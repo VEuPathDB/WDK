@@ -4,20 +4,15 @@ import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
 import {actionTypes} from '../actioncreators/RecordViewActionCreators';
 import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreators';
-import { StaticDataProps } from '../utils/StaticDataUtils';
 
 /** Store for record page */
 export default class RecordViewStore extends WdkStore {
-
-  getRequiredStaticDataProps() {
-    return [ StaticDataProps.USER ];
-  }
 
   getInitialState() {
     // TODO combine related state into objects (e.g., navPanelState, basketState, &c)
     return {
       // resources
-      user: undefined,
+      globalData: {},
       record: undefined,
       recordClass: undefined,
       categoryTree: undefined,

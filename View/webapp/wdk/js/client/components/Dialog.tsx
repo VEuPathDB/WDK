@@ -1,8 +1,16 @@
-import {Component, Children} from 'react';
-import {render, unmountComponentAtNode, findDOMNode} from 'react-dom';
+import React, {Component, Children, ReactChild} from 'react';
+import {render, unmountComponentAtNode} from 'react-dom';
+import $ from 'jquery';
 import { wrappable } from '../utils/componentUtils';
 
-let $ = window.jQuery;
+type Props = {
+  open?: boolean;
+  modal?: boolean;
+  title?: string;
+  onOpen?: Function;
+  onClose?: Function;
+};
+
 /**
  * A reusable jQueryUI Dialog component (http://jqueryui.com/dialog/).
  * Adapted from http://jsbin.com/vepidi/1/edit?html,js,output
@@ -75,7 +83,17 @@ let $ = window.jQuery;
  *     });
  *
  */
-class Dialog extends Component {
+class Dialog extends Component<Props, void> {
+
+  static defaultProps = {
+    open: false,
+    modal: true,
+    title: '',
+    onOpen() {},
+    onClose() {}
+  };
+
+  node: HTMLElement;
 
   /**
    * Render the child component then open or close dialog
@@ -110,7 +128,7 @@ class Dialog extends Component {
       title: this.props.title,
       autoOpen: false
     };
-    $(this.node).dialog(options);
+    $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
     this.handlePropsChanged();
   }
 
@@ -134,14 +152,5 @@ class Dialog extends Component {
   }
 
 }
-
-Dialog.defaultProps = {
-  open: false,
-  modal: true,
-  title: '',
-  onOpen() {},
-  onClose() {}
-};
-
 
 export default wrappable(Dialog);

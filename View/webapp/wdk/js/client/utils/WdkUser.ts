@@ -7,6 +7,7 @@ export interface User {
   lastName: string;
   organization: string;
   email: string;
+  isGuest: boolean;
 }
 
 export interface UserPreferences {

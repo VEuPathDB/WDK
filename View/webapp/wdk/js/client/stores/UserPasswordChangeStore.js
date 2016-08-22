@@ -1,12 +1,7 @@
 import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/UserActionCreators';
-import { StaticDataProps } from '../utils/StaticDataUtils';
 
 export default class UserPasswordChangeStore extends WdkStore {
-
-  getRequiredStaticDataProps() {
-    return [ StaticDataProps.USER ];
-  }
 
   // defines the structure of this store's data
   getInitialState() {

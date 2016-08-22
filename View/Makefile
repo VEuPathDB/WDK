@@ -13,21 +13,21 @@ wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx' -or -n
 # This exists mainly for legacy support. These should eventually
 # be included via npm and webpack. This will make it possible to
 # lazy-load these libraries with not-too-much effort.
+                # webapp/wdk/lib/jquery.cookie.js
+                # webapp/wdk/lib/jquery.blockUI.js
+                # webapp/wdk/lib/flexigrid.js
+                # webapp/wdk/lib/select2.min.js
+                # webapp/wdk/lib/jstree/jquery.jstree.js
 libs_sources := node_modules/babel-polyfill/dist/polyfill.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
                 webapp/wdk/lib/jquery-ui.js \
-                webapp/wdk/lib/jquery.cookie.js \
-                webapp/wdk/lib/jquery.blockUI.js \
                 webapp/wdk/lib/jquery.qtip.min.js \
-                webapp/wdk/lib/flexigrid.js \
-                webapp/wdk/lib/select2.min.js \
                 webapp/wdk/lib/flot/jquery.flot.min.js \
                 webapp/wdk/lib/flot/jquery.flot.categories.min.js \
                 webapp/wdk/lib/flot/jquery.flot.selection.min.js \
                 webapp/wdk/lib/flot/jquery.flot.time.min.js \
                 webapp/wdk/lib/datatables.min.js \
-                webapp/wdk/lib/jstree/jquery.jstree.js \
                 webapp/wdk/lib/spin.min.js \
                 webapp/wdk/lib/zynga-scroller/Animate.js \
                 webapp/wdk/lib/zynga-scroller/Scroller.js
@@ -36,7 +36,7 @@ test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
 .PHONY: all clean test test-server
 
-bundles: $(wdk_bundle) $(libs_bundle) $(css_bundle)
+bundles: $(wdk_bundle) $(css_bundle)
 
 # =============================================================================
 # Install npm packages. This target will prevent unneeded http requests.

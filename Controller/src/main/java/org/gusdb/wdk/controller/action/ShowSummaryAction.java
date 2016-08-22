@@ -205,6 +205,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
                 forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
                 forward = new ActionForward(forward.getPath(), true);
+                // set tab cookie
+                ShowApplicationAction.setWdkTabStateCookie(request, response);
             }
 
             String queryString = request.getQueryString();

@@ -9,10 +9,10 @@
  */
 
 // create internal packages
+import 'babel-polyfill';
 import './vendor';
 import './core';
 import './user';
-import './models';
 import './plugins';
 import './components';
 import './controllers';
@@ -32,17 +32,13 @@ import * as OntologyUtils from './client/utils/OntologyUtils';
 import * as CategoryUtils from './client/utils/CategoryUtils';
 import * as StaticDataUtils from './client/utils/StaticDataUtils';
 import * as FormSubmitter from './client/utils/FormSubmitter';
+import LazyFilterService from './client/utils/LazyFilterService';
 
 /**
  * Initialize the Wdk application.
  */
 export function initialize(...args) {
-  let context = initializeContext(...args);
-  // Make dispatcher for legacy integration
-  window.wdk.context = Object.assign({}, context, {
-    dispatchAction: context.makeDispatchAction('__LEGACY__')
-  });
-  return context;
+  return window.wdk.context = initializeContext(...args);
 }
 
 export {
@@ -58,5 +54,8 @@ export {
   OntologyUtils,
   CategoryUtils,
   StaticDataUtils,
-  FormSubmitter
+  FormSubmitter,
+  Stores,
+  TreeUtils,
+  LazyFilterService
 };

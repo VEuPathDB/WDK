@@ -17,7 +17,7 @@ class RecordUI extends Component {
   constructor(props) {
     super(props);
     this._ignoreScrollEvent = false;
-    this._updateActiveSection = throttle(this._updateActiveSection.bind(this), 250);
+    this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
     this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
     this._unsetIgnoreScrollEvent = debounce(this._unsetIgnoreScrollEvent.bind(this), 300);
   }
@@ -28,8 +28,8 @@ class RecordUI extends Component {
     if (target != null) {
       target.scrollIntoView();
     }
-    window.addEventListener('scroll', this._updateActiveSection);
-    window.addEventListener('resize', this._scrollToActiveSection);
+    window.addEventListener('scroll', this._updateActiveSection, { passive: true });
+    window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
   }
 
   componentDidUpdate(prevProps) {

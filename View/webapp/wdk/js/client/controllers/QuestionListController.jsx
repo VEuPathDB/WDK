@@ -1,6 +1,5 @@
 import { wrappable, safeHtml } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-import Link from '../components/Link';
 
 class QuestionListController extends WdkViewController {
 
@@ -9,7 +8,7 @@ class QuestionListController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return state.questions != null;
+    return state.globalData.questions != null;
   }
 
   getTitle() {
@@ -21,7 +20,7 @@ class QuestionListController extends WdkViewController {
       <div>
         <h2>Available Questions</h2>
         <ol>
-          {state.questions.map(question => (
+          {state.globalData.questions.map(question => (
             <li key={question.name} style={{margin:'10px 0'}}>
               <span style={{fontSize:'1.3em'}}>{question.displayName}</span> ({question.urlSegment})
               { /* <Link to={`/answer/${question.name}`}>answer page</Link> */ }

@@ -7,6 +7,7 @@ import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
 import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
+import WdkStore from './stores/WdkStore';
 
 import * as Components from './components';
 import * as Stores from './stores';
@@ -15,30 +16,32 @@ import * as Controllers from './controllers';
 /**
  * Initialize the application.
  *
- * @param {string} option.rootUrl Root URL used by the router. If the current
+ * @param {Object} options
+ * @param {string} options.rootUrl Root URL used by the router. If the current
  *   page's url does not begin with this option's value, the application will
  *   not render automatically.
- * @param {string|HTMLElement} option.rootElement Where to mount the
+ * @param {string|HTMLElement} options.rootElement Where to mount the
  *   application. Can be a selector string or an element. If this option does
  *   not resolve to an element after the DOMContentLoaded event is fired, the
  *   application will not render automatically.
- * @param {string} option.endpoint Base URL for WdkService.
- * @param {HTMLElement} option.rootElement DOM node to render the application.
- * @param {React.Element} option.applicationRoutes Additional routes to register
- *   with the Router.
- * @param {Object} option.storeWrappers Mapping from store name to replacement
+ * @param {string} options.endpoint Base URL for WdkService.
+ * @param {HTMLElement} options.rootElement DOM node to render the application.
+ * @param {Function} options.wrapRoutes A function that takes a WDK Routes React
+ *   Element and returns a React Element.
+ * @param {Object} options.storeWrappers Mapping from store name to replacement
  *   class
  */
-export function initialize({ rootUrl, rootElement, endpoint, applicationRoutes, storeWrappers }) {
-
+export function initialize(options) {
+  let { rootUrl, rootElement, endpoint, wrapRoutes, storeWrappers } = options;
   // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
-  let dispatcher = new Dispatcher;
+  let dispatcher = new Dispatcher();
   let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
   let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
-  makeDispatchAction()(loadAllStaticData());
+  let dispatchAction = makeDispatchAction('global');
+  dispatchAction(loadAllStaticData());
 
   // log all actions in dev environments
   if (__DEV__) logActions(dispatcher, stores);
@@ -55,7 +58,7 @@ export function initialize({ rootUrl, rootElement, endpoint, applicationRoutes, 
             rootUrl,
             makeDispatchAction,
             stores,
-            applicationRoutes
+            wrapRoutes
           });
         ReactDOM.render(applicationElement, container);
       }
@@ -69,22 +72,23 @@ export function initialize({ rootUrl, rootElement, endpoint, applicationRoutes, 
   }
 
   // return WDK application components
-  return { wdkService, makeDispatchAction, stores };
+  return { wdkService, dispatchAction, stores };
 }
 
 /**
  * Creates a `stores` object.
  *
  * @param {Dispatcher} dispatcher
- * @param {Object} named functions that return store override classes
+ * @param {Object} storeWrappers Named functions that return store override classes
  */
 function configureStores(dispatcher, storeWrappers) {
   let storeClasses = wrapStores(storeWrappers);
+  let globalDataStore = new storeClasses.GlobalDataStore(dispatcher);
   let storeInstances = {};
   Object.keys(storeClasses).forEach(function(className) {
     if (className != 'WdkStore') {
       storeInstances[className] =
-        new storeClasses[className](dispatcher, className, storeInstances);
+        new storeClasses[className](dispatcher, className, globalDataStore);
     }
   });
   return storeInstances;
@@ -111,7 +115,7 @@ function wrapStores(storeWrappers) {
           "but is `%s`.  Skipping...", key, storeWrapperType);
       continue;
     }
-    stores[key] = (wdkStore == null ? storeWrapper() : storeWrapper(wdkStore));
+    stores[key] = (wdkStore == null ? storeWrapper(WdkStore) : storeWrapper(wdkStore));
   }
   return stores;
 }
@@ -131,7 +135,7 @@ function wrapStores(storeWrappers) {
  * An `action` function should ultimately return an object to invoke a dispatch.
  *
  * @param {Dispatcher} dispatcher
- * @param {any?} services
+ * @param {Object?} services
  */
 function getDispatchActionMaker(dispatcher, services) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
@@ -142,6 +146,10 @@ function getDispatchActionMaker(dispatcher, services) {
     return function dispatchAction(action) {
       if (typeof action === 'function') {
         // Call the function with dispatchAction and services
+        // TODO Change this to `dispatchAction(action(services))`. Doing this alone will make it impossible
+        // for an ActionCreator to dispatch multiple actions. We can either handle an array as a case below,
+        // and call dispatchAction on each item of the array, or more generally we can support iterables.
+        // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
         return action(dispatchAction, services);
       }
       else if (isPromise(action)) {

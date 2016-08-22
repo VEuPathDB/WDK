@@ -1,4 +1,3 @@
-import {PropTypes} from 'react';
 import WdkViewController from './WdkViewController';
 import {wrappable} from '../utils/componentUtils';
 import {
@@ -68,7 +67,7 @@ class RecordController extends WdkViewController {
 
   renderRecord(state, eventHandlers) {
     if (state.record) {
-      let { user, record, recordClass, inBasket, inFavorites,
+      let { globalData: { user }, record, recordClass, inBasket, inFavorites,
         loadingBasketStatus, loadingFavoritesStatus } = state;
       let loadingClassName = 'fa fa-circle-o-notch fa-spin';
       let headerActions = [];
@@ -116,11 +115,6 @@ class RecordController extends WdkViewController {
     );
   }
 
-}
-
-RecordController.propTypes = {
-  stores: PropTypes.object.isRequired,
-  makeDispatchAction: PropTypes.func.isRequired
 }
 
 export default wrappable(RecordController);

@@ -3,10 +3,13 @@ var node_env = process.env.NODE_ENV || 'production';
 var outputPath = './dist/wdk/js';
 
 module.exports = {
-  entry: './webapp/wdk/js',
+  entry: {
+    'wdk-client': './webapp/wdk/js/client',
+    'wdk': './webapp/wdk/js'
+  },
   output: {
     path: outputPath,
-    filename: 'wdk.bundle.js',
+    filename: '[name].bundle.js',
     library: 'Wdk'
   },
   bail: true,

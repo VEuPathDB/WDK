@@ -5,10 +5,6 @@ import WdkServiceJsonReporterForm from '../components/WdkServiceJsonReporterForm
 
 export default class DownloadFormStore extends WdkStore {
 
-  getRequiredStaticDataProps() {
-    return [ StaticDataProps.PREFERENCES, StaticDataProps.ONTOLOGY ];
-  }
-
   // defines the structure of this store's data
   getInitialState() {
     return {
@@ -34,13 +30,17 @@ export default class DownloadFormStore extends WdkStore {
 
   handleStaticDataItemAction(state, itemName, payload) {
     let newState = super.handleStaticDataItemAction(state, itemName, payload);
-    // FIXME: calling this for all static data actions means form state may reset
-    //    if user changes preferences in one of the forms.  We don't have any
-    //    forms like this now but may in the future and others may already.
     return tryFormInit(this, newState);
   }
 
   handleAction(state, { type, payload }) {
+
+    if (this.globalDataStore.hasChanged()) {
+      // FIXME: calling this for all global data actions means form state may reset
+      //    if user changes preferences in one of the forms.  We don't have any
+      //    forms like this now but may in the future and others may already.
+      return tryFormInit(this, state);
+    }
 
     switch(type) {
 
@@ -92,7 +92,7 @@ function initialize(thisStore, state, { step, question, recordClass, scope }) {
 
 function tryFormInit(thisStore, state) {
   // try to calculate form state for WDK JSON reporter
-  if (thisStore.isAllRequiredStaticDataLoaded(state) && state.step != null) {
+  if (state.globalData[StaticDataProps.PREFERENCES] != null && state.globalData[StaticDataProps.ONTOLOGY] != null && state.step != null) {
     // step, preferences, and ontology have been loaded;
     //    calculate state and set isLoading to false
     let selectedReporterName = (state.availableReporters.length == 1 ?

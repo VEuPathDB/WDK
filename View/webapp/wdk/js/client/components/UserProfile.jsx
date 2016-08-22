@@ -57,7 +57,7 @@ let UserProfile = React.createClass({
                              onEmailChange={this.onEmailChange}
                              onFormStateChange={this.props.userEvents.updateProfileForm}
                              saveProfile={this.saveProfile}
-                             wdkConfig={this.props.config}/>
+                             wdkConfig={this.props.globalData.config}/>
           </div>
         }
       </div>
@@ -133,7 +133,7 @@ let UserProfile = React.createClass({
 UserProfile.propTypes = {
 
   /** WDK config object */
-  config: PropTypes.object.isRequired,
+  globalData: PropTypes.shape({ config: PropTypes.object.isRequired }),
 
   /** The user object to be modified */
   userFormData:  PropTypes.object.isRequired,

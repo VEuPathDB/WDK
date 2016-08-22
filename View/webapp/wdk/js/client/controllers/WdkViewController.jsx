@@ -1,10 +1,10 @@
 import { Component, PropTypes } from 'react';
-import Doc from '../components/Doc';
+import Page from '../components/Page';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
-import { wrapActions } from '../utils/componentUtils';
+import { wrapActions, PureComponent } from '../utils/componentUtils';
 
-class WdkViewController extends Component {
+class WdkViewController extends PureComponent {
 
   /*--------------- Methods that should probably be overridden ---------------*/
 
@@ -26,6 +26,13 @@ class WdkViewController extends Component {
   }
 
   /**
+   * Get state from store required for the view being rendered
+   */
+  getStateFromStore(store) {
+    return store.getState();
+  }
+
+  /**
    * This is a good place to perform side-effects, such as calling an action
    * creator to load data for a store.
    *
@@ -40,7 +47,6 @@ class WdkViewController extends Component {
    * @returns {void}
    */
   loadData(state, nextProps, previousProps) {
-    return;
   }
 
   /**
@@ -68,7 +74,7 @@ class WdkViewController extends Component {
   }
 
   /**
-   * Renders the highest page component below the Doc tag.
+   * Renders the highest page component below the Page tag.
    */
   renderView(state, eventHandlers) {
     return ( <span>Page for View Controller: {this.name}</span> );
@@ -102,7 +108,7 @@ class WdkViewController extends Component {
             "' that does not exist.");
       }
       else {
-        this.state = this.store.getState();
+        this.state = this.getStateFromStore(this.store);
       }
     }
   }
@@ -110,14 +116,18 @@ class WdkViewController extends Component {
   componentDidMount() {
     if (this.store != null) {
       this.storeSubscription = this.store.addListener(() => {
-        this.setState(this.store.getState());
+        this.setState(this.getStateFromStore(this.store));
       });
     }
-    this.loadData(this.state, this.props);
+    this.loadData(this.state, this.props, undefined);
   }
 
   componentWillReceiveProps(nextProps) {
     this.loadData(this.state, nextProps, this.props);
+  }
+
+  componentDidUpdate() {
+    document.title = this.getTitle(this.state);
   }
 
   /**
@@ -152,15 +162,14 @@ class WdkViewController extends Component {
    * fully loaded or has erred during loading.
    */
   render() {
-    let title = this.getTitle(this.state);
     if (this.isRenderDataLoadError(this.state)) {
-      return ( <Doc title={title}><LoadError/></Doc> );
+      return ( <Page {...this.store.getState()} {...this.eventHandlers}><LoadError/></Page> );
     }
     else if (!this.isRenderDataLoaded(this.state)) {
-      return ( <Doc title={title}><Loading/></Doc> );
+      return ( <Page {...this.store.getState()} {...this.eventHandlers}><Loading/></Page> );
     }
     else {
-      return ( <Doc title={title}>{this.renderView(this.state, this.eventHandlers)}</Doc> );
+      return ( <Page {...this.store.getState()} {...this.eventHandlers}>{this.renderView(this.state, this.eventHandlers)}</Page> );
     }
   }
 }

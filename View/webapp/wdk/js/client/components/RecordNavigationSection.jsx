@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import {includes, memoize} from 'lodash';
+import {includes, memoize, throttle} from 'lodash';
 import { seq } from '../utils/IterableUtils';
 import { preorderSeq, postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
@@ -17,12 +17,12 @@ class RecordNavigationSection extends PureComponent {
   constructor(props) {
     super(props);
     this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
-    this.setActiveCategory = this.setActiveCategory.bind(this);
+    this.setActiveCategory = throttle(this.setActiveCategory.bind(this), 300);
     this.state = { activeCategory: null };
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.setActiveCategory);
+    window.addEventListener('scroll', this.setActiveCategory, { passive: true });
   }
 
   componentWillUnmount() {

@@ -1,17 +1,8 @@
 import $ from 'jquery';
 import {Component, PropTypes} from 'react';
-import {useRouterHistory, Router, Route, IndexRoute} from 'react-router';
+import {Router, useRouterHistory} from 'react-router';
 import {createHistory} from 'history';
-import AppController from './AppController';
-import IndexController from './IndexController';
-import RecordController from './RecordController';
-import NotFoundController from './NotFoundController';
-import AnswerController from './AnswerController';
-import QuestionListController from './QuestionListController';
-import DownloadFormController from './DownloadFormController';
-import UserProfileController from './UserProfileController';
-import UserPasswordChangeController from './UserPasswordChangeController';
-import SiteMapController from './SiteMapController';
+import wdkRoutes from '../routes';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
@@ -30,22 +21,7 @@ export default class Root extends Component {
         <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
       );
     };
-    this.routes = (
-      <Route path="/" component={AppController}>
-        {/* Add application routes before WDK routes. This allows application routes to override WDK routes. */}
-        {this.props.applicationRoutes}
-        <IndexRoute component={IndexController}/>
-        <Route path="search/:recordClass/:question/result" component={AnswerController}/>
-        <Route path="record/:recordClass/download/*" component={DownloadFormController}/>
-        <Route path="record/:recordClass/*" component={RecordController}/>
-        <Route path="step/:stepId/download" component={DownloadFormController}/>
-        <Route path="user/profile" component={UserProfileController}/>
-        <Route path="user/profile/password" component={UserPasswordChangeController}/>
-        <Route path="data-finder" component={SiteMapController}/>
-        <Route path="question-list" component={QuestionListController}/>
-        <Route path="*" component={NotFoundController}/>
-      </Route>
-    );
+    this.routes = this.props.wrapRoutes(wdkRoutes);
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
   }
 
@@ -78,10 +54,11 @@ Root.propTypes = {
   rootUrl: PropTypes.string,
   makeDispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
-  applicationRoutes: PropTypes.element.isRequired
+  wrapRoutes: PropTypes.func
 };
 
 Root.defaultProps = {
-  rootUrl: '/'
+  rootUrl: '/',
+  wrapRoutes: routes => routes // identity
 };
 
