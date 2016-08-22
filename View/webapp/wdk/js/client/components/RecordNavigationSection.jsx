@@ -1,113 +1,143 @@
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
-import includes from 'lodash/collection/includes';
-import memoize from 'lodash/function/memoize';
-import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
-import * as i from '../utils/IterableUtils';
-import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
-import { wrappable } from '../utils/componentUtils';
+import {includes, memoize, throttle} from 'lodash';
+import { seq } from '../utils/IterableUtils';
+import { preorderSeq, postorderSeq } from '../utils/TreeUtils';
+import { wrappable, PureComponent } from '../utils/componentUtils';
+import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
+import { getId, getDisplayName } from '../utils/CategoryUtils';
+import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
+import RecordNavigationItem from './RecordNavigationItem';
+import Tree from './Tree';
+import RealTimeSearchBox from './RealTimeSearchBox';
 
-let RecordNavigationSection = React.createClass({
+/** Navigation panel for record page */
+class RecordNavigationSection extends PureComponent {
 
-  propTypes: {
-    collapsedCategories: React.PropTypes.array,
-    onCategoryToggle: React.PropTypes.func,
-    heading: React.PropTypes.node
-  },
+  constructor(props) {
+    super(props);
+    this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
+    this.setActiveCategory = throttle(this.setActiveCategory.bind(this), 300);
+    this.state = { activeCategory: null };
+  }
 
-  mixins: [ PureRenderMixin ],
+  componentDidMount() {
+    window.addEventListener('scroll', this.setActiveCategory, { passive: true });
+  }
 
-  getInitialState() {
-    return {
-      navigationExpanded: false,
-      navigationQuery: ''
-    };
-  },
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.setActiveCategory);
+  }
 
-  getDefaultProps() {
-    return {
-      onCategoryToggle: function noop() {},
-      heading: 'Categories'
-    };
-  },
+  componentDidUpdate(previousProps) {
+    if (this.props.collapsedSections !== previousProps.collapsedSections ||
+        this.props.showChildren !== previousProps.showChildren ) {
+      this.setActiveCategory();
+    }
+  }
+
+  // If showChildren is true, iterate postorder to get the first left-most child
+  // that is on-screen. Otherwise, we will only iterate top-level categories.
+  setActiveCategory() {
+    let categories = this.props.showChildren
+      ? preorderSeq(this.props.categoryTree)
+        .filter(node => node.children.length > 0)
+      : seq(this.props.categoryTree.children);
+
+    let activeCategory = categories.findLast(node => {
+      let id = getId(node);
+      let domNode = document.getElementById(id);
+      if (domNode == null) return;
+      let rect = domNode.getBoundingClientRect();
+      return rect.top <= 70;
+    });
+
+    this.setState({ activeCategory });
+  }
+
+  handleSearchTermChange(term) {
+    this.props.onNavigationQueryChange(term);
+    this.props.onNavigationSubcategoryVisibilityChange(true);
+  }
 
   render() {
-    let { navigationExpanded, navigationQuery } = this.state;
-    let { collapsedCategories, heading } = this.props;
-    let navigationQueryLower = navigationQuery.toLowerCase();
-    let categoryWordsMap = makeCategoryWordsMap(this.props.recordClass);
+    let { collapsedSections, heading, navigationQuery, navigationSubcategoriesExpanded } = this.props;
+    let searchQueryTerms = parseSearchQueryString(navigationQuery);
+    let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
-      'fa-plus-square': !navigationExpanded,
-      'fa-minus-square': navigationExpanded
+      'fa-plus-square': !navigationSubcategoriesExpanded,
+      'fa-minus-square': navigationSubcategoriesExpanded
     });
 
     return (
       <div className="wdk-RecordNavigationSection">
-        <div className="wdk-RecordNavigationSearch">
-          <input
-            className="wdk-RecordNavigationSearchInput"
-            placeholder={'Search ' + heading}
-            type="text"
-            value={navigationQuery}
-            onChange={e => {
-              this.setState({
-                navigationQuery: e.target.value,
-                navigationExpanded: true
-              });
-            }}
-          />
-        </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
-          <button className={expandClassName}
-            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
+          <button type="button" className={expandClassName}
+            onClick={() => {
+              this.props.onNavigationSubcategoryVisibilityChange(
+                !this.props.navigationSubcategoriesExpanded);
+            }}
           /> {heading}
         </h2>
+        <RealTimeSearchBox
+          placeholderText={'Search section names...'}
+          initialSearchTerm={navigationQuery}
+          onSearchTermChange={this.handleSearchTermChange}
+          delayMs={100}
+        />
         <div className="wdk-RecordNavigationCategories">
-          <RecordNavigationSectionCategories
-            record={this.props.record}
-            recordClass={this.props.recordClass}
-            categories={this.props.recordClass.categories}
-            onCategoryToggle={this.props.onCategoryToggle}
-            showChildren={navigationExpanded}
-            isCollapsed={category => includes(collapsedCategories, category.name)}
-            isVisible={category => includes(categoryWordsMap.get(category), navigationQueryLower)}
+          <Tree
+            tree={this.props.categoryTree.children}
+            id={c => getId(c)}
+            childNodes={c => c.children}
+            node={RecordNavigationItem}
+            showChildren={navigationSubcategoriesExpanded}
+            onSectionToggle={this.props.onSectionToggle}
+            isCollapsed={category => includes(collapsedSections, getId(category))}
+            isVisible={category => areTermsInString(searchQueryTerms, categoryWordsMap.get(category.properties))}
+            activeCategory={this.state.activeCategory}
           />
         </div>
       </div>
     );
   }
-});
+}
+
+RecordNavigationSection.propTypes = {
+  collapsedSections: React.PropTypes.array,
+  onSectionToggle: React.PropTypes.func,
+  heading: React.PropTypes.node
+};
+
+RecordNavigationSection.defaultProps = {
+  onSectionToggle: function noop() {},
+  heading: 'Contents'
+};
 
 export default wrappable(RecordNavigationSection);
 
-let makeCategoryWordsMap = memoize((recordClass) => {
-  return i.reduce((map, category) => {
+let makeCategoryWordsMap = memoize((root) =>
+  postorderSeq(root).reduce((map, node) => {
     let words = [];
 
-    for (let attribute of recordClass.attributes) {
-      if (attribute.category == category.name) {
-        words.push(attribute.displayName, attribute.description);
-      }
+    // add current node's displayName and description
+    words.push(
+      getDisplayName(node),
+      ...getPropertyValues('hasDefinition', node),
+      ...getPropertyValues('hasExactSynonym', node),
+      ...getPropertyValues('hasNarrowSynonym', node)
+    );
+
+    // add displayName and desription of attribute or table
+    if (nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node)) {
+      words.push(node.wdkReference.displayName, node.wdkReference.description);
     }
 
-    for (let table of recordClass.tables) {
-      if (table.category == category.name) {
-        words.push(table.displayName, table.description);
-      }
+    // add words from any children
+    for (let child of node.children) {
+      words.push(map.get(child.properties));
     }
 
-    if (category.categories != null) {
-      for (let cat of map.keys()) {
-        if (category.categories.indexOf(cat) > -1) {
-          words.push(map.get(cat));
-        }
-      }
-    }
-
-    words.push(category.displayName, category.description);
-
-    return map.set(category, words.join('\0').toLowerCase());
-  }, new Map(), postorderCategories(recordClass.categories));
-});
+    return map.set(node.properties, words.join('\0').toLowerCase());
+  }, new Map));

@@ -19,30 +19,13 @@
 
   <c:choose>
     <c:when test="${isLoggedIn eq true}">
-      <li><a href="${pageContext.request.contextPath}/showProfile.do">${userName}'s Profile</a></li>
+      <li><a href="${pageContext.request.contextPath}/app/user/profile">${userName}'s Profile</a></li>
       <li id="user-control">
-        <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"><jsp:text/></form>
-        <c:choose>
-          <c:when test="${authMethod eq 'OAUTH2'}">
-            <a href="javascript:void(0)" onclick="wdk.user.oauthLogout('${modelConfig.oauthUrl}')">Logout</a>
-          </c:when>
-          <c:when test="${authMethod eq 'USER_DB'}">
-            <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
-          </c:when>
-        </c:choose>
+        <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
       </li>
     </c:when>
     <c:otherwise>
-      <li>
-        <c:choose>
-          <c:when test="${authMethod eq 'OAUTH2'}">
-            <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}','${modelConfig.oauthClientId}')">Login</a>
-          </c:when>
-          <c:when test="${authMethod eq 'USER_DB'}">
-            <a href="javascript:void(0)" class="open-dialog-login-form">Login</a>
-          </c:when>
-        </c:choose>
-      </li>
+      <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a> </li>
       <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
     </c:otherwise>
   </c:choose>

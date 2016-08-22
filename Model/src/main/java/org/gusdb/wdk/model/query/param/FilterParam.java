@@ -299,10 +299,11 @@ public class FilterParam extends FlatVocabParam {
 
     // run the composed sql, and get the metadata back
     Map<String, List<String>> metadata = new LinkedHashMap<>();
+    PreparedStatement ps = null;
     ResultSet resultSet = null;
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setFetchSize(FETCH_SIZE);
       ps.setString(1, property);
       resultSet = ps.executeQuery();
@@ -323,7 +324,7 @@ public class FilterParam extends FlatVocabParam {
       throw new WdkModelException(ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, ps);
     }
 
     return metadata;
@@ -491,7 +492,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public void setContextQuestion(Question question) {
+  public void setContextQuestion(Question question)  throws WdkModelException {
     super.setContextQuestion(question);
     // also set context query to the metadata & spec queries
     if (metadataQuery != null)

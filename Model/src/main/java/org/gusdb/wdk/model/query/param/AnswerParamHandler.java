@@ -97,7 +97,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
-    AnswerValue answerValue = step.getAnswerValue(false, false);
+    AnswerValue answerValue = step.getAnswerValue(false);
     String checksum= answerValue.getChecksum();
     LOG.debug("Signature for step#" + stepId + ": " + checksum);
     return checksum;
@@ -115,7 +115,13 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String stepId = requestParams.getParam(param.getName());
+    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+  }
+  
+  @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException,
+  WdkModelException {
+    String stepId = inputStableValue;
     if (stepId == null || stepId.length() == 0)
       throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
     try {
@@ -125,7 +131,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     catch (NumberFormatException ex) {
       throw new WdkUserException("Invalid input to parameter '" + param.getPrompt() +
           "'; the input must be a step id.", ex);
-    }
+    }    
   }
 
   @Override

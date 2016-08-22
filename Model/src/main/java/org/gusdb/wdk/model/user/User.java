@@ -3,8 +3,10 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +36,11 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 import org.json.JSONException;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+
+import static org.gusdb.fgputil.functional.Functions.*;
+
 /**
  * @author xingao
  * 
@@ -48,8 +55,10 @@ public class User /* implements Serializable */{
   public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
   public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
 
-  private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
-  private final static String RECORD_VIEW_PREFIX = "record_view_";
+  public final static String SUMMARY_VIEW_PREFIX = "summary_view_";
+  public final static String RECORD_VIEW_PREFIX = "record_view_";
+
+  public final static String DEFAULT_SUMMARY_VIEW_PREF_SUFFIX = "";
 
   // represents the maximum number of sorts we apply to an answer
   public static final int SORTING_LEVEL = 3;
@@ -65,30 +74,22 @@ public class User /* implements Serializable */{
 
   // basic user information
   private String emailPrefix;
-  private String email;
-  private String lastName;
-  private String firstName;
-  private String middleName;
-  private String title;
-  private String organization;
-  private String department;
-  private String address;
-  private String city;
-  private String state;
-  private String zipCode;
-  private String phoneNumber;
-  private String country;
   private String openId;
 
   private Set<String> userRoles;
   private boolean guest = true;
-
+  
   /**
    * the preferences for the user: <prefName, prefValue>. It only contains the preferences for the current
    * project
    */
   private Map<String, String> globalPreferences;
   private Map<String, String> projectPreferences;
+  
+  /**
+   * Holds all key/value pairs associated with the user's profile.
+   */
+  private Map<UserProfileProperty,String> profile = new HashMap<>();
 
   // keep track in session , but don't serialize:
   // currently open strategies
@@ -101,7 +102,7 @@ public class User /* implements Serializable */{
 
   User(WdkModel model, int userId, String email, String signature) {
     this._userId = userId;
-    this.email = email;
+    setEmail(email);
     this.signature = signature;
 
     userRoles = new LinkedHashSet<String>();
@@ -166,13 +167,14 @@ public class User /* implements Serializable */{
    * @throws WdkModelException
    */
   public synchronized String getEmail() throws WdkModelException {
-    if (email == null)
+    if (this.profile.get(UserProfileProperty.EMAIL) == null) {
       userFactory.saveTemporaryUser(this);
-    return email;
+    }
+    return this.profile.get(UserProfileProperty.EMAIL);
   }
 
   public void setEmail(String email) {
-    this.email = email;
+    this.profile.put(UserProfileProperty.EMAIL, email);
   }
 
   public String getEmailPrefix() {
@@ -182,12 +184,37 @@ public class User /* implements Serializable */{
   public void setEmailPrefix(String emailPrefix) {
     this.emailPrefix = emailPrefix;
   }
-
+  
+  /**
+   * Sets the value of the profile property given by the UserProfileProperty enum
+   * @param key
+   * @param value
+   */
+  public void setProfileProperty(UserProfileProperty key, String value) {
+    this.profile.put(key, value);
+  }
+  
+  /**
+   * Return the entire user profile property map
+   * @return
+   */
+  public Map<UserProfileProperty, String> getProfileProperties() {
+    return this.profile;  
+  }
+  
+  /**
+   * Removes all existing user profile properties
+   */
+  public void clearProfileProperties() {
+    this.profile.clear();
+  }
+  
+  
   /**
    * @return Returns the address.
    */
   public String getAddress() {
-    return address;
+    return this.profile.get(UserProfileProperty.ADDRESS);
   }
 
   /**
@@ -195,14 +222,14 @@ public class User /* implements Serializable */{
    *          The address to set.
    */
   public void setAddress(String address) {
-    this.address = address;
+    this.profile.put(UserProfileProperty.ADDRESS, address);
   }
 
   /**
    * @return Returns the city.
    */
   public String getCity() {
-    return city;
+    return this.profile.get(UserProfileProperty.CITY);
   }
 
   /**
@@ -210,14 +237,14 @@ public class User /* implements Serializable */{
    *          The city to set.
    */
   public void setCity(String city) {
-    this.city = city;
+    this.profile.put(UserProfileProperty.CITY, city);
   }
 
   /**
    * @return Returns the country.
    */
   public String getCountry() {
-    return country;
+    return this.profile.get(UserProfileProperty.COUNTRY);
   }
 
   /**
@@ -225,14 +252,14 @@ public class User /* implements Serializable */{
    *          The country to set.
    */
   public void setCountry(String country) {
-    this.country = country;
+    this.profile.put(UserProfileProperty.COUNTRY, country);
   }
 
   /**
    * @return Returns the department.
    */
   public String getDepartment() {
-    return department;
+    return this.profile.get(UserProfileProperty.DEPARTMENT);
   }
 
   /**
@@ -240,14 +267,14 @@ public class User /* implements Serializable */{
    *          The department to set.
    */
   public void setDepartment(String department) {
-    this.department = department;
+    this.profile.put(UserProfileProperty.DEPARTMENT, department);
   }
 
   /**
    * @return Returns the firstName.
    */
   public String getFirstName() {
-    return firstName;
+    return this.profile.get(UserProfileProperty.FIRST_NAME);
   }
 
   /**
@@ -255,14 +282,14 @@ public class User /* implements Serializable */{
    *          The firstName to set.
    */
   public void setFirstName(String firstName) {
-    this.firstName = firstName;
+    this.profile.put(UserProfileProperty.FIRST_NAME, firstName);
   }
 
   /**
    * @return Returns the lastName.
    */
   public String getLastName() {
-    return lastName;
+    return this.profile.get(UserProfileProperty.LAST_NAME);
   }
 
   /**
@@ -270,14 +297,14 @@ public class User /* implements Serializable */{
    *          The lastName to set.
    */
   public void setLastName(String lastName) {
-    this.lastName = lastName;
+    this.profile.put(UserProfileProperty.LAST_NAME, lastName);
   }
 
   /**
    * @return Returns the middleName.
    */
   public String getMiddleName() {
-    return middleName;
+    return this.profile.get(UserProfileProperty.MIDDLE_NAME);
   }
 
   /**
@@ -285,7 +312,7 @@ public class User /* implements Serializable */{
    *          The middleName to set.
    */
   public void setMiddleName(String middleName) {
-    this.middleName = middleName;
+    this.profile.put(UserProfileProperty.MIDDLE_NAME, middleName);
   }
 
   /**
@@ -303,7 +330,7 @@ public class User /* implements Serializable */{
    * @return Returns the organization.
    */
   public String getOrganization() {
-    return organization;
+    return this.profile.get(UserProfileProperty.ORGANIZATION);
   }
 
   /**
@@ -311,14 +338,14 @@ public class User /* implements Serializable */{
    *          The organization to set.
    */
   public void setOrganization(String organization) {
-    this.organization = organization;
+    this.profile.put(UserProfileProperty.ORGANIZATION, organization);
   }
 
   /**
    * @return Returns the phoneNumber.
    */
   public String getPhoneNumber() {
-    return phoneNumber;
+    return this.profile.get(UserProfileProperty.PHONE_NUMBER);
   }
 
   /**
@@ -326,14 +353,14 @@ public class User /* implements Serializable */{
    *          The phoneNumber to set.
    */
   public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
+    this.profile.put(UserProfileProperty.PHONE_NUMBER, phoneNumber);
   }
 
   /**
    * @return Returns the state.
    */
   public String getState() {
-    return state;
+    return this.profile.get(UserProfileProperty.STATE);
   }
 
   /**
@@ -341,14 +368,14 @@ public class User /* implements Serializable */{
    *          The state to set.
    */
   public void setState(String state) {
-    this.state = state;
+    this.profile.put(UserProfileProperty.STATE, state);
   }
 
   /**
    * @return Returns the title.
    */
   public String getTitle() {
-    return title;
+    return this.profile.get(UserProfileProperty.TITLE);
   }
 
   /**
@@ -356,14 +383,14 @@ public class User /* implements Serializable */{
    *          The title to set.
    */
   public void setTitle(String title) {
-    this.title = title;
+    this.profile.put(UserProfileProperty.TITLE, title);
   }
 
   /**
    * @return Returns the zipCode.
    */
   public String getZipCode() {
-    return zipCode;
+    return this.profile.get(UserProfileProperty.ZIP_CODE);
   }
 
   /**
@@ -371,7 +398,7 @@ public class User /* implements Serializable */{
    *          The zipCode to set.
    */
   public void setZipCode(String zipCode) {
-    this.zipCode = zipCode;
+    this.profile.put(UserProfileProperty.ZIP_CODE, zipCode);
   }
 
   /**
@@ -883,7 +910,15 @@ public class User /* implements Serializable */{
   public Map<String, String> getGlobalPreferences() {
     return new LinkedHashMap<String, String>(globalPreferences);
   }
-
+  
+  public void clearGlobalPreferences() {
+    globalPreferences.clear();
+  }
+  
+  public void clearProjectPreferences() {
+    projectPreferences.clear();
+  }
+  
   public void clearPreferences() {
     globalPreferences.clear();
     projectPreferences.clear();
@@ -896,8 +931,8 @@ public class User /* implements Serializable */{
   }
 
   public void changePassword(String oldPassword, String newPassword, String confirmPassword)
-      throws WdkUserException {
-    userFactory.changePassword(email, oldPassword, newPassword, confirmPassword);
+      throws WdkUserException, WdkModelException {
+    userFactory.changePassword(this.profile.get(UserProfileProperty.EMAIL), oldPassword, newPassword, confirmPassword);
   }
 
   DatasetFactory getDatasetFactory() {
@@ -918,7 +953,7 @@ public class User /* implements Serializable */{
   }
 
   public int getItemsPerPage() {
-    String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
+    String prefValue = getProjectPreference(User.PREF_ITEMS_PER_PAGE);
     int itemsPerPage = (prefValue == null) ? 20 : Integer.parseInt(prefValue);
     return itemsPerPage;
   }
@@ -928,15 +963,20 @@ public class User /* implements Serializable */{
       itemsPerPage = 20;
     else if (itemsPerPage > 1000)
       itemsPerPage = 1000;
-    setGlobalPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
+    setProjectPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
     save();
   }
 
-  public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
+  //***********************************************************************
+  //*** Methods to support specification and sorting of summary attributes
+  //***********************************************************************
+
+  public Map<String, Boolean> getSortingAttributes(
+      String questionFullName, String keySuffix) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
-    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
+    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     String sortingList = projectPreferences.get(sortKey);
 
     // user doesn't have sorting preference, return the default from question.
@@ -959,8 +999,8 @@ public class User /* implements Serializable */{
     return sortingAttributes;
   }
 
-  public String addSortingAttribute(String questionFullName, String attrName, boolean ascending)
-      throws WdkModelException {
+  public String addSortingAttribute(String questionFullName, String attrName,
+      boolean ascending, String keySuffix) throws WdkModelException {
     // make sure the attribute exists in the question
     Question question = wdkModel.getQuestion(questionFullName);
     if (!question.getAttributeFieldMap().containsKey(attrName))
@@ -970,7 +1010,7 @@ public class User /* implements Serializable */{
     StringBuilder sort = new StringBuilder(attrName);
     sort.append(ascending ? " ASC" : " DESC");
 
-    Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
+    Map<String, Boolean> previousMap = getSortingAttributes(questionFullName, keySuffix);
     if (previousMap != null) {
       int count = 1;
       for (String name : previousMap.keySet()) {
@@ -982,22 +1022,22 @@ public class User /* implements Serializable */{
       }
     }
 
-    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
+    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     String sortValue = sort.toString();
     projectPreferences.put(sortKey, sortValue);
     return sortValue;
   }
 
-  public void setSortingAttributes(String questionName, String sortings) {
-    String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX;
+  public void setSortingAttributes(String questionName, String sortings, String keySuffix) {
+    String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     projectPreferences.put(sortKey, sortings);
   }
 
-  public String[] getSummaryAttributes(String questionFullName) throws WdkModelException {
+  public String[] getSummaryAttributes(String questionFullName, String keySuffix) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     String summaryValue = projectPreferences.get(summaryKey);
     Set<String> summary = new LinkedHashSet<>();
     if (summaryValue != null) {
@@ -1017,13 +1057,13 @@ public class User /* implements Serializable */{
     }
   }
 
-  public void resetSummaryAttributes(String questionFullName) {
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+  public void resetSummaryAttributes(String questionFullName, String keySuffix) {
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     projectPreferences.remove(summaryKey);
     logger.debug("reset used weight to false");
   }
 
-  public String setSummaryAttributes(String questionFullName, String[] summaryNames) throws WdkModelException {
+  public String setSummaryAttributes(String questionFullName, String[] summaryNames, String keySuffix) throws WdkModelException {
     // make sure all the attribute names exist
     Question question = (Question) wdkModel.resolveReference(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
@@ -1043,11 +1083,15 @@ public class User /* implements Serializable */{
       summary.append(attrName);
     }
 
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     String summaryValue = summary.toString();
     projectPreferences.put(summaryKey, summaryValue);
     return summaryValue;
   }
+
+  //***********************************************************************
+  //*** END methods to support specification and sorting of summary attributes
+  //***********************************************************************
 
   public String createRemoteKey() throws WdkUserException, WdkModelException {
     // user can remote key only if he/she is logged in
@@ -1218,7 +1262,7 @@ public class User /* implements Serializable */{
       catch (WdkModelException ex) {
         new WdkRuntimeException(ex);
       }
-      if (!email.equals(user.email))
+      if (!this.profile.get(UserProfileProperty.EMAIL).equals(user.profile.get(UserProfileProperty.EMAIL)))
         return false;
       if (!signature.equals(user.signature))
         return false;
@@ -1299,7 +1343,7 @@ public class User /* implements Serializable */{
 
     String operatorString = operator.getBaseOperator();
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
-    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
+    //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
     Step booleanStep;
     try {
@@ -1434,21 +1478,27 @@ public class User /* implements Serializable */{
     return sb.toString();
   }
 
-  public SummaryView getCurrentSummaryView(Question question) throws WdkUserException {
-    String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+  public SummaryView getCurrentSummaryView(Question question) {
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
     String viewName = projectPreferences.get(key);
     SummaryView view;
     if (viewName == null) { // no summary view set, use the default one
       view = question.getDefaultSummaryView();
     }
     else {
-      view = question.getSummaryView(viewName);
+      try {
+        view = question.getSummaryView(viewName);
+      }
+      catch (WdkUserException e) {
+        // stored user preference is no longer valid; choose default instead
+        view = question.getDefaultSummaryView();
+      }
     }
     return view;
   }
 
   public void setCurrentSummaryView(Question question, SummaryView summaryView) throws WdkModelException {
-    String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
     if (summaryView == null) { // remove the current summary view
       projectPreferences.remove(key);
     }
@@ -1487,11 +1537,107 @@ public class User /* implements Serializable */{
   @Override
   public String toString() {
     try {
-      return "User #" + getUserId() + " - " + email;
+      return "User #" + getUserId() + " - " + getEmail();
     }
     catch (WdkModelException ex) {
       // TODO Auto-generated catch block
       throw new WdkRuntimeException(ex);
     }
   }
+
+  /**
+   * Enumeration describing all the user attributes associated with a user profile
+   */
+  public static enum UserProfileProperty {
+    FIRST_NAME("firstName", "first_name", "First Name", true, 50),
+    MIDDLE_NAME("middleName", "middle_name", "Middle Name", false, 50),
+    LAST_NAME("lastName", "last_name", "Last Name", true, 50),
+    TITLE("title", "title", "Title", false, 255),
+    DEPARTMENT("department", "department", "Department", false, 255),
+    ORGANIZATION("organization", "organization", "Organization", true, 255),
+    EMAIL("email", "email", "Email", true, 255),
+    ADDRESS("address", "address", "Address", false, 500),
+    CITY("city", "city", "City", false, 255),
+    STATE("state", "state", "State", false, 255),
+    ZIP_CODE("zipCode", "zip_code", "ZipCode", false, 20),
+    COUNTRY("country", "country", "Country", false, 255),
+    PHONE_NUMBER("phoneNumber", "phone_number", "Phone Number", false, 50);
+
+    private final String _jsonPropertyName;
+    private final String _dbColumnName;
+    private final String _display;
+    private final boolean _isRequired;
+    private final int _maxLength;
+    
+    /**
+     * Returns a list of all json property names applicable to the user profile.  
+     */
+    public static final List<String> JSON_PROPERTY_NAMES = mapToList(Arrays.asList(UserProfileProperty.values()),
+      new Function<UserProfileProperty, String>() {
+        @Override
+        public String apply(UserProfileProperty property) {
+          return property.getJsonPropertyName();
+        }
+      }
+    );
+    
+    /**
+     * Returns a list of all required user profile property enums
+     */
+    public static final List<UserProfileProperty> REQUIRED_PROPERTIES = filter(Arrays.asList(UserProfileProperty.values()),
+      new Predicate<UserProfileProperty>() {
+        @Override
+        public boolean test(UserProfileProperty property) {
+          return property.isRequired(); 
+        }
+      }
+    );
+    
+
+    /**
+     * Construction of new enumeration item
+     * @param jsonPropertyName - name used in the json object delivered/received by REST web services
+     * @param dbColumnName - database field name
+     * @param display - display name for view
+     * @param isRequired
+     * @param maxLength - maximum length allowed for this property
+     */
+    private UserProfileProperty(String jsonPropertyName, String dbColumnName, String display, boolean isRequired, int maxLength) {
+      _jsonPropertyName = jsonPropertyName;
+      _dbColumnName = dbColumnName;
+      _display = display;
+      _isRequired = isRequired;
+      _maxLength = maxLength;
+    }
+    
+    public String getJsonPropertyName() {
+      return _jsonPropertyName;
+    }
+    
+    public String getDbColumnName() {
+      return _dbColumnName;
+    }  
+    
+    public String getDisplay() {
+      return _display;
+    }
+    
+    public boolean isRequired() {
+      return _isRequired;
+    }
+    
+    public int getMaxLength() {
+      return _maxLength;
+    }
+    
+    public static UserProfileProperty fromJsonPropertyName(String jsonPropertyName) {
+      for(UserProfileProperty property : UserProfileProperty.values()) {
+        if(property.getJsonPropertyName().equals(jsonPropertyName)) {
+          return property;
+        }
+      }
+      return null;
+    }
+    
+  }  
 }

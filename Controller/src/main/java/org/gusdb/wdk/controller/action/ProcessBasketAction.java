@@ -96,35 +96,37 @@ public class ProcessBasketAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        String data = request.getParameter(PARAM_DATA);
+        String type = request.getParameter(PARAM_TYPE);
         if (action == null)
           throw new WdkUserException("required action param is missing");
         
         int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
-            RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            RecordClassBean recordClass = getRecordClass(type, wdkModel);
+            List<String[]> records = getRecords(data, recordClass);
             user.addToBasket(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_REMOVE)) {
             // need type & data params, where data is a JSON list of record ids
-            RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            RecordClassBean recordClass = getRecordClass(type, wdkModel);
+            List<String[]> records = getRecords(data, recordClass);
             user.removeFromBasket(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_ADD_ALL)) {
             // only need the data param, and it is a step display id
-            StepBean step = getStep(request, user);
+            StepBean step = getStep(data, user);
             user.addToBasket(step);
         } else if (action.equalsIgnoreCase(ACTION_REMOVE_ALL)) {
             // only need the data param, and it is a step display id
-            StepBean step = getStep(request, user);
+            StepBean step = getStep(data, user);
             user.removeFromBasket(step);
         } else if (action.equalsIgnoreCase(ACTION_CLEAR)) {
             // only need the type param, and it is the recordClass full name
-            RecordClassBean recordClass = getRecordClass(request, wdkModel);
+            RecordClassBean recordClass = getRecordClass(type, wdkModel);
             user.clearBasket(recordClass);
         } else if (action.equalsIgnoreCase(ACTION_CHECK)) {
-        	RecordClassBean recordClass = getRecordClass(request, wdkModel);
-        	List<String[]> records = getRecords(request, recordClass);
+        	RecordClassBean recordClass = getRecordClass(type, wdkModel);
+        	List<String[]> records = getRecords(data, recordClass);
         	numProcessed = user.getBasketCount(records, recordClass);
         } else {
             throw new WdkUserException("Unknown Basket operation: '" + action
@@ -158,19 +160,17 @@ public class ProcessBasketAction extends Action {
         }
     }
 
-    private RecordClassBean getRecordClass(HttpServletRequest request,
+    protected RecordClassBean getRecordClass(String type,
             WdkModelBean wdkModel) throws WdkModelException, WdkUserException {
         // get recordClass
-        String type = request.getParameter(PARAM_TYPE);
         if (type == null)
           throw new WdkUserException("required type param is missing");
         return wdkModel.findRecordClass(type);
     }
 
-    private StepBean getStep(HttpServletRequest request, UserBean user)
+    private StepBean getStep(String data, UserBean user)
             throws WdkUserException, WdkModelException {
         // get the step from step id
-        String data = request.getParameter(PARAM_DATA);
         if (data == null || !data.matches("^\\d+$"))
             throw new WdkUserException("The content for '" + PARAM_DATA
                     + "' is not a valid step display id: '" + data + "'.");
@@ -179,9 +179,11 @@ public class ProcessBasketAction extends Action {
         return user.getStep(stepId);
     }
 
-    private List<String[]> getRecords(HttpServletRequest request,
-            RecordClassBean recordClass) throws JSONException, WdkUserException {
-        String data = request.getParameter(PARAM_DATA);
+    /**
+     * @throws WdkModelException  
+     */
+    protected List<String[]> getRecords(String data,
+            RecordClassBean recordClass) throws JSONException, WdkUserException, WdkModelException {
         if (data == null)
             throw new WdkUserException("the record ids list is missing.");
 

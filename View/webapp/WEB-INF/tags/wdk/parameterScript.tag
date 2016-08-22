@@ -4,5 +4,5 @@
 
 <%-- Available always now with namespaces concated
 <script type="text/javascript" src="<c:url value='/wdk/wdk/src/question.js'/>"></script>
-<script type="text/javascript" src="<c:url value='/wdk/wdk/src/parameterHandlers.js'/>"></script> 
+<script type="text/javascript" src="<c:url value='/wdk/wdk/src/parameterHandlers.jsx'/>"></script>
 --%>

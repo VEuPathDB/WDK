@@ -1,19 +1,16 @@
-import React from 'react';
+import { PropTypes } from 'react';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
-let RecordAttribute = React.createClass({
+/** Attribute value */
+function RecordAttribute(props) {
+  let { record, attribute } = props;
+  return renderAttributeValue(record.attributes[attribute.name], null, 'div');
+}
 
-  propTypes: {
-    value: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.object
-    ]).isRequired
-  },
-
-  render() {
-    return renderAttributeValue(this.props.value, null, 'div');
-  }
-
-});
+RecordAttribute.propTypes = {
+  attribute: PropTypes.object.isRequired,
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired
+};
 
 export default wrappable(RecordAttribute);

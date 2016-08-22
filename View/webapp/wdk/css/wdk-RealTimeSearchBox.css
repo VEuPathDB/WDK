@@ -1,0 +1,59 @@
+.wdk-RealTimeSearchBox {
+  white-space: nowrap;
+  position: relative;
+  width: 100%;
+}
+
+.wdk-RealTimeSearchBox__withHelp {
+  width: calc(100% - 2em);
+}
+
+input[type="search"].wdk-RealTimeSearchBoxInput {
+  width: calc(100% - 1.5em);
+  vertical-align: middle;
+  padding: 6px 20px 6px 6px;
+}
+
+.wdk-RealTimeSearchBoxLabel {
+  width: calc(100% - 10px);
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/** Lighten search box placeholder */
+/*
+input.wdk-RealTimeSearchBoxInput::-webkit-input-placeholder { color:#888; }
+input.wdk-RealTimeSearchBoxInput::-moz-placeholder { color:#888; }
+input.wdk-RealTimeSearchBoxInput:-ms-input-placeholder { color:#888; }
+input.wdk-RealTimeSearchBoxInput:-moz-placeholder { color:#888; }
+*/
+
+.wdk-RealTimeSearchBoxSearchIcon,
+button.wdk-RealTimeSearchBoxCancelBtn {
+  position: absolute;
+  right: 0px;
+  font-size: 1.4em;
+  color: #888;
+}
+
+.wdk-RealTimeSearchBox__active .wdk-RealTimeSearchBoxSearchIcon,
+.wdk-RealTimeSearchBox__inactive button.wdk-RealTimeSearchBoxCancelBtn {
+  display: none;
+}
+
+.wdk-RealTimeSearchBoxSearchIcon {
+  padding: 6px;
+}
+
+button.wdk-RealTimeSearchBoxCancelBtn {
+  border: 0;
+  background: transparent !important;
+  outline: none !important;
+  padding: 4px;
+}
+
+.wdk-RealTimeSearchBoxInfoIcon {
+  color: blue;
+  margin: 0 8px;
+  font-size: 1.4em;
+}

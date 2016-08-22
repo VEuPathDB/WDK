@@ -7,23 +7,33 @@ resultsPage.js
 Provides functions to support results table
 */
 
-wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
+wdk.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
   // Called when a step is selected and the tabs container is inserted in DOM
   function configureSummaryViews($element) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
-    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
-    var currentTab = 0;
+    var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
+    // var currentTab = 0;
     setupAddAttributes($element);
 
     $element.tabs({
       active : currentTab,
+      activate: function(event, ui) {
+        // save summary view preference
+        var summaryViewName = ui.newTab.attr('id');
+        var questionName = $element.attr('question');
+        $.get('savePreference.do', {
+          ['summary_view_' + questionName]: summaryViewName
+        })
+        .error(console.error.bind(console));
+      },
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
         wdk.basket.checkPageBasket();
         wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
+        ui.panel.trigger('wdk-results-loaded');
       }
     });
 
@@ -180,6 +190,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
           }
           resultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
           updateResultLabels(currentDiv, strat, step);
+          currentDiv.trigger('wdk-results-loaded');
         }
         if(strat) wdk.util.removeLoading(strat.frontId);
       },
@@ -312,17 +323,32 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     getResultsPage(gotoPageUrl, true, true);
   }
 
-  function openAttributeList(element){
+  function openAttributeList(element, viewName){
+    // first hack for apicommon (overridden addAttributes.tag), see second hack below
+    if ($(element).closest('.ui-tabs-panel').find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]').length > 0) {
+      eupathdb.attributeCheckboxTree.mountCheckboxTree(viewName);
+    }
     var dialogId = getDialogId(element, "attributesList");
+    var element = $("#" + dialogId);
     openBlockingDialog("#" + dialogId);
-
+    // Removing re-sizing of Add Columns dialog because jQuery UI resizing is broken - crisl 23FEB2016
+    element.dialog({resizable : false});
     // Very ugly kludge to reset checkbox tree to default
     // values when dialog is closed.
+    element.dialog({width : 'auto'});
+    var viewportWidth = $(window).width();
+    element.dialog({maxWidth : viewportWidth * 0.75 });
     $('#' + dialogId).on('dialogclose', function(e) {
-      var cbtId = $(e.target)
-        .find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]')
-        .data('id');
-      wdk.checkboxTree.selectCurrentNodes(cbtId);
+      var cbt = $(e.target).find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]');
+      if (cbt.length > 0) {
+        var cbtId = cbt.data('id');
+        wdk.checkboxTree.selectCurrentNodes(cbtId);
+      }
+      // second hack for apicommon (overridden addAttributes.tag), see first hack below
+      cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]');
+      if (cbt.length > 0) {
+        eupathdb.attributeCheckboxTree.unmountCheckboxTree(viewName);
+      }
     });
   }
 
@@ -340,12 +366,13 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   }
 
   function getDialogId(element, dialogClass) {
+    var containingTabId = $(element).closest(".ui-tabs-panel").attr("id");
     var list = $(element).next("." + dialogClass);
     if (list.length > 0) {
       var id = "dialog" + Math.floor(Math.random() * 1000000000);
       $(element).attr("dialog", id);
       list.attr("id", id).dialog({
-        appendTo: '#Summary_Views',
+        appendTo: "#" + containingTabId,
         autoOpen: false,
         open: function() {
           var $this = $(this);

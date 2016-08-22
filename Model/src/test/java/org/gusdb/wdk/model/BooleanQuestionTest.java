@@ -74,9 +74,6 @@ public class BooleanQuestionTest {
         paramValues.put(operator.getName(),
                 BooleanOperator.UNION.getOperator(appDb.getPlatform()));
 
-        StringParam expansion = booleanQuery.getUseBooleanFilter();
-        paramValues.put(expansion.getName(), "false");
-
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
         int size = answerValue.getResultSize();
@@ -103,9 +100,6 @@ public class BooleanQuestionTest {
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
                 BooleanOperator.INTERSECT.getOperator(appDb.getPlatform()));
-
-        StringParam expansion = booleanQuery.getUseBooleanFilter();
-        paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
@@ -134,9 +128,6 @@ public class BooleanQuestionTest {
         paramValues.put(operator.getName(),
                 BooleanOperator.LEFT_MINUS.getOperator(appDb.getPlatform()));
 
-        StringParam expansion = booleanQuery.getUseBooleanFilter();
-        paramValues.put(expansion.getName(), "false");
-
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
         int size = answerValue.getResultSize();
@@ -161,9 +152,6 @@ public class BooleanQuestionTest {
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
                 BooleanOperator.INTERSECT.getOperator(appDb.getPlatform()));
-
-        StringParam expansion = booleanQuery.getUseBooleanFilter();
-        paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);

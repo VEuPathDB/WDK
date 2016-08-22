@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.Field;
@@ -40,7 +41,7 @@ import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
  * @author Jerric
  * @created Jan 19, 2006
  */
-public abstract class AttributeField extends Field {
+public abstract class AttributeField extends Field implements Cloneable {
 
   public static final Pattern MACRO_PATTERN = Pattern.compile(
       "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
@@ -63,6 +64,11 @@ public abstract class AttributeField extends Field {
 
   private List<AttributePluginReference> pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> pluginMap;
+
+  @Override
+  public AttributeField clone() {
+    return (AttributeField) super.clone();
+  }
 
   public AttributeFieldContainer getContainer() {
     return container;
@@ -185,7 +191,7 @@ public abstract class AttributeField extends Field {
    * @param text
    * @return
    */
-  protected Map<String, AttributeField> parseFields(String text) {
+  protected Map<String, AttributeField> parseFields(String text) throws WdkModelException {
     Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
     Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
@@ -193,9 +199,8 @@ public abstract class AttributeField extends Field {
     while (matcher.find()) {
       String fieldName = matcher.group(1);
       if (!fields.containsKey(fieldName)) {
-        logger.warn("Invalid field macro in attribute" + " [" + name + "] of ["
+        throw new WdkModelException("Invalid field macro in attribute" + " [" + name + "] of ["
             + recordClass.getFullName() + "]: " + fieldName);
-        continue;
       }
 
       AttributeField field = fields.get(fieldName);
@@ -235,8 +240,8 @@ public abstract class AttributeField extends Field {
     // KLUGE!!!  Override getPropertyLists().  If wdkModel is null, then this
     //   field is contained in a TableField, which does not call resolveReferences
     //   on its attributes.  Return an empty map in this case.
-    if (wdkModel == null) {
-      return Collections.EMPTY_MAP;
+    if (_wdkModel == null) {
+      return Collections.emptyMap();
     }
     return super.getPropertyLists();
   }
@@ -272,8 +277,12 @@ public abstract class AttributeField extends Field {
   private void traverseDependeny(AttributeField attribute, Stack<String> path)
       throws WdkModelException {
     if (path.contains(attribute.name))
-      throw new WdkModelException("Attribute has loop reference: "
-          + attribute.name);
+      // NOTE: if you got this exception on a LinkAttribute, make sure you are
+      //   not self-referencing the LinkAttribute.  LinkAttributes need to only
+      //   reference existing ColumnAttributes (i.e. values pulled from SQL)
+      throw new WdkModelException("Attribute '" + attribute.name +
+          "' has circular reference: " +  FormatUtil.NL + "   Previous = [ " +
+          FormatUtil.join(new ArrayList<String>(path).toArray(), ", ") + " ]");
 
     path.push(attribute.name);
     for (AttributeField dependent : attribute.getDependents()) {

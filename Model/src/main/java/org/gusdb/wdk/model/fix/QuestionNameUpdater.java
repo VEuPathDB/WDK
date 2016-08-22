@@ -138,7 +138,7 @@ public class QuestionNameUpdater {
       logger.error(ex);
       throw ex;
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
       SqlUtils.closeStatement(psUpdate);
     }
 

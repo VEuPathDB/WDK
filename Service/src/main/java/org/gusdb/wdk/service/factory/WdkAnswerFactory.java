@@ -32,23 +32,16 @@ public class WdkAnswerFactory {
       AnswerValue answer = request.getQuestion().makeAnswerValue(_user.getUser(),
           convertParams(request.getParamValues()), startIndex, endIndex,
           sorting, request.getLegacyFilter(), true, request.getWeight());
-      return getFilteredAnswerBean(answer, request);
+      answer.setFilterOptions(request.getFilterValues());
+      answer.setViewFilterOptions(request.getViewFilterValues());
+      return new AnswerValueBean(answer);
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
   }
 
-  private AnswerValueBean getFilteredAnswerBean(AnswerValue answer, AnswerRequest request) {
-    answer.setFilterOptions(request.getFilterValues());
-    answer.setViewFilterOptions(request.getViewFilterValues());
-    // if view filters are present, then apply them; if user
-    //   doesn't want them, they will omit in request
-    answer.setApplyViewFilters(true);
-    return new AnswerValueBean(answer);
-  }
-
-  private Map<String, String> convertParams(Map<String, ParamValue> params) {
+  static Map<String, String> convertParams(Map<String, ParamValue> params) {
     Map<String, String> conversion = new HashMap<>();
     for (ParamValue param : params.values()) {
       conversion.put(param.getName(), param.getObjectValue().toString());

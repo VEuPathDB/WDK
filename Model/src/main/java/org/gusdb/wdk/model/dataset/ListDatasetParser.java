@@ -11,6 +11,8 @@ public class ListDatasetParser extends AbstractDatasetParser {
   public static final String PROP_ROW_DIVIDER = "row.divider";
   public static final String PROP_COLUMN_DIVIDER = "column.divider";
 
+  public static final String DATASET_COLUMN_DIVIDER = "______";
+
   private static final Logger logger = Logger.getLogger(ListDatasetParser.class);
 
   public ListDatasetParser() {
@@ -22,7 +24,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
   @Override
   public List<String[]> parse(String rawValue) throws WdkDatasetException {
     //String rowDivider = getRowDivider(rawValue);
-    // scrum Feb 2 2016: we allow all these charaters as row dividers, do not expect columns
+    // scrum Feb 2 2016: we allow all these characters as row dividers, do not expect columns
     String rowDivider = "[\\s,;]+";
     String[] rows = rawValue.split(rowDivider);
     String columnDivider = getColumnDivider(rows[0]);
@@ -75,7 +77,11 @@ public class ListDatasetParser extends AbstractDatasetParser {
     if (columnDivider != null)
       return columnDivider;
 
-    // determine the divider by content, starting with tab
+    // determine the divider by content, starting with DATASET_COLUMN_DIVIDER
+    if (row.indexOf(DATASET_COLUMN_DIVIDER) > 0)
+      return DATASET_COLUMN_DIVIDER;
+
+    // then tab
     if (row.indexOf('\t') > 0)
       return "\t";
 

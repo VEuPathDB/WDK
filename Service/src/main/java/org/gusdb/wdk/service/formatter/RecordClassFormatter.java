@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -60,6 +59,7 @@ public class RecordClassFormatter {
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+      .put(Keys.PRIMARY_KEY_ATTRIBUTE_NAME, recordClass.getPrimaryKeyAttributeField().getName())
       .put(Keys.PRIMARY_KEY_REFS, recordClass.getPrimaryKeyAttributeField().getColumnRefs())
       .put(Keys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
         FieldScope.ALL, expandTables, expandTableAttributes))
@@ -73,7 +73,9 @@ public class RecordClassFormatter {
         JSONObject obj = new JSONObject()
           .put(Keys.NAME, reporter.getName())
           .put(Keys.DISPLAY_NAME, reporter.getDisplayName())
-          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter));
+          .put(Keys.DESCRIPTION, reporter.getDescription())
+          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
+          .put(Keys.SCOPES, reporter.getScopesList());
         array.put(obj);
       }
     }

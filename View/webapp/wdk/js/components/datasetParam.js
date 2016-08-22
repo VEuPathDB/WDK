@@ -1,4 +1,4 @@
-wdk.util.namespace("wdk.components.datasetParam", function(ns, $) {
+wdk.namespace("wdk.components.datasetParam", function(ns, $) {
   "use strict";
 
   var init = function(paramDiv) {

@@ -125,13 +125,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
 
     // check if stable value is assigned
     String datasetId = requestParams.getParam(param.getName());
     if (datasetId != null) {
-      Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(datasetId));
-      return Integer.toString(dataset.getDatasetId());
+      return cleanAndValidateStableValue(user, datasetId);
     }
 
     // dataset id not assigned, create one.
@@ -184,7 +182,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         data = toString(records);
     }
 
-    logger.info("dataset parser: " + parserName + ", data: '" + data + "'");
+    logger.info("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
@@ -197,12 +195,20 @@ public class DatasetParamHandler extends AbstractParamHandler {
       if (parserName == null)
         parserName = ListDatasetParser.NAME; // use default parser.
       DatasetParser parser = datasetParam.getParser(parserName);
+      DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
       logger.info("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
       return Integer.toString(dataset.getDatasetId());
     }
     else
       return null;
+  }
+
+  @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+    Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(inputStableValue));
+    return Integer.toString(dataset.getDatasetId());    
   }
 
   private String toString(RecordInstance[] records) {
@@ -214,7 +220,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         if (first)
           first = false;
         else
-          buffer.append("|");
+          buffer.append(ListDatasetParser.DATASET_COLUMN_DIVIDER);
         buffer.append(value);
       }
       buffer.append("\n");

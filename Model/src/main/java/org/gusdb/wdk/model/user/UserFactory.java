@@ -19,6 +19,8 @@ import java.util.regex.Matcher;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -361,6 +363,18 @@ public class UserFactory {
     return getMergedUser(guest, getUser(userId));
   }
 
+  /**
+   * Returns whether email and password are a correct credentials combination.
+   * 
+   * @param email user email
+   * @param password user password
+   * @return true email corresponds to user and password is correct, else false
+   * @throws WdkModelException if error occurs while determining result
+   */
+  public boolean isCorrectPassword(String email, String password) throws WdkModelException {
+    return authenticate(email, password) != null;
+  }
+
   private User authenticate(String email, String password)
       throws WdkModelException {
     /*
@@ -485,6 +499,7 @@ public class UserFactory {
    * @throws WdkModelException if user cannot be found or error occurs
    */
   public User getUser(int userId) throws WdkModelException {
+    PreparedStatement psUser = null;
     ResultSet rsUser = null;
     String sql = "SELECT email, signature, is_guest, last_name, "
         + "first_name, middle_name, title, organization, "
@@ -494,12 +509,12 @@ public class UserFactory {
     try {
       // get user information
       long start = System.currentTimeMillis();
-      PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
+      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setInt(1, userId);
       rsUser = psUser.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-get-user-by-id", start);
       if (!rsUser.next()) {
-        throw new WdkModelException("Invalid user id: " + userId);
+        throw new NoSuchUserException("Invalid user id: " + userId);
       }
 
       // read user info
@@ -513,13 +528,12 @@ public class UserFactory {
       user.setTitle(rsUser.getString("title"));
       user.setOrganization(rsUser.getString("organization"));
       user.setDepartment(rsUser.getString("department"));
-      user.setAddress(""); // TODO: FIX rsUser.getString("address"));
+      user.setAddress(rsUser.getString("address"));
       user.setCity(rsUser.getString("city"));
       user.setState(rsUser.getString("state"));
       user.setZipCode(rsUser.getString("zip_code"));
       user.setPhoneNumber(rsUser.getString("phone_number"));
       user.setCountry(rsUser.getString("country"));
-      user.setOpenId(rsUser.getString("address")); // TODO: FIX!!!
       // user.setOpenId(rsUser.getString("open_id"));
 
       // load the user's roles
@@ -529,12 +543,12 @@ public class UserFactory {
       user.setPreferences(getPreferences(user));
 
       return user;
-    } catch (SQLException e) {
+    }
+    catch (SQLException | WdkUserException e) {
       throw new WdkModelException("Unable to get user with ID " + userId, e);
-    } catch (WdkUserException e) {
-      throw new WdkModelException("Unable to get user with ID " + userId, e);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rsUser);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rsUser, psUser);
     }
   }
 
@@ -561,7 +575,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, null);
     }
     User[] array = new User[users.size()];
     users.toArray(array);
@@ -606,20 +620,21 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, null);
       SqlUtils.closeStatement(psUser);
     }
   }
 
   private Set<String> getUserRoles(User user) throws WdkUserException, WdkModelException {
     Set<String> roles = new LinkedHashSet<String>();
+    PreparedStatement psRole = null;
     ResultSet rsRole = null;
     String sql = "SELECT user_role from " + userSchema + "user_roles "
         + "WHERE user_id = ?";
     try {
       // load the user's roles
       long start = System.currentTimeMillis();
-      PreparedStatement psRole = SqlUtils.getPreparedStatement(dataSource, sql);
+      psRole = SqlUtils.getPreparedStatement(dataSource, sql);
       psRole.setInt(1, user.getUserId());
       rsRole = psRole.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, "wdk-user-get-roles", start, rsRole);
@@ -629,7 +644,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rsRole);
+      SqlUtils.closeResultSetAndStatement(rsRole, psRole);
     }
     return roles;
   }
@@ -727,7 +742,7 @@ public class UserFactory {
       psUser.setString(6, user.getOrganization());
       psUser.setString(7, user.getDepartment());
       psUser.setString(8, user.getTitle());
-      psUser.setString(9, user.getOpenId()); // TODO: FIX!!! user.getAddress());
+      psUser.setString(9, user.getAddress());
       psUser.setString(10, user.getCity());
       psUser.setString(11, user.getState());
       psUser.setString(12, user.getZipCode());
@@ -782,6 +797,7 @@ public class UserFactory {
 
   public void deleteExpiredUsers(int hoursSinceActive) throws WdkUserException,
       WdkModelException {
+    PreparedStatement psUser = null;
     ResultSet rsUser = null;
     String sql = "SELECT email FROM " + userSchema + "users " + "WHERE email "
         + "LIKE '" + GUEST_USER_PREFIX + "%' AND last_active < ?";
@@ -792,7 +808,7 @@ public class UserFactory {
       Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
 
       long start = System.currentTimeMillis();
-      PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
+      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setTimestamp(1, timestamp);
       rsUser = psUser.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-expired-user", start, rsUser);
@@ -805,7 +821,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rsUser);
+      SqlUtils.closeResultSetAndStatement(rsUser, psUser);
     }
   }
 
@@ -836,17 +852,22 @@ public class UserFactory {
         toDelete.add(key);
       } else { // key exist, check if need to update
         String newValue = newPreferences.get(key);
-        if (!oldPreferences.get(key).equals(newValue))
+	String oldValue = oldPreferences.get(key);
+	if (newValue == null || oldValue == null) 
+	  throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
+	if (!oldPreferences.get(key).equals(newValue))
           toUpdate.put(key, newValue);
       }
     }
     for (String key : newPreferences.keySet()) {
+      if (newPreferences.get(key) == null) 
+	  throw new WdkModelException("Null values not allowed for new preference values. Key: " + key);
       if (!oldPreferences.containsKey(key))
         toInsert.put(key, newPreferences.get(key));
     }
-    logger.debug("to insert: " + toInsert);
-    logger.debug("to update: " + toUpdate);
-    logger.debug("to delete: " + toDelete);
+    logger.debug("to insert: " + FormatUtil.prettyPrint(toInsert, Style.MULTI_LINE));
+    logger.debug("to update: " + FormatUtil.prettyPrint(toUpdate, Style.MULTI_LINE));
+    logger.debug("to delete: " + FormatUtil.arrayToString(toDelete.toArray()));
 
     PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
     try {
@@ -941,13 +962,13 @@ public class UserFactory {
         else if (projectId.equals(this.projectId))
           specific.put(prefName, prefValue);
       }
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Could not get preferences for user "
           + user.getUserId(), e);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
-      if (resultSet == null)
-        SqlUtils.closeStatement(psSelect);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
     }
     List<Map<String, String>> preferences = new ArrayList<Map<String, String>>();
     preferences.add(global);
@@ -964,8 +985,7 @@ public class UserFactory {
     resetPassword(user);
   }
 
-  private void resetPassword(User user) throws WdkUserException,
-      WdkModelException {
+  private void resetPassword(User user) throws WdkModelException {
     String email = user.getEmail();
 
     // generate a random password of 8 characters long, the range will be
@@ -1006,7 +1026,7 @@ public class UserFactory {
   }
 
   void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
+      String confirmPassword) throws WdkUserException, WdkModelException {
     email = email.trim();
 
     if (newPassword == null || newPassword.trim().length() == 0)
@@ -1040,17 +1060,18 @@ public class UserFactory {
 
       // passed check, then save the new password
       savePassword(email, newPassword);
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
-      // SqlUtils.closeStatement(ps);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
 
   }
 
   public void savePassword(String email, String password)
-      throws WdkUserException {
+      throws WdkModelException {
     email = email.trim();
     PreparedStatement ps = null;
     String sql = "UPDATE " + userSchema
@@ -1062,10 +1083,14 @@ public class UserFactory {
       ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setString(1, encrypted);
       ps.setString(2, email);
-      ps.executeUpdate();
+      int numRowsUpdated = ps.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-update-password", start);
+      if (numRowsUpdated != 1) {
+        throw new WdkModelException("Password update for user with email '" +
+            email + "' updated " + numRowsUpdated + " rows.");
+      }
     } catch (SQLException ex) {
-      throw new WdkUserException(ex);
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(ps);
     }
@@ -1073,24 +1098,26 @@ public class UserFactory {
 
   private boolean isExist(String email) throws WdkUserException {
     email = email.trim();
-    // check if user exists in the database. if not, fail and ask to create
-    // the user first
+    // check if user exists in the database. if not, fail and ask to create the user first
+    PreparedStatement ps = null;
     ResultSet rs = null;
     String sql = "SELECT count(*) " + "FROM " + userSchema
         + "users WHERE email = ?";
     try {
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setString(1, email);
       rs = ps.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-select-user-by-email", start);
       rs.next();
       int count = rs.getInt(1);
       return (count > 0);
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
   }
 

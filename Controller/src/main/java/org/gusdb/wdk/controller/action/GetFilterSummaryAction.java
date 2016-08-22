@@ -44,6 +44,7 @@ public class GetFilterSummaryAction extends Action {
     FilterSummary summary = answer.getFilterSummary(filterName);
     
     request.setAttribute(ATTR_SUMMARY, summary);
+    request.setAttribute(PARAM_STEP, step);
     
     ActionForward forward = new ActionForward(filter.getView(), false);
     LOG.debug("Leaving GetFilterSummaryAction.");

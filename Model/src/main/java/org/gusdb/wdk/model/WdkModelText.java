@@ -73,7 +73,7 @@ public class WdkModelText extends WdkModelBase {
    * .WdkModel)
    */
   @Override
-  public void resolveReferences(WdkModel wodkModel) {
+  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
     // have nothing to do
   }
 }

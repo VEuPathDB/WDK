@@ -32,7 +32,7 @@ import org.json.JSONObject;
  *   urlSegment: String,
  *   class: String,
  *   parameters: [ see ParamFormatters ],
- *   defaultAttributes, [ String ],
+ *   defaultAttributes: [ String ],
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
  *   summaryViewPlugins: [ String ],
@@ -68,6 +68,7 @@ public class QuestionFormatter {
       .put(Keys.DISPLAY_NAME, q.getDisplayName())
       .put(Keys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
       .put(Keys.DESCRIPTION, q.getDescription())
+      .put(Keys.SUMMARY, q.getSummary())
       .put(Keys.HELP, q.getHelp())
       .put(Keys.NEW_BUILD, q.getNewBuild())
       .put(Keys.REVISE_BUILD, q.getReviseBuild())

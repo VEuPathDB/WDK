@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 
-let req = require.context('./examples', true, /^\.\/.*\.js$/);
+let req = require.context('./examples', true, /^\.\/.*\.jsx$/);
 
 class App extends React.Component {
 

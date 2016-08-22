@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.step", function(ns, $) {
+wdk.namespace("window.wdk.step", function(ns, $) {
   "use strict";
 
   ns.openDetail = null;

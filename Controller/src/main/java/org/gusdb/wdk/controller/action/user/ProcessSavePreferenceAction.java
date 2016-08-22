@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action.user;
 
 import java.util.Map;
@@ -12,6 +9,7 @@ import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author xingao
@@ -19,15 +17,14 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  */
 public class ProcessSavePreferenceAction extends WdkAction {
 
-    private static Logger logger = Logger.getLogger(ProcessSavePreferenceAction.class.getName());
+  private static Logger logger = Logger.getLogger(ProcessSavePreferenceAction.class.getName());
 
-    //  since params are dynamic, do not validate
-    @Override protected boolean shouldValidateParams() { return false; }
-    @Override protected Map<String, ParamDef> getParamDefs() { return null; }
+  //  since params are dynamic, do not validate
+  @Override protected boolean shouldValidateParams() { return false; }
+  @Override protected Map<String, ParamDef> getParamDefs() { return null; }
 
-    @Override
+  @Override
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
-
       UserBean wdkUser = getCurrentUser();
       
       for (String key : params.getKeys()) {
@@ -37,7 +34,7 @@ public class ProcessSavePreferenceAction extends WdkAction {
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);
         }
-        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY) || key.startsWith(User.SUMMARY_VIEW_PREFIX)) {
           wdkUser.setProjectPreference(key, value);
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);
@@ -45,6 +42,6 @@ public class ProcessSavePreferenceAction extends WdkAction {
       }
 
       wdkUser.save();
-      return new ActionResult().setRedirect(true).setViewPath("/");
+      return ActionResult.EMPTY_RESULT;
     }
 }

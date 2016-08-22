@@ -122,7 +122,7 @@ public class StepBean {
         return step.getDisplayName();
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         return step.getResultSize();
     }
 
@@ -135,24 +135,19 @@ public class StepBean {
     }
 
     public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
-        return getAnswerValue(true, false);
+        return new AnswerValueBean(step.getAnswerValue());
+    }
+
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+      return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
     public AnswerValueBean getViewAnswerValue() throws WdkModelException, WdkUserException {
-        return getAnswerValue(true, true);
-    }
-
-    public AnswerValueBean getAnswerValue(boolean validate, boolean applyViewFilters)
-            throws WdkModelException, WdkUserException {
-        return new AnswerValueBean(step.getAnswerValue(validate, applyViewFilters));
+        return new AnswerValueBean(step.getViewAnswerValue());
     }
 
     public int getStepId() {
         return step.getStepId();
-    }
-
-    public void setAnswerValue(AnswerValueBean answer) {
-        step.setAnswerValue(answer.getAnswerValue());
     }
 
     public int getEstimateSize() {
@@ -183,6 +178,10 @@ public class StepBean {
 
     public boolean getIsBoolean() {
         return step.isBoolean();
+    }
+
+    public boolean getIsCombined() {
+        return step.isCombined();
     }
 
     public boolean getIsTransform() {
@@ -328,11 +327,7 @@ public class StepBean {
         return step.isCombined();
     }
 
-    public boolean isUseBooleanFilter() throws WdkModelException {
-        return step.isUseBooleanFilter();
-    }
-
-    public boolean isFiltered() {
+    public boolean isFiltered() throws WdkModelException {
         return step.isFiltered();
     }
 
@@ -557,6 +552,10 @@ public class StepBean {
 
   public Integer getStrategyId() {
     return step.getStrategyId();
+  }
+
+  public void setAnswerValuePaging(int start, int end) {
+    step.setAnswerValuePaging(start, end);
   }
 
 }

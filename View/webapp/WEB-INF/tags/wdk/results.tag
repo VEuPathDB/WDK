@@ -50,27 +50,31 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
-<br />
+
 <!-- ================ New filter architecture ================= -->
 
 
+<!-- FIXME Uncomment sometime
 <c:if test="${strategy != null}">
   <imp:resultFilters step="${step}" />
 </c:if> 
+-->
 
 <!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 
+<c:set var="question" value="${wdkStep.question}" />
+<c:set var="views" value="${question.summaryViews}" />
+<jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
+<c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
+
 <div id="Summary_Views" class="Summary_Views"
     data-controller="wdk.resultsPage.configureSummaryViews"
     strategy="${strategy.strategyId}"
     step="${step.stepId}"
+    question="${question.fullName}"
     updateUrl="${pageContext.request.contextPath}/processSummaryView.do">
-  <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="views" value="${question.summaryViews}" />
-  <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
-  <c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
   
   <%-- get the index of the current view --%>
   <c:set var="selectedTab" value="${0}" />
@@ -87,8 +91,8 @@
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
         <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
-           title="${view.description}"
-        >${view.display} <span> </span></a>
+             title="${view.description}"
+          >${view.display} <span> </span></a>
       </li>
     </c:forEach>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
@@ -126,7 +130,6 @@
             </ul>
           </div>
         </c:if>
-        <imp:image style="margin-bottom: -13px; position: relative; top: -12px;" src="wdk/images/beta2-40.png" />
       </li>
     </c:if>
     <%--

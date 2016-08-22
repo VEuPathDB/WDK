@@ -102,7 +102,7 @@ public class DatasetParam extends Param {
 
     // optional recordClass Ref
     if (recordClassRef != null)
-      recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
+      recordClass = (RecordClass) _wdkModel.resolveReference(recordClassRef);
 
     // get parsers
     parsers = new LinkedHashMap<>();

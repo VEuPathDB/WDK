@@ -2,6 +2,7 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
+import { getId, getLabel } from '../utils/CategoryUtils';
 
 let RecordMainSection = React.createClass({
 
@@ -18,8 +19,7 @@ let RecordMainSection = React.createClass({
       depth,
       record,
       categories,
-      collapsedCategories,
-      collapsedTables,
+      collapsedSections,
       recordActions,
       parentEnumeration
     } = this.props;
@@ -29,32 +29,27 @@ let RecordMainSection = React.createClass({
     return (
       <div>
         {categories.map((category, index) => {
-          let categoryName = category.name;
-          let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
-          let tables = this.props.tables.filter(table => table.category == categoryName);
-          let enumeration = parentEnumeration == null
+          let categoryName = getLabel(category);
+          let categoryId = getId(category);
+          let enumeration = String(parentEnumeration == null
             ? index + 1
-            : parentEnumeration + '.' + (index + 1);
+            : parentEnumeration + '.' + (index + 1));
 
           return (
             <RecordMainCategorySection
-              key={String(category.name)}
-              depth={depth}
+              key={categoryName}
               category={category}
+              depth={depth}
+              enumeration={enumeration}
+              isCollapsed={collapsedSections.includes(categoryId)}
+              onSectionToggle={this.props.onSectionToggle}
               record={record}
               recordClass={this.props.recordClass}
-              attributes={attributes}
-              tables={tables}
-              isCollapsed={collapsedCategories.includes(category.name)}
-              collapsedTables={collapsedTables}
-              onCategoryToggle={this.props.onCategoryToggle}
-              onTableToggle={this.props.onTableToggle}
-              enumeration={enumeration}
             >
             <RecordMainSection
               {...this.props}
               depth={depth + 1}
-              categories={category.categories}
+              categories={category.children}
               parentEnumeration={enumeration}
             />
             </RecordMainCategorySection>

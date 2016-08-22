@@ -33,7 +33,7 @@
    <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
    <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
-      href="javascript:wdk.addStepPopup.showPanel('strategy_new')">New</a></li>
+      href="app/query-grid">New</a></li>
 
    <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
 	    onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('strategy_results')">Opened <font class="subscriptCount">(${openCount})</font></a></li>
@@ -45,7 +45,7 @@
    <c:if test="${fn:length(basketCounts) > 0}">
       <c:choose>
 	       <c:when test="${wdkUser.guest}">
-            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><imp:image class="basket" src="wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
+            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login('use baskets');"><imp:image class="basket" src="wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
 	       </c:when>
 	       <c:otherwise>
             <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><imp:image class="basket" src="wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>

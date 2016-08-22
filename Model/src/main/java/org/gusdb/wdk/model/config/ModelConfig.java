@@ -1,6 +1,11 @@
 package org.gusdb.wdk.model.config;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 
 /**
  * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
@@ -52,7 +57,7 @@ public class ModelConfig implements OAuthConfig {
   /**
    * the recipient of the super slow query log.
    */
-  private String adminEmail;
+  private List<String> adminEmails = Collections.EMPTY_LIST;
 
   /**
    * the subject of the registration email.
@@ -66,6 +71,8 @@ public class ModelConfig implements OAuthConfig {
 
   private ModelConfigUserDB userDB;
   private ModelConfigAppDB appDB;
+
+  private ModelConfigUserDatasetStore userDatasetStoreConfig;
 
   private QueryMonitor queryMonitor = new QueryMonitor();
 
@@ -118,6 +125,7 @@ public class ModelConfig implements OAuthConfig {
   private String oauthUrl = "";          // needed if method is OAUTH2
   private String oauthClientId = "";     // needed if method is OAUTH2
   private String oauthClientSecret = ""; // needed if method is OAUTH2
+  private String changePasswordUrl = ""; // probably needed if method is OAUTH2
 
   /**
    * Specify keystore file and pass phrase if SSL security checking is desired
@@ -258,7 +266,7 @@ public class ModelConfig implements OAuthConfig {
   }
 
   public String getAssetsUrl() {
-    return assetsUrl;
+    return (assetsUrl != null ? assetsUrl : webAppUrl);
   }
 
   public void setAssetsUrl(String assetsUrl) {
@@ -345,7 +353,7 @@ public class ModelConfig implements OAuthConfig {
    * @param authenticationMethod configured authentication method
    */
   public void setAuthenticationMethod(String authenticationMethod) {
-    LOG.info("Setting authentication method: " + authenticationMethod);
+    LOG.debug("Setting authentication method: " + authenticationMethod);
     this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
   }
 
@@ -401,6 +409,21 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
+   * @return custom change password URL if specified
+   */
+  public String getChangePasswordUrl() {
+    return changePasswordUrl;
+  }
+
+  /**
+   * @param changePasswordUrl custom change password URL to set
+   */
+  public void setChangePasswordUrl(String changePasswordUrl) {
+    LOG.debug("Overriding Change Password Page URL: " + changePasswordUrl);
+    this.changePasswordUrl = changePasswordUrl;
+  }
+
+  /**
    * @return key store file containing acceptable SSL hosts/certs
    * (called only if authentication method is OAUTH2)
    */
@@ -450,20 +473,26 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @return the adminEmail
+   * @return the adminEmails as a list of individual addresses
    */
-  public String getAdminEmail() {
-    return adminEmail;
+  public List<String> getAdminEmails() {
+    return adminEmails;
   }
 
   /**
-   * @param adminEmail
-   *          the adminEmail to set
+   * @return comma-delimited list of admin emails; this is probably the
+   * original value contained in the XML file but possibly slightly different
+   */
+  public String getAdminEmail() {
+    return FormatUtil.join(adminEmails.toArray(), ",");
+  }
+
+  /**
+   * @param adminEmail comma-delimited list of admin email addresses
    */
   public void setAdminEmail(String adminEmail) {
-    if (adminEmail != null && adminEmail.length() == 0)
-      adminEmail = null;
-    this.adminEmail = adminEmail;
+    adminEmails = (adminEmail == null || adminEmail.trim().isEmpty() ?
+      Collections.EMPTY_LIST : Arrays.asList(adminEmail.trim().split("[,\\s]+")));
   }
 
   /**
@@ -510,6 +539,18 @@ public class ModelConfig implements OAuthConfig {
 
   public void setCaching(boolean caching) {
     this.caching = caching;
+  }
+
+  public void setUserDatasetStore(ModelConfigUserDatasetStore udsConfig) {
+    this.userDatasetStoreConfig = udsConfig;
+  }
+  
+  /**
+   * The config for a user dataset store. Optional.  Might be null.
+   * @return
+   */
+  public ModelConfigUserDatasetStore getUserDatasetStoreConfig() {
+    return userDatasetStoreConfig;
   }
 
 }

@@ -47,7 +47,7 @@ public class SqlResultList implements ResultList {
   @Override
   public void close() throws WdkModelException {
     if (!resultSetClosed) {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
       resultSetClosed = true;
     }
   }
@@ -85,8 +85,7 @@ public class SqlResultList implements ResultList {
       return value;
     }
     catch (SQLException ex) {
-      logger.error("Cannot get value for column '" + columnName + "'");
-      throw new WdkModelException(ex);
+      throw new WdkModelException("Cannot get value for column '" + columnName + "'", ex);
     }
   }
 

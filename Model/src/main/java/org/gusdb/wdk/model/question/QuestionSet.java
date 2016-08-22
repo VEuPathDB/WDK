@@ -18,167 +18,165 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
  * Created: Fri June 4 15:05:30 2004 EDT
  * 
  * @author David Barkan
- * @version $Revision$ $Date: 2006-03-09 23:02:31 -0500 (Thu, 09 Mar
- *          2006) $ $Author$
+ * @version $Revision$ $Date$ $Author$
  */
 
 public class QuestionSet extends WdkModelBase implements ModelSetI<Question>, OptionallyTestable {
 
-    private List<Question> questionList = new ArrayList<Question>();
-    private Map<String, Question> questionMap = new LinkedHashMap<String, Question>();
-    private String name;
-    private String displayName;
+  private List<Question> _questionList = new ArrayList<Question>();
+  private Map<String, Question> _questionMap = new LinkedHashMap<String, Question>();
+  private String _name;
+  private String _displayName;
 
-    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
-    private String description;
-    private boolean doNotTest = false;
+  private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+  private String _description;
+  private boolean _doNotTest = false;
 
-    private boolean internal = false;
+  private boolean _internal = false;
 
-    public void setName(String name) {
-        this.name = name;
+  public void setName(String name) {
+    _name = name;
+  }
+
+  @Override
+  public String getName() {
+    return _name;
+  }
+
+  public void setDisplayName(String displayName) {
+    _displayName = displayName;
+  }
+
+  public String getDisplayName() {
+    return (_displayName != null) ? _displayName : _name;
+  }
+
+  public void addDescription(WdkModelText description) {
+    _descriptions.add(description);
+  }
+
+  public String getDescription() {
+    return _description;
+  }
+
+  public void setDoNotTest(boolean doNotTest) {
+    _doNotTest = doNotTest;
+  }
+
+  @Override
+  public boolean getDoNotTest() {
+    return _doNotTest;
+  }
+
+  public boolean isInternal() {
+    return _internal;
+  }
+
+  public void setInternal(boolean internal) {
+    _internal = internal;
+  }
+
+  public Question getQuestion(String name) throws WdkModelException {
+    Question question = _questionMap.get(name);
+    if (question == null)
+      throw new WdkModelException("Question Set " + getName() + " does not include question " + name);
+    return question;
+  }
+
+  public boolean contains(String questionName) {
+    return _questionMap.containsKey(questionName);
+  }
+
+  @Override
+  public Question getElement(String name) {
+    return _questionMap.get(name);
+  }
+
+  public Question[] getQuestions() {
+    Question[] array = new Question[_questionMap.size()];
+    _questionMap.values().toArray(array);
+    return array;
+  }
+
+  public Map<String, Question> getQuestionMap() {
+    return new LinkedHashMap<>(_questionMap);
+  }
+
+  public void addQuestion(Question question) {
+    question.setQuestionSet(this);
+    if (_questionList != null)
+      _questionList.add(question);
+    else
+      _questionMap.put(question.getName(), question);
+  }
+
+  @Override
+  public void resolveReferences(WdkModel model) throws WdkModelException {
+    for (Question question : _questionMap.values()) {
+      question.resolveReferences(model);
     }
+  }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getDisplayName() {
-        return (displayName != null) ? displayName : name;
-    }
-
-    public void addDescription(WdkModelText description) {
-        this.descriptions.add(description);
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDoNotTest(boolean doNotTest) {
-	this.doNotTest = doNotTest;
-    }
-
-    @Override
-    public boolean getDoNotTest() {
-	return doNotTest;
-    }
-
-    public boolean isInternal() {
-        return this.internal;
-    }
-
-    public void setInternal(boolean internal) {
-        this.internal = internal;
-    }
-
-    public Question getQuestion(String name) throws WdkModelException {
-        Question question = questionMap.get(name);
-        if (question == null)
-            throw new WdkModelException("Question Set " + getName()
-                    + " does not include question " + name);
-        return question;
-    }
-
-    public boolean contains(String questionName) {
-        return questionMap.containsKey(questionName);
-    }
-
-    @Override
-    public Question getElement(String name) {
-        return questionMap.get(name);
-    }
-
-    public Question[] getQuestions() {
-        Question[] array = new Question[questionMap.size()];
-        questionMap.values().toArray(array);
-        return array;
-    }
-    
-    public Map<String, Question> getQuestionMap() {
-      return new LinkedHashMap<>(questionMap);
-    }
-
-    public void addQuestion(Question question) {
-        question.setQuestionSet(this);
-        if (questionList != null) questionList.add(question);
-        else questionMap.put(question.getName(), question);
-    }
-
-    @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
-        for (Question question : questionMap.values()) {
-            question.resolveReferences(model);
-        }
-    }
-
-    @Override
-    public void setResources(WdkModel model) throws WdkModelException {
+  @Override
+  public void setResources(WdkModel model) throws WdkModelException {
     // do nothing
+  }
+
+  @Override
+  public String toString() {
+    String newline = System.getProperty("line.separator");
+    StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName() + "'" + newline +
+        "  displayName='" + getDisplayName() + "'" + newline + "  description='" + getDescription() + "'" +
+        newline + "  internal='" + isInternal() + "'" + newline);
+    buf.append(newline);
+
+    for (Question question : _questionMap.values()) {
+      buf.append(newline);
+      buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
+      buf.append(newline);
+      buf.append(question);
+      buf.append(newline);
     }
 
-    @Override
-    public String toString() {
-        String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
-                + "'" + newline + "  displayName='" + getDisplayName() + "'"
-                + newline + "  description='" + getDescription() + "'"
-                + newline + "  internal='" + isInternal() + "'" + newline);
-        buf.append(newline);
+    return buf.toString();
+  }
 
-        for (Question question : questionMap.values()) {
-            buf.append(newline);
-            buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
-            buf.append(newline);
-            buf.append(question);
-            buf.append(newline);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+   */
+  @Override
+  public void excludeResources(String projectId) throws WdkModelException {
+    // exclude descriptions
+    boolean hasDescription = false;
+    for (WdkModelText description : _descriptions) {
+      if (description.include(projectId)) {
+        if (hasDescription) {
+          throw new WdkModelException(
+              "The questionSet " + getName() + " has more than one description for project " + projectId);
         }
-
-        return buf.toString();
+        else {
+          _description = description.getText();
+          hasDescription = true;
+        }
+      }
     }
+    _descriptions = null;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
-    @Override
-    public void excludeResources(String projectId) throws WdkModelException {
-        // exclude descriptions
-        boolean hasDescription = false;
-        for (WdkModelText description : descriptions) {
-            if (description.include(projectId)) {
-                if (hasDescription) {
-                    throw new WdkModelException("The questionSet " + getName()
-                            + " has more than one description for project "
-                            + projectId);
-                } else {
-                    this.description = description.getText();
-                    hasDescription = true;
-                }
-            }
-        }
-        descriptions = null;
+    // exclude resources in each question
+    for (Question question : _questionList) {
+      if (question.include(projectId)) {
+        question.setQuestionSet(this);
+        question.excludeResources(projectId);
+        String questionName = question.getName();
+        if (_questionMap.containsKey(questionName))
+          throw new WdkModelException(
+              "Question named " + questionName + " already exists in question set " + getName());
 
-        // exclude resources in each question
-        for (Question question : questionList) {
-            if (question.include(projectId)) {
-                question.setQuestionSet(this);
-                question.excludeResources(projectId);
-                String questionName = question.getName();
-                if (questionMap.containsKey(questionName))
-                    throw new WdkModelException("Question named "
-                            + questionName + " already exists in question set "
-                            + getName());
-
-                questionMap.put(questionName, question);
-            }
-        }
-        questionList = null;
+        _questionMap.put(questionName, question);
+      }
     }
+    _questionList = null;
+  }
 }

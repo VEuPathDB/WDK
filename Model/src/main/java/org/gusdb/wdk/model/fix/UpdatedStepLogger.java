@@ -64,7 +64,7 @@ public class UpdatedStepLogger {
         steps.add(resultSet.getInt("step_id"));
       }
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
     logger.info(steps.size() + " steps are previously logged.");
     return steps;

@@ -1,8 +1,12 @@
 package org.gusdb.wdk.model.answer.single;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -31,5 +35,30 @@ public class SingleRecordAnswerValue extends AnswerValue {
   @Override
   public int getResultSize() {
     return 1;
+  }
+
+  @Override
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    // paging is irrelevant since there's only one record
+    return this;
+  }
+
+  @Override
+  public String getChecksum() throws WdkModelException, WdkUserException {
+    return EncryptionUtil.encryptNoCatch(new StringBuilder("SingleRecordAnswer_")
+      .append(_recordClass.getFullName()).append("_")
+      .append(FormatUtil.prettyPrint(_pkMap)).toString());
+  }
+  
+  @Override
+  public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
+    String[] pkArray = new String[_pkMap.size()];
+    String[] pkColNames = _recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    if (pkArray.length != pkColNames.length)
+      throw new WdkModelException("Incoming primary key array does not match recordclass PK column ref array");
+    for (int i = 0; i < pkColNames.length; i++) {
+      pkArray[i] = (String)_pkMap.get(pkColNames[i]);
+    }
+    return new ListBuilder<String[]>().add(pkArray).toList();
   }
 }

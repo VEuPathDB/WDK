@@ -99,7 +99,7 @@ public class Cache extends BeanBase implements CacheMBean {
     } catch (SQLException sqle) {
       logger.fatal(sqle);
     } finally {
-        SqlUtils.closeResultSetAndStatement(rs);
+        SqlUtils.closeResultSetAndStatement(rs, ps);
     }
     return value;
   }

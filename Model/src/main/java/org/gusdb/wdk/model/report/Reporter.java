@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.report;
 import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -74,7 +75,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
       logger.debug("Getting records #" + _startIndex + " to #" + pageEndIndex);
 
-      AnswerValue answerValue = new AnswerValue(_baseAnswer, _startIndex, pageEndIndex);
+      AnswerValue answerValue = _baseAnswer.cloneWithNewPaging(_startIndex, pageEndIndex);
 
       // disable sorting if the total size is bigger than threshold
       if (_resultSize > SORTING_THRESHOLD)
@@ -124,8 +125,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   protected WdkModel wdkModel;
 
   protected AnswerValue baseAnswer;
-  private int startIndex;
-  private int endIndex;
+  protected int startIndex;
+  protected int endIndex;
 
   private String description = null;
 
@@ -141,7 +142,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
    *           if error while setting properties on reporter
    */
   public void setProperties(Map<String, String> properties) throws WdkModelException {
-    this.properties = properties;
+    this.properties = new HashMap<>(properties);
     if (properties.containsKey(PROPERTY_PAGE_SIZE))
       maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
   }
@@ -206,7 +207,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   }
 
   protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException {
-    return baseAnswer.getSummaryAttributeFieldMap();
+    return baseAnswer.getAttributes().getSummaryAttributeFieldMap();
   }
 
   @Override

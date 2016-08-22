@@ -208,7 +208,7 @@ public class StepCountUpdater extends BaseCLI {
                 userIds.push(userId);
             }
         } finally {
-            SqlUtils.closeResultSetAndStatement(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet, null);
         }
         this.totalUsers = userIds.size();
     }

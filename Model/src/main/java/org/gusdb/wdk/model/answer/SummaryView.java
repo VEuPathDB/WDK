@@ -5,6 +5,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.record.RecordClass;
 
+// a SummaryView is generated from the information on the WDK Model (xml)
 public class SummaryView extends WdkView {
 
     public static SummaryView[] createSupportedSummaryViews(RecordClass recordClass)
@@ -14,7 +15,6 @@ public class SummaryView extends WdkView {
     }
 
     private String handlerClass;
-    private SummaryViewHandler handler;
 
     // must create public no-arg constructor for Digester
     public SummaryView() { }
@@ -35,10 +35,6 @@ public class SummaryView extends WdkView {
         // NOTE: will leave handler class null; default handler class will be used
     }
 
-    public SummaryViewHandler getHandler() {
-        return handler;
-    }
-
     public void setHandlerClass(String handlerClass) {
         this.handlerClass = handlerClass;
     }
@@ -46,15 +42,16 @@ public class SummaryView extends WdkView {
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
-        resolveHandlerClass();
+        // get throwaway instance here so we error up front if unable to resolve
+        getHandlerInstance();
     }
-    
-    private void resolveHandlerClass() throws WdkModelException {
+
+    public SummaryViewHandler getHandlerInstance() throws WdkModelException {
         if (handlerClass != null) {  // resolve the handler class
             try {
                 Class<? extends SummaryViewHandler> hClass = Class.forName(
                     handlerClass).asSubclass(SummaryViewHandler.class);
-                handler = hClass.newInstance();
+                return hClass.newInstance();
             } catch (ClassNotFoundException ex) {
                 throw new WdkModelException(ex);
             } catch (InstantiationException ex) {
@@ -63,5 +60,6 @@ public class SummaryView extends WdkView {
                 throw new WdkModelException(ex);
             }
         }
+        return null;
     }
 }

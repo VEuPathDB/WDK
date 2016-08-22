@@ -88,4 +88,17 @@ public class StrategyFilter extends StepFilter {
     User user = answer.getUser();
     return user.getStrategy(strategyId);
   }
+  
+  @Override
+  public void setDefaultValue(JSONObject defaultValue) {
+	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+  }
+  
+  @Override
+  /**
+   * Not fully implemented yet.
+   */
+  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+	  return false;
+  }
 }

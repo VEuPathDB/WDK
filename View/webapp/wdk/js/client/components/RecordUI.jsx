@@ -1,8 +1,10 @@
-import { Component, PropTypes } from 'react';
+import {Component} from 'react';
+import {debounce, throttle} from 'lodash';
 import classnames from 'classnames';
-import { wrappable } from '../utils/componentUtils';
-import Main from './Main';
-import Record from './Record';
+import {wrappable} from '../utils/componentUtils';
+import {postorderSeq} from '../utils/TreeUtils';
+import {getId} from '../utils/CategoryUtils';
+import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
 import Sticky from './Sticky';
@@ -14,34 +16,62 @@ class RecordUI extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      showSidebar: true
-    };
-
-    this.toggleCategory = this.toggleCategory.bind(this);
-    this.toggleTable = this.toggleTable.bind(this);
-    this.toggleSidebar = this.toggleSidebar.bind(this);
+    this._ignoreScrollEvent = false;
+    this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
+    this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
+    this._unsetIgnoreScrollEvent = debounce(this._unsetIgnoreScrollEvent.bind(this), 300);
   }
 
-  toggleCategory(category, isCollapsed) {
-    this.props.recordActions.toggleCategoryCollapsed(
-      this.props.recordClass.fullName,
-      category.name,
-      isCollapsed
-    );
+  componentDidMount() {
+    let { hash } = window.location;
+    let target = document.getElementById(hash.slice(1));
+    if (target != null) {
+      target.scrollIntoView();
+    }
+    window.addEventListener('scroll', this._updateActiveSection, { passive: true });
+    window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
   }
 
-  toggleTable(table, isCollapsed) {
-    this.props.recordActions.toggleTableCollapsed(
-      this.props.recordClass.fullName,
-      table.name,
-      isCollapsed
-    );
+  componentDidUpdate(prevProps) {
+    if (prevProps.navigationVisible !== this.props.navigationVisible) {
+      this._scrollToActiveSection();
+    }
   }
 
-  toggleSidebar(event) {
-    event.preventDefault();
-    this.setState({ showSidebar: !this.state.showSidebar });
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._updateActiveSection);
+    window.removeEventListener('resize', this._scrollToActiveSection);
+  }
+
+  _updateActiveSection() {
+    if (this._ignoreScrollEvent) return;
+    let activeElement = postorderSeq(this.props.categoryTree)
+    .map(node => document.getElementById(getId(node)))
+    .filter(el => el != null)
+    .find(el => {
+      let rect = el.getBoundingClientRect();
+      return rect.top <= 50 && rect.bottom > 50;
+    });
+    let activeSection = activeElement && activeElement.id;
+    if (activeSection != this.props.activeSection)
+      this.props.updateActiveSection(activeElement == null ? null : activeElement.id);
+  }
+
+  _scrollToActiveSection() {
+    this._setIgnoreScrollEvent();
+    let domNode = document.getElementById(this.props.activeSection);
+    if (domNode != null) {
+      domNode.scrollIntoView(true);
+    }
+    this._unsetIgnoreScrollEvent();
+  }
+
+  _setIgnoreScrollEvent() {
+    this._ignoreScrollEvent = true;
+  }
+
+  _unsetIgnoreScrollEvent() {
+    this._ignoreScrollEvent = false;
   }
 
   render() {
@@ -49,66 +79,67 @@ class RecordUI extends Component {
       'wdk-RecordContainer',
       'wdk-RecordContainer__' + this.props.recordClass.name,
       {
-        'wdk-RecordContainer__withSidebar': this.state.showSidebar,
-        'wdk-RecordContainer__withAdvanced': this.state.showAdvanced
-      }
+        'wdk-RecordContainer__withSidebar': this.props.navigationVisible      }
     );
 
     let sidebarIconClass = classnames({
       'fa fa-lg': true,
-      'fa-angle-double-down': !this.state.showSidebar,
-      'fa-angle-double-up': this.state.showSidebar
+      'fa-angle-double-down': !this.props.navigationVisible,
+      'fa-angle-double-up': this.props.navigationVisible
     });
 
     return (
-      <Main className={classNames}>
+      <div className={classNames}>
         <RecordHeading
           record={this.props.record}
           recordClass={this.props.recordClass}
-          user={this.props.user}
-          basket={this.props.baskets[this.props.recordClass.name][JSON.stringify(this.props.record.id)]}
-          userActions={this.props.userActions}
+          headerActions={this.props.headerActions}
         />
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
-          {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}
-          <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
-            {this.state.showSidebar ? '' : 'Show Categories '}
+          <button type="button" className="wdk-RecordSidebarToggle"
+            onClick={() => {
+              if (!this.props.navigationVisible) window.scrollTo(0, window.scrollY);
+              this.props.updateNavigationVisibility(!this.props.navigationVisible);
+            }}
+          >
+            {this.props.navigationVisible ? '' : 'Show Contents '}
             <i className={sidebarIconClass}
-              title={this.state.showSidebar ? 'Close sidebar' : 'Open sidebar'}/>
-          </a>
+              title={this.props.navigationVisible ? 'Close sidebar' : 'Open sidebar'}/>
+          </button>
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            collapsedCategories={this.props.collapsedCategories}
-            onCategoryToggle={this.toggleCategory}
+            categoryTree={this.props.categoryTree}
+            collapsedSections={this.props.collapsedSections}
+            activeSection={this.props.activeSection}
+            navigationQuery={this.props.navigationQuery}
+            navigationExpanded={this.props.navigationExpanded}
+            navigationSubcategoriesExpanded={this.props.navigationSubcategoriesExpanded}
+            onSectionToggle={this.props.toggleSection}
+            onNavigationVisibilityChange={this.props.updateNavigationVisibility}
+            onNavigationSubcategoryVisibilityChange={this.props.updateNavigationSubcategoryVisibility}
+            onNavigationQueryChange={this.props.updateNavigationQuery}
           />
         </Sticky>
         <div className="wdk-RecordMain">
-          <Record
+          <div className="wdk-RecordMainSectionFieldToggles">
+            <button type="button" title="Expand all content" className="wdk-Link"
+              onClick={this.props.updateAllFieldVisibility.bind(null, true)}>Expand All</button>
+            {' | '}
+            <button type="button" title="Collapse all content" className="wdk-Link"
+              onClick={this.props.updateAllFieldVisibility.bind(null, false)}>Collapse All</button>
+          </div>
+          <RecordMainSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            collapsedCategories={this.props.collapsedCategories}
-            collapsedTables={this.props.collapsedTables}
-            onCategoryToggle={this.toggleCategory}
-            onTableToggle={this.toggleTable}
+            categories={this.props.categoryTree.children}
+            collapsedSections={this.props.collapsedSections}
+            onSectionToggle={this.props.toggleSection}
           />
         </div>
-      </Main>
+      </div>
     )
   }
 }
-
-RecordUI.propTypes = {
-  record: PropTypes.object.isRequired,
-  recordClass: PropTypes.object.isRequired,
-  collapsedCategories: PropTypes.array.isRequired,
-  collapsedTables: PropTypes.array.isRequired,
-  user: PropTypes.object.isRequired,
-  baskets: PropTypes.object.isRequired,
-  recordActions: PropTypes.object.isRequired,
-  userActions: PropTypes.object.isRequired
-};
-
-
 
 export default wrappable(RecordUI);

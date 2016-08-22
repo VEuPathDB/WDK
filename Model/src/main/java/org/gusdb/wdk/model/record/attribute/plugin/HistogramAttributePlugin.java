@@ -145,7 +145,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
       logger.error(ex);
       throw new RuntimeException(ex);
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
     return counts;
   }

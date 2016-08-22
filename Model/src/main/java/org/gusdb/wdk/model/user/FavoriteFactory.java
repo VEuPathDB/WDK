@@ -214,11 +214,12 @@ public class FavoriteFactory {
     String sql = "SELECT count(*) AS fav_size FROM " + schema + TABLE_FAVORITES
         + " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?";
     DataSource ds = wdkModel.getUserDb().getDataSource();
+    PreparedStatement ps = null;
     ResultSet rs = null;
     int count = 0;
     try {
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+      ps = SqlUtils.getPreparedStatement(ds, sql);
       ps.setInt(1, user.getUserId());
       ps.setString(2, wdkModel.getProjectId());
       rs = ps.executeQuery();
@@ -230,23 +231,23 @@ public class FavoriteFactory {
       throw new WdkModelException("Could not get favorite counts for user "
           + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
     return count;
   }
 
-  public Map<RecordClass, List<Favorite>> getFavorites(User user)
-      throws WdkModelException {
+  public Map<RecordClass, List<Favorite>> getFavorites(User user) throws WdkModelException {
     String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"
         + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, lower("
         + COLUMN_RECORD_GROUP + ") ASC, " + Utilities.COLUMN_PK_PREFIX
         + "1 ASC";
     DataSource ds = wdkModel.getUserDb().getDataSource();
+    PreparedStatement ps = null;
     ResultSet rs = null;
     try {
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+      ps = SqlUtils.getPreparedStatement(ds, sql);
       ps.setFetchSize(100);
       ps.setString(1, wdkModel.getProjectId());
       ps.setInt(2, user.getUserId());
@@ -257,34 +258,42 @@ public class FavoriteFactory {
       Map<RecordClass, List<Favorite>> favorites = new LinkedHashMap<RecordClass, List<Favorite>>();
       while (rs.next()) {
         String rcName = rs.getString(COLUMN_RECORD_CLASS);
-        RecordClass recordClass = wdkModel.getRecordClass(rcName);
-        List<Favorite> list;
-        if (favorites.containsKey(recordClass)) {
-          list = favorites.get(recordClass);
-        } else {
-          list = new ArrayList<Favorite>();
-          favorites.put(recordClass, list);
+        // Start CWL 29JUN2016
+        // Added conditionals to avoid showing favorites for defunct record class sets or record classes
+        if(wdkModel.isExistsRecordClassSet(rcName)) {
+          RecordClass recordClass = wdkModel.getRecordClass(rcName);
+          if(recordClass != null) {
+            List<Favorite> list;
+            if (favorites.containsKey(recordClass)) {
+             list = favorites.get(recordClass);
+            } else {
+              list = new ArrayList<Favorite>();
+              favorites.put(recordClass, list);
+            }
+         
+            String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
+            for (int i = 1; i <= columns.length; i++) {
+              Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
+              primaryKeys.put(columns[i - 1], value);
+            }
+            RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
+            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
+            Favorite favorite = new Favorite(user);
+            favorite.setPrimaryKeys(pkValue);
+            favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
+            favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
+            list.add(favorite);
+          }  
         }
-
-        String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
-        for (int i = 1; i <= columns.length; i++) {
-          Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
-          primaryKeys.put(columns[i - 1], value);
-        }
-        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys);
-        Favorite favorite = new Favorite(user);
-        favorite.setPrimaryKeys(pkValue);
-        favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
-        favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
-        list.add(favorite);
+        // End CWL 29JUN2016
       }
       return favorites;
-    } catch (SQLException e) {
+    } catch (SQLException|WdkUserException e) {
       throw new WdkModelException("Cannot get favorites for user "
           + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
   }
 
@@ -301,10 +310,10 @@ public class FavoriteFactory {
       sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
     }
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    PreparedStatement psCount = null;
     ResultSet resultSet = null;
     try {
-      PreparedStatement psCount = SqlUtils.getPreparedStatement(dataSource,
-          sqlCount);
+      psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
       // check if the record already exists.
       setParams(psCount, userId, projectId, rcName, pkColumns, recordId, 1);
       boolean hasRecord = false;
@@ -322,7 +331,7 @@ public class FavoriteFactory {
           "Could not check whether record id(s) are favorites for user "
               + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, psCount);
     }
   }
 
@@ -423,10 +432,10 @@ public class FavoriteFactory {
         + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + "= ? AND "
         + COLUMN_PROJECT_ID + " = ?";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    PreparedStatement psSelect = null;
     ResultSet resultSet = null;
     try {
-      PreparedStatement psSelect = SqlUtils.getPreparedStatement(dataSource,
-          sql);
+      psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
       psSelect.setInt(1, user.getUserId());
       psSelect.setString(2, wdkModel.getProjectId());
 
@@ -449,7 +458,7 @@ public class FavoriteFactory {
       throw new WdkModelException("Could not set favorite groups for user "
           + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
     }
   }
 

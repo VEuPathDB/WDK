@@ -1,7 +1,5 @@
-wdk.util.namespace("window.wdk.util", function(ns, $) {
+wdk.namespace("window.wdk.util", function(ns, $) {
   "use strict";
-
-  // TODO - change wdk.util.namespace to wdk.namespace
 
   //show the loading icon in the upper right corner of the strategy that is being operated on
   function showLoading(divId) {

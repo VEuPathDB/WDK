@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.service;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -17,6 +18,7 @@ import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.answer.AnswerRequest;
 import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
@@ -30,18 +32,8 @@ import org.json.JSONObject;
  * <p>JSON input format:</p>
  * <pre>
  * {
- *   “questionDefinition”: {
- *     “questionName”: String,
- *     “params”: [ {
- *       “name”: String, “value”: Any
- *     } ],
- *     (optional) "legacyFilterName": String,
- *     (optional) “filters”: [ {
- *       “name”: String, value: Any
- *     } ],
- *     (optional) “viewFilters”: [ {
- *       “name”: String, value: Any
- *     } ]
+ *   "questionDefinition": {
+ *       see AnswerRequestFactory for details
  *   },
  *   formatting: {
  *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
@@ -70,7 +62,7 @@ public class AnswerService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, WdkUserException {
+  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException {
     // log this request's JSON here since filter will not log form data
     if (RequestLoggingFilter.isLogEnabled()) {
       RequestLoggingFilter.logRequest("POST", getUriInfo(),
@@ -81,7 +73,7 @@ public class AnswerService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response buildResult(String body) throws WdkModelException, WdkUserException {
+  public Response buildResult(String body) throws WdkModelException, DataValidationException {
     try {
 
       JSONObject json = new JSONObject(body);
@@ -89,7 +81,7 @@ public class AnswerService extends WdkService {
       // 1. Parse result request (question, params, etc.)
 
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean());
+      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean(), getSessionUser());
 
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
 
@@ -106,7 +98,7 @@ public class AnswerService extends WdkService {
 
       // regardless of whether format is specified, formatConfig is now required
       if (!formatting.has("formatConfig")) {
-        return getBadRequestBodyResponse("formatting object requires the formatConfig property");
+        throw new BadRequestException("formatting object requires the formatConfig property");
       }
       JSONObject formatConfig = formatting.getJSONObject("formatConfig");
 
@@ -127,7 +119,10 @@ public class AnswerService extends WdkService {
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
+    }
+    catch (WdkUserException e) {
+      throw new DataValidationException(e);
     }
   }
 
@@ -165,7 +160,7 @@ public class AnswerService extends WdkService {
 
     RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
     if (!recordClass.getReporterMap().keySet().contains(format)) {
-      throw new WdkUserException("Request for an invalid WDK answer format: " + format);
+      throw new WdkUserException("Request for an invalid answer format: " + format);
     }
 
     Reporter reporter = answerValue.createReport(format, formatConfig);

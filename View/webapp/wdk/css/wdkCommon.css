@@ -15,6 +15,19 @@
   }
 }
 
+/* apply a natural box layout model to all elements, but allowing components to change */
+/* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+html {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+/* Unfortunately, this does not play well with legacy WDK CSS
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+*/
+
 body { 
   font-size: 12px; 
   text-align: left;
@@ -66,8 +79,8 @@ p {
 }
 
 td { 
-    padding: 4px 4px 4px 4px;
-    vertical-align: baseline;
+  padding: 4px 4px 4px 4px;
+  vertical-align: baseline;
 }
 
 img[data-assets-src] {
@@ -145,6 +158,10 @@ img[data-assets-src][src] {
 	text-align: left;
 }
 
+.muted {
+  color: #9f9f9f;
+}
+
 .clear {
    clear:both;
 }
@@ -173,7 +190,32 @@ img[data-assets-src][src] {
 	width: 100%;
 	text-align: center;
 }
+.acenter {
+  text-align: center;
+}
+.aright {
+  text-align: right;
+}
+.aleft {
+  text-align: left;
+}
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =Root styling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.wdk-PageContent {
+  height: 100%;
+  padding: 1em 4em;
+  position: relative;
+}
+
+button.wdk-Link {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  color: blue;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    =Plugin styling
@@ -315,6 +357,10 @@ img[data-assets-src][src] {
 #login th { border-width: 0px 0px 0px 0px; }
 
 #login td { margin-top: 3px; }
+
+#wdk-dialog-login-form input {
+  margin: 0 4px;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    =smallMenu 
@@ -730,7 +776,7 @@ img.plus-minus {
 #contentwrapper {
 	float: left;
 	width: 100%;
-	margin: 12px 0 12px 0;
+	padding: 12px 0;
 }
 
 #contentcolumn2 {
@@ -937,6 +983,10 @@ form[name=questionForm] .filter-button {
 		float:right;
 }
 
+table.Results_Table {
+  border: 1px solid #aaa;
+}
+
 td.headerrow {
 	height: 29px;
 	font-size: 15px;
@@ -959,7 +1009,7 @@ tr.headerrow {
 tr.headerrow > th {
 	background-repeat: repeat-x;
 	background-position: top;
-	background-color: #EEEEEE;
+	background-color: #f2f2f2;
 }
 
 
@@ -984,9 +1034,7 @@ tr.subheaderrow {
 }
 
 tr.subheaderrow th {
-	background-repeat: repeat-x;
-	background-position: top;
-	background-color: #EEEEEE;
+  padding: 4px 0;
 }
 
 td.lines {
@@ -994,7 +1042,7 @@ td.lines {
 }
 
 td.linesalt {
-	background-color: #EEEEEE;
+	background-color: #EEEEEE; 
 	padding: 4px;
 }
 
@@ -1005,8 +1053,6 @@ table.results {
 }
 
 tr.subheaderrow th {
-	padding: 0px;  /* not needed in paging bar */
-/*	border-width: 2px 0 2px 0; */
 	border: 0;
 	border-style: solid;
 }
@@ -1016,8 +1062,9 @@ tr.headerrow th {
 	font-size: 12px;
 	vertical-align:	middle;
 	padding: 1px 2px;
-	border-width: 2px 1px 2px 1px; /* 2px 0 2px 0; results headers side borders */
+	border-width: 1px;  /* 2px 1px 2px 1px; */  /* 2px 0 2px 0; results headers side borders */
 	border-style: solid;
+                              border-color: #aaa;
 }
 
 /* result column headers */
@@ -1034,17 +1081,18 @@ tr.headerInternalRow td {
 }
 
 tr.lines {
-	background-color: whitesmoke; /* was #FFFFFF */
+	background-color: white; /* whitesmoke; */ /* was #FFFFFF */
 }
 
 tr.linesalt > td {
 /*	background-color: #DDDDDD; */
-	background-color: #EEEEEE;
+	background-color: #fbfbfb;  /* #EEEEEE; */
 }
 
 tr.lines td, tr.linesalt td {
-	padding: 0px 2px;
-	border-left: 1px solid #CCCCCC;
+  padding: 2px;  /* padding: 0px 2px;*/
+  vertical-align: middle;  /* results table:  basket in the middle */
+  border-left: 1px solid #CCCCCC;
 }
 
 
@@ -1771,6 +1819,10 @@ color:darkred;font-style:italic;font-size:95%;
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+.ui-front {
+  z-index: 10000000000;
+}
+
 .ui-tabs > .ui-widget-header {
     background: none;
     border: none;
@@ -1914,6 +1966,10 @@ span.marker a:link, span.marker a:visited {
 }
 .wdk-error::after {
   content: "!";
+}
+
+.flexigrid div.bDiv {
+  border: none;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

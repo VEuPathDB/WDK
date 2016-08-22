@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Link } from 'react-router';
 import { Column } from 'fixed-data-table';
 import AnswerTableCell from './AnswerTableCell';
 import AnswerTableHeader from './AnswerTableHeader';
@@ -377,7 +376,7 @@ let AnswerTable = React.createClass({
 
         <Table
           ref="table"
-          width={window.innerWidth - 45}
+          width={this.props.width}
           maxHeight={this.props.height - 32}
           rowsCount={records.length}
           rowHeight={28}

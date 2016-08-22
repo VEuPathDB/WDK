@@ -169,7 +169,7 @@ public class ProcessQuery extends Query {
    * Process Query is always cached.
    */
   @Override
-  public boolean isCached() {
+  public boolean getIsCacheable() {
     return true;
   }
 }

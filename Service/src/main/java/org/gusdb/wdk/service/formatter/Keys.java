@@ -16,6 +16,7 @@ public class Keys {
   public static final String ID = "id";
   public static final String NAME = "name";
   public static final String URL_SEGMENT = "urlSegment";
+  public static final String PRIMARY_KEY_ATTRIBUTE_NAME = "primaryKeyAttributeName";
   public static final String PRIMARY_KEY_REFS = "primaryKeyColumnRefs";
 
   // descriptive keys
@@ -37,13 +38,14 @@ public class Keys {
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
   public static final String DESCRIPTION = "description";
+  public static final String SUMMARY = "summary";
   public static final String ALIGN = "align";
   public static final String TRUNCATE_TO = "truncateTo";
   public static final String IS_READ_ONLY = "isReadOnly";
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
   public static final String USE_BASKET = "useBasket";
-
+  public static final String SCOPES = "scopes";
 
   // scoping-related keys
   public static final String CATEGORIES = "categories";
@@ -57,6 +59,8 @@ public class Keys {
   public static final String REVISE_BUILD = "reviseBuild";
 
   // keys for what and how data is being referenced
+  public static final String TREE = "tree";
+  public static final String CHILDREN = "children";
   public static final String PARAMETERS = "parameters";
   public static final String ATTRIBUTES = "attributes";
   public static final String DYNAMIC_ATTRIBUTES = "dynamicAttributes";
@@ -101,23 +105,36 @@ public class Keys {
   public static final String PROJECT_ID = "projectId";
   public static final String BUILD_NUMBER = "buildNumber";
   public static final String RELEASE_DATE = "releaseDate";
+  public static final String STARTUP_TIME = "startupTime";
   public static final String WEBAPP_URL = "webAppUrl";
   public static final String WEBSERVICE_URL = "webServiceUrl";
   public static final String ASSETS_URL = "assetsUrl";
+  public static final String CHANGE_PASSWORD_URL = "changePasswordUrl";
+  public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
 
   // authentication keys
   public static final String AUTHENTICATION = "authentication";
   public static final String AUTHENTICATION_METHOD = "method";
   public static final String OAUTH_URL = "oauthUrl";
   public static final String OAUTH_CLIENT_ID = "oauthClientId";
+  public static final String OAUTH_STATE_TOKEN = "oauthStateToken";
 
   // user-specific keys
   public static final String FIRST_NAME = "firstName";
   public static final String MIDDLE_NAME = "middleName";
   public static final String LAST_NAME = "lastName";
   public static final String EMAIL = "email";
+  public static final String TITLE = "title";
+  public static final String DEPARTMENT = "department";
   public static final String ORGANIZATION = "organization";
+  public static final String ADDRESS = "address";
+  public static final String CITY = "city";
+  public static final String STATE = "state";
+  public static final String COUNTRY = "country";
+  public static final String ZIP_CODE = "zipCode";
+  public static final String PHONE_NUMBER = "phoneNumber";
   public static final String IS_GUEST = "isGuest";
+  public static final String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   public static final String PREFERENCES = "preferences";
 
 }

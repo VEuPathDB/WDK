@@ -1,4 +1,4 @@
-import debounce from 'lodash/function/debounce';
+import {debounce} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AnswerFilterSelector from './AnswerFilterSelector';
@@ -45,7 +45,7 @@ let AnswerFilter = React.createClass({
   handleFilter() {
     let value = ReactDOM.findDOMNode(this.refs.filterInput).value;
     let { filterAttributes, filterTables } = this.state;
-    this.props.answerEvents.onFilter(value, filterAttributes, filterTables);
+    this.props.onFilter(value, filterAttributes, filterTables);
   },
 
   toggleAttribute(e) {

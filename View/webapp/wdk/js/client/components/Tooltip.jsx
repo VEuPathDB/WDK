@@ -4,12 +4,29 @@
  * This will eventually be replaced by a pure React component, as a part of an
  * initiative to remove our jQuery dependency.
  */
+import $ from 'jquery';
 import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 import { wrappable } from '../utils/componentUtils';
 
-let $ = window.jQuery;
+let defaultOptions = {
+  position: {
+    my: "top left",
+    at: "bottom left"
+  },
+  hide: {
+    fixed: true,
+    delay: 250
+  },
+  show: {
+    solo: true,
+    delay: 1000
+  },
+  style: {
+    classes: 'qtip-tipsy'
+  }
+};
 
 let Tooltip = React.createClass({
 
@@ -43,11 +60,9 @@ let Tooltip = React.createClass({
       ? content
       : ReactDOMServer.renderToStaticMarkup(content);
 
-    $(ReactDOM.findDOMNode(this)).wdkTooltip({
-      content: { text },
-      show: { delay: 1000 },
-      position: { my: 'top left', at: 'bottom left' }
-    });
+    $(ReactDOM.findDOMNode(this)).qtip(Object.assign({
+      content: { text }
+    }, defaultOptions));
   },
 
   _destroyTooltip() {

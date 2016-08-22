@@ -67,7 +67,7 @@ public class SqlQuery extends Query {
     super(query);
     this.clobRow = query.clobRow;
     this.sql = query.sql;
-    this.cached = query.cached;
+    this.isCacheable = query.isCacheable;
     this._useDBLink = query._useDBLink;
 
     if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
@@ -286,7 +286,7 @@ public class SqlQuery extends Query {
   
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved) return;
+    if (_resolved) return;
     super.resolveReferences(wdkModel);
     
     // set the dblink flag if any of the params is a datasetParam;

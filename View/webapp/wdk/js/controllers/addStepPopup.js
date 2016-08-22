@@ -1,6 +1,6 @@
 /* jshint scripturl:true */
 
-wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
+wdk.namespace("wdk.addStepPopup", function(ns, $) {
   "use strict";
 
   var global_isAdd;
@@ -137,6 +137,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           left: ($(window).width() - $("#query_form").width()) / 2,
           zIndex: 100
         });
+
+        $("#query_form .qf_section").height($("#query_form").height());
 
         $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
@@ -354,7 +356,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       $("#query_form_overlay").hide();
     } else {
       // ns.isSpan = false;
-      $("#query_form").remove();
+      $("#query_form").trigger("wdk-query-form-removed").remove();
       $("#query_form_overlay").remove();
       $(".original").remove();
       $("#stage-stack").html("");

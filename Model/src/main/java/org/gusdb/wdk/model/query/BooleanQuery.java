@@ -52,7 +52,6 @@ public class BooleanQuery extends SqlQuery {
   public static final String QUERY_NAME_PREFIX = "bq_";
   public static final String LEFT_OPERAND_PARAM_PREFIX = "bq_left_op_";
   public static final String RIGHT_OPERAND_PARAM_PREFIX = "bq_right_op_";
-  public static final String USE_BOOLEAN_FILTER_PARAM = "use_boolean_filter";
 
   public static final String OPERATOR_PARAM = "bq_operator";
 
@@ -64,16 +63,26 @@ public class BooleanQuery extends SqlQuery {
   private AnswerParam leftOperand;
   private AnswerParam rightOperand;
   private StringParam operator;
-  private StringParam useBooleanFilter;
   private RecordClass recordClass;
 
   public BooleanQuery(RecordClass recordClass) throws WdkModelException {
+	  setRecordClass(recordClass);
+  }
+  
+ /**
+  * Need a no-arg constructor for easy construction using newInstance()
+  * @throws WdkModelException
+  */
+  public BooleanQuery() throws WdkModelException {
+  }
+  
+  public void setRecordClass(RecordClass recordClass) throws WdkModelException {
     this.recordClass = recordClass;
-    this.wdkModel = recordClass.getWdkModel();
+    this._wdkModel = recordClass.getWdkModel();
     String rcName = recordClass.getFullName().replace('.', '_');
 
     // create or get the historyParam for the query
-    ParamSet internalParamSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     leftOperand = prepareOperand(internalParamSet, recordClass,
         LEFT_OPERAND_PARAM_PREFIX + rcName);
     leftOperand.setPrompt("Left Operand");
@@ -84,30 +93,25 @@ public class BooleanQuery extends SqlQuery {
     // create the stringParam for the others
     operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
     operator.setPrompt("Operator");
-    useBooleanFilter = prepareStringParam(internalParamSet,
-        USE_BOOLEAN_FILTER_PARAM);
-    useBooleanFilter.setPrompt("Use Expand Filter");
 
     // create the query
-    this.setName(BooleanQuery.getQueryName(recordClass));
+    this.setName(getQueryName(recordClass));
     this.addParam(leftOperand);
     this.addParam(rightOperand);
     this.addParam(operator);
-    this.addParam(useBooleanFilter);
 
     prepareColumns(recordClass);
 
-    this.setSql(constructSql());
+    this.setSql("don't care");  // the boolean query instance will not use sql set at the query level
   }
 
-  private BooleanQuery(BooleanQuery query) {
+  protected BooleanQuery(BooleanQuery query) {
     super(query);
 
     this.recordClass = query.recordClass;
     this.leftOperand = (AnswerParam) paramMap.get(query.leftOperand.getName());
     this.operator = (StringParam) paramMap.get(query.operator.getName());
     this.rightOperand = (AnswerParam) paramMap.get(query.rightOperand.getName());
-    this.useBooleanFilter = (StringParam) paramMap.get(query.useBooleanFilter.getName());
   }
 
   /**
@@ -138,13 +142,6 @@ public class BooleanQuery extends SqlQuery {
     return operator;
   }
 
-  /**
-   * @return the useBooleanFilter
-   */
-  public StringParam getUseBooleanFilter() {
-    return useBooleanFilter;
-  }
-
   private AnswerParam prepareOperand(ParamSet paramSet,
       RecordClass recordClass, String paramName) throws WdkModelException {
     AnswerParam operand;
@@ -156,8 +153,8 @@ public class BooleanQuery extends SqlQuery {
       String rcName = recordClass.getFullName();
       operand.addRecordClassRef(new RecordClassReference(rcName));
       paramSet.addParam(operand);
-      operand.resolveReferences(wdkModel);
-      operand.setResources(wdkModel);
+      operand.resolveReferences(_wdkModel);
+      operand.setResources(_wdkModel);
     }
     return operand;
   }
@@ -172,14 +169,14 @@ public class BooleanQuery extends SqlQuery {
       param.setName(paramName);
       param.setNumber(false);
       param.setNoTranslation(true);
-      param.resolveReferences(wdkModel);
-      param.setResources(wdkModel);
+      param.resolveReferences(_wdkModel);
+      param.setResources(_wdkModel);
       paramSet.addParam(param);
     }
     return param;
   }
 
-  private void prepareColumns(RecordClass recordClass) {
+  protected void prepareColumns(RecordClass recordClass) {
     PrimaryKeyAttributeField primaryKey = recordClass.getPrimaryKeyAttributeField();
 
     for (String columnName : primaryKey.getColumnRefs()) {
@@ -223,26 +220,6 @@ public class BooleanQuery extends SqlQuery {
       throws WdkModelException, WdkUserException {
     return new BooleanQueryInstance(user, this, values, validate,
         assignedWeight, context);
-  }
-
-  private String constructSql() {
-    StringBuffer sql = new StringBuffer();
-    constructOperandSql(sql, leftOperand.getName());
-    sql.append(" $$").append(operator.getName()).append("$$ ");
-    constructOperandSql(sql, leftOperand.getName());
-    return sql.toString();
-  }
-
-  private void constructOperandSql(StringBuffer sql, String operand) {
-    sql.append("SELECT ");
-    boolean first = true;
-    for (String column : columnMap.keySet()) {
-      if (first) first = false;
-      else sql.append(", ");
-      sql.append(column);
-    }
-    sql.append(" FROM $$").append(operand).append("$$");
-    sql.append(" WHERE $$").append(operand).append(".condition$$");
   }
 
   /*

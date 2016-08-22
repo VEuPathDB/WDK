@@ -1,0 +1,74 @@
+/* Enclosing div for checkbox tree */
+.wdk-CheckboxTree {
+  padding: 0.2em;
+}
+
+
+.wdk-CheckboxTree > ul {
+  margin-top: 0.5em;
+}
+
+.wdk-CheckboxTree-list {
+  margin-left: 2.3em;
+}
+
+.wdk-CheckboxTree-accordionButton {
+  cursor: pointer;
+}
+
+.wdk-CheckboxTree-list li label {
+  line-height: 15px;
+  cursor: default;
+  white-space:nowrap;
+}
+
+.wdk-CheckboxTree-list li label input {
+  margin-left: 4px;
+}
+
+.wdk-CheckboxTree-list li label span {
+  padding-left: 0.2em;
+}
+
+.wdk-CheckboxTree-expandedItem {
+  position:relative;
+}
+
+/* Provdes vertical lines between vertically aligned checkboxes */
+.wdk-CheckboxTree-expandedItem:after {
+  content:"";
+  position:absolute;
+  top: 20px;
+  left: 5px;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  background:url("../images/checkboxTree-vertical-line.png") repeat-y;
+}
+
+.wdk-CheckboxTree-expandedItem:last-of-type:after {
+  background: none;
+}
+
+/* Modifies size and color of accordion (expand/collapse) icon */
+.wdk-CheckboxTree-list i {
+  color: #AAA;
+  font-size: 14px;
+  /* Attempt to center arrow vertically with checkbox */
+  line-height: 12px;
+  left: -8px;
+  width: 0em;
+}
+
+.wdk-CheckboxTree-links {
+  text-align: left;
+  font-size: 0.9em;
+  margin: 0.5em 0;
+  max-width: 25em;
+}
+
+.wdk-CheckboxTree-links > div {
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+}
