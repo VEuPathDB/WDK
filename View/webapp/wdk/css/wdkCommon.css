@@ -203,9 +203,10 @@ img[data-assets-src][src] {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    =Root styling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-.wdk-RootContainer {
+.wdk-PageContent {
   height: 100%;
   padding: 1em 4em;
+  position: relative;
 }
 
 button.wdk-Link {

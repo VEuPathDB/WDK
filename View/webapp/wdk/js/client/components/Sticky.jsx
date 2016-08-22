@@ -39,8 +39,8 @@ let Sticky = React.createClass({
   updateIsFixed() {
     // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
     let rect = this.node.getBoundingClientRect();
-    let contentRect = this.contentNode.getBoundingClientRect();
     if (rect.top < 0 && this.state.isFixed === false) {
+      let contentRect = this.contentNode.getBoundingClientRect();
       this.setState({
         isFixed: true,
         height: rect.height,

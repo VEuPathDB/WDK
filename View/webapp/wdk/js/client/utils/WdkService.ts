@@ -1,12 +1,11 @@
 import stringify from 'json-stable-stringify';
-import {difference, once} from 'lodash';
+import {difference} from 'lodash';
 import localforage from 'localforage';
-import predicate from './Predicate';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
 import {getTargetType, getRefName, getDisplayName, CategoryNode} from './CategoryUtils';
 import {alert} from './Platform';
-import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record, PrimaryKey} from './WdkModel';
+import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record} from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 
 /**
@@ -27,12 +26,12 @@ interface RecordRequest {
   primaryKey: string[];
 }
 
-interface ServiceError extends Error {
+export interface ServiceError extends Error {
   response: string;
   status: number;
 }
 
-interface ServiceConfig {
+export interface ServiceConfig {
   assetsUrl: string;
   authentication: {
     oauthUrl: string;
@@ -67,7 +66,7 @@ export default class WdkService {
   _isInvalidating = false;
 
   /**
-   * @param {string} serviceUrl Base url for Wdk REST Service.
+   * @param {string} _serviceUrl Base url for Wdk REST Service.
    */
   constructor(private _serviceUrl: string) {
   }
@@ -107,7 +106,7 @@ export default class WdkService {
     return this._getFromCache('recordClasses', () => this._fetchJson<RecordClass[]>('get', url))
     .then(recordClasses => {
       // create indexes by name property for attributes and tables
-      // this is done after recordClasses have been retreived from the store
+      // this is done after recordClasses have been retrieved from the store
       // since it cannot reliably serialize Maps
       for (let recordClass of recordClasses) {
         Object.assign(recordClass, {
@@ -195,6 +194,13 @@ export default class WdkService {
     return this._fetchJson<Answer>(method, url, body);
   }
 
+  /**
+   * Get basket summary for all record classes
+   */
+  getBasketCounts() {
+    return this._fetchJson<{ [recordClassName: string]: number }>('get', '/user/current/basket');
+  }
+
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
   getBasketStatus(record: Record) {
     let action = 'check';
@@ -251,14 +257,14 @@ export default class WdkService {
     return this._fetchJson<UserPreferences>('get', '/user/current/preference');
   }
 
-  updateCurrentUserPreference(entries) {
+  updateCurrentUserPreference(entries: { [key: string]: string}) {
     let url = '/user/current/preference';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('patch', url, data);
   }
 
   getOauthStateToken() {
-    return this._fetchJson<string>('get', '/oauth/stateToken');
+    return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/stateToken');
   }
 
   findStep(stepId: number, userId: string = "current") {
@@ -305,7 +311,7 @@ export default class WdkService {
           error.status = xhr.status;
           reject(error);
         }
-      }
+      };
       xhr.open(method.toUpperCase(), this._serviceUrl + url);
       xhr.setRequestHeader('Content-Type', 'application/json');
       if (this._version) {
@@ -367,12 +373,12 @@ function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
  */
 function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>; }>) {
   return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
-    loop: for (let node of preorderSeq(ontology.tree)) {
+    for (let node of preorderSeq(ontology.tree)) {
       switch (getTargetType(node)) {
         case 'attribute': {
           let attributeName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
-          if (recordClass == null) continue loop;
+          if (recordClass == null) continue;
           let wdkReference = recordClass.attributesMap.get(attributeName);
           Object.assign(node, { wdkReference });
           break;
@@ -381,7 +387,7 @@ function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, Re
         case 'table': {
           let tableName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
-          if (recordClass == null) continue loop;
+          if (recordClass == null) continue;
           let wdkReference = recordClass.tablesMap.get(tableName);
           Object.assign(node, { wdkReference });
           break;
@@ -430,7 +436,7 @@ function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
 }
 
 /**
- * Sort onotlogy node siblings. This function mutates the tree, so should
+ * Sort ontology node siblings. This function mutates the tree, so should
  * only be used before caching the ontology.
  */
 function sortOntology(ontology: Ontology<CategoryNode>) {
@@ -471,7 +477,7 @@ function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryN
  * Create a Map of `array` keyed by each element's `key` property.
  *
  * @param {Array<T>} array
- * @param {string} key
+ * @param {Function} getKey
  * @return {Map<T>}
  */
 function makeIndex<T, U>(array: U[], getKey: (u: U) => T) {

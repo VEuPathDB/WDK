@@ -76,11 +76,3 @@
 .wdk-UserProfile-profileForm .wdk-CheckboxListItem input {
   margin-right: 0.5em;
 }
-
-.wdk-UserProfile-profileForm input[type="submit"]:disabled {
-  background-color: #ddd;
-  color: #777;
-  cursor: default;
-  border-radius: 4px;
-  border: none;
-}

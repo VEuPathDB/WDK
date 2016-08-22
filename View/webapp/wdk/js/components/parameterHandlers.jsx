@@ -1,4 +1,8 @@
-/* global _, wdk, ReactDOM */
+/* global _, wdk */
+import * as ReactDOM from 'react-dom';
+import LazyFilterService from './../client/utils/LazyFilterService';
+import AttributeFilter from './../client/components/AttributeFilter';
+
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
@@ -207,7 +211,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
-    var { LazyFilterService } = wdk.models.filter;
     var filterParamContainer = $param.find('.filter-param-container')[0];
     var $data = $param.data();
     $param.one(PARAM_DESTROY_EVENT, () => {
@@ -249,22 +252,38 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         }, filterData.metadataSpec[name]);
       });
 
-    var selectedField = previousValue && previousValue.filters && previousValue.filters[0]
-      ? fields.find(field => field.term === previousValue.filters[0].field.term)
-      : undefined;
-
     var filterParamOptions = { title, trimMetadataTerms };
 
     var filterService = new LazyFilterService({
       name,
       fields,
-      filters: previousValue && previousValue.filters,
-      ignoredData: previousValue && previousValue.ignored,
       data: filterData.values,
       questionName,
       dependedValue,
-      selectedField
+      metadataUrl: wdk.webappUrl('getMetadata.do')
     });
+
+    if (previousValue) {
+      let { filters, ignoredData } = previousValue;
+
+      if (ignoredData)
+        filterService.updateIgnoredData(ignoredData);
+
+      if (filters)
+        filterService.updateFilters(filters);
+
+      if (filters[0])
+        filterService.selectField(filters[0].field)
+    }
+
+    var invalidFilters = _.reduce(previousValue && previousValue.filters, function(invalidFilters, filter) {
+      if (_.every(fields, function(field) {
+          return filter.field.term !== field.term;
+        })) {
+        invalidFilters.push(filter);
+      }
+      return invalidFilters;
+    }, []);
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -282,7 +301,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // trigger loading event on $param
       triggerLoading($param, filterService.isLoading);
-      renderFilterParam(filterService, filterParamOptions, filterParamContainer);
+      renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
     });
 
     $param.find('.loading').hide();
@@ -314,13 +333,12 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
 
-    renderFilterParam(filterService, filterParamOptions, filterParamContainer);
+    renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
 
     console.timeEnd('intialize render :: ' + name);
   }
 
-  function renderFilterParam(filterService, options, el) {
-    let { AttributeFilter } = wdk.components.attributeFilter;
+  function renderFilterParam(filterService, options, invalidFilters, el) {
     let state = filterService.getState();
     ReactDOM.render(
       <AttributeFilter
@@ -337,7 +355,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         fieldMetadataMap={state.fieldMetadataMap}
 
         isLoading={state.isLoading}
-        invalidFilters={state.invalidFilters}
+        invalidFilters={invalidFilters}
 
         onActiveFieldChange={filterService.selectField}
         onFiltersChange={filterService.updateFilters}
@@ -823,7 +841,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     triggerLoading($param, true);
     return $.getJSON(url)
     .fail(function(jqXHR, textStatus, reason) {
-      var paramName = $($0).closest('.param-item').find('>label').text().trim() ||
+      var paramName = $param.closest('.param-item').find('>label').text().trim() ||
         'An unknown param';
       var message = paramName + ' could not be loaded: ' + reason;
       alert(message);

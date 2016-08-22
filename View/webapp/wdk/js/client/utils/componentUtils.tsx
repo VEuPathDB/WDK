@@ -40,7 +40,7 @@ export function pure<P>(Component: React.StatelessComponent<P>) {
   }
 }
 
-interface IWrapper<P> extends React.ComponentClass<P> {
+interface ComponentWrapper<P> extends React.ComponentClass<P> {
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.ComponentClass<P>): void;
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.StatelessComponent<P>): void;
   wrapComponent(factory: (Component: React.StatelessComponent<P>) => React.ComponentClass<P>): void;
@@ -100,9 +100,9 @@ interface IWrapper<P> extends React.ComponentClass<P> {
  *     });
  *
  */
-export function wrappable<P>(Component: React.ComponentClass<P>): IWrapper<P>;
-export function wrappable<P>(Component: React.StatelessComponent<P>): IWrapper<P>;
-export function wrappable<P>(Component: any): IWrapper<P> {
+export function wrappable<P>(Component: React.ComponentClass<P>): ComponentWrapper<P>;
+export function wrappable<P>(Component: React.StatelessComponent<P>): ComponentWrapper<P>;
+export function wrappable<P>(Component: any): ComponentWrapper<P> {
   return class Wrapper extends React.Component<P, void> {
 
     // Forward calls for displayName and propTypes to the wrapped Component.
@@ -304,11 +304,13 @@ interface HandlerSetObject {
  * @param {Function} dispatchAction
  * @param {Object<Function>} actions
  */
-export function wrapActions(dispatchAction: Function, actions: HandlerSetObject): HandlerSetObject {
+export function wrapActions(dispatchAction: Function, ...actionObjects: HandlerSetObject[]): HandlerSetObject {
   let wrappedActions: HandlerSetObject = {};
-  for (let key in actions) {
-    wrappedActions[key] = function wrappedAction(...args: any[]): Function {
-      return dispatchAction(actions[key](...args));
+  for (let actionObject of actionObjects) {
+    for (let key in actionObject) {
+      wrappedActions[key] = function wrappedAction(...args: any[]): Function {
+        return dispatchAction(actionObject[key](...args));
+      }
     }
   }
   return wrappedActions;

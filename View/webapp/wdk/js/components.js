@@ -1,4 +1,3 @@
-import './components/attributeFilter';
 import './components/checkboxTree';
 import './components/datasetParam';
 import './components/featureTooltip';

@@ -66,7 +66,11 @@ function setActiveRecord(recordClassName, primaryKeyValues) {
       });
       // Calls dispatch on the array of promises in the provided order
       // even if they resolve out of order.
-      seq([baseAction$].concat(tableActions), dispatch).catch(dispatchError);
+      seq([baseAction$].concat(tableActions), dispatch, dispatchError)
+        .catch(error => {
+          console.error(error);
+          if (__DEV__) alert('Render error. See browser console for details.')
+        });
 
       return baseAction$;
     });

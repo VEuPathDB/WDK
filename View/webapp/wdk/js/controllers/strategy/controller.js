@@ -136,6 +136,12 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   function chooseStrategyTab(allCount, openCount) {
     var openTabName = 'strategy_results';
     var allTabName = 'search_history';
+    // set tab state from query param, if present, and remove query param from url
+    var tabQueryParamMatches = location.search.match(/\btab=(\w+)/);
+    if (tabQueryParamMatches) {
+      wdk.stratTabCookie.setCurrentTabCookie('application', tabQueryParamMatches[1]);
+      history.replaceState('', null, location.pathname);
+    }
     var current = wdk.stratTabCookie.getCurrentTabCookie('application');
 
     if (!current || current === null) {

@@ -5,6 +5,10 @@
     "es6": true
   },
 
+  "globals": {
+    "__DEV__": true
+  },
+
   "plugins": [ "react" ],
 
   "parserOptions": {

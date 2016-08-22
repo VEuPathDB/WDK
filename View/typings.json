@@ -10,5 +10,8 @@
     "lodash": "registry:dt/lodash#3.10.0+20160619033623",
     "react": "registry:dt/react#0.14.0+20160621225615",
     "react-addons-shallow-compare": "registry:dt/react-addons-shallow-compare#0.14.0+20160316155526"
+  },
+  "dependencies": {
+    "react-dom": "registry:npm/react-dom#15.0.1+20160705210405"
   }
 }

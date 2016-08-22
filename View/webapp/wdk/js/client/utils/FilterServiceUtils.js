@@ -245,4 +245,3 @@ function removeParentsWithSingleChild(tree) {
       return node;
     });
 }
-

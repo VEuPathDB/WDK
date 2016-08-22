@@ -22,11 +22,7 @@ import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
 import org.gusdb.wdk.service.service.SystemService;
-import org.gusdb.wdk.service.service.user.DatasetService;
-import org.gusdb.wdk.service.service.user.PreferenceService;
-import org.gusdb.wdk.service.service.user.ProfileService;
-import org.gusdb.wdk.service.service.user.StepService;
-import org.gusdb.wdk.service.service.user.UserDatasetService;
+import org.gusdb.wdk.service.service.user.*;
 
 public class WdkServiceApplication extends Application {
 
@@ -71,6 +67,7 @@ public class WdkServiceApplication extends Application {
     .add(StepService.class)
     .add(DatasetService.class)
     .add(UserDatasetService.class)
+    .add(BasketService.class)
 
     // test
     .add(SampleService.class)

@@ -9,7 +9,7 @@ import $ from 'jquery';
 /**
  * @return {Promise<void>}
  */
-export function alert(title: string, message: string) {
+export function alert(title: string, message: string): Promise<void> {
   return dialog(title, message, [
     { text: 'OK', focus: true }
   ]);
@@ -18,7 +18,7 @@ export function alert(title: string, message: string) {
 /**
  * @return {Promise<boolean>}
  */
-export function confirm(title: string, message: string) {
+export function confirm(title: string, message: string): Promise<boolean> {
   return dialog(title, message, [
     { text: 'Cancel', value: false },
     { text: 'OK', value: true, focus: true }
@@ -38,7 +38,7 @@ interface ButtonDescriptor {
  * @param {any} escapeValue The value to use when dialog is closed via pressing the escape key
  * @returns {Promise<any>}
  */
-export function dialog(title: string, message: string, buttons: ButtonDescriptor[], escapeValue?: any) {
+export function dialog(title: string, message: string, buttons: ButtonDescriptor[], escapeValue?: any): Promise<any> {
   return new Promise(function(resolve, reject) {
     let $node = $('<div><p>' + message + '</p><div class="wdk-AlertButtons"></div></div>');
     let $buttons = buttons.map(button => {
