@@ -15,6 +15,7 @@ public abstract class FilterDefinition extends WdkModelBase {
   private String _view;
   private String _implementation;
   private boolean _isViewOnly = false;
+  private boolean _isAlwaysApplied = false;
 
   private List<WdkModelText> _displays = new ArrayList<>();
   private List<WdkModelText> _descriptions = new ArrayList<>();
@@ -75,6 +76,14 @@ public abstract class FilterDefinition extends WdkModelBase {
     _isViewOnly = isViewOnly;
   }
 
+  public boolean getIsAlwaysApplied() {
+    return _isAlwaysApplied;
+  }
+
+  public void setIsAlwaysApplied(boolean isAlwaysApplied) {
+    _isAlwaysApplied = isAlwaysApplied;
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -115,5 +124,6 @@ public abstract class FilterDefinition extends WdkModelBase {
     filter.setDescription(_description);
     filter.setView(_view);
     filter.setIsViewOnly(_isViewOnly);
+    filter.setIsAlwaysApplied(_isAlwaysApplied);
   }
 }

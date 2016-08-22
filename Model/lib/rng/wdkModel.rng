@@ -1653,6 +1653,11 @@
       <attribute name="view" />
     </optional>
     <optional>
+      <attribute name="isAlwaysApplied">
+        <data type="boolean" />
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="isViewOnly">
         <data type="boolean" />
       </attribute>
