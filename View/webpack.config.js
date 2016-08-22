@@ -2,42 +2,32 @@ var webpack = require('webpack');
 var node_env = process.env.NODE_ENV || 'production';
 var outputPath = './dist/wdk/js';
 
-var commonsPlugin = new webpack.optimize.CommonsChunkPlugin({
-  name: 'common',
-  path: outputPath,
-  filename: 'wdk.common.js'
-});
-
 module.exports = {
   entry: {
-    'app': './webapp/wdk/js/app',
-    'client': './webapp/wdk/js/client/main'
+    'wdk-client': './webapp/wdk/js/client',
+    'wdk': './webapp/wdk/js'
   },
   output: {
     path: outputPath,
-    filename: 'wdk.[name].js',
-    library: [ 'Wdk', '[name]' ],
-    libraryTarget: 'umd',
-    devtoolModuleFilenameTemplate: 'file://[absolute-resource-path]',
-    devtoolFallbackModuleFilenameTemplate: 'file://[absolute-resource-path]?[hash]',
+    filename: '[name].bundle.js',
+    library: 'Wdk'
   },
   bail: true,
   resolve: {
-    alias: {
-      // alias underscore to lodash, mainly for backbone
-      underscore: 'lodash'
-    },
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
-    extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".jsx"]
   },
   externals: [
     { jquery: 'jQuery' }
   ],
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel', query: { blacklist: [ 'react' ] } }, // blacklist react for non-jsx extension
-      { test: /\.jsx$/, exclude: /node_modules/, loader: 'babel' },
-      { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
+      { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory!ts' },
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory' },
+      { test: /\.css$/,  loader: "style-loader!css-loader?sourceMap" },
+      { test: /\.png$/,  exclude: /node_modules/, loader: "url-loader?limit=100000" },
+      { test: /\.gif/,   exclude: /node_modules/, loader: "url-loader?limit=100000" },
+      { test: /\.jpg$/,  exclude: /node_modules/, loader: "file-loader" }
     ]
   },
   node: {
@@ -53,8 +43,7 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("development")
           }
-        }),
-        commonsPlugin
+        })
       ]
 
     : [ new webpack.optimize.UglifyJsPlugin({ mangle: false }),
@@ -64,6 +53,6 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("production")
           }
-        }),
-        commonsPlugin ]
+        })
+      ]
 };

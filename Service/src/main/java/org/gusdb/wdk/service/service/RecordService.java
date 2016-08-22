@@ -1,7 +1,15 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -9,19 +17,23 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
+import org.gusdb.wdk.service.provider.MultipleChoicesStatusType;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.stream.RecordStreamer;
@@ -33,6 +45,9 @@ import org.json.JSONObject;
 public class RecordService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(RecordService.class);
+  private static final String RECORD_CLASS_RESOURCE = "Record Class Name: ";
+  private static final String TABLE_RESOURCE = "Table Name: ";
+  private static final String RECORD_RESOURCE = "with primary key [%s]";
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -57,14 +72,14 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      RecordClass rc = getRecordClass(recordClassName);
       return Response.ok(
           RecordClassFormatter.getRecordClassJson(rc, getFlag(expandAttributes),
               getFlag(expandTables), getFlag(expandTableAttributes)).toString()
       ).build();
     }
     catch (WdkModelException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName));
     }
   }
 
@@ -75,13 +90,13 @@ public class RecordService extends WdkService {
       @PathParam("recordClassName") String recordClassName,
       @QueryParam("expandAttributes") Boolean expandAttributes) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray attribsJson = AttributeFieldFormatter.getAttributesJson(
           recordClass.getAttributeFieldMap().values(), FieldScope.ALL, getFlag(expandAttributes));
       return Response.ok(attribsJson.toString()).build();
     }
     catch (WdkModelException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName));
     }
   }
 
@@ -93,14 +108,14 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray tablesJson = TableFieldFormatter.getTablesJson(
           recordClass.getTableFieldMap().values(), FieldScope.ALL,
           getFlag(expandTables), getFlag(expandTableAttributes));
       return Response.ok(tablesJson.toString()).build();
     }
     catch (WdkModelException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName));
     }
   }
 
@@ -130,12 +145,12 @@ public class RecordService extends WdkService {
   public Response getAnswerFormats(
       @PathParam("recordClassName") String recordClassName) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray json = RecordClassFormatter.getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL);
       return Response.ok(json.toString()).build();
     }
     catch (WdkModelException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName));
     }
   }
 
@@ -143,32 +158,67 @@ public class RecordService extends WdkService {
   @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException, WdkUserException {
+  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException {
+    RecordInstance recordInstance = null;
     try {
       JSONObject json = new JSONObject(body);
-
-      RecordRequest request = RecordRequest.createFromJson(
-          getCurrentUser(), json, recordClassName, getWdkModelBean());
-      
-      RecordInstance recordInstance = getRecordInstance(getCurrentUser(), request);
+      RecordClass rc = getRecordClass(recordClassName);
+      RecordRequest request = RecordRequest.createFromJson(getSessionUser(), json, rc, getWdkModelBean());
+      try {
+        List<Map<String,Object>> ids = rc.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
+        if(ids.size() > 1) {
+          List<String> idList = mapToList(ids,
+            new Function<Map<String,Object>, String>() {
+              @Override
+              public String apply(Map<String,Object> pkValueMap) {
+                Iterator<String> iterator = pkValueMap.keySet().iterator();
+                StringBuilder idString = new StringBuilder();
+                while(iterator.hasNext()) {
+                  String key = iterator.next();
+                  idString.append(key + " = " + pkValueMap.get(key) + " ");
+                }
+                return idString.toString();
+              }
+            }
+          );
+          String idDisplay = FormatUtil.join(idList.toArray(), "\n");
+          return Response.status(new MultipleChoicesStatusType()).type(MediaType.TEXT_PLAIN).entity(idDisplay).build();
+        }
+      }  
+      catch(WdkUserException e) {
+        throw new BadRequestException(e);
+      }
+      recordInstance = getRecordInstance(getSessionUser(), request);
 
       return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
     }
+    catch (WdkUserException | RecordNotFoundException e) {
+      // these may be thrown when the PK values either don't exist or map to >1 record
+      // OR the ID exists but the attribute query returns nothing
+      String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)) ,e);
+    }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
   }
-  
+
+  private RecordClass getRecordClass(String recordClassName) throws WdkModelException {
+    WdkModel model = getWdkModel();
+    RecordClass rc = model.getRecordClassByUrlSegment(recordClassName);
+    return (rc == null ? model.getRecordClass(recordClassName) : rc);
+  }
+
   private static RecordInstance getRecordInstance(User user, RecordRequest recordRequest) throws WdkModelException, WdkUserException {
     RecordClass recordClass = recordRequest.getRecordClass();
     return new RecordInstance(user, recordClass, recordRequest.getPrimaryKey());
   }
-  
+
   private Response getTableResponse(String recordClassName, String tableName,
       Boolean expandTableAttributes, boolean attributesOnly) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      RecordClass rc = getRecordClass(recordClassName);
       TableField table = rc.getTableFieldMap().get(tableName);
       boolean expandAttributes = getFlag(expandTableAttributes);
       if (table == null) throw new WdkModelException ("Table '" + tableName +
@@ -180,7 +230,7 @@ public class RecordService extends WdkService {
       ).toString()).build();
     }
     catch (WdkModelException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + TABLE_RESOURCE + tableName));
     }
   }
 }

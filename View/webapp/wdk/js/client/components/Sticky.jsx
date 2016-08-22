@@ -23,39 +23,37 @@ let Sticky = React.createClass({
     this.node = ReactDOM.findDOMNode(this);
     this.$node = $(this.node);
     this.contentNode = ReactDOM.findDOMNode(this.refs.content);
-    window.addEventListener('scroll', this.updateIsFixed);
-    window.addEventListener('wheel', this.updateIsFixed);
-    window.addEventListener('resize', this.updateIsFixed);
+    window.addEventListener('scroll', this.updateIsFixed, { passive: true });
+    window.addEventListener('wheel', this.updateIsFixed, { passive: true });
+    window.addEventListener('resize', this.updateIsFixed, { passive: true });
   },
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.updateIsFixed);
     window.removeEventListener('wheel', this.updateIsFixed);
-    window.addEventListener('resize', this.updateIsFixed);
+    window.removeEventListener('resize', this.updateIsFixed);
   },
 
   // Set position to fixed if top is above threshold, otherwise
   // set position to absolute.
   updateIsFixed() {
-    requestAnimationFrame(() => {
-      // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-      let rect = this.node.getBoundingClientRect();
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+    let rect = this.node.getBoundingClientRect();
+    if (rect.top < 0 && this.state.isFixed === false) {
       let contentRect = this.contentNode.getBoundingClientRect();
-      if (rect.top < 0 && this.state.isFixed === false) {
-        this.setState({
-          isFixed: true,
-          height: rect.height,
-          width: contentRect.width
-        });
-      }
-      else if (rect.top >= 0 && this.state.isFixed === true) {
-        this.setState({
-          isFixed: false,
-          height: null,
-          width: null
-        });
-      }
-    });
+      this.setState({
+        isFixed: true,
+        height: rect.height,
+        width: contentRect.width
+      });
+    }
+    else if (rect.top >= 0 && this.state.isFixed === true) {
+      this.setState({
+        isFixed: false,
+        height: null,
+        width: null
+      });
+    }
   },
 
   render() {

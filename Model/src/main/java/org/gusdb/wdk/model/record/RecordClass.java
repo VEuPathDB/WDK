@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
@@ -52,7 +53,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.CountPlugin;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
 
@@ -93,7 +93,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class RecordClass extends WdkModelBase implements AttributeFieldContainer, OptionallyTestable {
 
-  // private static final Logger logger = Logger.getLogger(RecordClass.class);
+  private static final Logger logger = Logger.getLogger(RecordClass.class);
 
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
 
@@ -177,6 +177,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       String idSql = idqBuilder.toString();
       String sql = builder.toString();
       sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
 
       ((SqlQuery) newQuery).setSql(sql);
     }
@@ -184,7 +185,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private RecordClassSet recordClassSet;
-
+  
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
 
   private Map<String, Query> attributeQueries = new LinkedHashMap<String, Query>();
@@ -200,17 +201,49 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String name;
   private String fullName;
+  
 
   /**
-   * TODO - the displayName, shortDisplayName, and type are redundant, need to consolidate them into one
-   * field.
+   * the native versions are the real name of the record class.  the non-native are potentially different,
+   * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
+   * result counts and display names
    */
+  private String nativeDisplayName;
+  private String nativeDisplayNamePlural;
+  private String nativeShortDisplayName;
+  private String nativeShortDisplayNamePlural;
   private String displayName;
   private String description;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
 
+  /**
+   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
+   * If present, induces construction of a non-default result size plugin that uses this sql
+   */
+  private ResultSizeQueryReference resultSizeQueryRef = null;
+
+  /**
+   * An option that provides SQL to post-process an Answer result, providing a custom property value. 
+   */
+  private ResultPropertyQueryReference resultPropertyQueryRef = null;
+
+  /**
+   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
+   * The default is overridden with a plugin supplied in the XML model, if provided.
+   */
+  private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+  
+  /**
+   * A pluggable way to compute a result property.  For example, count the number of genes in a list of transcripts that are missing transcripts.
+   */
+  private ResultProperty resultPropertyPlugin = null;
+
+  private String customBooleanQueryClassName = null;
+  
+  private BooleanQuery booleanQuery;
+  
   private String attributeOrdering;
 
   private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
@@ -244,6 +277,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private String aliasQueryRef = null;
   private Query aliasQuery = null;
+  private String aliasPluginClassName = null;
+  private PrimaryKeyAliasPlugin aliasPlugin = null;
 
   private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
   private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
@@ -288,12 +323,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private List<FilterReference> _filterReferences = new ArrayList<>();
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
   
-  private CountReference _countReference;
-  private CountPlugin _countPlugin;
-  
-  private BooleanReference _booleanReference;
-  private BooleanQuery _booleanQuery;
-
   private CategoryList _categoryList;
 
   private String _urlSegment;
@@ -304,7 +333,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public WdkModel getWdkModel() {
-    return wdkModel;
+    return _wdkModel;
   }
 
   public void setName(String name) {
@@ -315,12 +344,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (displayName == null) ? getName() : displayName;
   }
 
+  public String getNativeDisplayName() {
+    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
+  }
+
   public String getDescription() {
     return (description == null) ? "" : description;
   }
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+    this.nativeDisplayName = displayName;
   }
 
   public void setDescription(String description) {
@@ -334,8 +368,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getDisplayName());
   }
 
+  public String getNativeDisplayNamePlural() {
+      if (nativeDisplayNamePlural != null)
+        return nativeDisplayNamePlural;
+
+      return getPlural(getNativeDisplayName());
+    }
+
   public void setDisplayNamePlural(String displayNamePlural) {
     this.displayNamePlural = displayNamePlural;
+    this.nativeDisplayNamePlural = displayNamePlural;
   }
 
   public String getShortDisplayNamePlural() {
@@ -345,8 +387,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getShortDisplayName());
   }
 
+  public String getNativeShortDisplayNamePlural() {
+      if (nativeShortDisplayNamePlural != null)
+        return nativeShortDisplayNamePlural;
+
+      return getPlural(getNativeShortDisplayName());
+    }
+
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
+    this.nativeShortDisplayNamePlural = shortDisplayNamePlural;
   }
   
   public void setUrlName(String urlName) {
@@ -376,7 +426,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return name + "s";
   }
+  
+  public ResultSize getResultSizePlugin() {
+    return resultSizePlugin;
+  }
 
+  public ResultProperty getResultPropertyPlugin() {
+    return resultPropertyPlugin;
+  }
+  
+  public String getCustomBooleanQueryClassName() {
+    return customBooleanQueryClassName;
+  }
+    
   /**
    * @param attList
    *          comma separated list of attributes in a summary containing this recordClass.
@@ -437,7 +499,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void addReporterRef(ReporterRef reporter) {
     reporterList.add(reporter);
   }
-
+  
   public void setDoNotTest(boolean doNotTest) {
     this.doNotTest = doNotTest;
   }
@@ -457,6 +519,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public void setAttributeCategoryTree(AttributeCategoryTree tree) {
     attributeCategoryTree = tree;
+  }
+  
+  public void setResultSizeQueryRef(ResultSizeQueryReference ref) {
+    resultSizeQueryRef = ref;
+  }
+  
+  public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
+    resultPropertyQueryRef = ref;
+  }
+  
+  public void setCustomBooleanQueryClassName(String className) {
+    this.customBooleanQueryClassName = className;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -484,8 +558,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return fields;
   }
-	// used by report maker, adding display names in map so later the tables show sorted by display name
-	public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
+  // used by report maker, adding display names in map so later the tables show sorted by display name
+  public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
     Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
     for (TableField field : tableFieldsMap.values()) {
       if (scope.isFieldInScope(field)) {
@@ -570,6 +644,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
+  
+  public ResultSizeQueryReference getResultSizeQueryRef() {
+    return resultSizeQueryRef;  
+  }
+  
+  public ResultPropertyQueryReference getResultPropertyQueryRef() {
+    return resultPropertyQueryRef;  
+  }
+  
+  public BooleanQuery getBooleanQuery() {
+    return booleanQuery;
+  }
 
   @Override
   public String toString() {
@@ -653,10 +739,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
     super.resolveReferences(model);
-    this.wdkModel = model;
+    this._wdkModel = model;
 
     if (name.length() == 0 || name.indexOf('\'') >= 0)
       throw new WdkModelException("recordClass name cannot be empty or " + "having single quotes: " + name);
@@ -669,8 +755,53 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.resolveReferences(model);
     }
 
+    if (resultSizeQueryRef != null) {
+      resultSizeQueryRef.resolveReferences(model);
+      displayName = resultSizeQueryRef.getRecordDisplayName();
+      shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
+      displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
+      shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
+        Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+      resultSizePlugin = new SqlQueryResultSizePlugin(query);
+    }
+    
+    if (resultPropertyQueryRef != null) {
+      resultPropertyQueryRef.resolveReferences(model);
+        Query query = (Query) _wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
+      resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
+    }
+    
+    if (customBooleanQueryClassName != null) {
+    String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+    try {
+      Class<? extends BooleanQuery> classs = Class.forName(
+          customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+      booleanQuery = classs.newInstance();
+      booleanQuery.setRecordClass(this);
+    } catch (ClassNotFoundException ex) {
+      throw new WdkModelException(errmsg, ex);
+    } catch (InstantiationException ex) {
+      throw new WdkModelException(errmsg, ex);
+    } catch (IllegalAccessException ex) {
+      throw new WdkModelException(errmsg, ex);
+    }     
+    } else booleanQuery = new BooleanQuery(this);
+
+  
     // resolve the alias query
     resolveAliasQuery(model);
+    
+    // resolve the alias plugin
+    try {
+      if (aliasPluginClassName != null && aliasPlugin == null) {
+        Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(aliasPluginClassName).asSubclass(
+            PrimaryKeyAliasPlugin.class);
+        aliasPlugin = pluginClass.newInstance();
+      }
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Failed instantiating aliasPlugin for class " + aliasPluginClassName, e);
+    }
 
     // resolve the references for table queries
     resolveTableFieldReferences(model);
@@ -740,22 +871,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       reporterRef.resolveReferences(model);
     }
 
-    // resolve count plugin
-    if (_countReference != null) {
-      _countReference.resolveReferences(model);
-      _countPlugin = _countReference.getPlugin();
-    }
-    
-    // resolve custom boolean
-    if (_booleanReference != null) {
-      _booleanReference.resolveReferences(model);
-      _booleanQuery = _booleanReference.getQuery();
-    }
-
     // register this URL segment with the model to ensure uniqueness
-    wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
+    _wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
 
-    resolved = true;
+    _resolved = true;
   }
 
   private void resolveCategoryTreeReferences(WdkModel model) throws WdkModelException {
@@ -798,8 +917,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         String fieldName = field.getName();
         // check if the attribute is duplicated
         if (attributeFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The AttributeField " + fieldName +
+          throw new WdkModelException("The attribute " + fieldName +
               " is duplicated in the recordClass " + getFullName());
+
+        if (tableFieldsMap.containsKey(fieldName))
+          throw new WdkModelException("The attribute " + fieldName +
+              " has the same name as a table in the recordClass " + getFullName());
 
         // link columnAttributes with columns
         if (field instanceof ColumnAttributeField) {
@@ -941,7 +1064,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private Param getUserParam() throws WdkModelException {
     // create the missing user_id param for the attribute query
-    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     if (paramSet.contains(Utilities.PARAM_USER_ID))
       return paramSet.getParam(Utilities.PARAM_USER_ID);
 
@@ -949,9 +1072,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     userParam.setName(Utilities.PARAM_USER_ID);
     userParam.setNumber(true);
 
-    userParam.excludeResources(wdkModel.getProjectId());
-    userParam.resolveReferences(wdkModel);
-    userParam.setResources(wdkModel);
+    userParam.excludeResources(_wdkModel.getProjectId());
+    userParam.resolveReferences(_wdkModel);
+    userParam.setResources(_wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }
@@ -1104,8 +1227,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         }
         else { // other attribute fields
           if (attributeFieldsMap.containsKey(fieldName))
-            throw new WdkModelException("The attributeField " + fieldName + " is duplicated in recordClass " +
+            throw new WdkModelException("The attribute " + fieldName + " is duplicated in recordClass " +
                 getFullName());
+          if (tableFieldsMap.containsKey(fieldName))
+            throw new WdkModelException("The attribute " + fieldName +
+                " has the same name as a table in the recordClass " + getFullName());
+
         }
         attributeFieldsMap.put(fieldName, field);
         newFieldList.add(field);
@@ -1118,15 +1245,21 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       throw new WdkModelException("The primaryKeyField of recordClass " + getFullName() +
           " is not set. Please define a " + "<primaryKeyAttribute> in the recordClass.");
     this.aliasQueryRef = primaryKeyField.getAliasQueryRef();
+    this.aliasPluginClassName = primaryKeyField.getAliasPluginClassName();
 
     // exclude table fields
     for (TableField field : tableFieldList) {
       if (field.include(projectId)) {
         field.excludeResources(projectId);
         String fieldName = field.getName();
-        if (attributeFieldsMap.containsKey(fieldName))
+        if (tableFieldsMap.containsKey(fieldName))
           throw new WdkModelException("The table " + fieldName + " is duplicated in recordClass " +
               getFullName());
+        if (attributeFieldsMap.containsKey(fieldName))
+          throw new WdkModelException("The table" + fieldName +
+              " has the same name as an attribute in the recordClass " + getFullName());
+
+
         tableFieldsMap.put(fieldName, field);
       }
     }
@@ -1509,7 +1642,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
     questionName += getFullName().replace('.', '_');
     questionName += BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX;
-    return (Question) wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(questionName);
   }
 
   /**
@@ -1523,12 +1656,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
     questionName += getFullName().replace('.', '_');
     questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    return (Question) wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(questionName);
   }
 
   public Question[] getTransformQuestions(boolean allowTypeChange) {
     List<Question> list = new ArrayList<Question>();
-    for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+    for (QuestionSet questionSet : _wdkModel.getAllQuestionSets()) {
       for (Question question : questionSet.getQuestions()) {
         if (!question.getQuery().isTransform())
           continue;
@@ -1550,6 +1683,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public String getShortDisplayName() {
     return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
   }
+
+  public String getNativeShortDisplayName() {
+      return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
+    }
 
   /**
    * @param shortDisplayName
@@ -1657,14 +1794,31 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
+  public List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
-    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
-    // nothing to look up
-    if (aliasQuery == null) {
+   
+
+    if (aliasQuery != null) {
+      return getPrimaryKeyFromAliasQuery(user, pkValues);
+    } else if (aliasPlugin != null) {
+      return getPrimaryKeyFromAliasPlugin(user, pkValues);
+    } else {
+      List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
       records.add(pkValues);
       return records;
     }
+  }
+    
+  List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+    return aliasPlugin.getPrimaryKey(user, pkValues);
+  }
+  
+  
+  List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+
+    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
 
     // get alias from the alias query
     Map<String, String> oldValues = new LinkedHashMap<String, String>();
@@ -1757,7 +1911,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (filter == null)
       filter = getColumnFilter(key);
     if (filter == null)
-      throw new WdkModelException("Requested Step Filter doesn't exist: " + fullName);
+      throw new WdkModelException("Requested Filter, with key '" + key + "' doesn't exist in record: " + fullName);
     return filter;
   }
 
@@ -1791,10 +1945,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   public Map<String, Filter> getFilters() {
     // get all step filters
+    logger.debug("RECORDCLASS: GETTING ALL FILTERs");
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
-      if (!filter.getIsViewOnly())
+      if (!filter.getIsViewOnly()) {
+        logger.debug("RECORDCLASS: filter name: " + filter.getKey());
         filters.put(filter.getKey(), filter);
+      }
     }
 
     // get all column filters
@@ -1810,19 +1967,4 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filters;
   }
 
-  public CountPlugin getCountPlugin() {
-    return _countPlugin;
-  }
-
-  public void setCountReference(CountReference countReference) {
-    _countReference = countReference;
-  }
-
-  public BooleanQuery getBooleanQuery() {
-    return _booleanQuery;
-  }
-
-  public void setBooleanReference(BooleanReference booleanReference) {
-    _booleanReference = booleanReference;
-  }
 }

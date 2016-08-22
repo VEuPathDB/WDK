@@ -7,25 +7,36 @@
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at" %>
+<%@ attribute name="excludeBasketColumn"
+              type="java.lang.String"
+              required="false"
+              description="if true, the basket column will not be included" %>
 
-  <c:set var="wdkAnswer" value="${step.viewAnswerValue}"/>
-
-  <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
+  <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+
+  <c:set var="wdkAnswer" value="${step.answerValue}"/>
+  <c:set var="wdkViewAnswer" value="${step.viewAnswerValue}"/>
+  <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
   <c:set var="recordName" value="${recordClass.fullName}" />
-  <c:set var="recHasBasket" value="${recordClass.useBasket}" />
-  <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
-  <c:catch var="answerValueRecords_exception">
-    <c:set var="answerRecords" value="${wdkAnswer.records}" />
-  </c:catch>
-  <c:set var="wdkView" value="${requestScope.wdkView}" />
-
   <c:set var="displayName" value="${step.recordClass.displayName}"/>
+  <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
+  <c:set var="nativeDisplayNamePlural" value="${wdkAnswer.question.recordClass.nativeDisplayNamePlural}" />
 
+  <c:set var="recHasBasket" value="${recordClass.useBasket}" />
+  <c:set var="wdkView" value="${requestScope.wdkView}" />
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
+  <%-- catch raised exception so we can show the user a nice message --%>
+  <c:catch var="answerValueRecords_exception">
+    <%-- FIXME This should probably be logged to wdk logger --%>
+    <c:set var="answerRecords" value="${wdkViewAnswer.records}" />
+  </c:catch>
+
   <c:choose>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a basket --%>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -36,6 +47,8 @@
         </div>
       </div>
     </c:when>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a step result --%>
     <c:when test='${answerValueRecords_exception ne null}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -46,9 +59,11 @@
         </div>
       </div>
     </c:when>
-    <c:when test='${wdkAnswer.resultSize == 0}'>
+
+    <c:when test='${wdkViewAnswer.resultSize == 0}'>
       No results are retrieved
     </c:when>
+
     <c:otherwise>
 
       <%-- pager --%>
@@ -75,19 +90,54 @@
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
         <table  width="100%">
           <tr class="subheaderrow">
-            <th style="text-align: left;white-space:nowrap;"> 
-              <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
+
+            <th style="text-align: left; white-space: nowrap; width: 33%;"> 
+              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="top"/> 
             </th>
-            <th style="text-align: right;white-space:nowrap;">
-              <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
+
+            <th style="text-align: right; white-space: nowrap; width: 33px;">
+              <c:if test="${wdkViewAnswer.resultSize > 0}">
+
+                <%-- Galaxy URL --%>
+                <c:if test="${!empty sessionScope.GALAXY_URL}">
+                  <a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular">
+                    <b class="galaxy">SEND TO GALAXY</b>
+                  </a>
+                </c:if>
+
+                <c:choose>
+                  <c:when test="${wdkUser.guest}">
+                    <c:set var="basketClick" value="wdk.user.login('use baskets');" />
+                  </c:when>
+                  <c:otherwise>
+                    <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" /> <!-- fourth param is unused (basket.js) -->
+                  </c:otherwise>
+                </c:choose>
+
+                <c:url var="downloadLink" value="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"/>
+
+                <c:if test="${true}"> <!-- true = use React download page; false = use JSP download page-->
+                  <c:set var="summaryViewName" value="${empty requestScope.wdkView.name ? '_default' : requestScope.wdkView.name}"/>
+                  <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
+                </c:if>
+
+                <a class="step-download-link" style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
+
+                <c:if test="${recHasBasket}">
+                  <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
+                    <b>Add to Basket</b>
+                  </a>
+                </c:if>
+              </c:if>
+              <imp:addAttributes wdkAnswer="${wdkViewAnswer}" commandUrl="${commandUrl}"/>
             </th>
           </tr>
         </table>
         <%--------- END OF PAGING TOP BAR ----------%>
 
         <%-- content of current page --%>
-        <c:set var="sortingAttrNames" value="${wdkAnswer.sortingAttributeNames}" />
-        <c:set var="sortingAttrOrders" value="${wdkAnswer.sortingAttributeOrders}" />
+        <c:set var="sortingAttrNames" value="${wdkViewAnswer.sortingAttributeNames}" />
+        <c:set var="sortingAttrOrders" value="${wdkViewAnswer.sortingAttributeOrders}" />
 
         <%--------- RESULTS  ----------%>
        <div class="result-table-data" data-commandurl="${commandUrl}"></div>
@@ -97,15 +147,16 @@
 
               <table  style="width:100%" class="Results_Table" step="${step.stepId}">
 
+<%-- ================================================= --%>
 <%-- TABLE HEADER ROW --%>
                 <thead>
                   <tr class="headerrow">
-                    <c:if test="${recHasBasket}">  
+                    <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">  
 <%--------- BASKET COLUMN  ----------%>
                       <th>
                         <c:choose>
                           <c:when test="${wdkUser.guest}">
-                            <c:set var="basketClick" value="wdk.user.login();" />
+                            <c:set var="basketClick" value="wdk.user.login('use baskets');" />
                             <c:set var="basketTitle" value="Please log in to use the basket." />
                           </c:when>
                           <c:otherwise>
@@ -117,8 +168,9 @@
                         </a>
                       </th>
                     </c:if>
+
                     <c:set var="j" value="0"/>
-                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">   
+                    <c:forEach items="${wdkViewAnswer.summaryAttributes}" var="sumAttrib">   
 
 <%--------- OTHER COLUMNS  ----------%>
                     <%--------- SHOW Prim Key COLUMN (j=0) ONLY IF DISPLAYNAME is non empty (in model.xml) ----------%>
@@ -204,6 +256,7 @@
                   </tr>
                 </thead>
 
+<%-- ================================================= --%>
 <%-- TABLE RESULT ROWS --%>
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
@@ -213,7 +266,7 @@
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
 <%--------- BASKET COLUMN  ----------%>
-                      <c:if test="${recHasBasket}">            
+                      <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">            
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
                           <c:set var="basketId" value="basket${fn:replace(primaryKey.value,'.','_')}" />
@@ -228,7 +281,7 @@
                               <c:set var="basketClick" value="wdk.basket.updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recordName}')" />
                             </c:when>
                             <c:otherwise>
-                              <c:set var="basketClick" value="wdk.user.login();" />
+                              <c:set var="basketClick" value="wdk.user.login('use baskets');" />
                               <c:set var="basketTitle" value="Please log in to use the basket." />
                             </c:otherwise>
                           </c:choose>
@@ -240,11 +293,11 @@
 
 <%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
-                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">    
+                      <c:forEach items="${wdkViewAnswer.summaryAttributeNames}" var="sumAttrName">    
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
                         <c:if test="${not empty showPrimKey ||  j != 0}"> 
                           <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" />
+                          <imp:wdkAttribute columnName = "${sumAttrName}" attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" record="${record}" />
                         </c:if>    
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
@@ -266,7 +319,7 @@
         <table style="width:100%">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;"> 
-              <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="bottom"/> 
             </th>
           </tr>
         </table>

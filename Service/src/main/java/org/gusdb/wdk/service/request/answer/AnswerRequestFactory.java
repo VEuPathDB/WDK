@@ -15,7 +15,9 @@ import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,14 +35,14 @@ public class AnswerRequestFactory {
    * 
    * Input Format:
    * {
-   *   “questionName”: String,
-   *   “parameters”: Object (map from paramName -> paramValue),
+   *   "questionName" : String,
+   *   "parameters": Object (map from paramName -> paramValue),
    *   "legacyFilterName": (optional) String,
-   *   “filters”: (optional) [ {
-   *     “name”: String, value: Any
+   *   "filters": (optional) [ {
+   *     "name": String, value: Any
    *   } ],
-   *   “viewFilters”: (optional) [ {
-   *     “name”: String, value: Any
+   *   "viewFilters": (optional) [ {
+   *     "name": String, value: Any
    *   } ],
    *   "wdk_weight": (optional) Integer
    * }
@@ -50,7 +52,7 @@ public class AnswerRequestFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model) throws RequestMisformatException {
+  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model, User user) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
@@ -58,7 +60,7 @@ public class AnswerRequestFactory {
       Question question = model.getModel().getQuestion(questionName);
       AnswerRequest request = new AnswerRequest(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, model));
+      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, model, user));
       // all filter fields are optional
       if (json.has(Keys.LEGACY_FILTER_NAME)) {
         request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
@@ -74,8 +76,11 @@ public class AnswerRequestFactory {
       }
       return request;
     }
-    catch (JSONException | WdkUserException e) {
+    catch (JSONException e) {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
+    }
+    catch (WdkUserException e) {
+      throw new DataValidationException(e);
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Error querying model during answer request parsing", e);
@@ -112,7 +117,7 @@ public class AnswerRequestFactory {
   }
 
   private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
-      Question question, WdkModelBean model) throws WdkUserException {
+      Question question, WdkModelBean model, User user) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
     Map<String, Object> contextValues = getContextValues(paramsJson);
@@ -121,19 +126,21 @@ public class AnswerRequestFactory {
     Map<String, ParamValue> paramValues = new HashMap<>();
     for (Param expectedParam : expectedParams.values()) {
       String paramName = expectedParam.getName();
-      ParamValue value;
+      ParamValue paramValue;
+      String stableValue;
       if (!contextValues.containsKey(paramName)) {
         if (!expectedParam.isAllowEmpty()) {
           throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
         }
         else {
-          value = new ParamValue(expectedParam, expectedParam.getEmptyValue());
+          stableValue = expectedParam.getEmptyValue();          
         }
       }
       else {
-        value = new ParamValue(expectedParam, contextValues.get(paramName));
+        stableValue = (String)contextValues.get(paramName);
       }
-      paramValues.put(paramName, value);
+      paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().cleanAndValidateStableValue(user, stableValue));    
+      paramValues.put(paramName, paramValue);
 
     }
     return paramValues;

@@ -190,7 +190,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         values.put(pkValue, value);
       }
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
     return values;
   }

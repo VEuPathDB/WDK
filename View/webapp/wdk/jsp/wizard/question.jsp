@@ -116,7 +116,7 @@ ${Question_Header}
 
 <%-- display operators section --%>
 <c:set var="rcName" value="${wdkStep.question.recordClass.fullName}" />
-<c:set var="allowSpan" value="${rcName eq 'GeneRecordClasses.GeneRecordClass' 
+<c:set var="allowSpan" value="${rcName eq 'TranscriptRecordClasses.TranscriptRecordClass' 
                                 || rcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
                                 || rcName eq 'SnpRecordClasses.SnpRecordClass'

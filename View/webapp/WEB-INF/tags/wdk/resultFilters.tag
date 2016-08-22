@@ -27,7 +27,7 @@
                data-url="<c:url value='/toggleFilter.do?step=${step.stepId}&filter=${filter.key}' />" />
         <span class="name">${filter.display}</span>
         :
-        <span class="value">${option.displayValue}</span>
+        <span class="value">${option.displayValueMap[step.answerValue]}</span>
         <a href="<c:url value='/removeFilter.do?step=${step.stepId}&filter=${filter.key}' />"
           title="Remove this filter">
           <span class="remove ui-icon ui-icon-closethick"></span>

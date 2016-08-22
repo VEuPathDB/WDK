@@ -36,9 +36,6 @@ public class Migrator1_17To1_18 implements Migrator {
     private static final String NEW_USER_SCHEMA = "userlogins3.";
     private static final String NEW_WDK_SCHEMA = "wdkstorage.";
 
-    private PreparedStatement psInsertAnswer;
-    private PreparedStatement psInsertHistory;
-
     private Map<String, Integer> answerKeys;
     private Set<String> historyKeys;
 
@@ -55,69 +52,77 @@ public class Migrator1_17To1_18 implements Migrator {
         DBPlatform platform = userDb.getPlatform();
         DataSource dataSource = userDb.getDataSource();
 
-        System.out.println("Loading existing histories...");
-        loadHistories(wdkModel, dataSource);
+        PreparedStatement psInsertAnswer = null;
+        PreparedStatement psInsertHistory = null;
+        ResultSet histories = null;
 
-        System.out.println("Loading existing answers...");
-        loadAnswers(wdkModel, dataSource);
+        try {
+          System.out.println("Loading existing histories...");
+          loadHistories(wdkModel, dataSource);
+  
+          System.out.println("Loading existing answers...");
+          loadAnswers(wdkModel, dataSource);
+  
+          System.out.println("Loading old histories...");
+          psInsertAnswer = prepareAnswerStatement(dataSource);
+          psInsertHistory = prepareHistoryStatement(dataSource);
 
-        System.out.println("Loading old histories...");
-        prepareStatements(dataSource);
-
-        ResultSet histories = getHistories(wdkModel, dataSource);
-        int count = 0;
-        System.out.println("Migrating old histories...");
-        while (histories.next()) {
-            int userId = histories.getInt("user_id");
-            int historyId = histories.getInt("history_id");
-            String projectId = histories.getString("project_id");
-            String answerChecksum = histories.getString("query_instance_checksum");
-            String questionName = histories.getString("question_name");
-            String queryChecksum = histories.getString("query_signature");
-            Date createTime = histories.getDate("create_time");
-            Date lastRunTime = histories.getDate("last_run_time");
-            String customName = histories.getString("custom_name");
-            int estimateSize = histories.getInt("estimate_size");
-            boolean isBoolean = histories.getBoolean("is_boolean");
-            boolean isDeleted = histories.getBoolean("is_deleted");
-            String params = platform.getClobData(histories, "params");
-            String convertedParams = convertParams(params, isBoolean);
-
-            // check if history exists
-            String historyKey = userId + "_" + historyId;
-            if (historyKeys.contains(historyKey)) continue;
-
-            // answer if exists
-            String answerKey = projectId + "_" + answerChecksum;
-            Integer answerId = answerKeys.get(answerKey);
-
-            if (answerId == null) {
-                // answer doesn't exist, save new answer
-                answerId = insertAnswer(dataSource, platform, answerChecksum,
-                        projectId, questionName, queryChecksum, convertedParams);
-                answerKeys.put(answerKey, answerId);
-            }
-
-            // save history
-            String displayParams = isBoolean ? params : convertedParams;
-            insertHistory(dataSource, platform, userId, historyId, answerId,
-                    createTime, lastRunTime, estimateSize, customName,
-                    isBoolean, isDeleted, displayParams);
-            historyKeys.add(historyKey);
-
-            count++;
-
-            if (count % 10 == 0)
-                System.out.println("Migrated " + count + " histories...");
+          histories = getHistories(wdkModel, dataSource);
+          int count = 0;
+          System.out.println("Migrating old histories...");
+          while (histories.next()) {
+              int userId = histories.getInt("user_id");
+              int historyId = histories.getInt("history_id");
+              String projectId = histories.getString("project_id");
+              String answerChecksum = histories.getString("query_instance_checksum");
+              String questionName = histories.getString("question_name");
+              String queryChecksum = histories.getString("query_signature");
+              Date createTime = histories.getDate("create_time");
+              Date lastRunTime = histories.getDate("last_run_time");
+              String customName = histories.getString("custom_name");
+              int estimateSize = histories.getInt("estimate_size");
+              boolean isBoolean = histories.getBoolean("is_boolean");
+              boolean isDeleted = histories.getBoolean("is_deleted");
+              String params = platform.getClobData(histories, "params");
+              String convertedParams = convertParams(params, isBoolean);
+  
+              // check if history exists
+              String historyKey = userId + "_" + historyId;
+              if (historyKeys.contains(historyKey)) continue;
+  
+              // answer if exists
+              String answerKey = projectId + "_" + answerChecksum;
+              Integer answerId = answerKeys.get(answerKey);
+  
+              if (answerId == null) {
+                  // answer doesn't exist, save new answer
+                  answerId = insertAnswer(dataSource, platform, psInsertAnswer, answerChecksum,
+                          projectId, questionName, queryChecksum, convertedParams);
+                  answerKeys.put(answerKey, answerId);
+              }
+  
+              // save history
+              String displayParams = isBoolean ? params : convertedParams;
+              insertHistory(dataSource, platform, psInsertHistory, userId, historyId, answerId,
+                      createTime, lastRunTime, estimateSize, customName,
+                      isBoolean, isDeleted, displayParams);
+              historyKeys.add(historyKey);
+  
+              count++;
+  
+              if (count % 10 == 0)
+                  System.out.println("Migrated " + count + " histories...");
+          }
+          System.out.println("Totally migrated " + count + " histories.");
         }
-        System.out.println("Totally migrated " + count + " histories.");
-
-        SqlUtils.closeResultSetAndStatement(histories);
-        SqlUtils.closeStatement(psInsertAnswer);
-        SqlUtils.closeStatement(psInsertHistory);
+        finally {
+          SqlUtils.closeResultSetAndStatement(histories, null);
+          SqlUtils.closeStatement(psInsertAnswer);
+          SqlUtils.closeStatement(psInsertHistory);
+        }
     }
 
-    private void prepareStatements(DataSource dataSource) throws SQLException {
+    private PreparedStatement prepareAnswerStatement(DataSource dataSource) throws SQLException {
         // prepare insert answer statement
         StringBuffer sqlInsertAnswer = new StringBuffer("INSERT INTO ");
         sqlInsertAnswer.append(NEW_WDK_SCHEMA).append("answer (");
@@ -125,9 +130,10 @@ public class Migrator1_17To1_18 implements Migrator {
         sqlInsertAnswer.append("project_version, question_name, ");
         sqlInsertAnswer.append("query_checksum, params) ");
         sqlInsertAnswer.append("VALUES (?, ?, ?, '1.0', ?, ?, ?)");
-        psInsertAnswer = SqlUtils.getPreparedStatement(dataSource,
-                sqlInsertAnswer.toString());
+        return SqlUtils.getPreparedStatement(dataSource, sqlInsertAnswer.toString());
+    }
 
+    private PreparedStatement prepareHistoryStatement(DataSource dataSource) throws SQLException {
         // prepare insert history statement
         StringBuffer sqlInsertHistory = new StringBuffer("INSERT INTO ");
         sqlInsertHistory.append(NEW_USER_SCHEMA).append("histories (");
@@ -135,8 +141,7 @@ public class Migrator1_17To1_18 implements Migrator {
         sqlInsertHistory.append("last_run_time, estimate_size, custom_name, ");
         sqlInsertHistory.append("is_boolean, is_deleted, display_params) ");
         sqlInsertHistory.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        psInsertHistory = SqlUtils.getPreparedStatement(dataSource,
-                sqlInsertHistory.toString());
+        return SqlUtils.getPreparedStatement(dataSource, sqlInsertHistory.toString());
     }
 
     private ResultSet getHistories(WdkModel wdkModel, DataSource dataSource) throws SQLException {
@@ -166,7 +171,7 @@ public class Migrator1_17To1_18 implements Migrator {
             String historyKey = userId + "_" + historyId;
             historyKeys.add(historyKey);
         }
-        SqlUtils.closeResultSetAndStatement(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
 
     private void loadAnswers(WdkModel wdkModel, DataSource dataSource) throws SQLException {
@@ -183,7 +188,7 @@ public class Migrator1_17To1_18 implements Migrator {
             String answerKey = projectId + "_" + answerChecksum;
             answerKeys.put(answerKey, answerId);
         }
-        SqlUtils.closeResultSetAndStatement(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
 
     private String convertParams(String params, boolean isBoolean)
@@ -202,8 +207,8 @@ public class Migrator1_17To1_18 implements Migrator {
         return jsParams.toString();
     }
 
-    private int insertAnswer(DataSource dataSource, DBPlatform platform, String answerChecksum,
-            String projectId, String questionName, String queryChecksum,
+    private int insertAnswer(DataSource dataSource, DBPlatform platform, PreparedStatement psInsertAnswer,
+            String answerChecksum, String projectId, String questionName, String queryChecksum,
             String params) throws SQLException {
         int answerId = platform.getNextId(dataSource, NEW_WDK_SCHEMA, "answer");
 
@@ -217,8 +222,8 @@ public class Migrator1_17To1_18 implements Migrator {
         return answerId;
     }
 
-    private void insertHistory(DataSource dataSource, DBPlatform platform, int userId, int historyId,
-            int answerId, Date createTime, Date lastRunTime, int estimateSize,
+    private void insertHistory(DataSource dataSource, DBPlatform platform, PreparedStatement psInsertHistory,
+            int userId, int historyId, int answerId, Date createTime, Date lastRunTime, int estimateSize,
             String customName, boolean isBoolean, boolean isDeleted,
             String displayParams) throws SQLException {
         psInsertHistory.setInt(1, historyId);

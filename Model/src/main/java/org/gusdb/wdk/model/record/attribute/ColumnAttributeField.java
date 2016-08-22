@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.query.Query;
  * @author jerric
  * 
  */
-public class ColumnAttributeField extends AttributeField {
+public class ColumnAttributeField extends AttributeField implements Cloneable {
 
   private Column _column;
 
@@ -31,6 +31,11 @@ public class ColumnAttributeField extends AttributeField {
 
   public ColumnAttributeField() {
     super();
+  }
+
+  @Override
+  public ColumnAttributeField clone() {
+    return (ColumnAttributeField) super.clone();
   }
 
   /**

@@ -175,6 +175,13 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+    if (inputStableValue == null && !param.isAllowEmpty())
+      throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
+    return inputStableValue;
+  }
+  
+  @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) param;

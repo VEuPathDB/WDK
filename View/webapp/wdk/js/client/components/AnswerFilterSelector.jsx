@@ -1,8 +1,12 @@
-import React from 'react';
+import {Component} from 'react';
 import ReactDOM from 'react-dom';
+import {includes} from 'lodash';
 import TabbableContainer from './TabbableContainer';
-import { wrappable } from '../utils/componentUtils';
+import {wrappable} from '../utils/componentUtils';
 
+let $ = window.jQuery;
+
+/** Filter text input */
 function renderFilterField(field, isChecked, handleChange) {
   return (
     <div key={field.name}>
@@ -14,40 +18,41 @@ function renderFilterField(field, isChecked, handleChange) {
   );
 }
 
-let $ = window.jQuery;
+/** Record fields to match filter expression against */
+class AnswerFilterSelector extends Component {
 
-let AnswerFilterSelector = React.createClass({
+  constructor(props) {
+    super(props);
+    this.handleKeyPress = e => {
+      if (e.key === 'Escape') {
+        this.props.onClose();
+      }
+    };
+    this.handleDocumentClick = e => {
+      // close if the click target is not contained by this node
+      let node = ReactDOM.findDOMNode(this);
+      if ($(e.target).closest(node).length === 0) {
+        this.props.onClose();
+      }
+    };
+  }
 
   componentDidMount() {
     if (this.props.open) {
       document.addEventListener('click', this.handleDocumentClick);
     }
-  },
+  }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleDocumentClick);
-  },
+  }
 
   componentDidUpdate() {
     document.removeEventListener('click', this.handleDocumentClick);
     if (this.props.open) {
       document.addEventListener('click', this.handleDocumentClick);
     }
-  },
-
-  handleKeyPress(e) {
-    if (e.key === 'Escape') {
-      this.props.onClose();
-    }
-  },
-
-  handleDocumentClick(e) {
-    // close if the click target is not contained by this node
-    let node = ReactDOM.findDOMNode(this);
-    if ($(e.target).closest(node).length === 0) {
-      this.props.onClose();
-    }
-  },
+  }
 
   render() {
     if (!this.props.open) {
@@ -79,14 +84,14 @@ let AnswerFilterSelector = React.createClass({
         {recordClass.attributes
           .filter(attr => attr.isDisplayable)
           .map(attr => {
-            let isChecked = filterAttributes.includes(attr.name);
+            let isChecked = includes(filterAttributes, attr.name);
             return renderFilterField(attr, isChecked, toggleAttribute);
           })}
 
         {recordClass.tables
           .filter(table => table.isDisplayable)
           .map(table => {
-            let isChecked = filterTables.includes(table.name);
+            let isChecked = includes(filterTables, table.name);
             return renderFilterField(table, isChecked, toggleTable);
           })}
 
@@ -101,6 +106,6 @@ let AnswerFilterSelector = React.createClass({
     );
   }
 
-});
+}
 
 export default wrappable(AnswerFilterSelector);

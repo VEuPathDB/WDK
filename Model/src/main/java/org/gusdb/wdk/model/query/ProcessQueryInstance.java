@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
@@ -102,6 +101,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     }
     logger.debug("Process query cache insertion finished, and took " +
         ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+    
+    executePostCacheUpdateSql(tableName, instanceId);
   }
 
   private void invokeWsf(WsfResponseListener listener) throws WdkModelException, WdkUserException {
@@ -179,7 +180,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       if (column.getType() == ColumnType.CLOB)
         sql.append(", ").append(column.getName());
     }
-
+    
     // insert name of weight as the last column, if it doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
       sql.append(", ").append(weightColumn);
@@ -205,36 +206,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    */
   @Override
   protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
-    // prepare columns
-    Map<String, Column> columns = query.getColumnMap();
-    String[] columnNames = new String[columns.size()];
-    Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
-    for (int i = 0; i < columnNames.length; i++) {
-      // if the wsName is defined, reassign it to the columns
-      Column column = columns.get(columnNames[i]);
-      columnNames[i] = column.getWsName();
-      indices.put(column.getName(), i);
-    }
-
-    // add weight if needed
-    // String weightColumn = Utilities.COLUMN_WEIGHT;
-    // if (query.isHasWeight() && !columns.containsKey(weightColumn)) {
-    // indices.put(weightColumn, indices.size());
-    // for (int i = 0; i < content.length; i++) {
-    // content[i] = ArrayUtil.append(content[i], Integer.toString(assignedWeight));
-    // }
-    // }
-
-    ArrayResultList resultList = new ArrayResultList(indices);
-    resultList.setHasWeight(query.isHasWeight());
-    resultList.setAssignedWeight(assignedWeight);
-
-    invokeWsf(resultList);
-    this.resultMessage = resultList.getMessage();
-
-    logger.debug("WSQI Result Message:" + resultMessage);
-    logger.info("Result Array size = " + resultList.getSize());
-    return resultList;
+    throw new UnsupportedOperationException("Process queries are always cacheable, so ProcessQueryInstance.getUncachedResults() should never be called");
   }
 
   /*
@@ -267,7 +239,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     sqlTable.append(CacheFactory.COLUMN_ROW_ID + " " + numberType + " NOT NULL");
     if (query.isHasWeight())
       sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
-
+    
     // define the rest of the columns
     for (Column column : columns) {
       // weight column is already added to the sql.
@@ -322,7 +294,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    */
   @Override
   public int getResultSize() throws WdkModelException, WdkUserException {
-    if (!isCached()) {
+    if (!getIsCacheable()) {
       int count = 0;
       ResultList resultList = getResults();
       while (resultList.next()) {

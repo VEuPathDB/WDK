@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.formUtil", function(ns, $) {
+wdk.namespace("window.wdk.formUtil", function(ns, $) {
 	"use strict";
 
 	// find input elements in form based on type, then assign values/properties

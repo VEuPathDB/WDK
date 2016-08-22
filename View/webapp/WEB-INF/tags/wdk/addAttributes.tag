@@ -29,13 +29,13 @@
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <imp:checkboxTree id="${checkboxTreeId}" tree="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
+      <imp:checkboxTree id="${checkboxTreeId}" tree="${wdkAnswer.attributes.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
     </c:if>
     <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
 	      <imp:selectClearAll groupName="selectedFields" />
 	    </div>
-		  <c:set var="allAttributes" value="${wdkAnswer.displayableAttributes}" />
+		  <c:set var="allAttributes" value="${wdkAnswer.attributes.displayableAttributes}" />
     	<c:set var="i" value="0"/>
     	<fmt:formatNumber var="columnSize" value="${(fn:length(allAttributes) + 1)/3}" pattern="0"/>
     	<table>
@@ -47,7 +47,7 @@
 	          </c:if>
 	          <c:set var="inputProps" value=""/>
 	          <c:set var="j" value="0"/>
-	          <c:forEach items="${wdkAnswer.summaryAttributes}" var="summary">
+	          <c:forEach items="${wdkAnswer.attributes.summaryAttributes}" var="summary">
 	            <c:if test="${attribute.name eq summary.name}">
 	              <c:set var="inputProps" value="checked" />
 	              <c:if test="${attribute.removable == false}">
@@ -79,4 +79,4 @@
   </form>
   </div>
 
-</div>  <%--   class="attributesList formPopup"  --%>
+</div>  <%--   class="attributesList formPopup"  --%> 

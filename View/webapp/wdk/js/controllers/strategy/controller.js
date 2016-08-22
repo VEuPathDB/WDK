@@ -17,7 +17,7 @@
  *
  */
 
-wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
+wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
   var sidIndex = 0;
@@ -116,7 +116,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       });
 
     // update state when analysis status changes
-    wdk.on('analysis:statuschange', _.partial(fetchStrategies, mergeStrategies));
+    $(document).on('analysis:statuschange', function() {
+      fetchStrategies(mergeStrategies);
+    });
 
     // Add delegate submit handler here for question form
     // The callback is called when the event bubbles up to the body
@@ -134,6 +136,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   function chooseStrategyTab(allCount, openCount) {
     var openTabName = 'strategy_results';
     var allTabName = 'search_history';
+    // set tab state from query param, if present, and remove query param from url
+    var tabQueryParamMatches = location.search.match(/\btab=(\w+)/);
+    if (tabQueryParamMatches) {
+      wdk.stratTabCookie.setCurrentTabCookie('application', tabQueryParamMatches[1]);
+      history.replaceState('', null, location.pathname);
+    }
     var current = wdk.stratTabCookie.getCurrentTabCookie('application');
 
     if (!current || current === null) {

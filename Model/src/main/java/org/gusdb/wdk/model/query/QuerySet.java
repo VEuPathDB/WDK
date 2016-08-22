@@ -1,12 +1,14 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelSetI;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -28,12 +30,15 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
  */
 public class QuerySet extends WdkModelBase implements ModelSetI<Query>, OptionallyTestable {
 
+  protected static final Logger logger = Logger.getLogger(Query.class);
+
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuerySet.class);
 
   private List<Query> queryList = new ArrayList<Query>();
   private Map<String, Query> queries = new LinkedHashMap<String, Query>();
   private String name;
+  private List<PostCacheUpdateSql> postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
 
   /* for sanity testing */
   public static enum QueryType {
@@ -125,6 +130,14 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
     return queryType;
   }
 
+  public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
+    return Collections.unmodifiableList(postCacheUpdateSqls);
+  }
+
+  public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
+    this.postCacheUpdateSqls.add(postCacheUpdateSql);
+  }
+
   public void setDoNotTest(boolean doNotTest) {
     this.doNotTest = doNotTest;
   }
@@ -173,6 +186,14 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
     for (Query query : queries.values()) {
       query.resolveReferences(model);
     }
+
+    for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
+      if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
+          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
+          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
+        throw new WdkModelException(
+            "Invalid PostCacheUpdateSql. <sql> must be provided, and include the macros: " +
+                Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
   }
 
   /*

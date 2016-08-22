@@ -1,185 +1,220 @@
+import $ from 'jquery';
+import {createElement, PropTypes} from 'react';
+import {render, unmountComponentAtNode} from 'react-dom';
+import {formatAttributeValue, wrappable, PureComponent} from '../utils/componentUtils';
+import RealTimeSearchBox from './RealTimeSearchBox';
+
+const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
+const expandColumn = {
+  className: 'wdk-DataTableCell wdk-DataTableCell__childRowToggle',
+  orderable: false,
+  title: expandButton,
+  defaultContent: expandButton
+};
+
 /**
  * Sortable table for WDK-formatted data.
  *
  * This one used DataTables jQuery plugin
  */
+class DataTable extends PureComponent {
 
-import { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom';
-import mapValues from 'lodash/object/mapValues';
-import partial from 'lodash/function/partial';
-import { formatAttributeValue, wrappable } from '../utils/componentUtils';
+  componentDidMount() {
+    this._childRowContainers = new Map();
+    this._setup();
+  }
 
-const $ = window.jQuery;
+  componentDidUpdate() {
+    this._destroy();
+    this._setup();
+  }
 
-const expandColumn = {
-  className: 'wdk-DataTableCell wdk-DataTableCellExpand',
-  orderable: false,
-  defaultContent: ''
-};
+  componentWillUnmount() {
+    this._destroy();
+  }
 
-let DataTable = props => {
-  return (
-    <div ref={node => setupTable(node, props)} className="wdk-DataTableContainer"/>
-  );
-};
+  /** Initialize datatable plugin and set up handlers for creating child rows */
+  _setup() {
+    let {
+      childRow,
+      data,
+      sorting,
+      searchable,
+      height,
+      width
+    } = this.props;
+
+    let columns = childRow
+      ? [ expandColumn, ...formatColumns(this.props.columns) ]
+      : formatColumns(this.props.columns);
+
+    let order = formatSorting(columns, sorting.length === 0
+      ? [ { name: this.props.columns[0].name, direction: 'ASC' } ] : sorting);
+
+    let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
+      columns,
+      data,
+      order,
+      searching: searchable,
+      info: searchable,
+      headerCallback: (thead) => {
+        let i = 0;
+        let $ths = $(thead).find('th');
+        if (childRow) {
+          $ths.eq(i++).attr('title', 'Show or hide all row details');
+        }
+        for (let column of this.props.columns) {
+          if (column.help != null) $ths.eq(i++).attr('title', column.help);
+        }
+      }
+    });
+
+    if (height != null)
+      Object.assign(tableOpts, {
+        scrollY: height,
+        scrollX: true,
+        scrollCollapse: !childRow
+      });
+
+    this._$table = $('<table class="wdk-DataTable">')
+    .width(width)
+    .appendTo(this.node);
+
+    this._dataTable = this._$table.DataTable(tableOpts);
+
+    // click handler for expand single row
+    this._$table.on('click', 'td .wdk-DataTableCellExpand', e => {
+      let tr = $(e.target).closest('tr');
+      let row = this._dataTable.row(tr);
+      if (row.child.isShown()) {
+        this._hideChildRow(row.node());
+      }
+      else {
+        this._showChildRow(row.node());
+      }
+      this._updateChildRowClassNames();
+    });
+
+    // click handler for expand all rows
+    this._$table.on('click', 'th .wdk-DataTableCellExpand', () => {
+      // if all are shown, then hide all, otherwise show any that are hidden
+      let allShown = areAllChildRowsShown(this._dataTable);
+      let update = allShown ? this._hideChildRow : this._showChildRow;
+      for (let tr of this._dataTable.rows().nodes().toArray()) {
+        update.call(this, tr);
+      }
+      this._updateChildRowClassNames();
+    });
+  }
+
+  /** Update class names of child row expand buttons based on datatable state */
+  _updateChildRowClassNames() {
+    let allShown = true;
+    for (let tr of this._dataTable.rows().nodes().toArray()) {
+      let row = this._dataTable.row(tr);
+      let isShown = row.child.isShown();
+      $(tr).toggleClass('wdk-DataTableRow__expanded', isShown);
+      allShown = allShown && isShown;
+    }
+    this._$table
+      .find('th .wdk-DataTableCellExpand')
+      .closest('tr')
+      .toggleClass('wdk-DataTableRow__expanded', allShown);
+  }
+
+  /** Append child row container node to table row and show it */
+  _showChildRow(tableRowNode) {
+    let { childRow } = this.props;
+    let row = this._dataTable.row(tableRowNode);
+    let childRowContainer = this._getChildRowContainer(tableRowNode);
+    row.child(childRowContainer);
+    if (typeof childRow === 'string') {
+      childRowContainer.innerHTML = childRow;
+    }
+    else {
+      let props = { rowIndex: row.index(), rowData: row.data() };
+      render(createElement(childRow, props), childRowContainer);
+    }
+    row.child.show();
+  }
+
+  /** Hide child row */
+  _hideChildRow(tableRowNode) {
+    let row = this._dataTable.row(tableRowNode);
+    row.child.hide();
+  }
+
+  /** Get child row container from cache, or create and add to cache first */
+  _getChildRowContainer(tableRowNode) {
+    if (!this._childRowContainers.has(tableRowNode)) {
+      this._childRowContainers.set(tableRowNode, document.createElement('div'));
+    }
+    return this._childRowContainers.get(tableRowNode);
+  }
+
+  /** Unmount all child row components and destroy the datatable instance */
+  _destroy() {
+    this._dataTable.destroy(true);
+    for (let container of this._childRowContainers.values()) {
+      unmountComponentAtNode(container);
+    }
+    this._childRowContainers.clear();
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.searchable && (
+          <RealTimeSearchBox
+            className="wdk-DataTableSearchBox"
+            placeholderText="Search this table..."
+            onSearchTermChange={term => this._dataTable.search(term).draw()}
+            delayMs={0}
+          />
+        )}
+        <div ref={node => this.node = node} className="wdk-DataTableContainer"/>
+      </div>
+    );
+  }
+
+}
 
 export default wrappable(DataTable);
 
-let setupTable = (node, props) => {
-  if (node == null) return;
-
-  // Destroy DataTable instance, removing DOM node and event handlers
-  $(node).find('table:first').DataTable().destroy(true);
-
-  let {
-    childRow,
-    sorting,
-    searchable,
-    height,
-    width
-  } = props;
-
-  let data = formatData(props.data);
-
-  let columns = childRow
-    ? [ expandColumn, ...formatColumns(props.columns) ]
-    : formatColumns(props.columns);
-
-  let order = formatSorting(columns, sorting.length === 0
-    ? [ { name: props.columns[0].name, direction: 'ASC' } ] : sorting);
-
-  let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
-    columns,
-    data,
-    order,
-    searching: searchable
-  });
-
-  if (height != null)
-    Object.assign(tableOpts, {
-      scrollY: height,
-      scrollX: true,
-      scrollCollapse: !childRow
-    });
-
-  let $table = $('<table class="wdk-DataTable">')
-  .width(width)
-  .appendTo(node);
-
-  let dataTable = $table.DataTable(tableOpts);
-
-  let showChildRow_ = partial(showChildRow, dataTable, childRow);
-  let hideChildRow_ = partial(hideChildRow, dataTable);
-
-  $table.on('click', 'td.wdk-DataTableCellExpand', e => {
-    updateChildRows(() => {
-      let tr = $(e.target).closest('tr');
-      let row = dataTable.row(tr);
-      if (row.child.isShown()) {
-        hideChildRow_(row.node());
-      }
-
-      else {
-        showChildRow_(row.node());
-      }
-    }, dataTable, $table);
-  });
-
-  $table.on('click', 'th.wdk-DataTableCellExpand', () => {
-    updateChildRows(() => {
-      let allShown = isAllChildRowsShown(dataTable);
-      let update = allShown ? hideChildRow_ : showChildRow_;
-
-      for (let tr of dataTable.rows().nodes().toArray()) {
-        update(tr);
-      }
-    }, dataTable, $table);
-  });
-};
-
-let updateChildRows = (fn, dataTable, $table) => {
-  // update state of row children with provided function
-  fn();
-
-  // update css based on new table state
-  let allShown = true;
-
-  for (let tr of dataTable.rows().nodes().toArray()) {
-    let row = dataTable.row(tr);
-    let isShown = row.child.isShown();
-    $(tr).toggleClass('wdk-DataTableRow__expanded', isShown);
-    allShown = allShown && isShown;
-  }
-
-  $table.find('th.wdk-DataTableCellExpand').closest('tr')
-  .toggleClass('wdk-DataTableRow__expanded', allShown);
-};
-
-let showChildRow = (dataTable, childRow, tr) => {
-  let row = dataTable.row(tr);
-  let div = document.createElement('div');
-  row.child(div);
-  renderChildRow(row, div, childRow);
-  row.child.show();
-};
-
-let hideChildRow = (dataTable, tr) => {
-  let row = dataTable.row(tr);
-  row.child.hide();
-}
-
-let isAllChildRowsShown = (dataTable) => {
+/** helper to determine if all child rows are visible */
+function areAllChildRowsShown(dataTable) {
   return dataTable.rows().indexes().toArray().every(i => dataTable.row(i).child.isShown());
 }
-
-let updateToggleAllChildrenClass = (allShown) => {
-  $('th.wdk-DataTableCellExpand').closest('tr')
-  .toggleClass('wdk-DataTableRow__expanded', !allShown);
-}
-
-/*
-let removeChildRows = () => {
-  for (let childNode of this.childRowNodes.values()) {
-    ReactDOM.unmountComponentAtNode(childNode);
-  }
-  this.childRowNodes.clear();
-}
-*/
-
-let renderChildRow = (row, targetNode, childRow) => {
-  if (typeof childRow === 'string') {
-    targetNode.innerHTML = childRow;
-  }
-
-  else {
-    let props = { rowIndex: row.index(), rowData: row.data() };
-    ReactDOM.render(React.createElement(childRow, props), targetNode);
-  }
-}
-
 
 // helpers
 // -------
 
-let formatColumns = columns => columns.map(
-  column => Object.assign({
-    data: column.name,
-    className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
-    title: column.displayName || column.name,
-    // defaultContent: '<i class="wdk-DataTableCell____n_a">N/A</i>'
-  }, column)
-);
+/** Map WDK table attribute fields to datatable data format */
+function formatColumns(columns) {
+  return columns.map(
+    column => ({
+      data: column.name,
+      className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
+      title: column.displayName || column.name,
+      type: column.sortType,
+      visible: column.isDisplayable,
+      searchable: column.isDisplayable,
+      orderable: column.isSortable,
+      render(data, type) {
+        let value = formatAttributeValue(data);
+        if (type === 'display' && value != null) {
+          return '<div class="wdk-DataTableCellContent">' + value + '</div>'
+        }
+        return value;
+      }
+    })
+  );
+}
 
-let formatData = data => data.map(
-  row => mapValues(row, formatAttributeValue)
-);
-
-let formatSorting = (columns, sorting) => {
-  if (sorting.length === 0) return [ [0, 'asc'] ];
-
-  return sorting.map(sort => {
-    let index = columns.findIndex(column => column.name === sort.name);
+/** Map WDK table sorting to datatable data format */
+function formatSorting(columns, sorting = []) {
+  return sorting.length === 0 ? [ [0, 'asc'] ] : sorting.map(sort => {
+    let index = columns.findIndex(column => column.data === sort.name);
     if (index === -1) {
       console.warn("Could not determine sort index for the column " + sort.name);
       return [];
@@ -261,12 +296,15 @@ DataTable.defaultProps = {
 
 /** Default DataTables jQuery plugin options. */
 DataTable.defaultDataTableOpts = {
-  info: false,
+  dom: 'lript',
+  autoWidth: false,
   deferRender: true,
   paging: false,
   searching: true,
   language: {
-    search: '_INPUT_',
-    searchPlaceholder: 'Search table'
+    info: 'Showing _TOTAL_ ',
+    infoFiltered: 'of _MAX_ ',
+    infoEmpty: 'Showing 0 ',
+    infoPostFix: 'rows'
   }
 };

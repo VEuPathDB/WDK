@@ -34,9 +34,9 @@ public class AnswerValueTest {
         AnswerValue answer = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answer
-                .getDisplayableAttributeMap();
+            .getAttributes().getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answer
-                .getSummaryAttributeFieldMap();
+            .getAttributes().getSummaryAttributeFieldMap();
 
         // no display fields should appear in summary fields
         Assert.assertTrue(
@@ -57,9 +57,9 @@ public class AnswerValueTest {
         AnswerValue answerValue = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answerValue
-                .getDisplayableAttributeMap();
+            .getAttributes().getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answerValue
-                .getSummaryAttributeFieldMap();
+            .getAttributes().getSummaryAttributeFieldMap();
 
         for (AttributeField field : displayFields.values()) {
             // skip the fields that are already in the summary
@@ -75,7 +75,7 @@ public class AnswerValueTest {
             String[] summaryList = new String[list.size()];
             list.toArray(summaryList);
 
-            summaryFields = answerValue.getSummaryAttributeFieldMap();
+            summaryFields = answerValue.getAttributes().getSummaryAttributeFieldMap();
 
             for (String name : summaryList) {
                 Assert.assertTrue(summaryFields.containsKey(name));
@@ -89,9 +89,9 @@ public class AnswerValueTest {
         AnswerValue answerValue = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answerValue
-                .getDisplayableAttributeMap();
+            .getAttributes().getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answerValue
-                .getSummaryAttributeFieldMap();
+            .getAttributes().getSummaryAttributeFieldMap();
 
         // skip the primary key field
         Iterator<AttributeField> it = summaryFields.values().iterator();
@@ -108,8 +108,8 @@ public class AnswerValueTest {
         String[] summaryList = new String[list.size()];
         list.toArray(summaryList);
 
-        displayFields = answerValue.getDisplayableAttributeMap();
-        summaryFields = answerValue.getSummaryAttributeFieldMap();
+        displayFields = answerValue.getAttributes().getDisplayableAttributeMap();
+        summaryFields = answerValue.getAttributes().getSummaryAttributeFieldMap();
 
         Assert.assertTrue(displayFields.containsKey(field.getName()));
         Assert.assertFalse(summaryFields.containsKey(field.getName()));

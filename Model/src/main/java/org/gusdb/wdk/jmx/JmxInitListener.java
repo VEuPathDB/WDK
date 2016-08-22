@@ -5,6 +5,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -28,6 +29,7 @@ public final class JmxInitListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent sce) {
+    MDCUtil.setNonRequestThreadVars("jmxi");
     ServletContext context = sce.getServletContext();
 
     // Check whether model is initialized; if not, then initialization probably
@@ -55,6 +57,7 @@ public final class JmxInitListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
+    MDCUtil.setNonRequestThreadVars("jmxt");
     if (_registration != null) {
       _registration.destroy();
     }

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.answer.single;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
@@ -61,6 +63,8 @@ public class SingleRecordQuestion extends Question {
     }
     setWdkModel(wdkModel);
     setRecordClass(parts.recordClass);
+    _dynamicAttributeSet = new DynamicAttributeSet();
+    _dynamicAttributeSet.setQuestion(this);
   }
 
   @Override
@@ -72,20 +76,21 @@ public class SingleRecordQuestion extends Question {
     
     // build valid PK value list
     String[] pkValues = params.get(PRIMARY_KEY_PARAM_NAME).split(",");
-    PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
+    PrimaryKeyAttributeField pkAttrField = _recordClass.getPrimaryKeyAttributeField();
     String[] columnRefs =  pkAttrField.getColumnRefs();
 
     if (columnRefs.length != pkValues.length) {
-      throw new WdkUserException("RecordClass '" + recordClass.getFullName() +
+      throw new WdkUserException("RecordClass '" + _recordClass.getFullName() +
           "' PK requires exactly " + columnRefs.length + " values " + FormatUtil.arrayToString(columnRefs));
     }
 
+    // must be a map from String -> Object to comply with RecordInstance constructor :(
     Map<String, Object> pkMap = new HashMap<>();
     for (int i = 0; i < columnRefs.length; i++) {
       pkMap.put(columnRefs[i], pkValues[i]);
     }
 
-    return new SingleRecordAnswerValue(user, recordClass, this, pkMap);
+    return new SingleRecordAnswerValue(user, _recordClass, this, pkMap);
   }
 
   @Override
@@ -93,6 +98,12 @@ public class SingleRecordQuestion extends Question {
     return new MapBuilder<String, Param>()
         .put(PRIMARY_KEY_PARAM_NAME, createStringParam(PRIMARY_KEY_PARAM_NAME))
         .toMap();
+  }
+
+  @Override
+  public Param[] getParams() {
+    Collection<Param> params = getParamMap().values();
+    return params.toArray(new Param[params.size()]);
   }
 
   private Param createStringParam(String name) {

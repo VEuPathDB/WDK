@@ -7,9 +7,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
@@ -52,29 +50,17 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   @Override
   public String getUncachedSql() throws WdkModelException, WdkUserException {
 
-    // needs to apply the view to each operand before boolean
-    // get the use_boolean filter param
-    boolean booleanFlag = isUseBooleanFilter();
-
-    logger.info("Boolean expansion flag: " + booleanFlag);
-
-    Map<String, String> InternalValues = getParamInternalValues();
+    Map<String, String> internalValues = getParamInternalValues();
 
     // parse operator
-    String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
+    String operator = internalValues.get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
     DBPlatform platform = wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);
 
-    // construct the filter query for the first child
-    AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-    String leftSubSql = InternalValues.get(leftParam.getName());
-    String leftSql = constructOperandSql(leftSubSql, booleanFlag);
-
-    AnswerParam rightParam = booleanQuery.getRightOperandParam();
-    String rightSubSql = InternalValues.get(rightParam.getName());
-    String rightSql = constructOperandSql(rightSubSql, booleanFlag);
-
+    String leftSql = getLeftSql();
+    String rightSql = getRightSql();
+   
     String sql;
     if (op == BooleanOperator.UNION) {
       sql = getUnionSql(leftSql, rightSql, operator);
@@ -98,24 +84,15 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql;
   }
 
-  private String constructOperandSql(String subSql, boolean booleanFlag)
-      throws WdkModelException, WdkUserException {
-    RecordClass recordClass = booleanQuery.getRecordClass();
-    // apply the filter query if needed
-    AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
-    if (booleanFlag && filter != null) {
-      // here the assigned weight comes from the boolean query itself,
-      // since the filter is the boolean extension filter.
-      subSql = filter.applyFilter(user, subSql, assignedWeight);
-    }
+  private String constructOperandSql(String subSql) {
 
     // limit the column output
     StringBuffer sql = new StringBuffer();
 
     // fix the returned columns to be the pk columns, plus weight column
     sql.append("SELECT " + Utilities.COLUMN_WEIGHT);
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(", " + column);
     }
@@ -123,19 +100,13 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql.toString();
   }
 
-  public boolean isUseBooleanFilter() {
-    StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-    String strBooleanFlag = stableValues.get(useBooleanFilter.getName());
-    return Boolean.parseBoolean(strBooleanFlag);
-  }
-
   private String getUnionSql(String leftSql, String rightSql, String operator) {
     // just sum the weight from original sql
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(column + ", ");
     }
@@ -154,39 +125,50 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
     return sql.toString();
   }
+  
+  protected boolean possiblyNonUniquePrimaryKeys() {
+    return false;
+  }
 
   private String getIntersectSql(String leftSql, String rightSql,
       String operator) {
-    // just sum the weight from original sql
-    StringBuffer sql = new StringBuffer();
-    sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
-    for (String column : pkColumns) {
-      sql.append(column + ", ");
+    // get easy to use strings for our columns
+    String[] pkColumns = getPkColumns();
+    StringBuffer pkColumnsBuf = new StringBuffer(pkColumns[0]);
+    for (int i=1; i<pkColumns.length; i++) pkColumnsBuf.append(", " + pkColumns[i]);
+    String pkColumnsString = pkColumnsBuf.toString();
+    String weightColumn = Utilities.COLUMN_WEIGHT;
+    
+    // in rare cases (eg, gene boolean logic on transcripts), the primary key we are using is not really the record's primary key,
+    // and so is not guaranteed to be unique.  if so, collapse them into one row per primary key.
+    // only do this when needed, to avoid unneeded performance hit
+    //  
+    if (possiblyNonUniquePrimaryKeys()) {
+      leftSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + leftSql + ") l group by " + pkColumnsString;
+      rightSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + rightSql + ") r group by " + pkColumnsString;
     }
+    
+    StringBuffer sql = new StringBuffer();
+    sql.append("SELECT " + pkColumnsString + ", ");
+
+    // sum the weight from original sql
     // weight has to be the last column to ensure the values are inserted
     // correctly
-    String weightColumn = Utilities.COLUMN_WEIGHT;
     sql.append("sum (" + weightColumn + ") AS " + weightColumn);
     sql.append(" FROM (");
-    sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
+    sql.append("(SELECT 1 AS wdk_t, left.* FROM (" + leftSql + ") left) ");
     sql.append(operator);
-    sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
-    sql.append(") t GROUP BY ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? "" : ",");
-      sql.append(pkColumns[i]);
-    }
+    sql.append(" (SELECT 2 AS wdk_t, right.* FROM (" + rightSql + ") right)");
+    sql.append(") t GROUP BY " + pkColumnsString);
     sql.append(" HAVING count(*) > 1");
     return sql.toString();
   }
 
   private String getOtherOperationSql(String leftSql, String rightSql,
       String operator) {
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+
+    String[] pkColumns = getPkColumns();
 
     // first do boolean operation on primary keys only
     StringBuffer leftPiece = new StringBuffer();
@@ -213,4 +195,28 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
     return sql.toString();
   }
+  
+  /**
+   * get the columns to do the boolean operation on
+   * subclasses can override to provide custom pk columns
+   * @return
+   */
+  protected String[] getPkColumns() {
+	  RecordClass rc = booleanQuery.getRecordClass();
+	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
+  }
+  
+    protected String getLeftSql ()  throws WdkModelException, WdkUserException {
+	Map<String, String> internalValues = getParamInternalValues();
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+	String leftSubSql = internalValues.get(leftParam.getName());
+	return constructOperandSql(leftSubSql);
+    }
+
+    protected String getRightSql ()  throws WdkModelException, WdkUserException {
+	Map<String, String> internalValues = getParamInternalValues();
+	AnswerParam rightParam = booleanQuery.getRightOperandParam();
+	String rightSubSql = internalValues.get(rightParam.getName());
+	return constructOperandSql(rightSubSql);
+    }
 }

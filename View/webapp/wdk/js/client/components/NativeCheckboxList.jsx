@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import uid from 'lodash/utility/uniqueId';
+import {uniqueId} from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 
 /**
@@ -11,7 +11,7 @@ class NativeCheckboxList extends Component {
 
   constructor(props) {
     super(...arguments);
-    this.id = uid('NativeCheckboxList.');
+    this.id = uniqueId('NativeCheckboxList.');
     this.controlled = this.props.selectedItems != null;
 
     if (!this.controlled) {
@@ -27,8 +27,8 @@ class NativeCheckboxList extends Component {
     if (!this.controlled && !event.defaultPrevented) {
       this.setState({
         selectedItems: event.target.checked
-          ? this.state.selectedItems.concat(item)
-          : this.state.selectedItems.filter(i => i !== item)
+          ? this.state.selectedItems.concat(item.value)
+          : this.state.selectedItems.filter(i => i.value !== item.value)
       });
     }
   }
@@ -38,7 +38,7 @@ class NativeCheckboxList extends Component {
 
     if (!this.controlled && !event.defaultPrevented) {
       this.setState({
-        selectedItems: this.props.items.slice()
+        selectedItems: this.props.items.map(item => item.value)
       });
     }
 
@@ -68,15 +68,17 @@ class NativeCheckboxList extends Component {
             let id = `${this.id}.${item.value}`;
             return (
               <div key={item.value} className="wdk-CheckboxListItem">
-                <input
-                  id={id}
-                  type="checkbox"
-                  name={this.props.name}
-                  value={item.value}
-                  checked={selectedItems.includes(item.value)}
-                  onChange={e => this.toggle(e, item)}
-                />
-                <label htmlFor={id}> {item.display} </label>
+                <label>
+                  <input
+                    id={id}
+                    type="checkbox"
+                    name={this.props.name}
+                    value={item.value}
+                    checked={selectedItems.includes(item.value)}
+                    onChange={e => this.toggle(e, item)}
+                  />
+                  {' ' + item.display}
+                </label>
               </div>
             );
           })}

@@ -3,10 +3,6 @@
  */
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -53,14 +49,9 @@ public class TextAttributeValue extends AttributeValue {
   public Object getValue() throws WdkModelException, WdkUserException {
     if (this.text == null) {
       String text = ((TextAttributeField)field).getText();
-      Map<String, AttributeField> subFields = field.parseFields(text);
-      Map<String, Object> values = new LinkedHashMap<String, Object>();
-      for (String subField : subFields.keySet()) {
-        AttributeValue value = container.getAttributeValue(subField);
-        Object object = value.getValue();
-        values.put(subField, (object == null) ? "" : object.toString());
-      }
-      this.text = Utilities.replaceMacros(text, values);
+      String label = "attribute [" + field.getName() + "] of ["
+          + field.getRecordClass().getFullName() + "]";
+      this.text = container.replaceMacrosWithAttributeValues(text, label);
     }
     return this.text;
   }
@@ -68,15 +59,10 @@ public class TextAttributeValue extends AttributeValue {
   @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
     if (this.display == null) {
-      String content = ((TextAttributeField)field).getDisplay();
-      Map<String, AttributeField> subFields = field.parseFields(content);
-      Map<String, Object> values = new LinkedHashMap<String, Object>();
-      for (String subField : subFields.keySet()) {
-        AttributeValue value = container.getAttributeValue(subField);
-        Object object = value.getValue();
-        values.put(subField, (object == null) ? "" : object.toString());
-      }
-      this.display = Utilities.replaceMacros(content, values);
+      String display = ((TextAttributeField)field).getDisplay();
+      String label = "attribute [" + field.getName() + "] of ["
+            + field.getRecordClass().getFullName() + "]";
+      this.display = container.replaceMacrosWithAttributeValues(display, label);
     }
     return this.display;
   }

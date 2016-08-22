@@ -1,34 +1,33 @@
-PATH         := node_modules/.bin:$(PATH)
+PATH         := $(shell pwd)/node_modules/.bin:$(PATH)
 SHELL        := /bin/bash
 
 # The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.client.js.
 # wdk.common.js contains common code between wdk.app.js and wdk.client.js.
-wdk_bundle    := dist/wdk/js/wdk.common.js
-libs_bundle   := dist/wdk/js/wdk.libs.js
-css_bundle    := dist/wdk/css/wdk.min.css
-test_bundle   := test/dist/tests.js
+wdk_bundle    := $(shell pwd)/dist/wdk/js/wdk.bundle.js
+libs_bundle   := $(shell pwd)/dist/wdk/js/wdk.libs.js
+css_bundle    := $(shell pwd)/dist/wdk/css/wdk.min.css
+test_bundle   := $(shell pwd)/test/dist/tests.js
 
-wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx') webpack.config.js
+wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx' -or -name '*.ts' -or -name '*.tsx') webpack.config.js
 
 # This exists mainly for legacy support. These should eventually
 # be included via npm and webpack. This will make it possible to
 # lazy-load these libraries with not-too-much effort.
-libs_sources := node_modules/babel-core/browser-polyfill.min.js \
+                # webapp/wdk/lib/jquery.cookie.js
+                # webapp/wdk/lib/jquery.blockUI.js
+                # webapp/wdk/lib/flexigrid.js
+                # webapp/wdk/lib/select2.min.js
+                # webapp/wdk/lib/jstree/jquery.jstree.js
+libs_sources := node_modules/babel-polyfill/dist/polyfill.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
                 webapp/wdk/lib/jquery-ui.js \
-                webapp/wdk/lib/jquery.cookie.js \
-                webapp/wdk/lib/jquery.blockUI.js \
                 webapp/wdk/lib/jquery.qtip.min.js \
-                webapp/wdk/lib/flexigrid.js \
-                webapp/wdk/lib/select2.min.js \
                 webapp/wdk/lib/flot/jquery.flot.min.js \
                 webapp/wdk/lib/flot/jquery.flot.categories.min.js \
                 webapp/wdk/lib/flot/jquery.flot.selection.min.js \
                 webapp/wdk/lib/flot/jquery.flot.time.min.js \
-                webapp/wdk/lib/jquery.dataTables.min.js \
-                webapp/wdk/lib/dataTables.colVis.min.js \
-                webapp/wdk/lib/jstree/jquery.jstree.js \
+                webapp/wdk/lib/datatables.min.js \
                 webapp/wdk/lib/spin.min.js \
                 webapp/wdk/lib/zynga-scroller/Animate.js \
                 webapp/wdk/lib/zynga-scroller/Scroller.js
@@ -37,7 +36,7 @@ test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
 .PHONY: all clean test test-server
 
-bundles: $(wdk_bundle) $(libs_bundle) $(css_bundle)
+bundles: $(wdk_bundle) $(css_bundle)
 
 # =============================================================================
 # Install npm packages. This target will prevent unneeded http requests.
@@ -49,10 +48,17 @@ node_modules: npm-shrinkwrap.json
 node_modules/%: node_modules;
 
 # =============================================================================
+# Install typescript type definitions
+# =============================================================================
+typings: typings.json node_modules
+	typings install
+	touch typings
+
+# =============================================================================
 # Webpack bundles. See webpack.config.js for details
 # =============================================================================
 
-$(wdk_bundle): $(wdk_sources) node_modules
+$(wdk_bundle): $(wdk_sources) node_modules typings
 	webpack
 
 # =============================================================================
@@ -70,7 +76,7 @@ $(libs_bundle): $(libs_sources)
 
 $(css_bundle): $(css_sources) node_modules
 	mkdir -p $(dir $@)
-	cleancss --source-map --skip-rebase -o $@ $<
+	cd $(dir $<) && cleancss --skip-rebase --source-map -o $@ $(notdir $<)
 
 
 # =============================================================================
@@ -106,7 +112,7 @@ examples-server: node_modules
 # =============================================================================
 
 client-tests: node_modules
-	tape -r babel-core/register tests/client/**/*.js
+	tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js
 
 
 # =============================================================================

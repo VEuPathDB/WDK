@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 
 public class ThreadMonitor implements Runnable {
 
@@ -63,6 +64,7 @@ public class ThreadMonitor implements Runnable {
   // maintain compliance with Runnable interface.  TODO: assess refactor??
   @Override
   public void run() {
+    MDCUtil.setNonRequestThreadVars("thrm");
     if (!wdkModel.getModelConfig().isMonitorBlockedThreads()) {
       logger.info("Thread monitor not configured to run.  Monitor returning.");
       return; // thread monitor turned off
@@ -195,9 +197,9 @@ public class ThreadMonitor implements Runnable {
 
     try {
       // get admin email
-      String email = wdkModel.getModelConfig().getAdminEmail();
-      if (email != null)
-        Utilities.sendEmail(wdkModel, email, email, subject, content);
+      List<String> emails = wdkModel.getModelConfig().getAdminEmails();
+      if (!emails.isEmpty())
+        Utilities.sendEmail(wdkModel, FormatUtil.join(emails.toArray(), ","), emails.get(0), subject, content);
 
     } catch (WdkModelException ex) {
       ex.printStackTrace();

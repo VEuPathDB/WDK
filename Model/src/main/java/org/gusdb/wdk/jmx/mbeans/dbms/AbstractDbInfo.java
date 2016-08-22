@@ -80,7 +80,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       logger.error(sqle);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
   }
 
@@ -123,12 +123,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       logger.error("Failed attempting\n" + sql + "\n", e);
     }
     finally {
-      if (rs != null) {
-        SqlUtils.closeResultSetAndStatement(rs);
-      }
-      else {
-        SqlUtils.closeStatement(ps);
-      }
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
   }
 
@@ -161,7 +156,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       logger.error("NPE ", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
 
     //updateDblinkListWithValidity(dblinkList);
@@ -218,7 +213,7 @@ public abstract class AbstractDbInfo implements DbInfo {
         logger.error("Error while trying DB link validation SQL", e);
       }
       finally {
-        SqlUtils.closeResultSetAndStatement(rs);
+        SqlUtils.closeResultSetAndStatement(rs, ps);
       }
     }
   }

@@ -39,6 +39,7 @@ my %dblinkMap = (
     'icmrcomm'    => 'icemr.login_comment',
     'gus4commn'   => 'gus4commN.login_comment',
     'gus4comms'   => 'gus4commS.login_comment',
+    'gus4commt'   => 'gus4commT.login_comment',
     'prsmcomm'    => 'prism.login_comment',
     'prsmcomms'   => 'prisms.login_comment',
     'prsmcommn'   => 'prismn.login_comment',
@@ -163,8 +164,7 @@ sub new {
 
     $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
 
-    $self->{'authenticationMethod'} = 'user_db'; # oauth2 or user_db
-    #$self->{'authenticationMethod'} = 'oauth2'; # oauth2 or user_db
+    $self->{'authenticationMethod'} = 'oauth2'; # oauth2 or user_db
     $self->{'oauthUrl'} = 'https://eupathdb.org/oauth';
     $self->{'oauthClientId'} = 'apiComponentSite';
     $self->{'oauthClientSecret'} = $self->oauth_secret($self->{'euparc'}, $self->{'oauthClientId'});

@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
@@ -39,7 +38,6 @@ public class TableField extends Field implements AttributeFieldContainer {
   private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
   private String description;
   private String categoryName;
-  private Map<String, Boolean> sortingAttributeMap = new LinkedHashMap<String, Boolean>();
 
   public Query getQuery() {
     return query;
@@ -54,7 +52,6 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public void addAttributeField(AttributeField attributeField) {
-    attributeField.setRecordClass(recordClass);
     attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
   }
@@ -79,8 +76,8 @@ public class TableField extends Field implements AttributeFieldContainer {
     this.descriptions.add(description);
   }
   
-  public void setSorting(String sortList) throws WdkModelException {
-    sortingAttributeMap = Utilities.parseSortList(sortList);
+  public void setSorting(String sortList) {
+    // noop
   }
 
   /**
@@ -88,7 +85,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    */
   @Override
   public Map<String, Boolean> getSortingAttributeMap() {
-    return this.sortingAttributeMap;
+    return null;
   }
 
   /*
@@ -126,7 +123,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
     super.resolveReferences(wdkModel);
 
@@ -148,7 +145,13 @@ public class TableField extends Field implements AttributeFieldContainer {
         ((ColumnAttributeField) field).setColumn(column);
       } // else, it's okay to have unmatched columns
     }
-    resolved = true;
+
+    for (AttributeField field : attributeFieldMap.values()) {
+      // set recordClass
+      field.setRecordClass(recordClass);
+    }
+
+    _resolved = true;
   }
 
   /*

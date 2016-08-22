@@ -1,5 +1,9 @@
 import React, { PropTypes } from 'react';
 import { wrappable, getValueOrDefault } from '../utils/componentUtils';
+import Tooltip from './Tooltip';
+
+const baseClassName = "wdk-RadioList";
+const helpClassName = baseClassName + 'InfoIcon';
 
 let RadioList = React.createClass({
 
@@ -11,17 +15,24 @@ let RadioList = React.createClass({
   },
 
   render() {
-    let className = "wdk-RadioList " + getValueOrDefault(this.props, "className", "");
+    let className = baseClassName + " " + getValueOrDefault(this.props, "className", "");
     return (
       <ul className={className}>
         {this.props.items.map(item => (
           <li key={item.value}>
-            <input type="radio"
-              name={this.props.name}
-              value={item.value}
-              checked={item.value === this.props.value}
-              onChange={this.onChange}/>
-            {item.display}
+            <label>
+              <input type="radio"
+                name={this.props.name}
+                value={item.value}
+                checked={item.value === this.props.value}
+                onChange={this.onChange}/>
+              {' ' + item.display}
+              {item.description != null && 
+                <Tooltip content={item.description}>
+                  <i className={"fa fa-question-circle " + helpClassName}/>
+                </Tooltip>
+              }
+            </label>
           </li>
         ))}
       </ul>

@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.json.JSONObject;
 
 public abstract class ColumnFilter extends AbstractFilter {
 
@@ -38,5 +39,18 @@ public abstract class ColumnFilter extends AbstractFilter {
       sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
     }
     return sql.toString();
+  }
+  
+  @Override
+  public void setDefaultValue(JSONObject defaultValue) {
+	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+  }
+  
+  @Override
+  /**
+   * Not fully implemented yet.
+   */
+  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+	  return false;
   }
 }

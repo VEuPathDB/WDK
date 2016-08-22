@@ -1,107 +1,187 @@
-import { ReduceStore } from 'flux/utils';
-import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
+import {difference, union} from 'lodash';
+import WdkStore from './WdkStore';
+import {filterNodes} from '../utils/TreeUtils';
+import {getId, getTargetType} from '../utils/CategoryUtils';
+import {actionTypes} from '../actioncreators/RecordViewActionCreators';
+import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreators';
 
-let {
-  SET_ACTIVE_RECORD,
-  SET_ACTIVE_RECORD_LOADING,
-  SET_ERROR,
-  SHOW_CATEGORY,
-  HIDE_CATEGORY,
-  SHOW_TABLE,
-  HIDE_TABLE,
-  UPDATE_NAVIGATION_QUERY
-} = RecordViewActionCreator.actionTypes;
-
-export default class RecordViewStore extends ReduceStore {
+/** Store for record page */
+export default class RecordViewStore extends WdkStore {
 
   getInitialState() {
+    // TODO combine related state into objects (e.g., navPanelState, basketState, &c)
     return {
+      // resources
+      globalData: {},
       record: undefined,
-      collapsedCategories: undefined,
-      collapsedTables: undefined,
+      recordClass: undefined,
+      categoryTree: undefined,
+
+      // are resources loading
+      isLoading: undefined,
+
+      // state assocated with category tree
+      collapsedSections: undefined,
+
+      // navigation panel state
+      navigationVisible: true,
       navigationQuery: '',
-      visibleNavigationCategories: undefined
+      navigationSubcategoriesExpanded: false,
+
+      // basket state
+      inBasket: undefined,
+      loadingBasketStatus: undefined,
+      basketError: undefined,
+
+      // favorite state
+      inFavorites: undefined,
+      loadingFavoritesStatus: undefined,
+      favoritesError: undefined
     };
   }
 
-  reduce(state, { type, payload }) {
-    switch (type) {
-      case SET_ERROR:
-        return Object.assign({}, this.getInitialState(), {
+  handleAction(state, action) {
+    switch (action.type) {
+
+      case actionTypes.ERROR_RECEIVED:
+        return Object.assign({}, state, {
           isLoading: false,
-          error: payload.error
+          error: action.payload.error
         });
 
-      case SET_ACTIVE_RECORD_LOADING:
+      case actionTypes.ACTIVE_RECORD_LOADING:
         return Object.assign({}, state, {
           isLoading: true,
           error: null
         });
 
-      case SET_ACTIVE_RECORD: {
-        let { record, recordClass, questions, recordClasses, user, inBasket } = payload;
-
-        let collapsedCategories = state.recordClass === recordClass
-          ? state.collapsedCategories : recordClass.collapsedCategories || [];
-
-        let collapsedTables = state.recordClass === recordClass
-          ? state.collapsedTables : recordClass.collapsedTables || [];
-
+      case actionTypes.ACTIVE_RECORD_RECEIVED: {
+        let { record, recordClass, categoryTree } = action.payload;
         return Object.assign({}, state, {
-          record: record,
-          recordClass: recordClass,
-          questions: questions,
-          recordClasses: recordClasses,
-          collapsedCategories,
-          collapsedTables,
+          record,
+          recordClass,
+          collapsedSections: [],
           isLoading: false,
-          user,
-          inBasket
+          categoryTree
         });
       }
 
-      case SHOW_CATEGORY: {
-        let collapsedCategories = updateList(
-          payload.name,
-          false,
-          state.collapsedCategories
-        );
-        return Object.assign({}, state, { collapsedCategories });
+      case actionTypes.ACTIVE_RECORD_UPDATED: {
+        let { record } = action.payload;
+        return Object.assign({}, state, { record });
       }
 
-      case HIDE_CATEGORY: {
-        let collapsedCategories = updateList(
-          payload.name,
-          true,
-          state.collapsedCategories
+      case actionTypes.SECTION_VISIBILITY_CHANGED: {
+        let collapsedSections = updateList(
+          action.payload.name,
+          !action.payload.isVisible,
+          state.collapsedSections
         );
-        return Object.assign({}, state, { collapsedCategories });
+        return Object.assign({}, state, { collapsedSections });
       }
 
-      case SHOW_TABLE: {
-        let collapsedTables = updateList(
-          payload.name,
-          false,
-          state.collapsedTables
-        );
-        return Object.assign({}, state, { collapsedTables });
+      case actionTypes.ACTIVE_SECTION_CHANGED:
+        return Object.assign({}, state, {
+          activeSection: action.payload.name
+        });
+
+      /**
+       * Update visibility of all record fields (tables and attributes).
+       * Category section collapsed state will be preserved.
+       */
+      case actionTypes.ALL_FIELD_VISIBILITY_CHANGED: {
+        return Object.assign({}, state, {
+          collapsedSections: action.payload.isVisible
+          ? difference(state.collapsedSections, getAllFields(state))
+          : union(state.collapsedSections, getAllFields(state))
+        });
       }
 
-      case HIDE_TABLE: {
-        let collapsedTables = updateList(
-          payload.name,
-          true,
-          state.collapsedTables
-        );
-        return Object.assign({}, state, { collapsedTables });
+      case actionTypes.NAVIGATION_QUERY_CHANGED: {
+        return Object.assign({}, state, {
+          navigationQuery: action.payload.query
+        })
       }
+
+      case actionTypes.NAVIGATION_VISIBILITY_CHANGED: {
+        return Object.assign({}, state, {
+          navigationVisible: action.payload.isVisible
+        })
+      }
+
+      case actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED:
+        return Object.assign({}, state, {
+          navigationSubcategoriesExpanded: action.payload.isVisible
+        })
+
+      case userActionTypes.BASKET_STATUS_LOADING:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            loadingBasketStatus: true
+          })
+          : state;
+
+      case userActionTypes.BASKET_STATUS_RECEIVED:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            inBasket: action.payload.status,
+            loadingBasketStatus: false
+          })
+          : state;
+
+      case userActionTypes.BASKET_STATUS_ERROR:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            basketError: action.payload.error,
+            loadingBasketStatus: false
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_LOADING:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            loadingFavoritesStatus: true
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_RECEIVED:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            inFavorites: action.payload.status,
+            loadingFavoritesStatus: false
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_ERROR:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            favoritesError: action.payload.error,
+            loadingFavoritesStatus: false
+          })
+          : state;
 
       default:
         return state;
+
     }
   }
 }
 
+RecordViewStore.actionTypes = actionTypes;
+
+/** Create a new array adding or removing item */
 function updateList(item, add, list = []) {
   return add ? list.concat(item) : list.filter(x => x !== item);
+}
+
+/** Get all attributes and tables of active record */
+function getAllFields(state) {
+  return filterNodes(isFieldNode, state.categoryTree)
+  .map(getId);
+}
+
+/** Test is node is a field node */
+function isFieldNode(node) {
+  let targetType = getTargetType(node);
+  return targetType === 'attribute' || targetType === 'table';
 }

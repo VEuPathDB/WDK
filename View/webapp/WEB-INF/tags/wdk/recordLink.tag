@@ -20,6 +20,7 @@
     required="true"
     description="The display name of the primarykey"
   />
+
   <c:set var="recordLinkKeys" value="" />
   <c:forEach items="${primaryKeyAttributeValue.values}" var="pkValue">
     <c:set var="recordLinkKeys" value="${recordLinkKeys}&amp;${pkValue.key}=${pkValue.value}" />

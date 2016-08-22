@@ -1,0 +1,112 @@
+import WdkViewController from './WdkViewController';
+import { wrappable } from '../utils/componentUtils';
+import {isEqual} from 'lodash';
+import {
+  loadAnswer,
+  updateFilter,
+  moveColumn,
+  changeAttributes,
+  sort
+} from '../actioncreators/AnswerViewActionCreators';
+import Answer from '../components/Answer';
+import Loading from '../components/Loading';
+
+class AnswerController extends WdkViewController {
+
+  getStoreName() {
+    return "AnswerViewStore";
+  }
+
+  getActionCreators() {
+    return {
+      updateFilter,
+      moveColumn,
+      changeAttributes,
+      sort: (...args) => sort(this.state, ...args)
+    };
+  }
+
+  loadData(state, props) {
+    // incoming values from the router
+    let questionName = props.params.question;
+    let recordClassName = props.params.recordClass;
+    let parameters = props.location.query;
+
+    // decide whether new answer needs to be loaded (may not need to be loaded
+    //   if user goes someplace else and hits 'back' to here- store already correct)
+    if (state.question == null ||
+        state.question.urlSegment !== questionName ||
+        !isEqual(state.parameters, parameters)) {
+
+      // (re)initialize the page
+      let pagination = { numRecords: 1000, offset: 0 };
+      let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
+      let displayInfo = { pagination, sorting };
+      let opts = { displayInfo, parameters };
+      this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
+    }
+  }
+
+  isRenderDataLoaded(state) {
+    return state.records != null;
+  }
+
+  getTitle(state) {
+    return (state.question == null ? "Loading..." : state.question.displayName);
+  }
+
+  renderLoading(state) {
+    return state.isLoading && <Loading/>;
+  }
+
+  renderAnswer(state, eventHandlers) {
+    let {
+      meta,
+      records,
+      displayInfo,
+      allAttributes,
+      visibleAttributes,
+      filterTerm,
+      filterAttributes,
+      filterTables,
+      question,
+      recordClass
+    } = state;
+
+    if (filterAttributes.length === 0 && filterTables.length === 0) {
+      filterAttributes = recordClass.attributes.map(a => a.name);
+      filterTables = recordClass.tables.map(t => t.name);
+    }
+    return (
+      <Answer
+        meta={meta}
+        records={records}
+        question={question}
+        recordClass={recordClass}
+        displayInfo={displayInfo}
+        allAttributes={allAttributes}
+        visibleAttributes={visibleAttributes}
+        filterTerm={filterTerm}
+        filterAttributes={filterAttributes}
+        filterTables={filterTables}
+        format="table"
+        onSort={eventHandlers.sort}
+        onMoveColumn={eventHandlers.moveColumn}
+        onChangeColumns={eventHandlers.changeAttributes}
+        onFilter={eventHandlers.updateFilter}
+      />
+    );
+  }
+
+  renderView(state, eventHandlers) {
+    return (
+      <div>
+        {this.renderLoading(state)}
+        {this.renderAnswer(state, eventHandlers)}
+      </div>
+    );
+  }
+
+}
+
+export default wrappable(AnswerController);

@@ -5,9 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -18,6 +15,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+//import org.apache.log4j.Logger;
 
 public class RecordRequest {
   
@@ -38,11 +36,8 @@ public class RecordRequest {
    * @return
    * @throws RequestMisformatException
    */
-  public static RecordRequest createFromJson(User user, JSONObject json, String recordClassName, WdkModelBean model) throws RequestMisformatException {
+  public static RecordRequest createFromJson(User user, JSONObject json, RecordClass recordClass, WdkModelBean model) throws RequestMisformatException {
     try {
-      model.validateRecordClassName(recordClassName);
-      //      LOG.info(json.toString(3));
-      RecordClass recordClass = model.getModel().getRecordClass(recordClassName);
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
@@ -51,9 +46,6 @@ public class RecordRequest {
     }
     catch (JSONException | WdkUserException e) {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
-    }
-    catch (WdkModelException e) {
-      throw new WdkRuntimeException("Error creating request from JSON", e);
     }
   }
 

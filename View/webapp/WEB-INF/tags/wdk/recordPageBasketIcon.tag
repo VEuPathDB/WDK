@@ -24,12 +24,12 @@
     <c:choose>
         <c:when test="${wdkUser.guest}">
           <c:if test="${wdkRecord.recordClass.useBasket}">
-          <a class="basket" href="javascript:void(0)" onclick="wdk.user.login();"> Add to Basket
+          <a class="basket" href="javascript:void(0)" onclick="wdk.user.login('use baskets');"> Add to Basket
             <imp:image src="wdk/images/basket_gray.png" width='${imagesize}' title="Please log in to access the basket."/>
           </a>
           </c:if>
 
-          <a class="favorite" href="javascript:void(0)" onclick="wdk.user.login();">Add to Favorites
+          <a class="favorite" href="javascript:void(0)" onclick="wdk.user.login('use favorites');">Add to Favorites
             <imp:image src="wdk/images/favorite_gray.gif" width='${imagesize}' title="Please log in to access the favorites."/>
           </a>
          </c:when>

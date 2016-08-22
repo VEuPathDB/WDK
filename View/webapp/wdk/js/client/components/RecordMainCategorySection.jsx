@@ -1,117 +1,90 @@
-import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
-import classnames from 'classnames';
-import RecordAttribute from './RecordAttribute';
-import RecordTable from './RecordTable';
-import { wrappable } from '../utils/componentUtils';
+import { PropTypes } from 'react';
+import { compose } from 'lodash';
+import RecordAttributeSection from './RecordAttributeSection';
+import RecordTableSection from './RecordTableSection';
+import CollapsibleSection from './CollapsibleSection';
+import { pure, wrappable } from '../utils/componentUtils';
+import { getId, getTargetType, getDisplayName } from '../utils/CategoryUtils';
 
-let RecordMainCategorySection = React.createClass({
+/**
+ * Content for a node of a record category tree, or a record field.
+ */
+function RecordMainCategorySection(props) {
+  let {
+    category,
+    depth,
+    isCollapsed,
+    enumeration
+  } = props;
 
-  propTypes: {
-    isCollapsed: React.PropTypes.bool.isRequired,
-    category: React.PropTypes.object.isRequired,
-    depth: React.PropTypes.number,
-    record: React.PropTypes.object.isRequired,
-    recordClass: React.PropTypes.object.isRequired
-  },
-
-  mixins: [ PureRenderMixin ],
-
-  toggleCollapse() {
-    if (this.props.depth > 1) {
-      let { category, isCollapsed } = this.props;
-      this.props.onCategoryToggle(category, !isCollapsed);
+  let toggleCollapse = () => {
+    // only toggle non-top-level category and wdkReference nodes
+    if ('wdkReference' in category || depth > 1) {
+      props.onSectionToggle(
+        getId(category),
+        // It's tempting to negate this value, but we are sending the value
+        // we want for isVisible here.
+        isCollapsed
+      );
     }
-  },
+  };
 
-  toggleTableCollapse(table, isCollapsed) {
-    this.props.onTableToggle(table, !isCollapsed);
-  },
-
-  render() {
-    let {
-      category,
-      depth,
-      record,
-      recordClass,
-      attributes,
-      tables,
-      isCollapsed,
-      collapsedTables,
-      enumeration
-    } = this.props;
-    let Header = 'h' + Math.min(depth + 1, 6);
-    let headerClass = classnames({
-      'wdk-RecordSectionHeader': depth === 1,
-      'wdk-RecordSectionSubHeader': depth !== 1,
-      'wdk-RecordSectionSubHeader__collapsed': depth !== 1 && isCollapsed
-    });
-
-    return isCollapsed && depth === 1 ? null : (
-      <div id={String(category.name)} className="wdk-RecordSection">
-        <Header className={headerClass} onClick={this.toggleCollapse}>
-          <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {category.displayName}
-        </Header>
-        {isCollapsed ? null : (
-          <div>
-            <div className="wdk-RecordSectionContent">
-              {attributes.length > 0 &&
-                <div className="wdk-RecordAttributeSection">
-                  {attributes.filter(a => a.isDisplayable).map(function(attribute) {
-                    let { name, displayName } = attribute;
-                    let value = record.attributes[name]
-                    if (value == null) return null;
-                    return (
-                      <div className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`} key={name}>
-                        <div className="wdk-RecordAttributeName">
-                          <strong>{displayName}</strong>
-                        </div>
-                        <div className="wdk-RecordAttributeValue">
-                          <RecordAttribute value={value} record={record} recordClass={recordClass}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              }
-              {tables.map(tableMeta => {
-                let { name, displayName } = tableMeta;
-                let table = record.tables[name];
-
-                if (table == null || table.length === 0) return null;
-
-                let isCollapsed = collapsedTables.includes(name)
-
-                let wrapperClassBase = 'wdk-RecordTableWrapper';
-                let wrapperClass = classnames(
-                  wrapperClassBase,
-                  `${wrapperClassBase}__${name}`
-                );
-
-                let headerClassBase = 'wdk-RecordTableHeader';
-                let headerClass = classnames({
-                  [headerClassBase]: true,
-                  [`${headerClassBase}__collapsed`]: isCollapsed
-                });
-
-                return (
-                  <div key={name} className={wrapperClass}>
-                    <div className={headerClass}
-                      onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
-                      {' ' + displayName}
-                    </div>
-                    {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta} record={record} recordClass={recordClass}/>}
-                  </div>
-                );
-              })}
-            </div>
-            {this.props.children}
-          </div>
-        )}
-      </div>
+  switch (getTargetType(category)) {
+    case 'attribute': return (
+      <RecordAttributeSection
+        attribute={category.wdkReference}
+        record={props.record}
+        recordClass={props.recordClass}
+        isCollapsed={isCollapsed}
+        onCollapsedChange={toggleCollapse}
+      />
     );
+
+    case 'table': return (
+      <RecordTableSection
+        table={category.wdkReference}
+        record={props.record}
+        recordClass={props.recordClass}
+        isCollapsed={isCollapsed}
+        onCollapsedChange={toggleCollapse}
+      />
+    )
+
+    default: {
+      let id = getId(category);
+      let categoryName = getDisplayName(category);
+      let Header = 'h' + Math.min(depth + 1, 6);
+      let headerContent = (
+        <span>
+          <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
+          <a className="wdk-RecordSectionLink" onClick={e => e.stopPropagation()} href={'#' + id}>&sect;</a>
+        </span>
+      );
+      return (
+        <CollapsibleSection
+          id={id}
+          className={depth === 1 ? 'wdk-RecordSection' : 'wdk-RecordSubsection'}
+          headerComponent={Header}
+          headerContent={headerContent}
+          isCollapsed={isCollapsed}
+          onCollapsedChange={toggleCollapse}
+        >
+          {props.children}
+        </CollapsibleSection>
+      );
+    }
   }
+}
 
-});
+RecordMainCategorySection.propTypes = {
+  category: PropTypes.object.isRequired,
+  depth: PropTypes.number.isRequired,
+  enumeration: PropTypes.string.isRequired,
+  isCollapsed: PropTypes.bool.isRequired,
+  onSectionToggle: PropTypes.func.isRequired,
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  children: PropTypes.element
+};
 
-export default wrappable(RecordMainCategorySection);
+export default compose(wrappable, pure)(RecordMainCategorySection);

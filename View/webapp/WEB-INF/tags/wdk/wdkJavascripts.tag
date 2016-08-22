@@ -21,8 +21,6 @@
   <![CDATA[ <![endif]--> ]]>
   <!-- endload polyfills -->
 
-  <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
-  <imp:script charset="utf8" src="wdk/js/wdk.common.js"/>
-  <imp:script charset="utf8" src="wdk/js/wdk.app.js"/>
+  <imp:script charset="utf8" src="wdk/js/wdk.bundle.js"/>
 
 </jsp:root>

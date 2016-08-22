@@ -57,6 +57,9 @@
                 <attribute name="oauthClientSecret"/>
             </optional>
             <optional>
+                <attribute name="changePasswordUrl"/>
+            </optional>
+            <optional>
                 <attribute name="keyStoreFile"/>
             </optional>
             <optional>
@@ -89,7 +92,26 @@
                     <ref name="DBBaseContent" />
                 </element>
                 
-                <element name="emailSubject">
+		<optional>
+		  <element name="userDatasetStore">
+		    <attribute name="implementation"/>
+		    <zeroOrMore>
+		      <element name="property">
+			<attribute name="name" />
+			<text />
+		      </element>
+		    </zeroOrMore>
+		    <oneOrMore>
+		      <element name="typeHandler">
+			<attribute name="type"/>
+			<attribute name="version"/>
+			<attribute name="implementation"/>
+		      </element>
+		    </oneOrMore>
+		  </element>
+		</optional>
+
+               <element name="emailSubject">
                     <text />
                 </element>   
                      

@@ -167,10 +167,10 @@ public class DatasetFactory {
     sql.append(" FROM " + schema + TABLE_DATASETS + " d ");
     sql.append(" WHERE d." + COLUMN_DATASET_ID + " = " + datasetId);
 
-    DataSource dataSource = userDb.getDataSource();
+    DataSource userDs = userDb.getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql.toString(), "wdk-dataset-by-dataset-id");
+      resultSet = SqlUtils.executeQuery(userDs, sql.toString(), "wdk-dataset-by-dataset-id");
 
       if (!resultSet.next())
         throw new WdkModelException("Unable to get data set with ID: " + datasetId);
@@ -182,7 +182,7 @@ public class DatasetFactory {
       throw new WdkModelException("Unable to get data set with ID: " + datasetId, e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
 
@@ -191,10 +191,10 @@ public class DatasetFactory {
     sql.append("SELECT " + COLUMN_CONTENT);
     sql.append(" FROM " + schema + TABLE_DATASETS);
     sql.append(" WHERE " + COLUMN_DATASET_ID + " = " + datasetId);
-    DataSource dataSource = userDb.getDataSource();
+    DataSource userDs = userDb.getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql.toString(), "wdk-dataset-content-by-dataset-id");
+      resultSet = SqlUtils.executeQuery(userDs, sql.toString(), "wdk-dataset-content-by-dataset-id");
 
       if (!resultSet.next())
         throw new WdkModelException("Unable to get data set with ID: " + datasetId);
@@ -207,7 +207,7 @@ public class DatasetFactory {
       throw new WdkModelException("Unable to get data set with ID: " + datasetId, e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
 
@@ -229,9 +229,9 @@ public class DatasetFactory {
 
     List<String[]> values = new ArrayList<>();
     ResultSet resultSet = null;
-    DataSource dataSource = userDb.getDataSource();
+    DataSource userDs = userDb.getDataSource();
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-dataset-value-by-dataset-id");
+      resultSet = SqlUtils.executeQuery(userDs, sql, "wdk-dataset-value-by-dataset-id");
       while (resultSet.next()) {
         String[] row = new String[MAX_VALUE_COLUMNS];
         for (int i = 1; i < MAX_VALUE_COLUMNS; i++) {
@@ -245,7 +245,7 @@ public class DatasetFactory {
       throw new WdkModelException("Could not retrieve dataset values.", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
 

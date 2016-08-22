@@ -6,7 +6,9 @@ package org.gusdb.wdk.model.query;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.sql.DataSource;
 
@@ -60,6 +62,7 @@ public abstract class QueryInstance<T extends Query> {
   protected int assignedWeight;
 
   protected Map<String, String> context;
+  private Map<String, String> paramInternalValues = null;
 
   protected QueryInstance(User user, T query, Map<String, String> stableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
@@ -129,8 +132,8 @@ public abstract class QueryInstance<T extends Query> {
   /**
    * @return the cached
    */
-  public boolean isCached() {
-    return query.isCached();
+  public boolean getIsCacheable() {
+    return query.getIsCacheable();
   }
 
   public String getChecksum() throws WdkModelException, WdkUserException {
@@ -152,6 +155,8 @@ public abstract class QueryInstance<T extends Query> {
 
       // include extra info from child
       appendSJONContent(jsInstance);
+
+			logger.debug("json:\n" + jsInstance.toString(2));
 
       return jsInstance;
     }
@@ -185,24 +190,24 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public ResultList getResults() throws WdkModelException, WdkUserException {
-    logger.debug("retrieving results of query [" + query.getFullName() + "]");
+    //logger.debug("retrieving results of query [" + query.getFullName() + "]");
 
-    ResultList resultList = (isCached()) ? getCachedResults() : getUncachedResults();
+    ResultList resultList = (getIsCacheable()) ? getCachedResults() : getUncachedResults();
 
-    logger.debug("results of query [" + query.getFullName() + "] retrieved.");
+    //logger.debug("results of query [" + query.getFullName() + "] retrieved.");
 
     return resultList;
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
     try {
-      logger.debug("start getting query size");
+      //logger.debug("start getting query size");
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
       Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
-      logger.debug("end getting query size");
+      //logger.debug("end getting query size");
       return resultSize;
     }
     catch (SQLException e) {
@@ -306,31 +311,57 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
-    // the empty & default values are filled
-    Map<String, String> stableValues = fillEmptyValues(this.stableValues);
-    Map<String, String> internalValues = new LinkedHashMap<String, String>();
-    Map<String, Param> params = query.getParamMap();
-    for (String paramName : params.keySet()) {
-      Param param = params.get(paramName);
-      String internalValue, stableValue = stableValues.get(paramName);
 
-      // TODO: refactor so this fork isn't necessary
-      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
-        AbstractEnumParam aeParam = (AbstractEnumParam) param;
-        Map<String, String> dependedParamValues = new LinkedHashMap<>();
-        for (Param dependedParam : aeParam.getDependedParams()) {
-          String value = stableValues.get(dependedParam.getName());
-          dependedParamValues.put(dependedParam.getName(), value);
-        }
-        internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
-      }
-      else {
-        internalValue = param.getInternalValue(user, stableValue, stableValues);
-      }
+      if (paramInternalValues == null ) {
+	  // the empty & default values are filled
+	  Map<String, String> stableValues = fillEmptyValues(this.stableValues);
+	  paramInternalValues = new LinkedHashMap<String, String>();
+	  Map<String, Param> params = query.getParamMap();
+	  for (String paramName : params.keySet()) {
+	      Param param = params.get(paramName);
+	      String internalValue, stableValue = stableValues.get(paramName);
 
-      internalValues.put(paramName, internalValue);
+	      // TODO: refactor so this fork isn't necessary
+	      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
+		  AbstractEnumParam aeParam = (AbstractEnumParam) param;
+		  Map<String, String> dependedParamValues = new LinkedHashMap<>();
+		  for (Param dependedParam : aeParam.getDependedParams()) {
+		      String value = stableValues.get(dependedParam.getName());
+		      dependedParamValues.put(dependedParam.getName(), value);
+		  }
+		  internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
+	      }
+	      else {
+		  internalValue = param.getInternalValue(user, stableValue, stableValues);
+	      }
+
+	      paramInternalValues.put(paramName, internalValue);
+	  }
+      }
+      return Collections.unmodifiableMap(paramInternalValues);
+  }
+  
+  protected void executePostCacheUpdateSql(String tableName, int instanceId) throws WdkModelException {
+    List<PostCacheUpdateSql> list = query.getPostCacheUpdateSqls() != null ? query.getPostCacheUpdateSqls()
+        : query.getQuerySet().getPostCacheUpdateSqls();
+    for (PostCacheUpdateSql pcis : list) {
+
+      String sql = pcis.getSql();
+      sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
+      sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
+
+      logger.debug("POST sql: " + sql);
+      // get results and time process();
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      try {
+        SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheUpdateSql",
+            false);
+      }
+      catch (SQLException ex) {
+        throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
+      }
     }
-    return internalValues;
+
   }
 
   public int getAssignedWeight() {

@@ -33,12 +33,13 @@ public class RecordFormatter {
 
   public static JSONObject getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
       throws WdkModelException, WdkUserException {
-    return new JSONObject()
+    JSONObject recordJson = new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getPrimaryKey().getDisplay())
       .put(Keys.ID, getRecordPrimaryKeyJson(record))
       .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
       .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
+    return recordJson;
   }
 
   private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {

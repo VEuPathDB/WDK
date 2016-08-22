@@ -1,11 +1,12 @@
 package org.gusdb.wdk.service.service;
 
+import java.util.List;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -13,23 +14,21 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
-  protected static final Response getBadRequestBodyResponse(String message) {
-    return Response.status(Status.BAD_REQUEST).entity(
-        "Improperly formatted or incomplete request body: " + message).build();
-  }
+  public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
+  public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
 
-  protected static final Response getPermissionDeniedResponse() {
-    return Response.status(Status.FORBIDDEN).entity(
-        "Permission Denied.  You do not have access to this resource.").build();
-  }
-
-  protected static final Response getNotFoundResponse(String resourceName) {
-    return Response.status(Status.NOT_FOUND).entity(
-        "Resource specified [" + resourceName + "] does not exist.").build();
+  /**
+   * Composes a proper Not Found exception message using the supplied resource.
+   * @param resource
+   * @return - Not Found message with resource embedded.
+   */
+  public static String formatNotFound(String resource) {
+    return String.format(NOT_FOUND, resource);
   }
 
   @Context
@@ -57,21 +56,32 @@ public abstract class WdkService {
     return _request.getSession();
   }
 
-  protected UserBean getCurrentUserBean() {
+  protected UserBean getSessionUserBean() {
     return ((UserBean)_request.getSession().getAttribute("wdkUser"));
   }
-  
-  protected int getCurrentUserId() throws WdkModelException {
-    return getCurrentUserBean().getUserId();
+
+  protected int getSessionUserId() throws WdkModelException {
+    return getSessionUserBean().getUserId();
   }
 
-  protected User getCurrentUser() {
-    return getCurrentUserBean().getUser();
+  protected User getSessionUser() {
+    return getSessionUserBean().getUser();
+  }
+
+  protected boolean isSessionUserAdmin() throws WdkModelException {
+    List<String> adminEmails = getWdkModel().getModelConfig().getAdminEmails();
+    return adminEmails.contains(getSessionUser().getEmail());
+  }
+
+  protected void assertAdmin() throws WdkModelException {
+    if (!isSessionUserAdmin()) {
+      throw new ForbiddenException("Administrative access is required for this function.");
+    }
   }
 
   protected WdkAnswerFactory getResultFactory() {
     if (_resultFactory == null) {
-      _resultFactory = new WdkAnswerFactory(getCurrentUserBean());
+      _resultFactory = new WdkAnswerFactory(getSessionUserBean());
     }
     return _resultFactory;
   }
@@ -102,5 +112,16 @@ public abstract class WdkService {
    */
   protected boolean getFlag(Boolean boolValue, boolean defaultValue) {
     return (boolValue == null ? defaultValue : boolValue);
+  }
+
+  /**
+   * Returns a session-aware user bundle based on the input string.
+   * 
+   * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
+   * @return user bundle describing status of the requested user string
+   * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
+   */
+  protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
+    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
   }
 }

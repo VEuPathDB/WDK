@@ -2,11 +2,9 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -94,7 +92,7 @@ public class AnswerParam extends Param {
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
 
     super.resolveReferences(model);
@@ -106,6 +104,12 @@ public class AnswerParam extends Param {
       this.recordClasses.put(rcName, recordClass);
     }
     this.recordClassRefs = null;
+
+    /* the test below is probably not needed.  it was introduced for 
+       span logic, but, since that hard codes its records, it is not
+       vulnerable.  it is problematic because some primary keys
+       might have redundant components, so a perfect match is not
+       always required.
 
     // make sure all record classes has the same primary key definition
     RecordClass recordClass = recordClasses.values().iterator().next();
@@ -123,10 +127,11 @@ public class AnswerParam extends Param {
       for (String column : columns) {
         if (!set.contains(column))
           throw new WdkModelException(message);
-      }
+       }
     }
+    */
 
-    this.resolved = true;
+    this._resolved = true;
   }
 
   /*

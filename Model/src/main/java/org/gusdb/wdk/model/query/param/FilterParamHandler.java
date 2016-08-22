@@ -89,16 +89,12 @@ public class FilterParamHandler extends AbstractParamHandler {
       EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
       Set<String> internals = new LinkedHashSet<>();
-      // return stable values, instead of list of terms
-      if (param.isNoTranslation()) {
-        return stableValue;
-      }
 
       for (String term : terms) {
         if (!cache.containsTerm(term))
           continue;
 
-        String internal = cache.getInternal(term);
+        String internal = param.isNoTranslation() ? term : cache.getInternal(term);
 
         if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
           internal = "'" + internal.replaceAll("'", "''") + "'";
@@ -156,7 +152,12 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String stableValue = requestParams.getParam(param.getName());
+    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+  }
+  
+  @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+    String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
       if (!param.isAllowEmpty())
@@ -167,7 +168,7 @@ public class FilterParamHandler extends AbstractParamHandler {
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
-
+  
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
