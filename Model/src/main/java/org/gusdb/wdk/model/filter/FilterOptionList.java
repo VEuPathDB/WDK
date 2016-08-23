@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,9 +39,9 @@ public class FilterOptionList implements Iterable<FilterOption>{
     }
   }
 
-  public boolean isFiltered() throws WdkModelException {
+  public boolean isFiltered(Step step) throws WdkModelException {
     for (FilterOption option : _options.values()) {
-      if (!option.isDisabled() && !option.isSetToDefaultValue()) return true;
+      if (!option.isDisabled() && !option.isSetToDefaultValue(step)) return true;
     }
     return false;
   }

@@ -1196,10 +1196,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public Map<String, Filter> getFilters() {
     LOG.debug("QUESTION: GETTING ALL FILTERs");
     Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
-    for (Entry<String, Filter> map2 : map.entrySet()) {
-      LOG.debug("Filters from recordclass: name: " + map2.getKey());
-      LOG.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue(null).toString(2));
-    }
     for (Entry<String, Filter> filter : _filters.entrySet()) {
       if (!filter.getValue().getIsViewOnly()) {
         LOG.debug("question: adding one more filter:  name: " + filter.getKey());

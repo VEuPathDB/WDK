@@ -1822,8 +1822,7 @@ public class StepFactory {
         // RRD - decided to NOT automatically apply always-on filter values but to throw exception instead
         //throw new WdkModelException("Always-on filter '" + filter.getKey() + "' not found on step " + step.getStepId());
         // always-on filter is not yet on; rectify the situation
-        //addFilterDefault(step, filter);
-        //modified = true;
+        modified = addFilterDefault(step, filter) || modified;
       }
     }
     if (modified) {
@@ -1841,12 +1840,17 @@ public class StepFactory {
     }
   }
 
-  private void addFilterDefault(Step step, Filter filter) throws WdkModelException {
-    if (filter.getIsViewOnly()) {
-      step.addViewFilterOption(filter.getKey(), filter.getDefaultValue(step));
+  private boolean addFilterDefault(Step step, Filter filter) throws WdkModelException {
+    JSONObject defaultValue = filter.getDefaultValue(step);
+    if (defaultValue != null) {
+      if (filter.getIsViewOnly()) {
+        step.addViewFilterOption(filter.getKey(), defaultValue);
+      }
+      else {
+        step.addFilterOption(filter.getKey(), defaultValue, false);
+      }
+      return true;
     }
-    else {
-      step.addFilterOption(filter.getKey(), filter.getDefaultValue(step), false);
-    }
+    return false;
   }
 }

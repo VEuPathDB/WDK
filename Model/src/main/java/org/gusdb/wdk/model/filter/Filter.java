@@ -68,7 +68,7 @@ public interface Filter {
    */
   void setDefaultValue(JSONObject defaultValue);
   
-  JSONObject getDefaultValue(Step step);
+  JSONObject getDefaultValue(Step step) throws WdkModelException;
   
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
@@ -103,10 +103,10 @@ public interface Filter {
       WdkUserException;
   
   /**
-   * return true if supplied value equals default value.  return false if no default value.
+   * return true if supplied value equals default value for the given step.  return false if no default value.
    * @param value
    * @return
    */
-  boolean defaultValueEquals(JSONObject value) throws WdkModelException;
+  public boolean defaultValueEquals(Step step, JSONObject value) throws WdkModelException;
 
 }

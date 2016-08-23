@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.filter;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
@@ -53,8 +54,8 @@ public abstract class AbstractFilter implements Filter {
   }
   
   @Override
-  public JSONObject getDefaultValue(Step step) {
-	  return _defaultValue;
+  public JSONObject getDefaultValue(Step step) throws WdkModelException {
+    return _defaultValue;
   }
   
   @Override

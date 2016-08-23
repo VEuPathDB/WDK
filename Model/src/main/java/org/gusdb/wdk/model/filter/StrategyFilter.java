@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -98,7 +99,7 @@ public class StrategyFilter extends StepFilter {
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
 	  return false;
   }
 }

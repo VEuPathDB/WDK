@@ -19,8 +19,10 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public enum BooleanOperator {
 
-  UNION("UNION"), INTERSECT("INTERSECT"), LEFT_MINUS("MINUS"), RIGHT_MINUS(
-      "RMINUS");
+  UNION("UNION"),
+  INTERSECT("INTERSECT"),
+  LEFT_MINUS("MINUS"),
+  RIGHT_MINUS("RMINUS");
 
   private static Set<String> unions = new LinkedHashSet<String>();
   private static Set<String> intersets = new LinkedHashSet<String>();
