@@ -668,7 +668,7 @@ public class StepFactory {
     //   new steps, but may not have been applied to steps already in the DB.  This allows model XML
     //   authors to add default filters to the model without worrying about existing steps in the DB (as
     //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
-    checkAlwaysOnFiltersOnExistingStep(step);
+    applyAlwaysOnFiltersToExistingStep(step);
 
     logger.debug("loaded step #" + stepId);
     return step;
@@ -1808,7 +1808,7 @@ public class StepFactory {
     return ids;
   }
 
-  private void checkAlwaysOnFiltersOnExistingStep(Step step) throws WdkModelException {
+  private void applyAlwaysOnFiltersToExistingStep(Step step) throws WdkModelException {
     Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
     Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
     boolean modified = false;
