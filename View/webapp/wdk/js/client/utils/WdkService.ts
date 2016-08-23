@@ -49,6 +49,26 @@ export interface ServiceConfig {
   webServiceUrl: string;
 }
 
+type RequestOptions = {
+  /** Request method */
+  method: string;
+  /** Path to the resource, relative to the base url */
+  path: string;
+  /** Query params to include with request */
+  params?: { [key: string]: any; };
+  /** Request body */
+  body?: string;
+  /** Fetch from cache, if available */
+  useCache?: boolean;
+  /**
+   * Optional identity for cache. If useCache is true, and this is omitted, then
+   * a combination of the resource path and any provided params will be used as
+   * the cache key. If this is also included, this value will be appended to the
+   * generated cache key.
+   */
+  cacheId?: string;
+}
+
 /**
  * A helper to request resources from a Wdk REST Service.
  *
@@ -71,6 +91,41 @@ export default class WdkService {
   constructor(private _serviceUrl: string) {
   }
 
+  /**
+   * Send a request to a resource of the Wdk REST Service, and returns a Promise
+   * that will fulfill with the response, or reject with a ServiceError.
+   *
+   * @param options Options for request.
+   * @param options.method The request method to use.
+   * @param options.path The path of the resource, relative to the root url.
+   * @param options.params? Query params to include with request.
+   * @param options.body? The request body
+   * @param options.useCache? Indicate if resource should be fetched from cache.
+   *    This cache is invalidated whenever the REST Service application is restarted.
+   *    The resource's url and any query params are used to generate a cache key.
+   * @param options.cacheId? Additional string to use for cache key. This is useful
+   *    for POST requests that are semantically treated as GET requests.
+   * @return {Promise<Resource>}
+   */
+  sendRequest<Resource>(options: RequestOptions) {
+    let { method, path, params, body, useCache, cacheId } = options;
+    method = method.toUpperCase();
+    let url = path + (params == null ? '' : '?' + queryParams(params));
+    // Technically, only GET should be cache-able, but some resources treat POST
+    // as GET, so we will allow it.
+    if (useCache && (method === 'GET' || method === 'POST')) {
+      let cacheKey = url + (cacheId == null ? '' : '__' + cacheId);
+      return this._getFromCache(cacheKey,
+        () => this._fetchJson<Resource>(method, url, body));
+        // () => this.sendRequest(Object.assign({}, options, { useCache: false }));
+    }
+    return this._fetchJson<Resource>(method, url, body);
+  }
+
+  /**
+   * Get the configuration for the Wdk REST Service that resides at the given base url.
+   * @return {Promise<ServiceConfig>}
+   */
   getConfig() {
     return this._getFromCache('config', () => this._fetchJson<ServiceConfig>('get', '/'))
   }
@@ -482,4 +537,16 @@ function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryN
  */
 function makeIndex<T, U>(array: U[], getKey: (u: U) => T) {
   return array.reduce((index, item) => index.set(getKey(item), item), new Map<T, U>());
+}
+
+/**
+ * Convert an object into query params by traversing top-level object
+ * properties and coercing values into keys.
+ * @param object
+ * @return {string}
+ */
+function queryParams(object: { [key:string]: any}): string {
+  return Object.keys(object)
+    .map(key => key + '=' + object[key])
+    .join('&');
 }
