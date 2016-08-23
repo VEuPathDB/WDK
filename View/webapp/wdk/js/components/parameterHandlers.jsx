@@ -1,7 +1,7 @@
 /* global _, wdk */
 import * as ReactDOM from 'react-dom';
-import LazyFilterService from './../client/utils/LazyFilterService';
-import AttributeFilter from './../client/components/AttributeFilter';
+import LazyFilterService from '../client/utils/LazyFilterService';
+import AttributeFilter from '../client/components/AttributeFilter';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
@@ -174,11 +174,11 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
             .then(function(data) {
               // createAutoComplete(data, paramName, element);
               createFilteredSelect(data, paramName, $param, keepPreviousValue);
-            })
-            .always(function() {
-              triggerLoading($param, false);
             });
         }
+
+        // add loading event handling
+        $param.on(PARAM_LOADING_EVENT, (event, isLoading) => $param.find('.loading').toggle(isLoading));
       });
   }
 
@@ -206,6 +206,9 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         getParamJson($param, sendReqUrl)
         .then(createFilterParam.bind(null, $param, questionName, {}));
       }
+
+      // add loading event handling
+      $param.on(PARAM_LOADING_EVENT, (event, isLoading) => $param.find('.loading').toggle(isLoading));
     });
   }
 
@@ -303,8 +306,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       triggerLoading($param, filterService.isLoading);
       renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
     });
-
-    $param.find('.loading').hide();
 
     form.on('submit', function(e) {
       var filteredData = JSON.parse(input.val()).values;
@@ -747,7 +748,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     if (dependentParam.is('[data-type="type-ahead"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
-      // dependentParam.find('.loading').show();
 
       xhr = $.getJSON(sendReqUrl, function(data) {
         // createAutoComplete(data, paramName);
@@ -755,26 +755,20 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         element.find(".param[name='" + paramName + "']").attr("ready", "");
         dependentParam
           .attr('ready', '')
-          .find('input')
-            .removeAttr('disabled')
-            .end()
-          .find('.loading')
-            .hide();
+          .find('input').removeAttr('disabled');
       });
 
     } else if (dependentParam.is('[data-type="filter-param"]')) {
 
       // Hide current param and show loading
       dependentParam
-        .find('.filter-param').hide().end()
-        .find('.loading').show();
+        .find('.filter-param').hide();
 
       sendReqUrl = sendReqUrl + '&json=true';
       xhr = $.getJSON(sendReqUrl, function(data) {
         createFilterParam(dependentParam, questionName, dependedValues, data, keepPreviousValue);
         dependentParam
-          .find('input').removeAttr('disabled').end()
-          .find('.loading').hide();
+          .find('input').removeAttr('disabled');
         element.find(".param[name='" + paramName + "']").attr("ready", "");
       });
     } else {
