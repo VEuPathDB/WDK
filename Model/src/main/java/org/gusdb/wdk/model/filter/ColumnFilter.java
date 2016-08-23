@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 public abstract class ColumnFilter extends AbstractFilter {
@@ -50,7 +51,7 @@ public abstract class ColumnFilter extends AbstractFilter {
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
-	  return false;
+  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+    return false;
   }
 }

@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -112,7 +113,7 @@ public class ListColumnFilter extends SqlColumnFilter {
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
 	  return false;
   }
 }

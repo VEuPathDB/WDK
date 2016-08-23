@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 public class FilterOption {
@@ -90,8 +91,8 @@ public class FilterOption {
     return jsFilterOption;
   }
 
-  public boolean isSetToDefaultValue() throws WdkModelException {
-    return getFilter().defaultValueEquals(getValue());
+  public boolean isSetToDefaultValue(Step step) throws WdkModelException {
+    return getFilter().defaultValueEquals(step, getValue());
   }
 
   // FIXME: this is a total hack to support the JSP calling
