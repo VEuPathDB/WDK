@@ -25,6 +25,9 @@ public class CacheMgr {
   private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
 
+  private final StepCache _stepCache = new StepCache();
+  public StepCache getStepCache() { return _stepCache; }
+
   private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
 

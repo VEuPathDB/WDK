@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -31,6 +32,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
@@ -92,6 +94,8 @@ public class StepFactory {
   private static final String COLUMN_VERSION = "version";
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
+  public static final boolean USE_CACHE = false;
+
   static final int COLUMN_NAME_LIMIT = 200;
 
   public static final int UNKNOWN_SIZE = -1;
@@ -130,6 +134,8 @@ public class StepFactory {
   private DatabaseInstance userDb;
   private DataSource dataSource;
 
+  private StepFetcherProvider _stepFetcherProvider;
+
   // define SQL snippet "constants" to avoid building SQL each time
   private String modTimeSortSql;
   private String basicStratsSql;
@@ -158,7 +164,9 @@ public class StepFactory {
     dataSource = userDb.getDataSource();
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
-    this.userSchema = userDB.getUserSchema();
+    userSchema = userDB.getUserSchema();
+
+    _stepFetcherProvider = new StepFetcherProvider(this);
 
     /* define "static" SQL statements dependent only on schema name */
 
@@ -594,6 +602,18 @@ public class StepFactory {
 
   // get left child id, right child id in here
   Step loadStep(User user, int stepId) throws WdkModelException {
+    if (USE_CACHE) {
+      try {
+        return CacheMgr.get().getStepCache().getItem(stepId, _stepFetcherProvider.getFetcher(user));
+      }
+      catch (UnfetchableItemException e) {
+        throw (WdkModelException)e.getCause();
+      }
+    }
+    return loadStepNoCache(user, stepId);
+  }
+
+  Step loadStepNoCache(User user, int stepId) throws WdkModelException {
     logger.debug("Loading step#" + stepId + "....");
     PreparedStatement psStep = null;
     ResultSet rsStep = null;
