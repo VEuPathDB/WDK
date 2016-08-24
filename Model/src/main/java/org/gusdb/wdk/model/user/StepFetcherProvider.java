@@ -18,6 +18,8 @@ public class StepFetcherProvider {
 
   public static class StepFetcher implements ItemFetcher<Integer, Step> {
 
+    private static final long EXPIRATION_SECS = 20;
+
     private final StepFactory _stepFactory;
     private final User _user;
 
@@ -37,13 +39,15 @@ public class StepFetcherProvider {
     }
   
     @Override
-    public Step updateItem(Integer id, Step previousVersion) throws UnfetchableItemException {
-      return previousVersion;
+    public Step updateItem(Integer stepId, Step previousVersion) throws UnfetchableItemException {
+      return fetchItem(stepId);
     }
   
     @Override
-    public boolean itemNeedsUpdating(Step item) {
-      return false;
+    public boolean itemNeedsUpdating(Step step) {
+      long now = System.currentTimeMillis();
+      // if step is too old, then refresh (trying to keep this close to a request-scope cache)
+      return (step.objectCreationDate < now - (EXPIRATION_SECS * 1000));
     }
   }
 }
