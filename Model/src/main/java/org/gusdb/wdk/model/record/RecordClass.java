@@ -1037,22 +1037,24 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // resolve step filter references
     for (FilterReference reference : _filterReferences) {
-      String name = reference.getName();
-      FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
-      if (definition instanceof StepFilterDefinition) {
-        StepFilter filter = ((StepFilterDefinition) definition).getStepFilter();
-        if (_stepFilters.containsKey(filter.getKey()))
-          throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
-              " of recordClass " + getFullName() + " twice.");
-        _stepFilters.put(filter.getKey(), filter);
-      }
-      else {
-        throw new WdkModelException("The filter \"" + name + "\" is not a stepFilter on attribute " +
-            getName() + " of recordClass " + getFullName());
-      }
+      StepFilter filter = resolveStepFilterReferenceByName(reference.getName(), _wdkModel, "recordClass " + getFullName());
+      if (_stepFilters.containsKey(filter.getKey()))
+        throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
+            " of recordClass " + getFullName() + " twice.");
+      _stepFilters.put(filter.getKey(), filter);
     }
     _filterReferences.clear();
 
+  }
+
+  public static StepFilter resolveStepFilterReferenceByName(String name, WdkModel wdkModel, String location) throws WdkModelException {
+    FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
+    if (definition instanceof StepFilterDefinition) {
+      return ((StepFilterDefinition) definition).getStepFilter();
+    }
+    else {
+      throw new WdkModelException("The filter ref '" + name + "', declared at " + location + ", is not a stepFilter.");
+    }
   }
 
   /**
