@@ -1,3 +1,4 @@
+import { omit, pick } from 'lodash';
 import WdkViewController from './WdkViewController';
 import {wrappable} from '../utils/componentUtils';
 import {
@@ -17,6 +18,11 @@ class RecordController extends WdkViewController {
 
   getStoreName() {
     return 'RecordViewStore';
+  }
+
+  getStateFromStore(store) {
+    let state = store.getState();
+    return Object.assign(omit(state, 'globalData'), pick(state.globalData, 'user'));
   }
 
   // XXX Should parent class always include UserActionCreators, so all
@@ -67,7 +73,7 @@ class RecordController extends WdkViewController {
 
   renderRecord(state, eventHandlers) {
     if (state.record) {
-      let { globalData: { user }, record, recordClass, inBasket, inFavorites,
+      let { user, record, recordClass, inBasket, inFavorites,
         loadingBasketStatus, loadingFavoritesStatus } = state;
       let loadingClassName = 'fa fa-circle-o-notch fa-spin';
       let headerActions = [];
@@ -98,7 +104,7 @@ class RecordController extends WdkViewController {
 
       return (
         <RecordUI
-          {...state}
+          {...omit(state, 'user')}
           {...eventHandlers}
           headerActions={headerActions}
         />
