@@ -63,6 +63,9 @@ public class Step {
   // in DB, for soft delete
   private boolean deleted = false;
 
+  // creation timestamp for this Java object
+  public final long objectCreationDate;
+
   // nested step
   private boolean collapsible = false;
   private String collapsedName = null;
@@ -170,6 +173,7 @@ public class Step {
     this.answerValueCache = new AnswerValueCache(this);
     deleted = false;
     assignedWeight = 0;
+    objectCreationDate = System.currentTimeMillis();
   }
 
   /**
@@ -193,6 +197,7 @@ public class Step {
     this.answerValueCache = new AnswerValueCache(this);
     deleted = false;
     assignedWeight = 0;
+    objectCreationDate = System.currentTimeMillis();
   }
 
   /**
@@ -235,6 +240,7 @@ public class Step {
     exception = step.exception;
     strategyId = step.strategyId;
     inMemoryOnly = step.inMemoryOnly;
+    objectCreationDate = step.objectCreationDate;
 
     // answer value cache copy is NOT shallow- if caller wants a new step, they are
     // probably going to modify it to get a different answer value
