@@ -94,7 +94,7 @@ public class StepFactory {
   private static final String COLUMN_VERSION = "version";
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
-  private static final boolean USE_CACHE = false;
+  private static final boolean USE_CACHE = true;
 
   static final int COLUMN_NAME_LIMIT = 200;
 
