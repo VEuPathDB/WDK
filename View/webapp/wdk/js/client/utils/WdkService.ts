@@ -158,19 +158,17 @@ export default class WdkService {
    */
   getRecordClasses() {
     let url = '/record?expandRecordClasses=true&expandAttributes=true&expandTables=true&expandTableAttributes=true';
-    return this._getFromCache('recordClasses', () => this._fetchJson<RecordClass[]>('get', url))
-    .then(recordClasses => {
-      // create indexes by name property for attributes and tables
-      // this is done after recordClasses have been retrieved from the store
-      // since it cannot reliably serialize Maps
-      for (let recordClass of recordClasses) {
-        Object.assign(recordClass, {
-          attributesMap: makeIndex(recordClass.attributes, attr => attr.name),
-          tablesMap: makeIndex(recordClass.tables, table => table.name)
-        });
-      }
-      return recordClasses;
-    });
+    return this._getFromCache('recordClasses', () => this._fetchJson<RecordClass[]>('get', url)
+      .then(recordClasses => {
+        // create indexes by name property for attributes and tables
+        // this is done after recordClasses have been retrieved from the store
+        // since it cannot reliably serialize Maps
+        return recordClasses.map(recordClass =>
+          Object.assign(recordClass, {
+            attributesMap: makeIndex(recordClass.attributes, attr => attr.name),
+            tablesMap: makeIndex(recordClass.tables, table => table.name)
+          }));
+    }));
   }
 
   /**
