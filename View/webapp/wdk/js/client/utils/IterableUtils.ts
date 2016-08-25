@@ -44,6 +44,10 @@ interface Collector<T, U> {
  *
  */
 
+// XXX The for..of loop construct is not being used because babel adds a
+// try-catch to the loop body, which deoptimizes the code path. See
+// https://github.com/google/traceur-compiler/issues/1773.
+
 /**
  * Wraps `iterable` in an object with collection operations.
  *
@@ -142,8 +146,10 @@ class Seq<T> {
   }
 
   forEach(fn: (t:T) => void) {
-    for (let x of this) {
-      fn(x);
+    for (let iter = this[Symbol.iterator]();;) {
+      let { done, value } = iter.next();
+      if (done) break;
+      fn(value);
     }
     return this;
   }
@@ -153,8 +159,10 @@ class Seq<T> {
 export function map<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
-      for (let x of iterable) {
-        yield fn(x);
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
+        yield fn(value);
       }
     }
   }
@@ -163,8 +171,10 @@ export function map<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
 export function flatMap<T, U>(fn: FlatMapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
-      for (let x of iterable) {
-        yield* fn(x);
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
+        yield* fn(value);
       }
     }
   }
@@ -174,10 +184,12 @@ export function uniq<T>(iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let values = new Set();
-      for (let x of iterable) {
-        if (values.has(x) === false) {
-          values.add(x);
-          yield x;
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
+        if (values.has(value) === false) {
+          values.add(value);
+          yield value;
         }
       }
     }
@@ -187,8 +199,10 @@ export function uniq<T>(iterable: Iterable<T>) {
 export function filter<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
-      for (let x of iterable) {
-        if (fn(x)) yield x;
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
+        if (fn(value)) yield value;
       }
     }
   }
@@ -198,8 +212,9 @@ export function take<T>(n: number, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let count = 0;
-      for (let x of iterable) {
-        if (count++ < n) yield x;
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (!done && count++ < n) yield value;
         else break;
       }
     }
@@ -212,9 +227,10 @@ export function take<T>(n: number, iterable: Iterable<T>) {
 export function takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
-      for (let x of iterable) {
-        if (fn(x) === false) break;
-        yield x;
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done || fn(value) === false) break;
+        yield value;
       }
     }
   }
@@ -223,9 +239,11 @@ export function takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
 export function drop<T>(n: number, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
-      for (let x of iterable) {
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
         if (n-- > 0) continue;
-        yield x;
+        yield value;
       }
     }
   }
@@ -237,9 +255,11 @@ export function dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let take = false;
-      for (let item of iterable) {
-        if (take === false) take = !fn(item);
-        if (take === true) yield item;
+      for (let iter = iterable[Symbol.iterator]();;) {
+        let { done, value } = iter.next();
+        if (done) break;
+        if (take === false) take = !fn(value);
+        if (take === true) yield value;
       }
     }
   }
@@ -251,9 +271,11 @@ export function dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
 /**
  * Find the first item that test returns true for.
  */
-export function find<T>(test: Predicate<T>, iter: Iterable<T>) {
-  for (let item of iter) {
-    if (test(item) === true) return item;
+export function find<T>(test: Predicate<T>, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (test(value) === true) return value;
   }
   return undefined;
 }
@@ -261,10 +283,12 @@ export function find<T>(test: Predicate<T>, iter: Iterable<T>) {
 /**
  * Find the last item that the test returns true for.
  */
-export function findLast<T>(test: Predicate<T>, iter: Iterable<T>) {
+export function findLast<T>(test: Predicate<T>, iterable: Iterable<T>) {
   let last: T;
-  for (let item of iter) {
-    if (test(item)) last = item;
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (test(value)) last = value;
   }
   return last;
 }
@@ -275,7 +299,11 @@ export function first<T>(iterable: Iterable<T>) {
 
 export function last<T>(iterable: Iterable<T>) {
   let last: T;
-  for (last of iterable) { }
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    last = value;
+  }
   return last;
 }
 
@@ -284,15 +312,19 @@ export function rest<T>(iterable: Iterable<T>) {
 }
 
 export function every<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {
-  for (let x of iterable) {
-    if (test(x) === false) return false;
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (test(value) === false) return false;
   }
   return true;
 }
 
 export function some<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {
-  for (let x of iterable) {
-    if (test(x) === true) return true;
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (test(value) === true) return true;
   }
   return false;
 }
@@ -314,8 +346,10 @@ export function reduce<T, U>(fn: any, value: any, iterable?: any) {
   else {
     result = <U>value;
   }
-  for (let item of iterable) {
-    result = fn(result, item);
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    result = fn(result, value);
   }
   return result;
 }
