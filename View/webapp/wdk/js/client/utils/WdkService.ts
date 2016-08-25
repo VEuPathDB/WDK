@@ -81,6 +81,7 @@ export default class WdkService {
   });
   _cache: Map<string, Promise<any>> = new Map;
   _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
+  _currentUserPromise: Promise<User>;
   _initialCheck: Promise<void>;
   _version: number;
   _isInvalidating = false;
@@ -291,7 +292,10 @@ export default class WdkService {
   }
 
   getCurrentUser() {
-    return this._fetchJson<User>('get', '/user/current');
+    if (this._currentUserPromise == null) {
+      this._currentUserPromise = this._fetchJson<User>('get', '/user/current');
+    }
+    return this._currentUserPromise;
   }
 
   updateCurrentUser(user: User) {
