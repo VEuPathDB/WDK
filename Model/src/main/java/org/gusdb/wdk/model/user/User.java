@@ -74,7 +74,6 @@ public class User /* implements Serializable */{
 
   // basic user information
   private String emailPrefix;
-  private String openId;
 
   private Set<String> userRoles;
   private boolean guest = true;
@@ -399,21 +398,6 @@ public class User /* implements Serializable */{
    */
   public void setZipCode(String zipCode) {
     this.profile.put(UserProfileProperty.ZIP_CODE, zipCode);
-  }
-
-  /**
-   * @return user's OpenID
-   */
-  public String getOpenId() {
-    return openId;
-  }
-
-  /**
-   * @param openId
-   *          user's OpenID
-   */
-  public void setOpenId(String openId) {
-    this.openId = openId;
   }
 
   /**
@@ -1289,7 +1273,7 @@ public class User /* implements Serializable */{
   }
 
   public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, String booleanOperator,
-      boolean useBooleanFilter, String filterName) throws WdkModelException {
+      String filterName) throws WdkModelException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
     Question question = null;
     try {
@@ -1306,11 +1290,11 @@ public class User /* implements Serializable */{
     }
     else
       filter = recordClass.getDefaultFilter();
-    return createBooleanStep(strategyId, leftStep, rightStep, operator, useBooleanFilter, filter);
+    return createBooleanStep(strategyId, leftStep, rightStep, operator, filter);
   }
 
   public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, BooleanOperator operator,
-      boolean useBooleanFilter, AnswerFilterInstance filter) throws WdkModelException {
+      AnswerFilterInstance filter) throws WdkModelException {
     // make sure the left & right step belongs to the user
     if (leftStep.getUser().getUserId() != getUserId())
       throw new WdkModelException("The Left Step [" + leftStep.getStepId() +

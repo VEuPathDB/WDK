@@ -73,7 +73,7 @@ public class Bug4446Test {
     Step rightOperand = UnitTestHelper.createNormalStep(user);
 
     return user.createBooleanStep(leftOperand.getStrategyId(), leftOperand, rightOperand,
-        BooleanOperator.UNION, false, null);
+        BooleanOperator.UNION, null);
   }
 
   private Step createTransformStep(Step inputStep) throws WdkModelException, WdkUserException {

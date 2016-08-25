@@ -118,7 +118,7 @@ public class StrategyTest {
     Step step2 = UnitTestHelper.createNormalStep(user);
     BooleanOperator operator = BooleanOperator.UNION;
 
-    Step booleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false, null);
+    Step booleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, null);
 
     strategy.insertStepAfter(booleanStep, step1.getStepId());
     Step rootStep = strategy.getLatestStep();
@@ -141,7 +141,7 @@ public class StrategyTest {
     Step step2 = UnitTestHelper.createNormalStep(user);
     BooleanOperator operator = BooleanOperator.UNION;
     AnswerFilterInstance filter = recordClass.getDefaultFilter();
-    Step oldStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false, filter);
+    Step oldStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, filter);
     strategy.insertStepAfter(oldStep, step1.getStepId());
 
     AnswerFilterInstance newFilter = null;
@@ -194,7 +194,7 @@ public class StrategyTest {
     AnswerFilterInstance filter = step2.getFilter();
     BooleanOperator operator = BooleanOperator.UNION;
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
-    Step oldBooleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false,
+    Step oldBooleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(oldBooleanStep, step1.getStepId());
 
@@ -225,13 +225,13 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false,
+    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator, false,
+    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 
@@ -311,18 +311,18 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false,
+    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator, false,
+    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 
     Step step4 = UnitTestHelper.createNormalStep(user);
-    Step middleStep3 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step4, operator, false,
+    Step middleStep3 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step4, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep3, middleStep1.getStepId());
 
@@ -347,13 +347,13 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, false,
+    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator, false,
+    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 

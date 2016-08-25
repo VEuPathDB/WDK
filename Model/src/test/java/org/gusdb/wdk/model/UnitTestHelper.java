@@ -83,7 +83,7 @@ public class UnitTestHelper {
                 // user doesn't exist, create one
                 registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL,
                         "Test", "User", null, null, "WDK", null, null, null,
-                        null, null, null, null, null, null, null);
+                        null, null, null, null, null, null);
                 userFactory.savePassword(REGISTERED_USER_EMAIL,
                         REGISTERED_USER_PASSWORD);
             }

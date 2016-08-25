@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -16,14 +17,22 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 public class GoogleClientUtil {
 
+  private static final Logger LOG = Logger.getLogger(GoogleClientUtil.class);
+
   private static GoogleIdTokenVerifier VERIFIER = null;
   
   private static synchronized GoogleIdTokenVerifier getVerifier(String clientId) {
-    if (VERIFIER == null) {
-      // this is ok because there is only one client ID per webapp
-      VERIFIER = createVerifier(clientId);
+    try {
+      if (VERIFIER == null) {
+        // this is ok because there is only one client ID per webapp
+        VERIFIER = createVerifier(clientId);
+      }
+      return VERIFIER;
     }
-    return VERIFIER;
+    catch (Exception e) {
+      LOG.error("Unable to create Google ID token verifier.  Did you forget to unexclude httpclient in the base pom?", e);
+      throw e;
+    }
   }
 
   public static String getEmailFromTokenResponse(String idTokenStr, String clientId) throws WdkModelException {

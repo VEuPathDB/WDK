@@ -4,9 +4,6 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:imp="urn:jsptagdir:/WEB-INF/tags/imp">
 
-  <!-- Remove to save bandwidth until we add OpenID back in -->
-  <!--<imp:aboutOpenId/>-->
-
   <c:set var="reviseTitle">
     <imp:verbiage key="dialog.revise-search.title"/>
   </c:set>

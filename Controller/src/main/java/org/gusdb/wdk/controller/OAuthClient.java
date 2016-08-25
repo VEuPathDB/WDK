@@ -129,7 +129,7 @@ public class OAuthClient {
       // user does not exist; automatically create user for this gmail user
       String dummyFirstName = gmailAddress.substring(0, gmailAddress.indexOf("@"));
       UserBean user = _userFactory.createUser(gmailAddress, dummyFirstName,
-          "", "", "", "", "", "", "", "", "", "", "", "", null, null, false);
+          "", "", "", "", "", "", "", "", "", "", "", null, null, false);
       return user.getUserId();
     }
   }
