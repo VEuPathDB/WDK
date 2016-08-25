@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import {difference} from 'lodash';
+import {difference, indexBy} from 'lodash';
 import localforage from 'localforage';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
@@ -19,6 +19,10 @@ const CLIENT_WDK_VERSION_HEADER = 'X-CLIENT-WDK-TIMESTAMP';
  * model is stale, based on CLIENT_WDK_VERSION_HEADER.
  */
 const CLIENT_OUT_OF_SYNC_TEXT = 'WDK-TIMESTAMP-MISMATCH';
+
+type Dict<T> = {
+  [key: string]: T;
+};
 
 interface RecordRequest {
   attributes: string[];
@@ -166,8 +170,8 @@ export default class WdkService {
         // since it cannot reliably serialize Maps
         return recordClasses.map(recordClass =>
           Object.assign(recordClass, {
-            attributesMap: makeIndex(recordClass.attributes, attr => attr.name),
-            tablesMap: makeIndex(recordClass.tables, table => table.name)
+            attributesMap: indexBy(recordClass.attributes, 'name'),
+            tablesMap: indexBy(recordClass.tables, 'name')
           }));
     }));
   }
@@ -331,8 +335,8 @@ export default class WdkService {
   getOntology(name = '__wdk_categories__') {
     return this._getFromCache('ontology/' + name, () => {
       let ontology$ = this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
-      let recordClasses$ = this.getRecordClasses().then(rs => makeIndex(rs, r => r.name));
-      let questions$ = this.getQuestions().then(qs => makeIndex(qs, q => q.name));
+      let recordClasses$ = this.getRecordClasses().then(rs => indexBy(rs, 'name'));
+      let questions$ = this.getQuestions().then(qs => indexBy(qs, 'name'));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
       .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
 
@@ -428,31 +432,31 @@ function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>; }>) {
+function resolveWdkReferences(entities$: Promise<{ recordClasses: Dict<RecordClass>; questions: Dict<Question>; }>) {
   return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
     for (let node of preorderSeq(ontology.tree)) {
       switch (getTargetType(node)) {
         case 'attribute': {
           let attributeName = getRefName(node);
-          let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
           if (recordClass == null) continue;
-          let wdkReference = recordClass.attributesMap.get(attributeName);
+          let wdkReference = recordClass.attributesMap[attributeName];
           Object.assign(node, { wdkReference });
           break;
         }
 
         case 'table': {
           let tableName = getRefName(node);
-          let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
           if (recordClass == null) continue;
-          let wdkReference = recordClass.tablesMap.get(tableName);
+          let wdkReference = recordClass.tablesMap[tableName];
           Object.assign(node, { wdkReference });
           break;
         }
 
         case 'search': {
           let questionName = getRefName(node);
-          let wdkReference = questions.get(questionName);
+          let wdkReference = questions[questionName];
           Object.assign(node, { wdkReference });
           break;
         }

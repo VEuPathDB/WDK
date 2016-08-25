@@ -12,8 +12,8 @@ export interface RecordClass extends ModelEntity {
   description: string;
   attributes: AttributeField[];
   tables: TableField[];
-  attributesMap: Map<string, AttributeField>;
-  tablesMap: Map<string, TableField>;
+  attributesMap: { [key: string]: AttributeField };
+  tablesMap: { [key: string]: TableField };
 }
 
 export interface Question extends ModelEntity {
