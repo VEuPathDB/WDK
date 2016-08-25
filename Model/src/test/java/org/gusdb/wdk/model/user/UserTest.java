@@ -58,7 +58,7 @@ public class UserTest {
         }
 
         user = userFactory.createUser(email, lastName, firstName, null,
-                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null,
                 null, null);
 
         Assert.assertFalse("not guest", user.isGuest());
@@ -89,7 +89,7 @@ public class UserTest {
         if (user == null) {
           // user doesn't exist, create it
           user = userFactory.createUser(email, "Test", "User", null, null, null,
-              null, null, null, null, null, null, null, null, null, null);
+              null, null, null, null, null, null, null, null, null);
         }
 
         userFactory.deleteUser(user.getEmail());

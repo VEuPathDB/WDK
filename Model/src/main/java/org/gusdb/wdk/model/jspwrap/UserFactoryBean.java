@@ -59,13 +59,13 @@ public class UserFactoryBean {
     public UserBean createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country, String openId,
+            String zipCode, String phoneNumber, String country,
             Map<String, String> globalPreferences,
             Map<String, String> projectPreferences) throws WdkUserException,
             WdkModelException {
         User user = userFactory.createUser(email, lastName, firstName,
                 middleName, title, organization, department, address, city,
-                state, zipCode, phoneNumber, country, openId, globalPreferences,
+                state, zipCode, phoneNumber, country, globalPreferences,
                 projectPreferences);
         return new UserBean(user);
     }
@@ -81,13 +81,13 @@ public class UserFactoryBean {
     public UserBean createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country, String openId,
+            String zipCode, String phoneNumber, String country,
             Map<String, String> globalPreferences,
             Map<String, String> projectPreferences, boolean resetPw) throws WdkUserException,
             WdkModelException {
         User user = userFactory.createUser(email, lastName, firstName,
                 middleName, title, organization, department, address, city,
-                state, zipCode, phoneNumber, country, openId, globalPreferences,
+                state, zipCode, phoneNumber, country, globalPreferences,
                 projectPreferences, resetPw);
         return new UserBean(user);
     }
@@ -121,19 +121,6 @@ public class UserFactoryBean {
         User user = userFactory.login(guest.getUser(), email, password);
         return new UserBean(user);
     }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#authenticate(java.lang.String,
-     * java.lang.String)
-     */
-    public UserBean login(UserBean guest, String openid)
-            throws WdkModelException, WdkUserException {
-        User user = userFactory.login(guest.getUser(), openid);
-        if (user == null) return null;
-        return new UserBean(user);
-    }
 
     public UserBean login(UserBean guest, int userId)
         throws WdkModelException, WdkUserException {
@@ -165,20 +152,6 @@ public class UserFactoryBean {
         userFactory.resetPassword(email);
     }
 
-    /**
-     * Looks up user by openId and returns a user bean.  If none can be
-     * found, returns null.
-     * 
-     * @param openId open id to identify user
-     * @return user bean, or null if user does not exist
-     * @throws WdkModelException if error occurs
-     */
-    public UserBean getUserByOpenId(String openId) throws WdkModelException {
-        User user = userFactory.getUserByOpenId(openId);
-        if (user == null) return null;
-        return new UserBean(user);
-    }
-    
     /*
      * (non-Javadoc)
      * 

@@ -58,8 +58,6 @@ public class ProcessProfileAction extends WdkAction {
             user.setTitle(params.getValue("title"));
           } else if (paramName.equalsIgnoreCase("organization")) {
             user.setOrganization(params.getValue("organization"));
-          } else if (paramName.equalsIgnoreCase("openId")) {
-            user.setOpenId(params.getValue("openId"));
           } else if (paramName.equalsIgnoreCase("department")) {
             user.setDepartment(params.getValue("department"));
           } else if (paramName.equalsIgnoreCase("address")) {

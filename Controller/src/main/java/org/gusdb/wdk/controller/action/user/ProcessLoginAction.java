@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.controller.AuthenticationService;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.OAuthClient;
@@ -44,7 +43,6 @@ public class ProcessLoginAction extends WdkAction {
           new ParamDef(Required.OPTIONAL, Count.SINGULAR, DataType.STRING, new String[]{ "/" }))
       .addParam(CConstants.WDK_EMAIL_KEY, new ParamDef(Required.OPTIONAL))
       .addParam(CConstants.WDK_PASSWORD_KEY, new ParamDef(Required.OPTIONAL))
-      .addParam(CConstants.WDK_OPENID_KEY, new ParamDef(Required.OPTIONAL))
       .addParam(REMEMBER_PARAM_KEY, new ParamDef(Required.OPTIONAL)).toMap();
   
   @Override
@@ -182,48 +180,19 @@ public class ProcessLoginAction extends WdkAction {
 
   private ActionResult handleUserDbLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
     // get user's input
-    String openid = params.getValueOrEmpty(CConstants.WDK_OPENID_KEY);
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     boolean remember = params.getSingleCheckboxValue(REMEMBER_PARAM_KEY);
     
     // authenticate
     try {
-      // user must enter something for either openid or email/password
-      //checkExistenceOfParams(params);
-        
-      if (openid != null && openid.length() > 0) {
-        // first make sure we have a user with this OpenID
-        openid = AuthenticationService.normalizeOpenId(openid);
-        UserBean potentialUser = factory.getUserByOpenId(openid);
-        if (potentialUser == null) {
-          throw new WdkUserException("The OpenID you specified does not correspond to a registered user.");
-        }
-        
-        // try to authenticate with OpenID
-        try {
-          AuthenticationService auth = new AuthenticationService();
-          LOG.info("Setting referrer on OpenID login to : " + getRequestData().getReferrer());
-          auth.setReferringUrl(getOriginalReferrer(params, getRequestData()));
-          auth.setRememberUser(params.getSingleCheckboxValue("remember"));
-          String redirectUrl = auth.authRequest(openid, getWebAppRoot());
-          // same AuthenticationService MUST be used for stage 2, store on session for later retrieval
-          setSessionAttribute(CConstants.WDK_OPENID_AUTH_SERVICE_KEY, auth);
-          return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
-        }
-        catch (Exception e) {
-          throw new WdkUserException("Your OpenID could not be authenticated.  Please try again.", e);
-        }
-      }
-      else {
-        UserBean user = factory.login(guest, email, password);
-        int wdkCookieMaxAge = addLoginCookie(user, remember, getWdkModel(), this);
-        setCurrentUser(user);
-        setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
-        // go back to user's original page after successful login
-        String redirectPage = getOriginalReferrer(params, getRequestData());
-        return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
-      }
+      UserBean user = factory.login(guest, email, password);
+      int wdkCookieMaxAge = addLoginCookie(user, remember, getWdkModel(), this);
+      setCurrentUser(user);
+      setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
+      // go back to user's original page after successful login
+      String redirectPage = getOriginalReferrer(params, getRequestData());
+      return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
     }
     catch (Exception ex) {
       LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
@@ -232,6 +201,13 @@ public class ProcessLoginAction extends WdkAction {
     }
   }
 
+  /**
+   * Return action result for successful login
+   * 
+   * @param redirectUrl URL to which user will be directed
+   * @param wdkCookieMaxAge max age of login cookie (if applicable)
+   * @return action result
+   */
   protected ActionResult getSuccessfulLoginResult(String redirectUrl, int wdkCookieMaxAge) {
     if (redirectUrl.isEmpty()) redirectUrl = "/home.do";
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
@@ -276,16 +252,11 @@ public class ProcessLoginAction extends WdkAction {
 
   @SuppressWarnings("unused")
   private void checkExistenceOfParams(ParamGroup params) throws WdkUserException {
-    // must make sure user submitted either username/password OR openid
-    String openId = params.getValue(CConstants.WDK_OPENID_KEY);
-    if (openId != null && openId.length() > 0) {
-      // prefer openid
-      return;
-    }
+    // must make sure user submitted username/password
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     if (email == null || email.length() == 0 || password == null || password.length() == 0) {
-      throw new WdkUserException("You must enter either an OpenID or username/password.");
+      throw new WdkUserException("You must enter both username and password.");
     }
   }
   

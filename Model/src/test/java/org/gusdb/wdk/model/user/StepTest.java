@@ -55,7 +55,7 @@ public class StepTest {
     int rightSize = rightOperand.getResultSize();
 
     Step step = user.createBooleanStep(leftOperand.getStrategyId(), leftOperand, rightOperand,
-        BooleanOperator.UNION, false, null);
+        BooleanOperator.UNION, null);
     int size = step.getResultSize();
     Assert.assertTrue("result is boolean", step.isCombined());
     Assert.assertTrue("total size no smaller than left", size >= leftSize);

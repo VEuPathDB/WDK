@@ -33,7 +33,7 @@ public class ProcessRegisterAction extends WdkAction {
         new ActionResult().setViewPath(customViewFile) :
         new ActionResult().setViewName(SUCCESS));
 
-    String email = null, firstName = null, lastName = null, middleName = null, organization = null, openId = null;
+    String email = null, firstName = null, lastName = null, middleName = null, organization = null;
     Map<String, String> globalPreferences = new LinkedHashMap<String, String>();
     Map<String, String> projectPreferences = new LinkedHashMap<String, String>();
 
@@ -53,9 +53,6 @@ public class ProcessRegisterAction extends WdkAction {
       else if (paramName.equalsIgnoreCase("organization")) {
         organization = params.getValue(paramName);
       }
-      else if (paramName.equalsIgnoreCase("openId")) {
-        openId = params.getValue(paramName);
-      }
       else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
         String paramValue = params.getValue(paramName);
         globalPreferences.put(paramName, paramValue);
@@ -73,7 +70,7 @@ public class ProcessRegisterAction extends WdkAction {
         /* UserBean user = */
         logger.info("Creating new non-temp user: " + firstName + " " + lastName + " (" + email + ")");
         factory.createUser(email, lastName, firstName, middleName, null,
-            organization, null, null, null, null, null, null, null, openId,
+            organization, null, null, null, null, null, null, null,
             globalPreferences, projectPreferences);
         // registration succeed
         result.setRequestAttribute("registerSucceed", true);
@@ -88,7 +85,6 @@ public class ProcessRegisterAction extends WdkAction {
         result.setRequestAttribute("lastName", lastName);
         result.setRequestAttribute("middleName", middleName);
         result.setRequestAttribute("organization", organization);
-        result.setRequestAttribute("openId", openId);
         for (String param : projectPreferences.keySet()) {
           result.setRequestAttribute(param, projectPreferences.get(param));
         }

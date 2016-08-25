@@ -106,15 +106,6 @@ public class UserBean /* implements Serializable */{
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.user.User#getOpenId()
-   */
-  public String getOpenId() {
-    return user.getOpenId();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
    * @see org.gusdb.wdk.model.user.User#getDepartment()
    */
   public String getDepartment() {
@@ -258,15 +249,6 @@ public class UserBean /* implements Serializable */{
    */
   public void setCountry(String country) {
     user.setCountry(country);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#setOpenId(java.lang.String)
-   */
-  public void setOpenId(String openId) {
-    user.setOpenId(openId);
   }
 
   /*
@@ -969,9 +951,8 @@ public class UserBean /* implements Serializable */{
    *      org.gusdb.wdk.model.AnswerFilterInstance)
    */
   public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
-      String operator, boolean useBooleanFilter, String filterName) throws WdkModelException {
-    Step step = user.createBooleanStep(strategyId, previousStep.step, childStep.step, operator,
-        useBooleanFilter, filterName);
+      String operator, String filterName) throws WdkModelException {
+    Step step = user.createBooleanStep(strategyId, previousStep.step, childStep.step, operator, filterName);
     return new StepBean(this, step);
   }
 

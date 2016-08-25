@@ -98,9 +98,6 @@ public class CConstants {
     public static final String WDK_USER_KEY = "wdkUser";
     public static final String WDK_EMAIL_KEY = "email";
     public static final String WDK_PASSWORD_KEY = "password";
-    public static final String WDK_OPENID_KEY = "openid";
-    public static final String WDK_OPENID_AUTH_SERVICE_KEY = "openIdAuthService";
-    public static final String WDK_REMEMBER_USER_KEY = "openIdRememberUser";
     public static final String WDK_ERROR_TEXT_KEY = "errorText";
     public static final String WDK_LOGIN_ERROR_KEY = "loginError";
     public static final String WDK_REGISTER_ERROR_KEY = "registerError";

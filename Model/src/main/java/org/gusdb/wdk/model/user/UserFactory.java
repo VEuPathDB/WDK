@@ -120,7 +120,7 @@ public class UserFactory {
   public User createUser(String email, String lastName, String firstName,
       String middleName, String title, String organization, String department,
       String address, String city, String state, String zipCode,
-      String phoneNumber, String country, String openId,
+      String phoneNumber, String country,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences) throws WdkUserException,
       WdkModelException {
@@ -129,13 +129,13 @@ public class UserFactory {
 	  if (dontEmailProp != null && dontEmailProp.equals("true")) resetPwdAndSendEmail = false;
     return createUser(email, lastName, firstName, middleName, title,
         organization, department, address, city, state, zipCode, phoneNumber,
-        country, openId, globalPreferences, projectPreferences, resetPwdAndSendEmail);
+        country, globalPreferences, projectPreferences, resetPwdAndSendEmail);
   }
 
   public User createUser(String email, String lastName, String firstName,
       String middleName, String title, String organization, String department,
       String address, String city, String state, String zipCode,
-      String phoneNumber, String country, String openId,
+      String phoneNumber, String country,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences, boolean resetPwd)
       throws WdkUserException, WdkModelException {
@@ -178,14 +178,13 @@ public class UserFactory {
       psUser.setString(8, title);
       psUser.setString(9, organization);
       psUser.setString(10, department);
-      psUser.setString(11, openId); // TODO: put back address!
+      psUser.setString(11, address);
       psUser.setString(12, city);
       psUser.setString(13, state);
       psUser.setString(14, zipCode);
       psUser.setString(15, phoneNumber);
       psUser.setString(16, country);
       psUser.setString(17, signature);
-      // psUser.setString(18, openId);
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-register", start);
 
@@ -203,7 +202,6 @@ public class UserFactory {
       user.setZipCode(zipCode);
       user.setPhoneNumber(phoneNumber);
       user.setCountry(country);
-      user.setOpenId(openId);
       user.addUserRole(defaultRole);
       user.setGuest(false);
 
@@ -319,17 +317,6 @@ public class UserFactory {
     }
   }
 
-  public User login(User guest, String openId) throws WdkUserException,
-      WdkModelException {
-    // make sure the guest is really a guest
-    if (!guest.isGuest())
-      throw new WdkUserException("User has been logged in.");
-
-    // authenticate the user; if fails, a WdkUserException will be thrown out
-    User user = getUserByOpenId(openId);
-    return getMergedUser(guest, user);
-  }
-
   private User getMergedUser(User guest, User loggedInUser)
       throws WdkModelException, WdkUserException {
     if (loggedInUser == null)
@@ -390,12 +377,6 @@ public class UserFactory {
   public User getUserByEmail(String email) throws WdkModelException {
     return getUserByFields(new String[] { "email", email.trim() },
         "wdk-user-get-id-by-email");
-  }
-
-  public User getUserByOpenId(String openId) throws WdkModelException {
-    // TODO: after openid field is created, use it instead of address!
-    return getUserByFields(new String[] { "address", openId.trim() },
-        "wdk-user-get-id-by-openid");
   }
 
   // FIXME: should probably be renamed getUserBySignature
@@ -534,7 +515,6 @@ public class UserFactory {
       user.setZipCode(rsUser.getString("zip_code"));
       user.setPhoneNumber(rsUser.getString("phone_number"));
       user.setCountry(rsUser.getString("country"));
-      // user.setOpenId(rsUser.getString("open_id"));
 
       // load the user's roles
       user.setUserRole(getUserRoles(user));
@@ -749,7 +729,6 @@ public class UserFactory {
       psUser.setString(13, user.getPhoneNumber());
       psUser.setString(14, user.getCountry());
       psUser.setString(15, user.getEmail());
-      // psUser.setString(16, user.getOpenId());
       psUser.setInt(16, user.getUserId());
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sqlUser, "wdk-user-update-user", start);
