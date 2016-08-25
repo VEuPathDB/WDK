@@ -92,7 +92,7 @@ public class EuPathCategoriesFactory {
 
     if (model.getProjectId().equals("MicrobiomeDB")) {
       // Sample questions for menus
-      processPrimaryCategoryQuestions(ontology, scopes(MENU), "Samples", "SampleRecordClasses.SampleRecordClass",
+      processPrimaryCategoryQuestions(ontology, scopes(MENU), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
           websiteCategories, websiteRootCategories);
     }
     else {
@@ -118,11 +118,11 @@ public class EuPathCategoriesFactory {
     }
     if (model.getProjectId().equals("MicrobiomeDB")) {
       // Sample questions for webservice
-      processPrimaryCategoryQuestions(ontology, scopes(WEBSERVICE), "Samples", "SampleRecordClasses.SampleRecordClass",
+      processPrimaryCategoryQuestions(ontology, scopes(WEBSERVICE), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
           webserviceCategories, webserviceRootCategories);
 
       // gene questions for datasets
-      processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Samples", "SampleRecordClasses.SampleRecordClass",
+      processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
           datasetCategories, datasetRootCategories);
     }
     else {
