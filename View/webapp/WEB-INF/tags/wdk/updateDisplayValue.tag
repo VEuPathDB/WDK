@@ -6,6 +6,11 @@
               description="column value to be updated, passed from wdkAttribute"
 %>
 
+<%@ attribute name="columnName"
+              required="false"
+              description="name of column, if needed"
+%>
+
 <c:choose>
 <c:when test="${displayValue == null || fn:length(displayValue) == 0}">
   <span style="color:gray;">N/A</span>
