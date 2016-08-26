@@ -769,7 +769,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
 
     // comment out to use old categories
-    if (!ontologyFactoryMap.isEmpty()) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
+    if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
  }
 
   private void excludeResources() throws WdkModelException {
