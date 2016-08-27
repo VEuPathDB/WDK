@@ -29,7 +29,7 @@ public class StepParamFilterModifier {
   private static final int MAX_QUEUE_SIZE = 30;
   private static final int NUM_THREADS = 20;
   private static final int BATCH_COMMIT_SIZE = 100;
-  private static final boolean IGNORE_GUEST_USER_STEPS = true;
+  private static final boolean INCLUDE_GUEST_USER_STEPS = false;
 
   public static interface StepParamFilterModifierPlugin {
     public TwoTuple<Boolean, StepData> processStep(StepData nextStep, WdkModel wdkModel);
@@ -107,7 +107,7 @@ public class StepParamFilterModifier {
       }
   
       // execute quepop();ry to read all steps from DB and submit them to handler threads
-      new SQLRunner(userDb.getDataSource(), StepData.getAllStepsSql(getUserSchema(_wdkModel), IGNORE_GUEST_USER_STEPS))
+      new SQLRunner(userDb.getDataSource(), StepData.getAllStepsSql(getUserSchema(_wdkModel), INCLUDE_GUEST_USER_STEPS))
           .executeQuery(new StepDistributor(_wdkModel, stepQueue));
   
       // wait for queue to empty
