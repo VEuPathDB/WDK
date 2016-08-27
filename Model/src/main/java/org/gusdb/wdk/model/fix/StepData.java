@@ -89,11 +89,10 @@ public class StepData {
     _paramFilters = new JSONObject(platform.getClobData(rs, DISPLAY_PARAMS));
   }
 
-  public static String getAllStepsSql(String schema, boolean ignoreGuestUserSteps) {
+  public static String getAllStepsSql(String schema, boolean includeGuestUserSteps) {
     return "select " + SELECT_COLS_TEXT + " from " + schema + "steps" +
-        (ignoreGuestUserSteps ?
-            ", " + schema + "users u where s.is_deleted = 0 and u.user_id = s.user_id and u.is_guest = 0" :
-            " where is_deleted = 0");
+        (includeGuestUserSteps ? " where is_deleted = 0" :
+          ", " + schema + "users u where s.is_deleted = 0 and u.user_id = s.user_id and u.is_guest = 0");
   }
 
   public static String getUpdateStepSql(String schema) {
