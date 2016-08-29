@@ -1,20 +1,22 @@
+import { PropTypes, Component } from 'react';
+import $ from 'jquery';
+import { wrappable } from '../utils/componentUtils';
+
 /**
  * Creates a container that allows a user to cycle among all tabbable elements.
  * This is useful for components such as dialogs and dropdown menus.
  */
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { wrappable } from '../utils/componentUtils';
+class TabbableContainer extends Component {
 
-let $ = window.jQuery;
-
-let TabbableContainer = React.createClass({
+  constructor(props) {
+    super(props);
+    this.node = null;
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+  }
 
   componentDidMount() {
-    let node = ReactDOM.findDOMNode(this);
-    this.tabbables = $(':tabbable', node);
-    node.focus();
-  },
+    this.node.focus();
+  }
 
   handleKeyDown(e) {
     if (typeof this.props.onKeyDown === 'function') {
@@ -22,33 +24,41 @@ let TabbableContainer = React.createClass({
     }
 
     this.containTab(e);
-  },
+  }
 
   // prevent user from tabbing out of dropdown
   // manually tab since os x removes some controls from the tabindex by default
   containTab(e) {
     if (e.key !== 'Tab') { return; }
-    let { tabbables } = this;
+    let tabbables = $(':tabbable', this.node);
     let l = tabbables.length;
     let index = tabbables.index(e.target);
-    let inc = e.shiftKey ? l - 1 : 1;
-    let nextIndex = (index + inc) % l;
+    let delta = e.shiftKey ? l - 1 : 1;
+    let nextIndex = (index + delta) % l;
     let nextTarget = tabbables[nextIndex];
     if (nextTarget == null) {
       nextTarget = tabbables[0];
     }
     nextTarget.focus();
     e.preventDefault();
-  },
+  }
 
   render() {
     return (
-      <div tabIndex="-1" {...this.props} onKeyDown={this.handleKeyDown}>
+      <div ref={node => this.node = node} tabIndex="-1" {...this.props} onKeyDown={this.handleKeyDown}>
         {this.props.children}
       </div>
     );
   }
 
-});
+}
+
+TabbableContainer.propTypes = {
+  onKeyDown: PropTypes.func,
+  children: PropTypes.oneOfType([
+    PropTypes.element,
+    PropTypes.arrayOf(PropTypes.element)
+  ]).isRequired
+};
 
 export default wrappable(TabbableContainer);
