@@ -6,32 +6,28 @@ import {wrappable} from '../utils/componentUtils';
 import Header from './Header';
 import Footer from './Footer';
 import LoginForm from './LoginForm';
-import {User} from "../utils/WdkUser";
-import {ServiceConfig} from "../utils/WdkService";
+import {GlobalData} from '../stores/GlobalDataStore';
 
 type Props = {
-  children: React.ReactChild,
-  user: User & {
-    showLoginForm: boolean;
-    destination: string;
-  };
+  children: React.ReactChild;
+  globalData: GlobalData;
   dismissLoginForm: Function;
-  config: ServiceConfig;
 };
 
 function Page(props: Props) {
+  let { config, user } = props.globalData;
   return (
     <div className="wdk-RootContainer">
       <Header {...props}/>
-      {props.user && props.user.showLoginForm && (
+      {user && user.showLoginForm && (
         <LoginForm
           onCancel={props.dismissLoginForm}
           onSubmit={() => {}}
           open={true}
-          action={props.config.webAppUrl + '/processLogin.do'}
-          redirectUrl={props.user.destination}
-          passwordResetUrl={props.config.webAppUrl + '/showResetPassword.do'}
-          registerUrl={props.config.webAppUrl + '/showRegister.do'}
+          action={config.webAppUrl + '/processLogin.do'}
+          redirectUrl={user.destination}
+          passwordResetUrl={config.webAppUrl + '/showResetPassword.do'}
+          registerUrl={config.webAppUrl + '/showRegister.do'}
         />
       )}
       <div className="wdk-PageContent">{props.children}</div>

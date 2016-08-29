@@ -53,8 +53,8 @@ function LoginForm(props: Props) {
             <tr>
               <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }} colSpan="2">
                 <span className="small">
-                  <input style={{width:76, height:30}} id="login" value="Login" type="submit"/>
-                  <input onClick={props.onCancel} style={{width:76, height:30 }} value="Cancel" type="button"/>
+                  <input style={{width:76, height:30, fontSize: '1em'}} id="login" value="Login" type="submit"/>
+                  <input onClick={props.onCancel} style={{width:76, height:30, fontSize: '1em'}} value="Cancel" type="button"/>
                 </span>
               </td>
             </tr>
