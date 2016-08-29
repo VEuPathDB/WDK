@@ -31,23 +31,23 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
   // this plugin can only be assigned to questions/recordClasses that
   //   are configured with a tabular reporter
-  private static final String TABULAR_REPORTER_NAME = "tabular";
+  protected static final String TABULAR_REPORTER_NAME = "tabular";
 
-  private static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
-  private static final String EXTRACTED_ATTRIBS_PROP_KEY = "columnsToExtract";
-  private static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
-  private static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
-  private static final String ADD_HEADER_PROP_KEY = "addHeader";
+  protected static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
+  protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "columnsToExtract";
+  protected static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
+  protected static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
+  protected static final String ADD_HEADER_PROP_KEY = "addHeader";
 
-  private static final String DATA_FILE_NAME = "data.tab";
+  protected static final String DATA_FILE_NAME = "data.tab";
 
-  private static final int DEFAULT_IFRAME_WIDTH_PX = 900;
-  private static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
-  private static final boolean ADD_HEADER_BY_DEFAULT = true;
+  protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
+  protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
+  protected static final boolean ADD_HEADER_BY_DEFAULT = true;
 
   public static class ViewModel {
 
-    private final String _iframeBaseUrl;
+    private String _iframeBaseUrl;
     private final int _iframeWidth;
     private final int _iframeHeight;
 
@@ -56,6 +56,8 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       _iframeWidth = width;
       _iframeHeight = height;
     }
+
+    public void setIframeBaseUrl(String url) { _iframeBaseUrl = url; }
 
     public String getIframeBaseUrl() { return _iframeBaseUrl; }
     public String getDownloadPath() { return DATA_FILE_NAME; }
@@ -90,7 +92,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
         chooseSize(IFRAME_LENGTH_PROP_KEY, DEFAULT_IFRAME_HEIGHT_PX));
   }
 
-  private int chooseSize(String propName, int defaultValue) {
+  protected int chooseSize(String propName, int defaultValue) {
     String prop = getProperty(propName);
     return (prop != null && !prop.isEmpty()) ? Integer.parseInt(prop) : defaultValue;
   }
