@@ -19,14 +19,26 @@ let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
   Object.assign(actionMap, { [staticDataConfigMap[key].actionType]: staticDataConfigMap[key] }), <StaticDataConfigMap>{});
 let userActionMap = invert(userActionTypes);
 
+// XXX This can be a little cleaner
+type UserWithLoginState = User & {
+  showLoginForm: boolean;
+  destination: string;
+};
+
 type GlobalDataItem = ServiceConfig
                     | Ontology<CategoryNode>
                     | RecordClass[]
                     | Question[]
-                    | User
+                    | UserWithLoginState
                     | UserPreferences;
 
 export interface GlobalData  {
+  config: ServiceConfig;
+  ontology: Ontology<CategoryNode>;
+  recordClasses: RecordClass[];
+  questions: Question[];
+  user: UserWithLoginState;
+  preferences: UserPreferences;
   [key: string]: GlobalDataItem;
 };
 

@@ -153,9 +153,9 @@ export let showLoginWarning: ActionCreator = (attemptedAction: string, destinati
  */
 export let showLoginForm: ActionCreator = (destination = window.location.href) => {
   return function(dispatch, {wdkService}) {
-    dispatch(wdkService.getConfig()
+    wdkService.getConfig()
     .then(property('authentication.method'))
-    .then((method: string) => getShowLoginFormImpl(method, destination)));
+    .then((method: string) => dispatch(getShowLoginFormImpl(method, destination)));
   };
 };
 
