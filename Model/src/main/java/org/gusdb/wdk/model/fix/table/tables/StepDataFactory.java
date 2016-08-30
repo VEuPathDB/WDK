@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.fix;
+package org.gusdb.wdk.model.fix.table.tables;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.FunctionalInterfaces.notEqualTo;
@@ -18,22 +18,12 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
 import org.json.JSONObject;
 
-/**
- * Encapsulates the following data from the users table:
- * 
- * "STEP_ID" NUMBER(12,0)
- * "LEFT_CHILD_ID" NUMBER(12,0)
- * "RIGHT_CHILD_ID" NUMBER(12,0)
- * "ANSWER_FILTER" VARCHAR2(100 BYTE)
- * "PROJECT_ID" VARCHAR2(50 BYTE)
- * "QUESTION_NAME" VARCHAR2(200 BYTE)
- * "DISPLAY_PARAMS" CLOB
- * 
- * @author rdoherty
- */
-public class StepData {
+public class StepDataFactory implements TableRowFactory<StepData> {
+
+  private static final boolean INCLUDE_GUEST_USER_STEPS = false;
 
   // constants for column names
   private static final String STEP_ID = "STEP_ID";               // NUMBER(12,0)
@@ -66,95 +56,56 @@ public class StepData {
         @Override public String apply(String col) { return col + " = ?"; }
       }).toArray(), ", ");
 
-  public static final Integer[] UPDATE_PARAMETER_TYPES =
+  private static final Integer[] UPDATE_PARAMETER_TYPES =
       mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),
           toMapFunction(SQLTYPES)).toArray(new Integer[COLS.length]);
 
-  private Long _stepId;
-  private Long _leftChildId;
-  private Long _rightChildId;
-  private String _legacyAnswerFilter;
-  private String _projectId;
-  private String _questionName;
-  private JSONObject _paramFilters;
-
   // loads next row into StepData object
-  public StepData(ResultSet rs, DBPlatform platform) throws SQLException {
-    _stepId = rs.getLong(STEP_ID);
-    _leftChildId = rs.getLong(LEFT_CHILD_ID);
-    _rightChildId = rs.getLong(RIGHT_CHILD_ID);
-    _legacyAnswerFilter = rs.getString(ANSWER_FILTER);
-    _projectId = rs.getString(ANSWER_FILTER);
-    _questionName = rs.getString(ANSWER_FILTER);
-    _paramFilters = new JSONObject(platform.getClobData(rs, DISPLAY_PARAMS));
+  @Override
+  public StepData newTableRow(ResultSet rs, DBPlatform platform) throws SQLException {
+    StepData newRow = new StepData();
+    newRow.setStepId(rs.getLong(STEP_ID));
+    newRow.setLeftChildId(rs.getLong(LEFT_CHILD_ID));
+    newRow.setRightChildId(rs.getLong(RIGHT_CHILD_ID));
+    newRow.setLegacyAnswerFilter(rs.getString(ANSWER_FILTER));
+    newRow.setProjectId(rs.getString(ANSWER_FILTER));
+    newRow.setQuestionName(rs.getString(ANSWER_FILTER));
+    newRow.setParamFilters(new JSONObject(platform.getClobData(rs, DISPLAY_PARAMS)));
+    return newRow;
   }
 
-  public static String getAllStepsSql(String schema, boolean includeGuestUserSteps) {
+  protected boolean includeGuestUserSteps() {
+    return INCLUDE_GUEST_USER_STEPS;
+  }
+
+  @Override
+  public String getAllRecordsSql(String schema) {
     return "select " + SELECT_COLS_TEXT + " from " + schema + "steps" +
-        (includeGuestUserSteps ? " where is_deleted = 0" :
+        (includeGuestUserSteps() ? " where is_deleted = 0" :
           " s, " + schema + "users u where s.is_deleted = 0 and u.user_id = s.user_id and u.is_guest = 0");
   }
 
-  public static String getUpdateStepSql(String schema) {
+  @Override
+  public String getUpdateRecordSql(String schema) {
     return "update " + schema + "steps set " + UPDATE_COLS_TEXT + " where " + STEP_ID + " = ?";
   }
 
-  public Object[] toUpdateVals() {
-    return new Object[]{ _leftChildId, _rightChildId, _legacyAnswerFilter,
-        _projectId, _questionName, _paramFilters.toString(), _stepId };
+  @Override
+  public Integer[] getUpdateParameterTypes() {
+    return UPDATE_PARAMETER_TYPES;
   }
 
-  /*%%%%%%%%%%%%%%%% Getters and Setters %%%%%%%%%%%%%%%%*/
-  
-  public Long getStepId() {
-    return _stepId;
+  @Override
+  public Object[] toUpdateVals(StepData row) {
+    return new Object[] {
+        row.getLeftChildId(),
+        row.getRightChildId(),
+        row.getLegacyAnswerFilter(),
+        row.getProjectId(),
+        row.getQuestionName(),
+        row.getParamFilters().toString(),
+        row.getStepId()
+    };
   }
 
-  public Long getLeftChildId() {
-    return _leftChildId;
-  }
-
-  public void setLeftChildId(Long leftChildId) {
-    _leftChildId = leftChildId;
-  }
-
-  public Long getRightChildId() {
-    return _rightChildId;
-  }
-
-  public void setRightChildId(Long rightChildId) {
-    _rightChildId = rightChildId;
-  }
-
-  public String getLegacyAnswerFilter() {
-    return _legacyAnswerFilter;
-  }
-
-  public void setLegacyAnswerFilter(String legacyAnswerFilter) {
-    _legacyAnswerFilter = legacyAnswerFilter;
-  }
-
-  public String getProjectId() {
-    return _projectId;
-  }
-
-  public void setProjectId(String projectId) {
-    _projectId = projectId;
-  }
-
-  public String getQuestionName() {
-    return _questionName;
-  }
-
-  public void setQuestionName(String questionName) {
-    _questionName = questionName;
-  }
-
-  public JSONObject getParamFilters() {
-    return _paramFilters;
-  }
-
-  public void setParamFilters(JSONObject paramFilters) {
-    _paramFilters = paramFilters;
-  }
 }
