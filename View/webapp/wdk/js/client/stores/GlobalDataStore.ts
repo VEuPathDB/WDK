@@ -19,17 +19,11 @@ let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
   Object.assign(actionMap, { [staticDataConfigMap[key].actionType]: staticDataConfigMap[key] }), <StaticDataConfigMap>{});
 let userActionMap = invert(userActionTypes);
 
-// XXX This can be a little cleaner
-type UserWithLoginState = User & {
-  showLoginForm: boolean;
-  destination: string;
-};
-
 type GlobalDataItem = ServiceConfig
                     | Ontology<CategoryNode>
                     | RecordClass[]
                     | Question[]
-                    | UserWithLoginState
+                    | User
                     | UserPreferences;
 
 export interface GlobalData  {
@@ -37,7 +31,7 @@ export interface GlobalData  {
   ontology: Ontology<CategoryNode>;
   recordClasses: RecordClass[];
   questions: Question[];
-  user: UserWithLoginState;
+  user: User;
   preferences: UserPreferences;
   [key: string]: GlobalDataItem;
 };
@@ -82,20 +76,6 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
         let newPrefs = Object.assign({}, state[StaticDataProps.PREFERENCES], payload);
         // treat preference object as if it has just been loaded (with new values present)
         return this.handleStaticDataItemAction(state, StaticDataProps.PREFERENCES, { [StaticDataProps.PREFERENCES]: newPrefs });
-      }
-      case userActionTypes.SHOW_LOGIN_MODAL: {
-        let user = Object.assign({}, state[StaticDataProps.USER], {
-          showLoginForm: true,
-          loginDestination: payload.destination
-        });
-        return this.handleStaticDataItemAction(state, StaticDataProps.USER, { user });
-      }
-      case userActionTypes.LOGIN_DISMISSED: {
-        let user = Object.assign({}, state[StaticDataProps.USER], {
-          showLoginForm: false,
-          loginDestination: undefined
-        });
-        return this.handleStaticDataItemAction(state, StaticDataProps.USER, { user });
       }
       default:
         return state;
