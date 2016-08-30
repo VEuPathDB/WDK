@@ -51,6 +51,7 @@ node_modules/%: node_modules;
 # Install typescript type definitions
 # =============================================================================
 typings: typings.json node_modules
+	typings prune
 	typings install
 	touch typings
 
