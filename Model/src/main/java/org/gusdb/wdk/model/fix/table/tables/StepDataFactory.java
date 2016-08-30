@@ -23,8 +23,6 @@ import org.json.JSONObject;
 
 public class StepDataFactory implements TableRowFactory<StepData> {
 
-  private static final boolean INCLUDE_GUEST_USER_STEPS = false;
-
   // constants for column names
   private static final String STEP_ID = "STEP_ID";               // NUMBER(12,0)
   private static final String LEFT_CHILD_ID = "LEFT_CHILD_ID";   // NUMBER(12,0)
@@ -60,6 +58,12 @@ public class StepDataFactory implements TableRowFactory<StepData> {
       mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),
           toMapFunction(SQLTYPES)).toArray(new Integer[COLS.length]);
 
+  private final boolean _includeGuestUserSteps;
+
+  public StepDataFactory(boolean includeGuestUserSteps) {
+    _includeGuestUserSteps = includeGuestUserSteps;
+  }
+
   // loads next row into StepData object
   @Override
   public StepData newTableRow(ResultSet rs, DBPlatform platform) throws SQLException {
@@ -74,14 +78,10 @@ public class StepDataFactory implements TableRowFactory<StepData> {
     return newRow;
   }
 
-  protected boolean includeGuestUserSteps() {
-    return INCLUDE_GUEST_USER_STEPS;
-  }
-
   @Override
   public String getAllRecordsSql(String schema) {
     return "select " + SELECT_COLS_TEXT + " from " + schema + "steps" +
-        (includeGuestUserSteps() ? " where is_deleted = 0" :
+        (_includeGuestUserSteps ? " where is_deleted = 0" :
           " s, " + schema + "users u where s.is_deleted = 0 and u.user_id = s.user_id and u.is_guest = 0");
   }
 
