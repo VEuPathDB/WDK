@@ -2,7 +2,14 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "dist": "make -j2"
+    "build": "npm run build-js && npm run build-css",
+    "build-js": "webpack",
+    "build-css": "mkdir -p dist/wdk/css && cd dist/wdk/css && cleancss --skip-rebase --source-map -o wdk.min.css ../../../webapp/wdk/css/wdk.css",
+    "install-build-packages": "npm install --production",
+    "install-test-packages": "npm install",
+    "client-tests": "tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js",
+    "test-server": "webpack-dev-server --config webpack-test.config.js test/tests.js",
+    "examples-server": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
   "dependencies": {
