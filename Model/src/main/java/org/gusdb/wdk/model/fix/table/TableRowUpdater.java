@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -25,7 +26,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRow;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
@@ -40,22 +40,32 @@ public class TableRowUpdater<T extends TableRow> {
   private static final int NUM_THREADS = 20;
   private static final int BATCH_COMMIT_SIZE = 100;
 
+  private static enum ExitStatus {
+    SUCCESS, USER_ERROR, STEP_ERROR, THREAD_ERROR, PROGRAM_ERROR;
+  }
+
   private static class Config {
     public String projectId;
     public TableRowUpdaterPlugin<?> plugin;
   }
 
-  public static void main(String[] args) throws WdkModelException {
+  public static void main(String[] args) {
     Config config = parseArgs(args);
     WdkModel wdkModel = null;
+    ExitStatus exitValue = ExitStatus.SUCCESS;
     try {
       wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
       TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
-      updater.run();
+      exitValue = updater.run();
+    }
+    catch (Exception e) {
+      System.err.println(FormatUtil.getStackTrace(e));
+      exitValue = ExitStatus.PROGRAM_ERROR;
     }
     finally {
       if (wdkModel != null) wdkModel.releaseResources();
     }
+    System.exit(exitValue.ordinal());
   }
 
   private static Config parseArgs(String[] args) {
@@ -65,7 +75,7 @@ public class TableRowUpdater<T extends TableRow> {
           "  projectId: Name of project in XML/config dir (e.g. PlasmoDB)" + NL +
           "  plugin_class_name: Name of plugin's Java class " +
           "(must implement " + TableRowUpdaterPlugin.class.getName() + ")" + NL);
-      System.exit(1);
+      System.exit(ExitStatus.USER_ERROR.ordinal());
     }
     Config config = new Config();
     config.projectId = args[0];
@@ -103,10 +113,12 @@ public class TableRowUpdater<T extends TableRow> {
     }
   }
 
-  private void run() {
+  private ExitStatus run() {
     long startTime = System.currentTimeMillis();
     List<RowHandler<T>> threads = new ArrayList<>();
     List<Future<Stats>> results = new ArrayList<>();
+    Stats aggregate = new Stats();
+    int numThreadProblems = 0;
     try {
       DatabaseInstance userDb = _wdkModel.getUserDb();
       RecordQueue<T> recordQueue = new RecordQueue<>();
@@ -139,8 +151,6 @@ public class TableRowUpdater<T extends TableRow> {
         while (!allThreadsFinished(threads)) { /* wait */ }
 
         // collect stats and display
-        Stats aggregate = new Stats();
-        int numThreadProblems = 0;
         for (Future<Stats> result : results) {
           try {
             aggregate.incorporate(result.get());
@@ -154,6 +164,9 @@ public class TableRowUpdater<T extends TableRow> {
         LOG.info("Aggregate results: " + aggregate);
       }
     }
+    if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
+    if (aggregate.numRecordErrors > 0) return ExitStatus.STEP_ERROR;
+    return ExitStatus.SUCCESS;
   }
 
   private String getDuration(long startTime) {
@@ -257,8 +270,8 @@ public class TableRowUpdater<T extends TableRow> {
     }
 
     private void error(String message, Exception e) {
-      if (e == null) LOG.error(message);
-      else LOG.error(message, e);
+      if (e == null) LOG.error("Thread " + _threadId + ": " + message);
+      else LOG.error("Thread " + _threadId + ": " + message, e);
     }
 
     @Override
