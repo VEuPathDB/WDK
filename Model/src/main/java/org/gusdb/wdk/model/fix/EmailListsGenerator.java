@@ -38,7 +38,6 @@ public class EmailListsGenerator extends BaseCLI {
     }
     finally {
       logger.info("email lists generator done.");
-      System.exit(0);
     }
   }
 

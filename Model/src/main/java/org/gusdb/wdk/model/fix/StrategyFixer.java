@@ -37,7 +37,6 @@ public class StrategyFixer extends BaseCLI {
     }
     finally {
       LOG.info("strategy fixer finished.");
-      System.exit(0);
     }
   }
 

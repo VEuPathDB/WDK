@@ -39,12 +39,11 @@ public class OrganismUpdater {
     // one for each line
     if (args.length != 2) {
       System.err.println("Usage: organismUpdater <project_id> <map_file>\nPlease enter one project at a time.");
-      System.exit(-1);
+      System.exit(1);
     }
 
     OrganismUpdater updater = new OrganismUpdater(args[0], args[1]);
     updater.update();
-    System.exit(0);
   }
 
   private final String projectId;

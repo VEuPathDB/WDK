@@ -38,7 +38,6 @@ public class InvalidStepReporter extends BaseCLI {
       throw ex;
     } finally {
       logger.info("report complete.");
-      System.exit(0);
     }
   }
 

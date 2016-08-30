@@ -32,13 +32,12 @@ public class QuestionNameUpdater {
     // one for each line
     if (args.length != 2) {
       System.err.println("Usage: questionNameUpdater <project_id> <map_file>");
-      System.exit(-1);
+      System.exit(1);
     }
 
     QuestionNameUpdater updater = new QuestionNameUpdater(args[0], args[1]);
     updater.update();
-    System.exit(0);
-  }
+   }
 
   private final String projectId;
   private final WdkModel wdkModel;

@@ -47,7 +47,6 @@ public class ModelCacher extends BaseCLI {
     }
     finally {
       logger.info("model cacher done.");
-      System.exit(0);
     }
   }
 
@@ -190,9 +189,11 @@ public class ModelCacher extends BaseCLI {
     }
   }
 
-  public void dropTables(WdkModel wdkModel, String schema) {
+  public void dropTables(WdkModel wdkModel, String schema) throws SQLException {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    String[] sequences = new String[] { "wdk_questions_pkseq", "wdk_params_pkseq" };
+    DatabaseInstance database = wdkModel.getUserDb();
+    DBPlatform platform = database.getPlatform();
+     String[] sequences = new String[] { "wdk_questions_pkseq", "wdk_params_pkseq" };
     for (String sequence : sequences) {
       try {
         SqlUtils.executeUpdate(dataSource, "DROP SEQUENCE " + schema + sequence, "wdk-drop-sequence");
@@ -203,12 +204,8 @@ public class ModelCacher extends BaseCLI {
     }
     String[] tables = new String[] { "wdk_enum_params", "wdk_params", "wdk_questions" };
     for (String table : tables) {
-      try {
-        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + schema + table, "wdk-drop-table");
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
-      }
+      if (platform.checkTableExists(dataSource, schema, table))
+	SqlUtils.executeUpdate(dataSource, "DROP TABLE " + schema + table, "wdk-drop-table");
     }
   }
 
