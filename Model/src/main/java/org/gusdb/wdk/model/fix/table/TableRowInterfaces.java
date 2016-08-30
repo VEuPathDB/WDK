@@ -19,7 +19,7 @@ public class TableRowInterfaces {
 
   public static interface TableRowFactory<T extends TableRow> {
 
-    public String getAllRecordsSql(String schema);
+    public String getRecordsSql(String schema, String projectId);
 
     public T newTableRow(ResultSet rs, DBPlatform platform) throws SQLException;
 

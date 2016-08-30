@@ -40,7 +40,7 @@ public class TableRowUpdater<T extends TableRow> {
   private static final int NUM_THREADS = 20;
   private static final int BATCH_COMMIT_SIZE = 100;
 
-  private static final boolean UPDATES_DISABLED = true;
+  private static final boolean UPDATES_DISABLED = false;
 
   private static enum ExitStatus {
     SUCCESS, USER_ERROR, STEP_ERROR, THREAD_ERROR, PROGRAM_ERROR;
@@ -135,7 +135,7 @@ public class TableRowUpdater<T extends TableRow> {
       _exec.shutdown();
   
       // execute query to read all records from DB and submit them to handler threads
-      new SQLRunner(userDb.getDataSource(), _factory.getAllRecordsSql(getUserSchema(_wdkModel)))
+      new SQLRunner(userDb.getDataSource(), _factory.getRecordsSql(getUserSchema(_wdkModel), _wdkModel.getProjectId()))
           .executeQuery(new RecordDistributor<T>(_wdkModel, _factory, recordQueue));
   
       // wait for queue to empty
@@ -179,10 +179,15 @@ public class TableRowUpdater<T extends TableRow> {
     if (totalSeconds == 0) return totalSeconds + "." + millis;
     long seconds = totalSeconds % 60;
     long totalMinutes = totalSeconds / 60;
-    if (totalMinutes == 0) return totalMinutes + ":" + seconds + "." + millis;
+    if (totalMinutes == 0) return totalMinutes + ":" + pad10(seconds) + "." + millis;
     long minutes = totalMinutes % 60;
     long hours = totalMinutes / 60;
-    return hours + ":" + minutes + ":" + seconds + "." + millis;
+    return hours + ":" + pad10(minutes) + ":" + pad10(seconds) + "." + millis;
+  }
+
+  private String pad10(long minutes) {
+    if (minutes < 10) return "0" + minutes;
+    return String.valueOf(minutes);
   }
 
   private static String getUserSchema(WdkModel wdkModel) {

@@ -72,17 +72,18 @@ public class StepDataFactory implements TableRowFactory<StepData> {
     newRow.setLeftChildId(rs.getLong(LEFT_CHILD_ID));
     newRow.setRightChildId(rs.getLong(RIGHT_CHILD_ID));
     newRow.setLegacyAnswerFilter(rs.getString(ANSWER_FILTER));
-    newRow.setProjectId(rs.getString(ANSWER_FILTER));
-    newRow.setQuestionName(rs.getString(ANSWER_FILTER));
+    newRow.setProjectId(rs.getString(PROJECT_ID));
+    newRow.setQuestionName(rs.getString(QUESTION_NAME));
     newRow.setParamFilters(new JSONObject(platform.getClobData(rs, DISPLAY_PARAMS)));
     return newRow;
   }
 
   @Override
-  public String getAllRecordsSql(String schema) {
+  public String getRecordsSql(String schema, String projectId) {
+    String basicConditions = "is_deleted = 0 and project_id = '" + projectId + "'";
     return "select " + SELECT_COLS_TEXT + " from " + schema + "steps" +
-        (_includeGuestUserSteps ? " where is_deleted = 0" :
-          " s, " + schema + "users u where s.is_deleted = 0 and u.user_id = s.user_id and u.is_guest = 0");
+        (_includeGuestUserSteps ? " where " + basicConditions :
+          " s, " + schema + "users u where " + basicConditions + " and u.user_id = s.user_id and u.is_guest = 0");
   }
 
   @Override
