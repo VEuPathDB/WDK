@@ -3,16 +3,14 @@
     "fbemitter": "registry:dt/fbemitter#2.0.0+20160618175531",
     "flux": "registry:dt/flux#0.0.0+20160618175531",
     "immutable": "registry:dt/immutable#3.8.1+20160608070634",
-    "jquery": "registry:dt/jquery#1.10.0+20160628074423",
-    "jqueryui": "registry:dt/jqueryui#1.9.0+20160627030821",
+    "jquery": "registry:dt/jquery#1.10.0+20160704162008",
+    "jqueryui": "registry:dt/jqueryui#1.11.0+20160727153854",
     "json-stable-stringify": "registry:dt/json-stable-stringify#1.0.0+20160317120654",
     "localforage": "registry:dt/localforage#0.0.0+20160629074517",
-    "lodash": "registry:dt/lodash#3.10.0+20160619033623",
+    "lodash": "registry:dt/lodash#3.10.0+20160819115414",
     "node": "registry:env/node#0.10.0+20160825160117",
-    "react": "registry:dt/react#0.14.0+20160621225615",
-    "react-addons-shallow-compare": "registry:dt/react-addons-shallow-compare#0.14.0+20160316155526"
-  },
-  "dependencies": {
-    "react-dom": "registry:npm/react-dom#15.0.1+20160705210405"
+    "react": "registry:dt/react#0.14.0+20160829191040",
+    "react-addons-shallow-compare": "registry:dt/react-addons-shallow-compare#0.14.0+20160709044614",
+    "react-dom": "registry:dt/react-dom#0.14.0+20160412154040"
   }
 }
