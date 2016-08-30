@@ -8,6 +8,9 @@
   <jsp:directive.attribute name="title" required="false"
       description="Value to appear as the login pop-up's title"/>
 
+  <jsp:directive.attribute name="feature__newProfilePage" required="false" type="java.lang.Boolean"
+      description="Flag indicating to use the new React profile page."/>
+
   <c:set var="title" value="${empty title ? 'Account Login' : title}"/>
   <c:set var="modelConfig" value="${applicationScope.wdkModel.model.modelConfig}"/>
   <c:set var="authMethod" value="${modelConfig.authenticationMethodEnum.name}"/>
@@ -18,8 +21,18 @@
   <c:set var="functionArg" value="{ &quot;isLoggedIn&quot;: ${isLoggedIn}, &quot;userName&quot;: &quot;${userName}&quot; }"/>
 
   <c:choose>
+    <c:when test="${feature__newProfilePage eq true}">
+      <c:set var="profileUrl" value="${pageContext.request.contextPath}/app/user/profile"/>
+    </c:when>
+    <c:otherwise>
+      <c:set var="profileUrl" value="${pageContext.request.contextPath}/showProfile.do"/>
+    </c:otherwise>
+  </c:choose>
+
+
+  <c:choose>
     <c:when test="${isLoggedIn eq true}">
-      <li><a href="${pageContext.request.contextPath}/app/user/profile">${userName}'s Profile</a></li>
+      <li><a href="${profileUrl}">${userName}'s Profile</a></li>
       <li id="user-control">
         <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
       </li>
