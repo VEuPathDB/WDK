@@ -12,6 +12,7 @@
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 <c:set var="webAppUrl" value = "${scheme}://${serverName}/${request_uri}/" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
+<c:set var="config" value="${wdkModel.model.modelConfig}"/>
 
 <c:set var="isGuest">
   <c:choose>
@@ -42,6 +43,18 @@
       isGuest: ${isGuest}
     };
   </c:if>
+  <c:choose>
+    <c:when test="${config.authenticationMethodEnum eq 'OAUTH2'}">
+      wdkConfig.auth = {
+        method: 'OAUTH2',
+        oauthClientId: '${config.oauthClientId}',
+        oauthUrl: '${config.oauthUrl}'
+      };
+    </c:when>
+    <c:otherwise>
+      wdkConfig.auth = { method: 'USERDB' };
+    </c:otherwise>
+  </c:choose>
 </script>
 
 <%--

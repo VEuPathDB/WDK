@@ -8,6 +8,7 @@
     "json-stable-stringify": "registry:dt/json-stable-stringify#1.0.0+20160317120654",
     "localforage": "registry:dt/localforage#0.0.0+20160629074517",
     "lodash": "registry:dt/lodash#3.10.0+20160619033623",
+    "node": "registry:env/node#0.10.0+20160825160117",
     "react": "registry:dt/react#0.14.0+20160621225615",
     "react-addons-shallow-compare": "registry:dt/react-addons-shallow-compare#0.14.0+20160316155526"
   },

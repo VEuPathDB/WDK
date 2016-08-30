@@ -1,8 +1,6 @@
 /* global wdk, wdkConfig */
-import { createElement } from 'react';
-import { render } from 'react-dom';
-import { alert, confirm } from './client/utils/Platform';
-import LoginForm from './client/components/LoginForm';
+import * as AuthUtil from './client/utils/AuthUtil';
+import { confirm } from './client/utils/Platform';
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.
@@ -10,11 +8,21 @@ import LoginForm from './client/components/LoginForm';
 wdk.namespace("window.wdk.user", function(ns, $) {
   "use strict";
 
-  ns.id = function() { return wdkConfig.wdkUser.id; };
-  ns.name = function() { return wdkConfig.wdkUser.name; };
-  ns.country = function() { return wdkConfig.wdkUser.country; };
-  ns.email = function() { return wdkConfig.wdkUser.email; };
-  ns.isGuest = function() { return wdkConfig.guestUser; };
+  let { auth, guestUser, webappUrl, wdkUser } = wdkConfig;
+
+  let authUtilConfig = {
+    webappUrl,
+    serviceUrl: webappUrl + '/service',
+    method: auth.method,
+    oauthUrl: auth.oauthUrl,
+    oauthClientId: auth.oauthClientId
+  };
+
+  ns.id = function() { return wdkUser.id; };
+  ns.name = function() { return wdkUser.name; };
+  ns.country = function() { return wdkUser.country; };
+  ns.email = function() { return wdkUser.email; };
+  ns.isGuest = function() { return guestUser; };
   ns.isUserLoggedIn = function() { return !ns.isGuest(); };
 
   ns.login = function(action, destination = window.location.href) {
@@ -22,68 +30,14 @@ wdk.namespace("window.wdk.user", function(ns, $) {
       let message = `To ${action}, you must be logged in. Would you like to login now?`;
       confirm('Login required', message).then(confirmed => {
         if (confirmed) {
-          renderLoginForm(destination, true);
+          AuthUtil.login(authUtilConfig, destination);
         }
       });
     }
     else {
-      renderLoginForm(destination, true);
+      AuthUtil.login(authUtilConfig, destination);
     }
   };
-
-  let loginContainer;
-  function renderLoginForm(destination, open) {
-    loginContainer = loginContainer || document.body.appendChild(
-      document.createElement('div'));
-    wdk.context.wdkService.getConfig().then(config => {
-      let { authentication, webAppUrl } = config;
-      if (authentication.method === 'OAUTH2') {
-        let { oauthClientId, oauthUrl } = authentication;
-        return wdk.context.wdkService.getOauthStateToken().then(response => {
-          // build URL to OAuth service and redirect
-          let redirectUrlBase = webAppUrl + '/processLogin.do';
-
-          let googleSpecific = (oauthUrl.indexOf("google") != -1);
-          let redirectUrl, authEndpoint;
-          if (googleSpecific) {
-            // hacks to conform to google OAuth2 API
-            redirectUrl = redirectUrlBase;
-            authEndpoint = "auth";
-          }
-          else {
-            redirectUrl = redirectUrlBase + '?redirectUrl=' + encodeURIComponent(destination);
-            authEndpoint = "authorize";
-          }
-
-          let finalOauthUrl = oauthUrl + "/" + authEndpoint + "?" +
-            "response_type=code&" +
-            "scope=" + encodeURIComponent("openid email") + "&" +
-            "state=" + encodeURIComponent(response.oauthStateToken) + "&" +
-            "client_id=" + oauthClientId + "&" +
-            "redirect_uri=" + encodeURIComponent(redirectUrl);
-
-          window.location.assign(finalOauthUrl);
-        }).catch(error => {
-          alert("Unable to fetch your WDK state token.", "Please check your internet connection.");
-          throw error;
-        });
-      }
-      else {
-        let component = render(createElement('div', {}, createElement(LoginForm, {
-          onCancel: () => {
-            renderLoginForm(null, false);
-          },
-          onSubmit: () => {
-          },
-          open: open,
-          action: webAppUrl + '/processLogin.do',
-          redirectUrl: destination,
-          passwordResetUrl: webAppUrl + '/showResetPassword.do',
-          registerUrl: webAppUrl + '/showRegister.do'
-        })), loginContainer);
-      }
-    });
-  }
 
   ns.logout = function() {
     return confirm(
@@ -91,20 +45,7 @@ wdk.namespace("window.wdk.user", function(ns, $) {
       'Note: You must log out of any other EuPathDB sites separately'
     ).then(confirmed => {
       if (confirmed) {
-        wdk.context.wdkService.getConfig().then(config => {
-          let logoutUrl = config.webAppUrl + '/processLogout.do';
-          if (config.authentication.method === 'OAUTH2') {
-            let { oauthUrl } = config.authentication;
-            let googleSpecific = (oauthUrl.indexOf("google") != -1);
-            // don't log user out of google, only the eupath oauth server
-            let nextPage = (googleSpecific ? logoutUrl :
-            oauthUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl));
-            window.location.assign(nextPage);
-          }
-          else {
-            window.location.assign(logoutUrl);
-          }
-        })
+        AuthUtil.logout(authUtilConfig);
       }
     });
   };
@@ -121,7 +62,7 @@ wdk.namespace("window.wdk.user", function(ns, $) {
     if (hasLocalStorage) {
       var item;
       try { item = JSON.parse(localStorage.getItem(key)); }
-      catch(e) {}
+      catch(e) { /* ignore error */ }
       if (item) {
         if (!item.session || item.session === sessionId) {
           return item.value;

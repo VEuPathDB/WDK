@@ -39,7 +39,7 @@ export interface ServiceConfig {
   assetsUrl: string;
   authentication: {
     oauthUrl: string;
-    method: string;
+    method: 'OAUTH2' | 'USERDB';
     oauthClientId: string;
   };
   buildNumber: string;
@@ -81,7 +81,7 @@ type RequestOptions = {
 export default class WdkService {
 
   _store: LocalForage = localforage.createInstance({
-    name: 'WdkService/' + this._serviceUrl
+    name: 'WdkService/' + this.serviceUrl
   });
   _cache: Map<string, Promise<any>> = new Map;
   _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
@@ -91,9 +91,9 @@ export default class WdkService {
   _isInvalidating = false;
 
   /**
-   * @param {string} _serviceUrl Base url for Wdk REST Service.
+   * @param {string} serviceUrl Base url for Wdk REST Service.
    */
-  constructor(private _serviceUrl: string) {
+  constructor(public serviceUrl: string) {
   }
 
   /**
@@ -136,7 +136,7 @@ export default class WdkService {
   }
 
   getAnswerServiceUrl() {
-    return this._serviceUrl + '/answer';
+    return this.serviceUrl + '/answer';
   }
 
   /**
@@ -373,7 +373,7 @@ export default class WdkService {
           reject(error);
         }
       };
-      xhr.open(method.toUpperCase(), this._serviceUrl + url);
+      xhr.open(method.toUpperCase(), this.serviceUrl + url);
       xhr.setRequestHeader('Content-Type', 'application/json');
       if (this._version) {
         xhr.setRequestHeader(CLIENT_WDK_VERSION_HEADER, String(this._version));

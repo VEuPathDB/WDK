@@ -5,6 +5,7 @@ import { broadcast } from '../utils/StaticDataUtils';
 import {ActionCreator} from "../ActionCreator";
 import {User} from "../utils/WdkUser";
 import {Record} from "../utils/WdkModel";
+import * as AuthUtil from '../utils/AuthUtil';
 
 export let actionTypes = {
 
@@ -140,12 +141,14 @@ export let updateChangePasswordForm: ActionCreator = (formData: string) => {
  * Show a warning that user must be logged in for feature
  */
 export let showLoginWarning: ActionCreator = (attemptedAction: string, destination?: string) => {
-  return confirm(
-    'Login Required',
-    'To ' + attemptedAction + ', you must be logged in. Would you like to login now?'
-  ).then(confirmed => {
-    return confirmed ? showLoginForm(destination) : dismissLoginForm();
-  });
+  return function(dispatch) {
+    confirm(
+      'Login Required',
+      'To ' + attemptedAction + ', you must be logged in. Would you like to login now?'
+    ).then(confirmed => {
+      if (confirmed) dispatch(showLoginForm(destination));
+    });
+  }
 };
 
 /**
@@ -153,103 +156,40 @@ export let showLoginWarning: ActionCreator = (attemptedAction: string, destinati
  */
 export let showLoginForm: ActionCreator = (destination = window.location.href) => {
   return function(dispatch, {wdkService}) {
-    wdkService.getConfig()
-    .then(property('authentication.method'))
-    .then((method: string) => dispatch(getShowLoginFormImpl(method, destination)));
+    wdkService.getConfig().then(config => {
+      AuthUtil.login({
+        webappUrl: config.webAppUrl,
+        serviceUrl: wdkService.serviceUrl,
+        method: config.authentication.method,
+        oauthUrl: config.authentication.oauthUrl,
+        oauthClientId: config.authentication.oauthClientId
+      }, destination);
+    });
   };
 };
 
-/** get showLoginForm implementation based on authentication method */
-function getShowLoginFormImpl(method: string, destination: string) {
-  return method === 'OAUTH2' ? showOauthLoginForm(destination) : showUserdbLoginForm(destination);
-}
-
-/** redirect to oauth server login page */
-let showOauthLoginForm: ActionCreator = (destination: string) => {
-  return function run(dispatch, { wdkService }) {
-    dispatch(wdkService.getConfig().then((config) => {
-      let { webAppUrl, authentication: { oauthClientId, oauthUrl } } = config;
-      return wdkService.getOauthStateToken().then(response => {
-        // build URL to OAuth service and redirect
-        let redirectUrlBase = webAppUrl + '/processLogin.do';
-
-        let googleSpecific = (oauthUrl.indexOf("google") != -1);
-        let redirectUrl: string, authEndpoint: string;
-        if (googleSpecific) {
-          // hacks to conform to google OAuth2 API
-          redirectUrl = redirectUrlBase;
-          authEndpoint = "auth";
-        }
-        else {
-          redirectUrl = redirectUrlBase + '?redirectUrl=' + encodeURIComponent(destination);
-          authEndpoint = "authorize";
-        }
-
-        let finalOauthUrl = oauthUrl + "/" + authEndpoint + "?" +
-          "response_type=code&" +
-          "scope=" + encodeURIComponent("openid email") + "&" +
-          "state=" + encodeURIComponent(response.oauthStateToken) + "&" +
-          "client_id=" + oauthClientId + "&" +
-          "redirect_uri=" + encodeURIComponent(redirectUrl);
-
-        window.location.assign(finalOauthUrl);
-        return {
-          type: actionTypes.LOGIN_REDIRECT,
-          payload: undefined
-        }
-      }).catch((error: Error) => {
-        alert("Unable to fetch your WDK state token.", "Please check your internet connection.");
-        console.error(error);
-        return {
-          type: actionTypes.LOGIN_ERROR,
-          payload: { error }
-        };
-      });
-    }));
-  }
-};
-
-/** dispatch action to show modal dialog */
-let showUserdbLoginForm: ActionCreator = (destination: string) => {
-  return broadcast({
-    type: actionTypes.SHOW_LOGIN_MODAL,
-    payload: {
-      destination
-    }
-  });
-};
-
-export let dismissLoginForm: ActionCreator = () => {
-  return { type: actionTypes.LOGIN_DISMISSED, payload: undefined };
-};
-
 export let showLogoutWarning: ActionCreator = () => {
-  return confirm(
-    'Are you sure you want to logout?',
-    'Note: You must log out of any other EuPathDB sites separately'
-  ).then(confirmed => {
-    return confirmed ? logout() : { type: actionTypes.LOGIN_DISMISSED, payload: undefined };
-  });
+  return function(dispatch) {
+    confirm(
+      'Are you sure you want to logout?',
+      'Note: You must log out of any other EuPathDB sites separately'
+    ).then(confirmed => {
+      if (confirmed) dispatch(logout());
+    });
+  }
 };
 
 let logout: ActionCreator = () => {
   return function run(dispatch, { wdkService }) {
-    dispatch(wdkService.getConfig().then(config => {
-      let { authentication: { method, oauthUrl }, webAppUrl } = config;
-      let logoutUrl = webAppUrl + '/processLogout.do';
-      if (method === 'USER_DB')
-        location.assign(logoutUrl);
-      else {
-        let googleSpecific = (oauthUrl.indexOf("google") != -1);
-        // don't log user out of google, only the eupath oauth server
-        let nextPage = (googleSpecific ? logoutUrl : oauthUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl));
-        location.assign(nextPage);
-      }
-      return {
-        type: actionTypes.LOGOUT_REDIRECT,
-        payload: undefined
-      }
-    }));
+    wdkService.getConfig().then(config => {
+      AuthUtil.logout({
+        webappUrl: config.webAppUrl,
+        serviceUrl: wdkService.serviceUrl,
+        method: config.authentication.method,
+        oauthUrl: config.authentication.oauthUrl,
+        oauthClientId: config.authentication.oauthClientId
+      });
+    });
   }
 };
 
