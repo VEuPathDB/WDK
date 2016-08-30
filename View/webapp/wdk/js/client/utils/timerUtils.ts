@@ -97,7 +97,7 @@ export class IntervalList {
     }
 
     let loop = () => {
-      this._id = setTimeout(() => {
+      this._id = window.setTimeout(() => {
         this._callbacks.forEach(invoke);
         loop();
       }, this._interval);
