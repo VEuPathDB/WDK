@@ -117,6 +117,7 @@ public class TableRowUpdater<T extends TableRow> {
         threads.add(thread);
         results.add(_exec.submit(thread));
       }
+      _exec.shutdown();
   
       // execute query to read all records from DB and submit them to handler threads
       new SQLRunner(userDb.getDataSource(), _factory.getAllRecordsSql(getUserSchema(_wdkModel)))
