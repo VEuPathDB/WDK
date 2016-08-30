@@ -38,11 +38,13 @@ public class TableRowInterfaces {
   }
 
   public static class RowResult<T> extends TwoTuple<Boolean, T> {
+
     public RowResult(Boolean isModified, T record) {
       super(isModified, record);
     }
+
     public boolean isModified() { return getFirst(); }
-    public void setModified() { this.set(true, getSecond()); }
+    public void setModified() { set(true, getSecond()); }
     public T getTableRow() { return getSecond(); }
   }
 
