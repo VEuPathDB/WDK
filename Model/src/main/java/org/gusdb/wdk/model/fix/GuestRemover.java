@@ -46,7 +46,6 @@ public class GuestRemover extends BaseCLI {
     }
     finally {
       LOG.info("WDK User Remover done.");
-      System.exit(0);
     }
   }
 

@@ -51,7 +51,6 @@ public class StepParamExpander extends BaseCLI {
     }
     finally {
       logger.info("step params expanded.");
-      System.exit(0);
     }
   }
 

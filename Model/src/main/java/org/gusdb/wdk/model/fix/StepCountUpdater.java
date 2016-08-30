@@ -51,7 +51,6 @@ public class StepCountUpdater extends BaseCLI {
             throw ex;
         } finally {
             logger.info("step count updater done.");
-            System.exit(0);
         }
     }
 

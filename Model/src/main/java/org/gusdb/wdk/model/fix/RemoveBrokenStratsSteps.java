@@ -42,7 +42,6 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     }
     finally {
       LOG.info("WDK RemoveBrokenStratsSteps done.");
-      System.exit(0);
     }
   }
 
@@ -124,7 +123,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       }
       catch (SQLException ex) {
         LOG.warn(ex.getMessage());
-        remain = true;
+        throw ex;
       }
     }
 

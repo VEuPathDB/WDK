@@ -47,7 +47,6 @@ public class StepValidator extends BaseCLI {
     }
     finally {
       logger.info("step validator done.");
-      System.exit(0);
     }
   }
 
