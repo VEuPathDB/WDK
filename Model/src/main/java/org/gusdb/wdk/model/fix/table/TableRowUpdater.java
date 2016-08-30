@@ -40,6 +40,8 @@ public class TableRowUpdater<T extends TableRow> {
   private static final int NUM_THREADS = 20;
   private static final int BATCH_COMMIT_SIZE = 100;
 
+  private static final boolean UPDATES_DISABLED = true;
+
   private static enum ExitStatus {
     SUCCESS, USER_ERROR, STEP_ERROR, THREAD_ERROR, PROGRAM_ERROR;
   }
@@ -65,6 +67,7 @@ public class TableRowUpdater<T extends TableRow> {
     finally {
       if (wdkModel != null) wdkModel.releaseResources();
     }
+    System.out.println("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
     System.exit(exitValue.ordinal());
   }
 
@@ -338,8 +341,10 @@ public class TableRowUpdater<T extends TableRow> {
 
       };
 
-      new SQLRunner(_userDb.getDataSource(), _factory.getUpdateRecordSql(
-          getUserSchema(_wdkModel)), true).executeUpdateBatch(modifiedRecordBatch);
+      if (!UPDATES_DISABLED) {
+        new SQLRunner(_userDb.getDataSource(), _factory.getUpdateRecordSql(
+            getUserSchema(_wdkModel)), true).executeUpdateBatch(modifiedRecordBatch);
+      }
 
       modifiedRows.clear();
     }
