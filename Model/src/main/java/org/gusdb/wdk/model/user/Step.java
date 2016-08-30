@@ -40,9 +40,9 @@ public class Step {
 
   public static final int RESET_SIZE_FLAG = -1;
   
-  private static final String KEY_PARAMS = "params";
-  private static final String KEY_FILTERS = "filters";
-  private static final String KEY_VIEW_FILTERS = "viewFilters";
+  public static final String KEY_PARAMS = "params";
+  public static final String KEY_FILTERS = "filters";
+  public static final String KEY_VIEW_FILTERS = "viewFilters";
 
   private static final Logger logger = Logger.getLogger(Step.class);
 
