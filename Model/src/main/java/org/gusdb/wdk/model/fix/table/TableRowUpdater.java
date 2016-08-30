@@ -8,7 +8,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
@@ -27,6 +32,8 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowUpdaterPlugin;
 
 public class TableRowUpdater<T extends TableRow> {
+
+  private static final Logger LOG = Logger.getLogger(TableRowUpdater.class);
 
   // constants controlling behavior
   private static final int MAX_QUEUE_SIZE = 30;
@@ -78,6 +85,7 @@ public class TableRowUpdater<T extends TableRow> {
   private final TableRowFactory<T> _factory;
   private final TableRowUpdaterPlugin<T> _plugin;
   private final WdkModel _wdkModel;
+  private final ExecutorService _exec = Executors.newFixedThreadPool(NUM_THREADS);
 
   public TableRowUpdater(TableRowFactory<T> factory, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
     _factory = factory;
@@ -96,7 +104,9 @@ public class TableRowUpdater<T extends TableRow> {
   }
 
   private void run() {
+    long startTime = System.currentTimeMillis();
     List<RowHandler<T>> threads = new ArrayList<>();
+    List<Future<Stats>> results = new ArrayList<>();
     try {
       DatabaseInstance userDb = _wdkModel.getUserDb();
       RecordQueue<T> recordQueue = new RecordQueue<>();
@@ -105,7 +115,7 @@ public class TableRowUpdater<T extends TableRow> {
       for (int i = 0; i < NUM_THREADS; i++) {
         RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _factory, _wdkModel);
         threads.add(thread);
-        thread.start();
+        results.add(_exec.submit(thread));
       }
   
       // execute query to read all records from DB and submit them to handler threads
@@ -127,8 +137,35 @@ public class TableRowUpdater<T extends TableRow> {
         // wait for threads to finish
         while (!allThreadsFinished(threads)) { /* wait */ }
 
+        // collect stats and display
+        Stats aggregate = new Stats();
+        int numThreadProblems = 0;
+        for (Future<Stats> result : results) {
+          try {
+            aggregate.incorporate(result.get());
+          }
+          catch (ExecutionException | InterruptedException e) {
+            numThreadProblems++;
+          }
+        }
+        LOG.info(numThreadProblems + " threads exited abnormally.");
+        LOG.info("Duration: " + getDuration(startTime));
+        LOG.info("Aggregate results: " + aggregate);
       }
     }
+  }
+
+  private String getDuration(long startTime) {
+    long totalMillis = System.currentTimeMillis() - startTime;
+    long millis = totalMillis % 1000;
+    long totalSeconds = totalMillis / 1000;
+    if (totalSeconds == 0) return totalSeconds + "." + millis;
+    long seconds = totalSeconds % 60;
+    long totalMinutes = totalSeconds / 60;
+    if (totalMinutes == 0) return totalMinutes + ":" + seconds + "." + millis;
+    long minutes = totalMinutes % 60;
+    long hours = totalMinutes / 60;
+    return hours + ":" + minutes + ":" + seconds + "." + millis;
   }
 
   private static String getUserSchema(WdkModel wdkModel) {
@@ -166,9 +203,26 @@ public class TableRowUpdater<T extends TableRow> {
     }
   }
 
-  private static class RowHandler<T extends TableRow> extends Thread {
+  private static class Stats {
 
-    private static final Logger LOG = Logger.getLogger(RowHandler.class);
+    public int numProcessed = 0;
+    public int numModified = 0;
+    public int numRecordErrors = 0;
+
+    public void incorporate(Stats result) {
+      numProcessed += result.numProcessed;
+      numModified += result.numModified;
+      numRecordErrors += result.numRecordErrors;
+    }
+
+    @Override
+    public String toString() {
+      return "Processed " + numProcessed + " records" +
+          " (" + numModified + " modified, " + numRecordErrors + " errors)";
+    }
+  }
+
+  private static class RowHandler<T extends TableRow> implements Callable<Stats> {
 
     private final int _threadId;
     private final RecordQueue<T> _recordQueue;
@@ -207,43 +261,41 @@ public class TableRowUpdater<T extends TableRow> {
     }
 
     @Override
-    public void run() {
+    public Stats call() {
       log("Ready");
-      int numProcessedRecords = 0;
-      int numModifiedRecords = 0;
-      int numErrors = 0;
+      Stats stats = new Stats();
       List<T> modifiedRecords = new ArrayList<>();
       while (!_commitAndFinishFlag.get()) {
         T nextRecord = _recordQueue.popRow();
         if (nextRecord != null) {
-          numProcessedRecords++;
+          stats.numProcessed++;
           RowResult<T> result = null;
           try {
             result = _plugin.processRecord(nextRecord, _wdkModel);
           }
           catch (Exception e) {
             error("Exception processing record " + nextRecord.getDisplayId(), e);
-            numErrors++;
+            stats.numRecordErrors++;
           }
           if (result != null) {
             if (result.isModified()) {
               // record has been modified
               modifiedRecords.add(result.getTableRow());
-              numModifiedRecords++;
+              stats.numModified++;
             }
             if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
               update(modifiedRecords);
             }
           }
-          if (numProcessedRecords % 1000 == 0) {
-            log("Processed " + numProcessedRecords + " records" +
-                " (" + numModifiedRecords + " modified, " + numErrors + " errors)");
+          if (stats.numProcessed % 1000 == 0) {
+            log(stats.toString());
           }
         }
       }
       update(modifiedRecords);
-      log("Shutting down. Processed " + numProcessedRecords + ", Modified " + numModifiedRecords);
+      log("Shutting down. " + stats.toString());
       _isFinished.set(true);
+      return stats;
     }
 
     private void update(final List<T> modifiedRows) {
