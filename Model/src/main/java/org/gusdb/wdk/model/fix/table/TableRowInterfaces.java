@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.fix.table;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -11,10 +12,13 @@ public class TableRowInterfaces {
 
   public static interface TableRowUpdaterPlugin<T extends TableRow> {
 
+    public boolean configure(WdkModel wdkModel, List<String> additionalArgs);
+
     public TableRowUpdater<T> getTableRowUpdater(WdkModel wdkModel);
 
-    public RowResult<T> processRecord(T nextRow, WdkModel wdkModel) throws Exception;
+    public RowResult<T> processRecord(T nextRow) throws Exception;
 
+    public void dumpStatistics();
   }
 
   public static interface TableRowFactory<T extends TableRow> {

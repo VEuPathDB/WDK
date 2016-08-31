@@ -43,12 +43,13 @@ public class TableRowUpdater<T extends TableRow> {
   private static final boolean UPDATES_DISABLED = false;
 
   private static enum ExitStatus {
-    SUCCESS, USER_ERROR, STEP_ERROR, THREAD_ERROR, PROGRAM_ERROR;
+    SUCCESS, BAD_UPDATER_ARGS, BAD_PLUGIN_ARGS, PROGRAM_ERROR, THREAD_ERROR, RECORD_ERRORS;
   }
 
   private static class Config {
     public String projectId;
     public TableRowUpdaterPlugin<?> plugin;
+    public List<String> additionalArgs;
   }
 
   public static void main(String[] args) {
@@ -57,8 +58,14 @@ public class TableRowUpdater<T extends TableRow> {
     ExitStatus exitValue = ExitStatus.SUCCESS;
     try {
       wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
-      TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
-      exitValue = updater.run();
+      if (config.plugin.configure(wdkModel, config.additionalArgs)) {
+        TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
+        exitValue = updater.run();
+        config.plugin.dumpStatistics();
+      }
+      else {
+        exitValue = ExitStatus.BAD_PLUGIN_ARGS;
+      }
     }
     catch (Exception e) {
       System.err.println(FormatUtil.getStackTrace(e));
@@ -72,17 +79,22 @@ public class TableRowUpdater<T extends TableRow> {
   }
 
   private static Config parseArgs(String[] args) {
-    if (args.length != 2) {
+    if (args.length < 2) {
       System.err.println(NL +
-          "USAGE: TableRowUpdater <projectId> <plugin_class_name>" + NL + NL +
+          "USAGE: TableRowUpdater <projectId> <plugin_class_name> <args_to_plugin...>" + NL + NL +
           "  projectId: Name of project in XML/config dir (e.g. PlasmoDB)" + NL +
           "  plugin_class_name: Name of plugin's Java class " +
-          "(must implement " + TableRowUpdaterPlugin.class.getName() + ")" + NL);
-      System.exit(ExitStatus.USER_ERROR.ordinal());
+          "(must implement " + TableRowUpdaterPlugin.class.getName() + ")" + NL +
+          "  args_to_plugin: any additional arguments to be passed to your plugin via configure()");
+      System.exit(ExitStatus.BAD_UPDATER_ARGS.ordinal());
     }
     Config config = new Config();
     config.projectId = args[0];
     String pluginClassName = args[1];
+    config.additionalArgs = new ArrayList<>();
+    for (int i = 2; i < args.length; i++) {
+      config.additionalArgs.add(args[i]);
+    }
     try {
       @SuppressWarnings("unchecked")
       Class<? extends TableRowUpdaterPlugin<?>> pluginClass =
@@ -168,7 +180,7 @@ public class TableRowUpdater<T extends TableRow> {
       }
     }
     if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
-    if (aggregate.numRecordErrors > 0) return ExitStatus.STEP_ERROR;
+    if (aggregate.numRecordErrors > 0) return ExitStatus.RECORD_ERRORS;
     return ExitStatus.SUCCESS;
   }
 
@@ -295,7 +307,7 @@ public class TableRowUpdater<T extends TableRow> {
             stats.numProcessed++;
             RowResult<T> result = null;
             try {
-              result = _plugin.processRecord(nextRecord, _wdkModel);
+              result = _plugin.processRecord(nextRecord);
             }
             catch (Exception e) {
               error("Exception processing record " + nextRecord.getDisplayId(), e);

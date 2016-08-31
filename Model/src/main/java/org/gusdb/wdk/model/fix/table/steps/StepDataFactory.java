@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.fix.table.tables;
+package org.gusdb.wdk.model.fix.table.steps;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.FunctionalInterfaces.notEqualTo;
