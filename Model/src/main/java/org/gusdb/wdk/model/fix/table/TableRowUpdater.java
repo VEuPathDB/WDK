@@ -176,12 +176,13 @@ public class TableRowUpdater<T extends TableRow> {
     long totalMillis = System.currentTimeMillis() - startTime;
     long millis = totalMillis % 1000;
     long totalSeconds = totalMillis / 1000;
-    if (totalSeconds == 0) return totalSeconds + "." + millis;
+    if (totalSeconds == 0) return  millis + "ms";
     long seconds = totalSeconds % 60;
     long totalMinutes = totalSeconds / 60;
-    if (totalMinutes == 0) return totalMinutes + ":" + pad10(seconds) + "." + millis;
+    if (totalMinutes == 0) return seconds + "." + millis + " seconds";
     long minutes = totalMinutes % 60;
     long hours = totalMinutes / 60;
+    if (hours == 0) return minutes + ":" + pad10(seconds) + "." + millis;
     return hours + ":" + pad10(minutes) + ":" + pad10(seconds) + "." + millis;
   }
 
@@ -239,7 +240,7 @@ public class TableRowUpdater<T extends TableRow> {
 
     @Override
     public String toString() {
-      return "Processed " + numProcessed + " records" +
+      return "Processed " + numProcessed + " total records" +
           " (" + numModified + " modified, " + numRecordErrors + " errors)";
     }
   }
@@ -284,40 +285,48 @@ public class TableRowUpdater<T extends TableRow> {
 
     @Override
     public Stats call() {
-      log("Ready");
-      Stats stats = new Stats();
-      List<T> modifiedRecords = new ArrayList<>();
-      while (!_commitAndFinishFlag.get()) {
-        T nextRecord = _recordQueue.popRow();
-        if (nextRecord != null) {
-          stats.numProcessed++;
-          RowResult<T> result = null;
-          try {
-            result = _plugin.processRecord(nextRecord, _wdkModel);
-          }
-          catch (Exception e) {
-            error("Exception processing record " + nextRecord.getDisplayId(), e);
-            stats.numRecordErrors++;
-          }
-          if (result != null) {
-            if (result.isModified()) {
-              // record has been modified
-              modifiedRecords.add(result.getTableRow());
-              stats.numModified++;
+      try {
+        log("Ready");
+        Stats stats = new Stats();
+        List<T> modifiedRecords = new ArrayList<>();
+        while (!_commitAndFinishFlag.get()) {
+          T nextRecord = _recordQueue.popRow();
+          if (nextRecord != null) {
+            stats.numProcessed++;
+            RowResult<T> result = null;
+            try {
+              result = _plugin.processRecord(nextRecord, _wdkModel);
             }
-            if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
-              update(modifiedRecords);
+            catch (Exception e) {
+              error("Exception processing record " + nextRecord.getDisplayId(), e);
+              stats.numRecordErrors++;
             }
-          }
-          if (stats.numProcessed % 1000 == 0) {
-            log(stats.toString());
+            if (result != null) {
+              if (result.isModified()) {
+                // record has been modified
+                modifiedRecords.add(result.getTableRow());
+                stats.numModified++;
+              }
+              if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
+                update(modifiedRecords);
+              }
+            }
+            if (stats.numProcessed % 1000 == 0) {
+              log(stats.toString());
+            }
           }
         }
+        update(modifiedRecords);
+        log("Shutting down. " + stats.toString());
+        return stats;
       }
-      update(modifiedRecords);
-      log("Shutting down. " + stats.toString());
-      _isFinished.set(true);
-      return stats;
+      catch (Exception e) {
+        error("Ended unexpectedly", e);
+        throw e;
+      }
+      finally {
+        _isFinished.set(true);
+      }
     }
 
     private void update(final List<T> modifiedRows) {
@@ -346,6 +355,8 @@ public class TableRowUpdater<T extends TableRow> {
 
       };
 
+      log("Preparing to write " + modifiedRows.size() + " records to DB. " +
+          "First record: " + modifiedRows.iterator().next().getDisplayId());
       if (!UPDATES_DISABLED) {
         new SQLRunner(_userDb.getDataSource(), _factory.getUpdateRecordSql(
             getUserSchema(_wdkModel)), true).executeUpdateBatch(modifiedRecordBatch);
