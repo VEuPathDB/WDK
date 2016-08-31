@@ -24,6 +24,7 @@ public class StepData implements TableRow {
   private String _legacyAnswerFilter;
   private String _projectId;
   private String _questionName;
+  private String _origParamFiltersString;
   private JSONObject _paramFilters;
 
   @Override
@@ -79,6 +80,14 @@ public class StepData implements TableRow {
 
   public void setQuestionName(String questionName) {
     _questionName = questionName;
+  }
+
+  public String getOrigParamFiltersString() {
+    return _origParamFiltersString;
+  }
+
+  public void setOrigParamFiltersString(String origParamFiltersString) {
+    _origParamFiltersString = origParamFiltersString;
   }
 
   public JSONObject getParamFilters() {

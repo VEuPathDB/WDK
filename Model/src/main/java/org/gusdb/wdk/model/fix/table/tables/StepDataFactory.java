@@ -77,7 +77,8 @@ public class StepDataFactory implements TableRowFactory<StepData> {
     if (rs.wasNull()) newRow.setLegacyAnswerFilter(null);
     newRow.setProjectId(rs.getString(PROJECT_ID));
     newRow.setQuestionName(rs.getString(QUESTION_NAME));
-    newRow.setParamFilters(new JSONObject(platform.getClobData(rs, DISPLAY_PARAMS)));
+    newRow.setOrigParamFiltersString(platform.getClobData(rs, DISPLAY_PARAMS));
+    newRow.setParamFilters(new JSONObject(newRow.getOrigParamFiltersString()));
     return newRow;
   }
 
