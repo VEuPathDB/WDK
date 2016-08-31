@@ -37,7 +37,7 @@ public class TableRowUpdater<T extends TableRow> {
 
   // constants controlling behavior
   private static final int MAX_QUEUE_SIZE = 30;
-  private static final int NUM_THREADS = 20;
+  private static final int NUM_THREADS = 15;
   private static final int BATCH_COMMIT_SIZE = 100;
 
   private static final boolean UPDATES_DISABLED = false;
@@ -356,7 +356,7 @@ public class TableRowUpdater<T extends TableRow> {
       };
 
       log("Preparing to write " + modifiedRows.size() + " records to DB. " +
-          "First record: " + modifiedRows.iterator().next().getDisplayId());
+          "First record: " + (modifiedRows.isEmpty() ? "<none>" : modifiedRows.get(0).getDisplayId()));
       if (!UPDATES_DISABLED) {
         new SQLRunner(_userDb.getDataSource(), _factory.getUpdateRecordSql(
             getUserSchema(_wdkModel)), true).executeUpdateBatch(modifiedRecordBatch);
