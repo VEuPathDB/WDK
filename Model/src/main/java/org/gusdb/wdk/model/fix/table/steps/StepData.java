@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.fix.table.tables;
+package org.gusdb.wdk.model.fix.table.steps;
 
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRow;
 import org.json.JSONObject;
