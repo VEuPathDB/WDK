@@ -1,7 +1,8 @@
 package org.gusdb.wdk.model.fix.table.steps;
 
 import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.functional.FunctionalInterfaces.notEqualTo;
+import static org.gusdb.fgputil.functional.FunctionalInterfaces.equalTo;
+import static org.gusdb.fgputil.functional.FunctionalInterfaces.negate;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.toMapFunction;
@@ -48,7 +49,7 @@ public class StepDataFactory implements TableRowFactory<StepData> {
   
   private static final String SELECT_COLS_TEXT = join(COLS, ",");
 
-  private static final List<String> UPDATE_COLS = filter(Arrays.asList(COLS), notEqualTo(STEP_ID));
+  private static final List<String> UPDATE_COLS = filter(Arrays.asList(COLS), negate(equalTo(STEP_ID)));
 
   private static final String UPDATE_COLS_TEXT = join(mapToList(UPDATE_COLS, new Function<String, String>() {
         @Override public String apply(String col) { return col + " = ?"; }
