@@ -36,9 +36,9 @@ public class StepQuestionUpdater {
   }
 
   public boolean updateQuestionName(RowResult<StepData> result) {
-    String questionName  = result.getTableRow().getQuestionName();
+    String questionName  = result.getRow().getQuestionName();
     if (_mapping.containsKey(questionName)) {
-      result.getTableRow().setQuestionName(_mapping.get(questionName));
+      result.getRow().setQuestionName(_mapping.get(questionName));
       result.setModified();
       return true;
     }
