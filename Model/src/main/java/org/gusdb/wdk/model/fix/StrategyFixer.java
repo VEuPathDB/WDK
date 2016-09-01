@@ -29,14 +29,16 @@ public class StrategyFixer extends BaseCLI {
 
   private static final Logger LOG = Logger.getLogger(StrategyFixer.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     StrategyFixer fixer = new StrategyFixer(cmdName);
     try {
       fixer.invoke(args);
-    }
-    finally {
       LOG.info("strategy fixer finished.");
+      System.exit(0);
+    } catch (Exception e) {
+	e.printStackTrace();
+	System.exit(1);
     }
   }
 

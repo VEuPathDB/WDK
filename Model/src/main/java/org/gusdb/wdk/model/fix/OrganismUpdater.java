@@ -32,7 +32,7 @@ public class OrganismUpdater {
   private static final int lenParamOrg = PARAM_ORGANISM.length;
   private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
-  public static void main(String[] args) throws WdkModelException, SQLException, IOException, JSONException {
+  public static void main(String[] args) {
 
     // the format of the mapping file is:
     // old_name=new_name
@@ -42,8 +42,14 @@ public class OrganismUpdater {
       System.exit(1);
     }
 
-    OrganismUpdater updater = new OrganismUpdater(args[0], args[1]);
-    updater.update();
+    try {
+      OrganismUpdater updater = new OrganismUpdater(args[0], args[1]);
+      updater.update();
+      System.exit(0);
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   private final String projectId;

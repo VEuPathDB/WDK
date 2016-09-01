@@ -81,6 +81,6 @@ them each in their own tab in firefox.
 
 ";
 
-exit(1);
+exit(1) && exit(1);
 
 }

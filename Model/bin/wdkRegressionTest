@@ -21,7 +21,7 @@ if ($loadNewDatabase){
     
     my $dbCmd = "wdkTestDb -drop -create -model $model"; 
     print STDERR "Performing database management with command $dbCmd\n\n" if $verbose;
-    system($dbCmd);
+    system($dbCmd) && exit(1);
 }
 
 my $commandFh = FileHandle->new("<" . $commandListFile);

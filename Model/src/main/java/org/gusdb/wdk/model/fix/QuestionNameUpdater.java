@@ -24,8 +24,7 @@ public class QuestionNameUpdater {
 
   private static final Logger logger = Logger.getLogger(QuestionNameUpdater.class);
 
-  public static void main(String[] args) throws WdkModelException,
-      SQLException, IOException {
+  public static void main(String[] args)  {
 
     // the format of the mapping file is:
     // old_name=new_name
@@ -35,9 +34,15 @@ public class QuestionNameUpdater {
       System.exit(1);
     }
 
-    QuestionNameUpdater updater = new QuestionNameUpdater(args[0], args[1]);
-    updater.update();
-   }
+    try {
+      QuestionNameUpdater updater = new QuestionNameUpdater(args[0], args[1]);
+      updater.update();
+      System.exit(0);
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
 
   private final String projectId;
   private final WdkModel wdkModel;

@@ -38,19 +38,15 @@ public class StepCountUpdater extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StepCountUpdater.class);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String cmdName = System.getProperty("cmdName");
         StepCountUpdater updater = new StepCountUpdater(cmdName);
         try {
             updater.invoke(args);
-        } catch (RuntimeException ex) {
-            ex.printStackTrace();
-            throw ex;
+	    System.exit(0);
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw ex;
-        } finally {
-            logger.info("step count updater done.");
+	    System.exit(1);
         }
     }
 

@@ -34,18 +34,17 @@ public class GuestRemover extends BaseCLI {
 
   private static final Logger LOG = Logger.getLogger(GuestRemover.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     GuestRemover backup = new GuestRemover(cmdName);
     try {
       backup.invoke(args);
+      LOG.info("WDK User Remover done.");
+      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw ex;
-    }
-    finally {
-      LOG.info("WDK User Remover done.");
+      System.exit(1);
     }
   }
 

@@ -11,4 +11,4 @@ my $envJvmOpts = $ENV{GUSJVMOPTS};
 
 my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.fix.RunPublicStrats $args";
 
-system($cmd);
+system($cmd) && exit(1);

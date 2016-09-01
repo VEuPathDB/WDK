@@ -26,18 +26,17 @@ public class EmailListsGenerator extends BaseCLI {
 
   private static final Logger logger = Logger.getLogger(EmailListsGenerator.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     EmailListsGenerator generator = new EmailListsGenerator(cmdName);
     try {
       generator.invoke(args);
+      logger.info("email lists generator done.");
+      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw ex;
-    }
-    finally {
-      logger.info("email lists generator done.");
+      System.exit(1);
     }
   }
 
