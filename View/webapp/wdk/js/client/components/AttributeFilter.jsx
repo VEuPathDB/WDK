@@ -1086,7 +1086,7 @@ var HistogramField = React.createClass({
     toHistogramValue: React.PropTypes.func.isRequired,
     onChange: React.PropTypes.func.isRequired,
     field: React.PropTypes.object.isRequired,
-    filter: React.PropTypes.object.isRequired,
+    filter: React.PropTypes.object,
     overview: React.PropTypes.node.isRequired,
     displayName: React.PropTypes.string.isRequired
   },
@@ -1112,7 +1112,7 @@ var HistogramField = React.createClass({
     var inputMax = this.refs.max.value
     var min = inputMin === '' ? null : this.props.toFilterValue(inputMin);
     var max = inputMax === '' ? null : this.props.toFilterValue(inputMax);
-    this.emitChange({ min, max });
+    if (!isNaN(min) && !isNaN(max)) this.emitChange({ min, max });
   },
 
   updateFilter(range) {
@@ -1159,7 +1159,7 @@ var HistogramField = React.createClass({
             type="text"
             size="6"
             placeholder={distMin}
-            value={min}
+            value={min || ''}
             onChange={this.handleChange}
           />
           {' and '}
@@ -1168,7 +1168,7 @@ var HistogramField = React.createClass({
             type="text"
             size="6"
             placeholder={distMax}
-            value={max}
+            value={max || ''}
             onChange={this.handleChange}
           />
           <span className="selection-total">{selection}</span>
@@ -1340,7 +1340,7 @@ fieldComponents.number = React.createClass({
   },
 
   toFilterValue(value) {
-    return Number(value);
+    return value;
   },
 
   render() {

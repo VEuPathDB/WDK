@@ -37,12 +37,12 @@ export default class LazyFilterService extends FilterService {
   selectField(field) {
     this.cancelXhr(this._pendingSelectField);
     this._pendingSelectField = field;
-    FilterService.prototype.selectField.call(this, field);
+    super.selectField(field);
   }
 
   updateColumns(fields) {
     fields.forEach(field => this.cancelXhr(field));
-    FilterService.prototype.updateColumns.call(this, fields);
+    super.updateColumns(fields);
   }
 
   cancelXhr(field) {
