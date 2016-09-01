@@ -75,7 +75,12 @@ public class TableRowUpdater<T extends TableRow> {
 
   // constants exhibiting various exit statuses
   private static enum ExitStatus {
-    SUCCESS, BAD_UPDATER_ARGS, BAD_PLUGIN_ARGS, PROGRAM_ERROR, THREAD_ERROR, RECORD_ERRORS;
+    SUCCESS,
+    BAD_UPDATER_ARGS,
+    BAD_PLUGIN_ARGS,
+    PROGRAM_ERROR,
+    THREAD_ERROR,
+    RECORD_ERRORS;
   }
 
   /**%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
@@ -84,28 +89,42 @@ public class TableRowUpdater<T extends TableRow> {
 
   public static void main(String[] args) {
     LOG.info(TableRowUpdater.class.getSimpleName() + " started with args: " + FormatUtil.printArray(args));
-    Config config = parseArgs(args);
-    WdkModel wdkModel = null;
     ExitStatus exitValue = ExitStatus.SUCCESS;
+    WdkModel wdkModel = null;
     try {
-      wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
-      LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
-          " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
-      if (config.plugin.configure(wdkModel, config.additionalArgs)) {
-        TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
-        exitValue = updater.run();
-        config.plugin.dumpStatistics();
+      Config config = parseArgs(args);
+      try {
+        wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
+        try {
+          LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
+              " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
+          config.plugin.configure(wdkModel, config.additionalArgs);
+          try {
+            TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
+            exitValue = updater.run();
+            config.plugin.dumpStatistics();
+          }
+          catch (Exception e) {
+            LOG.error("Error during processing", e);
+            exitValue = ExitStatus.PROGRAM_ERROR;
+          }
+        }
+        catch (Exception e) {
+          LOG.error("Error occured while configuring plugin", e);
+          exitValue = ExitStatus.BAD_PLUGIN_ARGS;
+        }
       }
-      else {
-        exitValue = ExitStatus.BAD_PLUGIN_ARGS;
+      catch (Exception e) {
+        LOG.error("Error parsing WDK Model", e);
+        exitValue = ExitStatus.PROGRAM_ERROR;
+      }
+      finally {
+        if (wdkModel != null) wdkModel.releaseResources();
       }
     }
     catch (Exception e) {
-      LOG.error(e);
-      exitValue = ExitStatus.PROGRAM_ERROR;
-    }
-    finally {
-      if (wdkModel != null) wdkModel.releaseResources();
+      LOG.error("Error processing updater args", e);
+      exitValue = ExitStatus.BAD_UPDATER_ARGS;
     }
     LOG.info("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
     System.exit(exitValue.ordinal());
