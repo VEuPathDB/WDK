@@ -35,18 +35,17 @@ public class ModelCacher extends BaseCLI {
 
   private static final Logger logger = Logger.getLogger(ModelCacher.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     ModelCacher cacher = new ModelCacher(cmdName);
     try {
       cacher.invoke(args);
+      logger.info("model cacher done.");
+      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw ex;
-    }
-    finally {
-      logger.info("model cacher done.");
+      System.exit(1);
     }
   }
 

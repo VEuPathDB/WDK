@@ -30,18 +30,17 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
   private static final int PAGE_SIZE = 9000;
   private static final Logger LOG = Logger.getLogger(RemoveBrokenStratsSteps.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     RemoveBrokenStratsSteps backup = new RemoveBrokenStratsSteps(cmdName);
     try {
       backup.invoke(args);
+      LOG.info("WDK RemoveBrokenStratsSteps done.");
+      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw ex;
-    }
-    finally {
-      LOG.info("WDK RemoveBrokenStratsSteps done.");
+      System.exit(1);
     }
   }
 

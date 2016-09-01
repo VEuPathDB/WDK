@@ -11,7 +11,7 @@ my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'wdkUnit
 
 my $cmd = "java $sysProps $sysargs -cp $CLASSPATH org.gusdb.wdk.model.test.TestUtility $args";
 
-system($cmd);
+system($cmd) && exit(1);
 
 
 

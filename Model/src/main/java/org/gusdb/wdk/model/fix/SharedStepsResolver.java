@@ -37,23 +37,17 @@ public class SharedStepsResolver extends BaseCLI {
     String content;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     LOG.info("***** Starting SharedStepsResolver ******");
     String cmdName = System.getProperty("cmdName");
     SharedStepsResolver updater = new SharedStepsResolver(cmdName);
     try {
       updater.invoke(args);
-    }
-    catch (RuntimeException ex) {
-      ex.printStackTrace();
-      throw ex;
+      LOG.info("SharedStepsResolver done.");
+      System.exit(1);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw ex;
-    }
-    finally {
-      LOG.info("SharedStepsResolver done.");
       System.exit(0);
     }
   }

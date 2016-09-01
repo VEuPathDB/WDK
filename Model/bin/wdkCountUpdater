@@ -11,7 +11,7 @@ my $envJvmOpts = $ENV{GUSJVMOPTS};
 
 my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.fix.StepCountUpdater $args";
 
-system($cmd);
+system($cmd) && exit(1);
 
 
 

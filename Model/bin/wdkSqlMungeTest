@@ -10,7 +10,7 @@ my $args = &FgpUtil::Util::CommandHelper::getJavaArgs(@ARGV);
 
 my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.implementation.SqlClause $args";
 
-system($cmd);
+system($cmd) && exit(1);
 
 
 

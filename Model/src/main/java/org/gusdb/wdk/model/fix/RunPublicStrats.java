@@ -27,18 +27,17 @@ public class RunPublicStrats extends BaseCLI {
 
   private static final Logger LOG = Logger.getLogger(RunPublicStrats.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     RunPublicStrats runPublic = new RunPublicStrats(cmdName);
     try {
       runPublic.invoke(args);
+      LOG.info("Public Strategies done.");
+      System.exit(0);
     }
     catch (Exception e) {
       LOG.error("Error while running " + cmdName, e);
-      throw e;
-    }
-    finally {
-      LOG.info("Public Strategies done.");
+      System.exit(1);
     }
   }
 

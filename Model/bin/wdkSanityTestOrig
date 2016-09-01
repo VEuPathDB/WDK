@@ -11,6 +11,5 @@ my $envJvmOpts = $ENV{GUSJVMOPTS};
 
 my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.test.SanityTester $args";
 
-system($cmd);
+system($cmd) && exit(1);
 
-exit $? >> 8;
