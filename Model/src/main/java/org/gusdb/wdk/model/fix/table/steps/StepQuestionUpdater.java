@@ -21,8 +21,10 @@ public class StepQuestionUpdater {
   private final Map<String,String> _mapping;
 
   public StepQuestionUpdater(String filename, boolean dumpLoadedFile) throws IOException {
+    LOG.info("Loading new question mapping from file: " + filename);
     Properties mapping = new Properties();
     mapping.load(new FileInputStream(filename));
+    LOG.info("Loaded " + mapping.size() + " mappings.");
     _mapping = new HashMap<String,String>();
     for (Entry<Object,Object> entry : mapping.entrySet()) {
       _mapping.put((String)entry.getKey(), (String)entry.getValue());

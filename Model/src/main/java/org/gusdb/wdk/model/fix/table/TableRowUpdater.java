@@ -53,11 +53,14 @@ public class TableRowUpdater<T extends TableRow> {
   }
 
   public static void main(String[] args) {
+    LOG.info(TableRowUpdater.class.getSimpleName() + " started with args: " + FormatUtil.printArray(args));
     Config config = parseArgs(args);
     WdkModel wdkModel = null;
     ExitStatus exitValue = ExitStatus.SUCCESS;
     try {
       wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
+      LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
+          " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
       if (config.plugin.configure(wdkModel, config.additionalArgs)) {
         TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
         exitValue = updater.run();
@@ -68,29 +71,29 @@ public class TableRowUpdater<T extends TableRow> {
       }
     }
     catch (Exception e) {
-      System.err.println(FormatUtil.getStackTrace(e));
+      LOG.error(e);
       exitValue = ExitStatus.PROGRAM_ERROR;
     }
     finally {
       if (wdkModel != null) wdkModel.releaseResources();
     }
-    System.out.println("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
+    LOG.info("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
     System.exit(exitValue.ordinal());
   }
 
   private static Config parseArgs(String[] args) {
     if (args.length < 2) {
       System.err.println(NL +
-          "USAGE: TableRowUpdater <projectId> <plugin_class_name> <args_to_plugin...>" + NL + NL +
-          "  projectId: Name of project in XML/config dir (e.g. PlasmoDB)" + NL +
+          "USAGE: TableRowUpdater <plugin_class_name> <projectId> <args_to_plugin...>" + NL + NL +
           "  plugin_class_name: Name of plugin's Java class " +
           "(must implement " + TableRowUpdaterPlugin.class.getName() + ")" + NL +
-          "  args_to_plugin: any additional arguments to be passed to your plugin via configure()");
+          "  projectId: Name of project in XML/config dir (e.g. PlasmoDB)" + NL +
+          "  args_to_plugin: any additional arguments to be passed to your plugin via configure()" + NL);
       System.exit(ExitStatus.BAD_UPDATER_ARGS.ordinal());
     }
     Config config = new Config();
-    config.projectId = args[0];
-    String pluginClassName = args[1];
+    String pluginClassName = args[0];
+    config.projectId = args[1];
     config.additionalArgs = new ArrayList<>();
     for (int i = 2; i < args.length; i++) {
       config.additionalArgs.add(args[i]);
