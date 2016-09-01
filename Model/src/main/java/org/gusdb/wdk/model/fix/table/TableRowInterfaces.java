@@ -35,9 +35,8 @@ public class TableRowInterfaces {
      * 
      * @param wdkModel WDK model created from the project ID and gus home
      * @param additionalArgs additional arguments meant for this plugin
-     * @return
      */
-    public boolean configure(WdkModel wdkModel, List<String> additionalArgs);
+    public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception;
 
     /**
      * Return an instance of TableRowUpdater parameterized with the TableRow subclass
