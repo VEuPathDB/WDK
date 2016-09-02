@@ -1066,6 +1066,7 @@ var Histogram = React.createClass({
   }
 });
 
+// TODO Add binning
 var HistogramField = React.createClass({
 
   statics: {
@@ -1093,15 +1094,17 @@ var HistogramField = React.createClass({
 
   componentWillMount() {
     this.updateFilter = _.debounce(this.updateFilter, 50);
-    this.setDistributionRange(this.props);
+    this.cacheDistributionOperations(this.props);
   },
 
   componentWillReceiveProps(nextProps) {
-    this.setDistributionRange(nextProps);
+    this.cacheDistributionOperations(nextProps);
   },
 
-  setDistributionRange(props) {
-    var values = props.distribution.map(entry => entry.value);
+  cacheDistributionOperations(props) {
+    this.convertedDistribution = props.distribution.map(entry =>
+      Object.assign({}, entry, { value: props.toHistogramValue(entry.value)}));
+    var values = this.convertedDistribution.map(entry => entry.value);
     var min = props.toFilterValue(Math.min(...values));
     var max = props.toFilterValue(Math.max(...values));
     this.distributionRange = { min, max };
@@ -1130,7 +1133,7 @@ var HistogramField = React.createClass({
   },
 
   render: function() {
-    var { field, filter, distribution, displayName } = this.props;
+    var { field, filter, displayName } = this.props;
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
@@ -1175,7 +1178,7 @@ var HistogramField = React.createClass({
         </div>
 
         <Histogram
-          distribution={distribution}
+          distribution={this.convertedDistribution}
           onSelected={this.updateFilter}
           selectedMin={selectedMin}
           selectedMax={selectedMax}
