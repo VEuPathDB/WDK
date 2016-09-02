@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import EventEmitter from 'events';
+import {EventEmitter} from 'events';
 import {makeTree} from './FilterServiceUtils';
 
 // TODO Integrate with Flux architecture
@@ -11,23 +11,102 @@ import {makeTree} from './FilterServiceUtils';
 
 const CHANGE_EVENT = 'change';
 
+interface BaseField {
+  type: string;
+  term: string;
+  parent?: string;
+  leaf?: 'true';
+}
+
+export interface StringField extends BaseField {
+  type: 'string';
+}
+
+export interface NumberField extends BaseField {
+  type: 'number';
+}
+
+export interface DateField extends BaseField {
+  type: 'date';
+}
+
+export type Field = StringField | NumberField | DateField;
+
+export type FieldTreeNode = {
+  field: Field;
+  children: FieldTreeNode[];
+}
+
+export type Datum = {
+  term: string;
+  display: string;
+}
+
+export type Distribution = Array<{
+  value: string;
+  count: number;
+  filteredCount: number;
+}>;
+
+export type Metadata = {
+  [datum_term: string]: string[];
+}
+
+
+export type IFilter<Values, Field> = {
+  field: Field;
+  values: Values;
+  display: string;
+  selection?: Datum[];
+}
+
+export type MemberFilter = IFilter<string[], StringField>;
+
+export type RangeFilter = IFilter<{ min: string; max: string; }, NumberField | DateField>;
+
+export type Filter = MemberFilter | RangeFilter;
+
+export interface FilterServiceAttrs {
+  fields: Field[];
+  data: Datum[];
+  columns: Field[];
+  fieldMetadataMap: {
+    [field_term: string]: Metadata;
+  };
+}
+
 /** Abstract service class */
 export default class FilterService {
 
-  constructor(attrs) {
-    this._emitter = new EventEmitter();
+  private _emitter: EventEmitter;
+  isLoading: boolean;
+  filters: Filter[];
+  ignoredData: Datum[];
+  fields: FieldTreeNode[];
+  selectedField: Field;
+  data: Datum[];
+  filteredData: Datum[];
+  columns: Field[];
+  distributionMap: {
+    [datum_term: string]: Distribution;
+  };
+  fieldMetadataMap: {
+    [field_term: string]: Metadata;
+  };
 
-    // loading status for async operations
+  constructor(attrs: FilterServiceAttrs) {
+
+    this._emitter = new EventEmitter;
+
     this.isLoading = false;
 
-    // list of filters
     this.filters = [];
 
     // ignored data
     this.ignoredData = [];
 
     // metadata properties
-    this.fields = makeTree(attrs.fields || [], {});
+    this.fields = makeTree(attrs.fields || []);
 
     // unfiltered data, used for local filtering
     this.data = attrs.data || [];
@@ -48,7 +127,7 @@ export default class FilterService {
     _.bindAll(this);
   }
 
-  addListener(listener) {
+  addListener(listener: () => void) {
     this._emitter.on(CHANGE_EVENT, listener);
     return {
       remove: () => {
@@ -74,21 +153,20 @@ export default class FilterService {
     );
   }
 
-  selectField(field) {
+  selectField(field: Field) {
     this.isLoading = true;
     this.selectedField = field;
     this._emitChange();
 
     this.getFieldDistribution(field)
-      .then(function(distribution) {
+      .then(distribution => {
         this.distributionMap[field.term] = distribution;
-        // this.selectedField = field;
         this.isLoading = false;
         this._emitChange();
-      }.bind(this));
+      });
   }
 
-  updateFilters(filters) {
+  updateFilters(filters: Filter[]) {
     this.filters = filters;
     this.isLoading = true;
     this._emitChange();
@@ -113,7 +191,7 @@ export default class FilterService {
     }.bind(this));
   }
 
-  updateColumns(fields) {
+  updateColumns(fields: Field[]) {
     this.isLoading = true;
     this._emitChange();
 
@@ -125,7 +203,7 @@ export default class FilterService {
       });
   }
 
-  updateIgnoredData(data) {
+  updateIgnoredData(data: Datum[]) {
     this.ignoredData = data;
     this._emitChange();
   }
@@ -137,7 +215,7 @@ export default class FilterService {
   //
   //     [ { value, count, filteredCount } ]
   //
-  getFieldDistribution(field) {
+  getFieldDistribution(field: Field): Promise<Distribution> {
     throw new Error('getFieldDistribution() should be implemented ' + field);
   }
 
@@ -145,7 +223,7 @@ export default class FilterService {
   //
   //     [ { term, display } ]
   //
-  getFilteredData(filters) {
+  getFilteredData(filters: Filter[]): Promise<Datum[]> {
     throw new Error('getFilteredData() should be implemented ' + filters);
   }
 
@@ -153,11 +231,11 @@ export default class FilterService {
   //
   //     [ { data_term: field_value } ]
   //
-  getFieldMetadata(field) {
+  getFieldMetadata(field: Field): Promise<Metadata> {
     throw new Error('getFieldMetadata() should be implemented ' + field);
   }
 
-  _emitChange() {
+  _emitChange(): void {
     this._emitter.emit(CHANGE_EVENT);
   }
 

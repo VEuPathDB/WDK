@@ -1,9 +1,19 @@
 import _ from 'lodash';
+import {MemberFilter, RangeFilter} from "./FilterService";
 
+type Metadata = {
+  [key: string]: string[];
+};
+
+type Datum = {
+  term: string;
+};
+
+type Predicate<T> = (value: T) => boolean;
 
 /**
  * Returns a lodash-wrapped array of metadata values.
- * See https://lodash.com/docs/#_ for details of lodash-wrapped objectd.
+ * See https://lodash.com/docs/#_ for details of lodash-wrapped object.
  *
  * There are two main benefits to the lodash wrapper:
  *   1. Operations can be expressed fluently as method calls.
@@ -11,40 +21,39 @@ import _ from 'lodash';
  *      possible. It will also reduce the number of intermediate objects
  *      created on each iteration, thus reducing GC pressure.
  */
-function flattenMetadataValues(metadata) {
+function flattenMetadataValues(metadata: Metadata) {
   return _(metadata).values().flatten();
 }
 
 /**
- * Calculate the occurence of each value present in metadata.
+ * Calculate the occurrence of each value present in metadata.
  *
  * @param {object} metadata A key-value map of { sample: [ { value } ] }
  * @returns {object} A key-value map of { value: count }
  */
-export function countByValues(metadata) {
+export function countByValues(metadata: Metadata) {
   return flattenMetadataValues(metadata).countBy().value();
 }
 
 /**
- * Create a array of uniq metadata values
+ * Create a array of unique metadata values
  */
-export function uniqMetadataValues(metadata) {
-  return flattenMetadataValues(metadata).sortBy().uniq(true).value();
+export function uniqMetadataValues(metadata: Metadata) {
+  return flattenMetadataValues(metadata).sortBy().uniq(true).value() as string[];
 }
 
-export function getMemberPredicate(metadata, filter) {
-  var filterValues = filter.values;
-
-  return function memberPredicate(datum) {
+export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
+  let filterValues = filter.values;
+  return function memberPredicate(datum: Datum) {
     var metadataValues = metadata[datum.term];
     var index = filterValues.length;
-    var vIndex;
+    var vIndex: number;
 
     // Use a for loop for efficiency
     outer: while(index--) {
       if (metadataValues.length === 0) {
         if (filterValues[index] === null) return true;
-        continue outer;
+        continue;
       }
       vIndex = metadataValues.length;
       while(vIndex--) {
@@ -56,9 +65,10 @@ export function getMemberPredicate(metadata, filter) {
   };
 }
 
-export function getRangePredicate(metadata, filter) {
-  var min = filter.values.min;
-  var max = filter.values.max;
+export function getRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
+  var { min, max } = filter.field.type === 'number'
+    ? _.mapValues(filter.values, s => Number(s))
+    : _.mapValues(filter.values, s => new Date(s));
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
            : max !== null ? makeLte(max)
@@ -66,7 +76,7 @@ export function getRangePredicate(metadata, filter) {
 
   if (test === undefined) throw new Error('Count not determine range predicate.');
 
-  return function rangePredicate(datum) {
+  return function rangePredicate(datum: Datum) {
     return metadata[datum.term].some(test);
   }
 }
@@ -74,34 +84,34 @@ export function getRangePredicate(metadata, filter) {
 // Helper filtering functions
 // --------------------------
 
-export function makeGte(min) {
-  return function gte(value) {
+export function makeGte<T>(min: T) {
+  return function gte(value: T) {
     return value >= min;
   };
 }
 
-export function makeLte(max) {
-  return function lte(value) {
+export function makeLte<T>(max: T) {
+  return function lte(value: T) {
     return value <= max;
   };
 }
 
-export function makeWithin(min, max) {
+export function makeWithin<T>(min: T, max: T) {
   let gte = makeGte(min);
   let lte = makeLte(max);
-  return function within(value) {
+  return function within(value: T) {
     return gte(value) && lte(value);
   };
 }
 
-export function passesWith(value) {
-  return function passes(predicate) {
+export function passesWith<T>(value: T) {
+  return function passes(predicate: Predicate<T>) {
     return predicate(value);
   };
 }
 
-export function combinePredicates(predicates) {
-  return function predicate(value) {
+export function combinePredicates<T>(predicates: Predicate<T>[]) {
+  return function predicate(value: T) {
     return predicates.every(passesWith(value));
   };
 }
@@ -109,7 +119,22 @@ export function combinePredicates(predicates) {
 // Field tree
 // ----------
 
-export function makeTree(fields, options) {
+type Field = {
+  term: string;
+  parent?: string;
+  leaf?: 'true';
+};
+
+type FieldTreeNode = {
+  field: Field;
+  children: FieldTreeNode[];
+};
+
+type Options = {
+  trimMetadataTerms: boolean;
+};
+
+export function makeTree(fields: Field[], options: Options = { trimMetadataTerms: false }) {
 
   // Create tree, then prune it so it's easier to read
   var make = options.trimMetadataTerms
@@ -118,16 +143,16 @@ export function makeTree(fields, options) {
 
   // get all ontology terms starting from `filterable` fields
   // and traversing upwards by the `parent` attribute
-  var prunedFields = _.sortBy(pruneFields(fields), 'term');
+  var prunedFields: Field[] = _.sortBy(pruneFields(fields), 'term');
 
   // get root tree
-  var parentFields = _.reject(prunedFields, 'parent');
+  var parentFields: Field[] = _.reject(prunedFields, 'parent');
 
   // construct tree
   var groupedFields = make(parentFields, prunedFields);
 
   // sort node such that leaves are first
-  groupedFields = _.sortBy(groupedFields, function(node) {
+  groupedFields = _.sortBy(groupedFields, function(node: FieldTreeNode) {
     return node.field.leaf === 'true' ? 0 : 1;
   });
 
@@ -138,8 +163,8 @@ export function makeTree(fields, options) {
 // First, find all fields marked as `filterable` (this means
 //   the field is terminating and data can be filtered by it).
 // Then, for each field, find all parents.
-function pruneFields(fields) {
-  var missing = [];
+function pruneFields(fields: Field[]) {
+  var missing: Field[] = [];
   var prunedFields = _.where(fields, { leaf: 'true' })
     .reduce(function(acc, field) {
       while (field.parent) {
@@ -167,12 +192,10 @@ function pruneFields(fields) {
 // * More accurately, this will create one or more trees,
 //   one for each initial sibling field. But we can imagine
 //   a common, hidden, root node.
-function constructTree(siblingFields, allFields) {
+function constructTree(siblingFields: Field[], allFields: Field[]): FieldTreeNode[] {
   return siblingFields
     .map(function(field) {
-      var children = _.chain(allFields)
-        .where({ parent: field.term })
-        .value();
+      var children = allFields.filter(child => child.parent === field.term);
 
       return children.length
         ? { field: field, children: constructTree(children, allFields) }
@@ -200,7 +223,7 @@ function constructTree(siblingFields, allFields) {
 //     /     \
 //       ...
 //
-function removeSingleTopNode(tree) {
+function removeSingleTopNode(tree: FieldTreeNode[]) {
   while (tree.length === 1 && tree[0].children) {
     tree = tree[0].children;
   }
@@ -226,7 +249,7 @@ function removeSingleTopNode(tree) {
 //      / \
 //     A   D
 //
-function removeParentsWithSingleChild(tree) {
+function removeParentsWithSingleChild(tree: FieldTreeNode[]) {
   return tree
     .map(function(node) {
 

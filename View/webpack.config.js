@@ -46,7 +46,9 @@ module.exports = {
         })
       ]
 
-    : [ new webpack.optimize.UglifyJsPlugin({ mangle: false }),
+    : [
+        new webpack.optimize.UglifyJsPlugin({ mangle: false }),
+        new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurenceOrderPlugin(true),
         new webpack.DefinePlugin({
           __DEV__: "false",

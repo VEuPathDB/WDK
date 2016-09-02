@@ -24,6 +24,11 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     // need to trigger the click event so that the stage is set correctly on revise.
     element.find("#operations input[type='radio']:checked").click();
+
+    // Add listener for FORM_DESTROY_EVENT and trigger PARAM_DESTROY_EVENT for each params
+    element.closest('form').one(wdk.addStepPopup.FORM_DESTROY_EVENT, () => {
+      element.find('.param').trigger(PARAM_DESTROY_EVENT);
+    });
   }
 
   //==============================================================================

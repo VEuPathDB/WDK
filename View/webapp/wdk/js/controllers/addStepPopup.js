@@ -350,13 +350,14 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
     // updateStepNumberReferences();
   }
 
+  var FORM_DESTROY_EVENT = ns.FORM_DESTROY_EVENT = "wdk-query-form-removed";
   function closeAll(hide) {
     if (hide) {
       $("#query_form").hide();
       $("#query_form_overlay").hide();
     } else {
       // ns.isSpan = false;
-      $("#query_form").trigger("wdk-query-form-removed").remove();
+      $("#query_form").find('form').trigger(FORM_DESTROY_EVENT).end().remove();
       $("#query_form_overlay").remove();
       $(".original").remove();
       $("#stage-stack").html("");
