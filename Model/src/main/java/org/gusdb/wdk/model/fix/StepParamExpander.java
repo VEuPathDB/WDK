@@ -139,8 +139,16 @@ public class StepParamExpander extends BaseCLI {
     DataSource dataSource = database.getDataSource();
 
     // check if table exists
+		// in that case check if steps have been updated (in wdk_update_steps) and remove them 
     if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "step_params"))
-      return;
+			{
+				//1- delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)
+				//2- clean wdk_update_steps
+				SqlUtils.executeUpdate(dataSource, "delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)",
+					"wdk-update-param-table");
+		    SqlUtils.executeUpdate(dataSource, "delete from wdk_updated_steps","wdk-reset-updatedSteps-table");
+				return;
+			}
 
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params (" + " step_id NUMBER(12) NOT NULL, "
         + " param_name VARCHAR(200) NOT NULL, " + " param_value VARCHAR(4000), migration NUMBER(12))",
