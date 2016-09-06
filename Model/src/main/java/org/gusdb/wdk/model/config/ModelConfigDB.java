@@ -268,8 +268,8 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   
   @Override
   public String toString() {
-    String defaultSchema = SupportedPlatform.toPlatform(getPlatform())
-        .getPlatformInstance().getDefaultSchema(getLogin());
+    String defaultSchema = getPlatform() != null ? SupportedPlatform.toPlatform(getPlatform())
+        .getPlatformInstance().getDefaultSchema(getLogin()) : "Unknown";
     return new StringBuilder("ModelConfigDB {").append(FormatUtil.NL)
         .append("  platform:      ").append(getPlatform()).append(FormatUtil.NL)
         .append("  connectionUrl: ").append(getConnectionUrl()).append(FormatUtil.NL)
