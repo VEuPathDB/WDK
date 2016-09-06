@@ -91,7 +91,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
 		}
 
 		// 1
-    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 "); //still 147 strategies around
+    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
 
 		// 2
 		SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id FROM " +
@@ -102,14 +102,14 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
 						"insert-into-temp-broken-strats-table");
     deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
 
-		deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) ");
-		deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) ");
+		deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
+		deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
 
 		// 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
 		SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
 				userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
 						"(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
-		deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+		//	deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
 
     // after strategies have been cleanedup.. delete unused steps: every deletion will open up more to be deleted.
@@ -122,7 +122,9 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       }
       catch (SQLException ex) {
         LOG.warn(ex.getMessage());
-        throw ex;
+				// checking for a foreign constraint violation to continue checking steps
+        if ( !ex.getMessage().contains("oreign") )	throw ex;
+				remain=true;
       }
     }
 
