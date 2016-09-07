@@ -392,7 +392,13 @@ export default class WdkService {
       .then(() => this._store.getItem<T>(key))
       .then(storeItem => {
         if (storeItem != null) return storeItem;
-        return onCacheMiss().then(item => this._store.setItem(key, item));
+        return onCacheMiss().then(item => {
+          return this._store.setItem(key, item)
+          .catch(err => {
+            console.error('Unable to store WdkService item with key `' + key + '`.', err);
+            return item;
+          });
+        });
       });
       this._cache.set(key, cacheValue$);
     }
