@@ -26,7 +26,7 @@ module.exports = {
       { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory' },
       { test: /\.css$/,  loader: "style-loader!css-loader?sourceMap" },
       { test: /\.png$/,  exclude: /node_modules/, loader: "url-loader?limit=100000" },
-      { test: /\.gif/,   exclude: /node_modules/, loader: "url-loader?limit=100000" },
+      { test: /\.gif$/,   exclude: /node_modules/, loader: "url-loader?limit=100000" },
       { test: /\.jpg$/,  exclude: /node_modules/, loader: "file-loader" }
     ]
   },
