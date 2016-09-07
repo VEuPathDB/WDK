@@ -1385,7 +1385,7 @@ public class Step {
   }
 
   public JSONArray getFilterOptionsJSON() {
-    return (filterOptions == null) ? null : filterOptions.getJSON();
+    return (filterOptions == null) ? new JSONArray() : filterOptions.getJSON();
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
@@ -1401,7 +1401,7 @@ public class Step {
   }
 
   public JSONArray getViewFilterOptionsJSON() {
-    return (viewFilterOptions == null) ? null : viewFilterOptions.getJSON();
+    return (viewFilterOptions == null) ? new JSONArray() : viewFilterOptions.getJSON();
   }
 
   public void setViewFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
