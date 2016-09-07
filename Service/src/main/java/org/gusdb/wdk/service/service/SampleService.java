@@ -24,6 +24,7 @@ import javax.ws.rs.core.Variant;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.JsonType;
+import org.gusdb.fgputil.JsonType.ValueType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +48,11 @@ public class SampleService extends WdkService {
   public Response createElement(String body) {
     // parse request body to ensure it is JSON
     try {
-      JsonType input = new JsonType(body);
+      JsonType input = JsonType.parse(body);
+      if (!input.getType().equals(ValueType.OBJECT) && !input.getType().equals(ValueType.ARRAY)) {
+        LOG.info("Passed body '" + body + "' is neither JSON object nor array");
+        return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+      }
       long nextId = ID_SEQUENCE.getAndIncrement();
       STATE.put(nextId, input);
       String newUri = getUriInfo().getAbsolutePath() + "/" + nextId;
@@ -55,7 +60,7 @@ public class SampleService extends WdkService {
       output.put("id", nextId);
       return Response.created(URI.create(newUri)).entity(output.toString()).build();
     }
-    catch (JSONException e) {
+    catch (JSONException | IllegalArgumentException e) {
       LOG.info("Passed request body deemed unacceptable", e);
       return Response.notAcceptable(Collections.<Variant>emptyList()).build();
     }
