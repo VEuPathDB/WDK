@@ -1834,17 +1834,22 @@ public class StepFactory {
     Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
     Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
     boolean modified = false;
-    for (Filter filter : step.getQuestion().getFilters().values()) {
-      if (!filter.getIsAlwaysApplied()) {
-        // only need to apply always-applied filters
-        continue;
-      }
-      if ((filter.getIsViewOnly() && !appliedViewFilterKeys.contains(filter.getKey())) ||
-          (!filter.getIsViewOnly() && !appliedFilterKeys.contains(filter.getKey()))) {
-        // RRD - decided to NOT automatically apply always-on filter values but to throw exception instead
-        //throw new WdkModelException("Always-on filter '" + filter.getKey() + "' not found on step " + step.getStepId());
-        // always-on filter is not yet on; rectify the situation
-        modified = addFilterDefault(step, filter) || modified;
+    Question question = step.getQuestion();
+    @SuppressWarnings("unchecked") // cannot create array of specific map
+    Map<String, Filter>[] filterMaps = new Map[] { question.getFilters(), question.getViewFilters() };
+    for (Map<String, Filter> filterMap : filterMaps) {
+      for (Filter filter : filterMap.values()) {
+        if (!filter.getIsAlwaysApplied()) {
+          // only need to apply always-applied filters
+          continue;
+        }
+        if ((filter.getIsViewOnly() && !appliedViewFilterKeys.contains(filter.getKey())) ||
+            (!filter.getIsViewOnly() && !appliedFilterKeys.contains(filter.getKey()))) {
+          // RRD - decided to NOT automatically apply always-on filter values but to throw exception instead
+          //throw new WdkModelException("Always-on filter '" + filter.getKey() + "' not found on step " + step.getStepId());
+          // always-on filter is not yet on; rectify the situation
+          modified = addFilterDefault(step, filter) || modified;
+        }
       }
     }
     if (modified) {
