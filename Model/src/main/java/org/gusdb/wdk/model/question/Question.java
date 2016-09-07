@@ -1195,14 +1195,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   public Map<String, Filter> getFilters() {
     LOG.debug("QUESTION: GETTING ALL FILTERs");
-    Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
-    for (Entry<String, Filter> filter : _filters.entrySet()) {
-      if (!filter.getValue().getIsViewOnly()) {
-        LOG.debug("question: adding one more filter:  name: " + filter.getKey());
-        map.put(filter.getKey(), filter.getValue());
-      }
-    }
-    return map;
+    return getExclusiveFilterMap(false);
   }
 
   /**
@@ -1212,9 +1205,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   public Map<String, Filter> getViewFilters() {
     LOG.debug("QUESTION: GETTING VIEW FILTERs");
+    return getExclusiveFilterMap(true);
+  }
+
+  private Map<String, Filter> getExclusiveFilterMap(boolean viewOnly) {
     Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
     for (Entry<String, Filter> filter : _filters.entrySet()) {
-      if (filter.getValue().getIsViewOnly()) {
+      if (viewOnly == filter.getValue().getIsViewOnly()) {
         LOG.debug("question: adding one more filter:  name: " + filter.getKey());
         map.put(filter.getKey(), filter.getValue());
       }
