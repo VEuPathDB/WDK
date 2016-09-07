@@ -72,7 +72,7 @@ public class SampleService extends WdkService {
     if (expandRecords) {
       JSONObject json = new JSONObject();
       for (Long id : ids) {
-        Object obj = STATE.get(id).getNativeObject();
+        Object obj = STATE.get(id).get();
         LOG.info("Adding object of type " + obj.getClass().getName() + ": " + obj.toString());
         json.put(String.valueOf(id), obj);
       }
