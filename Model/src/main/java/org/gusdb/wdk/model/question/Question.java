@@ -1188,8 +1188,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   /**
    * Returns a set of filters (by name) for this question.  Only non-view-only
-   * filters are included in this list.  View-only filters are only available
-   * by name.
+   * filters are included in this list.  View-only filters are available via
+   * getViewFilters() or by name.
    * 
    * @return map of all non-view-only filters, from filter name to filter
    */
@@ -1204,7 +1204,24 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
     return map;
   }
-  
+
+  /**
+   * Returns a set of view filters (by name) for this question.
+   * 
+   * @return map of all non-view-only filters, from filter name to filter
+   */
+  public Map<String, Filter> getViewFilters() {
+    LOG.debug("QUESTION: GETTING VIEW FILTERs");
+    Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
+    for (Entry<String, Filter> filter : _filters.entrySet()) {
+      if (filter.getValue().getIsViewOnly()) {
+        LOG.debug("question: adding one more filter:  name: " + filter.getKey());
+        map.put(filter.getKey(), filter.getValue());
+      }
+    }
+    return map;
+  }
+
   public Filter getFilter(String filterName) throws WdkModelException {
     Filter filter = _filters.get(filterName);
     return (filter != null) ? filter : _recordClass.getFilter(filterName); 
