@@ -182,7 +182,7 @@ public class TableRowUpdater<T extends TableRow> {
 
   private ExitStatus run() {
     Timer timer = Timer.start();
-    List<RowHandler<T>> threads = new ArrayList<>();
+    ThreadCollection<T> threads = new ThreadCollection<>();
     List<Future<Stats>> results = new ArrayList<>();
     Stats aggregate = new Stats();
     int numThreadProblems = 0;
@@ -200,9 +200,9 @@ public class TableRowUpdater<T extends TableRow> {
   
       // execute query to read all records from DB and submit them to handler threads
       new SQLRunner(userDb.getDataSource(), _factory.getRecordsSql(getUserSchema(_wdkModel), _wdkModel.getProjectId()))
-          .executeQuery(new RecordQueuer<T>(_wdkModel, _factory, recordQueue));
+          .executeQuery(new RecordQueuer<T>(_wdkModel, _factory, recordQueue, threads));
   
-      // wait for queue to empty
+      // wait for queue to empty unless all threads exited early
       while (!recordQueue.isEmpty()) { /* wait */ }
 
     }
@@ -215,7 +215,7 @@ public class TableRowUpdater<T extends TableRow> {
         }
     
         // wait for threads to finish
-        while (!allThreadsFinished(threads)) { /* wait */ }
+        while (!threads.allThreadsFinished()) { /* wait */ }
 
         // collect stats and display
         for (Future<Stats> result : results) {
@@ -236,15 +236,6 @@ public class TableRowUpdater<T extends TableRow> {
     return ExitStatus.SUCCESS;
   }
 
-  private boolean allThreadsFinished(List<RowHandler<T>> threads) {
-    for (RowHandler<T> thread : threads) {
-      if (!thread.isFinished()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   private static String getUserSchema(WdkModel wdkModel) {
     return wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
@@ -252,6 +243,18 @@ public class TableRowUpdater<T extends TableRow> {
   /**%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
    *  Static helper inner classes 
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+  @SuppressWarnings("serial")
+  private static class ThreadCollection<T extends TableRow> extends ArrayList<RowHandler<T>> {
+    public boolean allThreadsFinished() {
+      for (RowHandler<T> thread : this) {
+        if (!thread.isFinished()) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
 
   /**
    * Provides a slightly clearer interface over a ConcurrentLinkedDeque, where records are pushed to the
@@ -281,19 +284,32 @@ public class TableRowUpdater<T extends TableRow> {
     private final WdkModel _wdkModel;
     private final TableRowFactory<T> _factory;
     private final RecordQueue<T> _recordQueue;
+    private final ThreadCollection<T> _threads;
 
-    public RecordQueuer(WdkModel wdkModel, TableRowFactory<T> factory, RecordQueue<T> recordQueue) {
+    public RecordQueuer(WdkModel wdkModel, TableRowFactory<T> factory, RecordQueue<T> recordQueue, ThreadCollection<T> threads) {
       _wdkModel = wdkModel;
       _factory = factory;
       _recordQueue = recordQueue;
+      _threads = threads;
     }
 
     @Override
     public void handleResult(ResultSet rs) throws SQLException {
       DBPlatform platform = _wdkModel.getUserDb().getPlatform();
-      while (rs.next()) {
-        while (_recordQueue.size() >= MAX_QUEUE_SIZE) { /* wait */ }
-        _recordQueue.pushRecord(_factory.newTableRow(rs, platform));
+      boolean exitEarly = false;
+      while (rs.next() && !exitEarly) {
+        while (_recordQueue.size() >= MAX_QUEUE_SIZE && !exitEarly) {
+          /* wait, unless all threads died */
+          if (_threads.allThreadsFinished()) {
+            LOG.warn("All RowHandler threads have exited before records completely read.  Will queue no more records.");
+            exitEarly = true;
+            // empty queue; no more records will be picked up
+            _recordQueue.clear();
+          }
+        }
+        if (!exitEarly) {
+          _recordQueue.pushRecord(_factory.newTableRow(rs, platform));
+        }
       }
     }
   }
@@ -407,6 +423,7 @@ public class TableRowUpdater<T extends TableRow> {
       }
       catch (Exception e) {
         error("Ended unexpectedly", e);
+        _isFinished.set(true);
         throw e;
       }
       finally {
