@@ -102,7 +102,6 @@ public class TableRowUpdater<T extends TableRow> {
           try {
             TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
             exitValue = updater.run();
-            config.plugin.dumpStatistics();
           }
           catch (Exception e) {
             LOG.error("Error during processing", e);
@@ -229,6 +228,11 @@ public class TableRowUpdater<T extends TableRow> {
         LOG.info(numThreadProblems + " threads exited abnormally.");
         LOG.info("Duration: " + timer.getElapsedAsString());
         LOG.info("Aggregate results: " + aggregate);
+        LOG.info("Dumping plugin statistics.");
+        if (numThreadProblems > 0) {
+          LOG.warn("At least one thread exited abnormally.  Plugin's statistics may be inaccurate.");
+        }
+        _plugin.dumpStatistics();
       }
     }
     if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
