@@ -34,7 +34,7 @@ public class StepDataFactory implements TableRowFactory<StepData> {
   private static final String DISPLAY_PARAMS = "DISPLAY_PARAMS"; // CLOB
 
   // SQL type map
-  private static final Map<String, Integer> SQLTYPES = 
+  protected static final Map<String, Integer> SQLTYPES = 
       new MapBuilder<String, Integer>(new LinkedHashMap<String, Integer>())
       .put(STEP_ID, Types.INTEGER)
       .put(LEFT_CHILD_ID, Types.INTEGER)
@@ -47,7 +47,7 @@ public class StepDataFactory implements TableRowFactory<StepData> {
 
   private static final String[] COLS = SQLTYPES.keySet().toArray(new String[SQLTYPES.size()]);
   
-  private static final String SELECT_COLS_TEXT = join(COLS, ",");
+  protected static final String SELECT_COLS_TEXT = join(COLS, ",");
 
   private static final List<String> UPDATE_COLS = filter(Arrays.asList(COLS), negate(equalTo(STEP_ID)));
 
@@ -59,7 +59,7 @@ public class StepDataFactory implements TableRowFactory<StepData> {
       mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),
           toMapFunction(SQLTYPES)).toArray(new Integer[COLS.length]);
 
-  private final boolean _includeGuestUserSteps;
+  protected final boolean _includeGuestUserSteps;
 
   public StepDataFactory(boolean includeGuestUserSteps) {
     _includeGuestUserSteps = includeGuestUserSteps;
