@@ -57,7 +57,8 @@ class RecordController extends WdkViewController {
     // We need to check pathname to ignore hash changes.
     if (previousProps == null || props.location.pathname !== previousProps.location.pathname) {
       let { recordClass, splat } = props.params;
-      this.dispatchAction(loadRecordData(recordClass, splat.split('/')));
+      this.dispatchAction(loadRecordData(
+        recordClass, splat.split('/'), props.location.hash.slice(1) || null));
     }
   }
 

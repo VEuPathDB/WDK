@@ -26,8 +26,9 @@ let getTables = partial(filterNodes, isTableNode);
 let getNodeName = partial(getPropertyValue, 'name');
 
 /** Fetch page data from services */
-export function loadRecordData(recordClass, primaryKeyValues) {
+export function loadRecordData(recordClass, primaryKeyValues, activeSection) {
   return function run(dispatch) {
+    dispatch(updateActiveSection(activeSection));
     dispatch(setActiveRecord(recordClass, primaryKeyValues))
     .then(action => {
       let { record, recordClass } = action.payload;
