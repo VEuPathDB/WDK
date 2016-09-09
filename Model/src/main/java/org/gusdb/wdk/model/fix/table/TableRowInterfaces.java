@@ -106,6 +106,10 @@ public class TableRowInterfaces {
      */
     public T newTableRow(ResultSet rs, DBPlatform platform) throws SQLException;
 
+  }
+
+  public static interface TableRowWriter<T extends TableRow> {
+
     /**
      * Provides parameterized SQL to update a single record.  This SQL will be converted to a
      * PreparedStatement, then executed as a batch update operation using the SQL types and update parameters

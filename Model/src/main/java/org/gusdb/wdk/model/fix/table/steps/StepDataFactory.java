@@ -21,9 +21,10 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
+import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
 import org.json.JSONObject;
 
-public class StepDataFactory implements TableRowFactory<StepData> {
+public class StepDataFactory implements TableRowFactory<StepData>, TableRowWriter<StepData> {
 
   // constants for column names
   private static final String STEP_ID = "STEP_ID";               // NUMBER(12,0)
