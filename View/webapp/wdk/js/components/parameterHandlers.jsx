@@ -298,20 +298,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterService', filterService);
     $param.trigger('filterParamDidMount');
 
-    filterService.addListener(function() {
-      var ignored = filterService.data.filter(datum => datum.isIgnored);
-      var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
-      input.val(JSON.stringify({
-        values: _.pluck(filteredData, 'term'),
-        ignored: _.pluck(ignored, 'term'),
-        filters: _.map(filterService.filters, _.partialRight(_.omit, 'selection'))
-      }));
-
-      // trigger loading event on $param
-      triggerLoading($param, filterService.isLoading);
-      renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
-    });
-
     form.on('submit', function(e) {
       var filteredData = JSON.parse(input.val()).values;
       var filteredDataCount = filteredData.length;
@@ -339,7 +325,22 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
 
-    renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
+    function updateInputFromFilterService() {
+      var ignored = filterService.data.filter(datum => datum.isIgnored);
+      var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
+      input.val(JSON.stringify({
+        values: _.pluck(filteredData, 'term'),
+        ignored: _.pluck(ignored, 'term'),
+        filters: _.map(filterService.filters, _.partialRight(_.omit, 'selection'))
+      }));
+
+      // trigger loading event on $param
+      triggerLoading($param, filterService.isLoading);
+      renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
+    }
+
+    updateInputFromFilterService();
+    filterService.addListener(updateInputFromFilterService);
 
     console.timeEnd('intialize render :: ' + name);
   }
