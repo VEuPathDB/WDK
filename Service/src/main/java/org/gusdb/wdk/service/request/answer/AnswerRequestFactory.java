@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.beans.ParamValue;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -48,29 +49,30 @@ public class AnswerRequestFactory {
    * }
    * 
    * @param json JSON representation of an answer request
-   * @param model WDK model
+   * @param modelBean WDK model bean
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model, User user) throws DataValidationException, RequestMisformatException {
+  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean modelBean, User user) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
-      model.validateQuestionFullName(questionName);
-      Question question = model.getModel().getQuestion(questionName);
+      modelBean.validateQuestionFullName(questionName);
+      WdkModel model = modelBean.getModel();
+      Question question = model.getQuestion(questionName);
       AnswerRequest request = new AnswerRequest(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, model, user));
+      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user));
       // all filter fields are optional
       if (json.has(Keys.LEGACY_FILTER_NAME)) {
         request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
       }
       request.setFilterValues(json.has(Keys.FILTERS) ?
           parseFilterValues(json.getJSONArray(Keys.FILTERS), question, model, false) :
-            new FilterOptionList(question));
+            new FilterOptionList(model, questionName));
       request.setViewFilterValues(json.has(Keys.VIEW_FILTERS) ?
           parseFilterValues(json.getJSONArray(Keys.VIEW_FILTERS), question, model, true) :
-            new FilterOptionList(question));
+            new FilterOptionList(model, questionName));
       if (json.has(Keys.WDK_WEIGHT)) {
         request.setWeight(json.getInt(Keys.WDK_WEIGHT));
       }
@@ -97,17 +99,18 @@ public class AnswerRequestFactory {
   }
 
   private static FilterOptionList parseFilterValues(JSONArray jsonArray,
-      Question question, WdkModelBean model, boolean isViewFilters) throws WdkUserException {
+      Question question, WdkModel model, boolean isViewFilters) throws WdkUserException {
     // parse filter values and validate
+    String questionName = question.getFullName();
     Map<String, JSONObject> inputValueMap = getContextValues(jsonArray);
-    FilterOptionList filterList = new FilterOptionList(question);
+    FilterOptionList filterList = new FilterOptionList(model, questionName);
     for (String filterName : inputValueMap.keySet()) {
       try {
         Filter filter = question.getFilter(filterName);
         if (filter.getIsViewOnly() != isViewFilters) {
           throw new WdkUserException("[" + filterName + "] Cannot use a regular filter as a view filter or vice-versa.");
         }
-        filterList.addFilterOption(new FilterOption(question, filter, inputValueMap.get(filterName)));
+        filterList.addFilterOption(new FilterOption(model, questionName, filterName, inputValueMap.get(filterName)));
       }
       catch (WdkModelException e) {
         
@@ -117,7 +120,7 @@ public class AnswerRequestFactory {
   }
 
   private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
-      Question question, WdkModelBean model, User user) throws WdkUserException, WdkModelException {
+      Question question, User user) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
     Map<String, Object> contextValues = getContextValues(paramsJson);

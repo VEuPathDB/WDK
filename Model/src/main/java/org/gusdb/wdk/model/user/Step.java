@@ -853,16 +853,16 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     if (filterOptions == null) {
-      filterOptions = new FilterOptionList(getQuestion());
+      filterOptions = new FilterOptionList(stepFactory.getWdkModel(), questionName);
     }
     return filterOptions;
   }
 
-  public FilterOptionList getViewFilterOptions() throws WdkModelException {
+  public FilterOptionList getViewFilterOptions() {
     if (viewFilterOptions == null) {
-      viewFilterOptions = new FilterOptionList(getQuestion());
+      viewFilterOptions = new FilterOptionList(stepFactory.getWdkModel(), questionName);
     }
     return viewFilterOptions;
   }
@@ -1394,7 +1394,7 @@ public class Step {
       this.filterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
+      FilterOptionList newList = new FilterOptionList(stepFactory.getWdkModel(), questionName, jsOptions);
       validateFilterOptions(newList, false);
       this.filterOptions = newList;
     }
@@ -1409,7 +1409,7 @@ public class Step {
       this.viewFilterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
+      FilterOptionList newList = new FilterOptionList(stepFactory.getWdkModel(), questionName, jsOptions);
       validateFilterOptions(newList, true);
       this.viewFilterOptions = newList;
     }

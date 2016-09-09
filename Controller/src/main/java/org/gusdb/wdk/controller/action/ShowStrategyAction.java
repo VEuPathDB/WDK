@@ -20,6 +20,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.filter.FilterOption;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -378,79 +379,91 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static JSONObject outputStep(WdkModelBean model, UserBean user,
-            StepBean step, int strategyId, boolean showSubStrategy, boolean updateResults)
-            throws JSONException, NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException {
+        StepBean step, int strategyId, boolean showSubStrategy, boolean updateResults)
+            throws JSONException, NoSuchAlgorithmException, WdkModelException, WdkUserException, SQLException {
 
-        JSONObject jsStep = new JSONObject();
-        jsStep.put("name", step.getDisplayName());
-        jsStep.put("customName", step.getCustomName());
-        jsStep.put("id", step.getStepId());
-        // the root of the sub-strategy should not be collapsed
-        jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
-        jsStep.put("isUncollapsible", step.isUncollapsible());
-        jsStep.put("hasCompleteAnalyses", step.getHasCompleteAnalyses());
+      JSONObject jsStep = new JSONObject();
+      jsStep.put("name", step.getDisplayName());
+      jsStep.put("customName", step.getCustomName());
+      jsStep.put("id", step.getStepId());
+      // the root of the sub-strategy should not be collapsed
+      jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
+      jsStep.put("isUncollapsible", step.isUncollapsible());
+      jsStep.put("hasCompleteAnalyses", step.getHasCompleteAnalyses());
 
-    try {
-      RecordClassBean recordClass = step.getRecordClass();
-      QuestionBean question = step.getQuestion();
-      jsStep.put("dataType", recordClass.getFullName());
-      jsStep.put("displayType", recordClass.getDisplayName());
-      jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
-      jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
-      jsStep.put("shortDisplayTypePlural",
-          recordClass.getShortDisplayNamePlural());
-      jsStep.put("isAnalyzable", question.getStepAnalyses().size() > 0
-          ? true : false);
-    } catch (WdkModelException ex) {
-      jsStep.put("dataType", "unknown");
-      jsStep.put("displayType", "unknown");
-      jsStep.put("shortDisplayType", "unknown");
-      jsStep.put("displayTypePlural", "unknown");
-      jsStep.put("shortDisplayTypePlural", "unknown");
-      jsStep.put("invalidQuestion", "true");
-    }
-        jsStep.put("shortName", step.getShortDisplayName());
-        jsStep.put("results", updateResults ? step.getResultSize() : step.getEstimateSize());
-        jsStep.put("questionName", step.getQuestionName());
-        jsStep.put("displayName", step.getDisplayName());
-        jsStep.put("isboolean", step.getIsBoolean());
-        jsStep.put("istransform", step.getIsTransform());
-        jsStep.put("filtered", step.isFiltered());
-        jsStep.put("filterName", step.getFilterDisplayName());
-        /* Start CWL 28JUN2016
-         * Added to surface step filter display names for use in Edit step dialog -
-         * including filter display name for those step filters that are not
-         * view-only.
-         */
-        JSONArray stepFilterDisplayNames = new JSONArray();
-        for(FilterOption option : step.getFilterOptions()) {
-          if(!option.getFilter().getIsViewOnly()) {
+      // some properties depend on the existence of a valid question name in this model
+      boolean isValidQuestion = false;
+      QuestionBean question = null;
+      RecordClassBean recordClass = null;
+      try {
+        question = step.getQuestion();
+        recordClass = step.getRecordClass();
+        isValidQuestion = true;
+      }
+      catch (WdkModelException e) { }
+
+      if (isValidQuestion) {
+        jsStep.put("dataType", recordClass.getFullName());
+        jsStep.put("displayType", recordClass.getDisplayName());
+        jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
+        jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
+        jsStep.put("shortDisplayTypePlural", recordClass.getShortDisplayNamePlural());
+        jsStep.put("isAnalyzable", question.getStepAnalyses().size() > 0 ? true : false);
+      }
+      else {
+        jsStep.put("dataType", "unknown");
+        jsStep.put("displayType", "unknown");
+        jsStep.put("shortDisplayType", "unknown");
+        jsStep.put("displayTypePlural", "unknown");
+        jsStep.put("shortDisplayTypePlural", "unknown");
+        jsStep.put("invalidQuestion", "true");
+      }
+
+      jsStep.put("shortName", step.getShortDisplayName());
+      jsStep.put("results", updateResults ? step.getResultSize() : step.getEstimateSize());
+      jsStep.put("questionName", step.getQuestionName());
+      jsStep.put("displayName", step.getDisplayName());
+      jsStep.put("isboolean", step.getIsBoolean());
+      jsStep.put("istransform", step.getIsTransform());
+      jsStep.put("filtered", step.isFiltered());
+      jsStep.put("filterName", step.getFilterDisplayName());
+      // Add array of filter names for use in Edit Step dialog.
+      //    If able, include filter display names for non-view-only step filters
+      //    Otherwise, just display raw names of all filters; some info better than none
+      FilterOptionList filterOptions = step.getFilterOptions();
+      JSONArray stepFilterDisplayNames = new JSONArray();
+      for (FilterOption option : filterOptions) {
+        if (isValidQuestion) {
+          if (!option.getFilter().getIsViewOnly()) {
             stepFilterDisplayNames.put(option.getFilter().getDisplay());
-          }  
+          }
         }
-        jsStep.put("stepFilterDisplayNames", stepFilterDisplayNames);
-        /* End CWL 28JUL2016 */
-        jsStep.put("urlParams", step.getQuestionUrlParams());
-        jsStep.put("isValid", step.getIsValid());
-        jsStep.put("validationMessage", // validation message deprecated
-            "Strategy is invalid and cannot be loaded at this time");
-        jsStep.put("assignedWeight", step.getAssignedWeight());
-        jsStep.put("useweights", model.getUseWeights());
-        jsStep.put("revisable", step.isRevisable());
-
-        jsStep.put("frontId", step.getFrontId());
-
-        outputParams(user, step, jsStep);
-
-        // determine the types of the step
-        if (showSubStrategy && step.getIsCollapsible()) {
-            outputSubStrategy(model, user, step, jsStep, strategyId, updateResults);
-        } else if (step.isCombined()) {
-            outputCombinedStep(model, user, step, jsStep, strategyId, updateResults);
+        else {
+          stepFilterDisplayNames.put(option.getKey());
         }
+      }
+      jsStep.put("stepFilterDisplayNames", stepFilterDisplayNames);
+      jsStep.put("urlParams", step.getQuestionUrlParams());
+      jsStep.put("isValid", step.getIsValid());
+      jsStep.put("validationMessage", // validation message deprecated
+          "Strategy is invalid and cannot be loaded at this time");
+      jsStep.put("assignedWeight", step.getAssignedWeight());
+      jsStep.put("useweights", model.getUseWeights());
+      jsStep.put("revisable", step.isRevisable());
 
-        return jsStep;
+      jsStep.put("frontId", step.getFrontId());
+
+      outputParams(user, step, jsStep);
+
+      // determine the types of the step
+      if (showSubStrategy && step.getIsCollapsible()) {
+        outputSubStrategy(model, user, step, jsStep, strategyId, updateResults);
+      }
+      else if (step.isCombined()) {
+        outputCombinedStep(model, user, step, jsStep, strategyId, updateResults);
+      }
+
+      return jsStep;
     }
 
     static private void outputCombinedStep(WdkModelBean wdkModel,
