@@ -75,11 +75,12 @@ public class TableRowUpdater<T extends TableRow> {
 
   // constants exhibiting various exit statuses
   private static enum ExitStatus {
-    SUCCESS,
+    SUCCESS, // must be first so exit code = 0
     BAD_UPDATER_ARGS,
     BAD_PLUGIN_ARGS,
     PROGRAM_ERROR,
     THREAD_ERROR,
+    FACTORY_ERROR,
     RECORD_ERRORS;
   }
 
@@ -88,43 +89,52 @@ public class TableRowUpdater<T extends TableRow> {
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
   public static void main(String[] args) {
+    Timer timer = Timer.start();
     LOG.info(TableRowUpdater.class.getSimpleName() + " started with args: " + FormatUtil.printArray(args));
     ExitStatus exitValue = ExitStatus.SUCCESS;
     WdkModel wdkModel = null;
+    int setupStage = 0;
     try {
       Config config = parseArgs(args);
-      try {
-        wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
-        try {
-          LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
-              " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
-          config.plugin.configure(wdkModel, config.additionalArgs);
-          try {
-            TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
-            exitValue = updater.run();
-          }
-          catch (Exception e) {
-            LOG.error("Error during processing", e);
-            exitValue = ExitStatus.PROGRAM_ERROR;
-          }
-        }
-        catch (Exception e) {
-          LOG.error("Error occured while configuring plugin", e);
-          exitValue = ExitStatus.BAD_PLUGIN_ARGS;
-        }
-      }
-      catch (Exception e) {
-        LOG.error("Error parsing WDK Model", e);
-        exitValue = ExitStatus.PROGRAM_ERROR;
-      }
-      finally {
-        if (wdkModel != null) wdkModel.releaseResources();
-      }
+
+      setupStage++; // 1
+      wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
+
+      setupStage++; // 2
+      LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
+          " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
+      config.plugin.configure(wdkModel, config.additionalArgs);
+
+      setupStage++; // 3
+      TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
+      exitValue = updater.run();
     }
     catch (Exception e) {
-      LOG.error("Error processing updater args", e);
-      exitValue = ExitStatus.BAD_UPDATER_ARGS;
+      switch(setupStage) {
+        case 3:
+          LOG.error("Error during processing", e);
+          exitValue = ExitStatus.PROGRAM_ERROR;
+          break;
+        case 2:
+          LOG.error("Error occured while configuring plugin", e);
+          exitValue = ExitStatus.BAD_PLUGIN_ARGS;
+          break;
+        case 1:
+          LOG.error("Error parsing WDK Model", e);
+          exitValue = ExitStatus.PROGRAM_ERROR;
+          break;
+        case 0:
+          LOG.error("Error processing updater args", e);
+          exitValue = ExitStatus.BAD_UPDATER_ARGS;
+          break;
+      }
     }
+    finally {
+      if (wdkModel != null) {
+        wdkModel.releaseResources();
+      }
+    }
+    LOG.info("Duration: " + timer.getElapsedAsString());
     LOG.info("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
     System.exit(exitValue.ordinal());
   }
@@ -179,12 +189,19 @@ public class TableRowUpdater<T extends TableRow> {
     _wdkModel = wdkModel;
   }
 
-  private ExitStatus run() {
-    Timer timer = Timer.start();
+  private ExitStatus run() throws Exception {
     ThreadCollection<T> threads = new ThreadCollection<>();
     List<Future<Stats>> results = new ArrayList<>();
     Stats aggregate = new Stats();
     int numThreadProblems = 0;
+
+    try {
+      _factory.setUp(_wdkModel);
+    }
+    catch (Exception e) {
+      LOG.error("Error setting up factory.", e);
+      return ExitStatus.FACTORY_ERROR;
+    }
     try {
       DatabaseInstance userDb = _wdkModel.getUserDb();
       RecordQueue<T> recordQueue = new RecordQueue<>();
@@ -212,7 +229,7 @@ public class TableRowUpdater<T extends TableRow> {
         for (RowHandler<T> thread : threads) {
           thread.commitAndFinish();
         }
-    
+
         // wait for threads to finish
         while (!threads.allThreadsFinished()) { /* wait */ }
 
@@ -226,7 +243,6 @@ public class TableRowUpdater<T extends TableRow> {
           }
         }
         LOG.info(numThreadProblems + " threads exited abnormally.");
-        LOG.info("Duration: " + timer.getElapsedAsString());
         LOG.info("Aggregate results: " + aggregate);
         LOG.info("Dumping plugin statistics.");
         if (numThreadProblems > 0) {
@@ -234,6 +250,13 @@ public class TableRowUpdater<T extends TableRow> {
         }
         _plugin.dumpStatistics();
       }
+    }
+    try {
+      _factory.tearDown(_wdkModel);
+    }
+    catch (Exception e) {
+      LOG.error("Error tearing down factory.", e);
+      return ExitStatus.FACTORY_ERROR;
     }
     if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
     if (aggregate.numRecordErrors > 0) return ExitStatus.RECORD_ERRORS;

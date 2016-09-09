@@ -19,6 +19,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
 import org.json.JSONObject;
 
@@ -112,6 +113,16 @@ public class StepDataFactory implements TableRowFactory<StepData> {
         row.getParamFilters().toString(),
         row.getStepId()
     };
+  }
+
+  @Override
+  public void setUp(WdkModel wdkModel) throws Exception {
+    // nothing to do here
+  }
+
+  @Override
+  public void tearDown(WdkModel wdkModel) throws Exception {
+    // nothing to do here
   }
 
 }
