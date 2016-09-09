@@ -73,6 +73,20 @@ public class TableRowInterfaces {
   public static interface TableRowFactory<T extends TableRow> {
 
     /**
+     * Do any pre-run setup required by this TableRowFactory
+     * 
+     * @param wdkModel WDK model that will be used in this run
+     */
+    public void setUp(WdkModel wdkModel) throws Exception;
+
+    /**
+     * Do any post-run tear down required by this TableRowFactory
+     * 
+     * @param wdkModel WDK model that will be used in this run
+     */
+    public void tearDown(WdkModel wdkModel) throws Exception;
+
+    /**
      * Provides SQL query that will be called to fetch the record set the plugin will process
      * 
      * @param schema schema of this DB
