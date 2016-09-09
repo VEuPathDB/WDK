@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRow;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowUpdaterPlugin;
+import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
 
 /**
  * Provides threading and database logic to update an arbitrary DB table using procedures defined in a plugin.
@@ -179,12 +180,14 @@ public class TableRowUpdater<T extends TableRow> {
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
   
   private final TableRowFactory<T> _factory;
+  private final TableRowWriter<T> _writer;
   private final TableRowUpdaterPlugin<T> _plugin;
   private final WdkModel _wdkModel;
   private final ExecutorService _exec = Executors.newFixedThreadPool(NUM_THREADS);
 
-  public TableRowUpdater(TableRowFactory<T> factory, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
+  public TableRowUpdater(TableRowFactory<T> factory, TableRowWriter<T> writer, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
     _factory = factory;
+    _writer = writer;
     _plugin = plugin;
     _wdkModel = wdkModel;
   }
@@ -208,7 +211,7 @@ public class TableRowUpdater<T extends TableRow> {
   
       // create and start threads that will listen to queue and pull off records to process
       for (int i = 0; i < NUM_THREADS; i++) {
-        RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _factory, _wdkModel);
+        RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _writer, _wdkModel);
         threads.add(thread);
         results.add(_exec.submit(thread));
       }
@@ -386,11 +389,11 @@ public class TableRowUpdater<T extends TableRow> {
     private final AtomicBoolean _isFinished = new AtomicBoolean(false);
     private final AtomicBoolean _commitAndFinishFlag = new AtomicBoolean(false);
 
-    public RowHandler(int threadId, RecordQueue<T> recordQueue, TableRowUpdaterPlugin<T> plugin, TableRowFactory<T> factory, WdkModel wdkModel) {
+    public RowHandler(int threadId, RecordQueue<T> recordQueue, TableRowUpdaterPlugin<T> plugin, TableRowWriter<T> writer, WdkModel wdkModel) {
       _threadId = threadId;
       _recordQueue = recordQueue;
       _plugin = plugin;
-      _batchUpdater = new BatchUpdater<T>(this, factory, wdkModel);
+      _batchUpdater = new BatchUpdater<T>(this, writer, wdkModel);
     }
 
     public void commitAndFinish() {
@@ -467,15 +470,15 @@ public class TableRowUpdater<T extends TableRow> {
   private static class BatchUpdater<T extends TableRow> {
 
     private final RowHandler<T> _parent;
-    private final TableRowFactory<T> _factory;
+    private final TableRowWriter<T> _writer;
     private final Integer[] _updateTypes;
     private final DataSource _userDs;
     private final String _schema;
     
-    public BatchUpdater(RowHandler<T> parent, TableRowFactory<T> factory, WdkModel wdkModel) {
+    public BatchUpdater(RowHandler<T> parent, TableRowWriter<T> writer, WdkModel wdkModel) {
       _parent = parent;
-      _factory = factory;
-      _updateTypes = factory.getUpdateParameterTypes();
+      _writer = writer;
+      _updateTypes = writer.getUpdateParameterTypes();
       _userDs = wdkModel.getUserDb().getDataSource();
       _schema = getUserSchema(wdkModel);
     }
@@ -491,7 +494,7 @@ public class TableRowUpdater<T extends TableRow> {
 
       // if updates enabled, execute argument batch
       if (!UPDATES_DISABLED) {
-        new SQLRunner(_userDs, _factory.getUpdateRecordSql(
+        new SQLRunner(_userDs, _writer.getUpdateRecordSql(
             _schema), true).executeUpdateBatch(batch);
       }
     }
@@ -504,7 +507,7 @@ public class TableRowUpdater<T extends TableRow> {
           return transform(modifiedRows.iterator(),
               new Function<T, Object[]>() {
                 @Override public Object[] apply(T obj) {
-                  return _factory.toUpdateVals(obj);
+                  return _writer.toUpdateVals(obj);
                 }
               });
         }
