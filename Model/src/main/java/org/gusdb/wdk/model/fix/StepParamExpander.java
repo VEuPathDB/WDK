@@ -8,22 +8,24 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
+import org.gusdb.fgputil.JsonIterators;
+import org.gusdb.fgputil.JsonType;
+import org.gusdb.fgputil.JsonType.ValueType;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamHandler;
-import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,37 +73,51 @@ public class StepParamExpander extends BaseCLI {
     ResultSet resultSet = null;
     PreparedStatement psInsert = null;
     try {
+      Timer timer = new Timer();
+      logger.info("Preparing database tables...");
       createParamTable(wdkModel);
+      logger.info("Database table preparation took " + timer.getElapsedAsString());
+      logger.info("Expanding params...");
       connection = ds.getConnection();
       connection.setAutoCommit(false);
 
-      // create select SQL
-      String sql = new StringBuilder("SELECT s.step_id, s.question_name, s.display_params ").append(" FROM ").append(
-          userSchema).append("steps s, ").append(userSchema).append("users u ").append(
-          " WHERE s.user_id = u.user_id AND u.is_guest = 0").append(
-          "   AND s.step_id NOT IN (SELECT step_id FROM step_params) ").toString();
+      String selectSql =
+          "SELECT s.step_id, s.display_params" +
+          " FROM " + userSchema + "steps s, " + userSchema + "users u" +
+          " WHERE s.user_id = u.user_id AND u.is_guest = 0" +
+          "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
 
       selectStmt = connection.createStatement();
       selectStmt.setFetchSize(1000);
+
+      logger.info("Executing select steps query...");
       long start = System.currentTimeMillis();
-      resultSet = selectStmt.executeQuery(sql);
-      QueryLogger.logEndStatementExecution(sql, "wdk-select-step-params", start);
+      resultSet = selectStmt.executeQuery(selectSql);
+      QueryLogger.logEndStatementExecution(selectSql, "wdk-select-step-params", start);
       psInsert = prepareInsert(connection);
 
-      int count = 0;
+      int stepCount = 0;
+      int stepsWithParamsCount = 0;
+      int noParamStepCount = 0;
+      int batchedParamValueRows = 0;
+      int totalParamValueRows = 0;
+      int numBatchesWritten = 0;
+
+      logger.info("Processing step rows...");
       while (resultSet.next()) {
 
+        stepCount++;
         int stepId = resultSet.getInt("step_id");
-        String questionName = resultSet.getString("question_name");
         String clob = database.getPlatform().getClobData(resultSet, "display_params");
-
-        if (clob == null)
+        Map<String, Set<String>> values = parseClob(stepId, clob);
+        if (stepCount % 1000 == 0) {
+          logger.info(stepCount + " steps read.");
+        }
+        if (values.isEmpty()) {
+          noParamStepCount++;
           continue;
-        clob = clob.trim();
-        if (!clob.startsWith("{"))
-          continue;
-				//logger.debug("***** MADE IT HERE : ****:  Step ID:" + stepId + ", questionName: " + questionName + ", clob is: " + clob);
-        Map<String, Set<String>> values = parseClob(wdkModel, questionName, clob);
+        }
+        stepsWithParamsCount++;
 
         // insert the values
         for (String paramName : values.keySet()) {
@@ -111,19 +127,33 @@ public class StepParamExpander extends BaseCLI {
             psInsert.setString(2, paramName);
             psInsert.setString(3, paramValue);
             psInsert.addBatch();
+            batchedParamValueRows++;
           }
         }
-        psInsert.executeBatch();
-        connection.commit();
-
-        count++;
-        if (count % 100 == 0) {
-          logger.debug(count + " steps processed.");
+        if (batchedParamValueRows > 200) {
+          numBatchesWritten++;
+          totalParamValueRows += batchedParamValueRows;
+          logger.info("Committing batch #" + numBatchesWritten + " of " + batchedParamValueRows + " param values (" + totalParamValueRows + " total).");
+          psInsert.executeBatch();
+          connection.commit();
+          batchedParamValueRows = 0;
         }
       }
-      logger.info("Totally processed " + count + " steps.");
+      if (batchedParamValueRows > 0) {
+        numBatchesWritten++;
+        totalParamValueRows += batchedParamValueRows;
+        logger.info("Committing batch #" + numBatchesWritten + " of " + batchedParamValueRows + " param values (" + totalParamValueRows + " total).");
+        psInsert.executeBatch();
+        connection.commit();
+      }
+
+      logger.info("Processed " + stepCount + " steps in " + timer.getElapsedAsString());
+      logger.info(noParamStepCount + " steps had no parameters.");
+      logger.info(stepsWithParamsCount + " steps had parameters.");
+      logger.info(totalParamValueRows + " parameter rows were inserted over " + numBatchesWritten +
+          " batches (avg batch size " + (totalParamValueRows / numBatchesWritten) + ").");
     }
-    catch (SQLException | WdkModelException | JSONException ex) {
+    catch (SQLException | JSONException ex) {
       connection.rollback();
       throw new WdkModelException(ex);
     }
@@ -139,84 +169,117 @@ public class StepParamExpander extends BaseCLI {
     DataSource dataSource = database.getDataSource();
 
     // check if table exists
-		// in that case check if any steps have been updated (in wdk_update_steps) and remove them 
-    if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "step_params"))
-			{
-				//1- delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)
-				logger.info("Delete steps that have been updated\n...");
-				SqlUtils.executeUpdate(dataSource, "delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)",
-					"wdk-update-param-table");
-				//2- clean wdk_update_steps
-				logger.info("Leave updatedSteps table empty for next use\n...");
-		    SqlUtils.executeUpdate(dataSource, "delete from wdk_updated_steps","wdk-reset-updatedSteps-table");
+    // in that case check if any steps have been updated (in wdk_update_steps) and remove them
+    if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "step_params")) {
+      
+      // if wdk_updated_steps table exists, purge updated steps from step_params
+      if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "wdk_updated_steps")) {
+        // 1- delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)
+        logger.info("Deleting step params that have been updated...");
+        SqlUtils.executeUpdate(dataSource,
+            "delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)",
+            "wdk-update-param-table");
+        // 2- clean wdk_update_steps
+        logger.info("Leave wdk_updated_steps table empty for next use...");
+        SqlUtils.executeUpdate(dataSource, "delete from wdk_updated_steps", "wdk-reset-updatedSteps-table");
+      }
+      else {
+        logger.info("wdk_updated_steps table does not exist; will not remove any updated step params");
+      }
+    }
+    else {
+      logger.info("Creating step_params table...");
 
-				return;
-			}
-
-    SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params (" + " step_id NUMBER(12) NOT NULL, "
-        + " param_name VARCHAR(200) NOT NULL, " + " param_value VARCHAR(4000), migration NUMBER(12))",
-        "wdk-create-param-table");
-
-    SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX step_params_ux01 "
-        + "ON step_params (step_id, param_name, param_value)", "wdk-create-param-indx");
-
-    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 " + "ON step_params (step_id)",
-        "wdk-create-param-indx");
+      SqlUtils.executeUpdate(dataSource,
+          "CREATE TABLE step_params (" +
+              " step_id NUMBER(12) NOT NULL, " +
+              " param_name VARCHAR(200) NOT NULL, " +
+              " param_value VARCHAR(4000), migration NUMBER(12))",
+          "wdk-create-param-table");
+  
+      SqlUtils.executeUpdate(dataSource,
+          "CREATE UNIQUE INDEX step_params_ux01 " + "ON step_params (step_id, param_name, param_value)",
+          "wdk-create-param-indx");
+  
+      SqlUtils.executeUpdate(dataSource,
+          "CREATE INDEX step_params_ix01 " + "ON step_params (step_id)",
+          "wdk-create-param-indx");
+    }
   }
 
   private PreparedStatement prepareInsert(Connection connection) throws SQLException {
-    StringBuffer sql = new StringBuffer("INSERT INTO step_params ");
-    sql.append(" (step_id, param_name, param_value) " + "  VALUES (?, ?, ?)");
-
-    return connection.prepareStatement(sql.toString());
+    String sql = "INSERT INTO step_params (step_id, param_name, param_value) VALUES (?, ?, ?)";
+    return connection.prepareStatement(sql);
   }
 
-  private Map<String, Set<String>> parseClob(WdkModel wdkModel, String questionName, String clob)
-      throws WdkModelException, JSONException {
-    Map<String, Set<String>> newValues = new LinkedHashMap<>();
-    if (clob != null && clob.length() > 0) {
-      // create a temp step to process the json and extract param values.
-      Step step = new Step(wdkModel.getStepFactory(), 0, 0);
-      step.setInMemoryOnly(true);
-      step.setParamFilterJSON(new JSONObject(clob));
-      Map<String, String> values = step.getParamValues();
+  private Map<String, Set<String>> parseClob(int stepId, String clob)
+      throws JSONException {
+    if (clob == null || clob.trim().isEmpty()) {
+      return new LinkedHashMap<>();
+    }
+    // parse JSON object out of clob
+    JSONObject displayParams;
+    try {
+      displayParams = new JSONObject(clob.trim());
+    }
+    catch (JSONException e) {
+      logger.warn("Step " + stepId + ": display_params CLOB is not a JSON object.");
+      return new LinkedHashMap<>();
+    }
+    return parseParams(stepId, displayParams.has(Step.KEY_PARAMS) ?
+        // new displayParams format, fetch params object from params property
+        displayParams.getJSONObject(Step.KEY_PARAMS) :
+        // old format, entire object is the params
+        displayParams);
+  }
 
-      for (String paramName : values.keySet()) {
-        String value = values.get(paramName);
-        String[] terms;
-        if (isFilterParam(wdkModel, questionName, paramName)) {
-          JSONObject jsValue = new JSONObject(value);
-          JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
-          terms = new String[jsTerms.length()];
-          for (int i = 0; i < terms.length; i++) {
-            terms[i] = jsTerms.getString(i);
+  private Map<String, Set<String>> parseParams(int stepId, JSONObject params) {
+    Map<String, Set<String>> newValues = new LinkedHashMap<>();
+    for (Entry<String, JsonType> paramEntry : JsonIterators.objectIterable(params)) {
+      String paramName = paramEntry.getKey().trim();
+      JsonType rawValue = paramEntry.getValue();
+      if (!rawValue.getType().equals(ValueType.STRING)) {
+        logger.warn("Step " + stepId + ": Param [" + paramName + "] has value " +
+            rawValue.toString() + " which is not a string.");
+        continue;
+      }
+      String value = rawValue.getString();
+      try {
+        JsonType jsonValue = JsonType.parse(value);
+        if (jsonValue.getType().equals(ValueType.OBJECT)) {
+          // may be filter param; look for values array
+          JSONObject filterParamValue = jsonValue.getJSONObject();
+          if (filterParamValue.has(FilterParamHandler.TERMS_KEY)) {
+            JSONArray terms = filterParamValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+            Set<String> termSet = new HashSet<>();
+            for (JsonType termObj : JsonIterators.arrayIterable(terms)) {
+              if (!termObj.getType().equals(ValueType.STRING)) {
+                logger.warn("Step " + stepId + ": Likely FilterParam [" + paramName +
+                    "] has term " + termObj.toString() + " which is not a string.");
+                continue;
+              }
+              termSet.add(truncateTerm(termObj.getString()));
+            }
+            newValues.put(paramName, termSet);
+            continue; // to next param
           }
         }
-        else {
-          terms = value.split(",");
-        }
-        Set<String> used = new HashSet<>();
-        for (String term : terms) {
-          if (term.length() > 4000)
-            term = term.substring(0, 4000);
-          used.add(term);
-        }
-        newValues.put(paramName.trim(), used);
       }
+      catch (Exception e) {
+        // problem parsing out filter param; probably just not a filter param
+      }
+      String[] terms = value.split(",");
+      Set<String> termSet = new HashSet<>();
+      for (String term : terms) {
+        termSet.add(truncateTerm(term));
+      }
+      newValues.put(paramName, termSet);
     }
     return newValues;
   }
 
-  private boolean isFilterParam(WdkModel wdkModel, String questionName, String paramName) {
-    try {
-      Question question = wdkModel.getQuestion(questionName);
-      Map<String, Param> params = question.getParamMap();
-      Param param = params.get(paramName);
-      return (param != null && param instanceof FilterParam);
-    }
-    catch (WdkModelException ex) {
-      return false;
-    }
+  private String truncateTerm(String term) {
+    return (term.length() <= 4000 ? term : term.substring(0, 4000));
   }
 
   /*
@@ -226,8 +289,8 @@ public class StepParamExpander extends BaseCLI {
    */
   @Override
   protected void declareOptions() {
-    addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which"
-        + " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
+    addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which" +
+        " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
   }
 
   /*
@@ -241,12 +304,11 @@ public class StepParamExpander extends BaseCLI {
     WdkModel wdkModel = null;
     try {
       wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
-      // expand step params
-      logger.info("Expanding params...");
       expand(wdkModel);
     }
     finally {
-      if (wdkModel != null) wdkModel.releaseResources();
+      if (wdkModel != null)
+        wdkModel.releaseResources();
     }
   }
 }
