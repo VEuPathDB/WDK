@@ -1834,7 +1834,15 @@ public class StepFactory {
     Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
     Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
     boolean modified = false;
-    Question question = step.getQuestion();
+    Question question;
+    try {
+      // check for question validity; 
+      question = step.getQuestion();
+    }
+    catch (WdkModelException e) {
+      // if not valid, user can only delete step so don't apply filters
+      return;
+    }
     @SuppressWarnings("unchecked") // cannot create array of specific map
     Map<String, Filter>[] filterMaps = new Map[] { question.getFilters(), question.getViewFilters() };
     for (Map<String, Filter> filterMap : filterMaps) {
