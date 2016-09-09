@@ -1,4 +1,5 @@
 import {Component} from 'react';
+import {findDOMNode} from 'react-dom';
 import {debounce, throttle} from 'lodash';
 import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
@@ -16,35 +17,79 @@ class RecordUI extends Component {
 
   constructor(props) {
     super(props);
-    this._ignoreScrollEvent = false;
+    // images whose load events we are listening to
+    this._images = new Set();
+
+    // flag to ingore calls to scroll changes
+    this._ignoreActiveSectionChange = false;
+
+    // bind event handlers
     this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
     this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
-    this._unsetIgnoreScrollEvent = debounce(this._unsetIgnoreScrollEvent.bind(this), 300);
+    this._unsetIgnoreActiveSectionChange = debounce(this._unsetIgnoreActiveSectionChange.bind(this), 300);
+    this._handleImageLoad = this._handleImageLoad.bind(this);
+    this._removeImageLoadHandlers = this._removeImageLoadHandlers.bind(this);
   }
 
   componentDidMount() {
-    let { hash } = window.location;
-    let target = document.getElementById(hash.slice(1));
-    if (target != null) {
-      target.scrollIntoView();
+    this._scrollToActiveSection();
+    for (let image of findDOMNode(this).querySelectorAll('img')) {
+      if (image.complete) {
+        this._scrollToActiveSection();
+      } else {
+        this._images.add(image);
+        image.addEventListener('load', this._handleImageLoad);
+      }
     }
+    window.addEventListener('wheel', this._removeImageLoadHandlers, { passive: true });
     window.addEventListener('scroll', this._updateActiveSection, { passive: true });
     window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.navigationVisible !== this.props.navigationVisible) {
+    let navVisibilityChanged = prevProps.navigationVisible !== this.props.navigationVisible;
+    let recordChanged = prevProps.record !== this.props.record;
+    if (navVisibilityChanged) {
       this._scrollToActiveSection();
+    }
+    if (recordChanged) {
+      this._scrollToActiveSection();
+      for (let image of findDOMNode(this).querySelectorAll('img')) {
+        if (!this._images.has(image)) {
+          if (image.complete) {
+            this._scrollToActiveSection();
+          } else {
+            this._images.add(image);
+            image.addEventListener('load', this._handleImageLoad);
+          }
+        }
+      }
     }
   }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this._updateActiveSection);
     window.removeEventListener('resize', this._scrollToActiveSection);
+    window.removeEventListener('wheel', this._removeImageLoadHandlers);
+  }
+
+  _handleImageLoad(event) {
+    this._images.delete(event.target);
+    console.trace('SCROLLING AFTER IMG LOAD');
+    this._scrollToActiveSection();
+  }
+
+  _removeImageLoadHandlers() {
+    this._ignoreActiveSectionChange = false;
+    for (let image of this._images) {
+      image.removeEventListener('load', this._handleImageLoad);
+    }
+    this._images.clear();
+    window.removeEventListener('wheel', this._removeImageLoadHandlers);
   }
 
   _updateActiveSection() {
-    if (this._ignoreScrollEvent) return;
+    if (this._ignoreActiveSectionChange || this._images.size > 0) return;
     let activeElement = postorderSeq(this.props.categoryTree)
     .map(node => document.getElementById(getId(node)))
     .filter(el => el != null)
@@ -58,20 +103,20 @@ class RecordUI extends Component {
   }
 
   _scrollToActiveSection() {
-    this._setIgnoreScrollEvent();
+    this._setIgnoreActiveSectionChange();
     let domNode = document.getElementById(this.props.activeSection);
     if (domNode != null) {
       domNode.scrollIntoView(true);
     }
-    this._unsetIgnoreScrollEvent();
+    this._unsetIgnoreActiveSectionChange();
   }
 
-  _setIgnoreScrollEvent() {
-    this._ignoreScrollEvent = true;
+  _setIgnoreActiveSectionChange() {
+    this._ignoreActiveSectionChange = true;
   }
 
-  _unsetIgnoreScrollEvent() {
-    this._ignoreScrollEvent = false;
+  _unsetIgnoreActiveSectionChange() {
+    this._ignoreActiveSectionChange = false;
   }
 
   render() {
