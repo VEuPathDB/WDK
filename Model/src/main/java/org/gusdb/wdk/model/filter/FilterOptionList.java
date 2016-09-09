@@ -4,44 +4,46 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class FilterOptionList implements Iterable<FilterOption>{
 
-  private static final Logger logger = Logger.getLogger(FilterOptionList.class);
+  private WdkModel _wdkModel;
+  private String _questionName;
+  private Map<String, FilterOption> _options;
 
-  private final Question _question;
-  private final Map<String, FilterOption> _options;
-
-  public FilterOptionList(Question question) {
-    _question = question;
-    _options = new LinkedHashMap<>();
-  }
-  
-  public FilterOptionList(FilterOptionList filterOptionList) {
-    _question = filterOptionList._question;
-    _options = new LinkedHashMap<String, FilterOption>(filterOptionList._options);
+  public FilterOptionList(WdkModel wdkModel, String questionName) {
+    init(wdkModel, questionName, new LinkedHashMap<String, FilterOption>());
   }
 
-  public FilterOptionList(Question question, JSONArray jsOptions) throws WdkModelException {
-    _question = question;
-    _options = new LinkedHashMap<>();
+  public FilterOptionList(WdkModel wdkModel, String questionName, JSONArray jsOptions) {
+    Map<String, FilterOption> options = new LinkedHashMap<>();
     for (int i = 0; i < jsOptions.length(); i++) {
       JSONObject jsFilterOption = jsOptions.getJSONObject(i);
-      FilterOption option = new FilterOption(question, jsFilterOption);
-      logger.debug("filter option LIST: 1 (question -- jsoptions array): ADDING FILTER OPTIONS to step with question: " + question.getFullName());
-      _options.put(option.getKey(), option);
+      FilterOption option = new FilterOption(wdkModel, questionName, jsFilterOption);
+      options.put(option.getKey(), option);
     }
+    init(wdkModel, questionName, options);
+  }
+
+  public FilterOptionList(FilterOptionList source) {
+    init(source._wdkModel, source._questionName, new LinkedHashMap<String, FilterOption>(source._options));
+  }
+
+  private void init(WdkModel wdkModel, String questionName, Map<String, FilterOption> options) {
+    _wdkModel = wdkModel;
+    _questionName = questionName;
+    _options = options;
   }
 
   public boolean isFiltered(Step step) throws WdkModelException {
     for (FilterOption option : _options.values()) {
-      if (!option.isDisabled() && !option.isSetToDefaultValue(step)) return true;
+      if (!option.isDisabled() && !option.isSetToDefaultValue(step))
+        return true;
     }
     return false;
   }
@@ -50,26 +52,20 @@ public class FilterOptionList implements Iterable<FilterOption>{
     return _options.size();
   }
 
-  public void addFilterOption(FilterOption filterOption) throws WdkModelException {
-    // make sure this option is valid for this list's question
-    String filterName = filterOption.getKey();
-    _question.getFilter(filterName);
-      logger.debug("filter option LIST: 2 (filteroption, copy): ADDING FILTER OPTION to step with question: " + _question.getFullName());
-    _options.put(filterName, filterOption);
+  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
+    addFilterOption(filterName, filterValue, false);
   }
 
   // we need to pass the disabled property
-  public void addFilterOption(String filterName, JSONObject filterValue, boolean is_disabled) throws WdkModelException {
-    Filter filter = _question.getFilter(filterName);
-    FilterOption option = new FilterOption(_question, filter, filterValue, is_disabled);
-    logger.debug("filter option LIST: 3new (filter name -- js value jsobject):ADDING FILTER OPTION to step with question: " + _question.getFullName());
-    _options.put(filterName, option);
+  public void addFilterOption(String filterName, JSONObject filterValue, boolean isDisabled) throws WdkModelException {
+    addFilterOption(new FilterOption(_wdkModel, _questionName, filterName, filterValue, isDisabled));
   }
-  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
-    Filter filter = _question.getFilter(filterName);
-    FilterOption option = new FilterOption(_question, filter, filterValue);
-    logger.debug("filter option LIST: 3 (filter name -- js value jsobject):ADDING FILTER OPTION to step with question: " + _question.getFullName());
-    _options.put(filterName, option);
+
+  public void addFilterOption(FilterOption filterOption) throws WdkModelException {
+    // make sure this option is valid for this list's question
+    _wdkModel.getQuestion(_questionName).getFilter(filterOption.getKey());
+    // no exception thrown; add filter to map
+    _options.put(filterOption.getKey(), filterOption);
   }
 
   public void removeFilterOption(String filterName) {

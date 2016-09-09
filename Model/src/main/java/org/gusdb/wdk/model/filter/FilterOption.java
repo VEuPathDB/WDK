@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
@@ -17,54 +17,51 @@ public class FilterOption {
 
   private static final Logger LOG = Logger.getLogger(FilterOption.class);
 
+  private static final boolean DEFAULT_IS_DISABLED = false;
+  
   public static final String KEY_NAME = "name";
   public static final String KEY_VALUE = "value";
   public static final String KEY_DISABLED = "disabled";
 
-  private final Filter _filter;
-  private final JSONObject _value;
-  private boolean _disabled = false;
+  private WdkModel _wdkModel;
+  private String _questionName;
+  private String _filterName;
+  private JSONObject _value;
+  private boolean _isDisabled = false;
 
-  public FilterOption(Question question, JSONObject jsFilterOption) throws WdkModelException {
-    String name = jsFilterOption.getString(KEY_NAME);
-    LOG.debug("FilterOption created (read from database?) for filter: " + name +  " on step with question: " +  question.getFullName() );
-    this._value = jsFilterOption.has(KEY_VALUE) ? jsFilterOption.getJSONObject(KEY_VALUE) : null;
-    this._filter = question.getFilter(name);
-    if (jsFilterOption.has(KEY_DISABLED)){
-      this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
-    }
+  public FilterOption(WdkModel wdkModel, String questionName, JSONObject jsFilterOption) {
+    String filterName = jsFilterOption.getString(KEY_NAME);
+    LOG.debug("FilterOption created (read from database?) for filter: " + filterName +  " on step with question: " +  questionName );
+    JSONObject value = jsFilterOption.has(KEY_VALUE) ? jsFilterOption.getJSONObject(KEY_VALUE) : null;
+    boolean isDisabled = (jsFilterOption.has(KEY_DISABLED) ? jsFilterOption.getBoolean(KEY_DISABLED) : DEFAULT_IS_DISABLED);
+    init(wdkModel, questionName, filterName, value, isDisabled);
   }
+
   // we need to add/pass the disabled property
-  public FilterOption(Question question, Filter filter, JSONObject value, boolean is_disabled) {
-    this._filter = filter; //a Filter
-    this._value = value; // a JSON object
-		this._disabled = is_disabled; // boolean
-		LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable: " + is_disabled ); 
-		/*
-    if ( ( question.getQuestionSetName().substring(0,8).equals("Internal") ) && (filter.getKey().contains("matched"))  ) {
-      LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable TRUE" );
-      this._disabled = true; 
-    }
-    else {   
-      LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
-      this._disabled = false;
-    }
-		*/
+  public FilterOption(WdkModel wdkModel, String questionName, String filterName, JSONObject value) {
+    init(wdkModel, questionName, filterName, value, DEFAULT_IS_DISABLED);
   }
 
- public FilterOption(Question question, Filter filter, JSONObject value) {
-	 LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
-    this._filter = filter; //a Filter
-    this._value = value; // a JSON object
-		this._disabled = false;  // boolean
+  // we need to add/pass the disabled property
+  public FilterOption(WdkModel wdkModel, String questionName, String filterName, JSONObject value, boolean isDisabled) {
+    init(wdkModel, questionName, filterName, value, isDisabled);
   }
+
+  private void init(WdkModel wdkModel, String questionName, String filterName, JSONObject value, boolean isDisabled) {
+    _wdkModel = wdkModel;
+    _questionName = questionName;
+    _filterName = filterName;
+    _value = value;
+    _isDisabled = isDisabled;
+    LOG.debug("FilterOption created for filter: " + _filterName +  " on step with question: " +  _questionName  + ", isDisabled? " + isDisabled );
+  }
+
+ public Filter getFilter() throws WdkModelException {
+   return _wdkModel.getQuestion(_questionName).getFilter(_filterName);
+ }
 
   public String getKey() {
-    return _filter.getKey();
-  }
-
-  public Filter getFilter() {
-    return _filter;
+    return _filterName;
   }
 
   public JSONObject getValue() {
@@ -72,22 +69,22 @@ public class FilterOption {
   }
 
   public String getDisplayValue(AnswerValue answerValue) throws WdkModelException, WdkUserException {
-    return _filter.getDisplayValue(answerValue, _value);
+    return getFilter().getDisplayValue(answerValue, _value);
   }
 
   public boolean isDisabled() {
-    return _disabled;
+    return _isDisabled;
   }
 
-  public void setDisabled(boolean disabled) {
-    this._disabled = disabled;
+  public void setDisabled(boolean isDisabled) {
+    _isDisabled = isDisabled;
   }
   
   public JSONObject getJSON() {
     JSONObject jsFilterOption = new JSONObject();
-    jsFilterOption.put(KEY_NAME, _filter.getKey());
+    jsFilterOption.put(KEY_NAME, _filterName);
     jsFilterOption.put(KEY_VALUE, _value);
-    jsFilterOption.put(KEY_DISABLED, _disabled);
+    jsFilterOption.put(KEY_DISABLED, _isDisabled);
     return jsFilterOption;
   }
 
