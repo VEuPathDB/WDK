@@ -31,10 +31,6 @@ public class FieldTree {
 
   private static final Reducer<SelectableItem,Boolean> ALL_SELECTED = new Reducer<SelectableItem,Boolean>() {
     @Override
-    public Boolean reduce(SelectableItem obj) {
-      return obj.isSelected();
-    }
-    @Override
     public Boolean reduce(SelectableItem obj, Boolean incomingValue) {
       return incomingValue && obj.isSelected();
     }
@@ -103,7 +99,7 @@ public class FieldTree {
   }
 
   public boolean isAllLeavesSelected() {
-    return _root.reduce(_root.LEAF_PREDICATE, ALL_SELECTED);
+    return _root.reduce(_root.LEAF_PREDICATE, ALL_SELECTED, true);
   }
 
   public JSONObject toJson() {
@@ -111,7 +107,7 @@ public class FieldTree {
   }
 
   public JSONObject toJson(TreeNode<SelectableItem> node) {
-    return _root.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
+    return node.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
       @Override
       public JSONObject map(SelectableItem item, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();
