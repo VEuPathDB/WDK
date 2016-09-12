@@ -50,11 +50,11 @@ public class TableRowInterfaces {
 
     /**
      * Processes a single record (a row in the DB table), updating the record in place and telling the
-     * updater whether the record was modified.  This method must be thread-safe as multiple threads may
+     * updater whether the record should be written.  This method must be thread-safe as multiple threads may
      * be calling it synchronously with different row objects.
      * 
      * @param nextRow object representing a row in the DB
-     * @return result of processing- essentially a tuple of <whether object was modified, updated object>
+     * @return result of processing- essentially a tuple of <whether object should be written, updated object>
      * @throws Exception if error occurs while processing row
      */
     public RowResult<T> processRecord(T nextRow) throws Exception;
@@ -171,16 +171,15 @@ public class TableRowInterfaces {
 
   /**
    * Represents the result of an update performed on an object representing a single record.  Provides a
-   * boolean value telling whether the value has been updated (and thus should be written back to the
-   * database), and the record itself.  If modification value is false, the record can be null with no
-   * ill effects.
+   * boolean value telling whether the value should be written back to the database), and the record itself.
+   * If shouldWrite value is false, the record can be null with no ill effects.
    * 
    * @param <T> type of record this result is for
    */
   public static class RowResult<T> extends TwoTuple<Boolean, T> {
 
     /**
-     * Creates a result for the passed record with initial modification value 'false'
+     * Creates a result for the passed record with initial write value 'false'
      * 
      * @param record record this result is for
      */
@@ -189,17 +188,18 @@ public class TableRowInterfaces {
     }
 
     /**
-     * @return whether this record was modified by the updater plugin
+     * @return whether the updater plugin has determined that this record should be written using the
+     * configured writers
      */
-    public boolean isModified() { return getFirst(); }
+    public boolean shouldWrite() { return getFirst(); }
 
     /**
-     * Sets modification value of this result to 'true'
+     * Sets shouldWrite value of this result to the passed value
      */
-    public void setModified() { set(true, getSecond()); }
+    public void setShouldWrite(boolean shouldWrite) { set(shouldWrite, getSecond()); }
 
     /**
-     * @return the (possibly already updated) record this result is for
+     * @return the (possibly modified) record this result is for
      */
     public T getRow() { return getSecond(); }
   }

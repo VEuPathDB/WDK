@@ -454,7 +454,7 @@ public class TableRowUpdater<T extends TableRow> {
               stats.numRecordErrors++;
             }
             if (result != null) {
-              if (result.isModified()) {
+              if (result.shouldWrite()) {
                 // record has been modified
                 modifiedRecords.add(result.getRow());
                 stats.numModified++;

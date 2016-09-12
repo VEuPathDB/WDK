@@ -39,7 +39,7 @@ public class StepQuestionUpdater {
     String questionName  = result.getRow().getQuestionName();
     if (_mapping.containsKey(questionName)) {
       result.getRow().setQuestionName(_mapping.get(questionName));
-      result.setModified();
+      result.setShouldWrite(true);
       return true;
     }
     return false;
