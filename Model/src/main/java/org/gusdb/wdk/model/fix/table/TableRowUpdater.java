@@ -75,7 +75,7 @@ public class TableRowUpdater<T extends TableRow> {
   // constants controlling behavior
   private static final int MAX_QUEUE_SIZE = 30;
   private static final int NUM_THREADS = 15;
-  private static final int BATCH_COMMIT_SIZE = 100;
+  private static final int BATCH_COMMIT_SIZE = 200;
   private static final boolean UPDATES_DISABLED = false;
 
   // constants exhibiting various exit statuses
@@ -94,6 +94,10 @@ public class TableRowUpdater<T extends TableRow> {
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
   public static void main(String[] args) {
+    System.exit(run(args));
+  }
+
+  public static int run(String[] args) {
     Timer timer = Timer.start();
     LOG.info(TableRowUpdater.class.getSimpleName() + " started with args: " + FormatUtil.printArray(args));
     ExitStatus exitValue = ExitStatus.SUCCESS;
@@ -141,7 +145,7 @@ public class TableRowUpdater<T extends TableRow> {
     }
     LOG.info("Duration: " + timer.getElapsedAsString());
     LOG.info("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
-    System.exit(exitValue.ordinal());
+    return exitValue.ordinal();
   }
 
   private static Config parseArgs(String[] args) {
@@ -372,7 +376,7 @@ public class TableRowUpdater<T extends TableRow> {
   private static class Stats {
 
     public int numProcessed = 0;
-    public int numModified = 0;
+    public int numWritten = 0;
     public int numRecordErrors = 0;
 
     /**
@@ -382,14 +386,14 @@ public class TableRowUpdater<T extends TableRow> {
      */
     public void incorporate(Stats stats) {
       numProcessed += stats.numProcessed;
-      numModified += stats.numModified;
+      numWritten += stats.numWritten;
       numRecordErrors += stats.numRecordErrors;
     }
 
     @Override
     public String toString() {
       return "Processed " + numProcessed + " total records" +
-          " (" + numModified + " modified, " + numRecordErrors + " errors)";
+          " (" + numWritten + " written, " + numRecordErrors + " errors)";
     }
   }
 
@@ -457,7 +461,7 @@ public class TableRowUpdater<T extends TableRow> {
               if (result.shouldWrite()) {
                 // record has been modified
                 modifiedRecords.add(result.getRow());
-                stats.numModified++;
+                stats.numWritten++;
               }
               if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
                 _batchUpdater.update(modifiedRecords);

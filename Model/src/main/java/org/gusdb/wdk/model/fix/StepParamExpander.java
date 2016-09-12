@@ -25,6 +25,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.fix.table.TableRowUpdater;
 import org.gusdb.wdk.model.query.param.FilterParamHandler;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
@@ -41,12 +42,15 @@ public class StepParamExpander extends BaseCLI {
 
   private static final Logger logger = Logger.getLogger(StepParamExpander.class);
 
+  private static final boolean USE_THREADED_BY_DEFAULT = true;
+
+  private static final String ARG_THREADED = "threaded";
+
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     StepParamExpander expender = new StepParamExpander(cmdName);
     try {
       expender.invoke(args);
-      logger.info("step params expanded.");
       System.exit(0);
     }
     catch (Exception ex) {
@@ -81,11 +85,7 @@ public class StepParamExpander extends BaseCLI {
       connection = ds.getConnection();
       connection.setAutoCommit(false);
 
-      String selectSql =
-          "SELECT s.step_id, s.display_params" +
-          " FROM " + userSchema + "steps s, " + userSchema + "users u" +
-          " WHERE s.user_id = u.user_id AND u.is_guest = 0" +
-          "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
+      String selectSql = getSelectSql(userSchema);
 
       selectStmt = connection.createStatement();
       selectStmt.setFetchSize(1000);
@@ -94,7 +94,7 @@ public class StepParamExpander extends BaseCLI {
       long start = System.currentTimeMillis();
       resultSet = selectStmt.executeQuery(selectSql);
       QueryLogger.logEndStatementExecution(selectSql, "wdk-select-step-params", start);
-      psInsert = prepareInsert(connection);
+      psInsert = connection.prepareStatement(getInsertSql());
 
       int stepCount = 0;
       int stepsWithParamsCount = 0;
@@ -150,8 +150,9 @@ public class StepParamExpander extends BaseCLI {
       logger.info("Processed " + stepCount + " steps in " + timer.getElapsedAsString());
       logger.info(noParamStepCount + " steps had no parameters.");
       logger.info(stepsWithParamsCount + " steps had parameters.");
+      int avgBatchSize = (numBatchesWritten == 0 ? 0 : totalParamValueRows / numBatchesWritten);
       logger.info(totalParamValueRows + " parameter rows were inserted over " + numBatchesWritten +
-          " batches (avg batch size " + (totalParamValueRows / numBatchesWritten) + ").");
+          " batches (avg batch size " + avgBatchSize + ").");
     }
     catch (SQLException | JSONException ex) {
       connection.rollback();
@@ -164,7 +165,15 @@ public class StepParamExpander extends BaseCLI {
     }
   }
 
-  private void createParamTable(WdkModel wdkModel) throws SQLException {
+  private String getSelectSql(String userSchema) {
+    return
+        "SELECT s.step_id, s.display_params" +
+        " FROM " + userSchema + "steps s, " + userSchema + "users u" +
+        " WHERE s.user_id = u.user_id AND u.is_guest = 0" +
+        "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
+  }
+
+  public static void createParamTable(WdkModel wdkModel) throws SQLException {
     DatabaseInstance database = wdkModel.getUserDb();
     DataSource dataSource = database.getDataSource();
 
@@ -207,25 +216,26 @@ public class StepParamExpander extends BaseCLI {
     }
   }
 
-  private PreparedStatement prepareInsert(Connection connection) throws SQLException {
-    String sql = "INSERT INTO step_params (step_id, param_name, param_value) VALUES (?, ?, ?)";
-    return connection.prepareStatement(sql);
+  public static String getInsertSql() {
+    return "INSERT INTO step_params (step_id, param_name, param_value) VALUES (?, ?, ?)";
   }
 
-  private Map<String, Set<String>> parseClob(int stepId, String clob)
+  public static Map<String, Set<String>> parseClob(int stepId, String clob)
       throws JSONException {
     if (clob == null || clob.trim().isEmpty()) {
       return new LinkedHashMap<>();
     }
     // parse JSON object out of clob
-    JSONObject displayParams;
     try {
-      displayParams = new JSONObject(clob.trim());
+      return parseDisplayParams(stepId, new JSONObject(clob.trim()));
     }
     catch (JSONException e) {
       logger.warn("Step " + stepId + ": display_params CLOB is not a JSON object.");
       return new LinkedHashMap<>();
     }
+  }
+
+  public static Map<String, Set<String>> parseDisplayParams(int stepId, JSONObject displayParams) {
     return parseParams(stepId, displayParams.has(Step.KEY_PARAMS) ?
         // new displayParams format, fetch params object from params property
         displayParams.getJSONObject(Step.KEY_PARAMS) :
@@ -233,7 +243,7 @@ public class StepParamExpander extends BaseCLI {
         displayParams);
   }
 
-  private Map<String, Set<String>> parseParams(int stepId, JSONObject params) {
+  private static Map<String, Set<String>> parseParams(int stepId, JSONObject params) {
     Map<String, Set<String>> newValues = new LinkedHashMap<>();
     for (Entry<String, JsonType> paramEntry : JsonIterators.objectIterable(params)) {
       String paramName = paramEntry.getKey().trim();
@@ -278,7 +288,7 @@ public class StepParamExpander extends BaseCLI {
     return newValues;
   }
 
-  private String truncateTerm(String term) {
+  public static String truncateTerm(String term) {
     return (term.length() <= 4000 ? term : term.substring(0, 4000));
   }
 
@@ -291,6 +301,7 @@ public class StepParamExpander extends BaseCLI {
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which" +
         " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
+    addSingleValueOption(ARG_THREADED, false, String.valueOf(USE_THREADED_BY_DEFAULT), "Set to true to use TableRowUpdater (threaded) version; else false");
   }
 
   /*
@@ -300,15 +311,27 @@ public class StepParamExpander extends BaseCLI {
    */
   @Override
   protected void execute() throws Exception {
-    String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+    String projectId = (String)getOptionValue(ARG_PROJECT_ID);
+    boolean useThreaded = Boolean.valueOf((String)getOptionValue(ARG_THREADED));
+    if (useThreaded) {
+      int exitCode = TableRowUpdater.run(new String[]{ StepParamExpanderPlugin.class.getName(), projectId });
+      System.exit(exitCode);
+    }
+    else {
+      runOrig(projectId);
+    }
+  }
+
+  private void runOrig(String projectId) throws WdkModelException, SQLException {
+    Timer t = new Timer();
     WdkModel wdkModel = null;
     try {
       wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
       expand(wdkModel);
     }
     finally {
-      if (wdkModel != null)
-        wdkModel.releaseResources();
+      if (wdkModel != null) wdkModel.releaseResources();
+      logger.info("Program duration: " + t.getElapsedAsString());
     }
   }
 }
