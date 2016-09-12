@@ -1,43 +1,32 @@
 package org.gusdb.wdk.model.fix.table.steps;
 
 import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.functional.FunctionalInterfaces.equalTo;
-import static org.gusdb.fgputil.functional.FunctionalInterfaces.negate;
-import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toMapFunction;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowFactory;
-import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
 import org.json.JSONObject;
 
-public class StepDataFactory implements TableRowFactory<StepData>, TableRowWriter<StepData> {
+public class StepDataFactory implements TableRowFactory<StepData> {
 
   // constants for column names
-  private static final String STEP_ID = "STEP_ID";               // NUMBER(12,0)
-  private static final String LEFT_CHILD_ID = "LEFT_CHILD_ID";   // NUMBER(12,0)
-  private static final String RIGHT_CHILD_ID = "RIGHT_CHILD_ID"; // NUMBER(12,0)
-  private static final String ANSWER_FILTER = "ANSWER_FILTER";   // VARCHAR2(100 BYTE)
-  private static final String PROJECT_ID = "PROJECT_ID";         // VARCHAR2(50 BYTE)
-  private static final String QUESTION_NAME = "QUESTION_NAME";   // VARCHAR2(200 BYTE)
-  private static final String DISPLAY_PARAMS = "DISPLAY_PARAMS"; // CLOB
+  public static final String STEP_ID = "STEP_ID";               // NUMBER(12,0)
+  public static final String LEFT_CHILD_ID = "LEFT_CHILD_ID";   // NUMBER(12,0)
+  public static final String RIGHT_CHILD_ID = "RIGHT_CHILD_ID"; // NUMBER(12,0)
+  public static final String ANSWER_FILTER = "ANSWER_FILTER";   // VARCHAR2(100 BYTE)
+  public static final String PROJECT_ID = "PROJECT_ID";         // VARCHAR2(50 BYTE)
+  public static final String QUESTION_NAME = "QUESTION_NAME";   // VARCHAR2(200 BYTE)
+  public static final String DISPLAY_PARAMS = "DISPLAY_PARAMS"; // CLOB
 
   // SQL type map
-  protected static final Map<String, Integer> SQLTYPES = 
+  public static final Map<String, Integer> SQLTYPES = 
       new MapBuilder<String, Integer>(new LinkedHashMap<String, Integer>())
       .put(STEP_ID, Types.INTEGER)
       .put(LEFT_CHILD_ID, Types.INTEGER)
@@ -48,19 +37,9 @@ public class StepDataFactory implements TableRowFactory<StepData>, TableRowWrite
       .put(DISPLAY_PARAMS, Types.CLOB)
       .toMap();
 
-  private static final String[] COLS = SQLTYPES.keySet().toArray(new String[SQLTYPES.size()]);
+  public static final String[] COLS = SQLTYPES.keySet().toArray(new String[SQLTYPES.size()]);
   
   protected static final String SELECT_COLS_TEXT = join(COLS, ",");
-
-  private static final List<String> UPDATE_COLS = filter(Arrays.asList(COLS), negate(equalTo(STEP_ID)));
-
-  private static final String UPDATE_COLS_TEXT = join(mapToList(UPDATE_COLS, new Function<String, String>() {
-        @Override public String apply(String col) { return col + " = ?"; }
-      }).toArray(), ", ");
-
-  private static final Integer[] UPDATE_PARAMETER_TYPES =
-      mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),
-          toMapFunction(SQLTYPES)).toArray(new Integer[COLS.length]);
 
   protected final boolean _includeGuestUserSteps;
 
@@ -92,29 +71,6 @@ public class StepDataFactory implements TableRowFactory<StepData>, TableRowWrite
     return "select " + SELECT_COLS_TEXT + " from " + schema + "steps" +
         (_includeGuestUserSteps ? " where " + basicConditions :
           " s, " + schema + "users u where " + basicConditions + " and u.user_id = s.user_id and u.is_guest = 0");
-  }
-
-  @Override
-  public String getWriteSql(String schema) {
-    return "update " + schema + "steps set " + UPDATE_COLS_TEXT + " where " + STEP_ID + " = ?";
-  }
-
-  @Override
-  public Integer[] getParameterTypes() {
-    return UPDATE_PARAMETER_TYPES;
-  }
-
-  @Override
-  public Collection<Object[]> toValues(StepData row) {
-    return ListBuilder.asList(new Object[] {
-        row.getLeftChildId(),
-        row.getRightChildId(),
-        row.getLegacyAnswerFilter(),
-        row.getProjectId(),
-        row.getQuestionName(),
-        row.getParamFilters().toString(),
-        row.getStepId()
-    });
   }
 
   @Override
