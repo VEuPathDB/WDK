@@ -51,7 +51,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
     public StepWithParams(StepData base) {
       super(base);
       params = StepParamExpander.parseDisplayParams(getStepId().intValue(), getParamFilters());
-      valueCount = Functions.reduce(params.values(), new Reducer<Set<String>, Integer>() {
+      valueCount = Functions.reduce(params.values().iterator(), new Reducer<Set<String>, Integer>() {
         @Override
         public Integer reduce(Set<String> obj, Integer incomingValue) {
           return incomingValue + obj.size();
