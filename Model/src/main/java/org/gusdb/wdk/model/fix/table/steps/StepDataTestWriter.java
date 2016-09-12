@@ -24,9 +24,9 @@ import org.gusdb.wdk.model.WdkModel;
  * 
  * @author rdoherty
  */
-public class StepDataTestFactory extends StepDataFactory {
+public class StepDataTestWriter extends StepDataWriter {
 
-  public static final Logger LOG = Logger.getLogger(StepDataTestFactory.class);
+  public static final Logger LOG = Logger.getLogger(StepDataTestWriter.class);
   
   private static final String TEST_TABLE_SCHEMA = "wdkmaint";
   private static final String TEST_TABLE_NAME = "STEP_UPDATER_PLUGIN_TEST";
@@ -44,7 +44,7 @@ public class StepDataTestFactory extends StepDataFactory {
           "\"OLD_DISPLAY_PARAMS\" CLOB," +
           "PRIMARY KEY (\"STEP_ID\"))";
 
-  private static final String INSERT_COLS_TEXT = SELECT_COLS_TEXT + ",OLD_DISPLAY_PARAMS";
+  private static final String INSERT_COLS_TEXT = StepDataFactory.SELECT_COLS_TEXT + ",OLD_DISPLAY_PARAMS";
 
   private static final String INSERT_WILDCARDS = join(mapToList(SQLTYPES.keySet(), new Function<String, String>() {
     @Override public String apply(String obj) { return "?"; }}).toArray(), ",") + ",?";
@@ -56,10 +56,6 @@ public class StepDataTestFactory extends StepDataFactory {
       SQLTYPES.values().toArray(new Integer[SQLTYPES.size()]), Types.CLOB);
 
   private static final String DELETE_TEST_RECORDS = "DELETE FROM " + TEST_TABLE;
-
-  public StepDataTestFactory(boolean includeGuestUserSteps) {
-    super(includeGuestUserSteps);
-  }
 
   @Override
   public void setUp(WdkModel wdkModel) throws DBStateException, SQLException {

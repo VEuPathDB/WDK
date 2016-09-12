@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -188,6 +189,10 @@ public class TableRowUpdater<T extends TableRow> {
   private final WdkModel _wdkModel;
   private final ExecutorService _exec = Executors.newFixedThreadPool(NUM_THREADS);
 
+  public TableRowUpdater(TableRowFactory<T> factory, TableRowWriter<T> writer, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
+    this(factory, ListBuilder.asList(writer), plugin, wdkModel);
+  }
+
   public TableRowUpdater(TableRowFactory<T> factory, List<TableRowWriter<T>> writers, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
     _factory = factory;
     _writers = writers;
@@ -202,10 +207,10 @@ public class TableRowUpdater<T extends TableRow> {
     int numThreadProblems = 0;
 
     try {
-      _factory.setUp(_wdkModel);
+      setUpDatabase();
     }
     catch (Exception e) {
-      LOG.error("Error setting up factory.", e);
+      LOG.error("Error setting up factory and/or writers.", e);
       return ExitStatus.FACTORY_ERROR;
     }
     try {
@@ -258,7 +263,7 @@ public class TableRowUpdater<T extends TableRow> {
       }
     }
     try {
-      _factory.tearDown(_wdkModel);
+      tearDownDatabase();
     }
     catch (Exception e) {
       LOG.error("Error tearing down factory.", e);
@@ -267,6 +272,20 @@ public class TableRowUpdater<T extends TableRow> {
     if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
     if (aggregate.numRecordErrors > 0) return ExitStatus.RECORD_ERRORS;
     return ExitStatus.SUCCESS;
+  }
+
+  private void setUpDatabase() throws Exception {
+    _factory.setUp(_wdkModel);
+    for (TableRowWriter<T> writer : _writers) {
+      writer.setUp(_wdkModel);
+    }
+  }
+
+  private void tearDownDatabase() throws Exception {
+    _factory.tearDown(_wdkModel);
+    for (TableRowWriter<T> writer : _writers) {
+      writer.tearDown(_wdkModel);
+    }
   }
 
   private static String getUserSchema(WdkModel wdkModel) {

@@ -112,6 +112,20 @@ public class TableRowInterfaces {
   public static interface TableRowWriter<T extends TableRow> {
 
     /**
+     * Do any pre-run setup required by this TableRowFactory
+     * 
+     * @param wdkModel WDK model that will be used in this run
+     */
+    public void setUp(WdkModel wdkModel) throws Exception;
+
+    /**
+     * Do any post-run tear down required by this TableRowFactory
+     * 
+     * @param wdkModel WDK model that will be used in this run
+     */
+    public void tearDown(WdkModel wdkModel) throws Exception;
+
+    /**
      * Provides parameterized SQL to write a single record.  This SQL will be converted to a
      * PreparedStatement, then executed as a batch update operation using the SQL types and values
      * provided by getParameterTypes() and toValues()
