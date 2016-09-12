@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,18 +95,18 @@ public class StepDataFactory implements TableRowFactory<StepData>, TableRowWrite
   }
 
   @Override
-  public String getUpdateRecordSql(String schema) {
+  public String getWriteSql(String schema) {
     return "update " + schema + "steps set " + UPDATE_COLS_TEXT + " where " + STEP_ID + " = ?";
   }
 
   @Override
-  public Integer[] getUpdateParameterTypes() {
+  public Integer[] getParameterTypes() {
     return UPDATE_PARAMETER_TYPES;
   }
 
   @Override
-  public Object[] toUpdateVals(StepData row) {
-    return new Object[] {
+  public Collection<Object[]> toValues(StepData row) {
+    return ListBuilder.asList(new Object[] {
         row.getLeftChildId(),
         row.getRightChildId(),
         row.getLegacyAnswerFilter(),
@@ -113,7 +114,7 @@ public class StepDataFactory implements TableRowFactory<StepData>, TableRowWrite
         row.getQuestionName(),
         row.getParamFilters().toString(),
         row.getStepId()
-    };
+    });
   }
 
   @Override

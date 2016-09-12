@@ -1,11 +1,14 @@
 package org.gusdb.wdk.model.fix.table;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.functional.Functions.flatten;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.transform;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -180,14 +183,14 @@ public class TableRowUpdater<T extends TableRow> {
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
   
   private final TableRowFactory<T> _factory;
-  private final TableRowWriter<T> _writer;
+  private final List<TableRowWriter<T>> _writers;
   private final TableRowUpdaterPlugin<T> _plugin;
   private final WdkModel _wdkModel;
   private final ExecutorService _exec = Executors.newFixedThreadPool(NUM_THREADS);
 
-  public TableRowUpdater(TableRowFactory<T> factory, TableRowWriter<T> writer, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
+  public TableRowUpdater(TableRowFactory<T> factory, List<TableRowWriter<T>> writers, TableRowUpdaterPlugin<T> plugin, WdkModel wdkModel) {
     _factory = factory;
-    _writer = writer;
+    _writers = writers;
     _plugin = plugin;
     _wdkModel = wdkModel;
   }
@@ -211,7 +214,7 @@ public class TableRowUpdater<T extends TableRow> {
   
       // create and start threads that will listen to queue and pull off records to process
       for (int i = 0; i < NUM_THREADS; i++) {
-        RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _writer, _wdkModel);
+        RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _writers, _wdkModel);
         threads.add(thread);
         results.add(_exec.submit(thread));
       }
@@ -389,11 +392,11 @@ public class TableRowUpdater<T extends TableRow> {
     private final AtomicBoolean _isFinished = new AtomicBoolean(false);
     private final AtomicBoolean _commitAndFinishFlag = new AtomicBoolean(false);
 
-    public RowHandler(int threadId, RecordQueue<T> recordQueue, TableRowUpdaterPlugin<T> plugin, TableRowWriter<T> writer, WdkModel wdkModel) {
+    public RowHandler(int threadId, RecordQueue<T> recordQueue, TableRowUpdaterPlugin<T> plugin, List<TableRowWriter<T>> writers, WdkModel wdkModel) {
       _threadId = threadId;
       _recordQueue = recordQueue;
       _plugin = plugin;
-      _batchUpdater = new BatchUpdater<T>(this, writer, wdkModel);
+      _batchUpdater = new BatchUpdater<T>(this, writers, wdkModel);
     }
 
     public void commitAndFinish() {
@@ -470,46 +473,52 @@ public class TableRowUpdater<T extends TableRow> {
   private static class BatchUpdater<T extends TableRow> {
 
     private final RowHandler<T> _parent;
-    private final TableRowWriter<T> _writer;
-    private final Integer[] _updateTypes;
+    private final List<TableRowWriter<T>> _writers;
+    private final List<Integer[]> _parameterTypes;
     private final DataSource _userDs;
     private final String _schema;
     
-    public BatchUpdater(RowHandler<T> parent, TableRowWriter<T> writer, WdkModel wdkModel) {
+    public BatchUpdater(RowHandler<T> parent, List<TableRowWriter<T>> writers, WdkModel wdkModel) {
       _parent = parent;
-      _writer = writer;
-      _updateTypes = writer.getUpdateParameterTypes();
+      _writers = writers;
       _userDs = wdkModel.getUserDb().getDataSource();
       _schema = getUserSchema(wdkModel);
+      _parameterTypes = mapToList(writers, new Function<TableRowWriter<T>, Integer[]>() {
+        @Override public Integer[] apply(TableRowWriter<T> writer) { return writer.getParameterTypes(); }});
     }
 
     public void update(final List<T> modifiedRows) {
 
-      // need to construct an argument batch around modified record list
-      ArgumentBatch batch = getArgumentBatch(modifiedRows);
-
       // log what we are about to do
-      _parent.log("Preparing to write " + modifiedRows.size() + " records to DB. " +
-          "First record: " + (modifiedRows.isEmpty() ? "<none>" : modifiedRows.get(0).getDisplayId()));
+      _parent.log("Preparing to write " + modifiedRows.size() + " records to DB using " + _writers.size() +
+          " writers. First record: " + (modifiedRows.isEmpty() ? "<none>" : modifiedRows.get(0).getDisplayId()));
 
-      // if updates enabled, execute argument batch
-      if (!UPDATES_DISABLED) {
-        new SQLRunner(_userDs, _writer.getUpdateRecordSql(
-            _schema), true).executeUpdateBatch(batch);
+      // perform writes using each writer
+      for (int i = 0; i < _writers.size(); i++) {
+
+        // need to construct an argument batch around modified record list
+        ArgumentBatch batch = getArgumentBatch(modifiedRows, _writers.get(i), _parameterTypes.get(i));
+
+        // if updates enabled, execute argument batch
+        if (!UPDATES_DISABLED) {
+          new SQLRunner(_userDs, _writers.get(i).getWriteSql(
+              _schema), true).executeUpdateBatch(batch);
+        }
       }
     }
 
-    private ArgumentBatch getArgumentBatch(final List<T> modifiedRows) {
+    private static <T extends TableRow> ArgumentBatch getArgumentBatch(final List<T> modifiedRows,
+        final TableRowWriter<T> writer, final Integer[] parameterTypesArray) {
       return new ArgumentBatch() {
 
         @Override
         public Iterator<Object[]> iterator() {
-          return transform(modifiedRows.iterator(),
-              new Function<T, Object[]>() {
-                @Override public Object[] apply(T obj) {
-                  return _writer.toUpdateVals(obj);
+          return flatten(transform(modifiedRows.iterator(),
+              new Function<T, Collection<Object[]>>() {
+                @Override public Collection<Object[]> apply(T obj) {
+                  return writer.toValues(obj);
                 }
-              });
+              }));
         }
 
         @Override
@@ -519,7 +528,7 @@ public class TableRowUpdater<T extends TableRow> {
 
         @Override
         public Integer[] getParameterTypes() {
-          return _updateTypes;
+          return parameterTypesArray;
         }
       };
     }

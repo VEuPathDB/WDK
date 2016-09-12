@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.fix.table;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -111,14 +112,14 @@ public class TableRowInterfaces {
   public static interface TableRowWriter<T extends TableRow> {
 
     /**
-     * Provides parameterized SQL to update a single record.  This SQL will be converted to a
-     * PreparedStatement, then executed as a batch update operation using the SQL types and update parameters
-     * provided by getUpdateParameterTypes() and toUpdateVals()
+     * Provides parameterized SQL to write a single record.  This SQL will be converted to a
+     * PreparedStatement, then executed as a batch update operation using the SQL types and values
+     * provided by getParameterTypes() and toValues()
      * 
      * @param schema schema of this DB
      * @return SQL update statement as string
      */
-    public String getUpdateRecordSql(String schema);
+    public String getWriteSql(String schema);
 
     /**
      * Provides the JDBC SQL types of the parameters passed to the update statement provided by
@@ -126,15 +127,16 @@ public class TableRowInterfaces {
      * 
      * @return array of SQL type integer constants corresponding to the params in the update SQL
      */
-    public Integer[] getUpdateParameterTypes();
+    public Integer[] getParameterTypes();
 
     /**
-     * Converts a TableRow object into an array of values provided to the SQL update statement as params.
+     * Converts a TableRow object to a collection of value arrays representing the passed object.  Each
+     * of the returned arrays will be applied to the write operation defined by the SQL above.
      * 
      * @param obj instance of Java row object
-     * @return array of update value representing the passed object
+     * @return collection of value arrays representing the passed object
      */
-    public Object[] toUpdateVals(T obj);
+    public Collection<Object[]> toValues(T obj);
 
   }
 
