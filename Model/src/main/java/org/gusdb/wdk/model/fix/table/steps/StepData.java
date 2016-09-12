@@ -27,6 +27,19 @@ public class StepData implements TableRow {
   private String _origParamFiltersString;
   private JSONObject _paramFilters;
 
+  public StepData() {}
+
+  public StepData(StepData orig) {
+    _stepId = orig._stepId;
+    _leftChildId = orig._leftChildId;
+    _rightChildId = orig._rightChildId;
+    _legacyAnswerFilter = orig._legacyAnswerFilter;
+    _projectId = orig._projectId;
+    _projectId = orig._questionName;
+    _origParamFiltersString = orig._origParamFiltersString;
+    _paramFilters = orig._paramFilters;
+  }
+
   @Override
   public String getDisplayId() {
     return _stepId.toString();

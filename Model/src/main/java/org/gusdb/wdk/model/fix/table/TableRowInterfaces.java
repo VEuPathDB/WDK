@@ -196,7 +196,7 @@ public class TableRowInterfaces {
     /**
      * Sets shouldWrite value of this result to the passed value
      */
-    public void setShouldWrite(boolean shouldWrite) { set(shouldWrite, getSecond()); }
+    public RowResult<T> setShouldWrite(boolean shouldWrite) { set(shouldWrite, getSecond()); return this; }
 
     /**
      * @return the (possibly modified) record this result is for
