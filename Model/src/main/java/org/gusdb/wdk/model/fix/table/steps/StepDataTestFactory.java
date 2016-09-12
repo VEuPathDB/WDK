@@ -6,10 +6,12 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -78,18 +80,18 @@ public class StepDataTestFactory extends StepDataFactory {
   }
 
   @Override
-  public String getUpdateRecordSql(String schema) {
+  public String getWriteSql(String schema) {
     return INSERT_SQL;
   }
 
   @Override
-  public Integer[] getUpdateParameterTypes() {
+  public Integer[] getParameterTypes() {
     return INSERT_PARAMETER_TYPES;
   }
 
   @Override
-  public Object[] toUpdateVals(StepData row) {
-    return new Object[] {
+  public Collection<Object[]> toValues(StepData row) {
+    return ListBuilder.asList(new Object[] {
         row.getStepId(),
         row.getLeftChildId(),
         row.getRightChildId(),
@@ -98,6 +100,6 @@ public class StepDataTestFactory extends StepDataFactory {
         row.getQuestionName(),
         row.getParamFilters().toString(),
         row.getOrigParamFiltersString()
-    };
+    });
   }
 }
