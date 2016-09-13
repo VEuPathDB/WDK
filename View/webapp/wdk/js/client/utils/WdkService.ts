@@ -207,6 +207,10 @@ export default class WdkService {
       this._recordCache.set(key, { request, response });
     }
 
+    // Get the request and response from `_recordCache` and replace them with
+    // merged request and response objects. Anything awaiting the response that
+    // is currently stored will still be called when it completes, regardless of
+    // the progress of the response it is replaced with.
     else {
       let { request, response } = this._recordCache.get(key);
       // determine which tables and attributes we need to retreive
@@ -413,7 +417,11 @@ export default class WdkService {
       .then(([ serviceConfig, storeConfig ]) => {
         if (storeConfig == null || storeConfig.startupTime != serviceConfig.startupTime) {
           return this._store.clear().then(() => {
-            return this._store.setItem('config', serviceConfig);
+            return this._store.setItem('config', serviceConfig)
+            .catch(err => {
+              console.error('Unable to store WdkService item with key `config`.', err);
+              return serviceConfig;
+            })
           });
         }
         return serviceConfig;
