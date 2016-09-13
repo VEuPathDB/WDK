@@ -174,6 +174,14 @@ public class FilterSizeCache {
     }
   }
 
+  /**
+   * @param e exception wrapping underlying cause
+   * @param returnClass the type we tell the compiler we are returning so the result of this method can be
+   * returned by any method (and we don't have to have a separate return)
+   * @return never returns anything; only throws exceptions
+   * @throws WdkModelException if underlying exception is WdkModelException
+   * @throws WdkUserException if underlying exception is WdkUserException
+   */
   private <T> T handleUnfetchableItem(UnfetchableItemException e, Class<T> returnClass)
       throws WdkModelException, WdkUserException {
     try {
