@@ -41,14 +41,13 @@ class RecordTable extends Component {
   }
 
   render() {
-    let { value, table, childRow, expandedRows, onExpandedRowsChange, className } = this.props;
+    let { value, childRow, expandedRows, onExpandedRowsChange, className } = this.props;
 
     if (this.displayableAttributes.length === 1) {
       let listColumnSize = Math.max(10, value.length / maxColumns);
       let attributeName = this.displayableAttributes[0].name;
       return (
         <div className={className}>
-          {table.description && <p>{table.description}</p>}
           {chunk(value, listColumnSize).map((tableChunk, index) =>
             <ul key={index} className="wdk-RecordTableList">
               {tableChunk.map((row, index) =>
@@ -62,7 +61,6 @@ class RecordTable extends Component {
 
     return (
       <div className={className}>
-        {table.description && <p>{table.description}</p>}
         <DataTable
           getRowId={getSortIndex}
           expandedRows={expandedRows}
