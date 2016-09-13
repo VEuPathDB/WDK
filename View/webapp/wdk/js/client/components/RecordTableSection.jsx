@@ -8,6 +8,15 @@ function RecordTableSection(props) {
   let { table, record, recordClass, isCollapsed, onCollapsedChange } = props;
   let { name, displayName } = table;
   let value = record.tables[name];
+  let numVisibleAttrs = table.attributes.filter(attr => attr.isDisplayable).length;
+  let className = [ 'wdk-RecordTable', 'wdk-RecordTable__' + table.name ].join(' ');
+
+  if (value == null)
+    return null
+
+  if (value.length === 0 || numVisibleAttrs === 0)
+    return <em>No data available</em>;
+
   return (
     <CollapsibleSection
       id={name}
@@ -16,9 +25,8 @@ function RecordTableSection(props) {
       isCollapsed={isCollapsed}
       onCollapsedChange={onCollapsedChange}
     >
-      {value == null
-        ? <p>Loading...</p>
-        : <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>}
+      {value == null ? <p>Loading...</p>
+        : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/>}
       </CollapsibleSection>
   );
 }

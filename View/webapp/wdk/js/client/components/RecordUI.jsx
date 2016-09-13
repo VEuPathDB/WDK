@@ -42,6 +42,7 @@ class RecordUI extends Component {
       }
     }
     window.addEventListener('wheel', this._removeImageLoadHandlers, { passive: true });
+    window.addEventListener('click', this._removeImageLoadHandlers, true);
     window.addEventListener('scroll', this._updateActiveSection, { passive: true });
     window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
   }
@@ -68,9 +69,10 @@ class RecordUI extends Component {
   }
 
   componentWillUnmount() {
+    window.removeEventListener('wheel', this._removeImageLoadHandlers);
+    window.removeEventListener('click', this._removeImageLoadHandlers, true);
     window.removeEventListener('scroll', this._updateActiveSection);
     window.removeEventListener('resize', this._scrollToActiveSection);
-    window.removeEventListener('wheel', this._removeImageLoadHandlers);
   }
 
   _handleImageLoad(event) {
@@ -86,6 +88,7 @@ class RecordUI extends Component {
     }
     this._images.clear();
     window.removeEventListener('wheel', this._removeImageLoadHandlers);
+    window.removeEventListener('click', this._removeImageLoadHandlers, true);
   }
 
   _updateActiveSection() {
