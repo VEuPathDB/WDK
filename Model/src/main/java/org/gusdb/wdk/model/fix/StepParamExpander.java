@@ -80,7 +80,7 @@ public class StepParamExpander extends BaseCLI {
       Timer timer = new Timer();
       logger.info("Preparing database tables...");
       createParamTable(wdkModel);
-      logger.info("Database table preparation took " + timer.getElapsedAsString());
+      logger.info("Database table preparation took " + timer.getElapsedString());
       logger.info("Expanding params...");
       connection = ds.getConnection();
       connection.setAutoCommit(false);
@@ -147,7 +147,7 @@ public class StepParamExpander extends BaseCLI {
         connection.commit();
       }
 
-      logger.info("Processed " + stepCount + " steps in " + timer.getElapsedAsString());
+      logger.info("Processed " + stepCount + " steps in " + timer.getElapsedString());
       logger.info(noParamStepCount + " steps had no parameters.");
       logger.info(stepsWithParamsCount + " steps had parameters.");
       int avgBatchSize = (numBatchesWritten == 0 ? 0 : totalParamValueRows / numBatchesWritten);
@@ -331,7 +331,7 @@ public class StepParamExpander extends BaseCLI {
     }
     finally {
       if (wdkModel != null) wdkModel.releaseResources();
-      logger.info("Program duration: " + t.getElapsedAsString());
+      logger.info("Program duration: " + t.getElapsedString());
     }
   }
 }

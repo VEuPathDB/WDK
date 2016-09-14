@@ -143,7 +143,7 @@ public class TableRowUpdater<T extends TableRow> {
         wdkModel.releaseResources();
       }
     }
-    LOG.info("Duration: " + timer.getElapsedAsString());
+    LOG.info("Duration: " + timer.getElapsedString());
     LOG.info("Exiting with status: " + exitValue.ordinal() + " (" + exitValue + ").");
     return exitValue.ordinal();
   }
