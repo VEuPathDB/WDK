@@ -1,9 +1,8 @@
 package org.gusdb.wdk.cache;
 
-import java.util.Map;
-
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
+import org.gusdb.wdk.model.query.param.FilterParam.MetadataCache;
 
 /**
  * This class manages WDK's subclasses of ItemCache.  For now it will simply
@@ -20,21 +19,18 @@ public class CacheMgr {
     return _instance;
   }
 
+  private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
+  private final StepCache _stepCache = new StepCache();
+  private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
+  private final MetadataCache _metadataCache = new MetadataCache();
+  private final MetadataCache _metadataSpecCache = new MetadataCache();
+
   private CacheMgr() { }
 
-  private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
-
-  private final StepCache _stepCache = new StepCache();
   public StepCache getStepCache() { return _stepCache; }
-
-  private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
-
-  private final ItemCache<String, Map<String, Map<String, String>>> _metadataCache = new ItemCache<>();
-  public ItemCache<String, Map<String, Map<String, String>>> getMetadataCache() { return _metadataCache; }
-
-  private final ItemCache<String, Map<String, Map<String, String>>> _metadataSpecCache = new ItemCache<>();
-  public ItemCache<String, Map<String, Map<String, String>>> getMetadataSpecCache() { return _metadataSpecCache; }
+  public MetadataCache getMetadataCache() { return _metadataCache; }
+  public MetadataCache getMetadataSpecCache() { return _metadataSpecCache; }
 
 }
