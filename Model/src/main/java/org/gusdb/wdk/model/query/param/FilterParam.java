@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.cache.CacheMgr;
@@ -45,6 +46,8 @@ import org.json.JSONObject;
  * 
  */
 public class FilterParam extends FlatVocabParam {
+
+  public static class MetadataCache extends ItemCache<String, Map<String, Map<String, String>>> { }
 
   static final String COLUMN_PROPERTY = "property";
   static final String COLUMN_VALUE = "value";
