@@ -43,6 +43,12 @@ class RecordTable extends Component {
   render() {
     let { value, childRow, expandedRows, onExpandedRowsChange, className } = this.props;
 
+    if (value.length === 0 || this.columns.length === 0) {
+      return (
+        <em>No data available</em>
+      );
+    }
+
     if (this.displayableAttributes.length === 1) {
       let listColumnSize = Math.max(10, value.length / maxColumns);
       let attributeName = this.displayableAttributes[0].name;
