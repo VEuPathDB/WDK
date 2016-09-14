@@ -20,9 +20,10 @@ function RecordTableSection(props) {
       onCollapsedChange={onCollapsedChange}
     >
       {description && <p>{description}</p>}
-      {value == null ? <p>Loading...</p>
-        : value.length === 0 || numVisibleAttrs === 0 ? <em>No data available</em>
-        : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/>}
+      {
+        value == null ? <p>Loading...</p>
+      : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/>
+      }
       </CollapsibleSection>
   );
 }
