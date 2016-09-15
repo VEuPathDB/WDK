@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,7 +65,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   @Override
-  public void configure(JSONObject config) {
+  public void configure(JSONObject config) throws WdkModelException {
     super.configure(config);
     showHeader = (config.has(PROP_INCLUDE_HEADER) ? config.getBoolean(PROP_INCLUDE_HEADER) : true);
     if (config.has(PROP_COLUMN_DIVIDER)) columnDivider = config.getString(PROP_COLUMN_DIVIDER);
@@ -155,20 +156,21 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     // get page based answers with a maximum size (defined in
     // PageAnswerIterator)
     for (AnswerValue answerValuePage : this) {
+      logger.info("About to dump text report using answervalue: " + new AnswerValueBean(answerValuePage).getSpecJson());
       TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
       try {
-	while (rows.hasNext()) {
-	  List<Object> row = rows.next();
-	  for (Object value : row) {
+        while (rows.hasNext()) {
+          List<Object> row = rows.next();
+          for (Object value : row) {
 
-	    writer.print((value == null) ? "N/A" : value);
-	    writer.print(columnDivider);
-	  }
-	  writer.println();
-	  writer.flush();
-	}
+            writer.print((value == null) ? "N/A" : value);
+            writer.print(columnDivider);
+          }
+          writer.println();
+          writer.flush();
+        }
       } finally {
-	rows.close();
+        rows.close();
       }
     }
   }

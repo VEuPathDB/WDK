@@ -160,7 +160,11 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     if (config.containsKey(PROPERTY_PAGE_SIZE)) maxPageSize = Integer.valueOf(config.get(PROPERTY_PAGE_SIZE));
   }
 
-  public void configure(JSONObject config) {
+  /**
+   * @param config JSONObject representing reporter configuration
+   * @throws WdkModelException if config is misformatted or contains invalid values
+   */
+  public void configure(JSONObject config) throws WdkModelException {
     
     if (config.has(PROPERTY_PAGE_SIZE)) maxPageSize = config.getInt(PROPERTY_PAGE_SIZE);
   }

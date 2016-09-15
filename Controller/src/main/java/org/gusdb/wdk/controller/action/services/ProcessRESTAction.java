@@ -21,6 +21,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
@@ -116,8 +117,7 @@ public class ProcessRESTAction extends Action {
       AnswerValueBean answerValue = step.getAnswerValue();
       // construct the forward to show_summary action
       request.setAttribute("wdkAnswer", answerValue);
-      Reporter reporter = answerValue.createReport(outputType, outputConfig);
-      reporter.configure(outputConfig);
+      Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), outputType, outputConfig);
       ServletOutputStream out = response.getOutputStream();
       response.setHeader("Pragma", "Public");
       response.setContentType(reporter.getHttpContentType());

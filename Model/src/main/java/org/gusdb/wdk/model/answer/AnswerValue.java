@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -543,90 +544,6 @@ public class AnswerValue {
   }
 
   /**
-   * Creates a reporter that covers all rows in the answer.
-   * 
-   * @param reporterName
-   * @param config
-   * @return
-   * @throws WdkUserException
-   */
-  public Reporter createReport(String reporterName, Map<String, String> config) throws WdkModelException,
-      WdkUserException {
-    // get the full answer
-    int endI = getResultSize();
-    return createReport(reporterName, config, 1, endI);
-  }
-
-  public Reporter createReport(String reporterName, Map<String, String> config, int startI, int endI)
-      throws WdkModelException {
-    Reporter reporter = createReportSub(reporterName, startI, endI);
-    reporter.configure(config);
-    return reporter;
-  }
-  
-  public Reporter createReport(String reporterName, JSONObject config) throws WdkModelException,
-  WdkUserException {
-    // get the full answer
-    int endI = getResultSize();
-    return createReport(reporterName, config, 1, endI);
-  }
-
-  public Reporter createReport(String reporterName, JSONObject config, int startI, int endI)
-      throws WdkModelException {
-    Reporter reporter = createReportSub(reporterName, startI, endI);
-    reporter.configure(config);
-    return reporter;
-  }
-
-  private Reporter createReportSub(String reporterName, int startI, int endI)
-      throws WdkModelException {
-    // get Reporter
-    Map<String, ReporterRef> rptMap = _question.getRecordClass().getReporterMap();
-    ReporterRef rptRef = rptMap.get(reporterName);
-    if (rptRef == null)
-      throw new WdkModelException("The reporter " + reporterName + " is " + "not registered for " +
-          _question.getRecordClass().getFullName());
-    String rptImp = rptRef.getImplementation();
-    if (rptImp == null)
-      throw new WdkModelException("The reporter " + reporterName + " is " + "not registered for " +
-          _question.getRecordClass().getFullName());
-
-    try {
-      Class<?> rptClass = Class.forName(rptImp);
-      Class<?>[] paramClasses = { AnswerValue.class, int.class, int.class };
-      Constructor<?> constructor = rptClass.getConstructor(paramClasses);
-
-      Object[] params = { this, startI, endI };
-      Reporter reporter = (Reporter) constructor.newInstance(params);
-      reporter.setProperties(rptRef.getProperties());
-      reporter.setWdkModel(rptRef.getWdkModel());
-      return reporter;
-    }
-    catch (ClassNotFoundException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (InstantiationException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (IllegalAccessException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (SecurityException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (NoSuchMethodException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (IllegalArgumentException ex) {
-      throw new WdkModelException(ex);
-    }
-    catch (InvocationTargetException ex) {
-      throw new WdkModelException(ex);
-    }
-  }
-
-
-  /**
    * Iterate through all the pages of the answer, and each page is represented by an AnswerValue object.
    * 
    * @return
@@ -723,8 +640,8 @@ public class AnswerValue {
     }
 
     if (count != _pageRecordInstances.size()) {
-      throw new WdkModelException("the integrated attribute query " +
-          "doesn't return the same number of records in the current " + "page. Paged attribute sql:\n" + sql);
+      throw new WdkModelException("The integrated attribute query '" + attributeQuery.getFullName() +
+          "' doesn't return the same number of records in the current " + "page. Paged attribute sql:\n" + sql);
     }
     logger.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
@@ -1460,6 +1377,10 @@ public class AnswerValue {
 
   public FilterOptionList getFilterOptions() {
     return _filterOptions;
+  }
+
+  public FilterOptionList getViewFilterOptions() {
+    return _viewFilterOptions;
   }
 
   public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {

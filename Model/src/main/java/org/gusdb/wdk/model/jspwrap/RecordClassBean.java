@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
-import org.gusdb.wdk.model.answer.ReporterRef;
+import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;

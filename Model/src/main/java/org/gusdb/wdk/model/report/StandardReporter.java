@@ -41,7 +41,7 @@ public abstract class StandardReporter extends Reporter {
   }
 
   @Override
-  public void configure(JSONObject config) {
+  public void configure(JSONObject config) throws WdkModelException {
     super.configure(config);
     reporterConfig.configure(config);
   }

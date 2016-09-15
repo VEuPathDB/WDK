@@ -16,6 +16,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -89,9 +90,7 @@ public class GetDownloadResultAction extends Action {
             }
 
             // make report
-            Reporter reporter = wdkAnswerValue.createReport(reporterName,
-                    config);
-            reporter.configure(config);
+            Reporter reporter = ReporterFactory.getReporter(wdkAnswerValue.getAnswerValue(), reporterName, config);
 
             response.setHeader("Pragma", "Public");
             response.setContentType(reporter.getHttpContentType());

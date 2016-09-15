@@ -69,7 +69,7 @@ public class TabularReporter extends StandardReporter {
     }
 
     @Override
-    public void configure(JSONObject config) {
+    public void configure(JSONObject config) throws WdkModelException {
       super.configure(config);
       hasHeader = (config.has(FIELD_HAS_HEADER) ? config.getBoolean(FIELD_HAS_HEADER) : true);
     }
