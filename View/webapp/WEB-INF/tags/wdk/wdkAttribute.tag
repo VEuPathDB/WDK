@@ -25,12 +25,6 @@
               description="The full name of the record class, to be used to render primary key attribute"
 %>
 
-<%@ attribute name="record"
-              type="org.gusdb.wdk.model.jspwrap.RecordBean"
-              required="true"
-              description="this record which contains the ID and all the attributes"
-%>
-
 <c:set var="toTruncate" value="${truncate != null && truncate == 'true'}" />
 <c:set var="attributeField" value="${attributeValue.attributeField}" />
 <c:set var="align" value="align='${attributeField.align}'" />
