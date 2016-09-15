@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -158,7 +159,7 @@ public class SummaryTester {
         if (!hasFormat) format = "tabular";
         Map<String, String> config = loadConfiguration(configFile);
 
-        Reporter reporter = answerValue.createReport(format, config,
+        Reporter reporter = ReporterFactory.getReporter(answerValue, format, config,
             nextStartRow, nextEndRow);
 
         reporter.report(System.out);

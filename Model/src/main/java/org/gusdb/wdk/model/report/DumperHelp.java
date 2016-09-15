@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
@@ -51,7 +52,7 @@ public class DumperHelp {
 	Map<String, String> emptyConfig = new LinkedHashMap<String,String>();
 
 	AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
-	Reporter reporter = answer.createReport(reporterName, emptyConfig);
+	Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
 
 	System.out.println("Help for reporter: " + reporterName);
 	System.out.println();

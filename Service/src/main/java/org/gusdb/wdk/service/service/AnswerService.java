@@ -12,7 +12,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.ReporterRef;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
+import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
@@ -163,7 +164,8 @@ public class AnswerService extends WdkService {
       throw new WdkUserException("Request for an invalid answer format: " + format);
     }
 
-    Reporter reporter = answerValue.createReport(format, formatConfig);
+    LOG.info("Creating report '" + format + "' using AnswerValue with spec: " + answerValue.getSpecJson());
+    Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), format, formatConfig);
 
     ResponseBuilder builder = Response.ok(AnswerStreamer.getAnswerAsStream(reporter))
         .type(reporter.getHttpContentType());

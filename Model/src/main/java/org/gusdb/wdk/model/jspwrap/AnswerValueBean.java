@@ -1,19 +1,21 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.AnswerValueAttributes;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -25,9 +27,9 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -363,32 +365,6 @@ public class AnswerValueBean {
     }
 
     /**
-     * @param reporterName
-     * @param config
-     * @return
-     * @throws WdkUserException 
-     * @see org.gusdb.wdk.model.AnswerValue#getReport(java.lang.String,
-     *      java.util.Map)
-     */
-    public Reporter createReport(String reporterName, Map<String, String> config)
-            throws WdkModelException, WdkUserException {
-        return answerValue.createReport(reporterName, config);
-    }
-
-    /**
-     * @param reporterName
-     * @param config
-     * @return
-     * @throws WdkUserException 
-     * @see org.gusdb.wdk.model.AnswerValue#getReport(java.lang.String,
-     *      java.util.Map)
-     */
-    public Reporter createReport(String reporterName, JSONObject config)
-            throws WdkModelException, WdkUserException {
-        return answerValue.createReport(reporterName, config);
-    }
-
-    /**
      * @return
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeNames()
      */
@@ -483,9 +459,8 @@ public class AnswerValueBean {
     }
 
     public AnswerValueBean makeAnswerValue(int pageStart, int pageEnd) {
-        AnswerValue answerValue = new AnswerValue(this.answerValue, pageStart,
-                pageEnd);
-        return new AnswerValueBean(answerValue);
+        AnswerValue pagedCopy = new AnswerValue(answerValue, pageStart, pageEnd);
+        return new AnswerValueBean(pagedCopy);
     }
 
     /**
@@ -556,5 +531,18 @@ public class AnswerValueBean {
       }
 
       return resultProperties;
+    }
+
+    public String getSpecJson() throws JSONException, WdkModelException {
+      AnswerFilterInstanceBean answerFilter = getFilter();
+      FilterOptionList filters = getAnswerValue().getFilterOptions();
+      FilterOptionList viewFilters = getAnswerValue().getViewFilterOptions();
+      JSONObject spec = new JSONObject();
+      spec.put("questionName", getQuestion().getFullName());
+      spec.put("answerFilter", answerFilter == null ? JSONObject.NULL : answerFilter.getName());
+      spec.put("params", FormatUtil.prettyPrint(getParams()));
+      spec.put("filters", filters == null ? JSONObject.NULL : filters.getJSON());
+      spec.put("viewFilters", viewFilters == null ? JSONObject.NULL : viewFilters.getJSON());
+      return spec.toString(2);
     }
 }

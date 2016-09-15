@@ -12,6 +12,7 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.StandardReporter;
@@ -101,9 +102,10 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
       throws WdkModelException, WdkUserException {
     String hasHeader = getProperty(ADD_HEADER_PROP_KEY);
-    if (hasHeader == null || hasHeader.isEmpty())
+    if (hasHeader == null || hasHeader.isEmpty()) {
       hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
-    Reporter reporter = answerValue.createReport(TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
+    }
+    Reporter reporter = ReporterFactory.getReporter(answerValue, TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
         .put(StandardReporter.Configuration.ATTACHMENT_TYPE, "text")
         .put(AttributesTabularReporter.PROP_INCLUDE_HEADER, hasHeader.toLowerCase())
         .put(AttributesTabularReporter.PROP_COLUMN_DIVIDER, FormatUtil.TAB)

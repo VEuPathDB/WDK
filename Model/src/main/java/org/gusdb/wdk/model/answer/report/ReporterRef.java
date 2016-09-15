@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.answer;
+package org.gusdb.wdk.model.answer.report;
 
 import java.util.ArrayList;
 import java.util.Arrays;
