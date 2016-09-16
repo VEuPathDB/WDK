@@ -75,31 +75,36 @@
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc,
 .wdk-DataTableContainer table.dataTable thead th.sorting_desc {
   cursor: pointer;
+  padding-left: 2em;
+  position: relative;
 }
 
-.wdk-DataTableContainer table.dataTable thead th.sorting:after,
-.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
-.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+.wdk-DataTableContainer table.dataTable thead th.sorting:before,
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:before,
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:before {
   font-family: FontAwesome;
-  padding-left: 8px;
+  padding-right: 8px;
   white-space: nowrap;
+  position: absolute;
+  left: 8px;
+  top: calc(50% - 6px);
 }
-.wdk-DataTableContainer table.dataTable thead th.sorting:after {
+.wdk-DataTableContainer table.dataTable thead th.sorting:before {
   content: "\f175\f176";
   color: #aaa;
   padding-top: 0.12em;
 }
-.wdk-DataTableContainer table.dataTable thead th.sorting:hover:after {
+.wdk-DataTableContainer table.dataTable thead th.sorting:hover:before {
   color: #888;
 }
-.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after {
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:before {
   content: "\f160";
 }
-.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:before {
   content: "\f161";
 }
 
-.wdk-DataTableContainer .dataTables_scrollBody table.dataTable thead th:after {
+.wdk-DataTableContainer .dataTables_scrollBody table.dataTable thead th:before {
   content: "" !important;
 }
 
