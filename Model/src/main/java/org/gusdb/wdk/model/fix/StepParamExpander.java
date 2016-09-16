@@ -169,7 +169,7 @@ public class StepParamExpander extends BaseCLI {
     return
         "SELECT s.step_id, s.display_params" +
         " FROM " + userSchema + "steps s, " + userSchema + "users u" +
-        " WHERE s.user_id = u.user_id AND u.is_guest = 0" +
+        " WHERE s.user_id = u.user_id AND u.is_guest = 0 AND is_deleted = 0" +
         "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
   }
 
