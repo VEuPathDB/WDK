@@ -172,7 +172,7 @@ export let showLogoutWarning: ActionCreator = () => {
   return function(dispatch) {
     confirm(
       'Are you sure you want to logout?',
-      'Note: You must log out of any other EuPathDB sites separately'
+      'Note: You must log out of other EuPathDB sites separately'
     ).then(confirmed => {
       if (confirmed) dispatch(logout());
     });
