@@ -8,7 +8,6 @@ function RecordTableSection(props) {
   let { table, record, recordClass, isCollapsed, onCollapsedChange } = props;
   let { name, displayName, description } = table;
   let value = record.tables[name];
-  let numVisibleAttrs = table.attributes.filter(attr => attr.isDisplayable).length;
   let className = [ 'wdk-RecordTable', 'wdk-RecordTable__' + table.name ].join(' ');
 
   return (

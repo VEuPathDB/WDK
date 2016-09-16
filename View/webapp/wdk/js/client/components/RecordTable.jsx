@@ -45,7 +45,7 @@ class RecordTable extends Component {
 
     if (value.length === 0 || this.columns.length === 0) {
       return (
-        <em>No data available</em>
+        <p><em>No data available</em></p>
       );
     }
 
