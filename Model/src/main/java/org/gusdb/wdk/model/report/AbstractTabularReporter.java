@@ -156,7 +156,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     // get page based answers with a maximum size (defined in
     // PageAnswerIterator)
     for (AnswerValue answerValuePage : this) {
-      logger.info("About to dump text report using answervalue: " + new AnswerValueBean(answerValuePage).getSpecJson());
+      logger.debug("About to dump text report using answervalue: " + new AnswerValueBean(answerValuePage).getSpecJson());
       TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
       try {
         while (rows.hasNext()) {
