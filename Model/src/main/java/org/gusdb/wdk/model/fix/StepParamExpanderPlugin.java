@@ -33,11 +33,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
     @Override
     public String getRecordsSql(String schema, String projectId) {
       // ignore projectId for now; must select cols from StepDataFactory so we can properly load StepData objs
-      String sql =
-          "SELECT " + SELECT_COLS_TEXT +
-          " FROM " + schema + "steps s, " + schema + "users u" +
-          " WHERE s.user_id = u.user_id AND u.is_guest = 0" +
-          "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
+      String sql = StepParamExpander.getSelectForColumns(schema, SELECT_COLS_TEXT);
       LOG.info("Returning the following SQL: " + sql);
       return sql;
     }
