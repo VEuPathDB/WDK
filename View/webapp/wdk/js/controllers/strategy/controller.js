@@ -62,7 +62,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
             this.timeout = this.timeout + 60000;
             $.ajax(this);
           } else {
-            if (this.url.indexOf("showSummary.do") != -1) {
+            if ( (this.url.indexOf("showSummaryView.do") != -1) || (this.url.indexOf("showSummary.do") != -1 ) ) {
               wdk.util.removeLoading();
             } else {
               initDisplay();
