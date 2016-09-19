@@ -24,7 +24,7 @@ class RecordTable extends Component {
   componentWillReceiveProps(nextProps) {
     // Only update columns and data if props change -- to prevent unneeded render
 
-    if (nextProps.table !== this.props.table)
+    if (nextProps.table.attributes !== this.props.table.attributes)
       this.setColumns(nextProps);
 
     if (nextProps.value !== this.props.value)

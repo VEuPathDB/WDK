@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import {createElement, PropTypes} from 'react';
+import {PropTypes} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, wrappable, PureComponent} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
@@ -211,7 +211,7 @@ class DataTable extends PureComponent {
     }
     else {
       let props = { rowIndex: row.index(), rowData: row.data() };
-      render(createElement(childRow, props), childRowContainer);
+      render(childRow(props), childRowContainer);
     }
     if (openRow) {
       row.child.show();
