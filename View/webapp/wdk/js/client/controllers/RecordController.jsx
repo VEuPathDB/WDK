@@ -3,7 +3,7 @@ import WdkViewController from './WdkViewController';
 import {wrappable} from '../utils/componentUtils';
 import {
   loadRecordData,
-  updateSectionVisibility as toggleSection,
+  updateSectionVisibility,
   updateNavigationQuery,
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
@@ -29,7 +29,7 @@ class RecordController extends WdkViewController {
   // components have access to them?
   getActionCreators() {
     return Object.assign({
-      toggleSection,
+      updateSectionVisibility,
       updateNavigationQuery,
       updateAllFieldVisibility,
       updateNavigationSubcategoryVisibility,

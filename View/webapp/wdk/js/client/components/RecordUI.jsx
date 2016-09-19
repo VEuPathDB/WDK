@@ -163,7 +163,7 @@ class RecordUI extends Component {
             navigationQuery={this.props.navigationQuery}
             navigationExpanded={this.props.navigationExpanded}
             navigationSubcategoriesExpanded={this.props.navigationSubcategoriesExpanded}
-            onSectionToggle={this.props.toggleSection}
+            onSectionToggle={this.props.updateSectionVisibility}
             onNavigationVisibilityChange={this.props.updateNavigationVisibility}
             onNavigationSubcategoryVisibilityChange={this.props.updateNavigationSubcategoryVisibility}
             onNavigationQueryChange={this.props.updateNavigationQuery}
@@ -182,7 +182,7 @@ class RecordUI extends Component {
             recordClass={this.props.recordClass}
             categories={this.props.categoryTree.children}
             collapsedSections={this.props.collapsedSections}
-            onSectionToggle={this.props.toggleSection}
+            onSectionToggle={this.props.updateSectionVisibility}
           />
         </div>
       </div>

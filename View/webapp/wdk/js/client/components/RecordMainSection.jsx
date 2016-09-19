@@ -1,64 +1,66 @@
-import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
+import { PropTypes } from 'react';
+import { compose } from 'lodash';
 import RecordMainCategorySection from './RecordMainCategorySection';
-import { wrappable } from '../utils/componentUtils';
+import { pure, wrappable } from '../utils/componentUtils';
 import { getId, getLabel } from '../utils/CategoryUtils';
 
-let RecordMainSection = React.createClass({
+let RecordMainSection$;
 
-  mixins: [ PureRenderMixin ],
+const RecordMainSection = ({
+  depth = 1,
+  record,
+  recordClass,
+  categories,
+  collapsedSections,
+  parentEnumeration,
+  onSectionToggle
+}) => (categories == null ? null : (
+  <div>
+    {categories.map((category, index) => {
+      let categoryName = getLabel(category);
+      let categoryId = getId(category);
+      let enumeration = String(parentEnumeration == null
+        ? index + 1
+        : parentEnumeration + '.' + (index + 1));
 
-  getDefaultProps() {
-    return {
-      depth: 1
-    };
-  },
+      return (
+        <RecordMainCategorySection
+          key={categoryName}
+          category={category}
+          depth={depth}
+          enumeration={enumeration}
+          isCollapsed={collapsedSections.includes(categoryId)}
+          onSectionToggle={onSectionToggle}
+          record={record}
+          recordClass={recordClass}
+        >
+          <RecordMainSection$
+            depth={depth + 1}
+            record={record}
+            recordClass={recordClass}
+            categories={category.children}
+            collapsedSections={collapsedSections}
+            parentEnumeration={enumeration}
+            onSectionToggle={onSectionToggle}
+          />
+        </RecordMainCategorySection>
+      );
+    })}
+  </div>
+))
 
-  render() {
-    let {
-      depth,
-      record,
-      categories,
-      collapsedSections,
-      recordActions,
-      parentEnumeration
-    } = this.props;
+RecordMainSection.propTypes = {
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  categories: PropTypes.array.isRequired,
+  collapsedSections: PropTypes.array.isRequired,
+  onSectionToggle: PropTypes.func.isRequired,
+  depth: PropTypes.number,
+  parentEnumeration: PropTypes.string
+};
 
-    if (categories == null) return null;
+// Append `$` so we can refer to this component recursively. We want to reserve
+// the normal name `RecordMainSection` for the inner function for debugging purposes.
+RecordMainSection$ = compose(wrappable, pure)(RecordMainSection);
 
-    return (
-      <div>
-        {categories.map((category, index) => {
-          let categoryName = getLabel(category);
-          let categoryId = getId(category);
-          let enumeration = String(parentEnumeration == null
-            ? index + 1
-            : parentEnumeration + '.' + (index + 1));
-
-          return (
-            <RecordMainCategorySection
-              key={categoryName}
-              category={category}
-              depth={depth}
-              enumeration={enumeration}
-              isCollapsed={collapsedSections.includes(categoryId)}
-              onSectionToggle={this.props.onSectionToggle}
-              record={record}
-              recordClass={this.props.recordClass}
-            >
-            <RecordMainSection
-              {...this.props}
-              depth={depth + 1}
-              categories={category.children}
-              parentEnumeration={enumeration}
-            />
-            </RecordMainCategorySection>
-            );
-        })}
-      </div>
-    );
-  }
-
-});
-
-export default wrappable(RecordMainSection);
+export default RecordMainSection$;
