@@ -7,6 +7,7 @@ import java.util.Map;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -60,5 +61,13 @@ public class SingleRecordAnswerValue extends AnswerValue {
       pkArray[i] = (String)_pkMap.get(pkColNames[i]);
     }
     return new ListBuilder<String[]>().add(pkArray).toList();
+  }
+
+  @Override
+  public Map<String, String> getParamDisplays() {
+    return new MapBuilder<String,String>()
+        .put(SingleRecordQuestion.PRIMARY_KEY_PARAM_NAME,
+            FormatUtil.join(_pkMap.values().toArray(), ","))
+        .toMap();
   }
 }

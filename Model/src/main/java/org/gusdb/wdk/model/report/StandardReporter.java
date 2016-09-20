@@ -58,7 +58,7 @@ public abstract class StandardReporter extends Reporter {
    */
   protected Set<Field> validateColumns() throws WdkModelException, WdkUserException {
     // get a map of report maker fields
-    Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
+    Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.ALL);
 
     // the config map contains a list of column names;
 
