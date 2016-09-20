@@ -262,6 +262,7 @@ public class AnswerValue {
     //   rebuilt by each new AnswerValue
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
+    _filter = answerValue._filter;
     if (answerValue._filterOptions != null) _filterOptions = new FilterOptionList(answerValue._filterOptions);
     if (answerValue._viewFilterOptions != null) _viewFilterOptions = new FilterOptionList(answerValue._viewFilterOptions);
 
