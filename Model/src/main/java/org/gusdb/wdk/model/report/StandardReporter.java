@@ -202,8 +202,13 @@ public abstract class StandardReporter extends Reporter {
         includeEmptyTables = config.getBoolean(INCLUDE_EMPTY_TABLES_JSON);
       } 
 
-      Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
+      /* TODO:  we are no longer using the inReportMaker flag.  we need to purge all the
+       * options that include xxxx_ALL_xxxx soon).
+       */
+      Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.ALL);  
+//      Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
 
+      // TODO: this option should be removed, as well as all xxxx_ALL_xxxx options
       if (config.has(SELECT_ALL_FIELDS)) {
         allFields = true;
         allTables = true;
