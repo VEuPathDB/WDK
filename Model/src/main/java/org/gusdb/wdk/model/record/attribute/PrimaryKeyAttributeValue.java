@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.record.attribute;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -50,8 +50,8 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   public Map<String, String> getValues() {
     Map<String, String> values = new LinkedHashMap<String, String>();
     for (String column : pkValues.keySet()) {
-      String value = Utilities.parseValue(pkValues.get(column));
-      values.put(column, value);
+      String copy = Utilities.parseValue(pkValues.get(column));
+      values.put(column, copy);
     }
     return values;
   }
@@ -85,25 +85,31 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
 
 @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
-    if (this.display == null) {
-      Map<String, Object> values = new LinkedHashMap<String, Object>(pkValues);
-
-      try {
-      // parse the text and look up other fields, so that primaryKey fields can support macros of other column
-      // attributes.
-      Map<String, AttributeField> subFields = field.parseFields(((PrimaryKeyAttributeField)field).getDisplay());
-      for (String fieldName : subFields.keySet()) {
-        if (!values.containsKey(fieldName)) {
-          AttributeValue value = valueContainer.getAttributeValue(fieldName);
-          Object object = value.getValue();
-          values.put(fieldName, (object == null) ? "" : object.toString());
-        }
+    if (display == null) {
+      if (valueContainer == null) {
+        // may happen if PK attribute value is created independently without container
+        // simply join PK values together
+        display = FormatUtil.join(pkValues.values().toArray(), ", ");
       }
-
-      display = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getDisplay(), values);
-      } catch (Exception ex) {
-         logger.error("Failed to substitute sub-fields.", ex);
-         throw new WdkModelException(ex);
+      else {
+        try {
+          // parse the text and look up other fields, so that primaryKey fields can support
+          //   macros of other column attributes
+          Map<String, Object> values = new LinkedHashMap<String, Object>(pkValues);
+          Map<String, AttributeField> subFields = field.parseFields(((PrimaryKeyAttributeField)field).getDisplay());
+          for (String fieldName : subFields.keySet()) {
+            if (!values.containsKey(fieldName)) {
+              AttributeValue fieldValue = valueContainer.getAttributeValue(fieldName);
+              Object object = fieldValue.getValue();
+              values.put(fieldName, (object == null) ? "" : object.toString());
+            }
+          }
+          display = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getDisplay(), values);
+        }
+        catch (Exception ex) {
+           logger.warn("Failed to substitute sub-fields.", ex);
+           throw new WdkModelException(ex);
+        }
       }
     }
     return display;
@@ -118,18 +124,21 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   public boolean equals(Object obj) {
     if (obj instanceof PrimaryKeyAttributeValue) {
       PrimaryKeyAttributeValue pk = (PrimaryKeyAttributeValue) obj;
-
+      if (pk.pkValues.size() != pkValues.size()) {
+        return false;
+      }
       for (String columnName : pkValues.keySet()) {
-        if (!pk.pkValues.containsKey(columnName))
+        if (!pk.pkValues.containsKey(columnName)) {
           return false;
-        Object value = pk.pkValues.get(columnName);
-        if (!pkValues.get(columnName).equals(value))
+        }
+        Object otherValue = pk.pkValues.get(columnName);
+        if (!pkValues.get(columnName).equals(otherValue)) {
           return false;
+        }
       }
       return true;
     }
-    else
-      return false;
+    return false;
   }
 
   /**
@@ -139,9 +148,10 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   @Override
   public int hashCode() {
     int hashCode = 0;
-    for(Object value : pkValues.values()) {
-      if (value != null)
-      hashCode ^= value.toString().hashCode();
+    for (Object pkValue : pkValues.values()) {
+      if (pkValue != null) {
+        hashCode ^= pkValue.toString().hashCode();
+      }
     }
     return hashCode;
   }
