@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.answer.single;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -25,6 +25,8 @@ public class SingleRecordQuestion extends Question {
 
   public static final String SINGLE_RECORD_QUESTION_NAME_PREFIX = "__";
   public static final String SINGLE_RECORD_QUESTION_NAME_SUFFIX = "__singleRecordQuestion__";
+
+  public static final String PRIMARY_KEY_PARAM_NAME = "primaryKeys";
 
   private static class QuestionNameParts {
     public boolean isValid = false;
@@ -53,8 +55,6 @@ public class SingleRecordQuestion extends Question {
     }
     return parts;
   }
-
-  private static final String PRIMARY_KEY_PARAM_NAME = "primaryKeys";
 
   public SingleRecordQuestion(String questionName, WdkModel wdkModel) {
     QuestionNameParts parts = parseQuestionName(questionName, wdkModel);
@@ -85,7 +85,8 @@ public class SingleRecordQuestion extends Question {
     }
 
     // must be a map from String -> Object to comply with RecordInstance constructor :(
-    Map<String, Object> pkMap = new HashMap<>();
+    Map<String, Object> pkMap = new LinkedHashMap<>();
+    // we can do this because columnRefs and pkValues are the same order; using a LinkedHashMap to maintain that order
     for (int i = 0; i < columnRefs.length; i++) {
       pkMap.put(columnRefs[i], pkValues[i]);
     }
