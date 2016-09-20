@@ -285,6 +285,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     for (Integer datasetId : datasetIds) {
       JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
       for (Integer recipientUserId : recipientUserIds) {
+        if (recipientUserId.equals(ownerUserId)) continue;  // don't think this is worth throwing an error on
         dataset.shareWith(recipientUserId);
         Integer[] linkInfo = {datasetId, recipientUserId};
         externalDatasetLinks.add(linkInfo);
