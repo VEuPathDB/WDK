@@ -7,6 +7,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.mvc.ErrorTemplate;
@@ -40,7 +41,7 @@ public class WdkClient {
 
   // FIXME Error handling
   @POST
-  @Consumes("application/x-www-form-urlencoded")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Template(name = "/index")
   @ErrorTemplate(name = "/error")
   public String post(@FormParam(PAYLOAD_PARAM) String payload) {
