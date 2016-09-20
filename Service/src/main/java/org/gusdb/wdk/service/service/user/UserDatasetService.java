@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -115,8 +116,16 @@ public class UserDatasetService extends UserService {
     Integer shareWithUserId = new Integer(body);
     getUserDataset(datasetIdStr).unshareWith(shareWithUserId);
     return Response.ok("").build();
-
   }
+  
+  @DELETE
+  @Path("{id}")
+  public Response deleteById(@PathParam("id") int datasetId) throws WdkModelException {
+    getUserDatasetStore().deleteUserDataset(getUserId(), datasetId);
+    return Response.ok().build();
+  }
+
+
   
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
