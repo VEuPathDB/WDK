@@ -339,7 +339,7 @@ public class ProcessRESTAction extends Action {
     writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
     // writer.println("<option>all</option>");
     // writer.println("<option>none</option>");
-    writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
+		//   writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
     writer.println("<option value='none'><doc title='description'>Show no attributes</doc></option>");
     for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
       writer.println("<option value='" + attr.replaceAll("'", "&apos;") +
@@ -354,8 +354,8 @@ public class ProcessRESTAction extends Action {
     writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
     // writer.println("<option >all</option>");
     // writer.println("<option>none</option>");
-    writer.println("<option value='all'><doc title='description'>Show all tables</doc></option>");
-    writer.println("<option value='none'><doc title='description'>Show no tables</doc></option>");
+    //writer.println("<option value='all'><doc title='description'>Show all tables</doc></option>");
+		 writer.println("<option value='none'><doc title='description'>Show no tables</doc></option>");
     for (String tab : wdkQuestion.getReportMakerTablesMap().keySet())
       writer.println("<option value='" + tab + "'><doc title='description'><![CDATA[" +
           wdkQuestion.getReportMakerTablesMap().get(tab).getDisplayName() + "]]></doc></option>");
