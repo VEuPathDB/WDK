@@ -260,6 +260,14 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         }, filterData.metadataSpec[name]);
       });
 
+    var [ validFilters, invalidFilters ] = _(_.get(previousValue, 'filters'))
+      .map(filter => ({
+        field: fields.find(field => field.field = filter.field),
+        values: filter.value
+      }))
+      .partition(_.property('field'))
+      .value();
+
     var filterParamOptions = { title, trimMetadataTerms };
 
     var filterService = new LazyFilterService({
@@ -271,27 +279,9 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       metadataUrl: wdk.webappUrl('getMetadata.do')
     });
 
-    if (previousValue) {
-      let { filters, ignoredData } = previousValue;
-
-      if (ignoredData)
-        filterService.updateIgnoredData(ignoredData);
-
-      if (filters)
-        filterService.updateFilters(filters);
-
-      if (filters[0])
-        filterService.selectField(filters[0].field)
-    }
-
-    var invalidFilters = _.reduce(previousValue && previousValue.filters, function(invalidFilters, filter) {
-      if (_.every(fields, function(field) {
-          return filter.field.term !== field.term;
-        })) {
-        invalidFilters.push(filter);
-      }
-      return invalidFilters;
-    }, []);
+    filterService.updateFilters(validFilters);
+    filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
+    if (validFilters[0]) filterService.selectField(validFilters[0].field);
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -331,7 +321,10 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       input.val(JSON.stringify({
         values: _.pluck(filteredData, 'term'),
         ignored: _.pluck(ignored, 'term'),
-        filters: _.map(filterService.filters, _.partialRight(_.omit, 'selection'))
+        filters: _.map(filterService.filters, filter => ({
+          value: filter.values,
+          field: filter.field.term
+        }))
       }));
 
       // trigger loading event on $param
