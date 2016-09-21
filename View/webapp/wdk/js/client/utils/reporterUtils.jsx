@@ -45,18 +45,20 @@ export function getAllTables(recordClass, predicate) {
 
 /**
  * Initializes form attribute state based on:
- *   1. current attribute selections
- *   2. user preferences if they exist
- *   3. default columns for the question
+ *   1. user preferences if they exist
+ *   2. default columns for the question
+ * Then must trim off any non-download-scope attributes
  */
-export function getAttributeSelections(userPrefs, question) {
+export function getAttributeSelections(userPrefs, question, allReportScopedAttrs) {
   // try initializing based on user prefs
   let userPrefKey = question.name + "_summary";
-  if (userPrefKey in userPrefs) {
-    return userPrefs[userPrefKey].split(',');
-  }
-  // otherwise, use default attribs from question
-  return question.defaultAttributes;
+  let initialAttrs = (userPrefKey in userPrefs ?
+      // preference key found; use user preference
+      userPrefs[userPrefKey].split(',') :
+      // otherwise, use default attribs from question
+      question.defaultAttributes);
+  // now must trim off any that do not appear in the tree (probably results-page scoped)
+  return initialAttrs.filter(attr => allReportScopedAttrs.indexOf(attr) != -1);
 }
 
 export function getAttributeTree(categoriesOntology, recordClassName, question) {
