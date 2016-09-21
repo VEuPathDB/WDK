@@ -628,32 +628,36 @@ public class Step {
     }
 
     // check stored param names against those in Question
-    Map<String, Param> params = getQuestion().getParamMap();
+    Question question = null;
+    try {
+      question = getQuestion();
+    }
+    catch (WdkModelException e) {
+      logger.warn("Found step [" + stepId + "] with invalid question " + questionName + ". Invalidating in DB.");
+      invalidateStep();
+      return false;
+    }
+
+    Map<String, Param> params = question.getParamMap();
     for (String paramName : paramValues.keySet()) {
       if (!params.containsKey(paramName)) {
         logger.error("Unable to find all stored param names in Question " + "(bad param name = " + paramName +
             ").  Setting valid to false.");
         invalidateStep();
+        return false;
       }
     }
 
-    try {
-      // check previous and child steps if still valid
-      Step prevStep, childStep;
-      if (valid &&
-          (((prevStep = getPreviousStep()) != null && !prevStep.isValid()) || ((childStep = getChildStep()) != null && !childStep.isValid()))) {
-        invalidateStep();
-      }
-    }
-    catch (WdkModelException ex) {
-      // question doesn't exist, return false
+    // check previous and child steps if still valid
+    Step myPrevStep, myChildStep;
+    if (valid &&
+        (((myPrevStep = getPreviousStep()) != null && !myPrevStep.isValid()) || ((myChildStep = getChildStep()) != null && !myChildStep.isValid()))) {
       invalidateStep();
-      return valid = false;
+      return false;
     }
 
-    // mark validity checked so we don't do the work above again
     validityChecked = true;
-    return valid;
+    return true;
   }
 
   /**
@@ -664,6 +668,7 @@ public class Step {
    */
   public void invalidateStep() throws WdkModelException {
     setValid(false);
+    validityChecked = true;
     if (!inMemoryOnly) {
      stepFactory.setStepValidFlag(this);
     }
