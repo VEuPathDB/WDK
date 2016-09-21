@@ -17,24 +17,24 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
 
   private static final Logger LOG = Logger.getLogger(ProcessQueryResponseListener.class);
 
-  private final List<Column> columns;
-  private final PreparedStatement psInsert;
-  private final Integer[] bindTypes;
-  private final Map<String, String> attachments;
-  private final int batchSize;
+  private final List<Column> _columns;
+  private final PreparedStatement _psInsert;
+  private final Integer[] _bindTypes;
+  private final Map<String, String> _attachments;
+  private final int _batchSize;
 
-  private int rowCount;
-  private String message;
+  private int _rowCount;
+  private String _message;
 
   public ProcessQueryResponseListener(List<Column> columns, PreparedStatement psInsert, int batchSize) {
-    this.psInsert = psInsert;
-    this.columns = columns;
-    this.attachments = new LinkedHashMap<>();
-    this.batchSize = batchSize;
+    _psInsert = psInsert;
+    _columns = columns;
+    _attachments = new LinkedHashMap<>();
+    _batchSize = batchSize;
 
-    Integer[] bindTypes = ResultListArgumentBatch.getBindTypes(columns);
+    Integer[] columnBindTypes = ResultListArgumentBatch.getBindTypes(columns);
     // add row id column
-    this.bindTypes = ArrayUtil.insert(bindTypes, 0, Types.INTEGER);
+    _bindTypes = ArrayUtil.insert(columnBindTypes, 0, Types.INTEGER);
   }
 
   @Override
@@ -42,14 +42,14 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
     Object[] objects = getObjects(row);
     try {
       // add rowCount into values
-      rowCount++;
-      objects = ArrayUtil.insert(objects, 0, rowCount);
+      _rowCount++;
+      objects = ArrayUtil.insert(objects, 0, _rowCount);
 
-      SqlUtils.bindParamValues(psInsert, bindTypes, objects);
-      psInsert.addBatch();
-      if (rowCount % batchSize == 0) {
-        psInsert.executeBatch();
-        LOG.debug(rowCount + " rows inserted.");
+      SqlUtils.bindParamValues(_psInsert, _bindTypes, objects);
+      _psInsert.addBatch();
+      if (_rowCount % _batchSize == 0) {
+        _psInsert.executeBatch();
+        LOG.debug(_rowCount + " rows inserted.");
       }
     }
     catch (SQLException ex) {
@@ -63,10 +63,10 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
    * @return
    */
   private Object[] getObjects(String[] row) throws ClientModelException {
-    Object[] objects = new Object[columns.size()];
+    Object[] objects = new Object[_columns.size()];
     int colIndex = 0;
-    for (int i = 0; i < columns.size(); i++) {
-      Column column = columns.get(i);
+    for (int i = 0; i < _columns.size(); i++) {
+      Column column = _columns.get(i);
       ColumnType type = column.getType();
       String value = row[i];
 
@@ -91,8 +91,8 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
     }
 
     // add CLOB values last
-    for (int i = 0; i < columns.size(); i++) {
-      Column column = columns.get(i);
+    for (int i = 0; i < _columns.size(); i++) {
+      Column column = _columns.get(i);
       if (column.getType().equals(ColumnType.CLOB)) {
         objects[colIndex] = row[i];
         colIndex++;
@@ -103,19 +103,19 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
 
   @Override
   public void onAttachmentReceived(String key, String content) {
-    attachments.put(key, content);
+    _attachments.put(key, content);
   }
 
   @Override
   public void onMessageReceived(String message) {
-    this.message = message;
+    _message = message;
   }
 
   public Map<String, String> getAttachments() {
-    return attachments;
+    return _attachments;
   }
 
   public String getMessage() {
-    return message;
+    return _message;
   }
 }
