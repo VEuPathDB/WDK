@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
-public class FileBasedRecordStream implements Iterable<RecordInstance>, AutoCloseable {
+public class FileBasedRecordStream implements RecordStream {
 
   private final AnswerValue _answerValue;
   private final Path _fileRepository;
