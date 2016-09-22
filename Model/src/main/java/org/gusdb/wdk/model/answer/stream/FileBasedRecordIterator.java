@@ -25,7 +25,7 @@ class FileBasedRecordIterator implements Iterator<RecordInstance> {
 
   void close() {
     _isClosed = true;
-    // TODO: close any open files
+    // TODO: wait for current calls to next() and hasNext() to complete, then close any open files
   }
 
   private void checkClosed() {
