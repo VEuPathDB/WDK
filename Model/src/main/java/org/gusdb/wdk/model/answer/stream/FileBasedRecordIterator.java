@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import org.gusdb.wdk.model.record.RecordInstance;
 
-public class FileBasedRecordIterator implements Iterator<RecordInstance> {
+class FileBasedRecordIterator implements Iterator<RecordInstance> {
 
   private boolean _isClosed = false;
 
