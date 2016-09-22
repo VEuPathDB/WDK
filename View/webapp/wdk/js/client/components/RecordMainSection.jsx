@@ -7,7 +7,7 @@ import { getId, getLabel } from '../utils/CategoryUtils';
 let RecordMainSection$;
 
 const RecordMainSection = ({
-  depth = 1,
+  depth = 0,
   record,
   recordClass,
   categories,
