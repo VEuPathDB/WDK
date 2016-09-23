@@ -28,8 +28,8 @@ class AnswerController extends WdkViewController {
 
   loadData(state, props) {
     // incoming values from the router
-    let questionName = props.params.question;
-    let recordClassName = props.params.recordClass;
+    let { question, recordClass: recordClassName } = props.params;
+    let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
     let parameters = props.location.query;
 
     // decide whether new answer needs to be loaded (may not need to be loaded
@@ -41,7 +41,7 @@ class AnswerController extends WdkViewController {
       // (re)initialize the page
       let pagination = { numRecords: 1000, offset: 0 };
       let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
-      let displayInfo = { pagination, sorting };
+      let displayInfo = { pagination, sorting, customName };
       let opts = { displayInfo, parameters };
       this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
     }
@@ -52,7 +52,7 @@ class AnswerController extends WdkViewController {
   }
 
   getTitle(state) {
-    return (state.question == null ? "Loading..." : state.question.displayName);
+    return (state.question == null ? "Loading..." : state.displayInfo.customName || state.question.displayName);
   }
 
   renderLoading(state) {

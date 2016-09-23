@@ -78,7 +78,7 @@ let Answer = React.createClass({
 
     return (
       <div className="wdk-AnswerContainer">
-        <h1 className="wdk-AnswerHeader">{question.displayName}</h1>
+        <h1 className="wdk-AnswerHeader">{displayInfo.customName || question.displayName}</h1>
         <div className="wdk-AnswerDescription">{description}</div>
         <div className="wdk-Answer">
           <AnswerFilter {...this.props}/>

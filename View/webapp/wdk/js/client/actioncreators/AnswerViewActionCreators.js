@@ -43,6 +43,7 @@ let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
  * @param {Array<Object>} opts.parameters Array of param spec objects: { name: string; value: any }
  * @param {Array<Object>} opts.filters Array of filter spec objects: { name: string; value: any }
  * @param {Array<Object>} opts.viewFilters Array of view filter  spec objects: { name: string; value: any }
+ * @param {string} opts.displayInfo.customName Custom name for the question to display on the page
  * @param {Object} opts.displayInfo.pagination Pagination specification.
  * @param {number} opts.displayInfo.pagination.offset 0-based index for first record.
  * @param {number} opts.displayInfo.pagination.numRecord The number of records to include.
@@ -70,7 +71,10 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
         parameters: pick(parameters, question.parameters),
         filters
       };
-      let formatting = { formatConfig: displayInfo };
+      let formatting = {
+        formatConfig: pick(displayInfo,
+          [ 'pagination', 'attributes', 'sorting' ])
+      };
       return wdkService.getAnswer(questionDefinition, formatting);
     });
 
