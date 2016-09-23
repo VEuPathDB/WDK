@@ -1,6 +1,6 @@
 import {Component} from 'react';
 import {findDOMNode} from 'react-dom';
-import {debounce, throttle} from 'lodash';
+import {debounce, get, throttle} from 'lodash';
 import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
 import {postorderSeq} from '../utils/TreeUtils';
@@ -17,82 +17,40 @@ class RecordUI extends Component {
 
   constructor(props) {
     super(props);
-    // images whose load events we are listening to
-    this._images = new Set();
-
-    // flag to ingore calls to scroll changes
-    this._ignoreActiveSectionChange = false;
-
     // bind event handlers
     this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
     this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
-    this._unsetIgnoreActiveSectionChange = debounce(this._unsetIgnoreActiveSectionChange.bind(this), 300);
-    this._handleImageLoad = this._handleImageLoad.bind(this);
-    this._removeImageLoadHandlers = this._removeImageLoadHandlers.bind(this);
+    this.monitorActiveSection = debounce(this.monitorActiveSection.bind(this), 100);
   }
 
   componentDidMount() {
-    this._scrollToActiveSection();
-    for (let image of findDOMNode(this).querySelectorAll('img')) {
-      if (image.complete) {
-        this._scrollToActiveSection();
-      } else {
-        this._images.add(image);
-        image.addEventListener('load', this._handleImageLoad);
-      }
-    }
-    window.addEventListener('wheel', this._removeImageLoadHandlers, { passive: true });
-    window.addEventListener('click', this._removeImageLoadHandlers, true);
-    window.addEventListener('scroll', this._updateActiveSection, { passive: true });
+    // this.monitorActiveSection();
     window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
+    this._scrollToActiveSection();
   }
 
   componentDidUpdate(prevProps) {
     let navVisibilityChanged = prevProps.navigationVisible !== this.props.navigationVisible;
     let recordChanged = prevProps.record !== this.props.record;
-    if (navVisibilityChanged) {
+    if (navVisibilityChanged || recordChanged) {
       this._scrollToActiveSection();
-    }
-    if (recordChanged) {
-      this._scrollToActiveSection();
-      for (let image of findDOMNode(this).querySelectorAll('img')) {
-        if (!this._images.has(image)) {
-          if (image.complete) {
-            this._scrollToActiveSection();
-          } else {
-            this._images.add(image);
-            image.addEventListener('load', this._handleImageLoad);
-          }
-        }
-      }
     }
   }
 
   componentWillUnmount() {
-    window.removeEventListener('wheel', this._removeImageLoadHandlers);
-    window.removeEventListener('click', this._removeImageLoadHandlers, true);
-    window.removeEventListener('scroll', this._updateActiveSection);
+    this.unmonitorActiveSection();
     window.removeEventListener('resize', this._scrollToActiveSection);
   }
 
-  _handleImageLoad(event) {
-    this._images.delete(event.target);
-    console.trace('SCROLLING AFTER IMG LOAD');
-    this._scrollToActiveSection();
+  monitorActiveSection() {
+    window.addEventListener('scroll', this._updateActiveSection, { passive: true });
   }
 
-  _removeImageLoadHandlers() {
-    this._ignoreActiveSectionChange = false;
-    for (let image of this._images) {
-      image.removeEventListener('load', this._handleImageLoad);
-    }
-    this._images.clear();
-    window.removeEventListener('wheel', this._removeImageLoadHandlers);
-    window.removeEventListener('click', this._removeImageLoadHandlers, true);
+  unmonitorActiveSection() {
+    window.removeEventListener('scroll', this._updateActiveSection, { passive: true });
   }
 
   _updateActiveSection() {
-    if (this._ignoreActiveSectionChange || this._images.size > 0) return;
     let activeElement = postorderSeq(this.props.categoryTree)
     .map(node => document.getElementById(getId(node)))
     .filter(el => el != null)
@@ -100,26 +58,17 @@ class RecordUI extends Component {
       let rect = el.getBoundingClientRect();
       return rect.top <= 50 && rect.bottom > 50;
     });
-    let activeSection = activeElement && activeElement.id;
-    if (activeSection != this.props.activeSection)
-      this.props.updateActiveSection(activeElement == null ? null : activeElement.id);
+    let activeSection = get(activeElement, 'id');
+    history.replaceState(null, null, activeSection ? '#' + activeSection : location.pathname);
   }
 
   _scrollToActiveSection() {
-    this._setIgnoreActiveSectionChange();
-    let domNode = document.getElementById(this.props.activeSection);
+    this.unmonitorActiveSection();
+    let domNode = document.getElementById(location.hash.slice(1));
     if (domNode != null) {
       domNode.scrollIntoView(true);
     }
-    this._unsetIgnoreActiveSectionChange();
-  }
-
-  _setIgnoreActiveSectionChange() {
-    this._ignoreActiveSectionChange = true;
-  }
-
-  _unsetIgnoreActiveSectionChange() {
-    this._ignoreActiveSectionChange = false;
+    this.monitorActiveSection();
   }
 
   render() {
