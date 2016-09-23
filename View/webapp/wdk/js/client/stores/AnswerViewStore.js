@@ -22,7 +22,8 @@ export default class AnswerViewStore extends WdkStore {
         sorting: undefined,
         pagination: undefined,
         attributes: undefined,
-        tables: undefined
+        tables: undefined,
+        customName: undefined
       }
     };
   }
