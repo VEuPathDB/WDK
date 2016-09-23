@@ -9,7 +9,7 @@
 <div id="query_form" style="min-height:140px;">
 <span class="dragHandle">
 	<div class="modal_name">
-		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title">${title}</h1>
+    <div style="font-size:130%;margin-top:4px;text-align:center;" id="query_form_title"><strong>${title}</strong></div>
 	</div>
 	<a class="back" href="javascript:wdk.addStepPopup.backStage()">
 		<imp:image src="wdk/images/backbutton.png" alt='Close'/>
