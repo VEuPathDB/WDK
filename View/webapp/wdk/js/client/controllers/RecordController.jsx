@@ -1,4 +1,4 @@
-import { omit, pick } from 'lodash';
+import { get, omit, pick } from 'lodash';
 import WdkViewController from './WdkViewController';
 import {wrappable} from '../utils/componentUtils';
 import {
@@ -54,11 +54,16 @@ class RecordController extends WdkViewController {
   }
 
   loadData(state, props, previousProps) {
-    // We need to check pathname to ignore hash changes.
-    if (previousProps == null || props.location.pathname !== previousProps.location.pathname) {
-      let { recordClass, splat } = props.params;
+    // only load record data if props don't match store state
+    let { recordClass, splat } = props.params;
+    let pkValues = splat.split('/');
+    let recordId = get(state, 'record.id');
+    let urlSegment = get(state, 'recordClass.urlSegment');
+    let recordIdChanged = recordId == null || !recordId.every((part, idx) => part.value === pkValues[idx]);
+    let recordClassChanged = recordClass !== urlSegment;
+    if (recordIdChanged || recordClassChanged) {
       this.dispatchAction(loadRecordData(
-        recordClass, splat.split('/'), props.location.hash.slice(1) || null));
+        recordClass, pkValues, props.location.hash.slice(1) || null));
     }
   }
 
