@@ -17,7 +17,7 @@ class RecordMainCategorySection extends PureComponent {
   toggleCollapse() {
     let { category, onSectionToggle, isCollapsed, depth } = this.props;
     // only toggle non-top-level category and wdkReference nodes
-    if ('wdkReference' in category || depth > 1) {
+    if ('wdkReference' in category || depth > 0) {
       onSectionToggle(
         getId(category),
         // It's tempting to negate this value, but we are sending the value
@@ -62,7 +62,7 @@ class RecordMainCategorySection extends PureComponent {
       default: {
         let id = getId(category);
         let categoryName = getDisplayName(category);
-        let Header = 'h' + Math.min(depth + 1, 6);
+        let Header = 'h' + Math.min(depth + 2, 6);
         let headerContent = (
           <span>
             <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
@@ -72,7 +72,7 @@ class RecordMainCategorySection extends PureComponent {
         return (
           <CollapsibleSection
             id={id}
-            className={depth === 1 ? 'wdk-RecordSection' : 'wdk-RecordSubsection'}
+            className={depth === 0 ? 'wdk-RecordSection' : 'wdk-RecordSubsection'}
             headerComponent={Header}
             headerContent={headerContent}
             isCollapsed={isCollapsed}
