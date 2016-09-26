@@ -25,7 +25,7 @@
 use DBI;
 use strict;
 #use warnings;
-use ApiCommonWebsite::Model::ModelConfig;
+use WDK::Model::ModelConfig;
 
 
 
@@ -54,7 +54,7 @@ my $start_run = time();
 
 if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
 my $model = $ARGV[0];
-my $c = new ApiCommonWebsite::Model::ModelConfig($model);
+my $c = new WDK::Model::ModelConfig($model);
 my $u  = $c->userDb->getLogin;
 my $pw = $c->userDb->getPassword;
 
