@@ -2,7 +2,7 @@ package WDK::Model::ModelConfig;
 
 use strict;
 use XML::Simple;
-use EuPathSiteCommon::Model::DbUtils qw(jdbc2oracleDbi dbi2connectString);
+use WDK::Model::DbUtils qw(jdbc2oracleDbi dbi2connectString);
 
 sub new {
     my ($class, $model) = @_;
@@ -134,7 +134,7 @@ Provides Perl access to properties in a WDK model-config.xml file.
 
 The conversion of the JDBC connectionUrl to Perl DBI only works for Oracle
 thin driver syntax, and even then not for all allowed syntax. See 
-EuPathSiteCommon::Model::DbUtils for supported syntax.
+WDK::Model::DbUtils for supported syntax.
 
 =head1 AUTHOR 
 
