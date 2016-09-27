@@ -111,7 +111,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
   }
 
   public static String toJsonBodyString(String entity) {
-    if (!entity.isEmpty()) {
+    if (entity != null && !entity.isEmpty()) {
       try {
         if (entity.startsWith("{")) {
           return new JSONObject(entity).toString(2);
