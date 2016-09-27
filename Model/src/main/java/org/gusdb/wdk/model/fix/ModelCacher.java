@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.runtime.GusHome;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
@@ -107,6 +105,7 @@ public class ModelCacher extends BaseCLI {
 
     boolean keepCache = (Boolean) getOptionValue(ARG_KEEP_CACHE);
 
+    int exitCode = 0;
     if (drop || create) {
       WdkModel wdkModel = null;
       try {
@@ -130,7 +129,7 @@ public class ModelCacher extends BaseCLI {
         try {
           logger.info("Expanding model for project " + projectId);
           wdkModel = WdkModel.construct(projectId, gusHome);
-          expand(wdkModel, schema, keepCache);
+          exitCode = expand(wdkModel, schema, keepCache);
         }
         finally {
           if (wdkModel != null) {
@@ -145,10 +144,11 @@ public class ModelCacher extends BaseCLI {
       logger.error("No valid operation specified");
       throw new WdkModelException("No valid operation specified");
     }
+    // no fatal errors; exit with exitCode
+    System.exit(exitCode);
   }
 
-  public void expand(WdkModel wdkModel, String schema, boolean keepCache) throws SQLException,
-      WdkModelException {
+  public int expand(WdkModel wdkModel, String schema, boolean keepCache) throws SQLException {
     // need to reset the cache first
     wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
 
@@ -219,6 +219,7 @@ public class ModelCacher extends BaseCLI {
     for (String qName : errorMap.keySet()) {
       logger.error(qName + ": " + errorMap.get(qName).toString());
     }
+    return (errorMap.isEmpty() ? 0 : 1);
   }
 
   public void dropTables(WdkModel wdkModel, String schema) throws SQLException {
