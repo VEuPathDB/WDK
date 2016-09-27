@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -13,6 +16,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -86,8 +90,8 @@ public class ModelCacher extends BaseCLI {
    */
   @Override
   protected void execute() throws Exception {
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
+    String gusHome = GusHome.getGusHome();
     String strProject = (String) getOptionValue(ARG_PROJECT_ID);
     String[] projects = strProject.split(",");
 
@@ -103,24 +107,37 @@ public class ModelCacher extends BaseCLI {
 
     boolean keepCache = (Boolean) getOptionValue(ARG_KEEP_CACHE);
 
-    if (create) {
-      String projectId = projects[0];
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-      createTables(wdkModel, schema);
-      logger.info("created model cache tables");
-    }
-    else if (drop) {
-      String projectId = projects[0];
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-      dropTables(wdkModel, schema);
-      logger.info("dropped model cache tables");
+    if (drop || create) {
+      WdkModel wdkModel = null;
+      try {
+        wdkModel = WdkModel.construct(projects[0], gusHome);
+        if (drop) {
+          dropTables(wdkModel, schema);
+          logger.info("dropped model cache tables");
+        }
+        if (create) {
+          createTables(wdkModel, schema);
+          logger.info("created model cache tables");
+        }
+      }
+      finally {
+        if (wdkModel != null) wdkModel.releaseResources();
+      }
     }
     else if (expand) {
+      WdkModel wdkModel = null;
       for (String projectId : projects) {
-        logger.info("Expanding model for project " + projectId);
-        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        expand(wdkModel, schema, keepCache);
-        wdkModel.releaseResources();
+        try {
+          logger.info("Expanding model for project " + projectId);
+          wdkModel = WdkModel.construct(projectId, gusHome);
+          expand(wdkModel, schema, keepCache);
+        }
+        finally {
+          if (wdkModel != null) {
+            wdkModel.releaseResources();
+            wdkModel = null;
+          }
+        }
         logger.info("=========================== done ============================");
       }
     }
@@ -147,6 +164,9 @@ public class ModelCacher extends BaseCLI {
     Connection connection = dataSource.getConnection();
     connection.setAutoCommit(false);
     PreparedStatement psQuestion = null, psParam = null, psEnum = null, psSelect = null;
+    Map<String, Exception> errorMap = new LinkedHashMap<>();
+    int questionsWritten = 0;
+    int questionsAlreadyPresent = 0;
     try {
       String sql = "INSERT INTO " + schema + "wdk_questions " + "(question_id, question_name, project_id, " +
           " question_checksum, query_checksum, record_class) " + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -168,16 +188,22 @@ public class ModelCacher extends BaseCLI {
 
       for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
         for (Question question : questionSet.getQuestions()) {
-          if (!questionExists(question, psSelect)) {
+          try {
+            if (questionExists(question, psSelect)) {
+              questionsAlreadyPresent++;
+              continue;
+            }
             saveQuestion(question, psQuestion, psParam, psEnum, s);
             connection.commit();
+            questionsWritten++;
+          }
+          catch (Exception e) {
+            logger.error("Failed to write " + question.getFullName(), e);
+            errorMap.put(question.getFullName(), e);
+            connection.rollback();
           }
         }
       }
-    }
-    catch (SQLException | WdkModelException ex) {
-      connection.rollback();
-      throw ex;
     }
     finally {
       connection.setAutoCommit(true);
@@ -185,6 +211,13 @@ public class ModelCacher extends BaseCLI {
       SqlUtils.closeStatement(psParam);
       SqlUtils.closeStatement(psEnum);
       SqlUtils.closeStatement(psSelect);
+    }
+    // log stats
+    logger.info(questionsAlreadyPresent + " questions already cached in DB.");
+    logger.info(questionsWritten + " questions successfully written.");
+    logger.info(errorMap.size() + " questions had errors. See below for summary, above for details.");
+    for (String qName : errorMap.keySet()) {
+      logger.error(qName + ": " + errorMap.get(qName).toString());
     }
   }
 
