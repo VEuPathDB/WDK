@@ -21,7 +21,7 @@ import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.events.StepsModifiedEvent;
+import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -87,7 +87,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
     startThreadPool();
-    Events.subscribe(this, StepsModifiedEvent.class, StepRevisedEvent.class, StepCopiedEvent.class);
+    Events.subscribe(this, StepResultsModifiedEvent.class, StepRevisedEvent.class, StepCopiedEvent.class);
   }
 
   /**
@@ -98,8 +98,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     if (event instanceof StepRevisedEvent) {
       invalidateResults(((StepRevisedEvent)event).getRevisedStep().getStepId());
     }
-    else if (event instanceof StepsModifiedEvent) {
-      List<Integer> stepIds = ((StepsModifiedEvent)event).getStepIds();
+    else if (event instanceof StepResultsModifiedEvent) {
+      List<Integer> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
       LOG.debug("StepsModifiedEvent with " + stepIds.size() + " steps: " +
           FormatUtil.arrayToString(stepIds.toArray()));
       for (int stepId : stepIds) {
