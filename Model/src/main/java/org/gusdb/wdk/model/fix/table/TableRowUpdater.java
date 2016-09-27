@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.fix.table;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.functional.Functions.flatten;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.transform;
+import static org.gusdb.fgputil.iterator.IteratorUtil.flatten;
+import static org.gusdb.fgputil.iterator.IteratorUtil.transform;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
