@@ -33,7 +33,7 @@ public class PagedAnswerRecordStream implements RecordStream {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     // nothing to do here
   }
 
