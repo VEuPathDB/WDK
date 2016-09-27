@@ -13,11 +13,11 @@ import org.gusdb.fgputil.events.Event;
  * 
  * @author ryan
  */
-public class StepsModifiedEvent extends Event {
+public class StepResultsModifiedEvent extends Event {
 
   private List<Integer> _stepIds;
 
-  public StepsModifiedEvent(List<Integer> stepIds) {
+  public StepResultsModifiedEvent(List<Integer> stepIds) {
     _stepIds = stepIds;
   }
 
