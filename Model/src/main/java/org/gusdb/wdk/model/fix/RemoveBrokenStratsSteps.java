@@ -123,7 +123,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       catch (SQLException ex) {
         LOG.warn(ex.getMessage());
 				// checking for a foreign constraint violation to continue checking steps
-        if ( !ex.getMessage().contains("oreign") )	throw ex;
+        if ( !ex.getMessage().contains("ORA-02292") )	throw ex;
 				remain=true;
       }
     }
@@ -166,10 +166,10 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
       count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable + " where create_time < '25-SEP-2016' " + 
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable + " where create_time < '25-SEP-2016' " +
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +  " where create_time < '25-SEP-2016' " +
-          "  MINUS SELECT right_child_id FROM           " + stepTable +   " where create_time < '25-SEP-2016' " +
+          "  SELECT step_id              FROM           " + stepTable +
+          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
+          "  MINUS SELECT left_child_id  FROM           " + stepTable +  
+          "  MINUS SELECT right_child_id FROM           " + stepTable +  
 					"  )");
       sum += count;
     }
@@ -182,7 +182,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     int count = 1, sum = 0;
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
-      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "create_time < '25-SEP-2016' and step_id IN (" +
+      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
           "  SELECT step_id              FROM           " + stepTable +
           "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
           "  MINUS SELECT left_child_id  FROM           " + stepTable +   
