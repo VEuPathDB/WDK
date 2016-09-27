@@ -225,7 +225,43 @@ public class FilterParamHandler extends AbstractParamHandler {
     stableValue = normalizeStableValue(stableValue);
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
-    return jsFilters.toString();
+    try {
+      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this.param).getMetadataSpec(user, contextParamValues);
+      if (jsFilters.length() == 0)
+        return "All " + param.prompt;
+      else {
+        String display = "";
+        for (int i = 0; i < jsFilters.length(); i++) {
+          JSONObject jsFilter = jsFilters.getJSONObject(i);
+          Map<String, String> fieldSpec = metadataSpec.get(jsFilter.getString("field"));
+          display += fieldSpec.get("display") + " is ";
+          switch(fieldSpec.get("filter")) {
+          case "membership":
+            JSONArray values = jsFilter.getJSONArray("value");
+            for (int j = 0; j < values.length(); j++) {
+              if (values.get(j) == JSONObject.NULL) values.put(j, "uknown");
+            }
+            display += jsFilter.getJSONArray("value").join(", ");
+            break;
+          case "range":
+            JSONObject range = jsFilter.getJSONObject("value");
+            String min = range.getString("min");
+            String max = range.getString("max");
+            display += min == null ? "less than " + max
+                     : max == null ? "greater than " + min
+                     : "between " + min + " and " + max;
+            break;
+          }
+          if (i != jsFilters.length()) display += "\n";
+        }
+        return display;
+      }
+    } catch (WdkUserException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return jsValue.getJSONArray(TERMS_KEY).toString();
+    }
+
   }
 
   private String normalizeStableValue(String stableValue) {
