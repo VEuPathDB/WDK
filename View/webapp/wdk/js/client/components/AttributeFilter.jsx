@@ -77,14 +77,15 @@ var FilterList = React.createClass({
             var className = _.result(selectedField, 'term') === filter.field.term ? 'selected' : '';
             var handleSelectClick = _.partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = _.partial(this.handleFilterRemoveClick, filter);
+            var display = getFilterDisplay(filter);
 
             return (
               <li key={filter.field.term} className={className}>
                 <div className="ui-corner-all">
                   <a className="select"
                     onClick={handleSelectClick}
-                    href={'#' + filter.field}
-                    title={filter.display}>{filter.display}</a>
+                    href={'#' + filter.field.term}
+                    title={display}>{display}</a>
                   {/* Use String.fromCharCode to avoid conflicts with
                       character ecoding. Other methods detailed at
                       http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
@@ -478,10 +479,10 @@ var AttributeFilter = React.createClass({
     this.props.onFiltersChange(filters);
   },
 
-  handleFieldFilterChange(field, values, display) {
+  handleFieldFilterChange(field, values) {
     let filters = this.props.filters.filter(f => f.field.term !== field.term);
     this.props.onFiltersChange(this.shouldAddFilter(field, values)
-      ? filters.concat({ field, values, display })
+      ? filters.concat({ field, values })
       : filters
     );
   },
@@ -491,30 +492,6 @@ var AttributeFilter = React.createClass({
          : field.type === 'number' ? values.min != null || values.max != null
          : field.type === 'date' ? values.min != null || values.max != null
          : false;
-  },
-
-  createStringFilter(field, values) {
-    if (values.length === this.props.activeFieldSummary.length) return null;
-    let display = values.length > 0
-      ? field.display + ' is ' + values.join(', ')
-      : 'No ' + field.display + ' selected';
-    return { field, values, display };
-  },
-
-  createNumberFilter(field, values) {
-    let { min, max } = values;
-    if (min === null && max === null) return null;
-    let distributionValues = this.props.activeFieldSummary.map(entry => entry.value);
-    let distributionMin = Math.min(...distributionValues);
-    let distributionMax = Math.max(...distributionValues);
-    let displayMin = min == null ? distributionMin : min;
-    let displayMax = max == null ? distributionMax : max;
-    let display = field.display + ' between ' + displayMin + ' and ' + displayMax;
-    return { field, values, display };
-  },
-
-  createDateFilter(field, values) {
-    return this.createNumberFilter(field, values);
   },
 
   render: function() {
@@ -644,7 +621,7 @@ var InvalidFilterList = React.createClass({
         <ul>
           {_.map(filters, function(filter) {
             return (
-              <li className="invalid">{filter.display}</li>
+              <li className="invalid">{getFilterDisplay(filter)}</li>
             );
           }, this)}
         </ul>
@@ -1472,6 +1449,18 @@ var EmptyField = React.createClass({
 
 function getFieldDetail(field) {
   return fieldComponents[_.result(field, 'type')];
+}
+
+function getFilterDisplay({ field, values }) {
+  switch(field.type) {
+    case 'string': return `${field.display} is ${values.map(value => value === null ? UNKNOWN_DISPLAY ? value).join(', ')}`;
+    case 'date':
+    case 'number': return `${field.display} is ` +
+      ( values.min == null ? `less than ${values.max}`
+      : values.max == null ? `greater than ${values.min}`
+      : `between ${values.min} and ${values.max}`);
+    default: return JSON.stringify(values);
+  }
 }
 
 export default AttributeFilter;
