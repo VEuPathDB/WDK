@@ -28,7 +28,7 @@ import org.json.JSONObject;
 public class OrganismUpdater {
 
   private static final String PARAM_ORGANISM[] = { "organism", "BlastDatabaseOrganism", "motif_organism",
-      "text_search_organism" };
+      "text_search_organism, organismSinglePick" };
   private static final int lenParamOrg = PARAM_ORGANISM.length;
   private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
