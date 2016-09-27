@@ -9,7 +9,7 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.events.StepsModifiedEvent;
+import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.user.Step;
 
 public class StepCache extends ItemCache<Integer, Step> {
@@ -30,12 +30,12 @@ public class StepCache extends ItemCache<Integer, Step> {
           LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
           expireCachedItems(stepId);
         }
-        else if (event instanceof StepsModifiedEvent) {
-          List<Integer> stepIds = ((StepsModifiedEvent)event).getStepIds();
+        else if (event instanceof StepResultsModifiedEvent) {
+          List<Integer> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
           LOG.info("Notification of steps modification, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
           expireCachedItems(stepIds.toArray(new Integer[stepIds.size()]));
         }
       }
-    }, StepRevisedEvent.class, StepsModifiedEvent.class);
+    }, StepRevisedEvent.class, StepResultsModifiedEvent.class);
   }
 }
