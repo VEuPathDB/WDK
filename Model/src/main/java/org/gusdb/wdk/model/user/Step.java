@@ -13,8 +13,11 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.events.StepCopiedEvent;
-import org.gusdb.wdk.events.StepsModifiedEvent;
+import org.gusdb.wdk.events.StepResultsModifiedEvent;
+import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,6 +26,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.ParamValuesInvalidException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -64,7 +68,7 @@ public class Step {
   private boolean deleted = false;
 
   // creation timestamp for this Java object
-  public final long objectCreationDate;
+  public long objectCreationDate;
 
   // nested step
   private boolean collapsible = false;
@@ -280,14 +284,14 @@ public class Step {
     }
   }
 
-    /** 
-     * Get the real result size from the answerValue.  AnswerValue is
-     * responsible for caching, if any
-     */
-    public int getResultSize() throws WdkModelException, WdkUserException {
-  estimateSize = getAnswerValue().getDisplayResultSize();
-  return estimateSize;
-    }
+  /** 
+   * Get the real result size from the answerValue.  AnswerValue is
+   * responsible for caching, if any
+   */
+  public int getResultSize() throws WdkModelException, WdkUserException {
+    estimateSize = getAnswerValue().getDisplayResultSize();
+    return estimateSize;
+  }
 
   // Needs to be updated for transforms
   public String getOperation() throws WdkModelException, WdkUserException {
@@ -458,20 +462,34 @@ public class Step {
    * @return Size estimate of this step's result
    */
   public int getEstimateSize() {
-    if (estimateSize == RESET_SIZE_FLAG) {
-      // The flag indicates if the size has been reset, and need to be calculated again.
-      try {
-  estimateSize = getResultSize();
-      }
-      catch (Exception ex) {
-        // do not throw error in this method, just return 0, to avoid infinite
-        // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
-        // it sees a -1;
-        logger.error("Error occurred, use the old estimate size", ex);
+    try {
+      if (!isValid()) {
         return 0;
       }
+      if (estimateSize == RESET_SIZE_FLAG) {
+        // The flag indicates if the size has been reset, and need to be calculated again.
+        try {
+          estimateSize = getResultSize();
+        }
+        catch (ParamValuesInvalidException e) {
+          // means we have invalid param values in this Step; invalidate locally
+          // TODO: experimented with writing this value to DB here but that causes errors if bad params
+          //   are entered during Add Step.  Figure out why and maybe add back
+          //invalidateStep();
+          valid = false;
+          validityChecked = true;
+          return 0;
+        }
+      }
+      return estimateSize;
     }
-    return estimateSize;
+    catch (Exception e) {
+      // do not throw error in this method, just return 0, to avoid infinite
+      // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
+      // it sees a -1;
+      logger.error("Error occurred, use the old estimate size", e);
+      return 0;
+    }
   }
 
   /**
@@ -561,9 +579,41 @@ public class Step {
 
     // get list of steps dependent on this one; all their results are now invalid
     List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
-    // invalidate step analysis tabs for this step and wait for completion
-    Events.triggerAndWait(new StepsModifiedEvent(stepIds), new WdkModelException(
-        "Unable to invalidate step IDs: " + FormatUtil.arrayToString(stepIds.toArray())));
+    Functions.filterInPlace(stepIds, new Predicate<Integer>() {
+      @Override public boolean test(Integer candidateStepId) {
+        // keep unless id is for this step
+        return (getStepId() != candidateStepId.intValue());
+      }
+    });
+
+    // alert listeners that this step has been revised and await results
+    Events.triggerAndWait(new StepRevisedEvent(this), new WdkModelException(
+        "Unable to process all StepRevised events for revised step " + getStepId()));
+
+    // alert listeners that the step results have changed for these steps and wait for completion
+    Events.triggerAndWait(new StepResultsModifiedEvent(stepIds), new WdkModelException(
+        "Unable to process all StepResultsModified events for step IDs: " +
+            FormatUtil.arrayToString(stepIds.toArray())));
+
+    // refresh in-memory step here in case listeners also modified it
+    refreshParamFilters();
+  }
+
+  /**
+   * Refreshes some key fields of this step with the current values in the DB.  This
+   * is to support outside modification of the step by event listeners.  If a listener
+   * modifies the step in response to a change we made, we will want to reflect these
+   * secondary changes in this current execution flow.
+   * 
+   * @throws WdkModelException if unable to load updated step
+   */
+  private void refreshParamFilters() throws WdkModelException {
+    Step step = stepFactory.getStepById(getStepId());
+    filterName = step.filterName;
+    paramValues = step.paramValues;
+    filterOptions = step.filterOptions;
+    viewFilterOptions = step.viewFilterOptions;
+    objectCreationDate = step.objectCreationDate;
   }
 
   public String getDescription() {
