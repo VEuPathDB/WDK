@@ -570,6 +570,9 @@ public class Step {
   // saves param values AND filter values (AND step name and maybe other things)
   public void saveParamFilters() throws WdkModelException {
 
+    // get Step as it is in the DB (FIXME: we should be tracking this in memory)
+    Step dbStep = stepFactory.getStepById(getStepId());
+
     stepFactory.saveStepParamFilters(this);
     stepFactory.resetStepCounts(this);
 
@@ -587,7 +590,7 @@ public class Step {
     });
 
     // alert listeners that this step has been revised and await results
-    Events.triggerAndWait(new StepRevisedEvent(this), new WdkModelException(
+    Events.triggerAndWait(new StepRevisedEvent(this, dbStep), new WdkModelException(
         "Unable to process all StepRevised events for revised step " + getStepId()));
 
     // alert listeners that the step results have changed for these steps and wait for completion

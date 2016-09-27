@@ -12,12 +12,18 @@ import org.gusdb.wdk.model.user.Step;
 public class StepRevisedEvent extends Event {
 
   private final Step _revisedStep;
+  private final Step _previousVersion;
 
-  public StepRevisedEvent(Step revisedStep) {
+  public StepRevisedEvent(Step revisedStep, Step previousVersion) {
     _revisedStep = revisedStep;
+    _previousVersion = previousVersion;
   }
 
   public Step getRevisedStep() {
     return _revisedStep;
+  }
+
+  public Step getPreviousVersion() {
+    return _previousVersion;
   }
 }
