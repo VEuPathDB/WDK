@@ -47,6 +47,10 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
     this.valueContainer = valueContainer;
   }
 
+  public Map<String, Object> getRawValues() {
+    return new LinkedHashMap<String, Object>(pkValues);
+  }
+
   public Map<String, String> getValues() {
     Map<String, String> values = new LinkedHashMap<String, String>();
     for (String column : pkValues.keySet()) {
