@@ -39,7 +39,7 @@ public class SingleTableRecordInstanceStream implements RecordStream {
     init(answerValue, tableField, resultList);
   }
 
-  public void init(AnswerValue answerValue, TableField tableField, ResultList resultList) {
+  private void init(AnswerValue answerValue, TableField tableField, ResultList resultList) {
     _answerValue = answerValue;
     _tableField = tableField;
     _pkField = _answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField();
