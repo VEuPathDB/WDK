@@ -1453,7 +1453,7 @@ function getFieldDetail(field) {
 
 function getFilterDisplay({ field, values }) {
   switch(field.type) {
-    case 'string': return `${field.display} is ${values.map(value => value === null ? UNKNOWN_DISPLAY ? value).join(', ')}`;
+    case 'string': return `${field.display} is ${values.map(value => value === null ? UNKNOWN_DISPLAY : value).join(', ')}`;
     case 'date':
     case 'number': return `${field.display} is ` +
       ( values.min == null ? `less than ${values.max}`
