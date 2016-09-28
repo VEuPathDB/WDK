@@ -1452,6 +1452,10 @@ function getFieldDetail(field) {
 }
 
 function getFilterDisplay({ field, values }) {
+  if (typeof field === 'string') {
+    return `${field} is ${JSON.stringify(values)}`;
+  }
+
   switch(field.type) {
     case 'string': return `${field.display} is ${values.map(value => value === null ? UNKNOWN_DISPLAY : value).join(', ')}`;
     case 'date':
