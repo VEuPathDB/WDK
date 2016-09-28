@@ -262,10 +262,10 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     var [ validFilters, invalidFilters ] = _(_.get(previousValue, 'filters'))
       .map(filter => ({
-        field: fields.find(field => field.field = filter.field),
+        field: fields.find(field => field.term == filter.field) || filter.field,
         values: filter.value
       }))
-      .partition(_.property('field'))
+      .partition(filter => typeof filter.field === 'object')
       .value();
 
     var filterParamOptions = { title, trimMetadataTerms };
