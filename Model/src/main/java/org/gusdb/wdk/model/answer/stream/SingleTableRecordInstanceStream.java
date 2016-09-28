@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -73,7 +72,7 @@ public class SingleTableRecordInstanceStream implements RecordStream {
           try {
             // start new record instance
             Map<String, Object> recordPrimaryKeyValues = _lastPkValues.get();
-            DynamicRecordInstance record = new DynamicRecordInstance(_answerValue, recordPrimaryKeyValues);
+            RecordInstance record = new RecordInstance(_answerValue, recordPrimaryKeyValues);
             record.getPrimaryKey().setValueContainer(record); // TODO: explore why we have to do this
             TableValue tableValue = new TableValue(_answerValue.getUser(), record.getPrimaryKey(), _tableField, true);
             record.addTableValue(tableValue);
