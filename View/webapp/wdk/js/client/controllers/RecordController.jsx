@@ -54,16 +54,11 @@ class RecordController extends WdkViewController {
   }
 
   loadData(state, props, previousProps) {
-    // only load record data if props don't match store state
-    let { recordClass, splat } = props.params;
-    let pkValues = splat.split('/');
-    let recordId = get(state, 'record.id');
-    let urlSegment = get(state, 'recordClass.urlSegment');
-    let recordIdChanged = recordId == null || !recordId.every((part, idx) => part.value === pkValues[idx]);
-    let recordClassChanged = recordClass !== urlSegment;
-    if (recordIdChanged || recordClassChanged) {
-      this.dispatchAction(loadRecordData(
-        recordClass, pkValues, props.location.hash.slice(1) || null));
+    // load data if location.pathname has changed
+    if (get(props, 'location.pathname') !== get(previousProps, 'location.pathname')) {
+      let { recordClass, splat } = props.params;
+      let pkValues = splat.split('/');
+      this.dispatchAction(loadRecordData(recordClass, pkValues));
     }
   }
 
