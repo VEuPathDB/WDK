@@ -43,19 +43,15 @@ export default class RecordViewStore extends WdkStore {
   handleAction(state, action) {
     switch (action.type) {
 
-      case actionTypes.ERROR_RECEIVED:
-        return Object.assign({}, state, {
-          isLoading: false,
-          error: action.payload.error
-        });
-
       case actionTypes.ACTIVE_RECORD_LOADING:
         return Object.assign({}, state, {
           isLoading: true,
-          error: null
+          error: null,
+          requestId: action.id
         });
 
       case actionTypes.ACTIVE_RECORD_RECEIVED: {
+        if (action.id !== state.requestId) return state;
         let { record, recordClass, categoryTree } = action.payload;
         return Object.assign({}, state, {
           record,
@@ -67,9 +63,17 @@ export default class RecordViewStore extends WdkStore {
       }
 
       case actionTypes.ACTIVE_RECORD_UPDATED: {
+        if (action.id !== state.requestId) return state;
         let { record } = action.payload;
         return Object.assign({}, state, { record });
       }
+
+      case actionTypes.ERROR_RECEIVED:
+        if (action.id !== state.requestId) return state;
+        return Object.assign({}, state, {
+          isLoading: false,
+          error: action.payload.error
+        });
 
       case actionTypes.SECTION_VISIBILITY_CHANGED: {
         let collapsedSections = updateList(

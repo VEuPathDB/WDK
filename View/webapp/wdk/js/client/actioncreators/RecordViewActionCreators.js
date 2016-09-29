@@ -1,4 +1,4 @@
-import {chunk, partial} from 'lodash';
+import {chunk, partial, uniqueId} from 'lodash';
 import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
 import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
@@ -40,6 +40,10 @@ export function loadRecordData(recordClass, primaryKeyValues, activeSection) {
   };
 }
 
+const dispatchWithId = (dispatch, id = uniqueId('groupid')) => action => {
+  return dispatch(Object.assign(action, { id }));
+}
+
 /**
  * Fetches the new record from the service and dispatches related
  * actions so that the store can update.
@@ -48,8 +52,12 @@ export function loadRecordData(recordClass, primaryKeyValues, activeSection) {
  * @param {Array<string>} primaryKeyValues
  */
 function setActiveRecord(recordClassName, primaryKeyValues) {
-  return function run(dispatch, {wdkService}) {
-    dispatch({ type: actionTypes.ACTIVE_RECORD_LOADING });
+  return function run(realDispatch, {wdkService}) {
+    const dispatch = dispatchWithId(realDispatch);
+    dispatch({
+      type: actionTypes.ACTIVE_RECORD_LOADING,
+      payload: { recordClassName, primaryKeyValues }
+    });
     // Fetch the record base and tables in parallel.
     return Promise.all([
       wdkService.findRecordClass(r => r.urlSegment === recordClassName),
