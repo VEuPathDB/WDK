@@ -1,5 +1,6 @@
+import $ from 'jquery';
 import stringify from 'json-stable-stringify';
-import {difference, indexBy} from 'lodash';
+import {compose, difference, indexBy, memoize} from 'lodash';
 import localforage from 'localforage';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
@@ -7,6 +8,7 @@ import {getTargetType, getRefName, getDisplayName, CategoryNode} from './Categor
 import {alert} from './Platform';
 import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record} from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
+import {on} from "cluster";
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -94,6 +96,7 @@ export default class WdkService {
    * @param {string} serviceUrl Base url for Wdk REST Service.
    */
   constructor(public serviceUrl: string) {
+    this.getOntology = memoize(this.getOntology.bind(this));
   }
 
   /**
@@ -192,6 +195,8 @@ export default class WdkService {
    *
    * The record instance will be stored in memory. Any subsequent requests will
    * be merged with the in-memory request.
+   *
+   * XXX Use _getFromCache with key of "recordInstance" so the most recent record is saved??
    */
   getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
@@ -337,18 +342,13 @@ export default class WdkService {
   }
 
   getOntology(name = '__wdk_categories__') {
-    return this._getFromCache('ontology/' + name, () => {
-      let ontology$ = this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
-      let recordClasses$ = this.getRecordClasses().then(rs => indexBy(rs, 'name'));
-      let questions$ = this.getQuestions().then(qs => indexBy(qs, 'name'));
-      let entities$ = Promise.all([ recordClasses$, questions$ ])
-      .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
-
-      return ontology$
-      .then(resolveWdkReferences(entities$))
-      .then(pruneUnresolvedReferences)
-      .then(sortOntology);
+    let recordClasses$ = this.getRecordClasses().then(rs => indexBy(rs, 'name'));
+    let questions$ = this.getQuestions().then(qs => indexBy(qs, 'name'));
+    let ontology$ = this._getFromCache('ontology/' + name, () => {
+      return this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
     });
+    return Promise.all([ recordClasses$, questions$, ontology$ ])
+      .then((resources) => normalizeOntology(resources[0], resources[1], resources[2]));
   }
 
   _fetchJson<T>(method: string, url: string, body?: string) {
@@ -440,44 +440,44 @@ function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
   return recordClassName + ':' + stringify(primaryKeyValues);
 }
 
+const normalizeOntology = memoize(compose(sortOntology, pruneUnresolvedReferences, resolveWdkReferences));
+
 /**
  * Adds the related WDK reference to each node. This function mutates the
  * ontology tree, which is ok since we are doing this before we cache the
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(entities$: Promise<{ recordClasses: Dict<RecordClass>; questions: Dict<Question>; }>) {
-  return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
-    for (let node of preorderSeq(ontology.tree)) {
-      switch (getTargetType(node)) {
-        case 'attribute': {
-          let attributeName = getRefName(node);
-          let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-          if (recordClass == null) continue;
-          let wdkReference = recordClass.attributesMap[attributeName];
-          Object.assign(node, { wdkReference });
-          break;
-        }
+function resolveWdkReferences(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: Ontology<CategoryNode>)  {
+  for (let node of preorderSeq(ontology.tree)) {
+    switch (getTargetType(node)) {
+      case 'attribute': {
+        let attributeName = getRefName(node);
+        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
+        if (recordClass == null) continue;
+        let wdkReference = recordClass.attributesMap[attributeName];
+        Object.assign(node, { wdkReference });
+        break;
+      }
 
-        case 'table': {
-          let tableName = getRefName(node);
-          let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-          if (recordClass == null) continue;
-          let wdkReference = recordClass.tablesMap[tableName];
-          Object.assign(node, { wdkReference });
-          break;
-        }
+      case 'table': {
+        let tableName = getRefName(node);
+        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
+        if (recordClass == null) continue;
+        let wdkReference = recordClass.tablesMap[tableName];
+        Object.assign(node, { wdkReference });
+        break;
+      }
 
-        case 'search': {
-          let questionName = getRefName(node);
-          let wdkReference = questions[questionName];
-          Object.assign(node, { wdkReference });
-          break;
-        }
+      case 'search': {
+        let questionName = getRefName(node);
+        let wdkReference = questions[questionName];
+        Object.assign(node, { wdkReference });
+        break;
       }
     }
-    return ontology;
-  });
+  }
+  return ontology;
 }
 
 function isWdkReference(node: CategoryNode) {
