@@ -119,6 +119,15 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
     return display;
   }
 
+  public static boolean rawValuesDiffer(Map<String, Object> map1, Map<String, Object> map2) {
+    if (map1.size() != map2.size()) return true;
+    for (String key : map1.keySet()) {
+      if (!map2.containsKey(key)) return true;
+      if (!map2.get(key).equals(map1.get(key))) return true;
+    }
+    return false;
+  }
+
   /**
    * @param obj
    * @return
@@ -126,23 +135,8 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof PrimaryKeyAttributeValue) {
-      PrimaryKeyAttributeValue pk = (PrimaryKeyAttributeValue) obj;
-      if (pk.pkValues.size() != pkValues.size()) {
-        return false;
-      }
-      for (String columnName : pkValues.keySet()) {
-        if (!pk.pkValues.containsKey(columnName)) {
-          return false;
-        }
-        Object otherValue = pk.pkValues.get(columnName);
-        if (!pkValues.get(columnName).equals(otherValue)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
+    return (obj instanceof PrimaryKeyAttributeValue) &&
+        !rawValuesDiffer(pkValues, ((PrimaryKeyAttributeValue)obj).pkValues);
   }
 
   /**
