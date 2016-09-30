@@ -3,52 +3,54 @@
  */
 import test from 'tape';
 import { Task } from '../../webapp/wdk/js/client/utils/Task';
+const noop = () => {};
 
-test('Task', t => {
-  t.plan(7);
+test('Task.of', (t) => {
+  Task.of(20).run((v) => {
+    t.equal(v, 20, 'should fulfill with value passed to it.');
+    t.end()
+  });
+});
 
-  Task.of(20).run({
-    onFulfill: v => {
-      t.equal(v, 20, 'Task.of should fulfill with value passed to it.');
-    }
+test('Task.reject', (t) => {
+  Task.reject('error').run(noop, (e) => {
+    t.equal(e, 'error', 'should reject with the value passed to it.');
+    t.end();
+  });
+});
+
+test('Task#map', (t) => {
+  Task.of(20).map((v) => v * v).run((v) => {
+    t.equal(v, 400, 'should fulfill with mappend applied to parent Task\'s fulfillment value.');
+    t.end();
+  });
+});
+
+test('Task#mapRejected', (t) => {
+  Task.reject(20).mapRejected((v) => v * v).run(noop, (v) => {
+    t.equal(v, 400, 'should reject with mappend applied to parent Task\'s rejection value.');
+    t.end();
+  });
+});
+
+test('Task#chain', (t) => {
+  t.plan(2);
+
+  Task.of(20).chain((v) => delayValue(v * v, 1000)).run((v) => {
+    t.equal(v, 400, 'should fulfill with the inner Task\'s fulfillment of the outer Task\'s fulfillent value.');
   });
 
-  Task.reject('error').run({
-    onRejected: e => {
-      t.equal(e, 'error', 'Task.reject should reject with the value passed to it.');
-    }
+  Task.of(20).chain(() => Task.reject('fail')).run(noop, (e) => {
+    t.equal(e, 'fail', 'should reject with the inner Task\'s rejection value')
+  });
+});
+
+test('Task#chainRejected', (t) => {
+  Task.reject(20).chainRejected((e) => Task.of(e * 20)).run((v) => {
+    t.equal(v, 400, 'should fulfill with the inner Task\'s fulfillment of the outer Task\'s rejection value.')
+    t.end();
   });
 
-  Task.of(20).map(v => v * v).run({
-    onFulfill: v => {
-      t.equal(v, 400, 'task.map should fulfill with mappend applied to parent Task\'s fulfillment value.');
-    }
-  });
-
-  Task.reject(20).mapRejected(v => v * v).run({
-    onRejected: v => {
-      t.equal(v, 400, 'task.mapRejected should reject with mappend applied to parent Task\'s rejection value.');
-    }
-  });
-
-  Task.of(20).chain(v => delayValue(v * v, 1000)).run({
-    onFulfill: v => {
-      t.equal(v, 400, 'task.chain should fulfill with the inner Task\'s fulfillment of the outer Task\'s fulfillent value.');
-    }
-  });
-
-  Task.of(20).chain(() => Task.reject('fail')).run({
-    onRejected: e => {
-      t.equal(e, 'fail', 'task.chain should reject with the inner Task\'s rejection value')
-    }
-  });
-  
-  Task.reject(20).chainRejected(e => Task.of(e * 20)).run({
-    onFulfill: v => {
-      t.equal(v, 400, 'task.chainRejected should fulfill with the inner Task\'s fulfillment of the outer Task\'s rejection value.')
-    }
-  });
-  
 });
 
 function delayValue(value, delay) {
