@@ -20,9 +20,9 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
-public class SingleTableRecordInstanceStream implements RecordStream {
+public class SingleTableRecordStream implements RecordStream {
 
-  private static final Logger LOG = Logger.getLogger(SingleTableRecordInstanceStream.class);
+  private static final Logger LOG = Logger.getLogger(SingleTableRecordStream.class);
 
   private AnswerValue _answerValue;
   private TableField _tableField;
@@ -31,7 +31,7 @@ public class SingleTableRecordInstanceStream implements RecordStream {
   private ResultList _resultList;
   private boolean _iteratorCalled;
 
-  public SingleTableRecordInstanceStream(AnswerValue answerValue, TableField tableField) throws WdkModelException {
+  public SingleTableRecordStream(AnswerValue answerValue, TableField tableField) throws WdkModelException {
     try {
       init(answerValue, tableField, answerValue.getTableFieldResultList(tableField));
     }
@@ -40,7 +40,7 @@ public class SingleTableRecordInstanceStream implements RecordStream {
     }
   }
 
-  public SingleTableRecordInstanceStream(AnswerValue answerValue, TableField tableField, ResultList resultList) {
+  public SingleTableRecordStream(AnswerValue answerValue, TableField tableField, ResultList resultList) {
     init(answerValue, tableField, resultList);
   }
 
