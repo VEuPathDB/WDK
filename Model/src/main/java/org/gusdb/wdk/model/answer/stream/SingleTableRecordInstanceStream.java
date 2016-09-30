@@ -1,9 +1,13 @@
 package org.gusdb.wdk.model.answer.stream;
 
+import static org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue.rawValuesDiffer;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,9 +19,10 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
 public class SingleTableRecordInstanceStream implements RecordStream {
+
+  private static final Logger LOG = Logger.getLogger(SingleTableRecordInstanceStream.class);
 
   private AnswerValue _answerValue;
   private TableField _tableField;
@@ -56,7 +61,9 @@ public class SingleTableRecordInstanceStream implements RecordStream {
     _iteratorCalled = true;
     try {
       if (_resultList.next()) {
-        _lastPkValues.set(AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField).getRawValues());
+        Map<String, Object> firstPk = AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField).getRawValues();
+        LOG.debug("First row PK = " + FormatUtil.prettyPrint(firstPk));
+        _lastPkValues.set(firstPk);
       }
       return new ReadOnlyIterator<RecordInstance>() {
         @Override
@@ -71,27 +78,30 @@ public class SingleTableRecordInstanceStream implements RecordStream {
 
           try {
             // start new record instance
-            Map<String, Object> recordPrimaryKeyValues = _lastPkValues.get();
-            RecordInstance record = new RecordInstance(_answerValue, recordPrimaryKeyValues);
-            record.getPrimaryKey().setValueContainer(record); // TODO: explore why we have to do this
+            Map<String, Object> currentRecordPkValues = _lastPkValues.get();
+            RecordInstance record = new RecordInstance(_answerValue, currentRecordPkValues);
             TableValue tableValue = new TableValue(_answerValue.getUser(), record.getPrimaryKey(), _tableField, true);
             record.addTableValue(tableValue);
   
             // add the row from the last call to next and clear lastPkValues
             tableValue.initializeRow(_resultList);
+            int rows = 1;
             _lastPkValues.set(null); // will reset if there is another record after this one
-            
+
             // loop through the ResultList's rows and add to table until PK values differ
             while (_resultList.next()) {
-              PrimaryKeyAttributeValue rowPrimaryKey = AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField);
-              Map<String,Object> newPkValues = rowPrimaryKey.getRawValues();
-              if (pksDiffer(recordPrimaryKeyValues, newPkValues)) {
+              Map<String,Object> rowPkValues = AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField).getRawValues();
+              LOG.debug("Will compare previous with " + FormatUtil.prettyPrint(rowPkValues));
+              if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
                 // save off next record's primary keys and return this record
-                _lastPkValues.set(newPkValues);
+                LOG.debug("New record's table; save off new record PKs and return record having table of size " + rows);
+                _lastPkValues.set(rowPkValues);
                 return record;
               }
               // otherwise add row to table value
               tableValue.initializeRow(_resultList);
+              rows++;
+              LOG.debug("Added row to current record's table.  Now " + rows + " rows.");
             }
   
             // if didn't already return, then this was the last record
@@ -106,15 +116,6 @@ public class SingleTableRecordInstanceStream implements RecordStream {
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Unable to initialize single-table record iterator", e);
     }
-  }
-
-  private static boolean pksDiffer(Map<String, Object> map1, Map<String, Object> map2) {
-    if (map1.size() != map2.size()) return false;
-    for (String key : map1.keySet()) {
-      if (!map2.containsKey(key)) return false;
-      if (!map2.get(key).equals(map1.get(key))) return false;
-    }
-    return true;
   }
 
   @Override
