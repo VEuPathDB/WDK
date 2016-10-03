@@ -68,8 +68,22 @@ class Seq<T> {
    */
   constructor(private iterable: Iterable<T>) { }
 
+  static from<T>(iterable: Iterable<T>) {
+    return new Seq(iterable);
+  }
+
   [Symbol.iterator]() {
     return this.iterable[Symbol.iterator]();
+  }
+
+  concat(thatIterable: Iterable<T>) {
+    let thisIterable = this.iterable;
+    return new Seq({
+      *[Symbol.iterator]() {
+        yield* thisIterable;
+        yield* thatIterable;
+      }
+    });
   }
 
   map<U>(fn: Mapper<T, U>) {
