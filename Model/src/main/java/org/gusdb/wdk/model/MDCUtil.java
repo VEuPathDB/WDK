@@ -74,6 +74,7 @@ public class MDCUtil {
     MDC.remove(LOG4J_IP_ADDRESS_KEY);
     MDC.remove(LOG4J_REQUESTED_DOMAIN_KEY);
     MDC.remove(LOG4J_SESSION_ID_KEY);
+    MDC.remove(LOG4J_SHORT_SESSION_ID_KEY);
     MDC.remove(LOG4J_REQUEST_ID_KEY);
   }
 
