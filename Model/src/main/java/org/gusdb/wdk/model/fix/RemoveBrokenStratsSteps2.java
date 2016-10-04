@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Date;
+import java.sql.Date;
 
 import javax.sql.DataSource;
 
@@ -108,10 +108,10 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
     
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     String analysisTable = userSchema + "step_analysis";
-    Date today = new Date();
+    Date today = new Date(new java.util.Date().getTime());
     String condition = "step_id IN (" + "  select * from (" +
         "  SELECT step_id              FROM           " + stepTable + 
-        "     WHERE create_time < (" + today + " - 1)" +   // step has to be 24+ hours old to be an orphan, for safety
+        "     WHERE create_time < ( to_date('" + today + "','yyyy-mm-dd') - 1)" +   // step has to be 24+ hours old to be an orphan, for safety
         "  MINUS SELECT root_step_id   FROM           " + strategyTable +
         "  MINUS SELECT left_child_id  FROM           " + stepTable +
         "  MINUS SELECT right_child_id FROM           " + stepTable +
@@ -120,7 +120,7 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
     String stepSql = "DELETE FROM " + stepTable + " WHERE " + condition;
     PreparedStatement psDeleteAnalyses = null;
     PreparedStatement psDeleteSteps = null;
-    
+    LOG.debug("\n" + stepSql + "\n");
     try {
       psDeleteAnalyses = SqlUtils.getPreparedStatement(dataSource, analysisSql);
       psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, stepSql);
@@ -130,7 +130,7 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
       do {
         // executeUpdate includes the commit
         countAnalysisDelete += psDeleteAnalyses.executeUpdate();
-        pageCount = psDeleteAnalyses.executeUpdate();
+        pageCount = psDeleteSteps.executeUpdate();
         countStepsDelete += pageCount;
       }
       while (pageCount != 0);
