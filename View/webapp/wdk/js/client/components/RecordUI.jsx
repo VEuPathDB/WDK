@@ -39,7 +39,7 @@ class RecordUI extends Component {
 
   componentWillUnmount() {
     this.unmonitorActiveSection();
-    window.removeEventListener('resize', this._scrollToActiveSection);
+    window.removeEventListener('resize', this._scrollToActiveSection, { passive: true });
   }
 
   monitorActiveSection() {

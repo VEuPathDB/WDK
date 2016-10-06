@@ -26,7 +26,7 @@ class RecordNavigationSection extends PureComponent {
   }
 
   componentWillUnmount() {
-    window.removeEventListener('scroll', this.setActiveCategory);
+    window.removeEventListener('scroll', this.setActiveCategory, { passive: true });
   }
 
   componentDidUpdate(previousProps) {
