@@ -63,6 +63,7 @@ public class SingleRecordQuestion extends Question {
     }
     setWdkModel(wdkModel);
     setRecordClass(parts.recordClass);
+    setName("Single" + parts.recordClass.getDisplayName());
     _dynamicAttributeSet = new DynamicAttributeSet();
     _dynamicAttributeSet.setQuestion(this);
   }
