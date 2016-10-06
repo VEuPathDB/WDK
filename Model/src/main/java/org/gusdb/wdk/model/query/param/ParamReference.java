@@ -26,7 +26,14 @@ public class ParamReference extends Reference {
       ParamReference paramRef, Query contextQuery) throws WdkModelException {
 
     String twoPartName = paramRef.getTwoPartName();
-    Param param = (Param) wdkModel.resolveReference(twoPartName);
+    Param param;
+    try {
+      param = (Param) wdkModel.resolveReference(twoPartName);
+    }
+    catch (WdkModelException e) {
+      throw new WdkModelException("Unable to resolve param reference '" + twoPartName +
+          "' referred to by context query '" + contextQuery.getFullName() + "'.", e);
+    }
     // clone the param to have different default values
     param = param.clone();
     param.setContextQuery(contextQuery);
