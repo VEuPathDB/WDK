@@ -3,10 +3,13 @@
  */
 package org.gusdb.wdk.model.record.attribute;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -91,9 +94,15 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   public String getDisplay() throws WdkModelException, WdkUserException {
     if (display == null) {
       if (valueContainer == null) {
-        // may happen if PK attribute value is created independently without container
-        // simply join PK values together
-        display = FormatUtil.join(pkValues.values().toArray(), ", ");
+        // may happen if PK attribute value is created independently without container;
+        // remove PROJECT_ID and join remaining PK values together
+        // FIXME: this implementation breaks PKs that are "generated" by other attributes;
+        //    not sure if this capability is really needed- seems like a PK should be independent
+        Object[] displayValues = Functions.pickKeys(pkValues, new Predicate<String>() {
+          @Override public boolean test(String key) {
+            return !Utilities.COLUMN_PROJECT_ID.equalsIgnoreCase(key);
+          }}).values().toArray();
+        display = FormatUtil.join(displayValues, ",");
       }
       else {
         try {
