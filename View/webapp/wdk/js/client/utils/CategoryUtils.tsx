@@ -200,9 +200,17 @@ export function findFirstLeafId(ontologyTreeRoot: CategoryNode): string {
 }
 
 /**
- * Returns an array of all the IDs of the leaf nodes in the passed tree
+ * Returns an array of all the IDs of the leaf nodes in the passed tree.  If the
+ * root has no children, this function assumes a "null" tree, and returns an empty array.
  */
 export function getAllLeafIds(ontologyTreeRoot: CategoryNode): string[] {
+  return (!nodeHasChildren(ontologyTreeRoot) ? [] : getAllLeafIdsNoCheck(ontologyTreeRoot));
+}
+
+/**
+ * Returns an array of all the IDs of the leaf nodes in the passed tree.
+ */
+function getAllLeafIdsNoCheck(ontologyTreeRoot: CategoryNode): string[] {
   let collectIds = (leafIds: string[], node: CategoryNode): string[] =>
     (!nodeHasChildren(node) ? leafIds.concat(getNodeId(node)) :
       getNodeChildren(node).reduce(collectIds, leafIds));
