@@ -1,9 +1,12 @@
-import { Component, PropTypes } from 'react';
+import { cloneElement, PropTypes } from 'react';
 import Page from '../components/Page';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
 import { wrapActions, PureComponent } from '../utils/componentUtils';
 
+/**
+ * Base class for all ViewContoller classes in WDK.
+ */
 class WdkViewController extends PureComponent {
 
   /*--------------- Methods that should probably be overridden ---------------*/
@@ -111,6 +114,12 @@ class WdkViewController extends PureComponent {
         this.state = this.getStateFromStore(this.store);
       }
     }
+    this.contextElement = makeContextElement({
+      store: this.store,
+      makeDispatchAction: this.props.makeDispatchAction,
+      dispatchAction: this.dispatchAction,
+      eventHandlers: this.eventHandlers
+    });
   }
 
   componentDidMount() {
@@ -140,45 +149,53 @@ class WdkViewController extends PureComponent {
   }
 
   /**
-   * Provides the context to be passed to this controller's children.  WDK
-   * components should never use context to access data, but if components are
-   * overridden and need to access data not passed to the replaced component
-   * (via props), the context can be used to read store data and dispatch
-   * actions to contact the server or load extra data into the store.
-   */
-  getChildContext() {
-    return {
-      store: this.store,
-      makeDispatchAction: this.props.makeDispatchAction,
-      dispatchAction: this.dispatchAction,
-      eventHandlers: this.eventHandlers
-    };
-  }
-
-  /**
    * Renders the page of this controller.  Subclasses may override, but may
    * save effort by overriding renderView() instead.  This method will call that
    * one but only after checking if data required for render has been not yet
    * fully loaded or has erred during loading.
    */
   render() {
+    let page;
     if (this.isRenderDataLoadError(this.state)) {
-      return ( <Page {...this.store.getState()} {...this.eventHandlers}><LoadError/></Page> );
+      page = ( <Page {...this.store.getState()} {...this.eventHandlers}><LoadError/></Page> );
     }
     else if (!this.isRenderDataLoaded(this.state)) {
-      return ( <Page {...this.store.getState()} {...this.eventHandlers}><Loading/></Page> );
+      page = ( <Page {...this.store.getState()} {...this.eventHandlers}><Loading/></Page> );
     }
     else {
-      return ( <Page {...this.store.getState()} {...this.eventHandlers}>{this.renderView(this.state, this.eventHandlers)}</Page> );
+      page = ( <Page {...this.store.getState()} {...this.eventHandlers}>{this.renderView(this.state, this.eventHandlers)}</Page> );
     }
+    return cloneElement(this.contextElement, null, page);
   }
 }
 
-WdkViewController.childContextTypes = {
-  store: PropTypes.object,
-  makeDispatchAction: PropTypes.func,
-  dispatchAction: PropTypes.func,
-  eventHandlers: PropTypes.object
-};
-
 export default WdkViewController;
+
+/**
+ * Helper to create the context provider React Element.
+ */
+function makeContextElement(context) {
+  /**
+   * Provides the context to be passed to this controller's children.  WDK
+   * components should never use context to access data, but if components are
+   * overridden and need to access data not passed to the replaced component
+   * (via props), the context can be used to read store data and dispatch
+   * actions to contact the server or load extra data into the store.
+   */
+  class WdkViewControllerContext extends PureComponent {
+    getChildContext() {
+      return context;
+    }
+    render() {
+      return this.props.children;
+    }
+  }
+  // TODO Remove makeDispatchAction and eventHandlers from context.
+  WdkViewControllerContext.childContextTypes = {
+    store: PropTypes.object,
+    makeDispatchAction: PropTypes.func,
+    dispatchAction: PropTypes.func,
+    eventHandlers: PropTypes.object
+  };
+  return <WdkViewControllerContext/>;
+}
