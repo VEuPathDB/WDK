@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { eq } from 'lodash';
 import {PropTypes} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, wrappable, PureComponent} from '../utils/componentUtils';
@@ -28,35 +29,48 @@ class DataTable extends PureComponent {
     let columnsChanged = didPropChange(this, prevProps, 'columns')
     let dataChanged = didPropChange(this, prevProps, 'data');
     let childRowChanged = didPropChange(this, prevProps, 'childRow');
-    let sortingChanged = didPropChange(this, prevProps, 'sorting');
+    let sortingChanged = didPropChange(this, prevProps, 'sorting') &&
+      eq(this.props.sorting, prevProps.sorting);
     let widthChanged = didPropChange(this, prevProps, 'width');
     let heightChanged = didPropChange(this, prevProps, 'height');
     let expandedRowsChanged = didPropChange(this, prevProps, 'expandedRows');
 
-    if (columnsChanged || dataChanged) {
+    this._isRedrawing = true;
+
+    if (columnsChanged || dataChanged || heightChanged) {
       this._destroy();
       this._setup();
     }
 
     else {
+      let needsRedraw = false;
+
       if (childRowChanged) {
         this._rerenderChildRows();
+        needsRedraw = true;
       }
+
       if (sortingChanged) {
         this._updateSorting();
+        needsRedraw = true;
       }
+
       if (widthChanged) {
         this._updateWidth();
+        needsRedraw = true;
       }
-      if (heightChanged) {
-        this._updateHeight();
-      }
+
       if (expandedRowsChanged) {
         this._updateExpandedRows();
+        needsRedraw = true;
       }
-      this._dataTable.draw();
+
+      if (needsRedraw) {
+        this._dataTable.draw();
+      }
     }
 
+    this._isRedrawing = false;
   }
 
   componentWillUnmount() {
@@ -78,7 +92,7 @@ class DataTable extends PureComponent {
       width
     } = this.props;
 
-    let columns = childRow != null
+    let columns = this.columns = childRow != null
       ? [ expandColumn, ...formatColumns(this.props.columns) ]
       : formatColumns(this.props.columns);
 
@@ -146,6 +160,16 @@ class DataTable extends PureComponent {
       this._updateChildRowClassNames();
       this._callExpandedRowsCallback();
     });
+
+    this._$table.on('order.dt', () => {
+      if (this._isRedrawing) return;
+
+      let sorting = this._dataTable.order().map(entry => ({
+        name: columns[entry[0]].data,
+        direction: entry[1].toUpperCase()
+      }));
+      this.props.onSortingChange(sorting);
+    });
   }
 
   _rerenderChildRows() {
@@ -155,16 +179,11 @@ class DataTable extends PureComponent {
   }
 
   _updateSorting() {
-    this._dataTable.order(formatSorting(this.props.sorting));
+    this._dataTable.order(formatSorting(this.columns, this.props.sorting));
   }
 
   _updateWidth() {
     this._$table.width(this.props.width);
-    this._dataTable.columns.adjust();
-  }
-
-  _updateHeight() {
-    this._$table.height(this.props.height);
     this._dataTable.columns.adjust();
   }
 
@@ -308,6 +327,8 @@ DataTable.propTypes = {
     direction: PropTypes.oneOf(['ASC', 'DESC']).isRequired
   })),
 
+  onSortingChange: PropTypes.func,
+
   /** width of the table - if a string, treated as a CSS unit; if a number, treated as px */
   width: CSSPropType,
 
@@ -346,6 +367,7 @@ DataTable.defaultProps = {
   height: undefined,
   searchable: true,
   sorting: [],
+  onSortingChange: () => {},
   onExpandedRowsChange: () => {}
 };
 

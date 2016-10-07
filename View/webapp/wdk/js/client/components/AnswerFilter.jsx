@@ -28,7 +28,7 @@ let AnswerFilter = React.createClass({
   },
 
   componentWillMount() {
-    this.handleFilter = debounce(this.handleFilter, 100);
+    this.handleFilter = debounce(this.handleFilter, 300);
   },
 
   componentDidUpdate(prevProps, prevState) {
