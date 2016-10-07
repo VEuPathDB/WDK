@@ -4,10 +4,7 @@ import * as i from '../../webapp/wdk/js/client/utils/IterableUtils';
 function integers() {
   return {
     *[Symbol.iterator]() {
-      let n = 1;
-      while (true) {
-        yield n++;
-      }
+      for (let n = 1;; n++) yield n;
     }
   };
 }

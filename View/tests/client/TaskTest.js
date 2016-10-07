@@ -50,7 +50,29 @@ test('Task#chainRejected', (t) => {
     t.equal(v, 400, 'should fulfill with the inner Task\'s fulfillment of the outer Task\'s rejection value.')
     t.end();
   });
+});
 
+test('Task.fromPromise', t => {
+  let cancel = Task.fromPromise(Promise.resolve(1))
+    .run(() => void t.fail('this should cancel'));
+  cancel();
+
+  Task.fromPromise(Promise.resolve(10))
+    .run(v => t.equals(v, 10, 'should resolve with Promise\'s resolve value'));
+
+  setTimeout(() => t.end(), 1000);
+});
+
+test('Task.cancel', t => {
+  t.plan(1);
+  let task = new Task(function(resolve) {
+    setTimeout(resolve, 100, 1);
+  });
+  let cancel = task.run(v => t.ok(v));
+  cancel();
+  setTimeout(function() {
+    t.ok(true);
+  }, 200);
 });
 
 function delayValue(value, delay) {

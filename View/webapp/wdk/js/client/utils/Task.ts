@@ -21,12 +21,29 @@ export class Task<T, E> {
     return new Task<void, E>((fulfill, reject) => void reject(e));
   }
 
+  static fromPromise<T, E>(p: Promise<T>) {
+    return new Task<T, E>(function(fulfill, reject) {
+      p.then(fulfill, reject);
+    });
+  }
+
   constructor(operation: Operation<T, E>) {
     this._operation = operation;
   }
 
   run(onFulfill: (t: T) => void = noop, onRejected: (e: E) => void = noop) {
-    return this._operation(onFulfill, onRejected);
+    let isCancelled = false;
+    function onFulfillProxy(t: T) {
+      if (!isCancelled) onFulfill(t);
+    }
+    function onRejectedProxy(e: E) {
+      if (!isCancelled) onRejected(e);
+    }
+    let _cancel = this._operation(onFulfillProxy, onRejectedProxy);
+    return function cance() {
+      isCancelled = true;
+      if (_cancel) (<CancelOperation>_cancel)();
+    }
   }
 
   map<U>(func: (t: T) => U) {
