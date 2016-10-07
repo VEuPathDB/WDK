@@ -75,6 +75,7 @@ let Answer = React.createClass({
     let firstRec = pagination.offset + 1;
     let lastRec = Math.min(pagination.offset + pagination.numRecords,
                              meta.responseCount, records.length);
+    let countPhrase = records.length ? `${firstRec} - ${lastRec} of ${meta.totalCount}` : 0;
 
     return (
       <div className="wdk-AnswerContainer">
@@ -83,7 +84,7 @@ let Answer = React.createClass({
         <div className="wdk-Answer">
           <AnswerFilter {...this.props}/>
           <p className="wdk-Answer-count">
-            Showing {firstRec} - {lastRec} of {meta.totalCount} {displayNamePlural}
+            Showing {countPhrase} {displayNamePlural}
           </p>
           <AnswerTable
             ref="records"
