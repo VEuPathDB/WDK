@@ -60,7 +60,7 @@ var SearchPage = React.createClass({
     };
     var store = this.props.data;
     var loadingStyle = ( !store.isLoading ? {"display":"none"} :
-      {"height":"60px","float":"right","marginRight":"60px"} );
+      {"height":"50px","float":"right","marginRight":"60px"} );
     return (
       <div>
         <h3>Choose a Search<img style={loadingStyle} src="images/loading.gif"/></h3>
@@ -108,6 +108,13 @@ var QuestionForm = React.createClass({
   changePageSize: function(event) {
     this.tryToSetPaging(this.props.data.pagination.pageNum, event.target.value);
   },
+  toggleAttributePane: function(event) {
+    this.props.ac.setAttributesVisible(!this.props.data.showAttributes);
+  },
+  toggleAttribute: function(attrName) {
+    var newAttrList = Util.toggleArrayItem(this.props.data.selectedAttributes, attrName);
+    this.props.ac.setSelectedAttributes(newAttrList);
+  },
   submitRequest: function() {
     var store = this.props.data;
     if (store.pagination.pageNum == null || store.pagination.pageSize == null) {
@@ -142,7 +149,7 @@ var QuestionForm = React.createClass({
               var param = store.paramValues[paramName];
               return (
                 <tr key={param.name}>
-                  <td>{param.displayName}</td>
+                  <td>{param.displayName}:</td>
                   <td><input type="text" data-name={param.name} value={param.value} onChange={changeParamFunction}/></td>
                 </tr>
               );
@@ -151,15 +158,56 @@ var QuestionForm = React.createClass({
         </table>
         <hr/>
         <div>
-          <label>Page To Display:</label>
-          <input type="text" value={pageNum} onChange={this.changePageNum}/>
+          <table>
+            <tbody>
+              <tr>
+                <td>Page To Display:</td>
+                <td><input type="text" value={pageNum} onChange={this.changePageNum}/></td>
+              </tr>
+              <tr>
+                <td>Page Size:</td>
+                <td><input type="text" value={pageSize} onChange={this.changePageSize}/></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <hr/>
         <div>
-          <label>Page Size:</label>
-          <input type="text" value={pageSize} onChange={this.changePageSize}/>
+          <label>
+            Select Attributes (
+            <span style={{textDecoration:'underline',color:'blue',cursor:'pointer'}} onClick={this.toggleAttributePane}>
+              {store.showAttributes ? "hide" : "show"}
+            </span>
+          )</label><br/>
+          <div style={{marginLeft:'2em', display: (store.showAttributes ? 'block' : 'none')}}>
+            <AttributeCheckboxList allAttributes={store.allAttributes}
+                selectedAttributes={store.selectedAttributes} onChange={this.toggleAttribute}/>
+          </div>
         </div>
         <hr/>
         <input type="button" value="Submit Request" onClick={this.submitRequest}/>
+      </div>
+    );
+  }
+});
+
+var AttributeCheckboxList = React.createClass({
+  render: function() {
+    var allAttributes = this.props.allAttributes;
+    var selectedAttributes = this.props.selectedAttributes;
+    var onChange = this.props.onChange;
+    return (
+      <div>
+        {allAttributes.map(function(attr){
+          var checked = (selectedAttributes.indexOf(attr.name) != -1);
+          return (
+            <div key={attr.name}>
+              <input type="checkbox" value={attr.name} checked={checked}
+                onChange={function(event){ onChange(attr.name); }}/>
+              <span>{attr.displayName}</span>
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -169,7 +217,7 @@ var QuestionJson = React.createClass({
   render: function() {
     var data = this.props.data;
     var formattedJson = JSON.stringify(Util.getAnswerRequestJson(
-      data.selectedQuestion, data.paramValues, data.pagination), null, 2);
+      data.selectedQuestion, data.paramValues, data.pagination, data.selectedAttributes), null, 2);
     return ( <div><pre>{formattedJson}</pre></div> );
   }
 });
@@ -196,7 +244,7 @@ var AnswerResults = React.createClass({
       <div>
         <div style={{"margin":"20px 0"}}>
           <strong>
-            Query returned {meta.totalCount} total records of type {meta.recordClass}.<br/>
+            Query returned {meta.totalCount} total records of type {meta.recordClassName}.<br/>
             Showing {records.length} records on page {this.props.resultStats.pageNum}.
           </strong>
         </div>
