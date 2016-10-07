@@ -22,7 +22,7 @@ class AnswerController extends WdkViewController {
       updateFilter,
       moveColumn,
       changeAttributes,
-      sort: (...args) => sort(this.state, ...args)
+      sort
     };
   }
 

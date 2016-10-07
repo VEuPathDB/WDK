@@ -25,6 +25,8 @@
   padding: .5em;
   width: 30em;
   margin-right: 1em;
+  border: 1px solid #888;
+  background: #fafaf9;
 }
 .wdk-Answer-filterSelectFieldsIcon,
 .wdk-Answer-filterSelectFieldsIcon:active,
@@ -93,14 +95,6 @@
   margin-top: 1em;
 }
 
-.wdk-AnswerTable td, .wdk-AnswerTable th {
-  padding: .5em;
-  min-width: 100px;
-}
-.wdk-AnswerTable td {
-  border: 1px dotted #cccccc;
-}
-
 .wdk-AnswerTable-header {
   display: inline-block;
   overflow: hidden;
@@ -118,16 +112,7 @@
 }
 
 .wdk-AnswerTable th {
-  border: 1px solid #cccccc;
-  font-weight: bold;
-  background-color: #f3f3f3;
   white-space: nowrap;
-  text-align: left;
-  cursor: pointer;
-}
-
-.wdk-AnswerTable th .ui-icon {
-  display: inline-block;
 }
 
 .wdk-AnswerTable-AttributeSelectorOpenButton {

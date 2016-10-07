@@ -3,6 +3,7 @@ import {pick} from 'lodash';
 export let actionTypes = {
   ANSWER_ADDED: 'answer/added',
   ANSWER_CHANGE_ATTRIBUTES: 'answer/attributes-changed',
+  ANSWER_SORTING_UPDATED: 'answer/sorting-updated',
   ANSWER_LOADING: 'answer/loading',
   ANSWER_MOVE_COLUMN: 'answer/column-moved',
   ANSWER_UPDATE_FILTER: 'answer/filtered',
@@ -107,31 +108,11 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
  * @param {Object} attribute Record attribute field
  * @param {string} direction Can be 'ASC' or 'DESC'
  */
-export function sort(state, attribute, direction) {
-  let { question, recordClass, displayInfo, parameters } = state;
-
-  // use the current question and recordclass URL segments
-  let questionName = question.urlSegment;
-  let recordClassName = recordClass.urlSegment;
-
-  // create the new sort from params
-  let attributeName = attribute.name;
-  let newSort = { attributeName, direction };
-
-  // create a new array by removing existing sort def for attribute
-  // and adding the new sort def to the beginning of the array, only
-  // retaining the last three defs
-  let retainedSorting = displayInfo.sorting
-    .filter(spec => spec.attributeName !== attributeName)
-    .slice(0, 2);
-  let sorting = [newSort].concat(retainedSorting);
-
-  // construct new opts from old, overriding old sorting with new
-  let newDisplayInfo = Object.assign({}, displayInfo, { sorting });
-  let newParameters = parameters;
-  let opts = { displayInfo: newDisplayInfo, parameters: newParameters };
-
-  return loadAnswer(questionName, recordClassName, opts);
+export function sort(sorting) {
+  return {
+    type: actionTypes.ANSWER_SORTING_UPDATED,
+    payload: { sorting }
+  };
 }
 
 /**

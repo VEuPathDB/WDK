@@ -36,6 +36,9 @@ export default class AnswerViewStore extends WdkStore {
       case actionTypes.ANSWER_CHANGE_ATTRIBUTES:
         return updateVisibleAttributes(state, payload);
 
+      case actionTypes.ANSWER_SORTING_UPDATED:
+        return updateSorting(state, payload);
+
       case actionTypes.ANSWER_LOADING:
         return answerLoading(state, { isLoading: true });
 
@@ -70,7 +73,7 @@ function addAnswer(state, payload) {
   let visibleAttributes = state.visibleAttributes;
   if (!visibleAttributes || state.meta.recordClassName !== answer.meta.recordClassName) {
     // need to populate attribute details for visible attributes
-    visibleAttributes = answer.meta.attributes.map(attrName => {
+    visibleAttributes = question.defaultAttributes.map(attrName => {
       // first try to find attribute in record class
       let value = allAttributes.find(attr => attr.name === attrName);
       if (value === null) {
@@ -139,6 +142,12 @@ function updateVisibleAttributes(state, { attributes }) {
   // Create a new copy of state
   return Object.assign({}, state, {
     visibleAttributes
+  });
+}
+
+function updateSorting(state, { sorting }) {
+  return Object.assign({}, state, {
+    displayInfo: Object.assign({}, state.displayInfo, { sorting })
   });
 }
 
