@@ -20,7 +20,10 @@ var Store = function(dispatcher, initialValue) {
     results: null,
     resultStats: null,
     pagination: { pageNum: 1, pageSize: 10 },
-    isLoading: false
+    isLoading: false,
+    showAttributes: false,
+    allAttributes: [],
+    selectedAttributes: []
   };
   var _registeredCallbacks = [];
 
@@ -45,14 +48,20 @@ var Store = function(dispatcher, initialValue) {
     //   { actionType: ActionType, data: Any }
     switch(payload.actionType) {
       case ActionType.CHANGE_QUESTION_ACTION:
-        // data is from QuestionFormatter
-        _data.selectedQuestion = payload.data;
-        _data.paramOrdering = payload.data.parameters.map(function(p) { return p.name; });
+        // quesiton data is from QuestionFormatter
+        _data.selectedQuestion = payload.data.question;
+        _data.paramOrdering = payload.data.question.parameters.map(function(p) { return p.name; });
         _data.paramValues = {};
-        payload.data.parameters.forEach(function(param) {
+        payload.data.question.parameters.forEach(function(param) {
           _data.paramValues[param.name] = param;
           _data.paramValues[param.name].value = param.defaultValue;
         });
+        // set up attributes
+        _data.showAttributes = false;
+        _data.allAttributes = [].concat(
+            payload.data.question.dynamicAttributes,
+            payload.data.recordClass.attributes);
+        _data.selectedAttributes = payload.data.question.defaultAttributes;
         // clear results
         _data.results = null;
         _data.resultStats = null;
@@ -65,16 +74,25 @@ var Store = function(dispatcher, initialValue) {
         // data is { pageNum: Number, pageSize: Number }
         _data.pagination = payload.data;
         break;
+      case ActionType.SET_ATTRIBUTES_VISIBLE:
+        // data is Boolean (true if visible)
+        _data.showAttributes = payload.data;
+        break;
+      case ActionType.SET_SELECTED_ATTRIBUTES:
+        // data is String[] representing new selected attributes
+        _data.selectedAttributes = payload.data.slice();
+        break;
       case ActionType.CHANGE_RESULTS_ACTION:
         // data is { results: Any }
         _data.results = payload.data;
         _data.resultStats = { pageNum: _data.pagination.pageNum };
         break;
       case ActionType.SET_LOADING_ACTION:
-        // data is Boolean
+        // data is Boolean (true if loading)
         _data.isLoading = payload.data;
+        break;
       default:
-        // this store does not support other actions
+        // this store does not support any other actions
     }
     // then alert registered views of change
     updateRegisteredViews();
