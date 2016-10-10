@@ -27,7 +27,7 @@ public class UserDatasetFormatter {
       if (!expand) datasetsJson.put(datasetId);
       else {
         UserDataset dataset = userDatasetsMap.get(datasetId);
-        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset);
+        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset, null);
         datasetsJson.put(getUserDatasetJson(dataset, compat, userDatasetStore));
       }
     }
