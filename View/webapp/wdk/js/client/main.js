@@ -30,9 +30,12 @@ import * as Controllers from './controllers';
  *   Element and returns a React Element.
  * @param {Object} options.storeWrappers Mapping from store name to replacement
  *   class
+ * @param {Function} options.onLocationChange Callback function called whenever
+ *   the location of the page changes. The function is called with a Location
+ *   object.
  */
 export function initialize(options) {
-  let { rootUrl, rootElement, endpoint, wrapRoutes, storeWrappers } = options;
+  let { rootUrl, rootElement, endpoint, wrapRoutes, storeWrappers, onLocationChange } = options;
   // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
   let dispatcher = new Dispatcher();
@@ -58,7 +61,8 @@ export function initialize(options) {
             rootUrl,
             makeDispatchAction,
             stores,
-            wrapRoutes
+            wrapRoutes,
+            onLocationChange
           });
         ReactDOM.render(applicationElement, container);
       }
