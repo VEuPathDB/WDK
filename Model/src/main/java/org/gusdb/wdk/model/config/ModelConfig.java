@@ -134,6 +134,11 @@ public class ModelConfig implements OAuthConfig {
   private String keyStorePassPhrase = "";
   
   /**
+   * Specifies the directory within which the wdk will house temporary files.
+   */
+  private String wdkTempDir;
+  
+  /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
    * 
    * @return
@@ -486,6 +491,7 @@ public class ModelConfig implements OAuthConfig {
   public String getAdminEmail() {
     return FormatUtil.join(adminEmails.toArray(), ",");
   }
+  
 
   /**
    * @param adminEmail comma-delimited list of admin email addresses
@@ -551,6 +557,14 @@ public class ModelConfig implements OAuthConfig {
    */
   public ModelConfigUserDatasetStore getUserDatasetStoreConfig() {
     return userDatasetStoreConfig;
+  }
+
+  public String getWdkTempDir() {
+	return wdkTempDir;
+  }
+
+  public void setWdkTempDir(String wdkTempDir) {
+	this.wdkTempDir = wdkTempDir;
   }
 
 }

@@ -20,6 +20,7 @@
             <optional>
                 <attribute name="adminEmail" />
             </optional>
+            <attribute name="wdkTempDir" />
             <optional>
                 <attribute name="useWeights">
                     <data type="boolean" />
