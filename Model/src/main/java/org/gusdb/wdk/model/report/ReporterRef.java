@@ -1,7 +1,4 @@
-/**
- * 
- */
-package org.gusdb.wdk.model.answer.report;
+package org.gusdb.wdk.model.report;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +12,6 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.ScopedField;
-import org.gusdb.wdk.model.report.Reporter;
 
 /**
  * A reference to the download Reporter class. the full class name of the
@@ -33,9 +29,9 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   private String name;
   private String displayName;
+  private String scopes;
   private String description;
   private String implementation;
-  private String scopes;
   private boolean inReportMaker = true;
   private List<WdkModelText> propertyList = new ArrayList<>();
   private Map<String, String> properties = new LinkedHashMap<>();

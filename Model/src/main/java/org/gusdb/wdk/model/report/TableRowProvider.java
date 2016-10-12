@@ -1,72 +1,62 @@
 package org.gusdb.wdk.model.report;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
-//import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.report.AbstractTabularReporter.RowsProvider;
 
+public class TableRowProvider implements RowsProvider {
 
-public class TableRowProvider implements TabularReporterRowsProvider {
-  //  private static final Logger logger = Logger.getLogger(TableRowProvider.class);
+  private final RecordInstance _record;
+  private final TableField _tableField;
 
-  AnswerValue answerValuePage;
-  private TableField tableField;
-  private boolean hasNext;
-  private ResultList resultList;
- 
-  TableRowProvider(AnswerValue answerValuePage, TableField tableField) {
-    this.answerValuePage = answerValuePage;
-    this.tableField = tableField;
+  public TableRowProvider(RecordInstance record, TableField tableField) {
+    _record = record;
+    _tableField = tableField;
   }
 
-  private ResultList getResultList() throws WdkModelException, WdkUserException {
-    if (resultList == null) 
-      resultList =  answerValuePage.getTableFieldResultList(tableField);
-    return resultList;
-  }
-   
-  // play games with flags to workaround ResultList not having a hasNext() method
   @Override
-  public boolean hasNext() throws WdkModelException, WdkUserException {
-    if (!hasNext) hasNext = getResultList().next();
-    return hasNext;
-  }
-  
-  @Override
-  public List<Object> next() throws WdkModelException, WdkUserException {
-    if (!hasNext()) throw new NoSuchElementException();
-    hasNext = false;
-    ResultList resultList = getResultList();
-
-    // make a tableValueRow for this row in the result set.  provides the record's formatting of a row in this table
-    PrimaryKeyAttributeValue primaryKey = AnswerValue.getPrimaryKeyFromResultList(resultList, answerValuePage.getPrimaryKeyAttributeField());
-    TableValueRow tableValueRow = new TableValueRow(primaryKey, tableField);
-    tableValueRow.initializeFromResultList(resultList);
-
-    List<Object> values = new ArrayList<Object>();
-    values.add(primaryKey.getDisplay());
-
-    AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
-    for (AttributeField field : fields) {
-      Object value = tableValueRow.get(field.getName());
-      values.add((value == null) ? "N/A" : value);
+  public Iterator<List<Object>> iterator() {
+    try {
+      return IteratorUtil.transform(
+          _record.getTableValue(_tableField.getName()).iterator(),
+          getTableRowConverter(_record, _tableField));
     }
-    return values;
+    catch (WdkModelException | WdkUserException e) {
+      throw new WdkRuntimeException("Unable to create iterator over table rows for table " + _tableField.getName(), e);
+    }
   }
 
-  @Override
-  public void close() throws WdkModelException, WdkUserException {
-    getResultList().close();
+  private static Function<Map<String,AttributeValue>,List<Object>> getTableRowConverter(
+      final RecordInstance record, final TableField tableField) {
+    return new Function<Map<String,AttributeValue>,List<Object>>() {
+      @Override public List<Object> apply(Map<String, AttributeValue> tableRow) {
+        try {
+          List<Object> values = new ArrayList<Object>();
+          values.add(record.getPrimaryKey().getDisplay());
+          AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
+          for (AttributeField field : fields) {
+            AttributeValue attrValue = tableRow.get(field.getName());
+            values.add((attrValue == null) ? "N/A" : attrValue.getValue());
+          }
+          return values;
+        }
+        catch (WdkUserException | WdkModelException e) {
+          throw new WdkRuntimeException("Unable to create value row for table " + tableField.getName(), e);
+        }
+      }
+    };
   }
-  
 }

@@ -1,6 +1,6 @@
 package org.gusdb.wdk.controller;
 
-import java.io.IOException;
+import static org.gusdb.wdk.model.ThreadMonitor.getThreadMonitorConfig;
 
 import javax.servlet.ServletContext;
 
@@ -8,11 +8,10 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.xml.sax.SAXException;
 
 public class WdkInitializer {
 
@@ -23,12 +22,33 @@ public class WdkInitializer {
       MDCUtil.setNonRequestThreadVars("init");
       LOG.info("Initializing WDK web application");
 
+      // get gus home and set on context
       String gusHome = GusHome.webInit(servletContext);
-      String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
-      String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
-      String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
+      servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
 
-      initMemberVars(servletContext, projectId, gusHome, alwaysGoToSummary, loginUrl);
+      LOG.info("Initializing model...");
+      String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+      WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
+
+      LOG.info("Initialized model object.  Setting on servlet context.");
+      servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModelBean);
+
+      // Set assetsUrl attribute. It will be null if not defined in the model
+      servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY,
+          wdkModel.getModelConfig().getAssetsUrl());
+
+      // assign select init parameters as context attributes
+      assignInitParamToAttribute(servletContext, CConstants.WDK_ALWAYSGOTOSUMMARY_KEY);
+      assignInitParamToAttribute(servletContext, CConstants.WDK_LOGIN_URL_KEY);
+
+      // load wizard
+      LOG.info("Loading wizard configuration.");
+      Wizard wizard = Wizard.loadWizard(gusHome, wdkModelBean);
+      servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
+
+      // start up thread monitor
+      ThreadMonitor.start(getThreadMonitorConfig(wdkModel));
 
       LOG.info("WDK web application initialization complete.");
     }
@@ -44,6 +64,9 @@ public class WdkInitializer {
     try {
       MDCUtil.setNonRequestThreadVars("term");
       LOG.info("Terminating WDK web application");
+
+      // shut down thread monitor
+      ThreadMonitor.shutDown();
 
       WdkModelBean wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
@@ -61,30 +84,11 @@ public class WdkInitializer {
     }
   }
 
-  private static void initMemberVars(ServletContext servletContext, String projectId,
-      String gusHome, String alwaysGoToSummary, String loginUrl)
-          throws WdkModelException, IOException, SAXException {
-
-    LOG.info("Initializing model...");
-    WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
-    WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
-
-    LOG.info("Initialized model object.  Setting on servlet context.");
-    servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-
-    // Set assetsUrl attribute. It will be null if not defined in the model
-    servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, wdkModel.getModel().getModelConfig().getAssetsUrl());
-
-    // load wizard
-    LOG.info("Loading wizard configuration.");
-    Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
-    servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
-    servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY, alwaysGoToSummary);
-    servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
-    servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
-  }
-
   public static WdkModelBean getWdkModel(ServletContext servletContext) {
     return (WdkModelBean)servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+  }
+
+  private static void assignInitParamToAttribute(ServletContext servletContext, String key) {
+    servletContext.setAttribute(key, servletContext.getInitParameter(key));
   }
 }

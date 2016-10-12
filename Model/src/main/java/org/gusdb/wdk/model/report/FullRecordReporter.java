@@ -1,39 +1,30 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.report;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.FieldScope;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.json.JSONException;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
@@ -43,360 +34,218 @@ import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author xingao
- * 
  */
 public class FullRecordReporter extends StandardReporter {
 
-    private static Logger logger = Logger.getLogger(FullRecordReporter.class);
+  private static Logger LOG = Logger.getLogger(FullRecordReporter.class);
 
-    private static final String NEW_LINE = System.getProperty("line.separator");
-
-    public static final String PROPERTY_TABLE_CACHE = "table_cache";
-    public static final String PROPERTY_RECORD_ID_COLUMN = "record_id_column";
-
-    private String tableCache;
-    private String recordIdColumn;
-
-    private String sqlInsert;
-    private String sqlQuery;
-
-    public FullRecordReporter(AnswerValue answerValue, int startIndex,
-            int endIndex) {
-        super(answerValue, startIndex, endIndex);
+  private static final Function<TableValue, TwoTuple<Integer,String>> tableFormatter =
+      new Function<TableValue, TwoTuple<Integer,String>>() {
+    @Override public TwoTuple<Integer, String> apply(TableValue tableValue) {
+      return formatTable(tableValue);
     }
+  };
 
-    /**
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#setProperties(java.util.Map)
-     */
-    @Override
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
-        super.setProperties(properties);
+  private TableCache _tableCache = null;
 
-        tableCache = properties.get(PROPERTY_TABLE_CACHE);
+  public FullRecordReporter(AnswerValue answerValue) {
+    super(answerValue);
+  }
 
-        // check required properties
-        recordIdColumn = properties.get(PROPERTY_RECORD_ID_COLUMN);
-        logger.info(" tableCache:" + tableCache + "recordIdColumn: "
-                + recordIdColumn);
-        if (tableCache != null && recordIdColumn == null)
-            throw new WdkModelException("The required property for reporter "
-                    + this.getClass().getName() + ", "
-                    + PROPERTY_RECORD_ID_COLUMN + ", is missing");
+  @Override
+  public void setProperties(Map<String, String> properties) throws WdkModelException {
+    super.setProperties(properties);
+    String cacheTableName = TableCache.getCacheTableName(properties);
+    if (cacheTableName != null) {
+      _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#getHttpContentType()
-     */
-    @Override
-    public String getHttpContentType() {
-        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-            return "text/plain";
-        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-            return "application/pdf";
-        } else { // use the default content type defined in the parent class
-            return super.getHttpContentType();
-        }
+  @Override
+  public String getHttpContentType() {
+    switch (getStandardConfig().getAttachmentType()) {
+      case "text":
+        return "text/plain";
+      case "pdf":
+        return "application/pdf";
+      default:
+        return super.getHttpContentType();
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#getDownloadFileName()
-     */
-    @Override
-    public String getDownloadFileName() {
-        logger.info("Internal format: " + reporterConfig.getAttachmentType());
-        String name = getQuestion().getName();
-        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-            return name + "_detail.txt";
-        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-            return name + "_detail.pdf";
-        } else { // use the default file name defined in the parent
-            return super.getDownloadFileName();
-        }
+  @Override
+  public String getDownloadFileName() {
+    String name = getQuestion().getName();
+    switch (getStandardConfig().getAttachmentType()) {
+      case "text":
+        return name + "_detail.txt";
+      case "pdf":
+        return name + "_detail.pdf";
+      default:
+        return super.getDownloadFileName();
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
-     */
-    @Override
-    public void write(OutputStream out) throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-
-        // get the columns that will be in the report
-        Set<Field> fields = validateColumns();
-
-        Set<AttributeField> attributes = new LinkedHashSet<AttributeField>();
-        Set<TableField> tables = new LinkedHashSet<TableField>();
-        for (Field field : fields) {
-            if (field instanceof AttributeField) {
-                attributes.add((AttributeField) field);
-            } else if (field instanceof TableField) {
-                tables.add((TableField) field);
-            }
-        }
-
-        if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-            formatRecord2PDF(attributes, tables, out);
-            return;
-
-        }
-
-        // get the formatted result
-        WdkModel wdkModel = getQuestion().getWdkModel();
-        RecordClass recordClass = getQuestion().getRecordClass();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-
-        // construct the insert sql
-        StringBuffer sqlInsert = new StringBuffer("INSERT INTO ");
-        sqlInsert.append(tableCache).append(" (wdk_table_id, ");
-        for (String column : pkColumns) {
-            sqlInsert.append(column).append(", ");
-        }
-        sqlInsert.append(" table_name, row_count, content) VALUES (");
-        sqlInsert.append(wdkModel.getUserDb().getPlatform()
-            .getNextIdSqlExpression("apidb", "wdkTable"));
-        sqlInsert.append(", ");
-        for (int i = 0; i < pkColumns.length; i++) {
-            sqlInsert.append("?, ");
-        }
-        sqlInsert.append("?, ?, ?)");
-
-        // construct the query sql
-        StringBuffer sqlQuery = new StringBuffer("SELECT ");
-        sqlQuery.append("count(*) AS cache_count FROM ").append(tableCache);
-        sqlQuery.append(" WHERE ");
-        for (String column : pkColumns) {
-            sqlQuery.append(column).append(" = ? AND ");
-        }
-        sqlQuery.append(" table_name = ?");
-
-        this.sqlInsert = sqlInsert.toString();
-        this.sqlQuery = sqlQuery.toString();
-        PreparedStatement psInsert = null;
-        PreparedStatement psQuery = null;
-        try {
-            if (tableCache != null) {
-                // want to cache the table content
-                DataSource dataSource = wdkModel.getAppDb().getDataSource();
-                psInsert = SqlUtils.getPreparedStatement(dataSource,
-                        sqlInsert.toString());
-                psQuery = SqlUtils.getPreparedStatement(dataSource,
-                        sqlQuery.toString());
-            }
-            int recordCount = 0;
-
-            // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            for (AnswerValue pageAnswer : this) {
-                for (RecordInstance record : pageAnswer.getRecordInstances()) {
-                    // print out attributes of the record first
-                    formatAttributes(record, attributes, writer);
-
-                    // print out tables
-                    formatTables(record, tables, writer, pageAnswer, psInsert,
-                            psQuery);
-
-                    writer.println();
-                    writer.println("------------------------------------------------------------");
-                    writer.println();
-                    writer.flush();
-
-                    // count the records processed so far
-                    recordCount++;
-                    if (recordCount % 100 == 0) {
-                        logger.info(recordCount + " records dumped so far");
-                    }
-                }
-            }
-            logger.info("Totally " + recordCount + " records dumped");
-        } finally {
-            SqlUtils.closeStatement(psQuery);
-            SqlUtils.closeStatement(psInsert);
-        }
+  @Override
+  public void write(OutputStream out) throws WdkModelException {
+    try (RecordStream records = getRecords()) {
+      if (getStandardConfig().getAttachmentType().equals("pdf")) {
+        formatRecord2PDF(out, records, getSelectedAttributes(), getSelectedTables(),
+            getStandardConfig().getIncludeEmptyTables());
+      }
+      else {
+        formatRecord2Text(out, records, getSelectedAttributes(), getSelectedTables(),
+            getStandardConfig().getIncludeEmptyTables(), _tableCache);
+      }
     }
+    catch (Exception e) {
+      throw new WdkModelException("Unable to write full record report", e);
+    }
+  }
 
+  private static void formatRecord2Text(OutputStream out, Iterable<RecordInstance> records,
+    Set<AttributeField> selectedAttributes, Set<TableField> selectedTables,
+    boolean includeEmptyTables, TableCache tableCache)
+        throws SQLException, WdkModelException, WdkUserException {
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    try {
+      if (tableCache != null) {
+        tableCache.open();
+      }
+      int recordCount = 0;
+      for (RecordInstance record : records) {
 
-    private void formatAttributes(RecordInstance record,
-            Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException, WdkUserException {
         // print out attributes of the record first
-        for (AttributeField field : attributes) {
-            AttributeValue value = record.getAttributeValue(field.getName());
-            writer.println(field.getDisplayName() + ": " + value);
-        }
-        // print out attributes of the record first
+        formatAttributes(record, selectedAttributes, writer);
+
+        // print out tables (may get table formatting from cache)
+        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, tableFormatter);
+
+        writer.println();
+        writer.println("------------------------------------------------------------");
         writer.println();
         writer.flush();
-    }
 
-    private void formatTables(RecordInstance record, Set<TableField> tables,
-            PrintWriter writer, AnswerValue answerValue,
-            PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, WdkUserException {
-        DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
-        RecordClass recordClass = record.getRecordClass();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        // count the records processed so far
+        recordCount++;
+        if (recordCount % 100 == 0) {
+          LOG.info(recordCount + " records dumped so far");
+        }
+      }
+      LOG.info("Totally " + recordCount + " records dumped");
+    }
+    finally {
+      if (tableCache != null) {
+        tableCache.close();
+      }
+    }
+  }
+
+  private static void formatAttributes(RecordInstance record, Set<AttributeField> attributes, PrintWriter writer)
+      throws WdkModelException, WdkUserException {
+    // print out attributes of the record first
+    for (AttributeField field : attributes) {
+      AttributeValue value = record.getAttributeValue(field.getName());
+      writer.println(field.getDisplayName() + ": " + value);
+    }
+    // print out attributes of the record first
+    writer.println();
+    writer.flush();
+  }
+
+  /**
+   * Returns a tuple of table_size (# of rows) and formatted string
+   * 
+   * @param tableValue table value for one row
+   * @return table size and formatted table
+   * @throws WdkRuntimException if unable to format table
+   */
+  private static TwoTuple<Integer,String> formatTable(TableValue tableValue) {
+    try {
+      TableField table = tableValue.getTableField();
+      AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+      // output table header
+      StringBuffer sb = new StringBuffer();
+      sb.append("Table: " + table.getDisplayName() + NL);
+      for (AttributeField attribute : fields) {
+        sb.append("[").append(attribute.getDisplayName()).append("]\t");
+      }
+      sb.append(NL);
+  
+      int tableSize = 0;
+      for (Map<String, AttributeValue> row : tableValue) {
+        tableSize++;
+        for (AttributeField field : fields) {
+          AttributeValue value = row.get(field.getName());
+          sb.append(value.getValue()).append("\t");
+        }
+        sb.append(NL);
+      }
+      return new TwoTuple<Integer, String>(tableSize, sb.toString());
+    }
+    catch (WdkModelException | WdkUserException e) {
+      throw new WdkRuntimeException("Unable to format table value", e);
+    }
+  }
+
+  private static void formatRecord2PDF(OutputStream out, Iterable<RecordInstance> records,
+      Set<AttributeField> attributes, Set<TableField> tables, boolean includeEmptyTables)
+          throws WdkModelException, WdkUserException {
+
+    LOG.info("format2PDF>>>");
+    Document document = new Document(PageSize.LETTER.rotate());
+
+    try {
+      PdfWriter pwriter = PdfWriter.getInstance(document, out);
+      document.open();
+
+      for (RecordInstance record : records) {
+        // print out attributes of the record first
+        for (AttributeField field : attributes) {
+          AttributeValue value = record.getAttributeValue(field.getName());
+          document.add(new Paragraph(field.getDisplayName() + ": " + value));
+        }
 
         // print out tables of the record
-        boolean needUpdate = false;
         for (TableField table : tables) {
-            TableValue tableValue = record.getTableValue(table.getName());
+          TableValue tableValue = record.getTableValue(table.getName());
 
-            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+          // check if table is empty
+          Iterator<Map<String, AttributeValue>> iterator = tableValue.iterator();
+          if (!includeEmptyTables && !iterator.hasNext()) {
+            continue;
+          }
 
-            // output table header
-            StringBuffer sb = new StringBuffer();
-            sb.append("Table: " + table.getDisplayName() + NEW_LINE);
-            for (AttributeField attribute : fields) {
-                sb.append("[").append(attribute.getDisplayName()).append("]\t");
+          AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+
+          // output table header
+          document.add(new Paragraph("Table: " + table.getDisplayName()));
+          int NumColumns = fields.length;
+          PdfPTable datatable = new PdfPTable(NumColumns);
+          for (AttributeField attribute : fields) {
+            datatable.addCell("" + attribute.getDisplayName() + "");
+          }
+
+          datatable.setHeaderRows(1);
+
+          while (iterator.hasNext()) {
+            Map<String, AttributeValue> row = iterator.next();
+            for (String fieldName : row.keySet()) {
+              AttributeValue value = row.get(fieldName);
+              Object objValue = value.getValue();
+              if (objValue == null)
+                objValue = "";
+              datatable.addCell(objValue.toString());
             }
-            sb.append(NEW_LINE);
-
-            int tableSize = 0;
-            for (Map<String, AttributeValue> row : tableValue) {
-                tableSize++;
-                for (AttributeField field : fields) {
-                    AttributeValue value = row.get(field.getName());
-                    sb.append(value.getValue()).append("\t");
-                }
-                sb.append(NEW_LINE);
-            }
-            String content = sb.toString();
-
-            // check if the record has been cached
-            if (tableCache != null) {
-                Map<String, String> pkValues = record.getPrimaryKey().getValues();
-                long start = System.currentTimeMillis();
-                for (int index = 1; index <= pkColumns.length; index++) {
-                    Object value = pkValues.get(pkColumns[index - 1]);
-                    psQuery.setObject(index, value);
-                }
-                psQuery.setString(pkColumns.length + 1, table.getName());
-                ResultSet rs = psQuery.executeQuery();
-                QueryLogger.logEndStatementExecution(sqlQuery,
-                        "wdk-report-full-select-count", start);
-                rs.next();
-                int count = rs.getInt("cache_count");
-                if (count == 0) {
-                    // insert into table cache
-                    int index;
-                    for (index = 1; index <= pkColumns.length; index++) {
-                        Object value = pkValues.get(pkColumns[index - 1]);
-                        psInsert.setObject(index, value);
-                    }
-                    psInsert.setString(index++, table.getName());
-                    psInsert.setInt(index++, tableSize);
-                    platform.setClobData(psInsert, index++, content, false);
-                    psInsert.addBatch();
-                    needUpdate = true;
-                }
-                SqlUtils.closeResultSetOnly(rs);
-            }
-
-            // write to the stream
-            if (reporterConfig.getIncludeEmptyTables() || tableSize > 0) {
-                writer.println(content);
-                writer.flush();
-            }
+          }
+          document.add(datatable);
         }
-        if (tableCache != null && needUpdate) {
-            long start = System.currentTimeMillis();
-            psInsert.executeBatch();
-            QueryLogger.logEndStatementExecution(sqlInsert, "wdk-report-full-insert", start);
-        }
+      }
+      document.close();
+      pwriter.close();
     }
-
-    private void formatRecord2PDF(Set<AttributeField> attributes,
-            Set<TableField> tables, OutputStream out) throws WdkModelException,
-            WdkUserException {
-
-        logger.info("format2PDF>>>");
-        Document document = new Document(PageSize.LETTER.rotate());
-
-        try {
-            // PdfWriter pwriter =
-            PdfWriter.getInstance(document, out);
-            document.open();
-
-            // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            for (AnswerValue answerValue : this) {
-                for (RecordInstance record : answerValue.getRecordInstances()) {
-                    // print out attributes of the record first
-                    for (AttributeField field : attributes) {
-                        AttributeValue value = record.getAttributeValue(field.getName());
-                        document.add(new Paragraph(field.getDisplayName()
-                                + ": " + value));
-                    }
-
-                    // print out tables of the record
-                    for (TableField table : tables) {
-                        TableValue tableValue = record.getTableValue(table.getName());
-
-                        // check if table is empty
-                        Iterator<Map<String, AttributeValue>> iterator = tableValue.iterator();
-                        if (!reporterConfig.getIncludeEmptyTables() && !iterator.hasNext()) {
-                            continue;
-                        }
-
-                        AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
-
-                        // output table header
-                        document.add(new Paragraph("Table: "
-                                + table.getDisplayName()));
-                        int NumColumns = fields.length;
-                        PdfPTable datatable = new PdfPTable(NumColumns);
-                        for (AttributeField attribute : fields) {
-                            datatable.addCell("" + attribute.getDisplayName()
-                                    + "");
-                        }
-
-                        datatable.setHeaderRows(1);
-
-                        while (iterator.hasNext()) {
-                            Map<String, AttributeValue> row = iterator.next();
-                            for (String fieldName : row.keySet()) {
-                                AttributeValue value = row.get(fieldName);
-                                Object objValue = value.getValue();
-                                if (objValue == null) objValue = "";
-                                datatable.addCell(objValue.toString());
-                            }
-                        }
-                        document.add(datatable);
-                    }
-
-                    // out.flush();
-                }
-            }
-            document.close();
-        } catch (DocumentException de) {
-            throw new WdkModelException(de);
-        }
-        // catch ( IOException ex ) {
-        // throw new WdkModelException( ex );
-        // }
-
+    catch (DocumentException de) {
+      throw new WdkModelException(de);
     }
-
-    @Override
-    protected void complete() {
-    // do nothing
-    }
-
-    @Override
-    protected void initialize() throws WdkModelException {
-    // do nothing
-    }
-    
+  }
 }

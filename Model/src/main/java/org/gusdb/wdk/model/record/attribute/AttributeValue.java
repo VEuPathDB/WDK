@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.record.attribute;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,7 +23,6 @@ public abstract class AttributeValue {
   protected static final Logger logger = Logger.getLogger(AttributeValue.class.getName());
 
   protected AttributeField field;
-  protected Object value;
 
   public abstract Object getValue() throws WdkModelException, WdkUserException;
 
@@ -80,5 +83,28 @@ public abstract class AttributeValue {
     } catch (WdkModelException | WdkUserException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  public static String replaceMacrosWithAttributeValues(String text, AttributeValueContainer container, String label)
+      throws WdkModelException, WdkUserException {
+    Map<String, Object> values = new LinkedHashMap<String, Object>();
+    Map<String, AttributeField> fields = container.getAttributeFieldMap();
+
+    Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
+    while (matcher.find()) {
+      String fieldName = matcher.group(1);
+
+      if (!values.containsKey(fieldName)) {
+
+        if (!fields.containsKey(fieldName)) {
+          logger.warn("Invalid field macro in " + label + ": " + fieldName);
+          continue;
+        }
+
+        AttributeValue value = container.getAttributeValue(fieldName);
+        values.put(fieldName, value.toString());
+      }
+    }
+    return Utilities.replaceMacros(text, values);
   }
 }

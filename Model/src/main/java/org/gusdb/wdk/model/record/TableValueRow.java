@@ -1,26 +1,25 @@
 package org.gusdb.wdk.model.record;
 
-import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeValueContainer;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
-import org.gusdb.wdk.model.query.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
+import org.gusdb.wdk.model.record.attribute.DynamicAttributeValueContainer;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
-
-import java.util.Map;
-import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-
-public class TableValueRow extends AttributeValueContainer implements Map<String, AttributeValue> {
+public class TableValueRow extends DynamicAttributeValueContainer implements Map<String, AttributeValue> {
 
   private PrimaryKeyAttributeValue primaryKey;
   private Map<String, AttributeField> attributeFields;
@@ -51,7 +50,7 @@ public class TableValueRow extends AttributeValueContainer implements Map<String
    * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
    */
   @Override
-    protected Map<String, AttributeField> getAttributeFieldMap() {
+  public Map<String, AttributeField> getAttributeFieldMap() {
     return attributeFields;
   }
 

@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -106,8 +107,7 @@ public class FavoriteFactory {
         AttributeField noteField = recordClass.getFavoriteNoteField();
         String note = null;
         if (noteField != null) {
-          RecordInstance instance = new RecordInstance(user, recordClass,
-              pkValues);
+          RecordInstance instance = new DynamicRecordInstance(user, recordClass, pkValues);
           AttributeValue noteValue = instance.getAttributeValue(noteField.getName());
           Object value = noteValue.getValue();
           note = (value != null) ? value.toString() : "";
@@ -277,7 +277,7 @@ public class FavoriteFactory {
               Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
               primaryKeys.put(columns[i - 1], value);
             }
-            RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
+            RecordInstance record = new DynamicRecordInstance(user, recordClass, primaryKeys);
             PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
             Favorite favorite = new Favorite(user);
             favorite.setPrimaryKeys(pkValue);

@@ -32,23 +32,23 @@ public class LinkAttributeValue extends AttributeValue {
   }
 
   public String getDisplayText() throws WdkModelException, WdkUserException {
-    if (this.displayText == null) {
-      String displayText = ((LinkAttributeField)field).getDisplayText();
+    if (displayText == null) {
+      String baseText = ((LinkAttributeField)field).getDisplayText();
       String label = "attribute" + " [" + field.getName() + "] of ["
             + field.getRecordClass().getFullName() + "]";
-      this.displayText = container.replaceMacrosWithAttributeValues(displayText, label);
+      displayText = replaceMacrosWithAttributeValues(baseText, container, label);
     }
-    return this.displayText;
+    return displayText;
   }
 
   public String getUrl() throws WdkModelException, WdkUserException {
-    if (this.url == null) {
-      String url = ((LinkAttributeField)field).getUrl();
+    if (url == null) {
+      String baseUrl = ((LinkAttributeField)field).getUrl();
       String label = "attribute" + " [" + field.getName() + "] of ["
           + field.getRecordClass().getFullName() + "]";
-      this.url = container.replaceMacrosWithAttributeValues(url, label);
+      url = replaceMacrosWithAttributeValues(baseUrl, container, label);
     }
-    return this.url;
+    return url;
   }
 
   /**
@@ -59,7 +59,7 @@ public class LinkAttributeValue extends AttributeValue {
    * @see org.gusdb.wdk.model.record.attribute.AttributeValue#getValue()
    */
   @Override
-  public Object getValue() throws WdkModelException, WdkUserException {
+  public String getValue() throws WdkModelException, WdkUserException {
     return getDisplayText() + "(" + getUrl() + ")";
   }
 }

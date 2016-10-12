@@ -228,32 +228,6 @@ public class QuestionBean {
     return question.getHelp();
   }
 
-  /**
-   * Called by the controller
-   * 
-   * @param paramErrors
-   *          Map of paramName-->value
-   * @param start
-   *          Index of the first record to include in the answer
-   * @param end
-   *          Index of the last record to include in the answer
-   * @throws WdkUserException 
-   */
-  public AnswerValueBean makeAnswerValue(UserBean user,
-      Map<String, String> paramValues, int pageStart, int pageEnd,
-      Map<String, Boolean> sortingMap, String filterName, boolean validate,
-      int assignedWeight) throws WdkModelException, WdkUserException {
-    AnswerFilterInstance filter = null;
-    if (filterName != null) {
-      RecordClass recordClass = question.getRecordClass();
-      filter = recordClass.getFilterInstance(filterName);
-    }
-    AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-        paramValues, pageStart, pageEnd, sortingMap, filter, validate,
-        assignedWeight);
-    return new AnswerValueBean(answerValue);
-  }
-
   public String getDescription() {
     return question.getDescription();
   }

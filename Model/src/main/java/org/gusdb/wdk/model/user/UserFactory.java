@@ -987,6 +987,7 @@ public class UserFactory {
     String emailContent = modelConfig.getEmailContent();
     String supportEmail = modelConfig.getSupportEmail();
     String emailSubject = modelConfig.getEmailSubject();
+    String smtpServer = modelConfig.getSmtpServer();
 
     // send an email to the user
     String pattern = "\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$";
@@ -1000,8 +1001,7 @@ public class UserFactory {
     pattern = "\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$";
     message = message.replaceAll(pattern, Matcher.quoteReplacement(password));
 
-    Utilities.sendEmail(wdkModel, user.getEmail(), supportEmail, emailSubject,
-        message);
+    Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, message);
   }
 
   void changePassword(String email, String oldPassword, String newPassword,

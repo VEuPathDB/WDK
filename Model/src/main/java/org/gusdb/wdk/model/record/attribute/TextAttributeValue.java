@@ -46,12 +46,12 @@ public class TextAttributeValue extends AttributeValue {
    * @see org.gusdb.wdk.model.AttributeValue#getValue()
    */
   @Override
-  public Object getValue() throws WdkModelException, WdkUserException {
+  public String getValue() throws WdkModelException, WdkUserException {
     if (this.text == null) {
-      String text = ((TextAttributeField)field).getText();
+      String fieldText = ((TextAttributeField)field).getText();
       String label = "attribute [" + field.getName() + "] of ["
           + field.getRecordClass().getFullName() + "]";
-      this.text = container.replaceMacrosWithAttributeValues(text, label);
+      this.text = replaceMacrosWithAttributeValues(fieldText, container, label);
     }
     return this.text;
   }
@@ -59,10 +59,10 @@ public class TextAttributeValue extends AttributeValue {
   @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
     if (this.display == null) {
-      String display = ((TextAttributeField)field).getDisplay();
+      String fieldDisplay = ((TextAttributeField)field).getDisplay();
       String label = "attribute [" + field.getName() + "] of ["
             + field.getRecordClass().getFullName() + "]";
-      this.display = container.replaceMacrosWithAttributeValues(display, label);
+      this.display = replaceMacrosWithAttributeValues(fieldDisplay, container, label);
     }
     return this.display;
   }

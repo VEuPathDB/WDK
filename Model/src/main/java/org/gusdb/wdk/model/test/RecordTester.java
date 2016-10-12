@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.User;
@@ -52,7 +53,7 @@ public class RecordTester {
         RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
         Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
         User user = wdkModel.getSystemUser();
-        RecordInstance recordInstance = new RecordInstance(user, recordClass,
+        RecordInstance recordInstance = new DynamicRecordInstance(user, recordClass,
                 pkValues);
 
         // try to get all attributes

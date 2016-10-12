@@ -52,20 +52,23 @@ public class FilterOptionList implements Iterable<FilterOption>{
     return _options.size();
   }
 
-  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
+  public FilterOptionList addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     addFilterOption(filterName, filterValue, false);
+    return this;
   }
 
   // we need to pass the disabled property
-  public void addFilterOption(String filterName, JSONObject filterValue, boolean isDisabled) throws WdkModelException {
+  public FilterOptionList addFilterOption(String filterName, JSONObject filterValue, boolean isDisabled) throws WdkModelException {
     addFilterOption(new FilterOption(_wdkModel, _questionName, filterName, filterValue, isDisabled));
+    return this;
   }
 
-  public void addFilterOption(FilterOption filterOption) throws WdkModelException {
+  public FilterOptionList addFilterOption(FilterOption filterOption) throws WdkModelException {
     // make sure this option is valid for this list's question
     _wdkModel.getQuestion(_questionName).getFilter(filterOption.getKey());
     // no exception thrown; add filter to map
     _options.put(filterOption.getKey(), filterOption);
+    return this;
   }
 
   public void removeFilterOption(String filterName) {

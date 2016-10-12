@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.User;
@@ -30,7 +31,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
 
   @Override
   public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
-    return new RecordInstance[]{ new RecordInstance(_user, _recordClass, _pkMap) };
+    return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
   }
 
   @Override

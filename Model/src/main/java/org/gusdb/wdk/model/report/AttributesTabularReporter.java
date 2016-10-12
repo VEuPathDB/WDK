@@ -1,31 +1,34 @@
 package org.gusdb.wdk.model.report;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
+import java.util.List;
+
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 public class AttributesTabularReporter extends AbstractTabularReporter {
 
-  public AttributesTabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-    super(answerValue, startIndex, endIndex);
-  }
-  
-  @Override
-  protected List<String> getHeader() throws WdkUserException, WdkModelException {
-    Set<AttributeField> attrFields = validateAttributeColumns();
-    List<String> list = new ArrayList<String>();
-    for (AttributeField field : attrFields) list.add(field.getDisplayName());
-    return list;
-  }
-  
-  @Override
-  protected TabularReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
-    return new AttributesRowProvider(answerValuePage, validateAttributeColumns());
+  public AttributesTabularReporter(AnswerValue answerValue) {
+    super(answerValue);
   }
 
+  @Override
+  protected List<String> getHeader() throws WdkUserException, WdkModelException {
+    return mapToList(getSelectedAttributes(), new Function<AttributeField, String>() {
+      @Override public String apply(AttributeField field) {
+        return field.getDisplayName();
+      }
+    });
+  }
+
+  @Override
+  protected RowsProvider getRowsProvider(RecordInstance record)
+      throws WdkUserException, WdkModelException {
+    return new AttributesRowProvider(record, getSelectedAttributes());
+  }
 }

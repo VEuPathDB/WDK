@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
  */
 public class WdkServiceJsonReporter extends StubReporter {
 
-  public WdkServiceJsonReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-    super(answerValue, startIndex, endIndex);
+  public WdkServiceJsonReporter(AnswerValue answerValue) {
+    super(answerValue);
   }
 }
