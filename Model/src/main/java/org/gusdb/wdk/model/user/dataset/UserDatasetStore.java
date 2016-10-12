@@ -19,7 +19,7 @@ public interface UserDatasetStore {
    * properties in model XML.
    * @param configuration
    */
-  void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException;
+  void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException;
   
   /**
    * For one user, provide a map from dataset ID to dataset.

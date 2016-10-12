@@ -73,13 +73,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   @Override
-  public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
+  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
     
-    for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
+    typeHandlersMap = typeHandlers;
   }
   
   public void checkRootDirExists() throws WdkModelException {

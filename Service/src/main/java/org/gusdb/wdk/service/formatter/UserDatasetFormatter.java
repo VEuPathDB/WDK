@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
@@ -27,8 +26,8 @@ public class UserDatasetFormatter {
       if (!expand) datasetsJson.put(datasetId);
       else {
         UserDataset dataset = userDatasetsMap.get(datasetId);
-        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset, null);
-        datasetsJson.put(getUserDatasetJson(dataset, compat, userDatasetStore));
+//        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset, appDbDataSource);
+        datasetsJson.put(getUserDatasetJson(dataset, userDatasetStore));
       }
     }
   }
@@ -65,7 +64,7 @@ public class UserDatasetFormatter {
 }
 
    */
-  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility, UserDatasetStore store) throws WdkModelException {
+  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetStore store) throws WdkModelException {
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
@@ -108,9 +107,12 @@ public class UserDatasetFormatter {
       fileJson.put("size", file.getFileSize());
       sharesJson.put(filesJson);
     }
+    /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
     compatJson.put("isCompatible", compatibility.isCompatible());
     compatJson.put("notCompatibleReason", compatibility.notCompatibleReason());
+    json.put("compatibility", compatJson);
+    */
     return json;
   }
 }

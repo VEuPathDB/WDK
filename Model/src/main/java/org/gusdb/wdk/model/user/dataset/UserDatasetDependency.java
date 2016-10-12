@@ -6,22 +6,46 @@ package org.gusdb.wdk.model.user.dataset;
  * @author steve
  *
  */
-public interface UserDatasetDependency {
+public class UserDatasetDependency {
+  private String resourceIdentifier;
+  private String resourceVersion;
+  private String resourceDisplayName;
+  
+  public UserDatasetDependency() {} // for subclasses that want to initialize using the setters
+   
+  public UserDatasetDependency(String resourceIdentifier, String resourceVersion, String resourceDisplayName) {
+    this.resourceIdentifier = resourceIdentifier;
+    this.resourceVersion = resourceVersion;
+    this.resourceDisplayName = resourceDisplayName;
+  }
+  
+  public void setResourceIdentifier(String resourceIdentifier) { this.resourceIdentifier = resourceIdentifier; }
+  public void setResourceVersion(String resourceVersion) { this.resourceVersion = resourceVersion; }
+  public void setResourceDisplayName(String resourceDisplayName) {
+    this.resourceDisplayName = resourceDisplayName;
+  }
+
   /**
    * The identifier of the resource depended on
    * @return
    */
-  String getResourceIdentifier();
-  
+  public String getResourceIdentifier() {
+    return resourceIdentifier;
+  }
+
   /**
    * The version of the resource depended on
    * @return
    */
-  String getResourceVersion();
-  
+  public String getResourceVersion() {
+    return resourceVersion;
+  }
+
   /**
    * A human readable form of the resource, for display to end user
    * @return
    */
-  String getResourceDisplayName();
+  public String getResourceDisplayName() {
+    return resourceDisplayName;
+  }
 }
