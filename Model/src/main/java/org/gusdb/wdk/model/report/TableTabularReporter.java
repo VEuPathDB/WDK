@@ -2,52 +2,78 @@ package org.gusdb.wdk.model.report;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.model.record.Field;
-import org.gusdb.wdk.model.record.FieldScope;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.answer.stream.SingleTableRecordStream;
+import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.json.JSONObject;
 
 public class TableTabularReporter extends AbstractTabularReporter {
 
-  private TableField tableField;
+  private TableField _tableField;
 
-  public TableTabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-    super(answerValue, startIndex, endIndex);
+  public TableTabularReporter(AnswerValue answerValue) {
+    super(answerValue);
   }
 
-  private TableField getTableField() throws WdkUserException, WdkModelException {
-    if (tableField == null) {
-      Set<Field> fields = validateColumns();
-      for (Field field : fields) {
-        if (field instanceof AttributeField) {
-          throw new WdkUserException("This report is for Tables only, not custom columns");
-        }
-        else if (field instanceof TableField) {
-          if (tableField != null) throw new WdkUserException("This report supports only a single table");
-          tableField = (TableField) field;
-        }
-      }
+  @Override
+  public void configure(Map<String,String> config) throws WdkUserException {
+    super.configure(config);
+    setTable();
+  }
+
+  @Override
+  public void configure(JSONObject config) throws WdkUserException {
+    super.configure(config);
+    setTable();
+  }
+
+  private void setTable() throws WdkUserException {
+    Set<TableField> tables = getSelectedTables();
+    if (tables.size() != 1 || !getSelectedAttributes().isEmpty()) {
+      throw new WdkUserException("This report supports exactly one table and no attributes.");
     }
-    return tableField;
+    _tableField = tables.iterator().next();
   }
-  
+
+  /**
+   * Override for table tabular; we actually are NOT doing answer paging in this
+   * reporter since only one query is required.  We can just stream the table
+   * results out the door, reading one RecordInstance at a time.
+   */
+  @Override
+  public RecordStream getRecords() throws WdkModelException {
+    // the records returned by this stream will have only PK and this single table field populated
+    return new SingleTableRecordStream(_baseAnswer, _tableField);
+  }
+
   @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
-    AttributeField[] fields = getTableField().getAttributeFields(FieldScope.REPORT_MAKER);
+    AttributeField[] fields = _tableField.getAttributeFields(FieldScope.REPORT_MAKER);
     List<String> list = new ArrayList<String>();
-    list.add(getTableField().getRecordClass().getPrimaryKeyAttributeField().getDisplayName());
-    for (AttributeField field : fields) list.add(field.getDisplayName());
+    list.add(_tableField.getRecordClass().getPrimaryKeyAttributeField().getDisplayName());
+    for (AttributeField field : fields) {
+      list.add(field.getDisplayName());
+    }
     return list;
   }
-  
+
   @Override
-  protected TabularReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
-    return new TableRowProvider(answerValuePage, getTableField());
+  protected RowsProvider getRowsProvider(RecordInstance record)
+      throws WdkUserException, WdkModelException {
+    return new TableRowProvider(record, _tableField);
   }
 
+  @Override
+  protected String getFileNameSuffix() {
+    return _tableField.getName();
+  }
 }

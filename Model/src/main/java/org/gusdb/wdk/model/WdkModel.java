@@ -76,7 +76,7 @@ import org.xml.sax.SAXException;
  * @author
  * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
  */
-public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
+public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, AutoCloseable {
 
   private static final Logger LOG = Logger.getLogger(WdkModel.class);
 
@@ -192,8 +192,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private String buildNumber;
 
-  private ThreadMonitor _myThreadMonitor;
-
   public WdkModel() {
     // add default sets
     try {
@@ -216,7 +214,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
       wdkModel.setStartupTime(now.getTime());
-      wdkModel.doAdditionalStartup();
+      wdkModel.checkSchema();
       LOG.info("WDK Model construction complete.");
       return wdkModel;
     }
@@ -235,12 +233,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     return stackTrace[callIndex].getClassName();
   }
 
-  private void doAdditionalStartup() throws WdkModelException {
+  private void checkSchema() throws WdkModelException {
     // verify the user schema
     _modelConfig.getUserDB().checkSchema(this);
-
-    // start up thread monitor and save reference
-    _myThreadMonitor = ThreadMonitor.start(this);
   }
 
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
@@ -576,8 +571,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    stepAnalysisFactory = (stepAnalysisPlugins == null ? new UnconfiguredStepAnalysisFactory(this)
-        : new StepAnalysisFactoryImpl(this));
+    stepAnalysisFactory = (stepAnalysisPlugins == null ?
+        new UnconfiguredStepAnalysisFactory(this) :
+        new StepAnalysisFactoryImpl(this));
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -596,12 +592,17 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     createBooleanQuestions();
   }
 
+
+  @Override
+  public void close() throws Exception {
+    releaseResources();
+  }
+
   public void releaseResources() {
     LOG.info("Releasing WDK Model resources...");
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
-    ThreadMonitor.shutDown(_myThreadMonitor);
     Events.shutDown();
     LOG.info("WDK Model resources released.");
   }
@@ -1144,6 +1145,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     return userDatasetStore;
   }
 
+  @SuppressWarnings("unused")
   public void setUserDatasetStorePlugin(UserDatasetStorePlugin plugin) {}
 
   public DatasetFactory getDatasetFactory() {

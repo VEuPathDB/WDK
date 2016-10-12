@@ -21,7 +21,6 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
@@ -37,6 +36,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.RequestParams;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.ReporterFactory;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It 1) reads param values from

@@ -27,13 +27,13 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
 
   private final Map<String, Object> pkValues;
   private AttributeValueContainer valueContainer;
-  
+  private String _value;
+
   /**
    * The display will be used in the summary and record page display. if a
    * display is not specified in the model, the text (in value) will be used as display.
    */
   private String display;
-
 
   public PrimaryKeyAttributeValue(PrimaryKeyAttributeField field, Map<String, Object> pkValues) {
     this(field, pkValues, null);
@@ -55,7 +55,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   }
 
   public Map<String, String> getValues() {
-    Map<String, String> values = new LinkedHashMap<String, String>();
+    Map<String, String> values = new LinkedHashMap<>();
     for (String column : pkValues.keySet()) {
       String copy = Utilities.parseValue(pkValues.get(column));
       values.put(column, copy);
@@ -73,24 +73,22 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   }
 
   @Override
-  public Object getValue() throws WdkModelException, WdkUserException {
-    if (value == null) {
+  public String getValue() throws WdkModelException, WdkUserException {
+    if (_value == null) {
       try {
         String label = "attribute" + " [" + field.getName() + "] of ["
             + field.getRecordClass().getFullName() + "]";
-				// NOTE: valueContainer is null when (.value) called in favorites.tag, changed to use (.display) anyway
-        value = valueContainer.replaceMacrosWithAttributeValues(
-          ((PrimaryKeyAttributeField)field).getText(),
-          label
-        );
-      } catch (Exception ex) {
+        // NOTE: valueContainer is null when (.value) called in favorites.tag, changed to use (.display) anyway
+        _value = replaceMacrosWithAttributeValues(((PrimaryKeyAttributeField)field).getText(), valueContainer, label);
+      }
+      catch (Exception ex) {
          throw new WdkModelException("Failed to substitute sub-fields.", ex);
       }
     }
-    return value;
+    return _value;
   }
 
-@Override
+  @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
     if (display == null) {
       if (valueContainer == null) {
@@ -170,7 +168,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   @Override
   public String toString() {
     try {
-      return (String) getValue();
+      return getValue();
     }
     catch (WdkModelException | WdkUserException ex) {
       throw new WdkRuntimeException(ex);

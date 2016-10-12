@@ -4,14 +4,13 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
@@ -173,10 +172,12 @@ public class DatasetParamHandler extends AbstractParamHandler {
         Strategy strategy = user.getStrategy(strategyId);
         Step step = strategy.getLatestStep();
         List<RecordInstance> list = new ArrayList<>();
-        for (AnswerValue answer : step.getAnswerValue().getFullAnswers()) {
-          list.addAll(Arrays.asList(answer.getRecordInstances()));
+        try (RecordStream fullAnswer = step.getAnswerValue().getFullAnswer()) {
+          for (RecordInstance record : fullAnswer) {
+            list.add(record);
+          }
         }
-        records = list.toArray(new RecordInstance[0]);
+        records = list.toArray(new RecordInstance[list.size()]);
       }
       if (records != null)
         data = toString(records);

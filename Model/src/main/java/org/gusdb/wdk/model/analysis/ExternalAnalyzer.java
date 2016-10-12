@@ -4,19 +4,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.report.BaseTabularReporter;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.StandardReporter;
-import org.gusdb.wdk.model.report.AttributesTabularReporter;
+import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.StandardConfig;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
@@ -106,10 +104,10 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
     }
     Reporter reporter = ReporterFactory.getReporter(answerValue, TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
-        .put(StandardReporter.Configuration.ATTACHMENT_TYPE, "text")
-        .put(AttributesTabularReporter.PROP_INCLUDE_HEADER, hasHeader.toLowerCase())
-        .put(AttributesTabularReporter.PROP_COLUMN_DIVIDER, FormatUtil.TAB)
-        .put(StandardReporter.Configuration.SELECTED_FIELDS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
+        .put(StandardConfig.ATTACHMENT_TYPE, "text")
+        .put(BaseTabularReporter.FIELD_HAS_HEADER, hasHeader)
+        .put(BaseTabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
+        .put(StandardConfig.SELECTED_FIELDS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
         .toMap());
     // write query results to disk
     Path outputFile = Paths.get(getStorageDirectory().toAbsolutePath().toString(), DATA_FILE_NAME);
@@ -117,7 +115,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       reporter.report(fileOut);
       return ExecutionStatus.COMPLETE;
     }
-    catch (IOException | NoSuchAlgorithmException | JSONException | SQLException e) {
+    catch (IOException | JSONException e) {
       throw new WdkModelException("Unable to dump analysis files to data storage dir", e);
     }
   }

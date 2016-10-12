@@ -3,11 +3,11 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import java.util.List;
 
-import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
+import org.gusdb.wdk.model.report.ReporterRef;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

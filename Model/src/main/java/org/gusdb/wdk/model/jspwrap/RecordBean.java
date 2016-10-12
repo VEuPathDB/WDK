@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -41,7 +42,7 @@ public class RecordBean {
     public RecordBean(UserBean user, RecordClassBean recordClass,
             Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
         this.user = user.getUser();
-        recordInstance = new RecordInstance(user.getUser(),
+        recordInstance = new DynamicRecordInstance(user.getUser(),
                 recordClass.recordClass, pkValues);
     }
     

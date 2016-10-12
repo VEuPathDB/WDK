@@ -1,24 +1,21 @@
 package org.gusdb.wdk.model.report;
 
 import java.io.OutputStream;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.json.JSONException;
+import org.json.JSONObject;
 
-public class StubReporter extends Reporter {
+public class StubReporter extends AbstractReporter {
 
-  public StubReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-    super(answerValue, startIndex, endIndex);
+  public StubReporter(AnswerValue answerValue) {
+    super(answerValue);
   }
 
-  @Override public String getConfigInfo() { return null; }
-  @Override protected void initialize() throws WdkModelException { }
-  @Override protected void complete() { }
-  @Override public void write(OutputStream out) throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException { }
+  @Override public void configure(Map<String, String> config) throws WdkUserException, WdkModelException { }
+  @Override public void configure(JSONObject config) throws WdkUserException, WdkModelException { }
+  @Override protected void write(OutputStream out) throws WdkModelException { }
 
 }

@@ -15,13 +15,15 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ColumnAttributeValue extends AttributeValue {
 
+  private Object _value;
+
   /**
    * @param instance
    * @param field
    */
   public ColumnAttributeValue(ColumnAttributeField field, Object value) {
     super(field);
-    this.value = value;
+    _value = value;
   }
 
   /*
@@ -30,8 +32,8 @@ public class ColumnAttributeValue extends AttributeValue {
    * @see org.gusdb.wdk.model.AttributeValue#getValue()
    */
   @Override
-  public Object getValue() throws WdkModelException {
-    return Utilities.parseValue(value);
+  public String getValue() throws WdkModelException {
+    return Utilities.parseValue(_value);
   }
 
 }

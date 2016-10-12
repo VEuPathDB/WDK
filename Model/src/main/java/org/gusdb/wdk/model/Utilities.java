@@ -259,10 +259,9 @@ public class Utilities {
     return result;
   }
 
-  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content, String ccAddresses,
       DataHandler[] attachments) throws WdkModelException {
-    String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
     logger.debug("Sending message to: " + sendTos + ", reply: " + reply
         + ", using SMPT: " + smtpServer);
@@ -317,15 +316,15 @@ public class Utilities {
     }
   }
 
-  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content, String ccAddresses)
       throws WdkModelException {
-    sendEmail(wdkModel, sendTos, reply, subject, content, ccAddresses, null);
+    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null);
   }
 
-  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content) throws WdkModelException {
-    sendEmail(wdkModel, sendTos, reply, subject, content, null, null);
+    sendEmail(smtpServer, sendTos, reply, subject, content, null, null);
   }
 
   public static byte[] readFile(File file) throws IOException {

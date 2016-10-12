@@ -1,45 +1,70 @@
 package org.gusdb.wdk.model.report;
 
-import java.util.ArrayList;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.report.AbstractTabularReporter.RowsProvider;
 
-public class AttributesRowProvider implements TabularReporterRowsProvider {
-  
-  AnswerValue answerValuePage;
-  private Set<AttributeField> fields;
-  private int recordInstancesCursor = 0;
- 
-  AttributesRowProvider(AnswerValue answerValuePage, Set<AttributeField> fields) {
-    this.answerValuePage = answerValuePage;
-    this.fields = fields;
+public class AttributesRowProvider implements RowsProvider {
+
+  private final RecordInstance _record;
+  private final Set<AttributeField> _attributes;
+
+  public AttributesRowProvider(RecordInstance record, Set<AttributeField> attributes) {
+    _record = record;
+    _attributes = attributes;
   }
-   
+
   @Override
-  public boolean hasNext() throws WdkModelException, WdkUserException {
-    return recordInstancesCursor < answerValuePage.getRecordInstances().length;
+  public Iterator<List<Object>> iterator() {
+    return new AttributeRowIterator(_record, _attributes);
   }
-  
-  @Override
-  public List<Object> next() throws WdkModelException, WdkUserException {
-    if (!hasNext()) throw new NoSuchElementException();
-    RecordInstance record = answerValuePage.getRecordInstances()[recordInstancesCursor++];
-    List<Object> values = new ArrayList<Object>();
-    for (AttributeField field : fields) {
-      AttributeValue value = record.getAttributeValue(field.getName());
-      values.add((value == null) ? "N/A" : value.getValue());
+
+  private static class AttributeRowIterator extends ReadOnlyIterator<List<Object>> {
+
+    private final RecordInstance _record;
+    private final Set<AttributeField> _attributes;
+    private boolean _recordFetched = false;
+
+    public AttributeRowIterator(RecordInstance record, Set<AttributeField> attributes) {
+      _record = record;
+      _attributes = attributes;
     }
-    return values;
+  
+    @Override
+    public boolean hasNext() {
+      return !_recordFetched;
+    }
+  
+    @Override
+    public List<Object> next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      _recordFetched = true;
+      return mapToList(_attributes, new Function<AttributeField, Object>() {
+        @Override public Object apply(AttributeField field) {
+          try {
+            AttributeValue value = _record.getAttributeValue(field.getName());
+            return (value == null ? "N/A" : value.getValue());
+          }
+          catch (WdkUserException | WdkModelException e) {
+            throw new WdkRuntimeException("Unable to get attribute value from record", e);
+          }
+        }
+      });
+    }
   }
- 
-  @Override
-  public void close() throws WdkModelException, WdkUserException {}
 }

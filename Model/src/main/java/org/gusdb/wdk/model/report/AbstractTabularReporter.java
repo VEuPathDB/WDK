@@ -4,17 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.record.RecordInstance;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -23,305 +20,173 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
 /**
- * A reporter that produces a tabular output from an answer.  It takes a pluggable row provider
- * that provides the data.  Typical row providers might merge the answer with a set of record attributes or a single record table.
+ * A reporter that produces a tabular output from an answer. It takes a pluggable row provider that provides
+ * the data. Typical row providers might merge the answer with a set of record attributes or a single record
+ * table.
+ * 
  * @author steve
- *
  */
-public abstract class AbstractTabularReporter extends StandardReporter {
+public abstract class AbstractTabularReporter extends BaseTabularReporter {
 
+  private static Logger LOG = Logger.getLogger(AbstractTabularReporter.class);
 
-  private static Logger logger = Logger.getLogger(AbstractTabularReporter.class);
+  public static interface RowsProvider extends Iterable<List<Object>> { }
 
-  public static final String PROP_INCLUDE_HEADER = "includeHeader";
-  public static final String PROP_COLUMN_DIVIDER = "divider";
-
-  public static final long MAX_EXCEL_LENGTH = 1024 * 1024 * 10;
-
-  private boolean showHeader = true;
-  private String columnDivider = "\t";
-
-  public AbstractTabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-      super(answerValue, startIndex, endIndex);
-  }
-
-  /*
-   * 
-   */
-  @Override
-  public void configure(Map<String, String> config) {
-      super.configure(config);
-
-      // get basic configurations
-      if (config.containsKey(PROP_INCLUDE_HEADER)) {
-          String value = config.get(PROP_INCLUDE_HEADER);
-          showHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
-                  : false;
-      }
-
-      if (config.containsKey(PROP_COLUMN_DIVIDER)) {
-          columnDivider = config.get(PROP_COLUMN_DIVIDER);
-      }
-  }
-
-  @Override
-  public void configure(JSONObject config) throws WdkModelException {
-    super.configure(config);
-    showHeader = (config.has(PROP_INCLUDE_HEADER) ? config.getBoolean(PROP_INCLUDE_HEADER) : true);
-    if (config.has(PROP_COLUMN_DIVIDER)) columnDivider = config.getString(PROP_COLUMN_DIVIDER);
-
-  }
-  
-  @Override
-  public String getConfigInfo() {
-      return "This reporter does not have config info yet.";
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.report.Reporter#getHttpContentType()
-   */
-  @Override
-  public String getHttpContentType() {
-      if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-          return "text/plain";
-      } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
-          return "application/vnd.ms-excel";
-      } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-          return "application/pdf";
-      } else { // use the default content type defined in the parent class
-          return super.getHttpContentType();
-      }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.report.Reporter#getDownloadFileName()
-   */
-  @Override
-  public String getDownloadFileName() {
-      logger.info("Internal format: " + reporterConfig.getAttachmentType());
-      String name = getQuestion().getName();
-      if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-          return name + "_summary.txt";
-      } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
-          return name + "_summary.xls";
-      } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-          return name + "_summary.pdf";
-      } else { // use the default file name defined in the parent
-          return super.getDownloadFileName();
-      }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
-   */
-  @Override
-  public void write(OutputStream out) throws WdkModelException,
-          NoSuchAlgorithmException, SQLException, JSONException,
-          WdkUserException {
-      PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-
-      // get the formatted result
-      if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
-          format2Excel(writer);
-      } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-          format2PDF(out);
-      } else {
-          format2Text(writer);
-      }
-  }
-  
   protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
-  
-  protected abstract TabularReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
 
-  private void format2Text(PrintWriter writer)
-      throws WdkModelException, WdkUserException {
+  protected abstract RowsProvider getRowsProvider(RecordInstance record)
+      throws WdkUserException, WdkModelException;
+
+  public AbstractTabularReporter(AnswerValue answerValue) {
+    super(answerValue);
+  }
+
+  @Override
+  protected void format2Text(OutputStream out) throws WdkModelException, WdkUserException {
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
     // print the header
-    if (showHeader) {
+    if (_includeHeader) {
       for (String title : getHeader()) {
         writer.print("[" + title + "]");
-        writer.print(columnDivider);
+        writer.print(_divider);
       }
       writer.println();
       writer.flush();
     }
 
-    // get page based answers with a maximum size (defined in
-    // PageAnswerIterator)
-    for (AnswerValue answerValuePage : this) {
-      logger.debug("About to dump text report using answervalue: " + new AnswerValueBean(answerValuePage).getSpecJson());
-      TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
-      try {
-        while (rows.hasNext()) {
-          List<Object> row = rows.next();
+    try (RecordStream records = getRecords()) {
+      for (RecordInstance record : records) {
+        for (List<Object> row : getRowsProvider(record)) {
           for (Object value : row) {
-
             writer.print((value == null) ? "N/A" : value);
-            writer.print(columnDivider);
+            writer.print(_divider);
           }
           writer.println();
           writer.flush();
         }
-      } finally {
-        rows.close();
       }
     }
   }
 
-  private void format2PDF(OutputStream out)
-          throws WdkModelException, WdkUserException {
-      logger.info("format2PDF>>>");
-      Document document = new Document(PageSize.LETTER.rotate());
-      try {
-          PdfWriter pwriter = PdfWriter.getInstance(document, out);
-          document.open();
+  @Override
+  protected void format2PDF(OutputStream out) throws WdkModelException, WdkUserException {
+    LOG.info("format2PDF>>>");
+    Document document = new Document(PageSize.LETTER.rotate());
+    try {
+      PdfWriter pwriter = PdfWriter.getInstance(document, out);
+      document.open();
 
-          int NumFields = getHeader().size();
+      int NumFields = getHeader().size();
 
-          PdfPTable datatable = new PdfPTable(NumFields);
+      PdfPTable datatable = new PdfPTable(NumFields);
 
-          if (showHeader) {
-              for (String title : getHeader()) {
-                  datatable.addCell("" + title + "");
-              }
+      if (_includeHeader) {
+        for (String title : getHeader()) {
+          datatable.addCell("" + title + "");
+        }
+      }
+
+      datatable.setHeaderRows(1);
+      int count = 0;
+
+      try (RecordStream records = getRecords()) {
+        for (RecordInstance record : records) {
+          for (List<Object> row : getRowsProvider(record)) {
+            count++;
+
+            if (count % 2 == 1) {
+              datatable.getDefaultCell().setGrayFill(0.9f);
+            }
+
+            for (Object value : row) {
+              datatable.addCell("" + value);
+            }
+
+            if (count % 2 == 1) {
+              datatable.getDefaultCell().setGrayFill(1);
+            }
+
+            if (count % 500 == 0) {
+              pwriter.flush();
+            }
           }
-
-          datatable.setHeaderRows(1);
-          int count = 0;
-
-          // get page based answers with a maximum size (defined in
-          // PageAnswerIterator)
-          for (AnswerValue answerValuePage : this) {
-	    TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
-	    try {
-	      while (rows.hasNext()) {
-                List<Object> row = rows.next();
-		count++;
-
-		if (count % 2 == 1) {
-		  datatable.getDefaultCell().setGrayFill(0.9f);
-		}
-
-		for (Object value : row) {
-		  datatable.addCell("" + value);
-		}
-
-		if (count % 2 == 1) {
-		  datatable.getDefaultCell().setGrayFill(1);
-		}
-
-		if (count % 500 == 0) {
-		  pwriter.flush();
-		}
-              }
-	    } finally {
-	      rows.close();
-	    }
-          }
-
-          datatable.setSplitLate(false);
-          datatable.setWidthPercentage(100);
-          document.setMargins(10, 10, 10, 10);
-          document.add(datatable);
-          document.close();
-          out.flush();
+        }
       }
 
-      catch (DocumentException de) {
-          throw new WdkModelException(de);
-          // de.printStackTrace();
-          // System.err.println("document: " + de.getMessage());
-      }
+      datatable.setSplitLate(false);
+      datatable.setWidthPercentage(100);
+      document.setMargins(10, 10, 10, 10);
+      document.add(datatable);
+      // close the document (the outputstream closed by calling code)
+      document.close();
+      out.flush();
+    }
 
-      catch (IOException ex) {
-          throw new WdkModelException(ex);
-      }
-
-      // close the document (the outputstream is also closed internally)
+    catch (DocumentException | IOException ex) {
+      throw new WdkModelException("Unable to write PDF tabular report", ex);
+    }
 
   }
 
-  private void format2Excel(PrintWriter writer)
-          throws WdkModelException, WdkUserException {
-      int count = 0;
-      String header = "<table border=\"1\">";
-      writer.println(header);
-      count += header.length() + 5;
+  @Override
+  protected void format2Excel(OutputStream out) throws WdkModelException, WdkUserException {
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    int count = 0;
+    String header = "<table border=\"1\">";
+    writer.println(header);
+    count += header.length() + 5;
 
-      // print the header
-      if (showHeader) {
+    // print the header
+    if (_includeHeader) {
+      writer.println("<tr>");
+      count += 5;
+      for (String heading : getHeader()) {
+        String title = "<th>[" + heading + "]</th>";
+        writer.print(title);
+        count += title.length();
+      }
+      writer.println();
+      writer.println("</tr>");
+      writer.flush();
+      count += 7;
+    }
+
+    try (RecordStream records = getRecords()) {
+      for (RecordInstance record : records) {
+        for (List<Object> row : getRowsProvider(record)) {
           writer.println("<tr>");
           count += 5;
-          for (String heading : getHeader()) {
-              String title = "<th>[" + heading + "]</th>";
-              writer.print(title);
-              count += title.length();
+          for (Object value : row) {
+            String val = "<td>" + value + "</td>";
+            writer.print(val);
+            count += val.length();
           }
           writer.println();
           writer.println("</tr>");
           writer.flush();
           count += 7;
-      }
 
-      // get page based answers with a maximum size (defined in
-      // PageAnswerIterator)
-      for (AnswerValue answerValuePage : this) {
-	TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
-	try {
-	  while (rows.hasNext()) {
-	    List<Object> row = rows.next();
-	    writer.println("<tr>");
-	    count += 5;
-	    for (Object value : row) {
-	      String val = "<td>" + value + "</td>";
-	      writer.print(val);
-	      count += val.length();
-	    }
-	    writer.println();
-	    writer.println("</tr>");
-	    writer.flush();
-	    count += 7;
-
-	    // logger.debug("Excel download - written: " + count);
-	    // check if the output exceeds the max allowed size
-	    if (count > MAX_EXCEL_LENGTH) {
-	      writer.print("<tr><td colspan=\"" + getHeader().size() + "\">");
-	      writer.print("The result size exceeds the maximum allowed "
-			   + "size for downloading excel files. The rest of "
-			   + "the results are ignored. Opening huge excel "
-			   + "files may crash your system. If you need to "
-			   + "get the complete results, please choose the "
-			   + "download type as Text File, or Show in Browser.");
-	      writer.println("</td></tr>");
-	      break;
-	    }
-	    if (count > MAX_EXCEL_LENGTH) break;
+          // logger.debug("Excel download - written: " + count);
+          // check if the output exceeds the max allowed size
+          if (count > MAX_EXCEL_LENGTH) {
+            writer.print("<tr><td colspan=\"" + getHeader().size() + "\">");
+            writer.print("The result size exceeds the maximum allowed " +
+                "size for downloading excel files. The rest of " +
+                "the results are ignored. Opening huge excel " +
+                "files may crash your system. If you need to " +
+                "get the complete results, please choose the " +
+                "download type as Text File, or Show in Browser.");
+            writer.println("</td></tr>");
+            break;
           }
-          if (count > MAX_EXCEL_LENGTH) break;
-	} finally {
-	  rows.close();
-	}
+          if (count > MAX_EXCEL_LENGTH)
+            break;
+        }
+        if (count > MAX_EXCEL_LENGTH)
+          break;
       }
-      writer.println("</table>");
-      writer.flush();
+    }
+    writer.println("</table>");
+    writer.flush();
   }
-
-  @Override
-  protected void complete() {
-      // do nothing
-  }
-
-  @Override
-  protected void initialize() throws WdkModelException {
-      // do nothing
-  }
-
-
 }

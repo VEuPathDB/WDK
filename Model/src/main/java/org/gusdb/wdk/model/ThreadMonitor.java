@@ -12,126 +12,124 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.runtime.ThreadUtil;
+import org.gusdb.wdk.model.config.ModelConfig;
 
 public class ThreadMonitor implements Runnable {
+
+  private static final Logger LOG = Logger.getLogger(ThreadMonitor.class);
 
   private static final long REPORT_INTERVAL = 3600 * 1000;
   private static final long SLEEP_INTERVAL = 10 * 1000;
   private static final long MIN_BLOCKED_CYCLES = 10;
 
-  private static final Logger logger = Logger.getLogger(ThreadMonitor.class);
+  private static Thread _monitor;
 
-  public static ThreadMonitor start(WdkModel wdkModel) {
-    ThreadMonitor monitor = new ThreadMonitor(wdkModel);
-    new Thread(monitor).start();
-    return monitor;
-  }
-  
-  public static void shutDown(ThreadMonitor monitor) {
-    if (monitor != null) {
-      logger.info("Stopping thread monitor.  Will wait for shutdown.");
-      monitor.requestStop();
-      while (!monitor.isStopped()) {
-        try {
-          Thread.sleep(100);
-        }
-        catch (InterruptedException ex) {
-          logger.warn("Thread interrupted before thread monitor could be shut down.");
-          return;
-        }
-      }
-      logger.info("Thread monitor successfully stopped.");
+  public static synchronized void start(ThreadMonitorConfig config) {
+    // ignore secondary calls if thread is alive; should ensure only one instance
+    if (_monitor == null || !_monitor.isAlive()) {
+      _monitor = new Thread(new ThreadMonitor(config));
+      _monitor.start();
     }
   }
 
-  private final WdkModel wdkModel;
-  private String siteInfo;
-  private boolean running = false;
-  private boolean stopRequested = false;
-
-  private ThreadMonitor(WdkModel wdkModel) {
-    this.wdkModel = wdkModel;
-    // get process & host name
-    siteInfo = wdkModel.getProjectId() + " v" + wdkModel.getVersion() + ", "
-        + ManagementFactory.getRuntimeMXBean().getName();
+  public static synchronized void shutDown() {
+    if (_monitor == null) {
+      LOG.warn("Attempt made to shut down Thread Monitor which was never started.");
+    }
+    else if (!_monitor.isAlive()) {
+      LOG.info("Thread Monitor already shut down.");
+    }
+    else {
+      LOG.info("Shutting down Thread Monitor.  Will wait for completion.");
+      _monitor.interrupt();
+      // wait until thread shut down
+      waitForShutDown(_monitor);
+      LOG.info("Thread Monitor successfully shut down.");
+    }
   }
 
-  private boolean isStopped() {
-    return !running;
+  private final ThreadMonitorConfig _config;
+
+  private ThreadMonitor(ThreadMonitorConfig config) {
+    _config = config;
   }
 
-  // This method should be private but we are forced to keep it public to
-  // maintain compliance with Runnable interface.  TODO: assess refactor??
   @Override
   public void run() {
     MDCUtil.setNonRequestThreadVars("thrm");
-    if (!wdkModel.getModelConfig().isMonitorBlockedThreads()) {
-      logger.info("Thread monitor not configured to run.  Monitor returning.");
-      return; // thread monitor turned off
+    if (!_config.isActive()) {
+      LOG.info("Thread monitor not configured to run.  Monitor returning.");
+      return;
     }
-    logger.info("Thread monitor started at Thread#"
-        + Thread.currentThread().getId() + " - " + siteInfo);
-    running = true;
-    stopRequested = false;
-    int threshold = wdkModel.getModelConfig().getBlockedThreshold();
-    int blockedCycles = 0;
-    long lastReport = 0;
     ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
+    if (!thbean.isThreadContentionMonitoringSupported()) {
+      LOG.warn("Thread monitoring is not supported by this JVM.  Monitor returning.");
+      return;
+    }
+    monitorThreads(thbean);
+  }
+
+  public void monitorThreads(ThreadMXBean thbean) {
+
+    String siteInfo = _config.getAppName() + ", " + ManagementFactory.getRuntimeMXBean().getName();
+    LOG.info("Thread Monitor started on thread #" + Thread.currentThread().getId() + " - " + siteInfo);
     thbean.setThreadContentionMonitoringEnabled(true);
-    while (!stopRequested) {
-      // get all threads
-      Thread[] threads = getAllThreads(thbean);
 
-      // summarize the states
-      Map<State, Integer> states = new HashMap<State, Integer>();
-      List<Thread> blockedThreads = new ArrayList<>();
-      for (Thread thread : threads) {
-        State state = thread.getState();
-        int count = states.containsKey(state) ? states.get(state) : 0;
-        states.put(state, count + 1);
-        if (state == State.BLOCKED)
-          blockedThreads.add(thread);
-      }
-      String stateText = printStates(states, threads.length, blockedCycles);
-      logger.debug(stateText);
+    int blockedCycles = 0; // keeps track of amount of time since last report
+    long lastReportTime = 0; // set to ensure first report happens immediately
 
-      if (blockedThreads.size() >= threshold) {
+    while (!Thread.interrupted()) {
+      ThreadState threadState = getThreadState(thbean);
+      String stateText = threadState.getSummary(blockedCycles);
+      LOG.debug(stateText);
+
+      if (threadState.getBlockedThreads().size() > _config.getMaxBlockedThreshold()) {
         blockedCycles++;
-        // enough blocked cycles reached
         if (blockedCycles >= MIN_BLOCKED_CYCLES) {
-          // enough blocked threads reached
-          if (System.currentTimeMillis() - lastReport > REPORT_INTERVAL) {
-            report(thbean, stateText, blockedThreads);
-            lastReport = System.currentTimeMillis();
+          // enough cycles reached where blocked thread count exceeds maximum
+          if (System.currentTimeMillis() - lastReportTime > REPORT_INTERVAL) {
+            report(thbean, siteInfo, stateText, threadState.getThird());
+            lastReportTime = System.currentTimeMillis();
           }
         }
-      } else
+      }
+      else {
         blockedCycles = 0; // reset the cycle
+      }
 
-      // sleep for a while
-      try {
-        Thread.sleep(SLEEP_INTERVAL);
-      } catch (InterruptedException ex) {
-        logger.warn("Thread Monitor interrupted during operation.  Exiting...");
+      // sleep for a while, and break if interrupted
+      if (ThreadUtil.sleep(SLEEP_INTERVAL)) {
+        LOG.info("Thread Monitor interrupted during operation.  Exiting...");
         break;
       }
     }
-    logger.info("Thread monitor stopped on Thread#"
-        + Thread.currentThread().getId() + " - " + siteInfo);
-    running = false;
+    LOG.info("Thread monitor stopped on Thread " + Thread.currentThread().getId() + " - " + siteInfo);
   }
 
-  private void requestStop() {
-    stopRequested = true;
+  private static ThreadState getThreadState(ThreadMXBean thbean) {
+    Thread[] threads = getAllThreads(thbean);
+    Map<State, Integer> states = new HashMap<State, Integer>();
+    List<Thread> blockedThreads = new ArrayList<>();
+    for (Thread thread : threads) {
+      State state = thread.getState();
+      int count = states.containsKey(state) ? states.get(state) : 0;
+      states.put(state, count + 1);
+      if (state == State.BLOCKED) {
+        blockedThreads.add(thread);
+      }
+    }
+    return new ThreadState(threads.length, states, blockedThreads);
   }
 
-  private Thread[] getAllThreads(ThreadMXBean thbean) {
+  private static Thread[] getAllThreads(ThreadMXBean thbean) {
     // get root thread group
     ThreadGroup group = Thread.currentThread().getThreadGroup();
     ThreadGroup parent;
-    while ((parent = group.getParent()) != null)
+    while ((parent = group.getParent()) != null) {
       group = parent;
-
+    }
     // get all threads
     int count = thbean.getThreadCount();
     int n = 0;
@@ -144,26 +142,28 @@ public class ThreadMonitor implements Runnable {
     return Arrays.copyOf(threads, n);
   }
 
-  private String printStates(Map<State, Integer> states, int total,
-      int blockedCycles) {
-    StringBuilder buffer = new StringBuilder("Current Threads - ");
-    buffer.append("Total: " + total);
-    State[] keys = states.keySet().toArray(new State[0]);
-    Arrays.sort(keys);
-    for (State state : keys) {
-      buffer.append(", " + state);
-      buffer.append(": " + states.get(state));
+  private void report(ThreadMXBean thbean, String siteInfo, String stateText, List<Thread> blockedThreads) {
+    // get title
+    String subject = "[" + siteInfo + "] WARNING - Too many blocked threads: " + blockedThreads.size();
+
+    // get content and log
+    String content = getEmailBody(thbean, siteInfo, stateText, blockedThreads);
+    LOG.warn(subject + "\n" + content.replaceAll("<[^<>]+>", " "));
+
+    try {
+      // get admin email
+      List<String> emails = _config.getAdminEmails();
+      String smtpServer = _config.getSmtpServer();
+      if (!emails.isEmpty())
+        Utilities.sendEmail(smtpServer, FormatUtil.join(emails.toArray(), ","), emails.get(0), subject, content);
     }
-    buffer.append(", blocked cycle: " + blockedCycles);
-    return buffer.toString();
+    catch (WdkModelException e) {
+      // simply log the exception here; it might be caused by a unconfigured admin email.
+      LOG.error("Unable to send 'Too Many Blocked Threads' email to admins", e);
+    }
   }
 
-  private void report(ThreadMXBean thbean, String stateText,
-      List<Thread> blockedThreads) {
-    // get title
-    String subject = "[" + siteInfo + "] WARNING - Too many blocked threads: "
-        + blockedThreads.size();
-
+  private String getEmailBody(ThreadMXBean thbean, String siteInfo, String stateText, List<Thread> blockedThreads) {
     // get thread infos
     long[] ids = new long[blockedThreads.size()];
     for (int i = 0; i < ids.length; i++) {
@@ -171,40 +171,79 @@ public class ThreadMonitor implements Runnable {
     }
     ThreadInfo[] infos = thbean.getThreadInfo(ids);
 
-    // get content
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("<p>" + siteInfo + "</p>");
-    buffer.append("<p>" + stateText + "</p><br/>\n");
-    buffer.append("<p>Too many blocked threads detected.<p>\n");
+    // build body text
+    StringBuilder buffer = new StringBuilder()
+        .append("<p>").append(siteInfo).append("</p>")
+        .append("<p>").append(stateText).append("</p><br/>\n")
+        .append("<p>Too many blocked threads detected.<p>\n");
     for (int i = 0; i < ids.length; i++) {
       Thread thread = blockedThreads.get(i);
       ThreadInfo info = infos[i];
-      if (info == null)
-        continue;
-
-      buffer.append("<div><div>Thread id=" + thread.getId() + ", name='"
-          + thread.getName() + "'</div>\n");
-      buffer.append("<div>\tblocked count=" + info.getBlockedCount()
-          + ", blocked time=" + info.getBlockedTime() + "</div>\n");
-      buffer.append("<ol>");
-      for (StackTraceElement element : thread.getStackTrace()) {
-        buffer.append("\t<li>" + element.toString() + "</li>\n");
+      if (info != null) {
+        buffer.append("<div><div>Thread id=").append(thread.getId())
+              .append(", name='").append(thread.getName()).append("'</div>\n")
+              .append("<div>\tblocked count=").append(info.getBlockedCount())
+              .append(", blocked time=").append(info.getBlockedTime() + "</div>\n")
+              .append("<ol>");
+        for (StackTraceElement element : thread.getStackTrace()) {
+          buffer.append("\t<li>").append(element.toString()).append("</li>\n");
+        }
+        buffer.append("</ol></div><br/>\n\n");
       }
-      buffer.append("</ol></div><br/>\n\n");
     }
-    String content = buffer.toString();
-    logger.warn(subject + "\n" + content.replaceAll("<[^<>]+>", " "));
+    return buffer.toString();
+  }
 
-    try {
-      // get admin email
-      List<String> emails = wdkModel.getModelConfig().getAdminEmails();
-      if (!emails.isEmpty())
-        Utilities.sendEmail(wdkModel, FormatUtil.join(emails.toArray(), ","), emails.get(0), subject, content);
+  private static class ThreadState extends ThreeTuple<Integer, Map<State, Integer>, List<Thread>> {
 
-    } catch (WdkModelException ex) {
-      ex.printStackTrace();
-      // ignore the exception here, it might be caused by an unconfigured admin
-      // email.
+    public ThreadState(Integer numTotalThreads, Map<State, Integer> threadStateCounts, List<Thread> blockedThreads) {
+      super(numTotalThreads, threadStateCounts, blockedThreads);
     }
+
+    public List<Thread> getBlockedThreads() {
+      return getThird();
+    }
+
+    public String getSummary(int blockedCycles) {
+      StringBuilder buffer = new StringBuilder("Current Threads - ");
+      buffer.append("Total: " + getFirst());
+      State[] keys = getSecond().keySet().toArray(new State[0]);
+      Arrays.sort(keys);
+      for (State state : keys) {
+        buffer.append(", " + state);
+        buffer.append(": " + getSecond().get(state));
+      }
+      buffer.append(", blocked cycle: " + blockedCycles);
+      return buffer.toString();
+    }
+  }
+
+  private static void waitForShutDown(Thread monitor) {
+    while (monitor.isAlive()) {
+      if (ThreadUtil.sleep(10)) {
+        LOG.warn("Thread Monitor shut down interrupted.  " +
+            "Do not know if spawned thread died successfully.");
+        return;
+      }
+    }
+  }
+
+  public static interface ThreadMonitorConfig {
+    public boolean isActive();
+    public String getAppName();
+    public int getMaxBlockedThreshold();
+    public String getSmtpServer();
+    public List<String> getAdminEmails();
+  }
+
+  public static ThreadMonitorConfig getThreadMonitorConfig(final WdkModel wdkModel) {
+    final ModelConfig modelConfig = wdkModel.getModelConfig();
+    return new ThreadMonitorConfig() {
+      @Override public boolean isActive() { return modelConfig.isMonitorBlockedThreads(); }
+      @Override public String getAppName() { return wdkModel.getProjectId() + " v" + wdkModel.getVersion(); }
+      @Override public int getMaxBlockedThreshold() { return modelConfig.getBlockedThreshold(); }
+      @Override public String getSmtpServer() { return modelConfig.getSmtpServer(); }
+      @Override public List<String> getAdminEmails() { return modelConfig.getAdminEmails(); }
+    };
   }
 }

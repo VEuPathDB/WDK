@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
@@ -44,7 +45,7 @@ public class RecordClassTest implements ElementTest {
     for (String key : paramValues.keySet()) {
       pkValues.put(key, paramValues.get(key));
     }
-    RecordInstance recordInstance = new RecordInstance(_user, _recordClass, pkValues);
+    RecordInstance recordInstance = new DynamicRecordInstance(_user, _recordClass, pkValues);
     recordInstance.print();
     result.setReturned("Created RecordInstance");
     result.setPassed(true);

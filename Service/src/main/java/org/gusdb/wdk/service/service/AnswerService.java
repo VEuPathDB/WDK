@@ -12,11 +12,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.report.ReporterFactory;
-import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.DataValidationException;
@@ -76,6 +76,10 @@ public class AnswerService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException, DataValidationException {
     try {
+      if (body == null || body.isEmpty()) {
+        throw new RequestMisformatException("Request JSON cannot be empty. " +
+            "If you are submitting a form, include the 'data' input parameter.");
+      }
 
       JSONObject json = new JSONObject(body);
 

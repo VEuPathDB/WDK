@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.answer;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -26,7 +24,8 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.report.ReporterRef;
+import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -40,6 +39,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.DefaultResultSizePlugin;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.ResultSize;
@@ -51,8 +51,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
-import org.gusdb.wdk.model.report.AttributesTabularReporter;
-import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -121,47 +119,10 @@ import org.json.JSONObject;
  */
 public class AnswerValue {
 
-  /**
-   * Computes application of various filters to the same answer value in parallel to get result sizes
-   * 
-   * May eventually be deprecated if we do away with the filter grid (the only place we really load filtered result sizes)
-   * 
-   * @author jerric
-   */
-  private static class FilterSizeTask implements Runnable {
-
-    private final AnswerValue _answer;
-    private final ConcurrentMap<String, Integer> _sizes;
-    private final String _filterName;
-    private final boolean _useDisplay;
-
-    private FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
-      _answer = answer;
-      _sizes = sizes;
-      _filterName = filterName;
-      _useDisplay = useDisplay;
-    }
-
-    @Override
-    public void run() {
-      try {
-        int size = (_useDisplay ?
-            _answer.getFilterDisplaySize(_filterName) :
-            _answer.getFilterSize(_filterName));
-        _sizes.put(_filterName, size);
-      }
-      catch (Exception ex) {
-        logger.error("Could not determine filter size for filter '" + _filterName + "'.", ex);
-        _sizes.put(_filterName, -1);
-      }
-    }
-
-  }
+  private static final Logger LOG = Logger.getLogger(AnswerValue.class);
 
   private static final int THREAD_POOL_SIZE = 4;
   private static final int THREAD_POOL_TIMEOUT = 5; // timeout thread pool, in minutes
-
-  private static final Logger logger = Logger.getLogger(AnswerValue.class);
 
   // ------------------------------------------------------------------
   // Instance variables
@@ -179,7 +140,7 @@ public class AnswerValue {
 
   private String _sortedIdSql;
 
-  private Map<PrimaryKeyAttributeValue, RecordInstance> _pageRecordInstances;
+  private Map<PrimaryKeyAttributeValue, DynamicRecordInstance> _pageRecordInstances;
 
   private Integer _resultSize; // size of total result
 
@@ -203,7 +164,7 @@ public class AnswerValue {
   private AnswerValueAttributes _attributes;
 
   // ------------------------------------------------------------------
-  // Constructor
+  // Constructors
   // ------------------------------------------------------------------
 
   /**
@@ -219,7 +180,7 @@ public class AnswerValue {
    */
   public AnswerValue(User user, Question question, QueryInstance<?> idsQueryInstance, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
-    logger.debug("AnswerValue being created for question: " + question.getDisplayName());
+    LOG.debug("AnswerValue being created for question: " + question.getDisplayName());
     _user = user;
     _question = question;
     _attributes = new AnswerValueAttributes(_user, _question);
@@ -233,10 +194,19 @@ public class AnswerValue {
       sortingMap = question.getSortingAttributeMap();
     _sortingMap = sortingMap;
 
-    // get the view (old filters)
+    // get the (old) filter instance
     _filter = filter;
 
-    logger.debug("AnswerValue created for question: " + question.getDisplayName());
+    LOG.debug("AnswerValue created for question: " + question.getDisplayName());
+  }
+
+  /**
+   * Copy constructor
+   * 
+   * @param answerValue the answer value to be copied
+   */
+  public AnswerValue(AnswerValue answerValue) {
+    this(answerValue, answerValue._startIndex, answerValue._endIndex);
   }
 
   /**
@@ -258,7 +228,7 @@ public class AnswerValue {
     _resultSize = answerValue._resultSize;
 
     // Note: do not copy result size maps (i.e. _resultSizesByFilter and
-    //  _resultSizesByProject); they are essentially caches and should be
+    //   _resultSizesByProject); they are essentially caches and should be
     //   rebuilt by each new AnswerValue
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
@@ -266,7 +236,7 @@ public class AnswerValue {
     if (answerValue._filterOptions != null) _filterOptions = new FilterOptionList(answerValue._filterOptions);
     if (answerValue._viewFilterOptions != null) _viewFilterOptions = new FilterOptionList(answerValue._viewFilterOptions);
 
-    logger.debug("AnswerValue created by copying another AnswerValue");
+    LOG.debug("AnswerValue created by copying another AnswerValue");
   }
 
   // ------------------------------------------------------------------
@@ -317,13 +287,13 @@ public class AnswerValue {
     if (_resultSize == null || !_idsQueryInstance.getIsCacheable()) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(this);
     }
-    logger.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + _idsQueryInstance.getIsCacheable());
+    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + _idsQueryInstance.getIsCacheable());
     return _resultSize;
   }
 
   public int getDisplayResultSize() throws WdkModelException, WdkUserException {
     ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
-    logger.debug("getting Display result size.");
+    LOG.debug("getting Display result size.");
     return plugin.getResultSize(this);
   }
 
@@ -545,16 +515,12 @@ public class AnswerValue {
   }
 
   /**
-   * Iterate through all the pages of the answer, and each page is represented by an AnswerValue object.
+   * Iterate through all the records of the answer
    * 
-   * @return
-   * @throws WdkUserException
+   * @return record stream of this answer value
    */
-  public Iterable<AnswerValue> getFullAnswers() throws WdkModelException, WdkUserException {
-    // user tabular reporter as answer iterator
-    int resultSize = this.getResultSize();
-    AttributesTabularReporter reporter = new AttributesTabularReporter(this, 1, resultSize);
-    return reporter;
+  public RecordStream getFullAnswer() {
+    return new PagedAnswerRecordStream(this, 200);
   }
 
   // ------------------------------------------------------------------
@@ -571,7 +537,7 @@ public class AnswerValue {
    * 
    */
   public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException, WdkUserException {
-    logger.debug("Integrating attributes query " + attributeQuery.getFullName());
+    LOG.debug("Integrating attributes query " + attributeQuery.getFullName());
     initPageRecordInstances();
 
     WdkModel wdkModel = _question.getWdkModel();
@@ -581,7 +547,7 @@ public class AnswerValue {
 
     //logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
     for (Column column : attributeQuery.getColumns()) {
-      logger.trace("column: '" + column.getName() + "'");
+      LOG.trace("column: '" + column.getName() + "'");
     }
     // if (attributeQuery instanceof SqlQuery)
     // logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
@@ -604,7 +570,7 @@ public class AnswerValue {
 
       while (resultList.next()) {
 	PrimaryKeyAttributeValue primaryKey = getPrimaryKeyFromResultList(resultList, pkField);
-        RecordInstance record = _pageRecordInstances.get(primaryKey);
+        DynamicRecordInstance record = _pageRecordInstances.get(primaryKey);
 
         if (record == null) {
           StringBuffer error = new StringBuffer();
@@ -632,7 +598,7 @@ public class AnswerValue {
       }
     }
     catch (SQLException e) {
-      logger.error("Error executing attribute query using SQL \"" + sql + "\"", e);
+      LOG.error("Error executing attribute query using SQL \"" + sql + "\"", e);
       throw new WdkModelException(e);
     }
     finally {
@@ -644,7 +610,7 @@ public class AnswerValue {
       throw new WdkModelException("The integrated attribute query '" + attributeQuery.getFullName() +
           "' doesn't return the same number of records in the current " + "page. Paged attribute sql:\n" + sql);
     }
-    logger.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
+    LOG.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
 
   public static PrimaryKeyAttributeValue getPrimaryKeyFromResultList(ResultList resultList, PrimaryKeyAttributeField pkField) throws WdkModelException {
@@ -695,7 +661,7 @@ public class AnswerValue {
     ResultList resultList = getTableFieldResultList(tableField);
 
     // initialize table values
-    for (RecordInstance record : _pageRecordInstances.values()) {
+    for (DynamicRecordInstance record : _pageRecordInstances.values()) {
       PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
       TableValue tableValue = new TableValue(_user, primaryKey, tableField, true);
       record.addTableValue(tableValue);
@@ -707,7 +673,7 @@ public class AnswerValue {
 
     while (resultList.next()) {
       PrimaryKeyAttributeValue primaryKey = getPrimaryKeyFromResultList(resultList, pkField);
-      RecordInstance record = _pageRecordInstances.get(primaryKey);
+      DynamicRecordInstance record = _pageRecordInstances.get(primaryKey);
       primaryKey.setValueContainer(record);
 
       if (record == null) {
@@ -715,7 +681,7 @@ public class AnswerValue {
         error.append("Paged table query [" + tableQuery.getFullName());
         error.append("] returned rows that doesn't match the paged ");
         error.append("records. (");
-	error.append(primaryKey.getValuesAsString());
+        error.append(primaryKey.getValuesAsString());
         error.append(").\nPaged table SQL:\n" + getPagedTableSql(tableQuery));
         error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
         throw new WdkModelException(error.toString());
@@ -725,13 +691,12 @@ public class AnswerValue {
       // initialize a row in table value
       tableValue.initializeRow(resultList);
     }
-    logger.debug("Table query [" + tableQuery + "] integrated.");
+    LOG.debug("Table query [" + tableQuery + "] integrated.");
   }
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = _question.getWdkModel();
-    // has to get a clean copy of the attribute query, without pk params
-    // appended
+    // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getQuery();
     tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
@@ -896,7 +861,7 @@ public class AnswerValue {
       sql.append("idq.").append(column);
     }
 
-    logger.debug("sorted id sql constructed.");
+    LOG.debug("sorted id sql constructed.");
     return sql.toString();
   }
 
@@ -912,7 +877,7 @@ public class AnswerValue {
     // add comments to the sql
     sql = " /* a page of sorted ids */ " + sql;
 
-    logger.debug("paged id sql constructed.");
+    LOG.debug("paged id sql constructed.");
 
     return sql;
   }
@@ -944,19 +909,19 @@ public class AnswerValue {
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
       if (viewFiltersApplied && !excludeViewFilters){
-        logger.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " + _viewFilterOptions.getFilterOptions().keySet() + " " + this);
+        LOG.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " + _viewFilterOptions.getFilterOptions().keySet() + " " + this);
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
-	logger.info("innersql: " + innerSql);
+	LOG.info("innersql: " + innerSql);
         innerSql = " /* new view filter applied on id query */ " + innerSql;
       }
      
       innerSql = "(" + innerSql + ")";
-      logger.debug("AnswerValue: ID SQL constructed with all filters:\n");
+      LOG.debug("AnswerValue: ID SQL constructed with all filters:\n");
 
       return innerSql;
     }
     catch (WdkModelException | WdkUserException ex) {
-      logger.error(ex.getMessage(), ex);
+      LOG.error(ex.getMessage(), ex);
       ex.printStackTrace();
       throw ex;
     }
@@ -986,7 +951,7 @@ public class AnswerValue {
     Map<String, String> queryNames = new LinkedHashMap<String, String>();
     Map<String, String> orderClauses = new LinkedHashMap<String, String>();
     WdkModel wdkModel = _question.getWdkModel();
-    logger.debug("sorting map: " + _sortingMap);
+    LOG.debug("sorting map: " + _sortingMap);
     for (String fieldName : _sortingMap.keySet()) {
       AttributeField field = fields.get(fieldName);
       if (field == null)
@@ -1057,7 +1022,7 @@ public class AnswerValue {
       return;
 
     //logger.debug("Initializing paged records......");
-    _pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
+    _pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, DynamicRecordInstance>();
 
     try {
       String sql = getPagedIdSql();
@@ -1087,7 +1052,7 @@ public class AnswerValue {
             Object value = resultList.get(column);
             pkValues.put(column, value);
           }
-          RecordInstance record = new RecordInstance(this, pkValues);
+          DynamicRecordInstance record = new DynamicRecordInstance(this, pkValues);
           _pageRecordInstances.put(record.getPrimaryKey(), record);
         }
       }
@@ -1103,9 +1068,9 @@ public class AnswerValue {
             buffer.append(", ");
           buffer.append(name);
         }
-        logger.debug("resultSize: " + resultSize + ", start: " + _startIndex + ", end: " + _endIndex);
-        logger.debug("expected: " + expected + ", actual: " + _pageRecordInstances.size());
-        logger.debug("Paged ID SQL:\n" + sql);
+        LOG.debug("resultSize: " + resultSize + ", start: " + _startIndex + ", end: " + _endIndex);
+        LOG.debug("expected: " + expected + ", actual: " + _pageRecordInstances.size());
+        LOG.debug("Paged ID SQL:\n" + sql);
         throw new WdkModelException("The number of results returned " + "by the id query " +
             _idsQueryInstance.getQuery().getFullName() +
             " changes when it is joined to the query (or queries) " + "for attribute set (" + buffer +
@@ -1116,7 +1081,7 @@ public class AnswerValue {
       }
     }
     catch (WdkModelException | WdkUserException ex) {
-      logger.error(ex.getMessage(), ex);
+      LOG.error(ex.getMessage(), ex);
       ex.printStackTrace();
       throw ex;
     }
@@ -1169,14 +1134,14 @@ public class AnswerValue {
         // WdkModelException("the assigned sorting attribute ["
         // + attributeName + "] doesn't exist in the answer of "
         // + "question " + question.getFullName());
-        logger.debug("Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
+        LOG.debug("Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
             _question.getFullName() + "', attribute: '" + attributeName + "'");
       }
       else {
         validMap.put(attributeName, sortingMap.get(attributeName));
       }
     }
-    logger.debug(buffer);
+    LOG.debug(buffer);
     _sortingMap.clear();
     _sortingMap.putAll(validMap);
 
@@ -1371,7 +1336,7 @@ public class AnswerValue {
   }
 
   public void setViewFilterOptions(FilterOptionList viewFilterOptions) {
-    logger.info("setting options: " + this + " " + viewFilterOptions);
+    LOG.info("setting options: " + this + " " + viewFilterOptions);
     _viewFilterOptions = viewFilterOptions;
     reset();
   }

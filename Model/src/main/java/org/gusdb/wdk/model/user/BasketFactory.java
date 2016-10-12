@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -403,8 +404,7 @@ public class BasketFactory {
             Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
             pkValues.put(columns[i - 1], columnValue);
           }
-          RecordInstance record = new RecordInstance(user, recordClass,
-              pkValues);
+          RecordInstance record = new DynamicRecordInstance(user, recordClass, pkValues);
           records.add(record);
         }
         return records;

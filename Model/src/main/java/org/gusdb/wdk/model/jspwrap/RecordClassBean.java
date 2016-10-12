@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
-import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -16,6 +15,7 @@ import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.ReporterRef;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -261,5 +261,9 @@ public class RecordClassBean {
 
     public boolean getHasResultSizeQuery() {
       return recordClass.getResultSizeQueryRef() != null;
+    }
+
+    public RecordClass getRecordClass() {
+      return recordClass;
     }
 }

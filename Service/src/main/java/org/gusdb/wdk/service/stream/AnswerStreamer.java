@@ -2,20 +2,16 @@ package org.gusdb.wdk.service.stream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerDetails;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AnswerStreamer {
@@ -43,8 +39,7 @@ public class AnswerStreamer {
         try {
           reporter.report(stream);
         }
-        catch (WdkModelException | NoSuchAlgorithmException | JSONException | WdkUserException
-            | SQLException e) {
+        catch (WdkModelException e) {
           throw new WebApplicationException(e);
         }
       }

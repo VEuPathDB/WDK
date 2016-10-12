@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -127,18 +126,6 @@ public class UserFactoryBean {
       User user = userFactory.login(guest.getUser(), userId);
       if (user == null) return null;
       return new UserBean(user);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#sendEmail(java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String)
-     */
-    public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkModelException  {
-        Utilities.sendEmail(userFactory.getWdkModel(), email, reply, subject,
-                content);
     }
 
     /*

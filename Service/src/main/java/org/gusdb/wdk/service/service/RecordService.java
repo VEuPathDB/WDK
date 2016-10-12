@@ -24,6 +24,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -211,8 +212,7 @@ public class RecordService extends WdkService {
   }
 
   private static RecordInstance getRecordInstance(User user, RecordRequest recordRequest) throws WdkModelException, WdkUserException {
-    RecordClass recordClass = recordRequest.getRecordClass();
-    return new RecordInstance(user, recordClass, recordRequest.getPrimaryKey());
+    return new DynamicRecordInstance(user, recordRequest.getRecordClass(), recordRequest.getPrimaryKey());
   }
 
   private Response getTableResponse(String recordClassName, String tableName,

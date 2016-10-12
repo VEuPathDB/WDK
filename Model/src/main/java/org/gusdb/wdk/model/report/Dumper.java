@@ -14,11 +14,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.answer.report.ReporterFactory;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
@@ -66,38 +65,31 @@ public class Dumper {
         OutputStream out = new FileOutputStream(outputFile);
 
         // construct wdkModel
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-        User user = wdkModel.getSystemUser();
-
-        // load selected question
-        Question question = (Question) wdkModel.resolveReference(questionName);
-
-        // prepare parameters
-        Map<String, String> params = parseListArgs("params", questionParams);
-        fillInParams(user, params, question);
-
-        // load config
-        Map<String, String> config = parseListArgs("config", reporterConfig);
-
-        // Get the reporter
-        AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
-        Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
-
+        WdkModel wdkModel = null;
         try {
-            // initialize the reporter
-            reporter.initialize();
+          wdkModel = WdkModel.construct(modelName, GusHome.getGusHome());
+          User user = wdkModel.getSystemUser();
 
-            // write the reporter
-            reporter.write(out);
-        } finally {
-            // complete the reporter
-            reporter.complete();
-            // flush the output stream
-            out.flush();
-            out.close();
-            // release the model
-            wdkModel.releaseResources();
+          // load selected question
+          Question question = (Question) wdkModel.resolveReference(questionName);
+
+          // prepare parameters
+          Map<String, String> params = parseListArgs("params", questionParams);
+          fillInParams(user, params, question);
+
+          // load config
+          Map<String, String> config = parseListArgs("config", reporterConfig);
+
+          // Get the reporter
+          AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
+          Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
+
+          reporter.report(out);
+          out.close();
+        }
+        finally {
+          // release the model
+          if (wdkModel != null) wdkModel.releaseResources();
         }
     }
 

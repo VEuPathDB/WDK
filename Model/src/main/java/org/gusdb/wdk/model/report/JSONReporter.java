@@ -1,32 +1,18 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.report;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -43,317 +29,165 @@ import org.json.JSONWriter;
  */
 public class JSONReporter extends StandardReporter {
 
-    private static Logger logger = Logger.getLogger(JSONReporter.class);
+  private static Logger LOG = Logger.getLogger(JSONReporter.class);
 
-    public static final String PROPERTY_TABLE_CACHE = "table_cache";
-    public static final String PROPERTY_RECORD_ID_COLUMN = "record_id_column";
+  private TableCache _tableCache;
 
-    private String tableCache;
-    private String recordIdColumn;
+  public JSONReporter(AnswerValue answerValue) {
+    super(answerValue);
+  }
 
-    private String sqlInsert;
-    private String sqlQuery;
+  @Override
+  public void setProperties(Map<String, String> properties) throws WdkModelException {
+    super.setProperties(properties);
+    String cacheTableName = TableCache.getCacheTableName(properties);
+    if (cacheTableName != null) {
+      _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
+    }
+  }
 
-    public JSONReporter(AnswerValue answerValue, int startIndex, int endIndex) {
-        super(answerValue, startIndex, endIndex);
+  @Override
+  public String getHttpContentType() {
+    return "application/json";
+  }
+
+  @Override
+  public String getDownloadFileName() {
+    return getQuestion().getName() + "_detail.json";
+  }
+
+  @Override
+  public void write(OutputStream out) throws WdkModelException {
+    try {
+      OutputStreamWriter streamWriter = new OutputStreamWriter(out);
+      JSONWriter writer = new JSONWriter(streamWriter);
+
+      AnswerValue av = _baseAnswer;
+      writer.object().key("response").object().key("recordset").object().key("id").value(
+          av.getChecksum()).key("count").value(this.getResultSize()).key("type").value(
+              av.getQuestion().getRecordClass().getDisplayName()).key("records").array();
+
+      if (_tableCache != null) {
+        _tableCache.open();
+      }
+
+      // get page based answers with a maximum size (defined in PageAnswerIterator)
+      int recordCount = 0;
+      for (RecordInstance record : getRecords()) {
+        writer.object().key("id").value(record.getPrimaryKey());
+
+        // print out attributes of the record first
+        formatAttributes(record, getSelectedAttributes(), writer);
+
+        // print out tables
+        formatTables(record, getSelectedTables(), writer, _tableCache);
+
+        // count the records processed so far
+        recordCount++;
+        writer.endObject();
+        streamWriter.flush();
+      }
+
+      writer.endArray() // records
+          .endObject().endObject().endObject();
+      streamWriter.flush();
+      streamWriter.close();
+      LOG.info("Totally " + recordCount + " records dumped");
+    }
+    catch (WdkUserException | JSONException | SQLException | IOException e) {
+      throw new WdkModelException("Unable to write JSON report", e);
+    }
+    finally {
+      if (_tableCache != null) {
+        _tableCache.close();
+      }
+    }
+  }
+
+  private static void formatAttributes(RecordInstance record, Set<AttributeField> attributes, JSONWriter writer)
+      throws WdkModelException, WdkUserException {
+    if (attributes.size() > 0) {
+      writer.key("fields").array();
+      for (AttributeField field : attributes) {
+        AttributeValue value = record.getAttributeValue(field.getName());
+        writer.object().key("name").value(field.getName()).key("value").value(value.getValue()).endObject();
+      }
+      writer.endArray();
+    }
+  }
+
+  /**
+   * Add the following to the writer for the passed record:
+   * 
+   * { tables: [
+   *   { name: String, rows: [
+   *     { fields: [
+   *       { name: String, value: String },
+   *       ...
+   *     ]}
+   *   ]}
+   * ]}
+   */
+  private static void formatTables(RecordInstance record, Set<TableField> tables, JSONWriter writer, TableCache tableCache)
+      throws WdkModelException, SQLException, WdkUserException {
+
+    JSONArray tablesArray = new JSONArray();
+
+    // print out tables of the record
+    for (TableField table : tables) {
+
+      // tuple of #rows and formatted object
+      TwoTuple<Integer,JSONObject> tableData = null;
+
+      if (tableCache == null) {
+        // if not caching then simply format and return
+        tableData = getTableJson(record.getTableValue(table.getName()));
+      }
+      else {
+        // check if the record has been cached
+        TwoTuple<Integer,String> cachedData = tableCache.getCachedTableValue(record, table.getName());
+        if (cachedData == null) {
+          tableData = getTableJson(record.getTableValue(table.getName()));
+          cachedData = new TwoTuple<Integer,String>(
+              tableData.getFirst(), tableData.getSecond().toString());
+          tableCache.insertTableValue(record, table.getName(), cachedData);
+        }
+      }
+
+      tablesArray.put(tableData.getSecond());
     }
 
-    /**
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#setProperties(java.util.Map)
-     */
-    @Override
-    public void setProperties(Map<String, String> properties) throws WdkModelException {
-        super.setProperties(properties);
+    // write to the stream
+    writer.key("tables").value(tablesArray);
 
-        tableCache = properties.get(PROPERTY_TABLE_CACHE);
-
-        // check required properties
-        recordIdColumn = properties.get(PROPERTY_RECORD_ID_COLUMN);
-        logger.info(" tableCache:" + tableCache + "recordIdColumn: "
-                + recordIdColumn);
-        if (tableCache != null && recordIdColumn == null)
-            throw new WdkModelException("The required property for reporter "
-                    + this.getClass().getName() + ", "
-                    + PROPERTY_RECORD_ID_COLUMN + ", is missing");
+    if (tableCache != null) {
+      // flush for each record
+      tableCache.flushBatch();
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#getHttpContentType()
-     */
-    @Override
-    public String getHttpContentType() {
-      return "application/json";
+  private static TwoTuple<Integer,JSONObject> getTableJson(TableValue tableValue) throws JSONException, WdkModelException, WdkUserException {
+    TableField table = tableValue.getTableField();
+    JSONObject tableObject = new JSONObject().put("name", table.getDisplayName());
+    JSONArray rowsArray = new JSONArray();
+    AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+
+    // output table header
+    int tableSize = 0;
+    for (Map<String, AttributeValue> row : tableValue) {
+      tableSize++;
+      JSONObject rowObject = new JSONObject();
+      JSONArray fieldsArray = new JSONArray();
+      for (AttributeField field : fields) {
+        String fieldName = field.getName();
+        AttributeValue value = row.get(fieldName);
+        JSONObject fieldObject = new JSONObject().put("name", fieldName).put("value", value.getValue());
+        fieldsArray.put(fieldObject);
+      }
+      rowObject.put("fields", fieldsArray);
+      rowsArray.put(rowObject);
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.Reporter#getDownloadFileName()
-     */
-    @Override
-    public String getDownloadFileName() {
-        logger.info("Internal format: " + reporterConfig.getAttachmentType());
-        String name = getQuestion().getName();
-        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-            return name + "_detail.json";
-        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
-            return name + "_detail.pdf";
-        } else { // use the default file name defined in the parent
-            return super.getDownloadFileName();
-        }
-    }
-
-    // FIXME Use JSON library to create JSON
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
-     */
-    @Override
-    public void write(OutputStream out) throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
-        OutputStreamWriter streamWriter = new OutputStreamWriter(out);
-        JSONWriter writer = new JSONWriter(streamWriter);
-
-        // get the columns that will be in the report
-        Set<Field> fields = validateColumns();
-
-        Set<AttributeField> attributes = new LinkedHashSet<AttributeField>();
-        Set<TableField> tables = new LinkedHashSet<TableField>();
-        for (Field field : fields) {
-            if (field instanceof AttributeField) {
-                attributes.add((AttributeField) field);
-            } else if (field instanceof TableField) {
-                tables.add((TableField) field);
-            }
-        }
-
-        // get the formatted result
-        WdkModel wdkModel = getQuestion().getWdkModel();
-        RecordClass recordClass = getQuestion().getRecordClass();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-
-        // construct the insert sql
-        StringBuffer sqlInsert = new StringBuffer("INSERT INTO ");
-        sqlInsert.append(tableCache).append(" (wdk_table_id, ");
-        for (String column : pkColumns) {
-            sqlInsert.append(column).append(", ");
-        }
-        sqlInsert.append(" table_name, row_count, content) VALUES (");
-        sqlInsert.append(wdkModel.getUserDb().getPlatform()
-            .getNextIdSqlExpression("apidb", "wdkTable"));
-        sqlInsert.append(", ");
-        for (int i = 0; i < pkColumns.length; i++) {
-            sqlInsert.append("?, ");
-        }
-        sqlInsert.append("?, ?, ?)");
-
-        // construct the query sql
-        StringBuffer sqlQuery = new StringBuffer("SELECT ");
-        sqlQuery.append("count(*) AS cache_count FROM ").append(tableCache);
-        sqlQuery.append(" WHERE ");
-        for (String column : pkColumns) {
-            sqlQuery.append(column).append(" = ? AND ");
-        }
-        sqlQuery.append(" table_name = ?");
-
-        this.sqlInsert = sqlInsert.toString();
-        this.sqlQuery = sqlQuery.toString();
-        PreparedStatement psInsert = null;
-        PreparedStatement psQuery = null;
-        try {
-            if (tableCache != null) {
-                // want to cache the table content
-                DataSource dataSource = wdkModel.getAppDb().getDataSource();
-                psInsert = SqlUtils.getPreparedStatement(dataSource,
-                        sqlInsert.toString());
-                psQuery = SqlUtils.getPreparedStatement(dataSource,
-                        sqlQuery.toString());
-            }
-            int recordCount = 0;
-            AnswerValue av = this.getAnswerValue();
-            // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            writer
-              .object()
-                .key("response")
-                .object()
-                  .key("recordset")
-                  .object()
-                    .key("id")
-                    .value(av.getChecksum())
-                    .key("count")
-                    .value(this.getResultSize())
-                    .key("type")
-                    .value(av.getQuestion().getRecordClass().getDisplayName())
-                    .key("records")
-                    .array();
-
-            for (AnswerValue pageAnswer : this) {
-                for (RecordInstance record : pageAnswer.getRecordInstances()) {
-                    writer
-                      .object()
-                        .key("id")
-                        .value(record.getPrimaryKey());
-
-                    // print out attributes of the record first
-                    formatAttributes(record, attributes, writer);
-                    // print out tables
-                    formatTables(record, tables, writer, pageAnswer, psInsert,
-                            psQuery);
-                    // writer.flush();
-                    // count the records processed so far
-                    recordCount++;
-                    writer.endObject();
-                    streamWriter.flush();
-                }
-            }
-
-            writer
-                    .endArray() // records
-                  .endObject()
-                .endObject()
-              .endObject();
-            streamWriter.flush();
-            streamWriter.close();
-            logger.info("Totally " + recordCount + " records dumped");
-        }
-        catch (IOException ioe) {
-            logger.error(ioe);
-        }
-        finally {
-            SqlUtils.closeStatement(psQuery);
-            SqlUtils.closeStatement(psInsert);
-        }
-    }
-
- 
-    private void formatAttributes(RecordInstance record,
-            Set<AttributeField> attributes, JSONWriter writer)
-            throws WdkModelException, WdkUserException {
-        if (attributes.size() > 0) {
-            writer.key("fields").array();
-            for (AttributeField field : attributes) {
-                AttributeValue value = record.getAttributeValue(field.getName());
-                writer.object()
-                    .key("name")
-                    .value(field.getName())
-                    .key("value")
-                    .value(value)
-                .endObject();
-            }
-            writer.endArray();
-        }
-    }
-
-    private void formatTables(RecordInstance record, Set<TableField> tables,
-            JSONWriter writer, AnswerValue answerValue,
-            PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, WdkUserException {
-        DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
-        RecordClass recordClass = record.getRecordClass();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-
-        // Add the following to the writer:
-        //
-        // { tables: [
-        //   { name: String, rows: [
-        //     { fields: [
-        //       { name: String, value: String },
-        //       ...
-        //     ]}
-        //   ]}
-        // ]};
-
-        JSONArray tablesArray = new JSONArray();
-
-        // print out tables of the record
-        boolean needUpdate = false;
-        for (TableField table : tables) {
-            // we will be writing this object to the cache
-            JSONObject tableObject = new JSONObject()
-              .put("name", table.getDisplayName());
-            JSONArray rowsArray = new JSONArray();
-            TableValue tableValue = record.getTableValue(table.getName());
-            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
-
-            // output table header
-            int tableSize = 0;
-            for (Map<String, AttributeValue> row : tableValue) {
-                JSONObject rowObject = new JSONObject();
-                JSONArray fieldsArray = new JSONArray();
-                for (AttributeField field : fields) {
-                    String fieldName = field.getName();
-                    AttributeValue value = row.get(fieldName);
-                    JSONObject fieldObject = new JSONObject()
-                      .put("name", fieldName)
-                      .put("value", value.getValue());
-                    fieldsArray.put(fieldObject);
-                }
-                rowObject.put("fields", fieldsArray);
-                rowsArray.put(rowObject);
-            }
-            tableObject.put("rows", rowsArray);
-            tablesArray.put(tableObject);
-
-            String content = tableObject.toString();
-            // check if the record has been cached
-            if (tableCache != null) {
-                Map<String, String> pkValues = record.getPrimaryKey().getValues();
-                long start = System.currentTimeMillis();
-                for (int index = 1; index <= pkColumns.length; index++) {
-                    Object value = pkValues.get(pkColumns[index - 1]);
-                    psQuery.setObject(index, value);
-                }
-                psQuery.setString(pkColumns.length + 1, table.getName());
-                ResultSet rs = psQuery.executeQuery();
-                QueryLogger.logEndStatementExecution(sqlQuery,
-                        "wdk-report-json-select-count", start);
-                rs.next();
-                int count = rs.getInt("cache_count");
-                if (count == 0) {
-                    // insert into table cache
-                    int index;
-                    for (index = 1; index <= pkColumns.length; index++) {
-                        Object value = pkValues.get(pkColumns[index - 1]);
-                        psInsert.setObject(index, value);
-                    }
-                    psInsert.setString(index++, table.getName());
-                    psInsert.setInt(index++, tableSize);
-                    platform.setClobData(psInsert, index++, content, false);
-                    psInsert.addBatch();
-                    needUpdate = true;
-                }
-                SqlUtils.closeResultSetOnly(rs);
-            }
-        }
-
-        // write to the stream
-        writer
-            .key("tables")
-            .value(tablesArray);
-
-        if (tableCache != null && needUpdate) {
-            long start = System.currentTimeMillis();
-            psInsert.executeBatch();
-            QueryLogger.logEndStatementExecution(sqlInsert, "wdk-report-json-insert",
-                    start);
-        }
-    }
-
-    @Override
-    protected void complete() {
-        // do nothing
-    }
-
-    @Override
-    protected void initialize() throws WdkModelException {
-        // do nothing
-    }
+    tableObject.put("rows", rowsArray);
+    return new TwoTuple<Integer,JSONObject>(tableSize, tableObject);
+  }
 }

@@ -29,10 +29,10 @@ public class TestFunctions {
     }
 
     @Override
-    public Object getValue() throws WdkModelException {
+    public String getValue() throws WdkModelException {
       return _str;
     }
-    
+
     @Override
     public String toString() {
       return "StringValue { value = '" + _str + "' }"; 
