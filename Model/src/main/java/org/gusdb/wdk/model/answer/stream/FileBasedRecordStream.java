@@ -318,6 +318,7 @@ public class FileBasedRecordStream implements RecordStream {
       Path filePath = _temporaryDirectory.resolve(query.getName() + TEMP_FILE_EXT);
 
       try {
+    	t.restart();  
     	logger.info("Starting query " + query.getName());
     	  
     	// Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.  
@@ -372,6 +373,7 @@ public class FileBasedRecordStream implements RecordStream {
     
     // Iterate over all the tables requested
     for(TableField table : _tables) {
+      t.restart();
       logger.info("Starting table: " + table.getName());
       
       // Appending table designation to query name for file to more easily distinguish 
