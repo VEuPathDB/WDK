@@ -9,7 +9,7 @@ public class UserDatasetType {
   private String name;
   private String version;
   
-  UserDatasetType(String name, String version) {
+  public UserDatasetType(String name, String version) {
     this.name = name;
     this.version = version;
   }

@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 
 /**
  * An implementation of JsonUserDatasetStore that uses the java nio Files operations
@@ -18,14 +20,14 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
  *
  */
 
-public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore {
+public class FilesysUserDatasetStore extends JsonUserDatasetStore {
 
   public FilesysUserDatasetStore() {
     super(new FilesysUserDatasetStoreAdaptor());
   }
 
   @Override
-  public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
+  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     super.initialize(configuration, typeHandlers);
     try {
       checkRootDirExists();

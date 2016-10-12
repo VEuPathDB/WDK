@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.config;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 
 
@@ -23,7 +25,9 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
   private String implementationClass;
   private List<WdkModelText> propertyList = new ArrayList<>();
   private Set<ModelConfigUserDatasetTypeHandler> typeHandlerConfigs = new HashSet<ModelConfigUserDatasetTypeHandler>();
-
+  private UserDatasetStore userDatasetStore;
+  private Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers;
+  
   /**
    * @return the implementation
    */
@@ -52,9 +56,14 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
    * 
    * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
    * .WdkModel)
+   * Returns an uninitialized user dataset store.
    */
   public UserDatasetStore getUserDatasetStore() throws WdkModelException {
 
+    if (userDatasetStore != null) {
+      return userDatasetStore;
+    }
+    
     // try to find implementation class
     String msgStart = "Implementation class for sserDatasetStorePlugin [" + getImplementation() + "] ";
     UserDatasetStore userDatasetStore;
@@ -72,13 +81,6 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
       throw new WdkModelException(msgStart + "cannot be constructed.", e);
     }
     
-    // call resolve references on handlers; add the resolved typeHandlers to our list
-    Set<UserDatasetTypeHandler> typeHandlers = new HashSet<UserDatasetTypeHandler>();
-    for (ModelConfigUserDatasetTypeHandler config : typeHandlerConfigs) {
-      config.initialize();
-      typeHandlers.add(config.getTypeHandler());
-    }
-    
     // stuff properties into a useable map
     Map<String, String> properties = new LinkedHashMap<>();
     for (WdkModelText property : propertyList) {
@@ -92,11 +94,21 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
             + "'");
     }
     propertyList = null;
-
-    // initialize the store
-    userDatasetStore.initialize(properties, typeHandlers);
     
+    userDatasetStore.initialize(properties, getTypeHandlers());
+
     return userDatasetStore;
   }
 
+  public Map<UserDatasetType, UserDatasetTypeHandler> getTypeHandlers() throws WdkModelException {
+    if (typeHandlers == null) {
+      // call resolve references on handlers; add the resolved typeHandlers to our list
+      typeHandlers = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
+      for (ModelConfigUserDatasetTypeHandler config : typeHandlerConfigs) {
+        config.initialize();
+        typeHandlers.put(config.getTypeHandler().getUserDatasetType(), config.getTypeHandler());
+      }
+    }
+    return typeHandlers;
+  }
 }
