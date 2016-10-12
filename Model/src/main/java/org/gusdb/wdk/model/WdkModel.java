@@ -36,7 +36,6 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStorePlugin;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
@@ -560,6 +559,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
     if (udsConfig != null) userDatasetStore = udsConfig.getUserDatasetStore();
+
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
@@ -1144,9 +1144,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public UserDatasetStore getUserDatasetStore() {
     return userDatasetStore;
   }
-
-  @SuppressWarnings("unused")
-  public void setUserDatasetStorePlugin(UserDatasetStorePlugin plugin) {}
 
   public DatasetFactory getDatasetFactory() {
     return datasetFactory;
