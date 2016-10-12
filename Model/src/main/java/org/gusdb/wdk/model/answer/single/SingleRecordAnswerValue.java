@@ -46,7 +46,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
 
   @Override
   public String getChecksum() throws WdkModelException, WdkUserException {
-    return EncryptionUtil.encryptNoCatch(new StringBuilder("SingleRecordAnswer_")
+    return EncryptionUtil.encrypt(new StringBuilder("SingleRecordAnswer_")
       .append(_recordClass.getFullName()).append("_")
       .append(FormatUtil.prettyPrint(_pkMap)).toString());
   }

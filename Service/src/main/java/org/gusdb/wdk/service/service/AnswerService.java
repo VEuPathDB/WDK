@@ -21,10 +21,10 @@ import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
-import org.gusdb.wdk.service.request.answer.AnswerRequest;
-import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
-import org.gusdb.wdk.service.request.answer.AnswerRequestSpecifics;
-import org.gusdb.wdk.service.request.answer.AnswerRequestSpecificsFactory;
+import org.gusdb.wdk.service.request.answer.AnswerSpec;
+import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
+import org.gusdb.wdk.service.request.answer.AnswerDetails;
+import org.gusdb.wdk.service.request.answer.AnswerDetailsFactory;
 import org.gusdb.wdk.service.stream.AnswerStreamer;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -82,7 +82,7 @@ public class AnswerService extends WdkService {
       // 1. Parse result request (question, params, etc.)
 
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean(), getSessionUser());
+      AnswerSpec request = AnswerSpecFactory.createFromJson(questionDefJson, getWdkModelBean(), getSessionUser());
 
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
 
@@ -90,7 +90,7 @@ public class AnswerService extends WdkService {
       if (!json.has("formatting")) {
         // request is for standard JSON with default specifics
         return getStandardJsonResponse(request,
-            AnswerRequestSpecificsFactory.createDefault(request.getQuestion()),
+            AnswerDetailsFactory.createDefault(request.getQuestion()),
             ContentDisposition.INLINE);
       }
 
@@ -112,7 +112,7 @@ public class AnswerService extends WdkService {
           
           // request is for standard JSON with configured specifics
           getStandardJsonResponse(request,
-              AnswerRequestSpecificsFactory.createFromJson(formatConfig, request.getQuestion()),
+              AnswerDetailsFactory.createFromJson(formatConfig, request.getQuestion()),
               formatConfig.has("contentDisposition") ?
                   ContentDisposition.valueOf(formatConfig.getString("contentDisposition").toUpperCase()) :
                   ContentDisposition.INLINE));
@@ -127,8 +127,8 @@ public class AnswerService extends WdkService {
     }
   }
 
-  private Response getStandardJsonResponse(AnswerRequest request,
-      AnswerRequestSpecifics requestSpecifics, ContentDisposition disposition) throws WdkModelException {
+  private Response getStandardJsonResponse(AnswerSpec request,
+      AnswerDetails requestSpecifics, ContentDisposition disposition) throws WdkModelException {
 
     // make an answer value
     AnswerValueBean answerValue = getResultFactory().createAnswer(request, requestSpecifics);
@@ -153,11 +153,11 @@ public class AnswerService extends WdkService {
     return response;
   }
 
-  private Response getReporterResponse(AnswerRequest request, String format, JSONObject formatConfig)
+  private Response getReporterResponse(AnswerSpec request, String format, JSONObject formatConfig)
       throws WdkModelException, WdkUserException {
 
     AnswerValueBean answerValue = getResultFactory().createAnswer(request,
-        AnswerRequestSpecificsFactory.createDefault(request.getQuestion()));
+        AnswerDetailsFactory.createDefault(request.getQuestion()));
 
     RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
     if (!recordClass.getReporterMap().keySet().contains(format)) {

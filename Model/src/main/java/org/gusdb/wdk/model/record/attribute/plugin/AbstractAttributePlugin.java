@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 
 public abstract class AbstractAttributePlugin implements AttributePlugin {
 
@@ -109,6 +110,21 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
   }
 
   /**
+   * Provides the answer value that this plugin will run against based on the step.  Created as
+   * a protected method so subclasses can override if they want to apply various filters or
+   * otherwise alter the input step before generating an answer value from it.
+   * 
+   * @param step original step
+   * @param user user whose preferences may be used to modify the step (typically the step owner)
+   * @return an answer value generated from that step or a modified version of it
+   * @throws WdkModelException if unable to create answer value
+   * @throws WdkUserException if unable to create answer value using params provided
+   */
+  protected AnswerValue getAnswerValue(Step step, User user) throws WdkModelException, WdkUserException {
+    return step.getViewAnswerValue();
+  }
+
+  /**
    * @return the combined attribute sql and id sql. the returned columns include
    *         all primary key columns (they can be found in the
    *         PrimaryKeyAttributeField of the RecordClass), as well as a column
@@ -125,7 +141,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     RecordClass recordClass = step.getQuestion().getRecordClass();
     String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-    AnswerValue answerValue = step.getAnswerValue();
+    AnswerValue answerValue = getAnswerValue(step, step.getUser());
     String idSql = answerValue.getIdSql();
 
     // construct the select clause

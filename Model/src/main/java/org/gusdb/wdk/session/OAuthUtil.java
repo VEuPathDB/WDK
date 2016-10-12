@@ -28,7 +28,7 @@ public class OAuthUtil {
         UUID.randomUUID() + ":::" +
         String.valueOf(new Date().getTime()) + ":::" +
         wdkModel.getSecretKey();
-    return EncryptionUtil.encryptNoCatch(saltedString);
+    return EncryptionUtil.encrypt(saltedString);
   }
 
 }

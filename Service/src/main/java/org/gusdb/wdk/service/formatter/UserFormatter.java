@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -49,20 +50,12 @@ public class UserFormatter {
           .put(Keys.COUNTRY, user.getCountry())
           .put(Keys.ZIP_CODE, user.getZipCode())
           .put(Keys.PHONE_NUMBER, user.getPhoneNumber())
-          .put(Keys.APPLICATION_SPECIFIC_PROPERTIES, getUserPrefsJson(user.getGlobalPreferences()));
+          .put(Keys.APPLICATION_SPECIFIC_PROPERTIES, JsonUtil.toJsonObject(user.getGlobalPreferences()));
       if (includePreferences) {
-        json.put(Keys.PREFERENCES, getUserPrefsJson(user.getProjectPreferences()));
+        json.put(Keys.PREFERENCES, JsonUtil.toJsonObject(user.getProjectPreferences()));
       }
     }
     return json;
-  }
-
-  public static JSONObject getUserPrefsJson(Map<String,String> preferenceMap) {
-    JSONObject prefs = new JSONObject();
-    for (Entry<String,String> pref : preferenceMap.entrySet()) {
-      prefs.put(pref.getKey(), pref.getValue());
-    }
-    return prefs;
   }
 
 }

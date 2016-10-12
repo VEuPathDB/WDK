@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
-import org.gusdb.fgputil.JavaScript;
+import org.gusdb.fgputil.script.JavaScript;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;

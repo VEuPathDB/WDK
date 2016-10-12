@@ -19,9 +19,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AnswerRequestSpecificsFactory {
+public class AnswerDetailsFactory {
 
-  private static final Logger LOG = Logger.getLogger(AnswerRequestSpecificsFactory.class);
+  private static final Logger LOG = Logger.getLogger(AnswerDetailsFactory.class);
 
   private static final String RETURN_ALL_ATTRIBUTES = "__ALL_ATTRIBUTES__";
   private static final String RETURN_DISPLAYABLE_ATTRIBUTES = "__DISPLAYABLE_ATTRIBUTES__";
@@ -35,8 +35,8 @@ public class AnswerRequestSpecificsFactory {
    * @param question question this specifics object is for
    * @return default request specifics
    */
-  public static AnswerRequestSpecifics createDefault(Question question) {
-    AnswerRequestSpecifics defaultSpecs = new AnswerRequestSpecifics();
+  public static AnswerDetails createDefault(Question question) {
+    AnswerDetails defaultSpecs = new AnswerDetails();
     // default offset and numRecords are set on declaration lines
     defaultSpecs.setAttributes(question.getSummaryAttributeFieldMap());
     defaultSpecs.setTables(Collections.EMPTY_MAP);
@@ -84,9 +84,9 @@ public class AnswerRequestSpecificsFactory {
    * @param question question used to validate incoming values
    * @throws RequestMisformatException if values are invalid or structure is malformed
    */
-  public static AnswerRequestSpecifics createFromJson(JSONObject specJson,
+  public static AnswerDetails createFromJson(JSONObject specJson,
       Question question) throws RequestMisformatException {
-      AnswerRequestSpecifics specs = new AnswerRequestSpecifics();
+      AnswerDetails specs = new AnswerDetails();
 
       // set requested paging
       if (specJson.has("pagination")) {
@@ -96,7 +96,7 @@ public class AnswerRequestSpecificsFactory {
           throw new RequestMisformatException("Paging offset must be non-negative.");
         specs.setNumRecords(paging.getInt("numRecords"));
         if (specs.getNumRecords() <= 0) {
-          specs.setNumRecords(AnswerRequestSpecifics.ALL_RECORDS);
+          specs.setNumRecords(AnswerDetails.ALL_RECORDS);
         }
       }
 
