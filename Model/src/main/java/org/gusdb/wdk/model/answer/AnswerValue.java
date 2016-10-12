@@ -626,11 +626,15 @@ public class AnswerValue {
      return _question.getRecordClass().getPrimaryKeyAttributeField();
   }
 
-  // ------------------------------------------------------------------
-  // Private Methods
-  // ------------------------------------------------------------------
-
-  private String getPagedAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
+  /**
+   * This method returns a paged attribute sql query.  It is now public because the FileBasedRecordStream object
+   * uses it to acquire a sql statement to execute.
+   * @param attributeQuery
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public String getPagedAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -865,7 +869,7 @@ public class AnswerValue {
     return sql.toString();
   }
 
-  private String getPagedIdSql() throws WdkModelException, WdkUserException {
+  public String getPagedIdSql() throws WdkModelException, WdkUserException {
       return getPagedIdSql(false, false);
   }
 
