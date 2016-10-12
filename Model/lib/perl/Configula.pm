@@ -44,6 +44,7 @@ my %dblinkMap = (
     'prsmcommn'   => 'prismn.login_comment',
     'rm15873'     => 'rm15873.login_comment',
     'rm9972'      => 'rm9972.login_comment',
+    'r28comms'    => 'r28comms.login_comment',
     'userdb'      => 'vm.userdb', # standalone virtual machine
 );
 
