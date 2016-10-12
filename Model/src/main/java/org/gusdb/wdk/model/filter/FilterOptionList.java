@@ -99,4 +99,24 @@ public class FilterOptionList implements Iterable<FilterOption>{
   public Iterator<FilterOption> iterator() {
     return _options.values().iterator();
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof FilterOptionList) {
+      FilterOptionList other = (FilterOptionList)obj;
+      if (!_questionName.equals(other._questionName)) {
+        return false;
+      }
+      // FIXME: this is not the most efficient way, and may even be
+      //    incorrect (due to property ordering), but it is the easiest code.
+      return getJSON().toString().equals(other.getJSON().toString());
+    }
+    return false;
+  }
+
+  // overriding since we are overriding equals()
+  @Override
+  public int hashCode() {
+    return (_questionName + " " + getJSON().toString()).hashCode();
+  }
 }

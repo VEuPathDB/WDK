@@ -86,9 +86,9 @@ public class HttpResponseHeaderLogger implements Filter {
     }
 
     public String getData() {
-      return new StringBuilder("Response [ status=").append(_responseStatus)
+      return new StringBuilder("Response [status=").append(_responseStatus)
           .append(", redirect=").append(_redirectLocation == null ? "<none>" : _redirectLocation)
-          .append(", headers=").append(FormatUtil.prettyPrint(_headers, Style.MULTI_LINE)).toString();
+          .append(", headers=").append(FormatUtil.prettyPrint(_headers, Style.MULTI_LINE)).append("]").toString();
     }
 
     @Override

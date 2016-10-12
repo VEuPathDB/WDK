@@ -11,10 +11,10 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.BaseCLI;
-import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;

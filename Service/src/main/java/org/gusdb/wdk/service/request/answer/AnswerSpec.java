@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.question.Question;
 
-public class AnswerRequest {
+public class AnswerSpec {
 
   private final Question _question;
   private Map<String, ParamValue> _params = new HashMap<>();
@@ -17,7 +17,7 @@ public class AnswerRequest {
   private FilterOptionList _viewFilters;
   private int _weight = 0;
 
-  AnswerRequest(Question question) {
+  AnswerSpec(Question question) {
     _question = question;
   }
 

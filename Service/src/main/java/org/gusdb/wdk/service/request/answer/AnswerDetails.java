@@ -6,12 +6,12 @@ import java.util.Map;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
-public class AnswerRequestSpecifics {
+public class AnswerDetails {
 
   static final Integer ALL_RECORDS = -1;
 
   // use factory method to construct from JSON
-  AnswerRequestSpecifics() {}
+  AnswerDetails() {}
 
   // all fields are private
   private int _offset = 0; // default start at first record

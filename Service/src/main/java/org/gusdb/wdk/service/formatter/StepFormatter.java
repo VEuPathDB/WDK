@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.user.Step;
@@ -15,6 +16,7 @@ import org.json.JSONObject;
  *   shortDisplayName: String,
  *   customName: String,
  *   baseCustomName: String,
+ *   isCollapsible: Boolean,
  *   collapsedName: String,
  *   description: String,
  *   ownerId: Number (user ID of owner),
@@ -37,6 +39,7 @@ public class StepFormatter {
         .put(Keys.SHORT_DISPLAY_NAME, step.getShortDisplayName())
         .put(Keys.CUSTOM_NAME, step.getCustomName())
         .put(Keys.BASE_CUSTOM_NAME, step.getBaseCustomName())
+        .put(Keys.IS_COLLAPSIBLE, step.isCollapsible())
         .put(Keys.COLLAPSED_NAME, step.getCollapsedName())
         .put(Keys.DESCRIPTION, step.getDescription())
         .put(Keys.OWNER_ID, step.getUser().getUserId())
@@ -44,6 +47,8 @@ public class StepFormatter {
         .put(Keys.ESTIMATED_SIZE, step.getEstimateSize())
         .put(Keys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(Keys.RECORD_CLASS_NAME, step.getType())
+        // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
+        //    to do so, must extract JSON formatting from Step and other classes
         .put(Keys.ANSWER_SPEC, createAnswerSpec(step));
     }
     catch (JSONException e) {
@@ -51,21 +56,18 @@ public class StepFormatter {
     }
   }
 
+  // FIXME: this method should convert AnswerSpec -> JSONObject
   private static JSONObject createAnswerSpec(Step step) {
     JSONObject json = new JSONObject()
       .put(Keys.QUESTION_NAME, step.getQuestionName())
       .put(Keys.PARAMETERS, step.getParamsJSON())
-      .put(Keys.FILTERS, getOrEmptyArray(step.getFilterOptionsJSON()))
-      .put(Keys.VIEW_FILTERS, getOrEmptyArray(step.getViewFilterOptionsJSON()))
+      .put(Keys.FILTERS, JsonUtil.getOrEmptyArray(step.getFilterOptionsJSON()))
+      .put(Keys.VIEW_FILTERS, JsonUtil.getOrEmptyArray(step.getViewFilterOptionsJSON()))
       .put(Keys.WDK_WEIGHT, step.getAssignedWeight());
     AnswerFilterInstance legacyFilter = step.getFilter();
     if (legacyFilter != null) {
       json.put(Keys.LEGACY_FILTER_NAME, legacyFilter.getName());
     }
     return json;
-  }
-
-  private static JSONArray getOrEmptyArray(JSONArray jsonArrayOrNull) {
-    return (jsonArrayOrNull == null ? new JSONArray() : jsonArrayOrNull);
   }
 }

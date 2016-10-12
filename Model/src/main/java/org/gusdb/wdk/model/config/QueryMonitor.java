@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.gusdb.fgputil.db.QueryLogConfig;
+import org.gusdb.fgputil.db.slowquery.QueryLogConfig;
 
 /**
  * An object representation of the <queryMonitor> tag in the model-config.xml.

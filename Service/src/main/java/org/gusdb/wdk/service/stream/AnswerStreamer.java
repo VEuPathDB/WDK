@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
-import org.gusdb.wdk.service.request.answer.AnswerRequestSpecifics;
+import org.gusdb.wdk.service.request.answer.AnswerDetails;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,7 +23,7 @@ public class AnswerStreamer {
   private static final Logger LOG = Logger.getLogger(AnswerStreamer.class);
 
   public static StreamingOutput getAnswerAsStream(AnswerValueBean answerValue,
-      AnswerRequestSpecifics specifics) throws WdkModelException {
+      AnswerDetails specifics) throws WdkModelException {
     // FIXME: currently do not support real streaming; need to implement in AnswerValueBean
     final JSONObject resultJson = AnswerFormatter.formatAnswer(answerValue, specifics);
     return new StreamingOutput() {

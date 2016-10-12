@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.DataValidationException;
@@ -24,9 +25,29 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AnswerRequestFactory {
+public class AnswerSpecFactory {
 
-  private static final Logger LOG = Logger.getLogger(AnswerRequest.class);
+  private static final Logger LOG = Logger.getLogger(AnswerSpec.class);
+
+  public static AnswerSpec createFromStep(Step step) throws WdkModelException {
+    Question question = step.getQuestion();
+    AnswerSpec answerSpec = new AnswerSpec(question);
+    answerSpec.setParamValues(toParamValueMap(question, step.getParamValues()));
+    answerSpec.setLegacyFilter(step.getFilter());
+    answerSpec.setFilterValues(step.getFilterOptions());
+    answerSpec.setViewFilterValues(step.getViewFilterOptions());
+    answerSpec.setWeight(step.getAssignedWeight());
+    return answerSpec;
+  }
+
+  private static Map<String, ParamValue> toParamValueMap(Question question, Map<String, String> paramValues) {
+    Map<String, Param> questionParams = question.getParamMap();
+    Map<String, ParamValue> paramValueMap = new HashMap<>();
+    for (String key : paramValues.keySet()) {
+      paramValueMap.put(key, new ParamValue(questionParams.get(key), paramValues.get(key)));
+    }
+    return paramValueMap;
+  }
 
   /**
    * Creates an AnswerRequest object using the passed JSON.  "questionName" is
@@ -53,14 +74,14 @@ public class AnswerRequestFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean modelBean, User user) throws DataValidationException, RequestMisformatException {
+  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
       modelBean.validateQuestionFullName(questionName);
       WdkModel model = modelBean.getModel();
       Question question = model.getQuestion(questionName);
-      AnswerRequest request = new AnswerRequest(question);
+      AnswerSpec request = new AnswerSpec(question);
       // params are required (empty array if no params)
       request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user));
       // all filter fields are optional
@@ -136,7 +157,7 @@ public class AnswerRequestFactory {
           throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
         }
         else {
-          stableValue = expectedParam.getEmptyValue();          
+          stableValue = expectedParam.getEmptyValue();
         }
       }
       else {

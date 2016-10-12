@@ -9,8 +9,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.service.request.answer.AnswerRequest;
-import org.gusdb.wdk.service.request.answer.AnswerRequestSpecifics;
+import org.gusdb.wdk.service.request.answer.AnswerSpec;
+import org.gusdb.wdk.service.request.answer.AnswerDetails;
 import org.gusdb.wdk.service.request.answer.SortItem;
 
 public class WdkAnswerFactory {
@@ -21,7 +21,7 @@ public class WdkAnswerFactory {
     _user = user;
   }
 
-  public AnswerValueBean createAnswer(AnswerRequest request, AnswerRequestSpecifics specifics) throws WdkModelException {
+  public AnswerValueBean createAnswer(AnswerSpec request, AnswerDetails specifics) throws WdkModelException {
     try {
       // FIXME: looks like index starts at 1 and end index is inclusive;
       //   would much rather see 0-based start and have end index be exclusive

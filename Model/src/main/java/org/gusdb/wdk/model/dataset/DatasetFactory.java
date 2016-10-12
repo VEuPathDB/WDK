@@ -18,10 +18,10 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;

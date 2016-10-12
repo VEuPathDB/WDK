@@ -5,16 +5,26 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.request.answer.AnswerRequest;
+import org.gusdb.wdk.service.request.answer.AnswerSpec;
+import org.gusdb.wdk.service.request.strategy.StepRequest;
 
 public class WdkStepFactory {
 
-  public static Step createStep(AnswerRequest answerSpec, User user, StepFactory stepFactory) throws WdkModelException {
+  public static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
     try {
+
+      // new step must be created from raw spec
+      AnswerSpec answerSpec = stepRequest.getAnswerSpec();
       Step step = stepFactory.createStep(user, null, answerSpec.getQuestion(), WdkAnswerFactory.convertParams(answerSpec.getParamValues()),
           answerSpec.getLegacyFilter(), 0, -1, false, true, answerSpec.getWeight(), answerSpec.getFilterValues());
       step.setViewFilterOptions(answerSpec.getViewFilterValues());
       step.saveParamFilters();
+
+      // once created, additional user-provided fields can be applied
+      step.setCustomName(stepRequest.getCustomName());
+      step.setCollapsible(stepRequest.isCollapsible());
+      step.setCollapsedName(stepRequest.getCollapsedName());
+      step.update(true);
       return step;
     }
     catch (WdkUserException e) {

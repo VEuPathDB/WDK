@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONException;
@@ -66,7 +67,7 @@ public class UserProfileRequest {
       request.setProfileMap(parseProfile(json));
       JSONObject properties = json.keySet().contains(APPLICATION_SPECIFIC_PROPERTIES)
           ? (JSONObject) json.get(APPLICATION_SPECIFIC_PROPERTIES) : new JSONObject();
-      request.setApplicationSpecificPropertiesMap(parseProperties(properties));
+      request.setApplicationSpecificPropertiesMap(JsonUtil.parseProperties(properties));
       return request;
     }
     catch (JSONException e) {
@@ -98,21 +99,6 @@ public class UserProfileRequest {
     if(!unrecognizedProperties.isEmpty()) {
       String unrecognized = FormatUtil.join(unrecognizedProperties.toArray(), ",");
       LOG.warn("This user service request contains the following unrecognized profile property names: " + unrecognized);
-    }
-    return map;
-  }
-  
-  /**
-   * Provides a map of the application specific property JSON objects.  Since some may
-   * be dynamically determined, no attempt is made to cull the list
-   * @param json - Object containing application specific properties
-   * @return - map of key | value pairs - no filtering
-   * @throws JSONException - among other reasons, thrown in the event of a non-string value
-   */
-  protected static Map<String,String> parseProperties(JSONObject json) throws JSONException {
-    Map<String, String> map = new HashMap<>();
-    for(Object key : json.keySet()) {
-      map.put((String) key, json.getString((String) key).trim());
     }
     return map;
   }

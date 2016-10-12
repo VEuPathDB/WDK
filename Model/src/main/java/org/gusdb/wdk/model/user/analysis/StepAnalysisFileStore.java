@@ -5,9 +5,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -47,7 +44,7 @@ public class StepAnalysisFileStore {
     // check if parent dir can be referenced so lock file can be created
     if (_fileStoreDirectory.getParent() == null) {
       throw new WdkModelException("Cannot provide raw file or root directory " +
-      		"as file store.  Parent directory required for: " + _fileStoreDirectory);
+          "as file store.  Parent directory required for: " + _fileStoreDirectory);
     }
     
     // create lock file in attempt to 
@@ -57,7 +54,7 @@ public class StepAnalysisFileStore {
     try {
       Files.createFile(lockFile);
       lockFileNeedsDeletion = true;
-      createOpenPermsDirectory(_fileStoreDirectory);
+      IoUtil.createOpenPermsDirectory(_fileStoreDirectory);
     }
     catch (FileAlreadyExistsException faee) {
       try {
@@ -67,7 +64,7 @@ public class StepAnalysisFileStore {
       }
       catch (InterruptedException e) {
         throw new WdkModelException("Thread interrupted while attempting " +
-        		"to create data store dir at: " + _fileStoreDirectory);
+            "to create data store dir at: " + _fileStoreDirectory);
       }
     }
     catch (IOException ioe) {
@@ -84,19 +81,6 @@ public class StepAnalysisFileStore {
               " but now unable to delete.", ioe);
         }
       }
-    }
-  }
-
-  private static void createOpenPermsDirectory(Path directory) throws IOException {
-    Files.createDirectory(directory);
-    // apply file permissions after the fact in case umask restrictions prevent it during creation
-    Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
-    try {
-      Files.setPosixFilePermissions(directory, perms);
-    }
-    catch (UnsupportedOperationException ex) {
-      // ignore it since it's not supported on Windows
-      LOG.info("cannot set permissions to " + directory);
     }
   }
 
@@ -137,7 +121,7 @@ public class StepAnalysisFileStore {
       if (Files.exists(storageDir)) {
         IoUtil.deleteDirectoryTree(storageDir);
       }
-      createOpenPermsDirectory(storageDir);
+      IoUtil.createOpenPermsDirectory(storageDir);
     }
     catch (IOException ioe) {
       throw new WdkModelException("Unable to clear or recreate results store for hash " + hash, ioe);

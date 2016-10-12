@@ -90,6 +90,7 @@ public class Keys {
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
   public static final String BASE_CUSTOM_NAME = "baseCustomName";
+  public static final String IS_COLLAPSIBLE = "isCollapsible";
   public static final String COLLAPSED_NAME = "collapsedName";
   public static final String OWNER_ID = "ownerId";
   public static final String STRATEGY_ID = "strategyId";

@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.service.request.answer.AnswerRequestSpecifics;
+import org.gusdb.wdk.service.request.answer.AnswerDetails;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,7 +31,7 @@ public class AnswerFormatter {
   private static final Logger LOG = Logger.getLogger(AnswerFormatter.class);
 
   public static JSONObject formatAnswer(AnswerValueBean answerValue,
-      AnswerRequestSpecifics specifics) throws WdkModelException {
+      AnswerDetails specifics) throws WdkModelException {
 
     Set<String> attributeNames = specifics.getAttributes().keySet();
     Set<String> tableNames = specifics.getTables().keySet();

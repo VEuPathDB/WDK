@@ -23,8 +23,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.JsonType;
-import org.gusdb.fgputil.JsonType.ValueType;
+import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -12,12 +12,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.UserPreferenceValidator;
 import org.gusdb.wdk.service.annotation.PATCH;
-import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
@@ -35,7 +35,7 @@ public class PreferenceService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs() throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    return Response.ok(UserFormatter.getUserPrefsJson(
+    return Response.ok(JsonUtil.toJsonObject(
         userBundle.getTargetUser().getProjectPreferences()).toString()).build();
   }
 
