@@ -80,7 +80,12 @@
     <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
-     </dependency>   
+     </dependency> 
+     
+     <dependency>
+       <groupId>net.sf.opencsv</groupId>
+       <artifactId>opencsv</artifactId>
+     </dependency>
 
   </dependencies>
 
