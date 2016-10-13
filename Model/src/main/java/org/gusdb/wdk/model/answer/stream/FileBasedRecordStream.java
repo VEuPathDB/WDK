@@ -399,7 +399,11 @@ public class FileBasedRecordStream implements RecordStream {
         List<String> attributeColumns = new ArrayList<>();
         List<ColumnAttributeField> fields = filterColumnAttributeFields(Arrays.asList(table.getAttributeFields()),true);
         for(ColumnAttributeField field : fields) {
-    	  attributeColumns.add(field.getColumn().getName());
+          // Strangely at least one column attribute field does not have a column object.  Need a
+          // little defensive programming here.
+          if(field.getColumn() != null) {
+    	    attributeColumns.add(field.getColumn().getName());
+          }
     	}
         
         // Combine the primary key columns and column attribute columns into a single list
