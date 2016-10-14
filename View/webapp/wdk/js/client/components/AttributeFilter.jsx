@@ -164,7 +164,7 @@ var FieldFilter = React.createClass({
               { ! this.props.distribution ? <Loading/>
               : <div>
                   <FieldDetail key={this.props.field.term} {...fieldDetailProps} />
-                  <div className="legend">
+                  <div className="filter-param-legend">
                     <div>
                       <div className="bar"><div className="fill"></div></div>
                       <div className="label">All {this.props.displayName}</div>

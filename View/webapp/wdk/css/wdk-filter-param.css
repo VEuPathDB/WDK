@@ -337,7 +337,7 @@
 .filter-param .fill.filtered {
   background-color: #DA7272;
 }
-.filter-param .legend {
+.filter-param .filter-param-legend {
   float: right;
   margin-bottom: 1em;
   padding: 0;
@@ -345,24 +345,24 @@
   border: 1px solid #dadada;
   border-radius: 4px;
 }
-.filter-param .legend > div {
+.filter-param .filter-param-legend > div {
   margin: .5em 0;
 }
-.filter-param .legend .bar {
+.filter-param .filter-param-legend .bar {
   display: inline-block;
   top: 7px;
   vertical-align: text-top;
   margin: 0;
   margin-left: 1em;
 }
-.filter-param .legend .label {
+.filter-param .filter-param-legend .label {
   display: inline-block;
   padding: 0 .4em;
 }
-.filter-param .legend .bar {
+.filter-param .filter-param-legend .bar {
   width: 10px;
 }
-.filter-param .legend .bar .fill {
+.filter-param .filter-param-legend .bar .fill {
   width: 10px;
   height: 10px;
 }
