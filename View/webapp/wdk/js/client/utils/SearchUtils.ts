@@ -54,7 +54,7 @@ export function areTermsInString(queryTerms: Array<string>, searchableString: st
  * @returns {boolean} true if a match
  */
 export function isTermInString(queryTerm: string, searchableString: string = '') {
-    return !queryTerm || (searchableString && searchableString.toLowerCase().includes(queryTerm.toLowerCase()));
+    return !queryTerm || (searchableString.toLowerCase().includes(queryTerm.toLowerCase()));
 }
 
 

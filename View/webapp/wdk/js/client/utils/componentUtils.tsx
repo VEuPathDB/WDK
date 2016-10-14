@@ -194,7 +194,7 @@ function logShallowComparison<P extends AnyObject>(obj1: P, obj2: P, label: stri
 export function safeHtml<P>(str: string, props: P, Component: React.ComponentClass<P>): JSX.Element;
 export function safeHtml<P>(str: string, props: P, Component: React.StatelessComponent<P>): JSX.Element;
 export function safeHtml<P>(str: string, props: P, Component: string): JSX.Element;
-export function safeHtml<P>(str = '', props: P = null, Component: any = 'span'): JSX.Element {
+export function safeHtml<P>(str = '', props?: P, Component: any = 'span'): JSX.Element {
   // Use innerHTML to auto close tags
   let container = document.createElement('div');
   container.innerHTML = str;
@@ -226,7 +226,7 @@ export function formatAttributeValue(value?: AttributeValue): string {
  * by default.
  * TODO Look up or inject custom formatters
  */
-export function renderAttributeValue<P>(value: AttributeValue, props: P = null, Component = 'span') {
+export function renderAttributeValue<P>(value: AttributeValue, props?: P, Component = 'span') {
   return safeHtml(
     formatAttributeValue(value),
     props,

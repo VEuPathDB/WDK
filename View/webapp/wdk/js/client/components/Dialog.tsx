@@ -9,6 +9,7 @@ type Props = {
   title?: string;
   onOpen?: Function;
   onClose?: Function;
+  children?: React.ReactChild;
 };
 
 /**
@@ -152,5 +153,7 @@ class Dialog extends Component<Props, void> {
   }
 
 }
+
+let a: React.ComponentClass<Props> = Dialog;
 
 export default wrappable(Dialog);

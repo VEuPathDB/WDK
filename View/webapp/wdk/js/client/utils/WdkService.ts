@@ -1,14 +1,11 @@
-import $ from 'jquery';
 import stringify from 'json-stable-stringify';
-import {compose, difference, indexBy, memoize} from 'lodash';
+import {difference, indexBy, memoize} from 'lodash';
 import localforage from 'localforage';
-import {preorderSeq} from './TreeUtils';
-import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
-import {getTargetType, getRefName, getDisplayName, CategoryNode} from './CategoryUtils';
+import {Ontology} from './OntologyUtils';
+import {CategoryTreeNode, normalizeOntology} from './CategoryUtils';
 import {alert} from './Platform';
 import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record} from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
-import {on} from "cluster";
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -21,10 +18,6 @@ const CLIENT_WDK_VERSION_HEADER = 'X-CLIENT-WDK-TIMESTAMP';
  * model is stale, based on CLIENT_WDK_VERSION_HEADER.
  */
 const CLIENT_OUT_OF_SYNC_TEXT = 'WDK-TIMESTAMP-MISMATCH';
-
-type Dict<T> = {
-  [key: string]: T;
-};
 
 interface RecordRequest {
   attributes: string[];
@@ -204,12 +197,14 @@ export default class WdkService {
     let url = '/record/' + recordClassName + '/instance';
 
     let { attributes = [], tables = [] } = options;
+    let cacheEntry = this._recordCache.get(key);
 
     // if we don't have the record, fetch whatever is requested
-    if (!this._recordCache.has(key)) {
+    if (cacheEntry == null) {
       let request = { attributes, tables, primaryKey };
       let response = this._fetchJson<Record>(method, url, stringify(request));
-      this._recordCache.set(key, { request, response });
+      cacheEntry = { request, response };
+      this._recordCache.set(key, cacheEntry);
     }
 
     // Get the request and response from `_recordCache` and replace them with
@@ -217,7 +212,7 @@ export default class WdkService {
     // is currently stored will still be called when it completes, regardless of
     // the progress of the response it is replaced with.
     else {
-      let { request, response } = this._recordCache.get(key);
+      let { request, response } = cacheEntry;
       // determine which tables and attributes we need to retreive
       let reqAttributes = difference(attributes, request.attributes);
       let reqTables = difference(tables, request.tables);
@@ -244,11 +239,12 @@ export default class WdkService {
             tables: Object.assign({}, record.tables, newRecord.tables)
           });
         });
-        this._recordCache.set(key, { request: finalRequest, response: finalResponse });
+        cacheEntry = { request: finalRequest, response: finalResponse };
+        this._recordCache.set(key, cacheEntry);
       }
     }
 
-    return this._recordCache.get(key).response;
+    return cacheEntry.response;
   }
 
   /**
@@ -345,7 +341,7 @@ export default class WdkService {
     let recordClasses$ = this.getRecordClasses().then(rs => indexBy(rs, 'name'));
     let questions$ = this.getQuestions().then(qs => indexBy(qs, 'name'));
     let ontology$ = this._getFromCache('ontology/' + name, () => {
-      return this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
+      return this._fetchJson<Ontology<CategoryTreeNode>>('get', '/ontology/' + name);
     });
     return Promise.all([ recordClasses$, questions$, ontology$ ])
       .then((resources) => normalizeOntology(resources[0], resources[1], resources[2]));
@@ -438,114 +434,6 @@ export default class WdkService {
 
 function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
   return recordClassName + ':' + stringify(primaryKeyValues);
-}
-
-const normalizeOntology = memoize(compose(sortOntology, pruneUnresolvedReferences, resolveWdkReferences));
-
-/**
- * Adds the related WDK reference to each node. This function mutates the
- * ontology tree, which is ok since we are doing this before we cache the
- * result. It might be useful for this to return a new copy of the ontology
- * in the future, but for now this saves some performance.
- */
-function resolveWdkReferences(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: Ontology<CategoryNode>)  {
-  for (let node of preorderSeq(ontology.tree)) {
-    switch (getTargetType(node)) {
-      case 'attribute': {
-        let attributeName = getRefName(node);
-        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-        if (recordClass == null) continue;
-        let wdkReference = recordClass.attributesMap[attributeName];
-        Object.assign(node, { wdkReference });
-        break;
-      }
-
-      case 'table': {
-        let tableName = getRefName(node);
-        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-        if (recordClass == null) continue;
-        let wdkReference = recordClass.tablesMap[tableName];
-        Object.assign(node, { wdkReference });
-        break;
-      }
-
-      case 'search': {
-        let questionName = getRefName(node);
-        let wdkReference = questions[questionName];
-        Object.assign(node, { wdkReference });
-        break;
-      }
-    }
-  }
-  return ontology;
-}
-
-function isWdkReference(node: CategoryNode) {
-  let targetType = getTargetType(node);
-  return targetType === 'attribute' || targetType === 'table' || targetType === 'search';
-}
-
-function isResolved(node: CategoryNode) {
-  return isWdkReference(node) ? node.wdkReference != null : true;
-}
-
-function pruneUnresolvedReferences(ontology: Ontology<CategoryNode>) {
-  //ontology.unprunedTree = ontology.tree;
-  ontology.tree = getTree(ontology, isResolved);
-  return ontology;
-}
-
-/**
- * Compare nodes based on the "sort order" property. If it is undefined,
- * compare based on displayName.
- */
-function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
-  if (nodeA.children.length === 0 && nodeB.children.length !== 0)
-    return -1;
-
-  if (nodeB.children.length === 0 && nodeA.children.length !== 0)
-    return 1;
-
-  let orderBySortNum = compareOnotologyNodesBySortNumber(nodeA, nodeB);
-  return orderBySortNum === 0 ? compareOntologyNodesByDisplayName(nodeA, nodeB) : orderBySortNum;
-}
-
-/**
- * Sort ontology node siblings. This function mutates the tree, so should
- * only be used before caching the ontology.
- */
-function sortOntology(ontology: Ontology<CategoryNode>) {
-  for (let node of preorderSeq(ontology.tree)) {
-    node.children.sort(compareOntologyNodes);
-  }
-  return ontology;
-}
-
-function compareOnotologyNodesBySortNumber(nodeA: CategoryNode, nodeB: CategoryNode) {
-  let sortOrderA = getPropertyValue('display order', nodeA);
-  let sortOrderB = getPropertyValue('display order', nodeB);
-
-  if (sortOrderA && sortOrderB) {
-    return Number(sortOrderA) >= Number(sortOrderB) ? 1 : -1;
-  }
-
-  if (sortOrderA) {
-    return -1;
-  }
-
-  if (sortOrderB) {
-    return 1;
-  }
-
-  return 0;
-}
-
-function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryNode) {
-  // attempt to sort by displayName
-  let nameA = getDisplayName(nodeA) || '';
-  let nameB = getDisplayName(nodeB) || '';
-
-  return nameA < nameB ? -1 : 1;
 }
 
 /**

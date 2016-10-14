@@ -298,7 +298,7 @@ export function find<T>(test: Predicate<T>, iterable: Iterable<T>) {
  * Find the last item that the test returns true for.
  */
 export function findLast<T>(test: Predicate<T>, iterable: Iterable<T>) {
-  let last: T;
+  let last: T|void;
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
     if (done) break;
@@ -312,7 +312,7 @@ export function first<T>(iterable: Iterable<T>) {
 }
 
 export function last<T>(iterable: Iterable<T>) {
-  let last: T;
+  let last: T|void;
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
     if (done) break;

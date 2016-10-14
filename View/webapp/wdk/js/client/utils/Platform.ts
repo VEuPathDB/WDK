@@ -42,12 +42,13 @@ export function dialog(title: string, message: string, buttons: ButtonDescriptor
   return new Promise(function(resolve, reject) {
     let $node = $('<div><p>' + message + '</p><div class="wdk-AlertButtons"></div></div>');
     let $buttons = buttons.map(button => {
-      return $('<button>' + button.text + '</button>')
-      .attr('autofocus', button.focus && 'autofocus')
+      let $button = $('<button>' + button.text + '</button>')
       .click(() => {
         $node.dialog('close');
         resolve(button.value);
       });
+      if (button.focus) $button.attr('autofocus', 'autofocus');
+      return $button;
     });
     $node.find('.wdk-AlertButtons').append($buttons);
     try {

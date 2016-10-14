@@ -1,8 +1,15 @@
 import $ from 'jquery';
 import _ from 'lodash';
+import FilterService from './FilterService';
 import {
-  FilterServiceAttrs, default as FilterService, Field, Metadata, Filter, RangeFilter, MemberFilter,
-  Datum
+  FilterServiceAttrs,
+  Field,
+  Metadata,
+  Filter,
+  RangeFilter,
+  MemberFilter,
+  Datum,
+  Distribution
 } from './FilterService';
 import {
   countByValues,
@@ -86,7 +93,7 @@ export default class LazyFilterService extends FilterService {
       var counts = countByValues(fieldMetadata);
       var filteredCounts = countByValues(filteredMetadata);
       var undefinedCount = _.values(fieldMetadata).filter(_.isEmpty).length;
-      let distribution = uniqMetadataValues(fieldMetadata).map((value) => {
+      let distribution: Distribution = uniqMetadataValues(fieldMetadata).map((value) => {
         return {
           value,
           count: counts[value],
@@ -159,11 +166,12 @@ export default class LazyFilterService extends FilterService {
         var predicates = filters
           .map(function(filter) {
             var metadata = this.fieldMetadataMap[filter.field.term];
-            switch(filter.field.type) {
+            var { type } = filter.field;
+            switch(type) {
               case 'string': return getMemberPredicate(metadata, <MemberFilter>filter);
               case 'date':
               case 'number': return getRangePredicate(metadata, <RangeFilter>filter);
-              default: throw new Error("Unknown filter field type: `" + filter.field.type + "`.");
+              default: throw new Error("Unknown filter field type: `" + type + "`.");
             }
           }, this);
         // Filter data by applying each predicate above to each data item.

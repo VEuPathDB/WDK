@@ -31,7 +31,7 @@ export function filterRecords(records: Record[], filterSpec: FilterSpec): Record
 function stripHTML(str: string): string {
   let span = document.createElement('span');
   span.innerHTML = str;
-  return span.textContent;
+  return span.textContent || '';
 }
 
 /**
