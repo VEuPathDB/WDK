@@ -19,7 +19,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -79,7 +78,7 @@ class FileBasedRecordIterator implements Iterator<RecordInstance> {
   	    for(ColumnAttributeField attributeField : attributeFields) {
   		  columnNames.add(attributeField.getName());
   	    }
-  	    ResultList attributeResultList = new CsvResultList(new BufferedReader(new FileReader(filePath.toString()), BUFFER_SIZE),columnNames, CsvResultList.TAB);
+  	    ResultList attributeResultList = new CsvResultList(new BufferedReader(new FileReader(filePath.toString()), BUFFER_SIZE),columnNames, CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE);
   	    _attributeIteratorMap.put(attributeResultList,attributeFileMap.get(filePath));
   	  }
   	
@@ -90,7 +89,7 @@ class FileBasedRecordIterator implements Iterator<RecordInstance> {
   	    
   	    // Provide an ordered list of column names to pass to the CSV result list so that column data may be properly retrieved by name.
   	    List<String> columnNames = FileBasedRecordStream.createTableColumnList(_answerValue, tableField);
-  	    ResultList tableResultList = new CsvResultList(new BufferedReader(new FileReader(filePath.toString()), BUFFER_SIZE), columnNames, CsvResultList.TAB);
+  	    ResultList tableResultList = new CsvResultList(new BufferedReader(new FileReader(filePath.toString()), BUFFER_SIZE), columnNames, CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE);
   	    
   	    // Create a SingleTableRecordInstanceStream object, passing in the table field and the CSV result list created above.
   	    SingleTableRecordStream singleTableRecordInstanceStream = new SingleTableRecordStream(_answerValue, tableFileMap.get(filePath), tableResultList);

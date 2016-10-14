@@ -274,7 +274,7 @@ public class FileBasedRecordStream implements RecordStream {
    */
   public void assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList) throws WdkModelException {
 	  
-    try(CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE), CsvResultList.TAB)) {
+    try(CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE), CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
 	 
   	  // Create an array sized to handle the attribute columns as this will be used to write out a row
   	  // to the CSV file.  Primary keys are not included since there should be exactly 1 row per primary key
@@ -358,7 +358,7 @@ public class FileBasedRecordStream implements RecordStream {
         }  
       }
     }
-    logger.info("Attribute file assembly complete : " + t.getElapsedString());
+    logger.info("Attribute file assembly complete");
   }
 	
   /**
@@ -374,7 +374,7 @@ public class FileBasedRecordStream implements RecordStream {
     // Iterate over all the tables requested
     for(TableField table : _tables) {
       t.restart();
-      logger.info("Starting table: " + table.getName());
+      logger.info("Starting table: " + table.getName() + "(query: " + table.getQuery().getName() + ")");
       
       // Appending table designation to query name for file to more easily distinguish 
       // these files from those supporting attribute queries and to avoid name collisions.
@@ -399,11 +399,11 @@ public class FileBasedRecordStream implements RecordStream {
         List<String> attributeColumns = new ArrayList<>();
         List<ColumnAttributeField> fields = filterColumnAttributeFields(Arrays.asList(table.getAttributeFields()),true);
         for(ColumnAttributeField field : fields) {
-          // Strangely at least one column attribute field does not have a column object.  Need a
-          // little defensive programming here.
-          if(field.getColumn() != null) {
-    	    attributeColumns.add(field.getColumn().getName());
+          // This should be prevented by upstream validation.
+          if(field.getColumn() == null) {
+            throw new WdkModelException("The column attribute field " + field.getName() + " has no column object.");
           }
+    	  attributeColumns.add(field.getName());
     	}
         
         // Combine the primary key columns and column attribute columns into a single list
@@ -424,7 +424,7 @@ public class FileBasedRecordStream implements RecordStream {
    	    }
       }
     }
-    logger.info("Table file assembly complete : " + t.getElapsedString());
+    logger.info("Table file assembly complete");
   }
 
   /**
