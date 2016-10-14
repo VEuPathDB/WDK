@@ -2,6 +2,7 @@
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -21,6 +22,12 @@ public class CsvResultList implements ResultList {
 	
 	/** A tab char that may be employed as a CSV file column separator */
 	public static final char TAB = '\t';
+	
+	/** A quote char that may be employed to bracket items */
+	public static final char QUOTE = '\"';
+	
+	/** The escape char to use in escaping quotes */
+	public static final char ESCAPE = '\\';
 
 	private List<String> _columnNames;
 	private String[] _currentLine;
@@ -36,12 +43,12 @@ public class CsvResultList implements ResultList {
 	 * @param columnNames - ordered list of column names
 	 * @throws WdkModelException
 	 */
-	public CsvResultList(BufferedReader reader, List<String> columnNames, char columnSeparator) throws WdkModelException {
+	public CsvResultList(BufferedReader reader, List<String> columnNames, char columnSeparator, char quoteCharacter, char escapeCharacter) throws WdkModelException {
 	  if(reader == null || columnNames == null || columnNames.isEmpty()) {
 		throw new WdkModelException("The required constructor parameters are not valid.");
 	  }
 	  _bufferedReader = reader;
-	  _csvReader = new CSVReader(_bufferedReader, columnSeparator);
+	  _csvReader = new CSVReader(_bufferedReader, columnSeparator, quoteCharacter, escapeCharacter);
 	  _isClosed = false;
 	  _columnNames = columnNames;
 	}
@@ -55,7 +62,13 @@ public class CsvResultList implements ResultList {
 		  _currentLine = _csvReader.readNext();
 		}
 		catch(IOException ioe) {
-		  throw new WdkModelException(ioe.getMessage());
+		  throw new WdkModelException(ioe);
+		}
+		// Added to be sure current line columns and column names match size-wise since
+		// we are using indexing to associate the two.
+		if(_currentLine != null && _currentLine.length != _columnNames.size()) {
+		  throw new WdkModelException("The line returned [" + Arrays.toString(_currentLine) + "]"
+		  		+ " does not match the column names [" + Arrays.toString(_columnNames.toArray())  + "]");
 		}
 		return _currentLine != null;
 	}
