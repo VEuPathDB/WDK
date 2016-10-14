@@ -148,7 +148,7 @@ export function pruneNodes (fn: (node: Node) => boolean, nodes: Node[]): Node[] 
     return fn(prunedNode)
       ? pushInto(prunedNodes, prunedNode)
       : pushInto(prunedNodes, ...prunedNode.children);
-  }, []);
+  }, [] as Node[]);
   return shallowEqual(nodes, prunedNodes) ? nodes : prunedNodes;
 }
 

@@ -44,7 +44,7 @@ export default class WdkStore<State> extends ReduceStore<State & BaseState, Acti
    * store's channel name.  To receive actions on channels intended for other
    * stores, override this method.
    */
-  storeShouldReceiveAction(channel: string) {
+  storeShouldReceiveAction(channel?: string) {
     return (channel === undefined /* broadcast */ || channel === this.channel);
   }
 

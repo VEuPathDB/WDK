@@ -11,6 +11,8 @@ type Datum = {
 
 type Predicate<T> = (value: T) => boolean;
 
+const T = _.constant(true);
+
 /**
  * Returns a lodash-wrapped array of metadata values.
  * See https://lodash.com/docs/#_ for details of lodash-wrapped object.
@@ -72,13 +74,17 @@ export function getRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
            : max !== null ? makeLte(max)
-           : undefined;
+           : T;
 
-  if (test === undefined) throw new Error('Count not determine range predicate.');
+  if (test === T) {
+    throw new Error('Count not determine range predicate.');
+  }
 
   return function rangePredicate(datum: Datum) {
-    return metadata[datum.term].some(test);
+    return metadata[datum.term].some(value =>
+      test(filter.field.type === 'number' ? Number(value) : new Date(value)));
   }
+
 }
 
 // Helper filtering functions
@@ -164,26 +170,26 @@ export function makeTree(fields: Field[], options: Options = { trimMetadataTerms
 //   the field is terminating and data can be filtered by it).
 // Then, for each field, find all parents.
 function pruneFields(fields: Field[]) {
-  var missing: Field[] = [];
-  var prunedFields = _.where(fields, { leaf: 'true' })
-    .reduce(function(acc, field) {
+  var missing: string[] = [];
+  var prunedFields = fields
+    .filter(field => field.leaf === 'true')
+    .reduce(function(prunedFields, field) {
       while (field.parent) {
-        acc.push(field);
-        field = _.findWhere(fields, {term: field.parent});
-        if (_.isUndefined(field)) {
-          missing.push(_.last(acc).parent);
+        prunedFields.add(field);
+        let nextField = fields.find(f => f.term === field.parent);
+        if (!nextField) {
+          missing.push(field.parent);
           break;
         }
+        field = nextField;
       }
-      acc.push(field);
-      return _.uniq(_.compact(acc));
-    }, []);
+      return prunedFields.add(field);
+    }, new Set() as Set<Field>)
 
   if (missing.length) {
     alert('The following properties are missing from the metadata_spec query:\n\n  ' + missing.join('\n  '));
   }
-
-  return prunedFields;
+  return Array.from(prunedFields);
 }
 
 // Convert a list to a tree* based on the `parent` property

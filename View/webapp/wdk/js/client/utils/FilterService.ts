@@ -43,7 +43,7 @@ export type Datum = {
 }
 
 export type Distribution = Array<{
-  value: string;
+  value: string|null;
   count: number;
   filteredCount: number;
 }>;
@@ -172,13 +172,17 @@ export default class FilterService {
     this._emitChange();
 
     let filter = this.selectedField && this.filters.find(filter => filter.field.term === this.selectedField.term);
-    var promises = [
+    var promises: [
+      Promise<Datum[]>,
+      Promise<Datum[]|undefined>,
+      Promise<Distribution|undefined>
+    ] = [
       this.getFilteredData(this.filters),
-      this.selectedField && this.getFieldDistribution(this.selectedField),
-      filter && this.getFilteredData([filter])
+      filter ? this.getFilteredData([filter]) : Promise.resolve(),
+      this.selectedField ? this.getFieldDistribution(this.selectedField) : Promise.resolve()
     ];
 
-    Promise.all(promises).then(function([ filteredData, distribution, filterSelection ]) {
+    Promise.all(promises).then(([ filteredData, filterSelection, distribution ]) => {
       if (distribution) {
         this.distributionMap[this.selectedField.term] = distribution;
       }
@@ -188,7 +192,7 @@ export default class FilterService {
       this.filteredData = filteredData;
       this.isLoading = false;
       this._emitChange();
-    }.bind(this));
+    });
   }
 
   updateColumns(fields: Field[]) {

@@ -43,14 +43,12 @@ export function initialize(...args) {
 
 export {
   wrapComponents,
-  Stores,
   Controllers,
   Components,
   ActionCreators,
   ComponentUtils,
   IterableUtils,
   ReporterUtils,
-  TreeUtils,
   OntologyUtils,
   CategoryUtils,
   StaticDataUtils,

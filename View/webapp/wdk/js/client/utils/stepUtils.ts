@@ -10,7 +10,13 @@ export function getStepBundlePromise(stepId: number, service: WdkService) {
 
   let stepPromise = service.findStep(stepId);
   let questionPromise = stepPromise.then(step => {
-    return service.findQuestion( q => q.name === step.answerSpec.questionName );
+    return service.findQuestion( q => q.name === step.answerSpec.questionName )
+    .then(question => {
+      if (question == null) {
+        throw new Error("The question `" + step.answerSpec.questionName + "` could not be found.");
+      }
+      return question;
+    })
   });
   let recordClassPromise = questionPromise.then(question => {
     return service.findRecordClass( rc => rc.name === question.recordClassName );

@@ -78,7 +78,7 @@ let getLoginContainer = memoize(function() {
 function renderLoginForm(destination: string, webappUrl: string, open: boolean) {
   render(createElement('div', {}, createElement(LoginForm, {
     onCancel: () => {
-      renderLoginForm(null, webappUrl, false);
+      renderLoginForm(destination, webappUrl, false);
     },
     onSubmit: () => {
     },

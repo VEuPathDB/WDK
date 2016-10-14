@@ -45,7 +45,7 @@ export class IntervalList {
 
   private _interval: number;
   private _callbacks: Function[];
-  private _id: number;
+  private _id: number|null;
 
   /**
    * @param {number} interval Time in ms.
@@ -84,15 +84,11 @@ export class IntervalList {
     }
   }
 
-  isRunning() {
-    return this._id != null;
-  }
-
   /**
    * Start the interval.
    */
   start() {
-    if (this.isRunning()) {
+    if (this._id !== null) {
       throw new Error("Attempting to start an interval that is already running.");
     }
 
@@ -111,7 +107,7 @@ export class IntervalList {
    * Stop the interval.
    */
   stop() {
-    if (!this.isRunning()) {
+    if (this._id === null) {
       throw new Error("Attemping to stop an interval that is already stopped.");
     }
     window.clearTimeout(this._id);

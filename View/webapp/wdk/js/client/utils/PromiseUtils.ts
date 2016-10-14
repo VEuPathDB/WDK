@@ -21,7 +21,7 @@ let pendingPromise = { then() { } };
  * @returns {Function} A function that returns a Promise.
  */
 export function latest<T>(promiseFactory: (...args: any[]) => Promise<T>) {
-  let latestPromise: Promise<T> = null;
+  let latestPromise: Promise<T>;
   return function createPromise(...args: any[]) {
     let thisPromise = latestPromise = promiseFactory(...args);
     return thisPromise.then(

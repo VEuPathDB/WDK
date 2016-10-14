@@ -8,7 +8,8 @@
     "allowSyntheticDefaultImports": true,
     "noImplicitReturns": true,
     "sourceMap": true,
-    "jsx": "react"
+    "jsx": "react",
+    "strictNullChecks": true
   },
   "exclude": [
     "node_modules"
