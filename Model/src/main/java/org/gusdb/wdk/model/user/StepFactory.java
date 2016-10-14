@@ -690,7 +690,7 @@ public class StepFactory {
     //   new steps, but may not have been applied to steps already in the DB.  This allows model XML
     //   authors to add default filters to the model without worrying about existing steps in the DB (as
     //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
-		// applyAlwaysOnFiltersToExistingStep(step);
+    applyAlwaysOnFiltersToExistingStep(step);
 
     LOG.debug("loaded step #" + stepId);
     return step;
@@ -1831,9 +1831,6 @@ public class StepFactory {
   }
 
   private void applyAlwaysOnFiltersToExistingStep(Step step) throws WdkModelException {
-    Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
-    Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
-    boolean modified = false;
     Question question;
     try {
       // check for question validity; 
@@ -1843,6 +1840,15 @@ public class StepFactory {
       // if not valid, user can only delete step so don't apply filters
       return;
     }
+
+    // create a copy of the step representing the pre-modified version
+    Step unmodifiedVersion = new Step(step);
+    unmodifiedVersion.setFilterOptions(new FilterOptionList(step.getFilterOptions()));
+    unmodifiedVersion.setViewFilterOptions(new FilterOptionList(step.getViewFilterOptions()));
+
+    boolean modified = false;
+    Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
+    Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
     @SuppressWarnings("unchecked") // cannot create array of specific map
     Map<String, Filter>[] filterMaps = new Map[] { question.getFilters(), question.getViewFilters() };
     for (Map<String, Filter> filterMap : filterMaps) {
@@ -1861,7 +1867,7 @@ public class StepFactory {
       }
     }
     if (modified) {
-      step.saveParamFilters();
+      step.saveParamFilters(unmodifiedVersion);
     }
   }
 
