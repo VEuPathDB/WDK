@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
@@ -30,7 +31,6 @@ import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
@@ -745,7 +745,7 @@ public class StepFactory {
     step.setAndVerifyChildStepId(rightStepId);
 
     // construct the update sql
-    StringBuilder sql = new StringBuilder("UPDATE ");
+    StringBuffer sql = new StringBuffer("UPDATE ");
     sql.append(_userSchema).append(TABLE_STEP).append(" SET ");
     sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
     if (query.isCombined()) {
@@ -1831,9 +1831,6 @@ public class StepFactory {
   }
 
   private void applyAlwaysOnFiltersToExistingStep(Step step) throws WdkModelException {
-    Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
-    Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
-    boolean modified = false;
     Question question;
     try {
       // check for question validity; 
@@ -1843,6 +1840,15 @@ public class StepFactory {
       // if not valid, user can only delete step so don't apply filters
       return;
     }
+
+    // create a copy of the step representing the pre-modified version
+    Step unmodifiedVersion = new Step(step);
+    unmodifiedVersion.setFilterOptions(new FilterOptionList(step.getFilterOptions()));
+    unmodifiedVersion.setViewFilterOptions(new FilterOptionList(step.getViewFilterOptions()));
+
+    boolean modified = false;
+    Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
+    Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
     @SuppressWarnings("unchecked") // cannot create array of specific map
     Map<String, Filter>[] filterMaps = new Map[] { question.getFilters(), question.getViewFilters() };
     for (Map<String, Filter> filterMap : filterMaps) {
@@ -1861,7 +1867,7 @@ public class StepFactory {
       }
     }
     if (modified) {
-      step.saveParamFilters();
+      step.saveParamFilters(unmodifiedVersion);
     }
   }
 
