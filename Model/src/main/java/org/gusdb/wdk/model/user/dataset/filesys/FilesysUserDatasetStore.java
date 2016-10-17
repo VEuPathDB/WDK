@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.dataset.filesys;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
@@ -42,5 +44,10 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
         throw new WdkModelException("Users root dir [" + usersRootDir + "] does not exist and cannot be created.", e2);
       }
     }
+  }
+
+  @Override
+  public UserDatasetFile getUserDatasetFile(Path path, Integer userDatasetId) {
+    return new FilesysUserDatasetFile(path, userDatasetId);
   }
 }

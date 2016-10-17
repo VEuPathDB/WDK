@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +39,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
   private String userDatasetSchemaName;
   private ModelConfig modelConfig;
   private String projectId;
+  private String wdkTempDirName;
   
   private static final Logger logger = Logger.getLogger(ModelCacher.class);
   
@@ -44,10 +47,10 @@ public class UserDatasetEventListHandler extends BaseCLI {
     super(command, "Handle a list of user dataset events.");
   }
 
-  private  void handleEventList(List<UserDatasetEvent> eventList, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException, SAXException, IOException {
+  private  void handleEventList(List<UserDatasetEvent> eventList, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir) throws WdkModelException, SAXException, IOException {
     for (UserDatasetEvent event : eventList) {
       if (event instanceof UserDatasetInstallEvent) {
-        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent)event, typeHandlers.get(event.getUserDatasetType()), getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName());
+        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent)event, typeHandlers.get(event.getUserDatasetType()), getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
       } else if (event instanceof UserDatasetUninstallEvent) {
         UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandlers.get(event.getUserDatasetType()), getAppDbDataSource(), getUserDatasetSchemaName());
       } else if (event instanceof UserDatasetAccessControlEvent) {
@@ -74,6 +77,13 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   private String getUserDatasetSchemaName() {
     return userDatasetSchemaName;
+  }
+  
+  private String getWdkTempDirName() throws WdkModelException {
+    if (wdkTempDirName == null) {
+      wdkTempDirName = getModelConfig().getWdkTempDir();
+    }
+    return wdkTempDirName;
   }
   
   private ModelConfig getModelConfig() throws  WdkModelException {
@@ -140,7 +150,8 @@ public class UserDatasetEventListHandler extends BaseCLI {
   protected void execute() throws Exception {
     setProjectId((String) getOptionValue(ARG_PROJECT));
     File eventsFile = new File((String) getOptionValue(ARG_EVENTS_FILE));
-    handleEventList(parseEventsFile(eventsFile), getModelConfig().getUserDatasetStoreConfig().getTypeHandlers());
+    Path tmpDir =  Paths.get(getWdkTempDirName());
+    handleEventList(parseEventsFile(eventsFile), getModelConfig().getUserDatasetStoreConfig().getTypeHandlers(), tmpDir);
   }
 
   @Override

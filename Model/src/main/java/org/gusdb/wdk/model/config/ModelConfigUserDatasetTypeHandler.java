@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.config;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 
@@ -13,14 +12,15 @@ public class ModelConfigUserDatasetTypeHandler extends ModelConfig {
   private String version;
   private UserDatasetTypeHandler typeHandler;
 
-  public UserDatasetTypeHandler getTypeHandler() {
+  public UserDatasetTypeHandler getTypeHandler() throws WdkModelException {
+    if (typeHandler == null) initialize();
     return typeHandler;
   }
 
   /**
    * @return the implementation
    */
-  public String getImplementation() {
+  private String getImplementation() {
     return implementationClass;
   }
 
@@ -36,16 +36,8 @@ public class ModelConfigUserDatasetTypeHandler extends ModelConfig {
     this.type = type;
   }
 
-  public String getType() {
-    return type;
-  }
-
   public void setVersion(String version) {
     this.version = version;
-  }
-
-  public String getVersion() {
-    return version;
   }
 
   /*
@@ -54,7 +46,7 @@ public class ModelConfigUserDatasetTypeHandler extends ModelConfig {
    * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model .WdkModel)
    */
 
-  public void initialize() throws WdkModelException {
+  private void initialize() throws WdkModelException {
 
     // try to find implementation class
     String msgStart = "Implementation class for userDatasetTypeHandlerPlugin [" + getImplementation() + "] ";

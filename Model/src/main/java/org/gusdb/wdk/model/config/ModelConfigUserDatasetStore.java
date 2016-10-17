@@ -104,9 +104,8 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
     if (typeHandlers == null) {
       // call resolve references on handlers; add the resolved typeHandlers to our list
       typeHandlers = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
-      for (ModelConfigUserDatasetTypeHandler config : typeHandlerConfigs) {
-        config.initialize();
-        typeHandlers.put(config.getTypeHandler().getUserDatasetType(), config.getTypeHandler());
+      for (ModelConfigUserDatasetTypeHandler typeHandlerConfig : typeHandlerConfigs) {
+        typeHandlers.put(typeHandlerConfig.getTypeHandler().getUserDatasetType(), typeHandlerConfig.getTypeHandler());
       }
     }
     return typeHandlers;
