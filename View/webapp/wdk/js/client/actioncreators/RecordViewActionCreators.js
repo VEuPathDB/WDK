@@ -8,7 +8,6 @@ export let actionTypes = {
   ACTIVE_RECORD_RECEIVED: 'record-view/active-record-received',
   ACTIVE_RECORD_UPDATED: 'record-view/active-record-updated',
   ACTIVE_RECORD_LOADING: 'record-view/active-record-loading',
-  ACTIVE_SECTION_CHANGED: 'record-view/active-section-changed',
   ERROR_RECEIVED: 'record-view/error-received',
   SECTION_VISIBILITY_CHANGED: 'record-view/section-visibility-changed',
   ALL_FIELD_VISIBILITY_CHANGED: 'record-view/all-field-visibility-changed',
@@ -26,9 +25,8 @@ let getTables = partial(filterNodes, isTableNode);
 let getNodeName = partial(getPropertyValue, 'name');
 
 /** Fetch page data from services */
-export function loadRecordData(recordClass, primaryKeyValues, activeSection) {
+export function loadRecordData(recordClass, primaryKeyValues) {
   return function run(dispatch) {
-    dispatch(updateActiveSection(activeSection));
     dispatch(setActiveRecord(recordClass, primaryKeyValues))
     .then(action => {
       let { record, recordClass } = action.payload;
@@ -91,19 +89,6 @@ export function updateSectionVisibility(sectionName, isVisible) {
   return {
     type: actionTypes.SECTION_VISIBILITY_CHANGED,
     payload: { name: sectionName, isVisible }
-  };
-}
-
-/**
- * Set the active section (the section at the top of the viewport)
- *
- * @param {string} name The section identifier
- * @param {number} offset? The section's viewport offset
- */
-export function updateActiveSection(name) {
-  return {
-    type: actionTypes.ACTIVE_SECTION_CHANGED,
-    payload: { name }
   };
 }
 

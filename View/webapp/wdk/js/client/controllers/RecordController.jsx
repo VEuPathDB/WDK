@@ -7,8 +7,7 @@ import {
   updateNavigationQuery,
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
-  updateNavigationVisibility,
-  updateActiveSection
+  updateNavigationVisibility
 } from '../actioncreators/RecordViewActionCreators';
 import * as UserActionCreators from '../actioncreators/UserActionCreators';
 import RecordUI from '../components/RecordUI';
@@ -33,8 +32,7 @@ class RecordController extends WdkViewController {
       updateNavigationQuery,
       updateAllFieldVisibility,
       updateNavigationSubcategoryVisibility,
-      updateNavigationVisibility,
-      updateActiveSection
+      updateNavigationVisibility
     }, UserActionCreators);
   }
 
