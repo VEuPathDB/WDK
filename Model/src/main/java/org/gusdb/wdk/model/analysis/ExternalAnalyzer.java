@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
@@ -13,8 +14,9 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.BaseTabularReporter;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.ReporterFactory;
 import org.gusdb.wdk.model.report.StandardConfig;
+import org.gusdb.wdk.model.report.TableTabularReporter;
+import org.gusdb.wdk.model.report.TabularReporter;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
@@ -31,14 +33,18 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   // this plugin can only be assigned to questions/recordClasses that
   //   are configured with a tabular reporter
   protected static final String TABULAR_REPORTER_NAME = "tabular";
-
-  protected static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
+  protected static final String TABLE_TABULAR_REPORTER_NAME = "tableTabular";
+  
   protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "columnsToExtract";
-  protected static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
-  protected static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
+  protected static final String EXTRACTED_TABLES_PROP_KEY = "tablesToExtract";
   protected static final String ADD_HEADER_PROP_KEY = "addHeader";
 
-  protected static final String DATA_FILE_NAME = "data.tab";
+  protected static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
+  protected static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
+  protected static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
+
+  protected static final String FILE_NAME_SUFFIX = ".tab";
+  protected static final String ATTRIBUTES_FILE_NAME = "attributes" + FILE_NAME_SUFFIX;
 
   protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
@@ -59,7 +65,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     public void setIframeBaseUrl(String url) { _iframeBaseUrl = url; }
 
     public String getIframeBaseUrl() { return _iframeBaseUrl; }
-    public String getDownloadPath() { return DATA_FILE_NAME; }
+    public String getDownloadPath() { return ATTRIBUTES_FILE_NAME; }
     public int getIframeWidth() { return _iframeWidth; }
     public int getIframeHeight() { return _iframeHeight; }
   }
@@ -103,17 +109,43 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     if (hasHeader == null || hasHeader.isEmpty()) {
       hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
     }
-    Reporter reporter = ReporterFactory.getReporter(answerValue, TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
+    String storageDir = getStorageDirectory().toAbsolutePath().toString();
+
+    // configure tabular reporter if attributes requested in config
+    String attributes = getProperty(EXTRACTED_ATTRIBS_PROP_KEY);
+    if (attributes != null && !attributes.trim().isEmpty()) {
+      Reporter reporter = new TabularReporter(answerValue);
+      reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, attributes.trim(), hasHeader));
+      writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
+    }
+
+    // get array of requested tables
+    String tablesStr = getProperty(EXTRACTED_TABLES_PROP_KEY);
+    if (tablesStr != null && !tablesStr.trim().isEmpty()) {
+      String[] tables = tablesStr.split(",");
+      for (String table : tables) {
+        Reporter reporter = new TableTabularReporter(answerValue);
+        reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
+        writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
+      }
+    }
+
+    return ExecutionStatus.COMPLETE;
+  }
+
+  private Map<String, String> getConfig(String reportSpecificKey, String reportSpecificValue, String hasHeader) {
+    return new MapBuilder<String,String>()
         .put(StandardConfig.ATTACHMENT_TYPE, "text")
         .put(BaseTabularReporter.FIELD_HAS_HEADER, hasHeader)
         .put(BaseTabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
-        .put(StandardConfig.SELECTED_FIELDS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
-        .toMap());
+        .put(reportSpecificKey, reportSpecificValue)
+        .toMap();
+  }
+
+  private static void writeReport(Reporter reporter, Path outputFile) throws WdkModelException {
     // write query results to disk
-    Path outputFile = Paths.get(getStorageDirectory().toAbsolutePath().toString(), DATA_FILE_NAME);
     try (FileOutputStream fileOut = new FileOutputStream(outputFile.toFile())) {
       reporter.report(fileOut);
-      return ExecutionStatus.COMPLETE;
     }
     catch (IOException | JSONException e) {
       throw new WdkModelException("Unable to dump analysis files to data storage dir", e);
