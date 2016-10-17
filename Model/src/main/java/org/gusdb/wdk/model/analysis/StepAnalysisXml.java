@@ -22,7 +22,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _description;
   private String _releaseVersion;
   private Integer _expirationMinutes;
-  
+
   // for running and viewing the analysis
   private String _analyzerClass;
   private String _formViewName;     // form view name to be resolved by factory
@@ -31,23 +31,24 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
 
   // for ui
   private String _customThumbnail; // path relative to WDK configured assetsUrl
-  
+
   public StepAnalysisXml() { }
-  
+
   public StepAnalysisXml(StepAnalysisXml obj) {
     super(obj);
     _name = obj._name;
     _displayName = obj._displayName;
+    _shortDescription = obj._shortDescription;
     _description = obj._description;
     _releaseVersion = obj._releaseVersion;
+    _expirationMinutes = obj._expirationMinutes;
     _analyzerClass = obj._analyzerClass;
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
     _properties = new HashMap<String,String>(obj._properties);
     _customThumbnail = obj._customThumbnail;
-    _expirationMinutes = obj._expirationMinutes;
   }
-  
+
   @Override
   public String getName() {
     return _name;
@@ -55,7 +56,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setName(String name) {
     _name = name;
   }
-  
+
   @Override
   public String getDisplayName() {
     return _displayName;
@@ -63,7 +64,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setDisplayName(String displayName) {
     _displayName = displayName;
   }
-  
+
   @Override
   public String getShortDescription() {
     return (_shortDescription != null && !_shortDescription.isEmpty() ? _shortDescription :
@@ -72,7 +73,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setShortDescription(WdkModelText shortDescription) {
     _shortDescription = shortDescription.getText();
   }
-  
+
   @Override
   public String getDescription() {
     return (_description != null && !_description.isEmpty() ? _description :
@@ -81,7 +82,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setDescription(WdkModelText description) {
     _description = description.getText();
   }
-  
+
   @Override
   public String getReleaseVersion() {
     return _releaseVersion;
@@ -89,7 +90,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setReleaseVersion(String releaseVersion) {
     _releaseVersion = releaseVersion;
   }
-  
+
   @Override
   public String getFormViewName() {
     return (_formViewName == null ? DEFAULT_FORM_VIEW : _formViewName);
@@ -97,7 +98,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setFormViewName(String formViewName) {
     _formViewName = formViewName;
   }
-  
+
   @Override
   public String getAnalysisViewName() {
     return (_analysisViewName == null ? DEFAULT_ANALYSIS_VIEW : _analysisViewName);
@@ -105,7 +106,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setAnalysisViewName(String analysisViewName) {
     _analysisViewName = analysisViewName;
   }
-  
+
   @Override
   public Map<String, String> getProperties() {
     return _properties;
@@ -116,7 +117,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       throw new IllegalArgumentException("Property must have a name.");
     _properties.put(name, property.getText());
   }
-  
+
   @Override
   public String getCustomThumbnail() {
     return _customThumbnail;
@@ -135,7 +136,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public boolean isExpirationMinutesSet() {
     return _expirationMinutes != null;
   }
-  
+
   @Override
   public StepAnalyzer getAnalyzerInstance() throws WdkModelException {
     if (_analyzerClass == null)
@@ -164,28 +165,29 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public void setAnalyzerClass(String analyzerClass) {
     _analyzerClass = analyzerClass;
   }
-  
+
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
-    
+
     // look up analysis object, then override with my values
     StepAnalysisXml saObj = wdkModel.getStepAnalysisPlugins().getStepAnalysis(_name);
     if (saObj == null) {
       throw new WdkModelException("StepAnalysisRef using name (" +
           _name + ") that does not map to StepAnalysisPlugin.");
     }
-    
+
     // always use values from reference, then obj, then default
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, saObj._displayName, _name);
     _shortDescription = chooseValue(_shortDescription, saObj._shortDescription, "");
     _description = chooseValue(_description, saObj._description, "");
     _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
+    _expirationMinutes = chooseValue(_expirationMinutes, saObj._expirationMinutes, null);
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
     _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
     _customThumbnail = chooseValue(_customThumbnail, saObj._customThumbnail, null);
-    
+
     // override properties, but retain non-conflicts from obj
     for (Entry<String,String> entry : saObj._properties.entrySet()) {
       // only add to this reference if doesn't already exist
@@ -198,21 +200,23 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     getAnalyzerInstance();
   }
 
-  private static String chooseValue(String refValue, String objValue, String defaultValue) {
+  private static <T> T chooseValue(T refValue, T objValue, T defaultValue) {
     if (refValue != null) return refValue;
     if (objValue != null) return objValue;
     return defaultValue;
   }
-  
+
   @Override
   public String toString() {
     String NL = System.getProperty("line.separator");
     StringBuilder sb = new StringBuilder("StepAnalysis {").append(NL)
       .append("  Name             : ").append(_name).append(NL)
       .append("  DisplayName      : ").append(_displayName).append(NL)
+      .append("  ShortDescription : ").append(_shortDescription).append(NL)
       .append("  Description      : ").append(_description).append(NL)
       .append("  ReleaseVersion   : ").append(_releaseVersion).append(NL)
-      .append("  AnalysisClass    : ").append(_analyzerClass).append(NL)
+      .append("  ExpirationMins   : ").append(_expirationMinutes).append(NL)
+      .append("  AnalyzerClass    : ").append(_analyzerClass).append(NL)
       .append("  FormViewName     : ").append(_formViewName).append(NL)
       .append("  AnalysisViewName : ").append(_analysisViewName).append(NL)
       .append("  CustomThumbnail  : ").append(_customThumbnail).append(NL)
