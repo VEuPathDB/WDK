@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -119,6 +120,8 @@ public class FileBasedRecordStream implements RecordStream {
   protected void createTemporaryDirectory() throws WdkModelException {
 	try {
 	  String wdkTempDir = _answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
+	  Files.createDirectories(Paths.get(wdkTempDir));
+	  IoUtil.openPosixPermissions(Paths.get(wdkTempDir));
 	  _temporaryDirectory = IoUtil.createOpenPermsTempDir(Paths.get(wdkTempDir), DIRECTORY_PREFIX);
 	}
 	catch(IOException ioe) {
