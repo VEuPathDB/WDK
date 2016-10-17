@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
+import java.nio.file.Path;
+
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -11,13 +13,25 @@ import org.gusdb.wdk.model.user.dataset.event.UserDatasetAccessControlEvent.Acce
 
 public class UserDatasetEventHandler {
 
-  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore userDatasetStore, DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
+  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore userDatasetStore, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir) throws WdkModelException {
+    String sql = "insert into " + userDatasetSchemaName + ".InstalledUserDataset (user_dataset_id) values (?)";
+
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
+    Object[] args = {event.getUserDatasetId()};
+    sqlRunner.executeUpdate(args);
+
     UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
-    typeHandler.installInAppDb(userDataset, appDbDataSource, userDatasetSchemaName);
+    typeHandler.installInAppDb(userDataset, tmpDir);
   }
   
   public static void handleUninstallEvent (UserDatasetUninstallEvent event, UserDatasetTypeHandler typeHandler, DataSource appDbDataSource, String userDatasetSchemaName) {
     typeHandler.uninstallInAppDb(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName);
+    String sql = "delete from " + userDatasetSchemaName + ".InstalledUserDataset where dataset_id = ?";
+
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
+    Object[] args = {event.getUserDatasetId()};
+    sqlRunner.executeUpdate(args);
+
   }
   
   public static void handleAccessControlEvent (UserDatasetAccessControlEvent event, DataSource appDbDataSource, String userDatasetSchemaName) {

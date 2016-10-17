@@ -4,22 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 
-public class FilesysUserDatasetFile implements UserDatasetFile {
+public class FilesysUserDatasetFile extends UserDatasetFile {
   
-  private Path filePath;
-  
-  public FilesysUserDatasetFile(Path filePath) {
-    this.filePath = filePath;
+ 
+  public FilesysUserDatasetFile(Path filePath, Integer userDatasetId) {
+    super(filePath, userDatasetId);
   }
 
   @Override
   public InputStream getFileContents() throws WdkModelException {
     try {
-      return Files.newInputStream(filePath);
+      return Files.newInputStream(getFilePath());
     } catch (IOException e) {
       throw new WdkModelException(e);
     }
@@ -28,7 +26,7 @@ public class FilesysUserDatasetFile implements UserDatasetFile {
   @Override
   public Long getFileSize() throws WdkModelException {
     try {
-      return Files.size(filePath);
+      return Files.size(getFilePath());
     } catch (IOException e) {
       throw new WdkModelException(e);
     }
@@ -36,7 +34,15 @@ public class FilesysUserDatasetFile implements UserDatasetFile {
 
   @Override
   public String getFileName() {
-    return filePath.getFileName().toString();
+    return getFilePath().getFileName().toString();
   }
 
+  @Override
+  protected void createLocalCopy(Path tmpFile) throws WdkModelException {
+    try {
+      Files.copy(getFilePath(), tmpFile);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+  }
 }

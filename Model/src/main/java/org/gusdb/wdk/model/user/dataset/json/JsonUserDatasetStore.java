@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.gusdb.wdk.model.user.dataset.filesys.FilesysUserDatasetFile;
 import org.json.JSONException;
 import org.json.JSONObject;
 //import org.apache.log4j.Logger;
@@ -208,9 +207,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @param dataFilesMap
    * @throws WdkModelException
    */
-  protected void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException {
+  protected void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap, Integer userDatasetId) throws WdkModelException {
     for (Path path : adaptor.getPathsInDir(dataFilesDir))
-      dataFilesMap.put(path.getFileName().toString(), new FilesysUserDatasetFile(path));
+      dataFilesMap.put(path.getFileName().toString(), getUserDatasetFile(path, userDatasetId));
   }
   
   /**

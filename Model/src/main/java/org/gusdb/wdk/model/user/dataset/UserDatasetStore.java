@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.dataset;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
@@ -118,6 +119,8 @@ public interface UserDatasetStore {
    */
 
   boolean checkUserDatasetsDirExists(Integer userId)  throws WdkModelException;
+  
+  UserDatasetFile getUserDatasetFile(Path path, Integer userDatasetId);
   
 
   
