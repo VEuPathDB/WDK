@@ -12,11 +12,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.report.AttributesTabularReporter;
 import org.gusdb.wdk.model.report.BaseTabularReporter;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.StandardConfig;
 import org.gusdb.wdk.model.report.TableTabularReporter;
-import org.gusdb.wdk.model.report.TabularReporter;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
@@ -35,7 +35,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String TABULAR_REPORTER_NAME = "tabular";
   protected static final String TABLE_TABULAR_REPORTER_NAME = "tableTabular";
   
-  protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "columnsToExtract";
+  protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "attributesToExtract";
   protected static final String EXTRACTED_TABLES_PROP_KEY = "tablesToExtract";
   protected static final String ADD_HEADER_PROP_KEY = "addHeader";
 
@@ -114,7 +114,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     // configure tabular reporter if attributes requested in config
     String attributes = getProperty(EXTRACTED_ATTRIBS_PROP_KEY);
     if (attributes != null && !attributes.trim().isEmpty()) {
-      Reporter reporter = new TabularReporter(answerValue);
+      Reporter reporter = new AttributesTabularReporter(answerValue);
       reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, attributes.trim(), hasHeader));
       writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
     }
