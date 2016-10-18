@@ -43,11 +43,20 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("development")
           }
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+          name: 'wdk-common',
+          // filename: 'wdk-common.bundle.js'
         })
       ]
 
     : [
-        new webpack.optimize.UglifyJsPlugin({ mangle: false }),
+        new webpack.optimize.UglifyJsPlugin({
+          mangle: false,
+          compress: {
+            warnings: false
+          }
+        }),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurenceOrderPlugin(true),
         new webpack.DefinePlugin({
@@ -55,6 +64,10 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("production")
           }
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+          name: 'wdk-common',
+          // filename: 'wdk-common.bundle.js'
         })
       ]
 };
