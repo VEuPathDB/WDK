@@ -277,8 +277,7 @@ public class FavoriteFactory {
               Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
               primaryKeys.put(columns[i - 1], value);
             }
-            RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
-            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
+            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys);
             Favorite favorite = new Favorite(user);
             favorite.setPrimaryKeys(pkValue);
             favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
@@ -289,7 +288,7 @@ public class FavoriteFactory {
         // End CWL 29JUN2016
       }
       return favorites;
-    } catch (SQLException|WdkUserException e) {
+    } catch (SQLException e) {
       throw new WdkModelException("Cannot get favorites for user "
           + user.getUserId(), e);
     } finally {
