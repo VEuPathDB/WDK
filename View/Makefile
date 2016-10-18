@@ -47,7 +47,7 @@ $(yarn_exec):
 # Install npm packages. This target will prevent unneeded http requests.
 # =============================================================================
 node_modules: $(yarn_exec)
-	yarn install --production
+	yarn
 
 node_modules/%: node_modules;
 
