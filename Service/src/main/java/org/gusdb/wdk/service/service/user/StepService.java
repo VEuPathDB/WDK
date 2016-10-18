@@ -16,9 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.TestUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
@@ -112,8 +110,8 @@ public class StepService extends UserService {
       if (nullSafeEquals(oldParamValues.get(paramName), newParamValues.get(paramName).getObjectValue())) paramFiltersChanged = true;
       step.setParamValue(paramName, (String)newParamValues.get(paramName).getObjectValue());
     }
-    if (nullSafeEquals(step.getFilterName(), answerSpec.getLegacyFilter().getName())) paramFiltersChanged = true;
-    step.setFilterName(answerSpec.getLegacyFilter().getName());
+    if (nullSafeEquals(step.getFilter(), answerSpec.getLegacyFilter())) paramFiltersChanged = true;
+    step.setFilterName(answerSpec.getLegacyFilter() == null ? null : answerSpec.getLegacyFilter().getName());
     if (nullSafeEquals(step.getFilterOptions(), answerSpec.getFilterValues())) paramFiltersChanged = true;
     step.setFilterOptions(answerSpec.getFilterValues());
     if (nullSafeEquals(step.getViewFilterOptions(), answerSpec.getViewFilterValues())) paramFiltersChanged = true;

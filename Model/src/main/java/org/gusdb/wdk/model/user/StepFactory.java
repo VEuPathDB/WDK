@@ -49,6 +49,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -259,7 +260,8 @@ public class StepFactory {
         sortingAttributes, filter, validate, assignedWeight);
     answerValue.setFilterOptions(filterOptions);
 
-    LOG.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
+    QueryInstance<?> queryInstance = answerValue.getIdsQueryInstance();
+    LOG.debug("id query name  :" + (queryInstance == null ? "<no_query_specified>" : queryInstance.getQuery().getFullName()));
     LOG.debug("answer checksum:" + answerValue.getChecksum());
     LOG.debug("question name:  " + question.getFullName());
 

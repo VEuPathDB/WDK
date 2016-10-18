@@ -18,7 +18,6 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
@@ -523,7 +522,7 @@ public class Step {
    */
   public boolean isCombined() {
     try {
-      return getQuestion().getQuery().isCombined();
+      return getQuestion().isCombined();
     }
     catch (WdkModelException ex) {
       return false;
@@ -537,7 +536,7 @@ public class Step {
    */
   public boolean isTransform() {
     try {
-      return getQuestion().getQuery().isTransform();
+      return getQuestion().isTransform();
     }
     catch (WdkModelException ex) {
       return false;
@@ -1106,7 +1105,7 @@ public class Step {
 
   public boolean isBoolean() {
     try {
-      return getQuestion().getQuery().isBoolean();
+      return getQuestion().isBoolean();
     }
     catch (WdkModelException ex) {
       return false;
@@ -1160,8 +1159,7 @@ public class Step {
   }
 
   public Question getQuestion() throws WdkModelException {
-    WdkModel wdkModel = stepFactory.getWdkModel();
-    return (Question) wdkModel.resolveReference(questionName);
+    return stepFactory.getWdkModel().getQuestion(questionName);
   }
 
   public AnswerFilterInstance getFilter() {

@@ -63,7 +63,8 @@ public class SingleRecordQuestion extends Question {
     }
     setWdkModel(wdkModel);
     setRecordClass(parts.recordClass);
-    setName("Single" + parts.recordClass.getDisplayName());
+    setName(questionName);
+    setDisplayName("Single" + parts.recordClass.getDisplayName());
     _dynamicAttributeSet = new DynamicAttributeSet();
     _dynamicAttributeSet.setQuestion(this);
   }
@@ -113,5 +114,20 @@ public class SingleRecordQuestion extends Question {
     param.setName(name);
     param.setAllowEmpty(false);
     return param;
+  }
+
+  @Override
+  public boolean isTransform() {
+    return false;
+  }
+
+  @Override
+  public boolean isCombined() {
+    return false;
+  }
+
+  @Override
+  public boolean isBoolean() {
+    return false;
   }
 }
