@@ -40,6 +40,11 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
+  public int getDisplayResultSize() {
+    return 1;
+  }
+
+  @Override
   public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
     // paging is irrelevant since there's only one record
     return this;

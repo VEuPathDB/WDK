@@ -26,7 +26,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.events.Event;
+import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.events.ListenerExceptionEvent;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -208,7 +211,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     LOG.info("WDK Model constructed by class: " + getCallingClass());
     LOG.info("Startup date " + now + " [" + now.getTime() + "]");
 
-    Events.init();
+    startEvents();
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
@@ -221,6 +224,21 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       LOG.error("Exception occurred while loading model.", ex);
       throw new WdkModelException(ex);
     }
+  }
+
+  /**
+   * Starts events framework and listens for exceptions thrown by event handlers, logging them
+   */
+  private void startEvents() {
+    Events.init();
+    Events.subscribe(new EventListener() {
+      @Override
+      public void eventTriggered(Event event) throws Exception {
+        ListenerExceptionEvent errorEvent = (ListenerExceptionEvent)event;
+        LOG.error("Error processing event: " +
+            errorEvent.getEvent().getClass().getName(), errorEvent.getException());
+      }
+    }, ListenerExceptionEvent.class);
   }
 
   private static String getCallingClass() {

@@ -1224,10 +1224,22 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return (filter != null) ? filter : _recordClass.getFilter(filterName); 
   }
 
-    /**
-     * Used when these values are patched in to this Question after the XML parsing and resolution phase is over.
-     */
-    public void setDefaultSummaryAttributeNames(String[] names) {
-  _defaultSummaryAttributeNames = names;
-    }
+  /**
+   * Used when these values are patched in to this Question after the XML parsing and resolution phase is over.
+   */
+  public void setDefaultSummaryAttributeNames(String[] names) {
+    _defaultSummaryAttributeNames = names;
+  }
+
+  public boolean isTransform() {
+    return getQuery().isTransform();
+  }
+
+  public boolean isCombined() {
+    return getQuery().isCombined();
+  }
+
+  public boolean isBoolean() {
+    return getQuery().isBoolean();
+  }
 }
