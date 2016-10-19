@@ -2,6 +2,8 @@ package org.gusdb.wdk.controller.actionutil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,12 +38,12 @@ public class HttpRequestData implements RequestData {
               "" : ":" + _request.getServerPort())
       .toString();
   }
-  
+
   @Override
   public String getRequestUri() {
     return _request.getRequestURI();
   }
-  
+
   @Override
   public String getRequestUrl() {
     return _request.getRequestURL().toString();
@@ -100,7 +102,33 @@ public class HttpRequestData implements RequestData {
   public String getServerName() {
     return _request.getServerName();
   }
-  
+
+  /**
+    * name of host running application (this might be different from
+    * any proxy webserver the terminal client is talking to)
+  **/
+  @Override
+  public String getAppHostName() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+     } catch (UnknownHostException e) {
+      return "N/A";
+     }
+  }
+
+  /**
+    * IP address of host running application (this might be different from
+    * any proxy webserver the terminal client is talking to)
+  **/
+  @Override
+  public String getAppHostAddress() {
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+     } catch (UnknownHostException e) {
+      return "N/A";
+     }
+  }
+
   @Override
   @SuppressWarnings("rawtypes")
   public Map<String, String[]> getTypedParamMap() {
