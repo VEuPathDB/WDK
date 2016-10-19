@@ -153,7 +153,9 @@ public class FileBasedRecordStream implements RecordStream {
    */
   protected static List<ColumnAttributeField> filterColumnAttributeFields(
       Collection<AttributeField> attributes, boolean tableAttributes) throws WdkModelException {
-    List<ColumnAttributeField> columnAttributes = new ArrayList<>();
+	// Using a set to collect column attribute fields because multiple non-column attributes may cite the same
+	// column attributes as dependencies and we don't want them counted more than once.
+    Set<ColumnAttributeField> columnAttributes = new HashSet<>();
     for (AttributeField attribute : attributes) {
       if (attribute instanceof ColumnAttributeField) {
         columnAttributes.add((ColumnAttributeField) attribute);
@@ -163,7 +165,7 @@ public class FileBasedRecordStream implements RecordStream {
         columnAttributes.addAll(attribute.getColumnAttributeFields().values());
       }
     }
-    return columnAttributes;
+    return new ArrayList<ColumnAttributeField>(columnAttributes);
   }
 
   /**
