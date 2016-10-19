@@ -22,6 +22,8 @@ public interface RequestData {
   public String getRequestHeader(String key);
   public String getRemoteHost();
   public String getServerName();
+  public String getAppHostName();
+  public String getAppHostAddress();
   public String getUserAgent();
   public HttpMethod getMethod();
   public Map<String, String[]> getTypedParamMap();
