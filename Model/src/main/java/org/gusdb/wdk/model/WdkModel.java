@@ -612,7 +612,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     releaseResources();
   }
 

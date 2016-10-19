@@ -14,6 +14,9 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
+import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -28,7 +31,7 @@ import org.json.JSONObject;
  * 
  * @author steve
  */
-public abstract class StandardReporter extends PagedReporter {
+public abstract class StandardReporter extends AbstractReporter {
 
   private static final Logger LOG = Logger.getLogger(StandardReporter.class);
 
@@ -44,7 +47,6 @@ public abstract class StandardReporter extends PagedReporter {
   public void configure(Map<String, String> config) throws WdkUserException {
     LOG.info(getClass().getName() + " instantiated and configured with: " +
         FormatUtil.prettyPrint(config, Style.MULTI_LINE));
-    super.configure(config);
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
   }
@@ -52,7 +54,6 @@ public abstract class StandardReporter extends PagedReporter {
   @Override
   public void configure(JSONObject config) throws WdkUserException {
     LOG.info(getClass().getName() + " instantiated and configured with: " + config.toString(2));
-    super.configure(config);
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
   }
@@ -67,6 +68,27 @@ public abstract class StandardReporter extends PagedReporter {
 
   protected Set<TableField> getSelectedTables() {
     return _tables;
+  }
+
+  private static String PROPERTY_PAGE_SIZE = "page_size";
+  private static final int DEFAULT_PAGE_SIZE = 100;
+  protected RecordStream getRecords() throws WdkModelException {
+    switch(_standardConfig.getStreamStrategy()) {
+      case PAGED_ANSWER:
+        int pageSize = DEFAULT_PAGE_SIZE;
+        if (_properties.containsKey(PROPERTY_PAGE_SIZE)) {
+          try {
+            pageSize = Integer.valueOf(_properties.get(PROPERTY_PAGE_SIZE));
+          }
+          catch (NumberFormatException e) {
+            throw new WdkModelException("Reporter property '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");
+          }
+        }
+        return new PagedAnswerRecordStream(_baseAnswer, pageSize);
+      case FILE_BASED:
+      default:
+        return new FileBasedRecordStream(_baseAnswer, getSelectedAttributes(), getSelectedTables()).populateFiles();
+    }
   }
 
   private void loadValidatedFields() throws WdkUserException {

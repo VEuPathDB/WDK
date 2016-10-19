@@ -39,6 +39,13 @@ public abstract class WdkService {
 
   private WdkModelBean _wdkModelBean;
   private WdkAnswerFactory _resultFactory;
+  private UserBean _user;
+
+  // public setter for unit tests
+  public void testSetup(WdkModel wdkModel, User user) {
+    _wdkModelBean = new WdkModelBean(wdkModel);
+    _user = new UserBean(user);
+  }
 
   protected WdkModelBean getWdkModelBean() {
     return _wdkModelBean;
@@ -57,7 +64,7 @@ public abstract class WdkService {
   }
 
   protected UserBean getSessionUserBean() {
-    return ((UserBean)_request.getSession().getAttribute("wdkUser"));
+    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute("wdkUser"));
   }
 
   protected int getSessionUserId() throws WdkModelException {

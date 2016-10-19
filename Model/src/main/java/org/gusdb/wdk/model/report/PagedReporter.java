@@ -3,12 +3,9 @@ package org.gusdb.wdk.model.report;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * A PagedReporter outputs a result in a paged fashion in order to avoid memory problems.  To do so, it
@@ -43,31 +40,7 @@ public abstract class PagedReporter extends AbstractReporter {
     }
   }
 
-  @Override
-  public void configure(Map<String, String> config) throws WdkUserException {
-    if (config.containsKey(PROPERTY_PAGE_SIZE)) {
-      try {
-        _pageSize = Integer.valueOf(config.get(PROPERTY_PAGE_SIZE));
-      }
-      catch (NumberFormatException e) {
-        throw new WdkUserException("Config value '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");
-      }
-    }
-  }
-
-  @Override
-  public void configure(JSONObject config) throws WdkUserException {
-    if (config.has(PROPERTY_PAGE_SIZE)) {
-      try {
-        _pageSize = config.getInt(PROPERTY_PAGE_SIZE);
-      }
-      catch (JSONException e) {
-        throw new WdkUserException("Config value '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");
-      }
-    }
-  }
-
-  public RecordStream getRecords() throws WdkModelException {
+  public RecordStream getRecords() {
     return new PagedAnswerRecordStream(_baseAnswer, _pageSize);
   }
 
