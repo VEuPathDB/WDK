@@ -23,6 +23,10 @@ import org.json.JSONObject;
  */
 public class StandardConfig {
 
+  public static enum StreamStrategy {
+    PAGED_ANSWER, FILE_BASED;
+  }
+
   // configuration props
   public static final String SELECT_ALL_FIELDS = "all-fields";
   public static final String SELECT_ALL_ATTRS = "allAttributes";
@@ -36,6 +40,7 @@ public class StandardConfig {
   public static final String SELECTED_TABLES_JSON = "tables";
   public static final String INCLUDE_EMPTY_TABLES_JSON = "includeEmptyTables";
   public static final String ATTACHMENT_TYPE_JSON = "attachmentType";
+  public static final String STREAM_STRATEGY_JSON = "streamStrategy";
 
   private final Question _question;
 
@@ -47,6 +52,7 @@ public class StandardConfig {
   private List<String> tables = new ArrayList<String>(); // table and attribute field names
   private boolean allTables = false;
   private String attachmentType = null;
+  protected StreamStrategy streamStrategy = StreamStrategy.PAGED_ANSWER;
 
   public StandardConfig(Question question) {
     _question = question;
@@ -82,6 +88,10 @@ public class StandardConfig {
 
   public String getAttachmentType() {
     return attachmentType;
+  }
+
+  public StreamStrategy getStreamStrategy() {
+    return streamStrategy;
   }
 
   /**
@@ -148,6 +158,9 @@ public class StandardConfig {
 
     if (config.has(ATTACHMENT_TYPE_JSON))
       attachmentType = config.getString(ATTACHMENT_TYPE_JSON).toLowerCase();
+
+    if (config.has(STREAM_STRATEGY_JSON))
+      streamStrategy = StreamStrategy.valueOf(config.getString(STREAM_STRATEGY_JSON).toUpperCase());
 
     return this;
   }
