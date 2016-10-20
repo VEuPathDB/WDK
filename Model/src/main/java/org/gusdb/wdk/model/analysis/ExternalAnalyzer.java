@@ -12,8 +12,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.report.AbstractTabularReporter;
 import org.gusdb.wdk.model.report.AttributesTabularReporter;
-import org.gusdb.wdk.model.report.BaseTabularReporter;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.StandardConfig;
 import org.gusdb.wdk.model.report.TableTabularReporter;
@@ -136,8 +136,8 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   private Map<String, String> getConfig(String reportSpecificKey, String reportSpecificValue, String hasHeader) {
     return new MapBuilder<String,String>()
         .put(StandardConfig.ATTACHMENT_TYPE, "text")
-        .put(BaseTabularReporter.FIELD_HAS_HEADER, hasHeader)
-        .put(BaseTabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
+        .put(AbstractTabularReporter.FIELD_HAS_HEADER, hasHeader)
+        .put(AbstractTabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
         .put(reportSpecificKey, reportSpecificValue)
         .toMap();
   }

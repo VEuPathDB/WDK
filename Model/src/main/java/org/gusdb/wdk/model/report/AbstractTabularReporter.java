@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,6 +13,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.json.JSONObject;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -26,22 +28,108 @@ import com.lowagie.text.pdf.PdfWriter;
  * 
  * @author steve
  */
-public abstract class AbstractTabularReporter extends BaseTabularReporter {
+public abstract class AbstractTabularReporter extends StandardReporter {
 
+  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(AbstractTabularReporter.class);
 
-  public static interface RowsProvider extends Iterable<List<Object>> { }
+  public static final String FIELD_HAS_HEADER = "includeHeader";
+  public static final String FIELD_DIVIDER = "divider";
+
+  protected static final long MAX_EXCEL_LENGTH = 1024 * 1024 * 10;
+
+  protected boolean _includeHeader = true;
+  protected String _divider = "\t";
+
+  protected static interface RowsProvider extends Iterable<List<Object>> { }
 
   protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
 
   protected abstract RowsProvider getRowsProvider(RecordInstance record)
       throws WdkUserException, WdkModelException;
 
-  public AbstractTabularReporter(AnswerValue answerValue) {
+  protected AbstractTabularReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 
   @Override
+  public void configure(Map<String, String> config) throws WdkUserException {
+    super.configure(config);
+
+    // get basic configurations
+    if (config.containsKey(FIELD_HAS_HEADER)) {
+      String value = config.get(FIELD_HAS_HEADER);
+      _includeHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"));
+    }
+
+    if (config.containsKey(FIELD_DIVIDER)) {
+      _divider = config.get(FIELD_DIVIDER);
+    }
+  }
+
+  @Override
+  public void configure(JSONObject config) throws WdkUserException {
+    super.configure(config);
+    _includeHeader = (config.has(FIELD_HAS_HEADER) ? config.getBoolean(FIELD_HAS_HEADER) : true);
+  }
+
+  @Override
+  public String getHttpContentType() {
+    switch (getStandardConfig().getAttachmentType()) {
+      case "text":
+        return "text/plain";
+      case "excel":
+        return "application/vnd.ms-excel";
+      case "pdf":
+        return "application/pdf";
+      default:
+        return super.getHttpContentType();
+    }
+  }
+
+  @Override
+  public String getDownloadFileName() {
+    return getDownloadFileName(getQuestion().getName());
+  }
+
+  protected String getDownloadFileName(String baseName) {
+    String suffix = getFileNameSuffix();
+    switch (getStandardConfig().getAttachmentType()) {
+      case "text":
+        return baseName + "_" + suffix + ".txt";
+      case "excel":
+        return baseName + "_" + suffix + ".xls";
+      case "pdf":
+        return baseName + "_" + suffix + ".pdf";
+      default:
+        return super.getDownloadFileName();
+    }
+  }
+
+  protected String getFileNameSuffix() {
+    return "Summary";
+  }
+
+  @Override
+  public void write(OutputStream out) throws WdkModelException {
+    try {
+      // get the formatted result
+      switch (getStandardConfig().getAttachmentType()) {
+        case "excel":
+          format2Excel(out);
+          break;
+        case "pdf":
+          format2PDF(out);
+          break;
+        default:
+          format2Text(out);
+      }
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Unable to write tabular report", e);
+    }
+  }
+
   protected void format2Text(OutputStream out) throws WdkModelException, WdkUserException {
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
     // print the header
@@ -68,9 +156,8 @@ public abstract class AbstractTabularReporter extends BaseTabularReporter {
     }
   }
 
-  @Override
   protected void format2PDF(OutputStream out) throws WdkModelException, WdkUserException {
-    LOG.info("format2PDF>>>");
+
     Document document = new Document(PageSize.LETTER.rotate());
     try {
       PdfWriter pwriter = PdfWriter.getInstance(document, out);
@@ -128,7 +215,6 @@ public abstract class AbstractTabularReporter extends BaseTabularReporter {
 
   }
 
-  @Override
   protected void format2Excel(OutputStream out) throws WdkModelException, WdkUserException {
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
     int count = 0;
