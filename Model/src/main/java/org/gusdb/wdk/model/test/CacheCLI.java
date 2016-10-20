@@ -106,10 +106,9 @@ public class CacheCLI extends BaseCLI {
         boolean purgeCache = (Boolean) getOptionValue(ARG_DROP_PURGE);
         boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
 
-        try {
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
             // read config info
-            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
             CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();
 
             long start = System.currentTimeMillis();

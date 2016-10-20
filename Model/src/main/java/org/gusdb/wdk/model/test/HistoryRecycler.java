@@ -1,12 +1,10 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test;
 
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -24,11 +22,12 @@ public class HistoryRecycler implements Runnable {
 
     private static final String STOP_SIGNAL_FILE = "recycle-history.stop";
     private static final int USER_EXPIRE_TIME = 24; // in hours
-    private String modelName;
+
+    private WdkModel wdkModel;
     private int interval;
 
-    public HistoryRecycler(String modelName, int interval) {
-        this.modelName = modelName;
+    public HistoryRecycler(WdkModel wdkModel, int interval) {
+        this.wdkModel = wdkModel;
         this.interval = interval;
     }
 
@@ -71,10 +70,8 @@ public class HistoryRecycler implements Runnable {
 
     private void recycle() throws WdkModelException, WdkUserException {
         System.out.println("========== Start recycling histories on "
-                + modelName + " ==========");
+                + wdkModel.getProjectId() + " ==========");
         // construct model
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         UserFactory factory = wdkModel.getUserFactory();
 
         // construct query signature
@@ -97,7 +94,7 @@ public class HistoryRecycler implements Runnable {
         factory.deleteExpiredUsers(USER_EXPIRE_TIME);
 
         System.out.println("========== Finished recycling histories on "
-                + modelName + " ==========");
+                + wdkModel.getProjectId() + " ==========");
     }
 
     public static void printUsage() {
@@ -113,10 +110,7 @@ public class HistoryRecycler implements Runnable {
         System.exit(-1);
     }
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String modelName = null;
         int interval = 0;
 
@@ -141,7 +135,8 @@ public class HistoryRecycler implements Runnable {
             printUsage();
         }
 
-        HistoryRecycler recycler = new HistoryRecycler(modelName, interval);
-        recycler.run();
+        try (WdkModel wdkModel = WdkModel.construct(modelName, GusHome.getGusHome())) {
+          new HistoryRecycler(wdkModel, interval).run();
+        }
     }
 }

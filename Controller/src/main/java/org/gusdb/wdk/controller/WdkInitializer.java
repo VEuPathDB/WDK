@@ -52,8 +52,9 @@ public class WdkInitializer {
 
       LOG.info("WDK web application initialization complete.");
     }
-    catch (Exception ex) {
-      throw new RuntimeException(ex);
+    catch (Exception e) {
+      LOG.error("Unable to initialize WDK web application.", e);
+      throw new RuntimeException(e);
     }
     finally {
       MDCUtil.clearValues();
@@ -72,7 +73,7 @@ public class WdkInitializer {
       if (wdkModel != null) {
         // insulate in case model never properly loaded
         LOG.info("Releasing resources for WDK Model.");
-        wdkModel.getModel().releaseResources();
+        wdkModel.getModel().close();
         LOG.info("WDK resource release complete.");
       }
     }

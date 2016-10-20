@@ -40,23 +40,25 @@ public class DumperHelp {
     String questionName = cmdLine.getOptionValue("question");
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-    WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-    User user = wdkModel.getSystemUser();
+    try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
 
-    Question question = (Question) wdkModel.resolveReference(questionName);
-
-    Map<String, String> params = new LinkedHashMap<String, String>();
-    fillInParams(user, params, question);
-
-    Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
-
-    AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
-    Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
-
-    System.out.println("Help for reporter: " + reporterName + NL);
-    System.out.println();
-    System.out.println(reporter.getHelp());
-    System.out.println();
+      User user = wdkModel.getSystemUser();
+  
+      Question question = (Question) wdkModel.resolveReference(questionName);
+  
+      Map<String, String> params = new LinkedHashMap<String, String>();
+      fillInParams(user, params, question);
+  
+      Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
+  
+      AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
+      Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
+  
+      System.out.println("Help for reporter: " + reporterName + NL);
+      System.out.println();
+      System.out.println(reporter.getHelp());
+      System.out.println();
+    }
   }
 
   private static void fillInParams(User user, Map<String, String> params, Question question)

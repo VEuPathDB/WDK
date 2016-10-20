@@ -321,20 +321,20 @@ public class StressTemplater {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-//        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
-//        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
+        try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
 
-        StressTemplater tester = new StressTemplater(wdkModel);
+          //SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
+          //SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
 
-        // open the input/output file
-        File outFile = new File(gusHome, "/config/" + modelName
-                + "/stress.template");
-        tester.makeTemplate(outFile);
+          StressTemplater tester = new StressTemplater(wdkModel);
 
-        System.out.println("The template file for " + modelName
-                + " has been saved at " + outFile.getAbsolutePath());
-        System.exit(0);
+          // open the input/output file
+          File outFile = new File(gusHome, "/config/" + modelName + "/stress.template");
+          tester.makeTemplate(outFile);
+
+          System.out.println("The template file for " + modelName
+              + " has been saved at " + outFile.getAbsolutePath());
+        }
     }
 
     private static void addOption(Options options, String argName, String desc) {

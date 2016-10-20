@@ -43,37 +43,37 @@ public class RecordTester {
 
         // initialize the model
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
+        try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
 
-        System.out.println("Model initialization took: "
-                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-        st = System.currentTimeMillis();
-
-        // create instance
-        RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
-        Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
-        User user = wdkModel.getSystemUser();
-        RecordInstance recordInstance = new DynamicRecordInstance(user, recordClass,
-                pkValues);
-
-        // try to get all attributes
-        recordInstance.getAttributeValueMap();
-
-        // try to get all tables
-        recordInstance.getTables();
-
-        System.out.println("Record creation took: "
-                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-        st = System.currentTimeMillis();
-
-        System.out.println(recordInstance.print());
-
-        System.out.println("Fields retrieval took: "
-                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-        long end = System.currentTimeMillis();
-        System.out.println("Total time spent: " + ((end - start) / 1000F)
-                + " seconds.");
-        // System.exit(0);
+          System.out.println("Model initialization took: "
+                  + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+          st = System.currentTimeMillis();
+  
+          // create instance
+          RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
+          Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
+          User user = wdkModel.getSystemUser();
+          RecordInstance recordInstance = new DynamicRecordInstance(user, recordClass,
+                  pkValues);
+  
+          // try to get all attributes
+          recordInstance.getAttributeValueMap();
+  
+          // try to get all tables
+          recordInstance.getTables();
+  
+          System.out.println("Record creation took: "
+                  + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+          st = System.currentTimeMillis();
+  
+          System.out.println(recordInstance.print());
+  
+          System.out.println("Fields retrieval took: "
+                  + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+          long end = System.currentTimeMillis();
+          System.out.println("Total time spent: " + ((end - start) / 1000F)
+                  + " seconds.");
+        }
     }
 
     private static Map<String, Object> parsePrimaryKeyArgs(String[] array) {

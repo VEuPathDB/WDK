@@ -328,13 +328,10 @@ public class StepParamExpander extends BaseCLI {
 
   private void runOrig(String projectId) throws WdkModelException, SQLException {
     Timer t = new Timer();
-    WdkModel wdkModel = null;
-    try {
-      wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
+    try (WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome())) {
       expand(wdkModel);
     }
     finally {
-      if (wdkModel != null) wdkModel.releaseResources();
       logger.info("Program duration: " + t.getElapsedString());
     }
   }

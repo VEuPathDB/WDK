@@ -166,36 +166,36 @@ public class QueryTester {
 
     // read config info
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-    WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
+    try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
 
-    QueryTester tester = new QueryTester(wdkModel);
-    QuerySet querySet = wdkModel.getQuerySet(querySetName);
-    Query query = querySet.getQuery(queryName);
+      QueryTester tester = new QueryTester(wdkModel);
+      QuerySet querySet = wdkModel.getQuerySet(querySetName);
+      Query query = querySet.getQuery(queryName);
 
-    if (showParams) {
-      tester.displayParams(query);
-    } else {
-      Map<String, String> rawValues = QueryTester.parseParamArgs(tester.user, params,
-          useDefaults, query);
-      Map<String, String> stableValues = query.getStableValues(tester.user,
-          rawValues);
-      if (showQuery) {
-        String querySql = tester.showSql(query, stableValues);
-        String newline = System.getProperty("line.separator");
-        String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
-        newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
-        System.out.println(newline + newlineQuery + newline);
-      } else if (returnResultAsTable) {
-        String table = tester.showResultTable(query, stableValues);
-        System.out.println(table);
+      if (showParams) {
+        tester.displayParams(query);
       } else {
-        QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
-            true, 0, new LinkedHashMap<String, String>());
-        ResultList rs = instance.getResults();
-        print(query, rs);
+        Map<String, String> rawValues = QueryTester.parseParamArgs(tester.user, params,
+            useDefaults, query);
+        Map<String, String> stableValues = query.getStableValues(tester.user,
+            rawValues);
+        if (showQuery) {
+          String querySql = tester.showSql(query, stableValues);
+          String newline = System.getProperty("line.separator");
+          String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
+          newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
+          System.out.println(newline + newlineQuery + newline);
+        } else if (returnResultAsTable) {
+          String table = tester.showResultTable(query, stableValues);
+          System.out.println(table);
+        } else {
+          QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
+              true, 0, new LinkedHashMap<String, String>());
+          ResultList rs = instance.getResults();
+          print(query, rs);
+        }
       }
     }
-    System.exit(0);
   }
 
   private static void print(Query query, ResultList resultList)

@@ -22,7 +22,6 @@ public class SanityTesterCLI {
   private static final String BEGIN_DATE_FORMAT = "EEE MMM dd HH:mm:ss zzz yyyy";
 
   public static void main(String[] args) {
-    WdkModel wdkModel = null;
     long startTime = System.currentTimeMillis();
     int exitCode = 0;
     try {
@@ -38,45 +37,43 @@ public class SanityTesterCLI {
       boolean verbose = cmdLine.hasOption("verbose");
       boolean passCountMismatches = cmdLine.hasOption("passCountMismatches");
 
-      wdkModel = WdkModel.construct(modelName, GusHome.getGusHome());
+      try (WdkModel wdkModel = WdkModel.construct(modelName, GusHome.getGusHome())) {
 
-      SanityTester sanityTester = new SanityTester(wdkModel, testFilter,
-          failuresOnly, indexOnly, skipWebSvcQueries, verbose, passCountMismatches);
-
-      System.out.println(new StringBuilder()
-        .append(NL)
-        .append("Sanity Test: ").append(NL)
-        .append(" [Model] ").append(modelName).append(NL)
-        .append(" [Database] ").append(wdkModel.getAppDb().getConfig().getConnectionUrl()).append(NL)
-        .append(" [Time] ").append(new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date())).append(NL)
-        .toString());
-
-      List<TestResult> results = sanityTester.runTests();
-      
-      if (!indexOnly) {
-        System.out.println(new StringBuilder().append(NL)
-            .append("Sanity Test Complete.  Results Overview:").append(NL).toString());
-        for (TestResult result : results) {
-          if (!result.isPassed() || !failuresOnly) {
-            System.out.println(result.getShortResultString());
+        SanityTester sanityTester = new SanityTester(wdkModel, testFilter,
+            failuresOnly, indexOnly, skipWebSvcQueries, verbose, passCountMismatches);
+  
+        System.out.println(new StringBuilder()
+          .append(NL)
+          .append("Sanity Test: ").append(NL)
+          .append(" [Model] ").append(modelName).append(NL)
+          .append(" [Database] ").append(wdkModel.getAppDb().getConfig().getConnectionUrl()).append(NL)
+          .append(" [Time] ").append(new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date())).append(NL)
+          .toString());
+  
+        List<TestResult> results = sanityTester.runTests();
+        
+        if (!indexOnly) {
+          System.out.println(new StringBuilder().append(NL)
+              .append("Sanity Test Complete.  Results Overview:").append(NL).toString());
+          for (TestResult result : results) {
+            if (!result.isPassed() || !failuresOnly) {
+              System.out.println(result.getShortResultString());
+            }
           }
+          System.out.println(new StringBuilder().append(NL)
+              .append("Results Summary:").append(NL).toString());
+          System.out.print(sanityTester.getSummaryLine());
+          if (sanityTester.isFailedOverall()) {
+            System.out.println(SanityTester.getRerunLine(results));
+            exitCode = 1;
+          }
+          System.out.println();
         }
-        System.out.println(new StringBuilder().append(NL)
-            .append("Results Summary:").append(NL).toString());
-        System.out.print(sanityTester.getSummaryLine());
-        if (sanityTester.isFailedOverall()) {
-          System.out.println(SanityTester.getRerunLine(results));
-          exitCode = 1;
-        }
-        System.out.println();
       }
     }
     catch (Exception e) {
       System.err.println(FormatUtil.getStackTrace(e));
       exitCode = 1;
-    }
-    finally {
-      wdkModel.releaseResources();
     }
 
     System.out.println(new StringBuilder(NL)

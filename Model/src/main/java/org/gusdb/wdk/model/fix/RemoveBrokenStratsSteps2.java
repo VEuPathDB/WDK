@@ -31,10 +31,6 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
     }
   }
 
-
-  private WdkModel wdkModel;
-  private String userSchema;
-  
   public RemoveBrokenStratsSteps2(String command) {
     super((command != null) ? command : "wdkRemoveBroken",
         "This command cleans broken strategies and steps from the user DB");
@@ -51,57 +47,57 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
     LOG.info("****IN EXECUTE******");
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-    wdkModel = WdkModel.construct(projectId, gusHome);
-    userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    userSchema = DBPlatform.normalizeSchema(userSchema);
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    DBPlatform platform = wdkModel.getUserDb().getPlatform();
-    String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
-        String tempBrokenTable = "wdk_broken_strategies";
-        String tempUnknownRCTable = "wdk_strats_unknownRC"; //unknown record class because invalid question name in root step
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+      String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
+      DataSource dataSource = wdkModel.getUserDb().getDataSource();
+      DBPlatform platform = wdkModel.getUserDb().getPlatform();
+      String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
+      String tempBrokenTable = "wdk_broken_strategies";
+      String tempUnknownRCTable = "wdk_strats_unknownRC"; //unknown record class because invalid question name in root step
 
-/* TO CLEAN/REMOVE:
- * 1- strategies is_deleted = 1
- * 2- broken:
- *   - strategies with user_id different from user_id in root_step
- *   - strategies with project_id different from project_id in root_step
- *   - strategies with root_step inexistent
- *   - strategies with user_id inexistent
- * 3- strategies with a root_step that contains an invalid question _name (this could be done in validate, options in redmine #19239)
- * 123- finally remove all steps that do not belong to a strategy
- */
-        if (platform.checkTableExists(dataSource, defaultSchema, tempBrokenTable)) {
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempBrokenTable, "drop-broken-strats-table.");
-        }
-        if (platform.checkTableExists(dataSource, defaultSchema, tempUnknownRCTable)) {
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempUnknownRCTable, "drop-unknownRC-strats-table.");
-        }
+      /* TO CLEAN/REMOVE:
+       * 1- strategies is_deleted = 1
+       * 2- broken:
+       *   - strategies with user_id different from user_id in root_step
+       *   - strategies with project_id different from project_id in root_step
+       *   - strategies with root_step inexistent
+       *   - strategies with user_id inexistent
+       * 3- strategies with a root_step that contains an invalid question _name (this could be done in validate, options in redmine #19239)
+       * 123- finally remove all steps that do not belong to a strategy
+       */
+      if (platform.checkTableExists(dataSource, defaultSchema, tempBrokenTable)) {
+        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempBrokenTable, "drop-broken-strats-table.");
+      }
+      if (platform.checkTableExists(dataSource, defaultSchema, tempUnknownRCTable)) {
+        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempUnknownRCTable, "drop-unknownRC-strats-table.");
+      }
 
-        // 1
-    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
+      // 1
+      deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
 
-        // 2
-        SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id FROM " +
-                userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.user_id != st.user_id", 
-                        "create-temp-broken-strats-table");
-        SqlUtils.executeUpdate(dataSource, "INSERT INTO wdk_broken_strategies (strategy_id) SELECT s.strategy_id FROM " +
-        userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.project_id != st.project_id", 
-                        "insert-into-temp-broken-strats-table");
-    deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
+      // 2
+      SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id FROM " +
+          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.user_id != st.user_id", 
+          "create-temp-broken-strats-table");
+      SqlUtils.executeUpdate(dataSource, "INSERT INTO wdk_broken_strategies (strategy_id) SELECT s.strategy_id FROM " +
+          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.project_id != st.project_id", 
+          "insert-into-temp-broken-strats-table");
+      deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
 
-        deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
-        deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
+      deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
+      deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
 
-        // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
-        SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
-                userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
-                        "(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
-        //  deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+      // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
+      SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
+          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
+          "(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
+      // deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
-        deleteStepsAndAnalyses(dataSource);
+      deleteStepsAndAnalyses(dataSource, userSchema);
+    }
   }
 
-  private void deleteStepsAndAnalyses(DataSource dataSource) throws SQLException {
+  private void deleteStepsAndAnalyses(DataSource dataSource, String userSchema) throws SQLException {
     
     // for one page of the current set of orphaned steps, first delete their analyses, then delete them.
     // this leads to a new set of orphane steps.  continue until none remain.

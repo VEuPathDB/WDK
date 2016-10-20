@@ -71,14 +71,14 @@ public class MigratorController {
       // get model;
       String modelName = commandLine.getOptionValue(ARG_MODEL);
       String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-      WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-
-      // invoke the migrator;
-      logger.debug("Invoking migrator...");
-      migrator.migrate(wdkModel, commandLine);
-      logger.debug("Migration done.");
-      System.exit(0);
-    } catch (Exception ex) {
+      try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
+        // invoke the migrator;
+        logger.debug("Invoking migrator...");
+        migrator.migrate(wdkModel, commandLine);
+        logger.debug("Migration done.");
+      }
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       controller.printUsage();
       System.exit(-1);

@@ -62,12 +62,11 @@ public class Dumper {
 
         // create the file for output
         File outputFile = new File(dir, outputFileName);
-        OutputStream out = new FileOutputStream(outputFile);
 
         // construct wdkModel
-        WdkModel wdkModel = null;
-        try {
-          wdkModel = WdkModel.construct(modelName, GusHome.getGusHome());
+        try (OutputStream out = new FileOutputStream(outputFile);
+             WdkModel wdkModel = WdkModel.construct(modelName, GusHome.getGusHome())) {
+
           User user = wdkModel.getSystemUser();
 
           // load selected question
@@ -85,11 +84,6 @@ public class Dumper {
           Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
 
           reporter.report(out);
-          out.close();
-        }
-        finally {
-          // release the model
-          if (wdkModel != null) wdkModel.releaseResources();
         }
     }
 

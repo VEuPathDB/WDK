@@ -38,26 +38,27 @@ public class XmlQuestionTester {
         String questionName = ref.getElementName();
 
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-
-        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
-        XmlQuestion question = questionSet.getQuestion(questionName);
-
-        // use external data source
-        if (xmlData != null) question.setXmlDataURL(xmlData);
-
-        int pageCount = 1;
-
-        for (int i = 0; i < rows.length; i += 2) {
-            int nextStartRow = Integer.parseInt(rows[i]);
-            int nextEndRow = Integer.parseInt(rows[i + 1]);
-
-            XmlAnswerValue answer = question.makeAnswer(null, nextStartRow,
-                    nextEndRow);
-
-            System.out.println("Printing Record Instances on page " + pageCount);
-            System.out.println(answer.print());
-            pageCount++;
+        try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
+  
+          XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
+          XmlQuestion question = questionSet.getQuestion(questionName);
+  
+          // use external data source
+          if (xmlData != null) question.setXmlDataURL(xmlData);
+  
+          int pageCount = 1;
+  
+          for (int i = 0; i < rows.length; i += 2) {
+              int nextStartRow = Integer.parseInt(rows[i]);
+              int nextEndRow = Integer.parseInt(rows[i + 1]);
+  
+              XmlAnswerValue answer = question.makeAnswer(null, nextStartRow,
+                      nextEndRow);
+  
+              System.out.println("Printing Record Instances on page " + pageCount);
+              System.out.println(answer.print());
+              pageCount++;
+          }
         }
     }
 

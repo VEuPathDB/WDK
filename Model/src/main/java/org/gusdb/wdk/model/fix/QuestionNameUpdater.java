@@ -15,10 +15,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.config.ModelConfigUserDB;
 
 public class QuestionNameUpdater {
 
@@ -34,33 +32,27 @@ public class QuestionNameUpdater {
       System.exit(1);
     }
 
-    try {
-      QuestionNameUpdater updater = new QuestionNameUpdater(args[0], args[1]);
-      updater.update();
-      System.exit(0);
-    } catch (Exception e) {
+    try (WdkModel wdkModel = WdkModel.construct(args[0], GusHome.getGusHome())) {
+      new QuestionNameUpdater(wdkModel, args[1]).update();
+    }
+    catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
   }
 
-  private final String projectId;
-  private final WdkModel wdkModel;
-  private final String userSchema;
-  // private final String wdkSchema;
-  private final Map<String, String> mappings;
-  private final UpdatedStepLogger stepLogger;
+  private final String _projectId;
+  private final WdkModel _wdkModel;
+  private final String _userSchema;
+  private final Map<String, String> _mappings;
+  private final UpdatedStepLogger _stepLogger;
 
-  public QuestionNameUpdater(String projectId, String mapFile)
-      throws WdkModelException, IOException, SQLException {
-    this.projectId = projectId;
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-    wdkModel = WdkModel.construct(projectId, gusHome);
-    ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
-    userSchema = userDB.getUserSchema();
-    // wdkSchema = userDB.getWdkEngineSchema();
-    mappings = loadMapFile(mapFile);
-    stepLogger = new UpdatedStepLogger(wdkModel);
+  public QuestionNameUpdater(WdkModel wdkModel, String mapFile) throws IOException, SQLException {
+    _wdkModel = wdkModel;
+    _projectId = _wdkModel.getProjectId();
+    _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
+    _mappings = loadMapFile(mapFile);
+    _stepLogger = new UpdatedStepLogger(_wdkModel);
   }
 
   private Map<String, String> loadMapFile(String fileName) throws IOException {
@@ -86,23 +78,23 @@ public class QuestionNameUpdater {
   private void updateQuestionNames() throws SQLException {
     logger.info("Checking question names...");
 
-    DatabaseInstance userDb = wdkModel.getUserDb();
+    DatabaseInstance userDb = _wdkModel.getUserDb();
     DataSource dataSource = userDb.getDataSource();
     PreparedStatement psSelect = null, psUpdate = null;
     ResultSet resultSet = null;
     String select = "SELECT s.step_id, s.question_name           " + " FROM "
-        + userSchema + "users u, " + userSchema + "steps s "
+        + _userSchema + "users u, " + _userSchema + "steps s "
         + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
         + "   AND  s.project_id = ?";
     // logger.info("SELECT:   " + select + "\n\n");
-    String update = "UPDATE " + userSchema + "steps "
+    String update = "UPDATE " + _userSchema + "steps "
         + " SET question_name = ? WHERE step_id = ?";
     // logger.info("UPDATE:   " + update + "\n\n");
 
     try {
       psSelect = SqlUtils.getPreparedStatement(dataSource, select);
       psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
-      psSelect.setString(1, projectId);
+      psSelect.setString(1, _projectId);
       logger.debug("SELECT:   " + psSelect + "\n\n");
       resultSet = psSelect.executeQuery();
       int count = 0;
@@ -119,16 +111,16 @@ public class QuestionNameUpdater {
           continue;
         // if (content.replaceAll("\\s", "").equals("{}")) continue;
 
-        if (mappings.containsKey(content)) {
+        if (_mappings.containsKey(content)) {
           logger.info("old question:" + content + "\n");
-          content = mappings.get(content);
+          content = _mappings.get(content);
           logger.info("new question:" + content + "\n\n");
           // platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setString(1, content);
           psUpdate.setInt(2, stepId);
           logger.debug("UPDATE:   " + psUpdate + "\n\n");
           psUpdate.addBatch();
-          stepLogger.logStep(stepId);
+          _stepLogger.logStep(stepId);
           count++;
           if (count % 100 == 0)
             psUpdate.executeBatch();
@@ -136,7 +128,7 @@ public class QuestionNameUpdater {
       }
       if (count % 100 != 0)
         psUpdate.executeBatch();
-      stepLogger.finish();
+      _stepLogger.finish();
       logger.info("THE END:   " + count + " steps modified\n\n");
     } catch (SQLException ex) {
       logger.error(ex);
@@ -145,7 +137,5 @@ public class QuestionNameUpdater {
       SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
       SqlUtils.closeStatement(psUpdate);
     }
-
   }
-
 }

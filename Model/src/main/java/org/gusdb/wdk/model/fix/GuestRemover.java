@@ -10,6 +10,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 
@@ -72,9 +73,6 @@ public class GuestRemover extends BaseCLI {
     }
   }
 
-  private WdkModel wdkModel;
-  private String userSchema;
-
   public GuestRemover(String command) {
     super((command != null) ? command : "wdkGuestRemover",
         "This command removes expired guest user data from user DB.");
@@ -99,22 +97,21 @@ public class GuestRemover extends BaseCLI {
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
 
-    wdkModel = WdkModel.construct(projectId, gusHome);
-    userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    userSchema = DBPlatform.normalizeSchema(userSchema);
-
-    LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
-    String guestSql = lookupGuests(userSchema, cutoffDate);
-    LOG.info("********** " + guestSql + " **********");
- 
-    LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
-    removeGuests(guestSql);
-
-    LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********"); 
-		DataSource dataSource = wdkModel.getUserDb().getDataSource();
-		// though we cannot use the cutoff date here...
-    removeGBrowseGuests(dataSource);
-
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+      DatabaseInstance userDb = wdkModel.getUserDb();
+      String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
+  
+      LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
+      String guestSql = lookupGuests(userDb, userSchema, cutoffDate);
+      LOG.info("********** " + guestSql + " **********");
+   
+      LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
+      removeGuests(userDb, userSchema, guestSql);
+  
+      LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
+      // though we cannot use the cutoff date here...
+      removeGBrowseGuests(userDb.getDataSource());
+    }
   }
 
   /**
@@ -124,11 +121,11 @@ public class GuestRemover extends BaseCLI {
    * @throws SQLException
    * @throws DBStateException
    */
-  private String lookupGuests(String userSchema, String cutoffDate) throws DBStateException, SQLException {
+  private String lookupGuests(DatabaseInstance userDb, String userSchema, String cutoffDate) throws DBStateException, SQLException {
     // check if the guest table exists
-    DBPlatform platform = wdkModel.getUserDb().getPlatform();
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
+    DBPlatform platform = userDb.getPlatform();
+    DataSource dataSource = userDb.getDataSource();
+    String defaultSchema = userDb.getDefaultSchema();
     if (platform.checkTableExists(dataSource, defaultSchema, GUEST_TABLE)) {
       // guest table exists, will drop it first.
       SqlUtils.executeUpdate(dataSource, "DROP TABLE " + GUEST_TABLE, "backup-drop-guest-table.");
@@ -143,11 +140,11 @@ public class GuestRemover extends BaseCLI {
 		return "SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id";
   }
 
-  private void removeGuests(String guestSql) throws SQLException {
+  private void removeGuests(DatabaseInstance userDb, String userSchema, String guestSql) throws SQLException {
     LOG.info("****IN REMOVEGUESTS ******");
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    DataSource dataSource = userDb.getDataSource();
     //String userClause = "user_id IN (" + guestSql + ")";
-		String userClause = " EXISTS (" + guestSql + ")";
+    String userClause = " EXISTS (" + guestSql + ")";
 
     deleteByBatch(dataSource, userSchema + "dataset_values", " dataset_id IN (SELECT dataset_id FROM " +
         userSchema + "datasets t WHERE " + userClause + ")");
@@ -187,6 +184,4 @@ public class GuestRemover extends BaseCLI {
       SqlUtils.closeStatement(psDelete);
     }
   }
-
-
 }

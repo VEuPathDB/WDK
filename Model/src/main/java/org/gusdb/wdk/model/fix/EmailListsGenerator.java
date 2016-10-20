@@ -74,9 +74,9 @@ public class EmailListsGenerator extends BaseCLI {
 
       for (String projectId : projects) {
         logger.info("Generating list for project " + projectId);
-        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        reportEmails(wdkModel);
-        wdkModel.releaseResources();
+        try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+          reportEmails(wdkModel);
+        }
         logger.info("=========================== done ============================");
       }
 

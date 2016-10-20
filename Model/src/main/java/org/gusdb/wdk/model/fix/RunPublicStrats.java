@@ -58,9 +58,7 @@ public class RunPublicStrats extends BaseCLI {
     String gusHome = GusHome.getGusHome();
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
-    WdkModel wdkModel = null;
-    try {
-      wdkModel = WdkModel.construct(projectId, gusHome);
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
       LOG.debug("\n\n\n**********  MODEL CONSTRUCTED : using " + gusHome + "**********");
       LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
       LOG.info("\n**********  MODEL CONSTRUCTED : running ALL Public Strategies**********");
@@ -72,9 +70,6 @@ public class RunPublicStrats extends BaseCLI {
           LOG.info("{ strategyId: " + st.getStrategyId() + ", strategyName: " + st.getName() + ", owner: " + st.getUser().getEmail());
         }
       }
-    }
-    finally {
-      if (wdkModel != null) wdkModel.releaseResources();
     }
   }
 
