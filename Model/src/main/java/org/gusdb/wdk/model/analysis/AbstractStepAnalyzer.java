@@ -127,13 +127,13 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public Object getFormViewModel() throws WdkModelException, WdkUserException {
     return null;
   }
-  
+
   @Override
   public void validateAnswerValue(AnswerValue answerValue)
       throws IllegalAnswerValueException, WdkModelException, WdkUserException {
     // do nothing
   }
-  
+
   /*%%%%%%%%%%%%%% Helper functions for Property validation %%%%%%%%%%%%%%*/
 
   protected void checkPropertyExistence(String propName) throws WdkModelException {
@@ -141,6 +141,16 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
       throw new WdkModelException("Missing required property '" + propName +
           "' in instanc of Step Analysis Plugin '" + getClass().getName() + "'");
     }
+  }
+
+  protected void checkAtLeastOneExists(String... propNames) throws WdkModelException {
+    for (String propName : propNames) {
+      if (getProperty(propName) != null) {
+        return; // found one of the properties
+      }
+    }
+    throw new WdkModelException("Missing required property.  " +
+        "Must have one or more of " + FormatUtil.arrayToString(propNames));
   }
 
   protected void checkPositiveIntegerIfPresent(String propName) throws WdkModelException {
