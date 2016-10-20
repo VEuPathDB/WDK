@@ -8,15 +8,18 @@ import java.nio.file.Path;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.pub.io.IRODSFileFactory;
 
 /**
  * @author steve
  *
  */
 public class IrodsUserDatasetFile extends UserDatasetFile {
-
+  
   public IrodsUserDatasetFile(Path filePath, Integer userDatasetId) {
-    super(filePath, userDatasetId);
+	super(filePath, userDatasetId);
   }
 
   /* (non-Javadoc)
@@ -24,8 +27,14 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   public InputStream getFileContents() throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
+	IRODSFile file = IrodsUserDatasetStoreAdaptor.getFile(getFilePath().toString()); 
+	IRODSFileFactory factory = IrodsUserDatasetStoreAdaptor.getFactory();
+	try {
+	  return factory.instanceIRODSFileInputStream(file);
+	} 
+	catch (JargonException je) {
+	  throw new WdkModelException("Unable to create a file input stream for the file " + file.getName(), je);
+	}
   }
 
   /* (non-Javadoc)
@@ -33,8 +42,8 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   public Long getFileSize() throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
+	IRODSFile file = IrodsUserDatasetStoreAdaptor.getFile(getFilePath().toString());
+	return file.length();
   }
 
   /* (non-Javadoc)
@@ -42,14 +51,19 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   public String getFileName() throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
+	IRODSFile file = IrodsUserDatasetStoreAdaptor.getFile(getFilePath().toString());
+    return file.getName();
   }
 
   @Override
   protected void createLocalCopy(Path tmpFile) throws WdkModelException {
-    // TODO Auto-generated method stub
-    
+	IRODSFile irodsFile = IrodsUserDatasetStoreAdaptor.getFile(getFilePath().toString());
+	try {
+	  IrodsUserDatasetStoreAdaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, null);
+	}
+	catch(JargonException je) {
+	  throw new WdkModelException("Unable to copy " + getFilePath().toString() + " to " + tmpFile.toString() + ". - ", je);
+	}
   }
 
 }
