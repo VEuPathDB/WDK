@@ -100,6 +100,10 @@ public class FileBasedRecordStream implements RecordStream {
    */
   public FileBasedRecordStream populateFiles() throws WdkModelException {
     createTemporaryDirectory();
+    
+    // Make sure the paged attribute SQL actually returns all records.
+    _answerValue.setPageIndex(0, -1);
+    
     if (_attributes != null && _attributes.size() > 0) {
       assembleAttributeFiles();
     }
@@ -276,7 +280,7 @@ public class FileBasedRecordStream implements RecordStream {
    * they can be deleted from the temporary file directory manually.
    */
   public void makeFilesWorldWriteable() {
-    for (Path filePath : _attributeFileMap.keySet()) {
+    for (Path filePath : _attributeFileMap.keySet()) {	
       File file = new File(filePath.toString());
       file.setWritable(true, false);
     }
@@ -355,7 +359,6 @@ public class FileBasedRecordStream implements RecordStream {
           logger.info("Starting query " + query.getName());
 
           // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
-          _answerValue.setPageIndex(0, -1);
           String sql = _answerValue.getPagedAttributeSql(query);
 
           // Get the result list for the current attribute query
