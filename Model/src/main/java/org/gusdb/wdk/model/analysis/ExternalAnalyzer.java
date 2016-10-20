@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,8 +29,6 @@ import org.json.JSONException;
  * @author rdoherty
  */
 public class ExternalAnalyzer extends AbstractStepAnalyzer {
-
-  private static final Logger LOG = Logger.getLogger(ExternalAnalyzer.class);
 
   // this plugin can only be assigned to questions/recordClasses that
   //   are configured with a tabular reporter
@@ -127,11 +124,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     if (tablesStr != null && !tablesStr.trim().isEmpty()) {
       String[] tables = tablesStr.split(",");
       for (String table : tables) {
-        table = table.trim();
-        if (table.isEmpty()) {
-          LOG.warn("Empty table name specified.  Skipping...");
-          continue;
-        }
         Reporter reporter = new TableTabularReporter(answerValue);
         reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
         writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
