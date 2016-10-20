@@ -31,10 +31,11 @@ import org.irods.jargon.core.transfer.TransferControlBlock;
 public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor {
   private static IRODSFileSystem system;
   private static IRODSAccount account;
+  private static IRODSFileFactory factory;
   
   /**
    * This method returns the IRODSFileSystem object instance variable if it is populated.  Otherwise
-   * it creates a new instance to be use subsequently by all IRODS methods.
+   * it creates a new instance to be used subsequently by all IRODS methods.
    * @return - IRODSFileSystem instance
    * @throws WdkModelException
    */
@@ -48,6 +49,28 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
       }
     }
     return system;
+  }
+  
+  /**
+   * Provides the IRODS file factory object
+   * @return - IRODSFileFactory object
+   */
+  public static IRODSFileFactory getFactory() {
+	return factory;
+  }
+
+  /**
+   * Provides the IRODS data transfer operation object
+   * @return - DataTransferOperations
+   * @throws WdkModelException
+   */
+  public static DataTransferOperations getDataTransferOperations() throws WdkModelException {
+	try {
+	  return system.getIRODSAccessObjectFactory().getDataTransferOperations(account);
+	}
+	catch (JargonException je) {
+	  throw new WdkModelException("Unable to obtain data transfer operations object " + je);
+	}
   }
   
   /**
@@ -83,24 +106,27 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
   public static void initializeIrods(String host, int port, String user, String pwd, String zone, String resource) throws WdkModelException {
     getSystem();
     initializeAccount(host, port, user, pwd, zone, resource);
+    try {
+      IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
+      factory = accessObjectFactory.getIRODSFileFactory(account);
+    }
+    catch(JargonException je) {
+      throw new WdkModelException("Problem creating IRODS file factory. - " + je);
+    }
   }
   
 
   /**
-   * Convenience method to refactor out common code for many IRODS methods that result in
+   * Convenience method to re-factor out common code for many IRODS methods that result in
    * the return of a IRODSFile.  Note that Jargon does not throw an exception if the result
    * does not point to a collection/data object.
    * @param pathName
    * @return
    * @throws WdkModelException
    */
-  protected static IRODSFile getFile(String pathName) throws WdkModelException {
-    IRODSFile file = null;
+  public static IRODSFile getFile(String pathName) throws WdkModelException {
     try {
-      IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
-      IRODSFileFactory factory = accessObjectFactory.getIRODSFileFactory(account);
-      file = factory.instanceIRODSFile(pathName);
-      return file;
+      return factory.instanceIRODSFile(pathName);
     }
     catch(JargonException je) {
       throw new WdkModelException("Problem accessing IRODS collection/data object. - " + je);
@@ -131,7 +157,7 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     try {
       IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
       IRODSFile sourceFile = getFile(fromPathName);
-      DataTransferOperations dataXferOps = accessObjectFactory.getDataTransferOperations(account);
+      DataTransferOperations dataXferOps = getDataTransferOperations();
       // Resorted to this workaround because Jargon cannot move one file into an already occupied
       // location and no 'force' flag is implemented (apparently) in Jargon yet.
       TransferControlBlock tcb = accessObjectFactory.buildDefaultTransferControlBlockBasedOnJargonProperties();
@@ -169,13 +195,8 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     StringBuilder output = null;
     String pathName = file.toString();
     try {
-      IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
-      IRODSFileFactory irodsFileFactory = accessObjectFactory.getIRODSFileFactory(account);
-      irodsFile = irodsFileFactory.instanceIRODSFile(pathName);
-      try(
-        IRODSFileReader reader = new IRODSFileReader(irodsFile, irodsFileFactory);
-        BufferedReader buffer = new BufferedReader(reader);) 
-      { 
+      irodsFile = factory.instanceIRODSFile(pathName);
+      try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, factory))) { 
         String s = "";
         output = new StringBuilder();
         while((s = buffer.readLine()) != null) { 
@@ -214,8 +235,6 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     String pathName = path.toString();
     String tempPathName = path.getParent().toString() + "/temp." + Long.toString(System.currentTimeMillis());
     try {
-      IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
-      IRODSFileFactory factory = accessObjectFactory.getIRODSFileFactory(account);
       irodsTempFile = factory.instanceIRODSFile(tempPathName);
       irodsFile = factory.instanceIRODSFile(pathName);
       // Looks like writer does not truncate any existing file content.  So we can just
@@ -241,7 +260,7 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
       finally {
         closeFile(irodsTempFile);
       }
-      DataTransferOperations dataXferOps = accessObjectFactory.getDataTransferOperations(account);
+      DataTransferOperations dataXferOps = getDataTransferOperations();
       dataXferOps.move(tempPathName, pathName);
     }
     catch(JargonException je) {
@@ -301,17 +320,14 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     IRODSFile irodsFile = null;
     String pathName = file.toString();
     try {
-      IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
-      IRODSFileFactory irodsFileFactory = accessObjectFactory.getIRODSFileFactory(account);
-      irodsFile = irodsFileFactory.instanceIRODSFile(pathName);
+      irodsFile = getFile(pathName);
       try(
-       IRODSFileReader reader = new IRODSFileReader(irodsFile, irodsFileFactory);
-       BufferedReader buffer = new BufferedReader(reader);) 
-      { 
-        return buffer.readLine(); 
+       IRODSFileReader reader = new IRODSFileReader(irodsFile, getFactory());
+       BufferedReader buffer = new BufferedReader(reader);) { 
+        return buffer.readLine();
       }  
     }
-    catch(JargonException | IOException ex) {
+    catch(IOException ex) {
       throw new WdkModelException("Problem reading IRODS file " + ex);
     }
     finally {
@@ -345,11 +361,25 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
       }  
     }
     catch(JargonException | IOException ex) {
-      throw new WdkModelException("Problem creating IRODS file " + ex);
+      throw new WdkModelException("Problem creating IRODS file. ", ex);
     }
     finally {
       closeFile(irodsFile);
     }  
+  }
+  
+  /**
+   * The connection to the IRODS system is closed much as a DB connection would be.
+   */
+  public void close() {
+	try {
+	  if(system != null) {
+		system.close();
+	  }
+	}
+	catch(JargonException je) {
+	  throw new RuntimeException("Problem closing IRODS connection. ", je);
+	}
   }
 
 }
