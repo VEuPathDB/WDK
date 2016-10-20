@@ -73,7 +73,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   @Override
   public void validateProperties() throws WdkModelException {
     checkPropertyExistence(EXTERNAL_APP_URL_PROP_KEY);
-    checkAtLeastOneExists(EXTRACTED_ATTRIBS_PROP_KEY, EXTRACTED_ATTRIBS_PROP_KEY);
+    checkAtLeastOneExists(EXTRACTED_ATTRIBS_PROP_KEY, EXTRACTED_TABLES_PROP_KEY);
     checkPositiveIntegerIfPresent(IFRAME_WIDTH_PROP_KEY);
     checkPositiveIntegerIfPresent(IFRAME_LENGTH_PROP_KEY);
     checkBooleanIfPresent(ADD_HEADER_PROP_KEY);
