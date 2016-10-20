@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test.stress;
 
 import java.io.BufferedReader;
@@ -31,7 +28,8 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -72,8 +70,9 @@ public class StressTester {
 
     private static Logger logger = Logger.getLogger(StressTester.class);
 
-    private List<UrlItem> urlPool;
-    private Map<String, Map<String, Set<String>>> questionCache;
+    private final WdkModel _wdkModel;
+    private final List<UrlItem> urlPool;
+    private final Map<String, Map<String, Set<String>>> questionCache;
 
     private String questionUrlPattern;
     private String xmlQuestionUrlPattern;
@@ -81,28 +80,23 @@ public class StressTester {
     private String homeUrlPattern;
     private Map<String, String> otherUrls;
 
-    private List<StressTestRunner> runners;
-
-    private String modelName;
-    private String gusHome;
+    private final List<StressTestRunner> runners;
 
     private int maxDelayTime;
     private int minDelayTime;
 
-    private Random rand;
+    private final Random rand;
 
     private long testTag;
-    private DataSource dataSource;
-    private PreparedStatement preparedStatement;
 
     private long finishedCount;
     private long succeededCount;
 
-    public StressTester(String modelName)
-            throws InvalidPropertiesFormatException, IOException,
-            WdkModelException {
-        logger.info("Initializing stress test on " + modelName);
+    public StressTester(WdkModel wdkModel) throws InvalidPropertiesFormatException, IOException, WdkModelException {
 
+        logger.info("Initializing stress test on " + wdkModel.getProjectId());
+
+        _wdkModel = wdkModel;
         urlPool = new ArrayList<UrlItem>();
         otherUrls = new LinkedHashMap<String, String>();
         questionCache = new LinkedHashMap<String, Map<String, Set<String>>>();
@@ -110,38 +104,34 @@ public class StressTester {
         rand = new Random(System.currentTimeMillis());
         finishedCount = succeededCount = 0;
 
-        this.modelName = modelName;
-        gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
-        // load the model
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-        dataSource = wdkModel.getAppDb().getDataSource();
-
-        // initialize the stress-test result table
         try {
-            initializeResultTable(wdkModel);
-            // get a new test_tag
-            testTag = getNewTestTag(wdkModel);
-            System.out.println("The curent test tag is: " + testTag);
-        } catch (SQLException ex) {
+          // initialize the stress-test result table
+          initializeResultTable(wdkModel.getAppDb());
+          // get a new test_tag
+          testTag = getNewTestTag(wdkModel);
+          System.out.println("The curent test tag is: " + testTag);
+
+          // load configurations
+          loadProperties();
+
+          // compose the testing urls
+          composeUrls();
+        }
+        catch (SQLException ex) {
             throw new WdkModelException(ex);
         }
-
-        // load configurations
-        loadProperties(wdkModel);
-        // compose the testing urls
-        composeUrls(wdkModel);
     }
 
-    private void initializeResultTable(WdkModel wdkModel) throws SQLException {
+    private static void initializeResultTable(DatabaseInstance appDb) throws SQLException {
         // check if result table exists
         try {
-            ResultSet rs = SqlUtils.executeQuery(dataSource,
-                    "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
+            ResultSet rs = SqlUtils.executeQuery(appDb.getDataSource(),
+                "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
             SqlUtils.closeResultSetAndStatement(rs, null);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             // table doesn't exist, create it
-            DBPlatform platform = wdkModel.getAppDb().getPlatform();
+            DBPlatform platform = appDb.getPlatform();
             String numericType = platform.getNumberDataType(20);
             String textType = platform.getClobDataType();
 
@@ -158,41 +148,48 @@ public class StressTester {
             sb.append(" PRIMARY KEY(test_tag, task_id))");
 
             // create the result table
-            SqlUtils.executeUpdate(dataSource, sb.toString(),
+            SqlUtils.executeUpdate(appDb.getDataSource(), sb.toString(),
                     "wdk-create-stress-test-table");
         }
-        // initialize update prepared statement
-        StringBuffer sb = new StringBuffer();
-        sb.append("INSERT INTO " + TABLE_STRESS_RESULT);
-        sb.append(" (test_tag, task_id, runner_id, task_type, start_time, ");
-        sb.append("end_time, result_type, result_message)");
-        sb.append(" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        preparedStatement = SqlUtils.getPreparedStatement(dataSource,
-                sb.toString());
     }
 
-    private long getNewTestTag(WdkModel wdkModel) throws SQLException {
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT,
-                "wdk-stress-next-tag");
-        long testTag = 0;
-        rs.next();
-        int count = rs.getInt(1);
-        if (count > 0) testTag = rs.getLong(2);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (testTag + 1);
+    private static PreparedStatement getResultInsertStatement(DataSource dataSource) throws SQLException {
+      // initialize update prepared statement
+      StringBuilder sb = new StringBuilder();
+      sb.append("INSERT INTO " + TABLE_STRESS_RESULT);
+      sb.append(" (test_tag, task_id, runner_id, task_type, start_time, ");
+      sb.append("end_time, result_type, result_message)");
+      sb.append(" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      return SqlUtils.getPreparedStatement(dataSource, sb.toString());
     }
 
-    private void loadProperties(WdkModel wdkModel)
+    private static long getNewTestTag(WdkModel wdkModel) throws SQLException {
+        ResultSet rs = null;
+        try {
+          rs = SqlUtils.executeQuery(wdkModel.getAppDb().getDataSource(),
+              "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT,
+              "wdk-stress-next-tag");
+          long testTag = 0;
+          rs.next();
+          int count = rs.getInt(1);
+          if (count > 0) testTag = rs.getLong(2);
+          return (testTag + 1);
+        }
+        finally {
+          SqlUtils.closeResultSetAndStatement(rs, null);
+        }
+    }
+
+    private void loadProperties()
             throws InvalidPropertiesFormatException, IOException {
         logger.debug("Loading stress test configurations...");
 
         // load stress test configuration file
-        File stressConfigFile = new File(gusHome, "/config/" + modelName
-                + "/stress-config.xml");
-        InputStream in = new FileInputStream(stressConfigFile);
+        File stressConfigFile = getConfigFile("stress-config.xml");
         Properties properties = new Properties();
-        properties.loadFromXML(in);
+        try (InputStream in = new FileInputStream(stressConfigFile)) {
+          properties.loadFromXML(in);
+        }
 
         // load properties
         questionUrlPattern = properties.getProperty(FIELD_QUESTION_URL);
@@ -213,7 +210,7 @@ public class StressTester {
         }
     }
 
-    private void composeUrls(WdkModel wdkModel) throws WdkModelException {
+    private void composeUrls() throws WdkModelException {
         logger.debug("Composing test urls...");
         // add home url into the pool
         if (homeUrlPattern != null) {
@@ -229,15 +226,15 @@ public class StressTester {
         }
 
         // compose urls from the model
-        composeFromModel(wdkModel);
+        composeFromModel();
 
         // compose urls from stress test template
         composeFromTemplate();
     }
 
-    private void composeFromModel(WdkModel wdkModel) {
+    private void composeFromModel() {
         // compose urls for all xml questions
-        XmlQuestionSet[] xmlqsets = wdkModel.getXmlQuestionSets();
+        XmlQuestionSet[] xmlqsets = _wdkModel.getXmlQuestionSets();
         for (XmlQuestionSet xmlqset : xmlqsets) {
             XmlQuestion[] xmlqs = xmlqset.getQuestions();
             for (XmlQuestion xmlq : xmlqs) {
@@ -250,7 +247,7 @@ public class StressTester {
 
         // load questions from the model
         questionCache.clear();
-        QuestionSet[] qsets = wdkModel.getAllQuestionSets();
+        QuestionSet[] qsets = _wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {
             // skip the internal questions
             if (qset.isInternal()) continue;
@@ -285,8 +282,7 @@ public class StressTester {
 
     private void composeFromTemplate() throws WdkModelException {
         logger.info("Loading test cases from template files");
-        File templateFile = new File(gusHome, "/config/" + modelName
-                + "/stress.template");
+        File templateFile = getConfigFile("stress.template");
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(
@@ -357,83 +353,94 @@ public class StressTester {
         }
     }
 
+    private File getConfigFile(String name) {
+      return new File(_wdkModel.getGusHome(), "/config/" + _wdkModel.getProjectId() + "/" + name);
+    }
+
     public void runTest(int numThreads) throws WdkModelException {
         logger.info("Running stress test...");
+        PreparedStatement preparedStatement = null;
+        try {
+          preparedStatement = getResultInsertStatement(_wdkModel.getAppDb().getDataSource());
 
-        // create stress test runners
-        for (int i = 0; i < numThreads; i++) {
-            StressTestRunner runner = new StressTestRunner();
-            Thread thread = new Thread(runner);
-            thread.start();
-            runners.add(runner);
+          // create stress test runners
+          for (int i = 0; i < numThreads; i++) {
+              StressTestRunner runner = new StressTestRunner();
+              Thread thread = new Thread(runner);
+              thread.start();
+              runners.add(runner);
+          }
+  
+          // wait till all tasks are executed
+          while (!isStopping()) {
+              // get the finished tasks and release runner
+              for (StressTestRunner runner : runners) {
+                  if (runner.getState() == RunnerState.Finished) {
+                      try {
+                          saveFinishedTask(runner.popFinishedTask(), preparedStatement);
+                      } catch (SQLException ex) {
+                          logger.error(ex);
+                          ex.printStackTrace();
+                      }
+                  }
+                  // randomly pick a task to the idling runners;
+                  if (runner.getState() == RunnerState.Idle) {
+                      StressTestTask task = createTask();
+                      int delay = rand.nextInt(maxDelayTime - minDelayTime)
+                              + minDelayTime;
+                      try {
+                          runner.assignTask(task, delay);
+                      } catch (InvalidStatusException ex) {
+                          logger.error(ex);
+                          ex.printStackTrace();
+                      }
+                  }
+              }
+  
+              // print out the current statistics
+              logger.info("Idle: " + getIdleCount() + "\tBusy: " + getBusyCount()
+                      + "\tFinished: " + finishedCount + "/" + succeededCount);
+  
+              try {
+                  Thread.sleep(5 * 1000);
+              } catch (InterruptedException ex) {}
+              // print out current progress
+          }
+          // stop runners
+          for (StressTestRunner runner : runners) {
+              runner.stop();
+          }
+          // wait until all runners are stopped
+          boolean stopped = false;
+          while (!stopped) {
+              stopped = true;
+              for (StressTestRunner runner : runners) {
+                  if (!runner.isStopped()) {
+                      stopped = false;
+                      break;
+                  }
+              }
+              if (!stopped) {
+                  try {
+                      Thread.sleep(500);
+                  } catch (InterruptedException ex) {}
+              }
+          }
+          logger.info("Stress Test is finished.");
+          System.out.println("Stress Test is finished. The test tag is: " + testTag);
         }
-
-        // wait till all tasks are executed
-        while (!isStopping()) {
-            // get the finished tasks and release runner
-            for (StressTestRunner runner : runners) {
-                if (runner.getState() == RunnerState.Finished) {
-                    try {
-                        saveFinishedTask(runner.popFinishedTask());
-                    } catch (SQLException ex) {
-                        logger.error(ex);
-                        ex.printStackTrace();
-                    }
-                }
-                // randomly pick a task to the idling runners;
-                if (runner.getState() == RunnerState.Idle) {
-                    StressTestTask task = createTask();
-                    int delay = rand.nextInt(maxDelayTime - minDelayTime)
-                            + minDelayTime;
-                    try {
-                        runner.assignTask(task, delay);
-                    } catch (InvalidStatusException ex) {
-                        logger.error(ex);
-                        ex.printStackTrace();
-                    }
-                }
-            }
-
-            // print out the current statistics
-            logger.info("Idle: " + getIdleCount() + "\tBusy: " + getBusyCount()
-                    + "\tFinished: " + finishedCount + "/" + succeededCount);
-
-            try {
-                Thread.sleep(5 * 1000);
-            } catch (InterruptedException ex) {}
-            // print out current progress
+        catch (SQLException e) {
+          throw new WdkModelException(e);
         }
-        // stop runners
-        for (StressTestRunner runner : runners) {
-            runner.stop();
+        finally {
+          SqlUtils.closeStatement(preparedStatement);
         }
-        // wait until all runners are stopped
-        boolean stopped = false;
-        while (!stopped) {
-            stopped = true;
-            for (StressTestRunner runner : runners) {
-                if (!runner.isStopped()) {
-                    stopped = false;
-                    break;
-                }
-            }
-            if (!stopped) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {}
-            }
-        }
-        SqlUtils.closeStatement(preparedStatement);
-        logger.info("Stress Test is finished.");
-        System.out.println("Stress Test is finished. The test tag is: "
-                + testTag);
     }
 
     private boolean isStopping() {
         // check if the exit condition is met; that is, if a "model-stress.stop"
         // file is present
-        File stopFile = new File(gusHome, "/config/" + modelName
-                + "/stress.stop");
+        File stopFile = getConfigFile("stress.stop");
         return (stopFile.exists());
     }
 
@@ -475,7 +482,7 @@ public class StressTester {
         return new StressTestTask(urlItem);
     }
 
-    private void saveFinishedTask(StressTestTask task) throws SQLException {
+    private void saveFinishedTask(StressTestTask task, PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setLong(1, testTag);
         preparedStatement.setLong(2, task.getTaskId());
         preparedStatement.setInt(3, task.getRunnerId());
@@ -529,10 +536,9 @@ public class StressTester {
         String strThreads = cmdLine.getOptionValue("threads");
         int numThreads = Integer.parseInt(strThreads);
 
-        // create tester
-        StressTester tester = new StressTester(modelName);
-        // run tester
-        tester.runTest(numThreads);
-        System.exit(0);
+        // construct WDK model, create tester, and run
+        try (WdkModel wdkModel = WdkModel.construct(modelName, GusHome.getGusHome())) {
+          new StressTester(wdkModel).runTest(numThreads);
+        }
     }
 }

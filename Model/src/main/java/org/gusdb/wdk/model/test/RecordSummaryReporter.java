@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -79,11 +78,7 @@ public class RecordSummaryReporter extends BaseCLI {
   public static void main(String[] args) throws Exception {
     String cmdName = System.getProperty("cmdName");
     RecordSummaryReporter reporter = new RecordSummaryReporter(cmdName);
-    try {
-      reporter.invoke(args);
-    } finally {
-      System.exit(0);
-    }
+    reporter.invoke(args);
   }
 
   /**
@@ -119,19 +114,17 @@ public class RecordSummaryReporter extends BaseCLI {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectIds = (String) getOptionValue(ARG_PROJECT_ID);
     String output = (String) getOptionValue(ARG_OUTPUT_FILE);
+    if (!output.endsWith(".csv")) output += ".csv";
 
-    // load all the models, then load questions from each of them
+    // load all the models, then load recordclasses from each of them
     Map<String, RecordInfo> recordInfos = new LinkedHashMap<>();
     for (String projectId : projectIds.split(",")) {
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-      loadRecords(wdkModel, recordInfos);
+      try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+        loadRecords(wdkModel, recordInfos);
+      }
     }
 
-    if (!output.endsWith(".csv")) output += ".csv";
-    File outFile = new File(output);
-    PrintWriter writer = null;
-    try {
-      writer = new PrintWriter(new FileWriter(outFile));
+    try (PrintWriter writer = new PrintWriter(new FileWriter(output))) {
       writer.println("\"Record\",\"Field\",\"Type\",\"Section\",\"Text\",\"Projects\"");
 
       // sort record info
@@ -142,15 +135,13 @@ public class RecordSummaryReporter extends BaseCLI {
         writeRecordInfo(writer, recordInfo);
         writer.flush();
       }
-    } catch (IOException ex) {
-      throw new WdkModelException(ex);
-    } finally {
-      if (writer != null) writer.close();
     }
-
+    catch (IOException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
-  private void loadRecords(WdkModel wdkModel,
+  private static void loadRecords(WdkModel wdkModel,
       Map<String, RecordInfo> recordInfos) {
     String projectId = wdkModel.getProjectId();
     for (RecordClassSet recordSet : wdkModel.getAllRecordClassSets()) {
@@ -168,7 +159,7 @@ public class RecordSummaryReporter extends BaseCLI {
     }
   }
 
-  private void loadFields(String projectId, Field[] fields,
+  private static void loadFields(String projectId, Field[] fields,
       RecordInfo recordInfo) {
     for (Field field : fields) {
       FieldInfo fieldInfo = recordInfo.fieldInfos.get(field.getName());
@@ -181,7 +172,7 @@ public class RecordSummaryReporter extends BaseCLI {
     }
   }
 
-  private void writeRecordInfo(PrintWriter writer, RecordInfo recordInfo) {
+  private static void writeRecordInfo(PrintWriter writer, RecordInfo recordInfo) {
     writeRecordInfo(writer, recordInfo, recordInfo.displayNames, "", "",
         "displayName");
     writeRecordInfo(writer, recordInfo, recordInfo.shortDisplayNames, "", "",
@@ -199,7 +190,7 @@ public class RecordSummaryReporter extends BaseCLI {
     }
   }
 
-  private void writeRecordInfo(PrintWriter writer, RecordInfo recordInfo,
+  private static void writeRecordInfo(PrintWriter writer, RecordInfo recordInfo,
       Map<String, Set<String>> sections, String fieldName, String fieldType,
       String sectionName) {
     for (String text : sections.keySet()) {
@@ -220,7 +211,7 @@ public class RecordSummaryReporter extends BaseCLI {
     }
   }
 
-  private String escape(String text) {
+  private static String escape(String text) {
     if (text == null || text.length() == 0) return "";
     text = text.replaceAll("\\s", " ").replaceAll(",", ";");
     return "\"" + text.replaceAll("\"", "\"\"") + "\"";

@@ -148,17 +148,12 @@ public class PersistenceTester {
       System.out.println("USAGE: fgpJava " + PersistenceTester.class.getName() +
           " <project_id> (e.g. PlasmoDB)");
     }
-    WdkModel model = null;
-    try {
-      model = WdkModel.construct("PlasmoDB", GusHome.getGusHome());
+    try (WdkModel model = WdkModel.construct("PlasmoDB", GusHome.getGusHome())) {
       PersistenceTester tester = new PersistenceTester(model);
       tester.runTests();
     }
     catch (Exception e) {
       System.err.println("Error during processing: " + FormatUtil.getStackTrace(e));
-    }
-    finally {
-      if (model != null) model.releaseResources();
     }
   }
 }

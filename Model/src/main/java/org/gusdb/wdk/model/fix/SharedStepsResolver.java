@@ -84,24 +84,25 @@ public class SharedStepsResolver extends BaseCLI {
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-    WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-    String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    userSchema = DBPlatform.normalizeSchema(userSchema);
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
-
-    // set up the temp table
-    try {
-      SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + TEMP_STEP_TABLE + " AS SELECT * FROM " +
-          userSchema + "steps WHERE rownum = 1", "create-tmp-steps");
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+      String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+      userSchema = DBPlatform.normalizeSchema(userSchema);
+      DataSource dataSource = wdkModel.getUserDb().getDataSource();
+  
+      // set up the temp table
+      try {
+        SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + TEMP_STEP_TABLE + " AS SELECT * FROM " +
+            userSchema + "steps WHERE rownum = 1", "create-tmp-steps");
+      }
+      catch (SQLException ex) {}
+      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
+  
+      mapSharedRootSteps(wdkModel, dataSource, userSchema);
+      mapSharedChildSteps(wdkModel, dataSource, userSchema, true);
+      mapSharedChildSteps(wdkModel, dataSource, userSchema, false);
+  
+      SqlUtils.executeUpdate(dataSource, "DROP TABLE " + TEMP_STEP_TABLE, "drop-tmp-steps");
     }
-    catch (SQLException ex) {}
-    SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
-
-    mapSharedRootSteps(wdkModel, dataSource, userSchema);
-    mapSharedChildSteps(wdkModel, dataSource, userSchema, true);
-    mapSharedChildSteps(wdkModel, dataSource, userSchema, false);
-
-    SqlUtils.executeUpdate(dataSource, "DROP TABLE " + TEMP_STEP_TABLE, "drop-tmp-steps");
   }
 
   private void mapSharedRootSteps(WdkModel wdkModel, DataSource dataSource, String userSchema)

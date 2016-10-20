@@ -107,9 +107,7 @@ public class ModelCacher extends BaseCLI {
 
     int exitCode = 0;
     if (drop || create) {
-      WdkModel wdkModel = null;
-      try {
-        wdkModel = WdkModel.construct(projects[0], gusHome);
+      try (WdkModel wdkModel = WdkModel.construct(projects[0], gusHome)) {
         if (drop) {
           dropTables(wdkModel, schema);
           logger.info("dropped model cache tables");
@@ -119,23 +117,12 @@ public class ModelCacher extends BaseCLI {
           logger.info("created model cache tables");
         }
       }
-      finally {
-        if (wdkModel != null) wdkModel.releaseResources();
-      }
     }
     else if (expand) {
-      WdkModel wdkModel = null;
       for (String projectId : projects) {
-        try {
-          logger.info("Expanding model for project " + projectId);
-          wdkModel = WdkModel.construct(projectId, gusHome);
+        logger.info("Expanding model for project " + projectId);
+        try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
           exitCode = expand(wdkModel, schema, keepCache);
-        }
-        finally {
-          if (wdkModel != null) {
-            wdkModel.releaseResources();
-            wdkModel = null;
-          }
         }
         logger.info("=========================== done ============================");
       }

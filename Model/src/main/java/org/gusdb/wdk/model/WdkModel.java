@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Event;
@@ -72,11 +73,7 @@ import org.xml.sax.SAXException;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
- * WDK. Furthermore, it is also an in-memory representation of the whole WKK model.
- * 
- * 
- * @author
- * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
+ * WDK. Furthermore, it is also an in-memory representation of the whole WDK model.
  */
 public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, AutoCloseable {
 
@@ -194,6 +191,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private String buildNumber;
 
+  // unfortunately this must be public to fit in Manageable framework
   public WdkModel() {
     // add default sets
     try {
@@ -613,10 +611,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   @Override
   public void close() {
-    releaseResources();
-  }
-
-  public void releaseResources() {
     LOG.info("Releasing WDK Model resources...");
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
@@ -1488,5 +1482,19 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public Question getQuestionByUrlSegment(String urlSegment) throws WdkModelException {
     String questionFullName = _questionUrlSegmentMap.get(urlSegment);
     return (questionFullName == null ? null : getQuestion(questionFullName));
+  }
+
+  public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {
+    AutoCloseableList<WdkModel> models = new AutoCloseableList<>();
+    try {
+      for (String projectId : projects) {
+        models.add(WdkModel.construct(projectId, gusHome));
+      }
+      return models;
+    }
+    catch (Exception e) {
+      models.close();
+      throw e;
+    }
   }
 }

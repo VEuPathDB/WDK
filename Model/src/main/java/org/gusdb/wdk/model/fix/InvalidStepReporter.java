@@ -76,16 +76,17 @@ public class InvalidStepReporter extends BaseCLI {
 
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String include = (String) getOptionValue(ARG_INCLUDE);
-    WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
 
-    // make sure the include value is correct
-    if (!include.equals(VALUE_ALL) && !include.equals(VALUE_INVALID)
-        && !include.equals(VALUE_VALID)) {
-      printUsage();
-      System.exit(-1);
+      // make sure the include value is correct
+      if (!include.equals(VALUE_ALL) && !include.equals(VALUE_INVALID)
+          && !include.equals(VALUE_VALID)) {
+        printUsage();
+        System.exit(-1);
+      }
+  
+      report(wdkModel, include);
     }
-
-    report(wdkModel, include);
   }
 
   private void report(WdkModel wdkModel, String include) throws SQLException {

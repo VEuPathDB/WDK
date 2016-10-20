@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -89,9 +87,8 @@ public class SummaryTester {
     String questionName = ref.getElementName();
     String modelName = cmdLine.getOptionValue("model");
     String gusHome = GusHome.getGusHome();
-    WdkModel wdkModel = null;
-    try {
-      wdkModel = WdkModel.construct(modelName, gusHome);
+    try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
+
       User user = wdkModel.getSystemUser();
 
       QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
@@ -175,9 +172,6 @@ public class SummaryTester {
       ex.printStackTrace();
       System.exit(1);
     }
-    finally {
-      if (wdkModel != null) wdkModel.releaseResources();
-    }
   }
 
   private static Map<String, String> loadConfiguration(String configFileName) throws IOException {
@@ -203,8 +197,7 @@ public class SummaryTester {
   }
 
   private static void writeSummaryAsXml(User user, Question question, Map<String, String> paramValues,
-      String xmlFile, AnswerFilterInstance filter) throws WdkModelException, WdkUserException, IOException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+      String xmlFile, AnswerFilterInstance filter) throws WdkModelException, WdkUserException, IOException, JSONException {
 
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 

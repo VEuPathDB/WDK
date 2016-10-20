@@ -128,19 +128,18 @@ public class QuestionSummaryReporter extends BaseCLI {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectIds = (String) getOptionValue(ARG_PROJECT_ID);
     String output = (String) getOptionValue(ARG_OUTPUT_FILE);
+    if (!output.endsWith(".csv")) output += ".csv";
 
     // load all the models, then load questions from each of them
     Map<String, QuestionInfo> questionInfos = new LinkedHashMap<>();
     for (String projectId : projectIds.split(",")) {
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-      loadQuestions(wdkModel, questionInfos);
+      try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+        loadQuestions(wdkModel, questionInfos);
+      }
     }
 
-    if (!output.endsWith(".csv")) output += ".csv";
-    File outFile = new File(output);
-    PrintWriter writer = null;
-    try {
-      writer = new PrintWriter(new FileWriter(outFile));
+    try (PrintWriter writer = new PrintWriter(new FileWriter(output))) {
+
       writer.println("\"Question\",\"Type\",\"Param\",\"Section\",\"Text\",\"Projects\"");
 
       // sort question info
@@ -151,15 +150,13 @@ public class QuestionSummaryReporter extends BaseCLI {
         writeQuestionInfo(writer, questionInfo);
         writer.flush();
       }
-    } catch (IOException ex) {
-      throw new WdkModelException(ex);
-    } finally {
-      if (writer != null) writer.close();
     }
-
+    catch (IOException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
-  private void loadQuestions(WdkModel wdkModel,
+  private static void loadQuestions(WdkModel wdkModel,
       Map<String, QuestionInfo> questionInfos) {
     String projectId = wdkModel.getProjectId();
     for (QuestionSet questionSet : wdkModel.getQuestionSets().values()) {
@@ -179,7 +176,7 @@ public class QuestionSummaryReporter extends BaseCLI {
     }
   }
 
-  private void loadParams(String projectId, Param[] params,
+  private static void loadParams(String projectId, Param[] params,
       QuestionInfo questionInfo) {
     for (Param param : params) {
       ParamInfo paramInfo = questionInfo.paramInfos.get(param.getFullName());
@@ -192,7 +189,7 @@ public class QuestionSummaryReporter extends BaseCLI {
     }
   }
 
-  private void writeQuestionInfo(PrintWriter writer, QuestionInfo questionInfo) {
+  private static void writeQuestionInfo(PrintWriter writer, QuestionInfo questionInfo) {
     writeQuestionInfo(writer, questionInfo, questionInfo.displayNames, "",
         "displayName");
     writeQuestionInfo(writer, questionInfo, questionInfo.shortDisplayNames, "",
@@ -215,7 +212,7 @@ public class QuestionSummaryReporter extends BaseCLI {
     }
   }
 
-  private void writeQuestionInfo(PrintWriter writer, QuestionInfo questionInfo,
+  private static void writeQuestionInfo(PrintWriter writer, QuestionInfo questionInfo,
       Map<String, Set<String>> sections, String paramName, String sectionName) {
     for (String text : sections.keySet()) {
       Set<String> projects = sections.get(text);
@@ -235,7 +232,7 @@ public class QuestionSummaryReporter extends BaseCLI {
     }
   }
 
-  private String escape(String text) {
+  private static String escape(String text) {
     if (text == null || text.length() == 0) return "";
     text = text.replaceAll("\\s", " ").replaceAll(",", ";");
     return "\"" + text.replaceAll("\"", "\"\"") + "\"";

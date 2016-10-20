@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 
@@ -30,18 +29,10 @@ public class StressTestAnalyzer {
     private static final Logger logger = Logger.getLogger(StressTestAnalyzer.class);
 
     private long testTag;
-    private WdkModel wdkModel;
     private DataSource dataSource;
 
-    public StressTestAnalyzer(long testTag, String modelName)
-            throws WdkModelException {
-        logger.info("Initializing stress test analyzer on " + modelName
-                + " with test_tag=" + testTag);
+    public StressTestAnalyzer(long testTag, WdkModel wdkModel) {
         this.testTag = testTag;
-
-        // load WdkModel
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        wdkModel = WdkModel.construct(modelName, gusHome);
         dataSource = wdkModel.getAppDb().getDataSource();
     }
 
@@ -313,11 +304,7 @@ public class StressTestAnalyzer {
         return CommandHelper.declareOptions(names, descs, required, args);
     }
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args)
-            throws WdkModelException, SQLException {
+    public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
 
         // process args
@@ -328,10 +315,14 @@ public class StressTestAnalyzer {
         String testTagStr = cmdLine.getOptionValue("tag");
         long testTag = Long.parseLong(testTagStr);
 
-        // create tester
-        StressTestAnalyzer analyzer = new StressTestAnalyzer(testTag, modelName);
-        // run tester
-        analyzer.print();
-        System.exit(0);
+        // load WdkModel
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
+          // create tester
+          logger.info("Initializing stress test analyzer on " + modelName + " with test_tag=" + testTag);
+          StressTestAnalyzer analyzer = new StressTestAnalyzer(testTag, wdkModel);
+          // run tester
+          analyzer.print();
+        }
     }
 }

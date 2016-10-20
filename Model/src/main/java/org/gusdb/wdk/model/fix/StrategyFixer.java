@@ -71,12 +71,11 @@ public class StrategyFixer extends BaseCLI {
   @Override
   protected void execute() throws Exception {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-
+    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
       fillInStrategyId(wdkModel);
       // generateSignatures(wdkModel);
+    }
   }
 
   /**

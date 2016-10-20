@@ -1021,35 +1021,26 @@ public class ModelXmlParser extends XmlParser {
   }
 
   public static void main(String[] args) {
-    String cmdName = System.getProperty("cmdName");
-    int exitValue = 0;
-
-    // process args
-    WdkModel wdkModel = null;
     try {
+      String cmdName = System.getProperty("cmdName");
       Options options = declareOptions();
       CommandLine cmdLine = parseOptions(cmdName, options, args);
       String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
 
-      // create a parser, and parse the model file
-      wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
-
-      if (cmdLine.hasOption(ARG_DEPENDENCY)) { // print out only the dependency
-        System.out.println(wdkModel.getDependencyTree());
-      }
-      else { // print out the model content
-        System.out.println(wdkModel.toString());
+      // process args
+      try (WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome())) {
+        if (cmdLine.hasOption(ARG_DEPENDENCY)) { // print out only the dependency
+          System.out.println(wdkModel.getDependencyTree());
+        }
+        else { // print out the model content
+          System.out.println(wdkModel.toString());
+        }
       }
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      exitValue = 1;
+      System.exit(1);
     }
-    finally {
-      if (wdkModel != null)
-        wdkModel.releaseResources();
-    }
-    System.exit(exitValue);
   }
 
   private static void addOption(Options options, String argName, String desc) {

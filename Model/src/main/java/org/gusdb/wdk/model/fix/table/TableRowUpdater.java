@@ -101,22 +101,22 @@ public class TableRowUpdater<T extends TableRow> {
     Timer timer = Timer.start();
     LOG.info(TableRowUpdater.class.getSimpleName() + " started with args: " + FormatUtil.printArray(args));
     ExitStatus exitValue = ExitStatus.SUCCESS;
-    WdkModel wdkModel = null;
     int setupStage = 0;
     try {
       Config config = parseArgs(args);
 
       setupStage++; // 1
-      wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome());
+      try (WdkModel wdkModel = WdkModel.construct(config.projectId, GusHome.getGusHome())) {
 
-      setupStage++; // 2
-      LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
-          " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
-      config.plugin.configure(wdkModel, config.additionalArgs);
+        setupStage++; // 2
+        LOG.info("Configuring plugin " + config.plugin.getClass().getSimpleName() +
+            " with args " + FormatUtil.arrayToString(config.additionalArgs.toArray()));
+        config.plugin.configure(wdkModel, config.additionalArgs);
 
-      setupStage++; // 3
-      TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
-      exitValue = updater.run();
+        setupStage++; // 3
+        TableRowUpdater<?> updater = config.plugin.getTableRowUpdater(wdkModel);
+        exitValue = updater.run();
+      }
     }
     catch (Exception e) {
       switch(setupStage) {
@@ -136,11 +136,6 @@ public class TableRowUpdater<T extends TableRow> {
           LOG.error("Error processing updater args", e);
           exitValue = ExitStatus.BAD_UPDATER_ARGS;
           break;
-      }
-    }
-    finally {
-      if (wdkModel != null) {
-        wdkModel.releaseResources();
       }
     }
     LOG.info("Duration: " + timer.getElapsedString());
