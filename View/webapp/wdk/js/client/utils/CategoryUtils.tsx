@@ -104,20 +104,28 @@ export function getSynonyms(node: CategoryTreeNode) {
  * @param description - tooltip
  * @returns {{properties: {targetType: string[], name: *[]}, wdkReference: {displayName: *, help: *}, children: Array}}
  */
-export function createNode(id: string, displayName: string, description: string, children?: CategoryTreeNode[]): CategoryTreeNode {
-  return {
-    type: children ? 'category' : 'individual',
-    children,
+export function createNode(id: string, displayName: string, description: string, children: CategoryTreeNode[] = []): CategoryTreeNode {
+  return children.length > 0 ? {
+    type: 'category',
+    properties: {
+      label: [id],
+      hasDefinition: [description],
+      'EuPathDB alternative term': [displayName]
+    },
+    children
+  } : {
+    type: 'individual',
     properties : {
-      targetType : ["attribute"],
+      targetType : ['attribute'],
       name : [id]
     },
     wdkReference : {
       name: id,
       displayName : displayName,
       help : description
-    }
-  } as CategoryNode;
+    },
+    children
+  }
 }
 
 /**
