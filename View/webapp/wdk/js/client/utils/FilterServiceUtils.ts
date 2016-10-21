@@ -166,7 +166,7 @@ export function makeTree(fields: Field[], options: Options = { trimMetadataTerms
 }
 
 // Given a list of fields:
-// First, find all fields marked as `filterable` (this means
+// First, find all fields marked as `leaf` (this means
 //   the field is terminating and data can be filtered by it).
 // Then, for each field, find all parents.
 function pruneFields(fields: Field[]) {
