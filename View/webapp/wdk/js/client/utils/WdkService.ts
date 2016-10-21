@@ -4,7 +4,15 @@ import localforage from 'localforage';
 import {Ontology} from './OntologyUtils';
 import {CategoryTreeNode, normalizeOntology} from './CategoryUtils';
 import {alert} from './Platform';
-import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record} from './WdkModel';
+import {
+  Answer,
+  AnswerSpec,
+  AnswerFormatting,
+  Question,
+  RecordClass,
+  Record,
+  UserDataset
+} from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 
 /**
@@ -327,6 +335,10 @@ export default class WdkService {
     let url = '/user/current/preference';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('patch', url, data);
+  }
+
+  getCurrentUserDatasets() {
+    return this._fetchJson<UserDataset[]>('get', '/user/current/user-dataset?expandDetails=true');
   }
 
   getOauthStateToken() {

@@ -107,3 +107,31 @@ export interface AnswerFormatting {
   sorting: [ { attributeName: string; direction: 'ASC' | 'DESC' } ];
   contentDisposition?: 'inline' | 'attatchment';
 }
+
+export type UserDataset = {
+  created: number;
+  dependencies: Array<{
+    resourceDisplayName: string;
+    resourceIdentifier: string;
+    resourceVersion: string;
+  }>;
+  id: number;
+  meta: {
+    description: string;
+    name: string;
+    summary: string;
+  };
+  modified: number;
+  owner: number;
+  percentQuotaUsed: number;
+  sharedWith: Array<{
+    time: number;
+    user: number;
+  }>;
+  size: number;
+  type: {
+    example: string;
+  };
+  updloaded: number;
+}
+
