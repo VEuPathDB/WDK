@@ -31,7 +31,7 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
       // create step analysis instance and run
       StepAnalyzer analyzer = StepAnalysisFactoryImpl.getConfiguredAnalyzer(_context, _fileStore);
       ExecutionStatus status = analyzer.runAnalysis(
-          _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
+          _context.getStep().getAnswerValue().cloneWithNewPaging(1, -1), new StatusLogger(contextHash, _dataStore));
 
       LOG.info("Analyzer returned without exception and with status: " + status);
 

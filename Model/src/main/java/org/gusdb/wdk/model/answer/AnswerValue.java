@@ -212,9 +212,9 @@ public class AnswerValue {
   /**
    * A copy constructor with start- and end-index modification
    * 
-   * @param answerValue
-   * @param startIndex
-   * @param endIndex
+   * @param answerValue source answer value
+   * @param startIndex 1-based start index (inclusive)
+   * @param endIndex end index (inclusive), or a negative value for all records
    */
   public AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) {
     _startIndex = startIndex;
@@ -243,6 +243,11 @@ public class AnswerValue {
   // Public Methods
   // ------------------------------------------------------------------
 
+  /**
+   * @param startIndex 1-based start index (inclusive)
+   * @param endIndex end index (inclusive), or a negative value for all records
+   * @return copy of this answer value with new paging
+   */
   public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
     return new AnswerValue(this, startIndex, endIndex);
   }
