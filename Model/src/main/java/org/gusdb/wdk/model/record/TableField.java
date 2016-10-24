@@ -31,6 +31,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   // private static final Logger logger = Logger.getLogger(TableField.class);
 
   private String queryTwoPartName;
+  private Query unpreparedQuery;
   private Query query;
   private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
   private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
@@ -39,25 +40,25 @@ public class TableField extends Field implements AttributeFieldContainer {
   private String description;
   private String categoryName;
 
-  public Query getQuery() {
-    return query;
+  public Query getUnpreparedQuery() {
+    return unpreparedQuery;
   }
 
-  void setQuery(Query query) {
-    this.query = query;
+  public Query getQuery() {
+    return query;
   }
 
   public void setQueryRef(String queryRef) {
     this.queryTwoPartName = queryRef;
   }
 
+  public String getQueryRef() {
+    return queryTwoPartName;
+  }
+
   public void addAttributeField(AttributeField attributeField) {
     attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
-  }
-
-  public String getQueryRef() {
-    return queryTwoPartName;
   }
 
   @Override
@@ -128,15 +129,14 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.resolveReferences(wdkModel);
 
     // resolve Query
-    Query query = (Query) wdkModel.resolveReference(queryTwoPartName);
+    unpreparedQuery = (Query) wdkModel.resolveReference(queryTwoPartName);
 
     // validate the table query
-    recordClass.validateBulkQuery(query);
+    recordClass.validateBulkQuery(unpreparedQuery);
 
     // prepare the query and add primary key params
     String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-    query = RecordClass.prepareQuery(wdkModel, query, paramNames);
-    this.query = query;
+    query = RecordClass.prepareQuery(wdkModel, unpreparedQuery, paramNames);
 
     Column[] columns = query.getColumns();
     for (Column column : columns) {
