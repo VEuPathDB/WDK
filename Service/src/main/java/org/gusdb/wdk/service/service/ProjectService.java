@@ -6,6 +6,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
 
 @Path("/")
@@ -25,5 +26,17 @@ public class ProjectService extends WdkService {
     String imageLink = assetsUrl + "/wdk/images/r2d2_ceramic_teapot.jpg";
     String html = "<!DOCTYPE html><html><body><img src=\"" + imageLink + "\"/></body></html>";
     return Response.status(418).entity(html).build();
+  }
+
+  @GET
+  @Path("cpuTest")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response doCpuTest() {
+    Timer t = new Timer();
+    for(long i = 0; i < 50E8; i++) {
+      @SuppressWarnings("unused")
+      long a = i;
+    }
+    return Response.ok("Time is " + t.getElapsedString()).build();
   }
 }
