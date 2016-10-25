@@ -66,6 +66,8 @@ public abstract class AbstractEnumParam extends Param {
 
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
+  private static final boolean INVALID_DEFAULT_IS_FATAL = false;
+
   /**
    * @author jerric
    * 
@@ -625,10 +627,10 @@ public abstract class AbstractEnumParam extends Param {
   private int getNumSelected(User user, String[] terms, Map<String, String> contextParamValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and
     // count the leaves
-    String displayType = getDisplayType();
+    //String displayType = getDisplayType();
     //logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
-		//   ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
-		//   ", countOnlyLeaves = " + getCountOnlyLeaves());
+    //   ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
+    //   ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (displayType != null && displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
       FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
@@ -658,7 +660,7 @@ public abstract class AbstractEnumParam extends Param {
    * Builds the default value (and sanity default value) of the "current" enum values
    */
   protected final void applySelectMode(EnumParamVocabInstance cache) throws WdkModelException {
-		// logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
+    // logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
     //    super.getDefault());
     String defaultFromModel = super.getDefault();
 
@@ -669,8 +671,12 @@ public abstract class AbstractEnumParam extends Param {
       // to the cache.
       String[] defaults = getMultiPick() ? defaultFromModel.split("\\s*,\\s*")
           : new String[] { defaultFromModel };
+      List<String> trimmedDefaults = new ArrayList<>();
       for (String def : defaults) {
-        if (!cache.getTerms().contains(def)) {
+        if (cache.getTerms().contains(def)) {
+          trimmedDefaults.add(def);
+        }
+        else {
           // the given default doesn't match any term
           if (isDependentParam()) {
             // need to investigate and make sure the default is as
@@ -680,14 +686,16 @@ public abstract class AbstractEnumParam extends Param {
             logger.warn(errorMessage);
           }
           else {
-            // param doesn't depend on anything. The default must be
-            // wrong.
+            // param doesn't depend on anything. The default must be wrong.
             logger.warn(errorMessage);
-            throw new WdkModelException(errorMessage);
+            if (INVALID_DEFAULT_IS_FATAL) {
+              throw new WdkModelException(errorMessage);
+            }
           }
         }
       }
-      cache.setDefaultValue(defaultFromModel);
+      cache.setDefaultValue(FormatUtil.join(
+          trimmedDefaults.toArray(new String[trimmedDefaults.size()]), ","));
       return;
     }
 
