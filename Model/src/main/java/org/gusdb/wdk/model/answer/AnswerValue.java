@@ -1333,13 +1333,6 @@ public class AnswerValue {
   }
 
   public void setFilterOptions(FilterOptionList filterOptions) {
-    //logger.debug("****Answer Value: Setting filterOptions");
-		/*   if (_filterOptions != null) {
-      logger.debug("size:" + filterOptions.getSize() + ", and they are: " + filterOptions.getJSON());
-    }
-    else {
-      logger.debug("NULL");
-			}*/
     _filterOptions = filterOptions;
     reset();
   }
