@@ -52,7 +52,7 @@ public class StandardConfig {
   private List<String> tables = new ArrayList<String>(); // table and attribute field names
   private boolean allTables = false;
   private String attachmentType = null;
-  protected StreamStrategy streamStrategy = StreamStrategy.PAGED_ANSWER;
+  protected StreamStrategy streamStrategy = StreamStrategy.FILE_BASED;
 
   public StandardConfig(Question question) {
     _question = question;
