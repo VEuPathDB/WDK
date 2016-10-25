@@ -73,7 +73,7 @@ export function submitForm(step, selectedReporter, formState, target = '_blank')
   return function run(dispatch, { wdkService }) {
     // a submission must trigger a form download, meaning we must POST the form
     let submissionJson = {
-      questionDefinition: step.answerSpec,
+      answerSpec: step.answerSpec,
       formatting: {}
     };
     if (selectedReporter != null) {

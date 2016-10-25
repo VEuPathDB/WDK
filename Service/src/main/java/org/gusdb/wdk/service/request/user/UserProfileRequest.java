@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
-import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 

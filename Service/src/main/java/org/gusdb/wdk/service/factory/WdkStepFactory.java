@@ -12,11 +12,12 @@ public class WdkStepFactory {
 
   public static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
     try {
-
       // new step must be created from raw spec
       AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-      Step step = stepFactory.createStep(user, null, answerSpec.getQuestion(), WdkAnswerFactory.convertParams(answerSpec.getParamValues()),
-          answerSpec.getLegacyFilter(), 0, -1, false, true, answerSpec.getWeight(), answerSpec.getFilterValues());
+      Step step = stepFactory.createStep(user, null, answerSpec.getQuestion(),
+          AnswerValueFactory.convertParams(answerSpec.getParamValues()),
+          answerSpec.getLegacyFilter(), 1, -1, false, true, answerSpec.getWeight(),
+          answerSpec.getFilterValues());
       step.setViewFilterOptions(answerSpec.getViewFilterValues());
       step.saveParamFilters();
 

@@ -44,18 +44,20 @@ public abstract class StandardReporter extends AbstractReporter {
   }
 
   @Override
-  public void configure(Map<String, String> config) throws WdkUserException {
+  public Reporter configure(Map<String, String> config) throws WdkUserException {
     LOG.info(getClass().getName() + " instantiated and configured with: " +
         FormatUtil.prettyPrint(config, Style.MULTI_LINE));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
+    return this;
   }
 
   @Override
-  public void configure(JSONObject config) throws WdkUserException {
+  public Reporter configure(JSONObject config) throws WdkUserException {
     LOG.info(getClass().getName() + " instantiated and configured with: " + config.toString(2));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
+    return this;
   }
 
   protected StandardConfig getStandardConfig() {

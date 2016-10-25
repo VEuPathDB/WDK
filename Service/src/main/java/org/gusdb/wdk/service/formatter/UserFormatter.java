@@ -1,12 +1,8 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -21,7 +21,7 @@ public class BasketService extends UserService {
   @GET
   @Path("basket")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getBaskets(String body) throws WdkModelException {
+  public Response getBaskets() throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     User user = userBundle.getTargetUser();
     if (user.isGuest()) {

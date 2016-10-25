@@ -4,7 +4,6 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.user.Step;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -92,7 +92,7 @@ function addAnswer(state, payload) {
   answer.meta.attributes = answer.meta.attributes.filter(isNotWeight);
 
   /*
-   * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
+   * This will update the keys `filteredRecords`, and `answerSpec` in `state`.
    */
   return Object.assign({}, state, {
     meta: answer.meta,

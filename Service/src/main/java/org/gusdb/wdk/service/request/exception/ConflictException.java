@@ -1,22 +1,22 @@
-package org.gusdb.wdk.service.request;
+package org.gusdb.wdk.service.request.exception;
 
 /**
  * Custom service exception to be thrown when the JSON received is syntactically 
- * correct but problems with the content preclude the successful completion of
- * the web service.
+ * correct but problems the content provided conflicts with existing content.  The
+ * default message is HTTP 409 Conflict.
  * @author crisl-adm
  *
  */
-public class DataValidationException extends Exception {
+public class ConflictException extends Exception {
 
   private static final long serialVersionUID = 1L;
-  private static final String DEFAULT_MESSAGE = "HTTP 422 Unprocessable Entity";
+  private static final String DEFAULT_MESSAGE = "HTTP 409 Conflict";
 
   /** 
-   * No arg constructor 
+   * No arg constructor
    * Passing default message to superclass
    */
-  public DataValidationException() {
+  public ConflictException() {
     super(DEFAULT_MESSAGE);
   }
 
@@ -24,7 +24,7 @@ public class DataValidationException extends Exception {
    * Passing the message into the superclass
    * @param message
    */
-  public DataValidationException(String message) {
+  public ConflictException(String message) {
       super(message);
   }
   
@@ -33,7 +33,7 @@ public class DataValidationException extends Exception {
    * and applying the default message 
    * @param t
    */
-  public DataValidationException(Throwable t) {
+  public ConflictException(Throwable t) {
     super(DEFAULT_MESSAGE, t);
   }
   
@@ -42,7 +42,7 @@ public class DataValidationException extends Exception {
    * @param message
    * @param t
    */
-  public DataValidationException(String message, Throwable t) {
+  public ConflictException(String message, Throwable t) {
     super(message, t);
   }
 }

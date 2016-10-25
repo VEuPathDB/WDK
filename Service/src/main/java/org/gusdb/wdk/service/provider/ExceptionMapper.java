@@ -27,9 +27,10 @@ import org.gusdb.wdk.service.error.ValueMaps;
 import org.gusdb.wdk.service.error.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.ServletContextValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.SessionAttributeValueMap;
-import org.gusdb.wdk.service.request.ConflictException;
-import org.gusdb.wdk.service.request.DataValidationException;
-import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.exception.ConflictException;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.statustype.UnprocessableEntityStatusType;
 import org.json.JSONException;
 
 @Provider

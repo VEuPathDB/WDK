@@ -179,13 +179,10 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    // check to make sure a service JSON reporter reference is complete
-    String reporterName = WDK_SERVICE_JSON_REPORTER_RESERVED_NAME;
-    String className = org.gusdb.wdk.model.report.WdkServiceJsonReporter.class.getName();
-    if ((reporterName.equals(getName()) && !className.equals(getImplementation())) ||
-        (className.equals(getImplementation()) && !reporterName.equals(getName()))) {
-      throw new WdkModelException("Reporter reserved name '" + reporterName + "' " +
-          "must be used in combination with implementation class " + className);
+    // warn user if they are using a service JSON reporter reference
+    if (WDK_SERVICE_JSON_REPORTER_RESERVED_NAME.equals(getName())) {
+      logger.warn("You are using reporter reserved name '" + getName() + "'.  This will not affect the " +
+          "WDK answer service endpoint; your reporter may not be accessible in that context.");
     }
     // try to find implementation class
     String msgStart = "Implementation class for reporter '" + getName() + "' [" + getImplementation() + "] ";

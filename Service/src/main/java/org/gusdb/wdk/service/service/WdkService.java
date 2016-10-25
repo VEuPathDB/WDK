@@ -15,7 +15,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
-import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
@@ -38,7 +37,6 @@ public abstract class WdkService {
   private UriInfo _uriInfo;
 
   private WdkModelBean _wdkModelBean;
-  private WdkAnswerFactory _resultFactory;
   private UserBean _user;
 
   // public setter for unit tests
@@ -84,13 +82,6 @@ public abstract class WdkService {
     if (!isSessionUserAdmin()) {
       throw new ForbiddenException("Administrative access is required for this function.");
     }
-  }
-
-  protected WdkAnswerFactory getResultFactory() {
-    if (_resultFactory == null) {
-      _resultFactory = new WdkAnswerFactory(getSessionUserBean());
-    }
-    return _resultFactory;
   }
 
   @Context

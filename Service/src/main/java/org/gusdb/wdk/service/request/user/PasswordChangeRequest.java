@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.request.user;
 
-import org.gusdb.wdk.service.request.DataValidationException;
-import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 

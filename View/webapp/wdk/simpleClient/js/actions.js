@@ -49,7 +49,7 @@ var Util = (function() {
     if (offset < 0) offset = 0;
     if (numRecords < 1) numRecords = 10;
     return {
-      questionDefinition: {
+      answerSpec: {
         questionName: question.name,
         parameters: paramPack,
         filters: []

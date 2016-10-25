@@ -25,23 +25,24 @@ public class TableTabularReporter extends AbstractTabularReporter {
   }
 
   @Override
-  public void configure(Map<String,String> config) throws WdkUserException {
+  public TableTabularReporter configure(Map<String,String> config) throws WdkUserException {
     super.configure(config);
-    setTable();
+    return setTable();
   }
 
   @Override
-  public void configure(JSONObject config) throws WdkUserException {
+  public TableTabularReporter configure(JSONObject config) throws WdkUserException {
     super.configure(config);
-    setTable();
+    return setTable();
   }
 
-  private void setTable() throws WdkUserException {
+  private TableTabularReporter setTable() throws WdkUserException {
     Set<TableField> tables = getSelectedTables();
     if (tables.size() != 1 || !getSelectedAttributes().isEmpty()) {
       throw new WdkUserException("This report supports exactly one table and no attributes.");
     }
     _tableField = tables.iterator().next();
+    return this;
   }
 
   /**
