@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.answer.stream.RecordStream;
  * 
  * @author rdoherty
  */
-public abstract class PagedReporter extends AbstractReporter {
+public abstract class PagedAnswerReporter extends AbstractReporter {
 
   public static final String PROPERTY_PAGE_SIZE = "page_size";
 
@@ -23,7 +23,7 @@ public abstract class PagedReporter extends AbstractReporter {
 
   protected int _pageSize = DEFAULT_PAGE_SIZE;
 
-  protected PagedReporter(AnswerValue answerValue) {
+  protected PagedAnswerReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 

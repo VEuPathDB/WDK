@@ -22,24 +22,23 @@ import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
-import org.gusdb.wdk.service.request.DataValidationException;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ *  TODO: validate
+ *    - requested user exists
+ *    - sharing:
+ *      - target user exists
+ *      - shared dataset exists
+ *    - external datasets
+ *      - original dataset exists, and is still shared  
+ *
+ */
 public class UserDatasetService extends UserService {
-  
-  /*
-   *  TODO: validate
-   *    - requested user exists
-   *    - sharing:
-   *      - target user exists
-   *      - shared dataset exists
-   *    - external datasets
-   *      - original dataset exists, and is still shared  
-   *
-   */
 
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -54,12 +53,12 @@ public class UserDatasetService extends UserService {
     Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
     return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, expandDatasets).toString()).build();
   }
-  
+
   @PUT
   @Path("user-dataset/{datasetId}/meta")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException, DataValidationException {
+  public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
     try {
       JSONObject metaJson = new JSONObject(body);
       getUserDatasetStore().updateMetaFromJson(getUserId(), new Integer(datasetIdStr), metaJson);
@@ -70,19 +69,17 @@ public class UserDatasetService extends UserService {
     }
   }
 
-  /*
-{
- "targetUsers" : [12401223],
- "datasetsToShare" : [555,777]
-}
-
+  /**
+   * {
+   *   "targetUsers" : [12401223],
+   *   "datasetsToShare" : [555,777]
+   * }
    */
   @PUT
   @Path("user-dataset/{datasetId}/share")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response shareWith(@PathParam("datasetId") String datasetIdStr, String body)
-      throws WdkModelException, DataValidationException {
+  public Response shareWith(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
 
     JSONObject jsonObj = new JSONObject(body);
     

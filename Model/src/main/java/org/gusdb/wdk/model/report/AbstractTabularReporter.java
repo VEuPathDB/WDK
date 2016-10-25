@@ -53,7 +53,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   @Override
-  public void configure(Map<String, String> config) throws WdkUserException {
+  public AbstractTabularReporter configure(Map<String, String> config) throws WdkUserException {
     super.configure(config);
 
     // get basic configurations
@@ -65,12 +65,15 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     if (config.containsKey(FIELD_DIVIDER)) {
       _divider = config.get(FIELD_DIVIDER);
     }
+
+    return this;
   }
 
   @Override
-  public void configure(JSONObject config) throws WdkUserException {
+  public AbstractTabularReporter configure(JSONObject config) throws WdkUserException {
     super.configure(config);
     _includeHeader = (config.has(FIELD_HAS_HEADER) ? config.getBoolean(FIELD_HAS_HEADER) : true);
+    return this;
   }
 
   @Override

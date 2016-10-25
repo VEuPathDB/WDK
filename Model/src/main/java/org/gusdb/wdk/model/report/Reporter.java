@@ -25,8 +25,8 @@ public interface Reporter {
 
   // methods to configure reporter
   public void setProperties(Map<String, String> properties) throws WdkModelException;
-  public void configure(Map<String, String> config) throws WdkUserException, WdkModelException;
-  public void configure(JSONObject config) throws WdkUserException, WdkModelException;
+  public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException;
+  public Reporter configure(JSONObject config) throws WdkUserException, WdkModelException;
 
   // methods used to deliver report
   public String getHttpContentType();

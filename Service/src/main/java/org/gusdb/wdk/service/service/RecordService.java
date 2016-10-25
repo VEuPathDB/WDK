@@ -33,11 +33,11 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
+import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
-import org.gusdb.wdk.service.provider.MultipleChoicesStatusType;
 import org.gusdb.wdk.service.request.RecordRequest;
-import org.gusdb.wdk.service.request.RequestMisformatException;
-import org.gusdb.wdk.service.stream.RecordStreamer;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -162,47 +162,57 @@ public class RecordService extends WdkService {
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException {
     RecordInstance recordInstance = null;
     try {
-      JSONObject json = new JSONObject(body);
-      RecordClass rc = getRecordClass(recordClassName);
-      RecordRequest request = RecordRequest.createFromJson(getSessionUser(), json, rc, getWdkModelBean());
+      // get and parse request information
+      RecordClass recordClass = getRecordClass(recordClassName);
+      JSONObject requestJson = new JSONObject(body);
+      RecordRequest request = RecordRequest.createFromJson(recordClass, requestJson);
+
+      // check to see if PKs specified map to multiple records
       try {
-        List<Map<String,Object>> ids = rc.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
-        if(ids.size() > 1) {
-          List<String> idList = mapToList(ids,
-            new Function<Map<String,Object>, String>() {
-              @Override
-              public String apply(Map<String,Object> pkValueMap) {
-                Iterator<String> iterator = pkValueMap.keySet().iterator();
-                StringBuilder idString = new StringBuilder();
-                while(iterator.hasNext()) {
-                  String key = iterator.next();
-                  idString.append(key + " = " + pkValueMap.get(key) + " ");
-                }
-                return idString.toString();
-              }
-            }
-          );
+        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
+        if (ids.size() > 1) {
+          // more than one record found; return multi-choice status and give user IDs from which to choose
+          List<String> idList = getDisplayableIds(ids);
           String idDisplay = FormatUtil.join(idList.toArray(), "\n");
           return Response.status(new MultipleChoicesStatusType()).type(MediaType.TEXT_PLAIN).entity(idDisplay).build();
         }
-      }  
+      }
       catch(WdkUserException e) {
         throw new BadRequestException(e);
       }
-      recordInstance = getRecordInstance(getSessionUser(), request);
 
-      return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
-    }
-    catch (WdkUserException | RecordNotFoundException e) {
-      // these may be thrown when the PK values either don't exist or map to >1 record
-      // OR the ID exists but the attribute query returns nothing
-      String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
-      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)) ,e);
+      // PKs represent only one record; fetch, format, and return
+      recordInstance = getRecordInstance(getSessionUser(), request);
+      JSONObject recordJson = RecordFormatter.getRecordJson(
+          recordInstance, request.getAttributeNames(), request.getTableNames());
+      return Response.ok(recordJson.toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);
       throw new BadRequestException(e);
     }
+    catch (WdkUserException | RecordNotFoundException e) {
+      // these may be thrown when the PK values either don't exist or map to >1 record
+      // OR the ID exists but the attribute query returns nothing
+      String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE +
+          recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)) ,e);
+    }
+  }
+
+  private static List<String> getDisplayableIds(List<Map<String,Object>> ids) {
+    return mapToList(ids, new Function<Map<String,Object>, String>() {
+      @Override
+      public String apply(Map<String,Object> pkValueMap) {
+        Iterator<String> iterator = pkValueMap.keySet().iterator();
+        StringBuilder idString = new StringBuilder();
+        while(iterator.hasNext()) {
+          String key = iterator.next();
+          idString.append(key + " = " + pkValueMap.get(key) + " ");
+        }
+        return idString.toString();
+      }
+    });
   }
 
   private RecordClass getRecordClass(String recordClassName) throws WdkModelException {

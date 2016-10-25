@@ -1,7 +1,8 @@
-package org.gusdb.wdk.service.request;
+package org.gusdb.wdk.service.request.exception;
 
+import org.gusdb.wdk.model.WdkUserException;
 
-public class RequestMisformatException extends Exception {
+public class RequestMisformatException extends WdkUserException {
 
   private static final long serialVersionUID = 1L;
 

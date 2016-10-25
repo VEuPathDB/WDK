@@ -20,7 +20,7 @@ let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
  * Request data format, POSTed to service:
  *
  *     {
- *       "questionDefinition": {
+ *       "answerSpec": {
  *         "questionName": String,
  *         "parameters": Object (map of paramName -> paramValue),
  *         "filters": [ {
@@ -58,8 +58,8 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
     // FIXME Set attributes to whatever we're sorting on. This is required by
     // the service, but it doesn't appear to have any effect at this time. We
     // should be passing the attribute in based on info from the RecordClass.
-    displayInfo.attributes = "__DISPLAYABLE_ATTRIBUTES__"; // special string for all displayable attributes
-    displayInfo.tables = "__DISPLAYABLE_TABLES__";         // special string for all displayable tables
+    displayInfo.attributes = "__ALL_ATTRIBUTES__"; // special string for default attributes
+    displayInfo.tables = [];
 
     dispatch({ type: actionTypes.ANSWER_LOADING });
 
@@ -67,7 +67,7 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
     let recordClassPromise = wdkService.findRecordClass(hasUrlSegment(recordClassUrlSegment));
     let answerPromise = questionPromise.then(question => {
       // Build XHR request data for '/answer'
-      let questionDefinition = {
+      let answerSpec = {
         questionName: question.name,
         parameters: pick(parameters, question.parameters),
         filters
@@ -76,7 +76,7 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
         formatConfig: pick(displayInfo,
           [ 'pagination', 'attributes', 'sorting' ])
       };
-      return wdkService.getAnswer(questionDefinition, formatting);
+      return wdkService.getAnswer(answerSpec, formatting);
     });
 
     return Promise.all([ answerPromise, questionPromise, recordClassPromise ])

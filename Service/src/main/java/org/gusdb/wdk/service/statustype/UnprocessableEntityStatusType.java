@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.provider;
+package org.gusdb.wdk.service.statustype;
 
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.Response.StatusType;

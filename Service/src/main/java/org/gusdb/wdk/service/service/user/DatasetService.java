@@ -23,7 +23,7 @@ import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.WdkDatasetException;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.Keys;
-import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,7 +81,7 @@ public class DatasetService extends UserService {
       datasetMetadata.put(Keys.ID, dataset.getDatasetId());
       return Response.ok(datasetMetadata.toString()).build();
     }
-    catch (RequestMisformatException | JSONException | WdkUserException e) {
+    catch (JSONException | WdkUserException e) {
       throw new BadRequestException(e);
     }
   }
@@ -94,6 +94,8 @@ public class DatasetService extends UserService {
       //@FormParam("file") InputStream fileInputStream,
       //@FormParam("file") FormDataContentDisposition contentDispositionHeader)
   {
+    // TODO implement; currently just making sure this resource is only accessed by the owner
+    @SuppressWarnings("unused")
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     return Response.ok("{ }").build();
 

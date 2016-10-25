@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.service.request.DataValidationException;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 
 /**
  * Simple validator to check key and value lengths for user preferences and profile properties

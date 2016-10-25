@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 
 public class AnswerDetails {
 
@@ -19,6 +20,7 @@ public class AnswerDetails {
   private Map<String, AttributeField> _attributes;
   private Map<String, TableField> _tables;
   private List<SortItem> _sorting;
+  private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
 
   // all getters are public
   public int getOffset() { return _offset; }
@@ -26,6 +28,7 @@ public class AnswerDetails {
   public Map<String, AttributeField> getAttributes() { return _attributes; }
   public Map<String, TableField> getTables() { return _tables; }
   public List<SortItem> getSorting() { return _sorting; }
+  public ContentDisposition getContentDisposition() { return _contentDisposition; }
 
   // all setters are package-private, available only to factory
   void setOffset(int offset) { _offset = offset; }
@@ -33,5 +36,6 @@ public class AnswerDetails {
   void setAttributes(Map<String, AttributeField> attributes) { _attributes = attributes; }
   void setTables(Map<String, TableField> tables) { _tables = tables; }
   void setSorting(List<SortItem> sorting) { _sorting = sorting; }
+  void setContentDisposition(ContentDisposition contentDisposition) { _contentDisposition = contentDisposition; }
 
 }

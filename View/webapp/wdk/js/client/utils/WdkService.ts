@@ -258,10 +258,10 @@ export default class WdkService {
   /**
    * Get an answer from the answer service.
    */
-  getAnswer(questionDefinition: AnswerSpec, formatting: AnswerFormatting) {
+  getAnswer(answerSpec: AnswerSpec, formatting: AnswerFormatting) {
     let method = 'post';
     let url = '/answer';
-    let body = stringify({ questionDefinition, formatting });
+    let body = stringify({ answerSpec, formatting });
     return this._fetchJson<Answer>(method, url, body);
   }
 

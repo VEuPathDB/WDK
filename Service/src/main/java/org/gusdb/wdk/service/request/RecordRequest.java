@@ -6,37 +6,31 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-//import org.apache.log4j.Logger;
 
 public class RecordRequest {
-  
-    //private static final Logger LOG = Logger.getLogger(WdkAnswerRequest.class);
-  
-  
+
  /**
-   * * Input Format:
-   * 
+   * Input Format:
    * {
    *  "primaryKey": [ "12345", "myProject" ],
    *  "tables": [ String, String ],
    *  "attributes": [ String, String ]
    * }
    * 
-   * @param json
-   * @param model
-   * @return
+   * @param recordClass recordClass for which this request was made
+   * @param json request json in the format above
+   * @return object representing request
    * @throws RequestMisformatException
    */
-  public static RecordRequest createFromJson(User user, JSONObject json, RecordClass recordClass, WdkModelBean model) throws RequestMisformatException {
+  public static RecordRequest createFromJson(RecordClass recordClass, JSONObject json) throws RequestMisformatException {
     try {
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
