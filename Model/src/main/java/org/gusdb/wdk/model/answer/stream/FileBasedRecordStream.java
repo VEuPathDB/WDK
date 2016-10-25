@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -75,15 +74,12 @@ public class FileBasedRecordStream implements RecordStream {
    * 
    * @param answerValue
    *          answer value defining the records to be returned
-   * @param fileRepository
-   *          file repository where temporary files will be written
    * @param attributes
    *          collection of requested attribute fields
    * @param tables
    *          collection of requested table fields
    */
-  public FileBasedRecordStream(AnswerValue answerValue, Collection<AttributeField> attributes,
-      Collection<TableField> tables) {
+  public FileBasedRecordStream(AnswerValue answerValue, Collection<AttributeField> attributes, Collection<TableField> tables) {
     _answerValue = answerValue;
     _attributes = attributes;
     _tables = tables;
@@ -96,13 +92,12 @@ public class FileBasedRecordStream implements RecordStream {
    * 
    * @throws WdkModelException
    *           if unable to complete population
-   * @throws WdkUserException
    */
   public FileBasedRecordStream populateFiles() throws WdkModelException {
     createTemporaryDirectory();
     
     // Make sure the paged attribute SQL actually returns all records.
-    _answerValue.setPageIndex(0, -1);
+    _answerValue.setPageIndex(1, -1);
     
     if (_attributes != null && _attributes.size() > 0) {
       assembleAttributeFiles();
@@ -118,29 +113,18 @@ public class FileBasedRecordStream implements RecordStream {
   }
 
   /**
-   * Create a temporary directory to house the temporary CSV file to be created.
+   * Create a temporary directory to house the temporary CSV files to be created.
    * 
    * @throws WdkModelException
    */
-  protected void createTemporaryDirectory() throws WdkModelException {
+  private void createTemporaryDirectory() throws WdkModelException {
     try {
       String wdkTempDir = _answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
-      Files.createDirectories(Paths.get(wdkTempDir));
-      IoUtil.openPosixPermissions(Paths.get(wdkTempDir));
       _temporaryDirectory = IoUtil.createOpenPermsTempDir(Paths.get(wdkTempDir), DIRECTORY_PREFIX);
     }
     catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
-  }
-
-  /**
-   * Provides handle to temporary directory housing temporary CSV files
-   * 
-   * @return - path to temporary directory
-   */
-  public Path getTemporaryDirectory() {
-    return _temporaryDirectory;
   }
 
   /**
@@ -155,10 +139,10 @@ public class FileBasedRecordStream implements RecordStream {
    * @return - subset of original attribute fields list containing only column attribute fields
    * @throws WdkModelException
    */
-  protected static List<ColumnAttributeField> filterColumnAttributeFields(
+  static List<ColumnAttributeField> filterColumnAttributeFields(
       Collection<AttributeField> attributes, boolean tableAttributes) throws WdkModelException {
-	// Using a set to collect column attribute fields because multiple non-column attributes may cite the same
-	// column attributes as dependencies and we don't want them counted more than once.
+    // Using a set to collect column attribute fields because multiple non-column attributes may cite the same
+    // column attributes as dependencies and we don't want them counted more than once.
     Set<ColumnAttributeField> columnAttributes = new HashSet<>();
     for (AttributeField attribute : attributes) {
       if (attribute instanceof ColumnAttributeField) {
@@ -173,65 +157,17 @@ public class FileBasedRecordStream implements RecordStream {
   }
 
   /**
-   * Culls all the column attribute fields from the table field and returns a list of primary key column names
-   * and column attribute column names.
-   * 
-   * @param answerValue
-   * @param table
-   *          - the given table field
-   * @return ordered list of primary key column names and table column attribute column names.
-   * @throws WdkModelException
-   */
-  public static List<String> createTableColumnList(AnswerValue answerValue, TableField table)
-      throws WdkModelException {
-
-    // Collect together all the columns representing the primary key attribute fields.
-    PrimaryKeyAttributeField pkField = answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField();
-    String[] pkColumns = pkField.getColumnRefs();
-
-    // Collect together all the columns representing the column attribute fields to be included
-    List<String> attributeColumns = new ArrayList<>();
-    List<ColumnAttributeField> fields = filterColumnAttributeFields(Arrays.asList(table.getAttributeFields()),
-        true);
-    for (ColumnAttributeField field : fields) {
-      attributeColumns.add(field.getColumn().getName());
-    }
-
-    // Combine the primary key columns and column attribute columns into a single list
-    List<String> columnNames = new ArrayList<>(Arrays.asList(pkColumns));
-    columnNames.addAll(attributeColumns);
-
-    return columnNames;
-  }
-
-  /**
    * Collect all the queries needed to accommodate the requested attributes. Using a set to avoid dups.
    * 
    * @param columnAttributes
    * @return a set of attribute queries
    * @throws WdkModelException
    */
-  public Set<Query> getAttributeQueries(List<ColumnAttributeField> columnAttributes)
+  private static Set<Query> getAttributeQueries(List<ColumnAttributeField> columnAttributes)
       throws WdkModelException {
     Set<Query> queries = new HashSet<>();
     for (ColumnAttributeField attribute : columnAttributes) {
       queries.add(attribute.getColumn().getQuery());
-    }
-    return queries;
-  }
-
-  /**
-   * Collect all the queries needed to accommodate the requested tables.
-   * 
-   * @return a set of table queries
-   * @throws WdkModelException
-   */
-  public Set<Query> getTableQueries() throws WdkModelException {
-    Set<Query> queries = new HashSet<>();
-    for (TableField table : _tables) {
-      Query tableQuery = table.getQuery();
-      queries.add(
-          (Query) _answerValue.getQuestion().getWdkModel().resolveReference(tableQuery.getFullName()));
     }
     return queries;
   }
@@ -246,7 +182,7 @@ public class FileBasedRecordStream implements RecordStream {
    *         attributes requested.
    * @throws WdkModelException
    */
-  public List<String> getQueryColumns(Query query, List<ColumnAttributeField> columnAttributes)
+  private static List<String> getQueryColumns(Query query, List<ColumnAttributeField> columnAttributes)
       throws WdkModelException {
     List<String> columnNames = new ArrayList<>();
     for (ColumnAttributeField attribute : columnAttributes) {
@@ -266,7 +202,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<Query, List<String>> assembleAttributeQueryColumnMap(List<ColumnAttributeField> columnAttributes)
+  private static Map<Query, List<String>> assembleAttributeQueryColumnMap(List<ColumnAttributeField> columnAttributes)
       throws WdkModelException, WdkUserException {
     Map<Query, List<String>> queryColumnNameMap = new LinkedHashMap<>();
     for (Query query : getAttributeQueries(columnAttributes)) {
@@ -279,7 +215,7 @@ public class FileBasedRecordStream implements RecordStream {
    * Temporary addition for development purpose to chmod all generated files with world write permissions so
    * they can be deleted from the temporary file directory manually.
    */
-  public void makeFilesWorldWriteable() {
+  private void makeFilesWorldWriteable() {
     for (Path filePath : _attributeFileMap.keySet()) {	
       File file = new File(filePath.toString());
       file.setWritable(true, false);
@@ -304,7 +240,7 @@ public class FileBasedRecordStream implements RecordStream {
    *          - the query results
    * @throws WdkModelException
    */
-  public void assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList)
+  private static void assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList)
       throws WdkModelException {
 
     try (CSVWriter writer = new CSVWriter(
@@ -338,7 +274,7 @@ public class FileBasedRecordStream implements RecordStream {
    * 
    * @throws WdkModelException
    */
-  public void assembleAttributeFiles() throws WdkModelException {
+  private void assembleAttributeFiles() throws WdkModelException {
     try {
       Timer t = new Timer();
       logger.info("Starting attribute file assembly...");
@@ -412,7 +348,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void assembleTableFiles() throws WdkModelException {
+  private void assembleTableFiles() throws WdkModelException {
     Timer t = new Timer();
     logger.info("Starting table file assembly...");
 
