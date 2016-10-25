@@ -9,6 +9,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Event;
@@ -215,6 +219,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       WdkModel wdkModel = parser.parseModel(projectId);
       wdkModel.setStartupTime(now.getTime());
       wdkModel.checkSchema();
+      wdkModel.checkTmpDir();
       LOG.info("WDK Model construction complete.");
       return wdkModel;
     }
@@ -251,6 +256,26 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private void checkSchema() throws WdkModelException {
     // verify the user schema
     _modelConfig.getUserDB().checkSchema(this);
+  }
+
+  private void checkTmpDir() throws WdkModelException {
+    String configuredDir = _modelConfig.getWdkTempDir();
+    LOG.info("Checking configured temp dir: " + configuredDir);
+    Path wdkTempDir = Paths.get(configuredDir);
+    if (Files.exists(wdkTempDir) && Files.isDirectory(wdkTempDir) &&
+        Files.isReadable(wdkTempDir) && Files.isWritable(wdkTempDir)) {
+      return;
+    }
+    try {
+      LOG.info("Temp dir does not exist or has insufficient permissions.  Trying to remedy...");
+      Files.createDirectories(wdkTempDir);
+      IoUtil.openPosixPermissions(wdkTempDir);
+      LOG.info("Temp dir created at: " + wdkTempDir.toAbsolutePath());
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to create WDK temp directory [" +
+          configuredDir + "] and/or set open permissions", e);
+    }
   }
 
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
