@@ -82,8 +82,8 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
     super.resolveReferences(wdkModel);
 
     // verify the name
-    if (!name.equals(_column.getName()))
-      throw new WdkModelException("The name of the ColumnAttributeField" + " '" + name +
+    if (!_name.equals(_column.getName()))
+      throw new WdkModelException("The name of the ColumnAttributeField" + " '" + _name +
           "' does not match the column name '" + _column.getName() + "'");
 
     // resolve the column filters
@@ -94,12 +94,12 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
         ColumnFilter filter = ((ColumnFilterDefinition) definition).getColumnFilter(this);
         if (_columnFilters.containsKey(filter.getKey()))
           throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
-              " of recordClass " + recordClass.getFullName() + " twice.");
+              " of recordClass " + _recordClass.getFullName() + " twice.");
         _columnFilters.put(filter.getKey(), filter);
       }
       else {
         throw new WdkModelException("The filter \"" + name + "\" is not a columnFilter on attribute " +
-            getName() + " of recordClass " + recordClass.getFullName());
+            getName() + " of recordClass " + _recordClass.getFullName());
       }
     }
     _filterReferences.clear();
@@ -118,7 +118,7 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
   @Override
   public Map<String, ColumnAttributeField> getColumnAttributeFields() {
     Map<String, ColumnAttributeField> fields = new LinkedHashMap<String, ColumnAttributeField>();
-    fields.put(name, this);
+    fields.put(_name, this);
     return fields;
   }
 

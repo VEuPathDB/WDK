@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record;
 
 import java.io.PrintWriter;
@@ -18,22 +15,21 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public abstract class Field extends WdkModelBase implements ScopedField {
 
-  protected String name;
-  protected String displayName;
-  protected String longDisplayName; // a longer version, for UIs that have the room
-  protected String help;
-  protected String type;
-  protected int truncateTo;
-  protected boolean internal;
-  protected boolean inReportMaker;
-
-  protected RecordClass recordClass;
+  protected String _name;
+  protected String _displayName;
+  protected String _longDisplayName; // a longer version, for UIs that have the room
+  protected String _help;
+  protected String _type;
+  protected int _truncateTo;
+  protected boolean _internal;
+  protected boolean _inReportMaker;
+  protected RecordClass _recordClass;
 
   public Field() {
     // initialize the optional properties
-    internal = false;
-    inReportMaker = true;
-    truncateTo = Utilities.TRUNCATE_DEFAULT;
+    _internal = false;
+    _inReportMaker = true;
+    _truncateTo = Utilities.TRUNCATE_DEFAULT;
   }
 
   @Override
@@ -45,7 +41,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    * @return Returns the displayName.
    */
   public String getDisplayName() {
-    return (displayName == null) ? name : displayName;
+    return (_displayName == null) ? _name : _displayName;
   }
 
   /**
@@ -53,7 +49,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The displayName to set.
    */
   public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+    _displayName = displayName;
   }
 
   /**
@@ -61,22 +57,22 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    * @return Returns the longDisplayName.
    */
   public String getLongDisplayName() {
-    return (longDisplayName == null) ? getDisplayName() : longDisplayName;
+    return (_longDisplayName == null) ? getDisplayName() : _longDisplayName;
   }
 
   /**
-   * @param displayName
+   * @param _displayName
    *          The displayName to set.
    */
   public void setLongDisplayName(String longDisplayName) {
-    this.longDisplayName = longDisplayName;
+    _longDisplayName = longDisplayName;
   }
 
   /**
    * @return Returns the help.
    */
   public String getHelp() {
-    return this.help;
+    return _help;
   }
 
   /**
@@ -84,7 +80,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The help to set.
    */
   public void setHelp(String help) {
-    this.help = help;
+    _help = help;
   }
 
   /**
@@ -94,7 +90,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    */
   @Override
   public boolean isInReportMaker() {
-    return this.inReportMaker;
+    return _inReportMaker;
   }
 
   /**
@@ -102,7 +98,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The inReportMaker to set.
    */
   public void setInReportMaker(boolean inReportMaker) {
-    this.inReportMaker = inReportMaker;
+    _inReportMaker = inReportMaker;
   }
 
   /**
@@ -112,7 +108,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    */
   @Override
   public boolean isInternal() {
-    return this.internal;
+    return _internal;
   }
 
   /**
@@ -120,14 +116,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The internal to set.
    */
   public void setInternal(boolean internal) {
-    this.internal = internal;
+    _internal = internal;
   }
 
   /**
    * @return Returns the name.
    */
   public String getName() {
-    return this.name;
+    return _name;
   }
 
   /**
@@ -135,14 +131,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The name to set.
    */
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   /**
    * @return Returns the truncateTo.
    */
   public int getTruncateTo() {
-    return this.truncateTo;
+    return _truncateTo;
   }
 
   /**
@@ -150,14 +146,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The truncateTo to set.
    */
   public void setTruncateTo(int truncateTo) {
-    this.truncateTo = truncateTo;
+    _truncateTo = truncateTo;
   }
 
   /**
    * @return Returns the type.
    */
   public String getType() {
-    return this.type;
+    return _type;
   }
 
   /**
@@ -165,14 +161,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          The type to set.
    */
   public void setType(String type) {
-    this.type = type;
+    _type = type;
   }
 
   /**
    * @return the recordClass
    */
   public RecordClass getRecordClass() {
-    return recordClass;
+    return _recordClass;
   }
 
   /**
@@ -180,7 +176,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    *          the recordClass to set
    */
   public void setRecordClass(RecordClass recordClass) {
-    this.recordClass = recordClass;
+    _recordClass = recordClass;
   }
 
   /*
@@ -200,6 +196,8 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   }
 
   /**
+   * @param writer where to write content
+   * @param indent how much to indent output
    * @throws WdkModelException if unable to print dependency content 
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {

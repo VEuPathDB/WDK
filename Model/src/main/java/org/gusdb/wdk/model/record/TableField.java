@@ -24,41 +24,38 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
  * class for how to define table queries.
  * 
  * @author jerric
- * 
  */
 public class TableField extends Field implements AttributeFieldContainer {
 
-  // private static final Logger logger = Logger.getLogger(TableField.class);
+  private String _queryTwoPartName;
+  private Query _unwrappedQuery;
+  private Query _wrappedQuery;
+  private List<AttributeField> _attributeFieldList = new ArrayList<AttributeField>();
+  private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
-  private String queryTwoPartName;
-  private Query unpreparedQuery;
-  private Query query;
-  private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
-  private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
+  private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+  private String _description;
+  private String _categoryName;
 
-  private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
-  private String description;
-  private String categoryName;
-
-  public Query getUnpreparedQuery() {
-    return unpreparedQuery;
+  public Query getUnwrappedQuery() {
+    return _unwrappedQuery;
   }
 
-  public Query getQuery() {
-    return query;
+  public Query getWrappedQuery() {
+    return _wrappedQuery;
   }
 
   public void setQueryRef(String queryRef) {
-    this.queryTwoPartName = queryRef;
+    _queryTwoPartName = queryRef;
   }
 
   public String getQueryRef() {
-    return queryTwoPartName;
+    return _queryTwoPartName;
   }
 
   public void addAttributeField(AttributeField attributeField) {
     attributeField.setContainer(this);
-    attributeFieldList.add(attributeField);
+    _attributeFieldList.add(attributeField);
   }
 
   @Override
@@ -74,11 +71,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public void addDescription(WdkModelText description) {
-    this.descriptions.add(description);
-  }
-  
-  public void setSorting(String sortList) {
-    // noop
+    _descriptions.add(description);
   }
 
   /**
@@ -100,12 +93,12 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public String getDescription() {
-    return (description == null) ? "" : description;
+    return (_description == null) ? "" : _description;
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
     Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
-    for (AttributeField field : attributeFieldMap.values()) {
+    for (AttributeField field : _attributeFieldMap.values()) {
       if (scope.isFieldInScope(field)) {
         map.put(field.getName(), field);
       }
@@ -114,7 +107,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public AttributeField getAttributeField(String fieldName) {
-    return attributeFieldMap.get(fieldName);
+    return _attributeFieldMap.get(fieldName);
   }
 
   /*
@@ -129,26 +122,26 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.resolveReferences(wdkModel);
 
     // resolve Query
-    unpreparedQuery = (Query) wdkModel.resolveReference(queryTwoPartName);
+    _unwrappedQuery = (Query) wdkModel.resolveReference(_queryTwoPartName);
 
     // validate the table query
-    recordClass.validateBulkQuery(unpreparedQuery);
+    _recordClass.validateBulkQuery(_unwrappedQuery);
 
     // prepare the query and add primary key params
-    String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-    query = RecordClass.prepareQuery(wdkModel, unpreparedQuery, paramNames);
+    String[] paramNames = _recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    _wrappedQuery = RecordClass.prepareQuery(wdkModel, _unwrappedQuery, paramNames);
 
-    Column[] columns = query.getColumns();
+    Column[] columns = _wrappedQuery.getColumns();
     for (Column column : columns) {
-      AttributeField field = attributeFieldMap.get(column.getName());
+      AttributeField field = _attributeFieldMap.get(column.getName());
       if (field != null && field instanceof ColumnAttributeField) {
         ((ColumnAttributeField) field).setColumn(column);
       } // else, it's okay to have unmatched columns
     }
 
-    for (AttributeField field : attributeFieldMap.values()) {
+    for (AttributeField field : _attributeFieldMap.values()) {
       // set recordClass
-      field.setRecordClass(recordClass);
+      field.setRecordClass(_recordClass);
     }
 
     _resolved = true;
@@ -175,32 +168,31 @@ public class TableField extends Field implements AttributeFieldContainer {
 
     // exclude descriptions
     boolean hasDescription = false;
-    for (WdkModelText description : descriptions) {
+    for (WdkModelText description : _descriptions) {
       if (description.include(projectId)) {
         if (hasDescription) {
-          throw new WdkModelException("The table field " + name + " of recordClass " +
-              recordClass.getFullName() + " has more than one description for project " + projectId);
+          throw new WdkModelException("The table field " + _name + " of recordClass " +
+              _recordClass.getFullName() + " has more than one description for project " + projectId);
         }
         else {
-          this.description = description.getText();
+          _description = description.getText();
           hasDescription = true;
         }
       }
     }
-    descriptions = null;
+    _descriptions = null;
 
     // exclude attributes
-    for (AttributeField field : attributeFieldList) {
+    for (AttributeField field : _attributeFieldList) {
       if (field.include(projectId)) {
         field.excludeResources(projectId);
         String fieldName = field.getName();
-        if (attributeFieldMap.containsKey(fieldName))
-          throw new WdkModelException("The attributeField " + fieldName + " is duplicated in table " +
-              this.name);
-        attributeFieldMap.put(fieldName, field);
+        if (_attributeFieldMap.containsKey(fieldName))
+          throw new WdkModelException("The attributeField " + fieldName + " is duplicated in table " + _name);
+        _attributeFieldMap.put(fieldName, field);
       }
     }
-    attributeFieldList = null;
+    _attributeFieldList = null;
   }
 
   @Override
@@ -208,23 +200,23 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.printDependencyContent(writer, indent);
 
     // print attribute fields
-    writer.println(indent + "<attributes count=\"" + attributeFieldMap.size() + "\">");
-    String[] attributeNames = attributeFieldMap.keySet().toArray(new String[0]);
+    writer.println(indent + "<attributes count=\"" + _attributeFieldMap.size() + "\">");
+    String[] attributeNames = _attributeFieldMap.keySet().toArray(new String[0]);
     Arrays.sort(attributeNames);
     String indent1 = indent + WdkModel.INDENT;
     for (String attributeName : attributeNames) {
-      attributeFieldMap.get(attributeName).printDependency(writer, indent1);
+      _attributeFieldMap.get(attributeName).printDependency(writer, indent1);
     }
 
     // print table queries
-    query.printDependency(writer, indent);
+    _wrappedQuery.printDependency(writer, indent);
   }
 
   /**
    * @return attribute category name
    */
   public String getAttributeCategory() {
-    return categoryName;
+    return _categoryName;
   }
 
   /**
@@ -232,7 +224,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    *          attribute category name
    */
   public void setAttributeCategory(String categoryName) {
-    this.categoryName = categoryName;
+    _categoryName = categoryName;
   }
 
 }

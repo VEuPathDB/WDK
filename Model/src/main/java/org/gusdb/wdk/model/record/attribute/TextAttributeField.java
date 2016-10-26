@@ -66,8 +66,8 @@ public class TextAttributeField extends AttributeField {
 
 
 
-    String rcName = (recordClass == null) ? ""
-        : (recordClass.getFullName() + ".");
+    String rcName = (_recordClass == null) ? ""
+        : (_recordClass.getFullName() + ".");
 
 
 

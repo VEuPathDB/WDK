@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record.attribute;
 
 import java.io.PrintWriter;
@@ -15,7 +12,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -46,24 +42,21 @@ public abstract class AttributeField extends Field implements Cloneable {
   public static final Pattern MACRO_PATTERN = Pattern.compile(
       "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
 
-  protected static Logger logger = Logger.getLogger(AttributeField.class);
-
   /**
    * The dependent fields are the ones that are embedded in the current field.
    */
-  protected abstract Collection<AttributeField> getDependents()
-      throws WdkModelException;
+  protected abstract Collection<AttributeField> getDependents() throws WdkModelException;
 
-  protected AttributeFieldContainer container;
+  protected AttributeFieldContainer _container;
 
-  private boolean sortable = true;
-  private String align;
-  private boolean nowrap = false;
-  private boolean removable = true;
-  private String categoryName;
+  private boolean _sortable = true;
+  private String _align;
+  private boolean _nowrap = false;
+  private boolean _removable = true;
+  private String _categoryName;
 
-  private List<AttributePluginReference> pluginList = new ArrayList<AttributePluginReference>();
-  private Map<String, AttributePluginReference> pluginMap;
+  private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
+  private Map<String, AttributePluginReference> _pluginMap;
 
   @Override
   public AttributeField clone() {
@@ -71,7 +64,7 @@ public abstract class AttributeField extends Field implements Cloneable {
   }
 
   public AttributeFieldContainer getContainer() {
-    return container;
+    return _container;
   }
 
   /**
@@ -80,7 +73,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @return
    */
   public boolean isRemovable() {
-    return removable;
+    return _removable;
   }
 
   /**
@@ -88,14 +81,14 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          the removable to set
    */
   public void setRemovable(boolean removable) {
-    this.removable = removable;
+    _removable = removable;
   }
 
   /**
    * @return the sortable
    */
   public boolean isSortable() {
-    return sortable;
+    return _sortable;
   }
 
   /**
@@ -103,14 +96,14 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          the sortable to set
    */
   public void setSortable(boolean sortable) {
-    this.sortable = sortable;
+    _sortable = sortable;
   }
 
   /**
    * @return the align
    */
   public String getAlign() {
-    return align;
+    return _align;
   }
 
   /**
@@ -118,14 +111,14 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          the align to set
    */
   public void setAlign(String align) {
-    this.align = align;
+    _align = align;
   }
 
   /**
    * @return the nowrap
    */
   public boolean isNowrap() {
-    return nowrap;
+    return _nowrap;
   }
 
   /**
@@ -133,14 +126,14 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          the nowrap to set
    */
   public void setNowrap(boolean nowrap) {
-    this.nowrap = nowrap;
+    _nowrap = nowrap;
   }
 
   /**
    * @return attribute category name
    */
   public String getAttributeCategory() {
-    return categoryName;
+    return _categoryName;
   }
 
   /**
@@ -148,7 +141,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          attribute category name
    */
   public void setAttributeCategory(String categoryName) {
-    this.categoryName = categoryName;
+    _categoryName = categoryName;
   }
 
   /**
@@ -156,19 +149,19 @@ public abstract class AttributeField extends Field implements Cloneable {
    *          the container to set
    */
   public void setContainer(AttributeFieldContainer container) {
-    this.container = container;
+    _container = container;
   }
 
   public void addAttributePluginReference(AttributePluginReference reference) {
     reference.setAttributeField(this);
-    if (pluginList != null)
-      pluginList.add(reference);
+    if (_pluginList != null)
+      _pluginList.add(reference);
     else
-      pluginMap.put(reference.getName(), reference);
+      _pluginMap.put(reference.getName(), reference);
   }
 
   public Map<String, AttributePluginReference> getAttributePlugins() {
-    return new LinkedHashMap<String, AttributePluginReference>(pluginMap);
+    return new LinkedHashMap<String, AttributePluginReference>(_pluginMap);
   }
 
   public Map<String, ColumnAttributeField> getColumnAttributeFields()
@@ -193,14 +186,14 @@ public abstract class AttributeField extends Field implements Cloneable {
    */
   protected Map<String, AttributeField> parseFields(String text) throws WdkModelException {
     Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
-    Map<String, AttributeField> fields = container.getAttributeFieldMap();
+    Map<String, AttributeField> fields = _container.getAttributeFieldMap();
 
     Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
       if (!fields.containsKey(fieldName)) {
-        throw new WdkModelException("Invalid field macro in attribute" + " [" + name + "] of ["
-            + recordClass.getFullName() + "]: " + fieldName);
+        throw new WdkModelException("Invalid field macro in attribute" + " [" + _name + "] of ["
+            + _recordClass.getFullName() + "]: " + fieldName);
       }
 
       AttributeField field = fields.get(fieldName);
@@ -221,18 +214,18 @@ public abstract class AttributeField extends Field implements Cloneable {
     super.excludeResources(projectId);
 
     // exclude attribute plugin references
-    pluginMap = new LinkedHashMap<String, AttributePluginReference>();
-    for (AttributePluginReference plugin : pluginList) {
+    _pluginMap = new LinkedHashMap<String, AttributePluginReference>();
+    for (AttributePluginReference plugin : _pluginList) {
       if (plugin.include(projectId)) {
         String name = plugin.getName();
-        if (pluginMap.containsKey(name))
+        if (_pluginMap.containsKey(name))
           throw new WdkModelException("The plugin '" + name
-              + "' is duplicated in attribute " + this.name);
+              + "' is duplicated in attribute " + _name);
         plugin.excludeResources(projectId);
-        pluginMap.put(name, plugin);
+        _pluginMap.put(name, plugin);
       }
     }
-    pluginList = null;
+    _pluginList = null;
   }
 
   @Override
@@ -257,7 +250,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     super.resolveReferences(wdkModel);
 
     // resolve plugin references
-    for (AttributePluginReference plugin : pluginMap.values()) {
+    for (AttributePluginReference plugin : _pluginMap.values()) {
       plugin.resolveReferences(wdkModel);
     }
 
@@ -276,15 +269,15 @@ public abstract class AttributeField extends Field implements Cloneable {
    */
   private void traverseDependeny(AttributeField attribute, Stack<String> path)
       throws WdkModelException {
-    if (path.contains(attribute.name))
+    if (path.contains(attribute._name))
       // NOTE: if you got this exception on a LinkAttribute, make sure you are
       //   not self-referencing the LinkAttribute.  LinkAttributes need to only
       //   reference existing ColumnAttributes (i.e. values pulled from SQL)
-      throw new WdkModelException("Attribute '" + attribute.name +
+      throw new WdkModelException("Attribute '" + attribute._name +
           "' has circular reference: " +  FormatUtil.NL + "   Previous = [ " +
           FormatUtil.join(new ArrayList<String>(path).toArray(), ", ") + " ]");
 
-    path.push(attribute.name);
+    path.push(attribute._name);
     for (AttributeField dependent : attribute.getDependents()) {
       traverseDependeny(dependent, path);
     }
