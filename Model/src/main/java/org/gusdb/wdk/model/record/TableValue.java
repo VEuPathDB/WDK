@@ -72,7 +72,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     } else {
       // not bulk model, need to create query instance, and initialize
       // rows by the TableValue itself.
-      Query query = tableField.getQuery();
+      Query query = tableField.getWrappedQuery();
       this.instance = query.makeInstance(user, primaryKey.getValues(), true, 0,
           new LinkedHashMap<String, String>());
     }

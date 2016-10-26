@@ -97,7 +97,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
   @Override
   public void setRecordClass(RecordClass recordClass) {
     super.setRecordClass(recordClass);
-    this.recordClass = recordClass;
+    this._recordClass = recordClass;
   }
 
   /**
@@ -149,7 +149,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
         if (columnRefSet.contains(columnName)) {
           throw new WdkModelException("The columnRef " + columnRef
               + " is duplicated in primaryKetAttribute in " + "recordClass "
-              + recordClass.getFullName());
+              + _recordClass.getFullName());
         } else
           columnRefSet.add(columnName);
       }
@@ -157,11 +157,11 @@ public class PrimaryKeyAttributeField extends AttributeField {
     columnRefList = null;
     if (columnRefSet.size() == 0)
       throw new WdkModelException("No primary key column defined in "
-          + "recordClass " + recordClass.getFullName());
+          + "recordClass " + _recordClass.getFullName());
     if (columnRefSet.size() > Utilities.MAX_PK_COLUMN_COUNT)
       throw new WdkModelException("You can specify up to "
           + Utilities.MAX_PK_COLUMN_COUNT + " primary key "
-          + "columns in recordClass " + recordClass.getFullName());
+          + "columns in recordClass " + _recordClass.getFullName());
 
     // exclude format
     for (WdkModelText text : textList) {
@@ -174,7 +174,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
     textList = null;
     if (text == null)
       throw new WdkModelException("No primary key format string defined"
-          + " in recordClass " + recordClass.getFullName());
+          + " in recordClass " + _recordClass.getFullName());
 
 
  // exclude display, display is optional

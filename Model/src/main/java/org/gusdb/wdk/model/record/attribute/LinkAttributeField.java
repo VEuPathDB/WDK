@@ -43,10 +43,10 @@ public class LinkAttributeField extends AttributeField {
     displayTexts = new ArrayList<WdkModelText>();
     urls = new ArrayList<WdkModelText>();
     // by default, don't show linked attributes in the download
-    this.inReportMaker = false;
+    this._inReportMaker = false;
     
-    if (this.type == null) {
-      this.type = DEFAULT_TYPE;
+    if (this._type == null) {
+      this._type = DEFAULT_TYPE;
     }
   }
 
@@ -95,8 +95,8 @@ public class LinkAttributeField extends AttributeField {
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
-    String rcName = (recordClass == null) ? ""
-        : (recordClass.getFullName() + ".");
+    String rcName = (_recordClass == null) ? ""
+        : (_recordClass.getFullName() + ".");
 
     // exclude urls
     boolean hasUrl = false;
@@ -113,7 +113,7 @@ public class LinkAttributeField extends AttributeField {
     }
     // check if all urls are excluded
     if (!hasUrl)
-      throw new WdkModelException("The linkAttribute " + rcName + name
+      throw new WdkModelException("The linkAttribute " + rcName + _name
           + " does not have a <url> tag for project " + projectId);
     urls = null;
 
@@ -133,7 +133,7 @@ public class LinkAttributeField extends AttributeField {
     }
     // check if all texts are excluded
     if (!hasText)
-      throw new WdkModelException("The linkAttribute " + rcName + name
+      throw new WdkModelException("The linkAttribute " + rcName + _name
           + " does not have a <displayText> tag for project " + projectId);
     displayTexts = null;
   }

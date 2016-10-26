@@ -40,7 +40,7 @@ public class TableQueryTest {
         for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
                 for (TableField table : recordClass.getTableFields()) {
-                    Query query = table.getQuery();
+                    Query query = table.getWrappedQuery();
                     if (query.getDoNotTest())
                         continue;
                     for (ParamValuesSet valueSet : ParamValuesFactory.getParamValuesSets(user, query)) {

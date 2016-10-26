@@ -355,12 +355,12 @@ public class FileBasedRecordStream implements RecordStream {
     // Iterate over all the tables requested
     for (TableField table : _tables) {
       t.restart();
-      logger.info("Starting table: " + table.getName() + "(query: " + table.getQuery().getName() + ")");
+      logger.info("Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
 
       // Appending table designation to query name for file to more easily distinguish
       // these files from those supporting attribute queries and to avoid name collisions.
       Path filePath = _temporaryDirectory.resolve(
-          table.getQuery().getName() + TABLE_DESIGNATION + TEMP_FILE_EXT);
+          table.getWrappedQuery().getName() + TABLE_DESIGNATION + TEMP_FILE_EXT);
 
       // Add the path to the temporary CSV file and the table field to a map to be used when
       // restoring the data to record instances. Not cherry-picking columns here so we can
@@ -395,10 +395,10 @@ public class FileBasedRecordStream implements RecordStream {
         columnNames.addAll(attributeColumns);
 
         // Transfer the result list content to the CSV file provided.
-        logger.info("Starting iteration over result list for query " + table.getQuery().getName() + ": " +
+        logger.info("Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " +
             t.getElapsedString());
         assembleCsvFile(filePath, columnNames, resultList);
-        logger.info("Finished iteration over result list for query " + table.getQuery().getName() + ": " +
+        logger.info("Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " +
             t.getElapsedString());
 
       }

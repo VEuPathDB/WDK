@@ -678,7 +678,7 @@ public class AnswerValue {
 
     // make table values
     PrimaryKeyAttributeField pkField = getPrimaryKeyAttributeField();
-    Query tableQuery = tableField.getQuery();
+    Query tableQuery = tableField.getWrappedQuery();
 
     while (resultList.next()) {
       PrimaryKeyAttributeValue primaryKey = getPrimaryKeyFromResultList(resultList, pkField);
@@ -706,8 +706,7 @@ public class AnswerValue {
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = _question.getWdkModel();
     // has to get a clean copy of the attribute query, without pk params appended
-    Query tableQuery = tableField.getQuery();
-    tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
+    Query tableQuery = tableField.getUnwrappedQuery();
 
     /*logger.debug("integrate table query from answer: " + tableQuery.getFullName());
     for (Param param : tableQuery.getParams()) {

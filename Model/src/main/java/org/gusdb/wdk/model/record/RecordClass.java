@@ -987,8 +987,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (TableField tableField : tableFieldsMap.values()) {
       tableField.resolveReferences(wdkModel);
 
-      Query query = tableField.getQuery();
-      query = (Query) wdkModel.resolveReference(query.getFullName());
+      Query query = tableField.getUnwrappedQuery();
 
       // add user param into the original table query, if needed
       if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
