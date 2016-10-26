@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.query.Query;
  * {@link Query}.
  * 
  * @author jerric
- * 
  */
 public class ColumnAttributeField extends AttributeField implements Cloneable {
 
@@ -42,7 +41,7 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
    * @return Returns the column.
    */
   public Column getColumn() {
-    return this._column;
+    return _column;
   }
 
   /**
@@ -50,7 +49,7 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
    *          The column to set.
    */
   public void setColumn(Column column) {
-    this._column = column;
+    _column = column;
   }
 
   public void addFilterReference(FilterReference reference) {
