@@ -75,6 +75,10 @@ public class EuPathCategoriesFactory {
   private final String MENU = "menu";
   private final String WEBSERVICE = "webservice";
 
+  private String[][] mbioRecordClassInfo = {
+    { "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass" }
+  };
+
   // record classes whose individuals all have both scope website and menu
   private String[][] otherRecordClassInfo = {
       { "Popset Isolate Sequences", "PopsetRecordClasses.PopsetRecordClass" },
@@ -90,16 +94,9 @@ public class EuPathCategoriesFactory {
 
     Ontology ontology = model.getOntology("Categories");
 
-    if (model.getProjectId().equals("MicrobiomeDB")) {
-      // Sample questions for menus
-      processPrimaryCategoryQuestions(ontology, scopes(MENU), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
-          websiteCategories, websiteRootCategories);
-    }
-    else {
-      // Gene questions for menus
-      processPrimaryCategoryQuestions(ontology, scopes(MENU), "Genes",
-          "TranscriptRecordClasses.TranscriptRecordClass", websiteCategories, websiteRootCategories);
-    }
+    // Gene questions for menus
+    processPrimaryCategoryQuestions(ontology, scopes(MENU), "Genes",
+        "TranscriptRecordClasses.TranscriptRecordClass", websiteCategories, websiteRootCategories);
     // sort using ontology's sorting order, if present, else alphabetical.
     for (SearchCategory category : websiteCategories.values()) {
       // set the display name in the ref, so it can be used for sorting. ignore questions not found in model
@@ -116,26 +113,15 @@ public class EuPathCategoriesFactory {
         sortedMap.put(ref.getQuestionFullName(), ref);
       category.setResolvedQuestionRefMap(sortedMap);
     }
-    if (model.getProjectId().equals("MicrobiomeDB")) {
-      // Sample questions for webservice
-      processPrimaryCategoryQuestions(ontology, scopes(WEBSERVICE), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
-          webserviceCategories, webserviceRootCategories);
+    // Sample questions for webservice
+    processPrimaryCategoryQuestions(ontology, scopes(WEBSERVICE), "Genes",
+        "TranscriptRecordClasses.TranscriptRecordClass", webserviceCategories, webserviceRootCategories);
 
-      // gene questions for datasets
-      processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass",
-          datasetCategories, datasetRootCategories);
-    }
-    else {
-      // Sample questions for webservice
-      processPrimaryCategoryQuestions(ontology, scopes(WEBSERVICE), "Genes",
-          "TranscriptRecordClasses.TranscriptRecordClass", webserviceCategories, webserviceRootCategories);
-
-      // gene questions for datasets
-      processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Genes",
-          "TranscriptRecordClasses.TransciptRecordClass", datasetCategories, datasetRootCategories);
-    }
+    // gene questions for datasets
+    processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Genes",
+        "TranscriptRecordClasses.TransciptRecordClass", datasetCategories, datasetRootCategories);
     // non-gene questions
-    for (String[] recordClassInfo : otherRecordClassInfo) {
+    for (String[] recordClassInfo : model.getProjectId().equals("MicrobiomeDB") ? mbioRecordClassInfo : otherRecordClassInfo) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes(MENU, WEBSERVICE));
       if (prunedOntologyTree == null)
         continue;
