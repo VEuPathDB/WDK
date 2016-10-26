@@ -15,44 +15,41 @@ import org.gusdb.wdk.model.WdkModelText;
  * record specific text section.
  * 
  * @author jerric
- * 
  */
 public class TextAttributeField extends AttributeField {
 
-
-
-  private List<WdkModelText> texts;
+  private List<WdkModelText> _texts;
   /**
    * The text are used in the download, and should not include any html tags.
    */
-  private String text;
+  private String _text;
 
-  private List<WdkModelText> displays;
+  private List<WdkModelText> _displays;
   /**
    * the display are used on the website, and html tags are allowed. display is
    * optional, and if not set, text will be used instead.
    */
-  private String display;
+  private String _display;
 
   public TextAttributeField() {
-    texts = new ArrayList<WdkModelText>();
-    displays = new ArrayList<WdkModelText>();
+    _texts = new ArrayList<WdkModelText>();
+    _displays = new ArrayList<WdkModelText>();
   }
 
   public void addText(WdkModelText text) {
-    this.texts.add(text);
+    _texts.add(text);
   }
 
   public String getText() {
-    return text;
+    return _text;
   }
 
   public void addDisplay(WdkModelText display) {
-    this.displays.add(display);
+    _displays.add(display);
   }
 
   public String getDisplay() {
-    return (display != null) ? display : text;
+    return (_display != null) ? _display : _text;
   }
 
   /*
@@ -73,37 +70,37 @@ public class TextAttributeField extends AttributeField {
 
     // exclude texts
     boolean hasText = false;
-    for (WdkModelText text : texts) {
+    for (WdkModelText text : _texts) {
       if (text.include(projectId)) {
         if (hasText) {
           throw new WdkModelException("The textAttribute " + rcName + getName()
               + " has more than one <text> for " + "project " + projectId);
         } else {
-          this.text = text.getText();
+          _text = text.getText();
           hasText = true;
         }
       }
     }
     // check if all texts are excluded
-    if (this.text == null)
+    if (_text == null)
       throw new WdkModelException("The text attribute " + rcName + getName()
           + " does not have a <text> tag for project " + projectId);
-    texts = null;
+    _texts = null;
 
     // exclude display, display is optional
     boolean hasDisplay = false;
-    for (WdkModelText display : displays) {
+    for (WdkModelText display : _displays) {
       if (display.include(projectId)) {
         if (hasDisplay) {
           throw new WdkModelException("The textAttribute " + rcName + getName()
               + " has more than one <display> for " + "project " + projectId);
         } else {
-          this.display = display.getText();
+          _display = display.getText();
           hasDisplay = true;
         }
       }
     }
-    displays = null;
+    _displays = null;
   }
 
   /*
@@ -113,9 +110,9 @@ public class TextAttributeField extends AttributeField {
    */
   @Override
   public Collection<AttributeField> getDependents() throws WdkModelException {
-    String content = text;
-    if (display != null)
-      content += "\n" + display;
+    String content = _text;
+    if (_display != null)
+      content += "\n" + _display;
     return parseFields(content).values();
   }
 }

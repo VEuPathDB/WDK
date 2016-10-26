@@ -36,21 +36,20 @@ import org.gusdb.wdk.model.record.RecordInstance;
  */
 public class PrimaryKeyAttributeField extends AttributeField {
 
-  private List<WdkModelText> columnRefList = new ArrayList<WdkModelText>();
-  private Set<String> columnRefSet = new LinkedHashSet<String>();
+  private List<WdkModelText> _columnRefList = new ArrayList<WdkModelText>();
+  private Set<String> _columnRefSet = new LinkedHashSet<String>();
 
-  private List<WdkModelText> textList = new ArrayList<WdkModelText>();
-  private List<WdkModelText> displays = new ArrayList<WdkModelText>();
-  private String text;
-	private String display;
-
+  private List<WdkModelText> _textList = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _displays = new ArrayList<WdkModelText>();
+  private String _text;
+  private String _display;
 
   /**
    * if an alias query ref is defined, the ids will be passed though this alias
    * query to get the new ids whenever a recordInstance is created.
    */
-  private String aliasQueryRef = null;
-  private String aliasPluginClassName = null;
+  private String _aliasQueryRef = null;
+  private String _aliasPluginClassName = null;
 
   public PrimaryKeyAttributeField() {
     // this step should be deprecated
@@ -59,33 +58,33 @@ public class PrimaryKeyAttributeField extends AttributeField {
   }
 
   public void addColumnRef(WdkModelText columnRef) {
-    this.columnRefList.add(columnRef);
+    _columnRefList.add(columnRef);
   }
 
   public String[] getColumnRefs() {
-    String[] array = new String[columnRefSet.size()];
-    columnRefSet.toArray(array);
+    String[] array = new String[_columnRefSet.size()];
+    _columnRefSet.toArray(array);
     return array;
   }
 
   public boolean hasColumn(String columnName) {
-    return columnRefSet.contains(columnName);
+    return _columnRefSet.contains(columnName);
   }
 
   public void addText(WdkModelText text) {
-    this.textList.add(text);
+    _textList.add(text);
   }
 
   public String getText() {
-    return text;
+    return _text;
   }
 
  public void addDisplay(WdkModelText display) {
-	 this.displays.add(display);
+	 _displays.add(display);
   }
 
   public String getDisplay() {
-    return (display != null) ? display : text;
+    return (_display != null) ? _display : _text;
   }
 
   /*
@@ -97,14 +96,14 @@ public class PrimaryKeyAttributeField extends AttributeField {
   @Override
   public void setRecordClass(RecordClass recordClass) {
     super.setRecordClass(recordClass);
-    this._recordClass = recordClass;
+    _recordClass = recordClass;
   }
 
   /**
    * @return the aliasQueryRef
    */
   public String getAliasQueryRef() {
-    return aliasQueryRef;
+    return _aliasQueryRef;
   }
 
   /**
@@ -112,21 +111,21 @@ public class PrimaryKeyAttributeField extends AttributeField {
    *          the aliasQueryRef to set
    */
   public void setAliasQueryRef(String aliasQueryRef) {
-    this.aliasQueryRef = aliasQueryRef;
+    _aliasQueryRef = aliasQueryRef;
   }
 
   /**
    * @return the aliasPluginClassName
    */
   public String getAliasPluginClassName() {
-    return aliasPluginClassName;
+    return _aliasPluginClassName;
   }
 
   /**
    * @param aliasPluginClassName
    */
   public void setAliasPluginClassName(String aliasPluginClassName) {
-    this.aliasPluginClassName = aliasPluginClassName;
+    _aliasPluginClassName = aliasPluginClassName;
   }
 
   /*
@@ -141,51 +140,51 @@ public class PrimaryKeyAttributeField extends AttributeField {
 
 
     // exclude columnRefs
-    for (WdkModelText columnRef : columnRefList) {
+    for (WdkModelText columnRef : _columnRefList) {
       if (columnRef.include(projectId)) {
         columnRef.excludeResources(projectId);
         String columnName = columnRef.getText();
 
-        if (columnRefSet.contains(columnName)) {
+        if (_columnRefSet.contains(columnName)) {
           throw new WdkModelException("The columnRef " + columnRef
               + " is duplicated in primaryKetAttribute in " + "recordClass "
               + _recordClass.getFullName());
         } else
-          columnRefSet.add(columnName);
+          _columnRefSet.add(columnName);
       }
     }
-    columnRefList = null;
-    if (columnRefSet.size() == 0)
+    _columnRefList = null;
+    if (_columnRefSet.size() == 0)
       throw new WdkModelException("No primary key column defined in "
           + "recordClass " + _recordClass.getFullName());
-    if (columnRefSet.size() > Utilities.MAX_PK_COLUMN_COUNT)
+    if (_columnRefSet.size() > Utilities.MAX_PK_COLUMN_COUNT)
       throw new WdkModelException("You can specify up to "
           + Utilities.MAX_PK_COLUMN_COUNT + " primary key "
           + "columns in recordClass " + _recordClass.getFullName());
 
     // exclude format
-    for (WdkModelText text : textList) {
+    for (WdkModelText text : _textList) {
       if (text.include(projectId)) {
         text.excludeResources(projectId);
-        this.text = text.getText();
+        _text = text.getText();
         break;
       }
     }
-    textList = null;
-    if (text == null)
+    _textList = null;
+    if (_text == null)
       throw new WdkModelException("No primary key format string defined"
           + " in recordClass " + _recordClass.getFullName());
 
 
  // exclude display, display is optional
-    for (WdkModelText display : displays) {
+    for (WdkModelText display : _displays) {
       if (display.include(projectId)) {
         display.excludeResources(projectId);
-        this.display = display.getText();
+        _display = display.getText();
         break;
       }
     }
-    displays = null;
+    _displays = null;
 
 
   }
@@ -197,7 +196,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
    */
   @Override
   public Collection<AttributeField> getDependents() throws WdkModelException {
-    return parseFields(text).values();
+    return parseFields(_text).values();
   }
 
   /**

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;

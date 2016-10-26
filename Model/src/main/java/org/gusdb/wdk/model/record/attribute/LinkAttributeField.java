@@ -19,8 +19,8 @@ import org.gusdb.wdk.model.record.RecordClass;
  * 
  * <p>
  * The link attribute is usually embedded with {@link ColumnAttributeField}s to
- * provide record specific links, and the {@link LinkAttributeField#displayText}
- * and {@link LinkAttributeField#url} can embed {@link ColumnAttributeField}s
+ * provide record specific links, and the {@link LinkAttributeField#_displayText}
+ * and {@link LinkAttributeField#_url} can embed {@link ColumnAttributeField}s
  * from the same {@link RecordClass}.
  * </p>
  * 
@@ -31,27 +31,27 @@ public class LinkAttributeField extends AttributeField {
 
   private static final String DEFAULT_TYPE = "link";
   
-  private List<WdkModelText> urls;
-  private String url;
+  private List<WdkModelText> _urls;
+  private String _url;
 
-  private List<WdkModelText> displayTexts;
-  private String displayText;
+  private List<WdkModelText> _displayTexts;
+  private String _displayText;
 
-  private boolean newWindow = false;
+  private boolean _newWindow = false;
 
   public LinkAttributeField() {
-    displayTexts = new ArrayList<WdkModelText>();
-    urls = new ArrayList<WdkModelText>();
+    _displayTexts = new ArrayList<WdkModelText>();
+    _urls = new ArrayList<WdkModelText>();
     // by default, don't show linked attributes in the download
-    this._inReportMaker = false;
+    _inReportMaker = false;
     
-    if (this._type == null) {
-      this._type = DEFAULT_TYPE;
+    if (_type == null) {
+      _type = DEFAULT_TYPE;
     }
   }
 
   public void setNewWindow(boolean newWindow) {
-    this.newWindow = newWindow;
+    _newWindow = newWindow;
   }
 
   /**
@@ -60,22 +60,22 @@ public class LinkAttributeField extends AttributeField {
    * @return
    */
   public boolean isNewWindow() {
-    return newWindow;
+    return _newWindow;
   }
 
   public void addUrl(WdkModelText url) {
-    this.urls.add(url);
+    _urls.add(url);
   }
 
   String getUrl() {
-    return url;
+    return _url;
   }
 
   /**
    * @return the displayText
    */
   public String getDisplayText() {
-    return displayText;
+    return _displayText;
   }
   
   /**
@@ -83,7 +83,7 @@ public class LinkAttributeField extends AttributeField {
    *          the displayText to set
    */
   public void addDisplayText(WdkModelText displayText) {
-    this.displayTexts.add(displayText);
+    _displayTexts.add(displayText);
   }
 
   /*
@@ -100,13 +100,13 @@ public class LinkAttributeField extends AttributeField {
 
     // exclude urls
     boolean hasUrl = false;
-    for (WdkModelText url : urls) {
+    for (WdkModelText url : _urls) {
       if (url.include(projectId)) {
         if (hasUrl) {
           throw new WdkModelException("The linkAttribute " + rcName + getName()
               + " has more than one <url> for " + "project " + projectId);
         } else {
-          this.url = url.getText();
+          _url = url.getText();
           hasUrl = true;
         }
       }
@@ -115,18 +115,18 @@ public class LinkAttributeField extends AttributeField {
     if (!hasUrl)
       throw new WdkModelException("The linkAttribute " + rcName + _name
           + " does not have a <url> tag for project " + projectId);
-    urls = null;
+    _urls = null;
 
     // exclude display texts
     boolean hasText = false;
-    for (WdkModelText text : displayTexts) {
+    for (WdkModelText text : _displayTexts) {
       if (text.include(projectId)) {
         if (hasText) {
           throw new WdkModelException("The linkAttribute " + rcName + getName()
               + " has more than one <displayText> " + "for project "
               + projectId);
         } else {
-          this.displayText = text.getText();
+          _displayText = text.getText();
           hasText = true;
         }
       }
@@ -135,7 +135,7 @@ public class LinkAttributeField extends AttributeField {
     if (!hasText)
       throw new WdkModelException("The linkAttribute " + rcName + _name
           + " does not have a <displayText> tag for project " + projectId);
-    displayTexts = null;
+    _displayTexts = null;
   }
 
   /*
@@ -145,8 +145,8 @@ public class LinkAttributeField extends AttributeField {
    */
   @Override
   protected Collection<AttributeField> getDependents() throws WdkModelException {
-    Map<String, AttributeField> dependents = parseFields(displayText);
-    dependents.putAll(parseFields(url));
+    Map<String, AttributeField> dependents = parseFields(_displayText);
+    dependents.putAll(parseFields(_url));
     return dependents.values();
   }
 }
