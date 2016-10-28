@@ -124,19 +124,27 @@ public class UserDatasetEventListHandler extends BaseCLI {
     Integer userDatasetId = new Integer(columns[2]);
     UserDatasetType userDatasetType = new UserDatasetType(columns[3], columns[4]);
     
+    // install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
     if (columns[0].equals("install")) {
       Integer ownerUserId = new Integer(columns[5]);
       String[] dependencyArr = columns[6].split(" ");  // for now, support just one dependency
       Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
       dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
       events.add(new UserDatasetInstallEvent(projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
-    } else if (columns[0].equals("uninstall")) {
+    }
+
+
+    else if (columns[0].equals("uninstall")) {
       events.add(new UserDatasetUninstallEvent(projectsFilter, userDatasetId, userDatasetType));
-    } else if (columns[0].equals("accessControl")) {
+    } 
+
+    else if (columns[0].equals("accessControl")) {
         Integer userId = new Integer(columns[5]);
         AccessControlAction action = columns[6].equals("grant")? AccessControlAction.GRANT : AccessControlAction.REVOKE;
         events.add(new UserDatasetAccessControlEvent(projectsFilter, userDatasetId, userDatasetType, userId, action));     
-    } else {
+    } 
+
+    else {
       throw new WdkModelException("Unrecognized user dataset event type: " + columns[0]);
     }
       
