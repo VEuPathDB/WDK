@@ -5,15 +5,20 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.filter.ColumnFilter;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.record.Field;
 
 /**
  * This is an {@link AttributeField} that maps an underlying {@link Column} from an attribute or table
@@ -71,11 +76,6 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
     _filterReferences.addAll(list);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel )
-   */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
@@ -104,11 +104,6 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
     _filterReferences.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeField#getDependents()
-   */
   @Override
   protected Collection<AttributeField> getDependents() {
     return new ArrayList<AttributeField>();
@@ -124,8 +119,31 @@ public class ColumnAttributeField extends AttributeField implements Cloneable {
   public Collection<ColumnFilter> getColumnFilters() {
     return _columnFilters.values();
   }
-  
+
   public void addColumnFilter(ColumnFilter filter) {
     _columnFilters.put(filter.getKey(), filter);
+  }
+
+  public static final Function<ColumnAttributeField, Entry<String, ColumnAttributeField>> toMapEntry =
+      Field.getToMapEntry(ColumnAttributeField.class);
+
+  /**
+   * Converts a collection of column attribute fields into a list of their column names, throwing a
+   * runtime exception if the field does not refer to a column (this is a WDK model problem)
+   * 
+   * @param attributeFields collection of fields
+   * @return list of names of the columns of those fields
+   */
+  public static List<String> getColumnNames(Collection<ColumnAttributeField> attributeFields) {
+    // convert attributes to pull to their names
+    return Functions.mapToList(attributeFields, new Function<ColumnAttributeField, String>() {
+      @Override public String apply(ColumnAttributeField field) {
+        // This should be prevented by upstream validation.
+        if (field.getColumn() == null) {
+          throw new WdkRuntimeException("The column attribute field " + field.getName() + " has no column object.");
+        }
+        return field.getColumn().getName();
+      }
+    });
   }
 }

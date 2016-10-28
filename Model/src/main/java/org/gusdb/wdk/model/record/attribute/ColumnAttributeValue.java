@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record.attribute;
 
 import org.gusdb.wdk.model.Utilities;
