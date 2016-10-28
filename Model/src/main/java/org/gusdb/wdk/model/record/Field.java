@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.record;
 
 import java.io.PrintWriter;
+import java.util.Map.Entry;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -14,6 +17,16 @@ import org.gusdb.wdk.model.WdkModelException;
  * @created Jan 17, 2006
  */
 public abstract class Field extends WdkModelBase implements ScopedField {
+
+  public static <T extends Field> Function<T, Entry<String, T>> getToMapEntry(
+      @SuppressWarnings("unused") Class<T> fieldClass) { // used by compiler to determine type of T
+    return new Function<T, Entry<String, T>>() {
+      @Override
+      public Entry<String, T> apply(T field) {
+        return new TwoTuple<String, T>(field._name, field);
+      }
+    };
+  }
 
   protected String _name;
   protected String _displayName;
