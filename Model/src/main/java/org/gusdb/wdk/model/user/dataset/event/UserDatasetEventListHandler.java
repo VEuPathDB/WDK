@@ -1,7 +1,11 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -115,31 +119,58 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   private List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
     List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
-    String line = "";
-    String[] columns = line.split("\t");
-    
-    String project = columns[1].length() > 0? columns[1] : null;
-    Set<String> projectsFilter = new HashSet<String>();
-    projectsFilter.add(project);
-    Integer userDatasetId = new Integer(columns[2]);
-    UserDatasetType userDatasetType = new UserDatasetType(columns[3], columns[4]);
-    
-    if (columns[0].equals("install")) {
-      Integer ownerUserId = new Integer(columns[5]);
-      String[] dependencyArr = columns[6].split(" ");  // for now, support just one dependency
-      Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
-      dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
-      events.add(new UserDatasetInstallEvent(projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
-    } else if (columns[0].equals("uninstall")) {
-      events.add(new UserDatasetUninstallEvent(projectsFilter, userDatasetId, userDatasetType));
-    } else if (columns[0].equals("accessControl")) {
-        Integer userId = new Integer(columns[5]);
-        AccessControlAction action = columns[6].equals("grant")? AccessControlAction.GRANT : AccessControlAction.REVOKE;
-        events.add(new UserDatasetAccessControlEvent(projectsFilter, userDatasetId, userDatasetType, userId, action));     
-    } else {
-      throw new WdkModelException("Unrecognized user dataset event type: " + columns[0]);
+
+    // first read events into memory, to avoid keeping file handle open while we process events
+    List<String> lines = null;
+    try {
+      InputStream in = Files.newInputStream(eventsFile.toPath());
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+      String line = null;
+      lines = new ArrayList<String>();
+      while ((line = reader.readLine()) != null) {
+        lines.add(line);
+      }
     }
-      
+    catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+
+    for (String line : lines) {
+      String[] columns = line.split("\t");
+
+      String project = columns[1].length() > 0 ? columns[1] : null;
+      Set<String> projectsFilter = new HashSet<String>();
+      projectsFilter.add(project);
+      Integer userDatasetId = new Integer(columns[2]);
+      UserDatasetType userDatasetType = new UserDatasetType(columns[3], columns[4]);
+
+      // install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
+      if (columns[0].equals("install")) {
+        Integer ownerUserId = new Integer(columns[5]);
+        String[] dependencyArr = columns[6].split(" "); // for now, support just one dependency
+        Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
+        dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
+        events.add(new UserDatasetInstallEvent(projectsFilter, userDatasetId, userDatasetType, ownerUserId,
+            dependencies));
+      }
+
+      else if (columns[0].equals("uninstall")) {
+        events.add(new UserDatasetUninstallEvent(projectsFilter, userDatasetId, userDatasetType));
+      }
+
+      else if (columns[0].equals("accessControl")) {
+        Integer userId = new Integer(columns[5]);
+        AccessControlAction action = columns[6].equals("grant") ? AccessControlAction.GRANT
+            : AccessControlAction.REVOKE;
+        events.add(new UserDatasetAccessControlEvent(projectsFilter, userDatasetId, userDatasetType, userId,
+            action));
+      }
+
+      else {
+        throw new WdkModelException("Unrecognized user dataset event type: " + columns[0]);
+      }
+    }
     return null;
   }
   
