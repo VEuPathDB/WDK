@@ -13,8 +13,8 @@ public class UserDatasetAccessControlEvent extends UserDatasetEvent {
   private Integer userId;
   private AccessControlAction action;
   
-  UserDatasetAccessControlEvent(Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer userId, AccessControlAction action) {
-    super(projectsFilter, userDatasetId, userDatasetType);
+  UserDatasetAccessControlEvent(Integer eventId, Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer userId, AccessControlAction action) {
+    super(eventId, projectsFilter, userDatasetId, userDatasetType);
     this.userId = userId;
     this.action = action;
   }

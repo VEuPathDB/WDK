@@ -13,22 +13,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.gusdb.fgputil.db.pool.SimpleDbConfig;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
-import org.gusdb.wdk.model.fix.ModelCacher;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
+import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetAccessControlEvent.AccessControlAction;
 import org.xml.sax.SAXException;
@@ -40,31 +43,41 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   private UserDatasetStore userDatasetStore;
   private DataSource appDbDataSource;
-  private String userDatasetSchemaName;
+  private String userDatasetSchemaName = "ApiDBUserDatasets";
   private ModelConfig modelConfig;
   private String projectId;
   private String wdkTempDirName;
   
-  private static final Logger logger = Logger.getLogger(ModelCacher.class);
+  private static final Logger logger = Logger.getLogger(UserDatasetEventListHandler.class);
   
   public UserDatasetEventListHandler(String command) {
     super(command, "Handle a list of user dataset events.");
   }
 
   private  void handleEventList(List<UserDatasetEvent> eventList, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir) throws WdkModelException, SAXException, IOException {
+
     for (UserDatasetEvent event : eventList) {
+
       if (event instanceof UserDatasetInstallEvent) {
-        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent)event, typeHandlers.get(event.getUserDatasetType()), getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
-      } else if (event instanceof UserDatasetUninstallEvent) {
-        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandlers.get(event.getUserDatasetType()), getAppDbDataSource(), getUserDatasetSchemaName());
-      } else if (event instanceof UserDatasetAccessControlEvent) {
+	UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
+	if (typeHandler == null) throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " + event.getUserDatasetType() + " which is not present in the wdk configuration");
+        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent)event, typeHandler, getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
+      } 
+
+      else if (event instanceof UserDatasetUninstallEvent) {
+	UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
+	if (typeHandler == null) throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " + event.getUserDatasetType() + " which is not present in the wdk configuration");
+        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandler, getAppDbDataSource(), getUserDatasetSchemaName());
+      } 
+
+      else if (event instanceof UserDatasetAccessControlEvent) {
         UserDatasetEventHandler.handleAccessControlEvent((UserDatasetAccessControlEvent)event, getAppDbDataSource(), getUserDatasetSchemaName());
       }
     }
   }
   
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
-    if (userDatasetStore != null) {
+    if (userDatasetStore == null) {
       ModelConfigUserDatasetStore udsConfig= getModelConfig().getUserDatasetStoreConfig();
       userDatasetStore = udsConfig.getUserDatasetStore();
     }
@@ -78,6 +91,24 @@ public class UserDatasetEventListHandler extends BaseCLI {
     }
     return appDbDataSource;
   }
+
+  /*
+  public String getGusConfig(String key) throws FileNotFoundException,
+						       IOException {
+
+    if (gusProps == null) {
+      String gusHome = System.getProperty("GUS_HOME");
+      String configFileName = gusHome + "/config/gus.config";
+      gusProps = new Properties();
+      gusProps.load(new FileInputStream(configFileName));
+    }
+    String value = gusProps.getProperty(key);
+    if (value == null)
+      error("Required property " + key
+	    + " not found in gus.config file: " + configFileName);
+    return value;
+  }
+  */
 
   private String getUserDatasetSchemaName() {
     return userDatasetSchemaName;
@@ -118,60 +149,59 @@ public class UserDatasetEventListHandler extends BaseCLI {
   }
 
   private List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
+
     List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
 
-    // first read events into memory, to avoid keeping file handle open while we process events
-    List<String> lines = null;
     try {
       InputStream in = Files.newInputStream(eventsFile.toPath());
       BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
       String line = null;
-      lines = new ArrayList<String>();
       while ((line = reader.readLine()) != null) {
-        lines.add(line);
+	line = line.trim();
+	if (line.length() == 0) break;
+	String[] columns = line.split("\t");
+	
+	Integer eventId = new Integer(columns[0]);
+	String project = columns[2].length() > 0 ? columns[2] : null;
+	Set<String> projectsFilter = new HashSet<String>();
+	projectsFilter.add(project);
+	Integer userDatasetId = new Integer(columns[3]);
+	UserDatasetType userDatasetType = UserDatasetTypeFactory.getUserDatasetType(columns[4], columns[5]);
+
+	// event_id install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
+	if (columns[1].equals("install")) {
+	  Integer ownerUserId = new Integer(columns[6]);
+	  String[] dependencyArr = columns[7].split(" "); // for now, support just one dependency
+	  Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
+	  dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
+	  events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId,
+						 dependencies));
+	}
+
+	// event_id uninstall projects user_dataset_id ud_type_name ud_type_version
+	else if (columns[1].equals("uninstall")) {
+	  events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
+	}
+
+	// event_id accessControl projects user_dataset_id ud_type_name ud_type_version user_id grant
+	else if (columns[1].equals("accessControl")) {
+	  Integer userId = new Integer(columns[6]);
+	  AccessControlAction action = columns[7].equals("grant") ? AccessControlAction.GRANT
+            : AccessControlAction.REVOKE;
+	  events.add(new UserDatasetAccessControlEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
+						       action));
+	}
+
+	else {
+	  throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
+	}
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
-
-    for (String line : lines) {
-      String[] columns = line.split("\t");
-
-      String project = columns[1].length() > 0 ? columns[1] : null;
-      Set<String> projectsFilter = new HashSet<String>();
-      projectsFilter.add(project);
-      Integer userDatasetId = new Integer(columns[2]);
-      UserDatasetType userDatasetType = new UserDatasetType(columns[3], columns[4]);
-
-      // install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
-      if (columns[0].equals("install")) {
-        Integer ownerUserId = new Integer(columns[5]);
-        String[] dependencyArr = columns[6].split(" "); // for now, support just one dependency
-        Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
-        dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
-        events.add(new UserDatasetInstallEvent(projectsFilter, userDatasetId, userDatasetType, ownerUserId,
-            dependencies));
-      }
-
-      else if (columns[0].equals("uninstall")) {
-        events.add(new UserDatasetUninstallEvent(projectsFilter, userDatasetId, userDatasetType));
-      }
-
-      else if (columns[0].equals("accessControl")) {
-        Integer userId = new Integer(columns[5]);
-        AccessControlAction action = columns[6].equals("grant") ? AccessControlAction.GRANT
-            : AccessControlAction.REVOKE;
-        events.add(new UserDatasetAccessControlEvent(projectsFilter, userDatasetId, userDatasetType, userId,
-            action));
-      }
-
-      else {
-        throw new WdkModelException("Unrecognized user dataset event type: " + columns[0]);
-      }
-    }
-    return null;
+    
+    return events;
   }
   
   private void setProjectId(String projectId) {this.projectId = projectId;}
