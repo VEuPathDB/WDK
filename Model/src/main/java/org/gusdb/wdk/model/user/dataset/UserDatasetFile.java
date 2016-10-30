@@ -1,8 +1,6 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -44,20 +42,16 @@ public abstract class UserDatasetFile {
   public abstract String getFileName() throws WdkModelException;
   
   /**
-   * Make a local copy of this user dataset file.  
+   * Make a local copy of this user dataset file.  tmpWorkingDir is a temp dir that is dedicated
+   * to the job that needs this local copy.
    * Call removeLocalCopy() when done.
    * @return The full path as a String.
    * @throws WdkModelException
    */
-  public Path getLocalCopy(Path tmpDir) throws WdkModelException {
-    try {
-      // use datasetid as prefix to be doubly sure of universal file name uniqueness
-      Path tmpFile = Files.createTempFile(tmpDir, userDatasetId.toString() + "_", null);
-      createLocalCopy(tmpFile);
-      return tmpFile;
-    } catch (IOException e) {
-      throw new WdkModelException(e);
-    }
+  public Path getLocalCopy(Path tmpWorkingDir) throws WdkModelException {
+      Path localCopy = tmpWorkingDir.resolve(getFileName());
+      createLocalCopy(localCopy);
+      return localCopy;
   }
   
   protected abstract void createLocalCopy(Path tmpFile) throws WdkModelException;
