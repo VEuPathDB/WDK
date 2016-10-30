@@ -1,8 +1,11 @@
 package org.gusdb.wdk.model.user.dataset;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -45,36 +48,78 @@ public abstract class UserDatasetTypeHandler {
   public void installInAppDb(UserDataset userDataset, Path tmpDir) throws WdkModelException {
 
     Map<String, Path> nameToTempFileMap = new HashMap<String, Path>();
-
+    
+    Path workingDir = createWorkingDir(tmpDir, userDataset.getUserDatasetId());
+    
     for (String userDatasetFileName : getInstallInAppDbFileNames(userDataset)) {
       UserDatasetFile udf = userDataset.getFile(userDatasetFileName);
       if (udf == null) throw new WdkModelException("File name requested by type handler, '" + userDatasetFileName + "' is not found in user dataset " + userDataset.getUserDatasetId() + " of type " + userDataset.getType());
-      Path tmpFile = udf.getLocalCopy(tmpDir);
+      Path tmpFile = udf.getLocalCopy(workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
     runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap));
-    try {
-      for (Path tmpFile : nameToTempFileMap.values()) Files.delete(tmpFile);
-    } catch (IOException e) {
-      throw new WdkModelException(e);
-    }
-  }
-
+     deleteWorkingDir(workingDir);
+   }
+  
   public void uninstallInAppDb(Integer userDatasetId) throws WdkModelException {
     runCommand(getUninstallInAppDbCommand(userDatasetId));    
   }
 
   private void runCommand(String[] command) throws WdkModelException {
+    
     StringBuilder builder = new StringBuilder();
     for (String s : command) { builder.append(s + " "); }
     logger.info("Running command: " + builder);
+
+    Process p = null;
+    Boolean success = false;
     try {
-      Process p = Runtime.getRuntime().exec(command);
+      p = Runtime.getRuntime().exec(command);
       p.waitFor();
+      success = p.exitValue() == 0;
+      p.destroy();
     }
     catch (IOException | InterruptedException e) {
       throw new WdkModelException(e);
+    } finally {
+      if (p != null) p.destroy();
+    }
+    if (!success) {
+      throw new WdkModelException("Failed running command: " + command);
+   }
+  }
+
+  private Path createWorkingDir(Path tmpDir, Integer userDatasetId) throws WdkModelException {
+    Path workingDir;
+    try {
+      workingDir = Files.createTempDirectory(tmpDir, "ud_" + userDatasetId);
+    }
+    catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+    return workingDir;
+  }
+  
+  private void deleteWorkingDir(Path workingDir) throws WdkModelException {
+    try {
+      Files.walkFileTree(workingDir, new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          Files.delete(file);
+          return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+          Files.delete(dir);
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    }
+    catch (IOException e) {
+      throw new WdkModelException(e);
     }
   }
+
 
 }
