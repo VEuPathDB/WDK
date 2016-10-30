@@ -235,8 +235,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     Path datafilesDir = datasetDir.resolve("datafiles");
     if (!directoryExists(datafilesDir))
       throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
-
+ 
     Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
+
+    for (Path dataFilePath : adaptor.getPathsInDir(datafilesDir)) {
+      UserDatasetFile udf = getUserDatasetFile(dataFilePath, datasetId);
+      dataFiles.put(udf.getFileName(), udf);
+    }
 
     return new JsonUserDataset(datasetId, datasetJson, metaJson, dataFiles);
   }
