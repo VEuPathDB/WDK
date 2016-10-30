@@ -13,15 +13,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Properties;
-
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.platform.SupportedPlatform;
-import org.gusdb.fgputil.db.pool.SimpleDbConfig;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
