@@ -9,8 +9,10 @@ public class UserDatasetEvent {
   private Set<String> projectsFilter; // null if no filter
   private Integer userDatasetId;
   private UserDatasetType userDatasetType;
+  private Integer eventId;
   
-  public UserDatasetEvent(Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType) {
+  public UserDatasetEvent(Integer eventId, Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType) {
+    this.eventId = eventId;
     this.projectsFilter = projectsFilter;
     this.userDatasetId = userDatasetId;
     this.userDatasetType = userDatasetType;
@@ -19,4 +21,5 @@ public class UserDatasetEvent {
   public Set<String> getProjectsFilter() { return Collections.unmodifiableSet(projectsFilter); }
   public Integer getUserDatasetId() { return userDatasetId; }
   public UserDatasetType getUserDatasetType() { return userDatasetType; }
+  public Integer getEventId() { return eventId; }
 }

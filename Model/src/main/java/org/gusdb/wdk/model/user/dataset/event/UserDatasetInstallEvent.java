@@ -10,8 +10,8 @@ public class UserDatasetInstallEvent extends UserDatasetEvent {
   private Set<UserDatasetDependency> dependencies;
   private Integer ownerUserId;
   
-  public UserDatasetInstallEvent(Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer ownerUserId, Set<UserDatasetDependency> dependencies) {
-    super(projectsFilter, userDatasetId, userDatasetType);
+  public UserDatasetInstallEvent(Integer eventId, Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer ownerUserId, Set<UserDatasetDependency> dependencies) {
+    super(eventId, projectsFilter, userDatasetId, userDatasetType);
     this.dependencies = dependencies;
     this.ownerUserId = ownerUserId;
   }
