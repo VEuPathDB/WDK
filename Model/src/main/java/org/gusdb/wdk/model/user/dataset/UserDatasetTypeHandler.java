@@ -57,15 +57,17 @@ public abstract class UserDatasetTypeHandler {
       Path tmpFile = udf.getLocalCopy(workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
-    runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap));
-     deleteWorkingDir(workingDir);
+    runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap), workingDir);
+    deleteWorkingDir(workingDir);
    }
   
-  public void uninstallInAppDb(Integer userDatasetId) throws WdkModelException {
-    runCommand(getUninstallInAppDbCommand(userDatasetId));    
+  public void uninstallInAppDb(Integer userDatasetId, Path tmpDir) throws WdkModelException {
+    Path workingDir = createWorkingDir(tmpDir, userDatasetId);
+    runCommand(getUninstallInAppDbCommand(userDatasetId), workingDir);    
+    deleteWorkingDir(workingDir);
   }
 
-  private void runCommand(String[] command) throws WdkModelException {
+  private void runCommand(String[] command, Path workingDir) throws WdkModelException {
     
     StringBuilder builder = new StringBuilder();
     for (String s : command) { builder.append(s + " "); }
@@ -74,7 +76,11 @@ public abstract class UserDatasetTypeHandler {
     Process p = null;
     Boolean success = false;
     try {
-      p = Runtime.getRuntime().exec(command);
+      p = new ProcessBuilder(command)
+          .directory(workingDir.toFile())
+          .redirectOutput(workingDir.resolve("stdout").toFile())
+          .redirectError(workingDir.resolve("stderr").toFile())
+          .start();
       p.waitFor();
       success = p.exitValue() == 0;
       p.destroy();
@@ -85,14 +91,14 @@ public abstract class UserDatasetTypeHandler {
       if (p != null) p.destroy();
     }
     if (!success) {
-      throw new WdkModelException("Failed running command: " + command);
+      throw new WdkModelException("Failed running command: " + builder + ". For details, see " + workingDir);
    }
   }
 
   private Path createWorkingDir(Path tmpDir, Integer userDatasetId) throws WdkModelException {
     Path workingDir;
     try {
-      workingDir = Files.createTempDirectory(tmpDir, "ud_" + userDatasetId);
+      workingDir = Files.createTempDirectory(tmpDir, "ud_" + userDatasetId + "_");
     }
     catch (IOException e) {
       throw new WdkModelException(e);

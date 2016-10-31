@@ -63,7 +63,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
       else if (event instanceof UserDatasetUninstallEvent) {
 	UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
 	if (typeHandler == null) throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " + event.getUserDatasetType() + " which is not present in the wdk configuration");
-        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandler, getAppDbDataSource(), getUserDatasetSchemaName());
+        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandler, getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
       } 
 
       else if (event instanceof UserDatasetAccessControlEvent) {
