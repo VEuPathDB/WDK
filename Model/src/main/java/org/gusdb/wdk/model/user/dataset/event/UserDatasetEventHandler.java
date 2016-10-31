@@ -25,7 +25,7 @@ public class UserDatasetEventHandler {
 
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
     Object[] args = {event.getUserDatasetId()};
-    //    sqlRunner.executeUpdate(args);
+    sqlRunner.executeUpdate(args);
 
     UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
     typeHandler.installInAppDb(userDataset, tmpDir);
@@ -33,7 +33,7 @@ public class UserDatasetEventHandler {
   
   public static void handleUninstallEvent (UserDatasetUninstallEvent event, UserDatasetTypeHandler typeHandler, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir) throws WdkModelException {
     typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir);
-    String sql = "delete from " + userDatasetSchemaName + ".InstalledUserDataset where dataset_id = ?";
+    String sql = "delete from " + userDatasetSchemaName + ".InstalledUserDataset where user_dataset_id = ?";
 
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
     Object[] args = {event.getUserDatasetId()};
