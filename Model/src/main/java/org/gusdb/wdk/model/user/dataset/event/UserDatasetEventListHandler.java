@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +20,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -50,28 +54,74 @@ public class UserDatasetEventListHandler extends BaseCLI {
     super(command, "Handle a list of user dataset events.");
   }
 
-  private  void handleEventList(List<UserDatasetEvent> eventList, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir) throws WdkModelException, SAXException, IOException {
+  private void handleEventList(List<UserDatasetEvent> eventList,
+      Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
+          throws WdkModelException, SAXException, IOException {
+    
+    Integer lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
 
     for (UserDatasetEvent event : eventList) {
 
+      if (event.getEventId() <= lastHandledEventId) continue;
+      
       if (event instanceof UserDatasetInstallEvent) {
-	UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-	if (typeHandler == null) throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " + event.getUserDatasetType() + " which is not present in the wdk configuration");
-        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent)event, typeHandler, getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
-      } 
+        UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
+        if (typeHandler == null)
+          throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration");
+        UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler,
+            getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
+      }
 
       else if (event instanceof UserDatasetUninstallEvent) {
-	UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-	if (typeHandler == null) throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " + event.getUserDatasetType() + " which is not present in the wdk configuration");
-        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent)event, typeHandler, getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
-      } 
+        UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
+        if (typeHandler == null)
+          throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration");
+        UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
+            getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
+      }
 
       else if (event instanceof UserDatasetAccessControlEvent) {
-        UserDatasetEventHandler.handleAccessControlEvent((UserDatasetAccessControlEvent)event, getAppDbDataSource(), getUserDatasetSchemaName());
+        UserDatasetEventHandler.handleAccessControlEvent((UserDatasetAccessControlEvent) event,
+            getAppDbDataSource(), getUserDatasetSchemaName());
       }
     }
   }
-  
+
+  /**
+   * Find the highest event id in the app db's handled events log.  Null if none. 
+   * @param appDbDataSource
+   * @param userDatasetSchemaName
+   * @return
+   * @throws WdkModelException if the log has a failed event (no complete date) from a previous run.
+   */
+  private Integer findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
+    
+    final List<Integer> ids = new ArrayList<Integer>();
+    ResultSetHandler handler = new ResultSetHandler() {
+      @Override
+      public void handleResult(ResultSet rs) throws SQLException {
+        if (rs.next())  ids.add(rs.getInt(1)); // only zero or one row will be returned
+      }
+    };
+    
+    // first confirm there are no failed events from the last run.  (They'll have a null completed time)
+    String sql = "select min(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent where completed = null";
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
+    Object[] args = {};
+    sqlRunner.executeQuery(args, handler); 
+    if (!ids.isEmpty()) {
+      throw new WdkModelException("Event id " + ids.get(0) + " failed to complete in a previous run");
+    }
+    
+    // find highest previously handled event id
+    ids.clear();
+    sql = "select max(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent";
+    sqlRunner.executeQuery(args, handler); 
+    return ids.isEmpty()? null : ids.get(0);
+  }
+
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
     if (userDatasetStore == null) {
       ModelConfigUserDatasetStore udsConfig= getModelConfig().getUserDatasetStoreConfig();
