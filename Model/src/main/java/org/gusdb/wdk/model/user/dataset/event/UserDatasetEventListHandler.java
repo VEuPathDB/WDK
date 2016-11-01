@@ -59,7 +59,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
           throws WdkModelException, SAXException, IOException {
     
     Integer lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
-
+    int count = 0;
     for (UserDatasetEvent event : eventList) {
 
       if (event.getEventId() <= lastHandledEventId) continue;
@@ -86,7 +86,9 @@ public class UserDatasetEventListHandler extends BaseCLI {
         UserDatasetEventHandler.handleAccessControlEvent((UserDatasetAccessControlEvent) event,
             getAppDbDataSource(), getUserDatasetSchemaName());
       }
+      count++;
     }
+    logger.info("Handled " + count + " new events");
   }
 
   /**
@@ -102,24 +104,25 @@ public class UserDatasetEventListHandler extends BaseCLI {
     ResultSetHandler handler = new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
-        if (rs.next())  ids.add(rs.getInt(1)); // only zero or one row will be returned
+        if (rs.next())  ids.add(rs.getInt(1)); // one row will be returned
       }
     };
     
     // first confirm there are no failed events from the last run.  (They'll have a null completed time)
-    String sql = "select min(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent where completed = null";
+    String sql = "select min(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent where completed is null";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
     Object[] args = {};
     sqlRunner.executeQuery(args, handler); 
-    if (!ids.isEmpty()) {
+    if (ids.get(0) != 0) {
       throw new WdkModelException("Event id " + ids.get(0) + " failed to complete in a previous run");
     }
     
     // find highest previously handled event id
-    ids.clear();
+    ids.remove(0);
     sql = "select max(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent";
+    sqlRunner = new SQLRunner(appDbDataSource, sql);
     sqlRunner.executeQuery(args, handler); 
-    return ids.isEmpty()? null : ids.get(0);
+    return ids.get(0);
   }
 
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
