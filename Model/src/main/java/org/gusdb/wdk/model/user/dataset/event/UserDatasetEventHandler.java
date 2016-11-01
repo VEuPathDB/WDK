@@ -71,14 +71,14 @@ public class UserDatasetEventHandler {
   
   private static void revokeAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Revoking access to user dataset " + userDatasetId + " from user " + userId);
-    String sql = "delete from " + userDatasetSchemaName + ".UserDatasetAccessControl where user_id = ? and dataset_id = ?";
+    String sql = "delete from " + userDatasetSchemaName + ".UserDatasetAccessControl where user_id = ? and user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
     Object[] args = {userId, userDatasetId};
     sqlRunner.executeUpdate(args);
   }
   private static void revokeAllAccess(Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Revoking all access to user dataset " + userDatasetId);
-   String sql = "delete from " + userDatasetSchemaName + ".UserDatasetAccessControl where dataset_id = ?";
+   String sql = "delete from " + userDatasetSchemaName + ".UserDatasetAccessControl where user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
     Object[] args = {userDatasetId};
     sqlRunner.executeUpdate(args);
