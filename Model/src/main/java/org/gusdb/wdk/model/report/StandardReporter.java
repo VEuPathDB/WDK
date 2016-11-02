@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.report;
 
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
@@ -41,6 +43,22 @@ public abstract class StandardReporter extends AbstractReporter {
 
   protected StandardReporter(AnswerValue answerValue) {
     super(answerValue);
+    standardizeAnswerValue(_baseAnswer);
+  }
+
+  private static void standardizeAnswerValue(AnswerValue answerValue) {
+    try {
+
+      // always return all records; user cannot select a subset of records
+      answerValue.setPageIndex(1, -1);
+
+      // disable custom sorting - always sort by PK columns
+      answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
+
+    }
+    catch (WdkModelException ex) {
+      throw new WdkRuntimeException(ex);
+    }
   }
 
   @Override
