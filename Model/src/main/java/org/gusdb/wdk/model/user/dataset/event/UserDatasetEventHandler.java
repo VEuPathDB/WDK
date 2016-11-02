@@ -21,13 +21,14 @@ public class UserDatasetEventHandler {
     
     logger.info("Installing user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-    String sql = "insert into " + userDatasetSchemaName + ".InstalledUserDataset (user_dataset_id) values (?)";
+    UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
+
+    String sql = "insert into " + userDatasetSchemaName + ".InstalledUserDataset (user_dataset_id, name) values (?, ?)";
 
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
-    Object[] args = {event.getUserDatasetId()};
+    Object[] args = {event.getUserDatasetId(), userDataset.getMeta().getName()};
     sqlRunner.executeUpdate(args);
 
-    UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
     typeHandler.installInAppDb(userDataset, tmpDir);
     grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName);
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
