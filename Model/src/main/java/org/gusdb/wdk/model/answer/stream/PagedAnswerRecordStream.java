@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.answer.stream;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -39,12 +38,9 @@ public class PagedAnswerRecordStream implements RecordStream {
 
   private static class PagedAnswerIterator implements Iterator<AnswerValue> {
 
-    private static final int SORTING_THRESHOLD = 100;
-
     private final AnswerValue _baseAnswer;
     private final int _endIndex;
     private final int _pageSize;
-    private final boolean _disableSorting;
 
     // will be updated with each call to next()
     private int _startIndex;
@@ -58,7 +54,6 @@ public class PagedAnswerRecordStream implements RecordStream {
       int avEndIndex = _baseAnswer.getEndIndex();
       _endIndex = (avEndIndex == -1 /* all records */ || avEndIndex > resultSize ? resultSize : avEndIndex);
       _pageSize = pageSize;
-      _disableSorting = (resultSize > SORTING_THRESHOLD);
     }
 
     @Override
@@ -74,16 +69,6 @@ public class PagedAnswerRecordStream implements RecordStream {
       LOG.debug("Getting records #" + _startIndex + " to #" + pageEndIndex);
 
       AnswerValue answerValue = _baseAnswer.cloneWithNewPaging(_startIndex, pageEndIndex);
-
-      // disable sorting if the total size is bigger than threshold
-      if (_disableSorting) {
-        try {
-          answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
-        }
-        catch (WdkModelException ex) {
-          throw new WdkRuntimeException(ex);
-        }
-      }
 
       // update the current index
       _startIndex = pageEndIndex + 1;

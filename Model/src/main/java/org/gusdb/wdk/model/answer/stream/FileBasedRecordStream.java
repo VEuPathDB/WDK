@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.answer.stream;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,18 +10,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -35,16 +35,18 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class FileBasedRecordStream implements RecordStream {
 
-  private static final Logger logger = Logger.getLogger(FileBasedRecordStream.class);
+  private static final Logger LOG = Logger.getLogger(FileBasedRecordStream.class);
 
   /** Buffer size for the buffered writer use to write CSV files */
   private static final int BUFFER_SIZE = 32768;
+
+  /** Determines whether temporary directory and containing files are deleted on close */
+  private static final boolean DELETE_TEMPORARY_FILES = true;
 
   /**
    * Suffix for temporary CSV files constructed from table queries. Done in part to avoid conflicts with
@@ -58,14 +60,19 @@ public class FileBasedRecordStream implements RecordStream {
   /** The prefix to be applied to a temporary directory */
   private static final String DIRECTORY_PREFIX = "wdk_";
 
+  // final fields passed to constructor
   private final AnswerValue _answerValue;
   private final Collection<AttributeField> _attributes;
   private final Collection<TableField> _tables;
-  private final List<FileBasedRecordIterator> _iterators = new ArrayList<>();
+
+  // fields populated by populateFiles
   private Path _temporaryDirectory;
   private Map<Path, List<ColumnAttributeField>> _attributeFileMap = new HashMap<>();
-  private Map<Path, TableField> _tableFileMap = new HashMap<>();
+  private Map<Path, TwoTuple<TableField,List<String>>> _tableFileMap = new HashMap<>();
   private boolean _filesPopulated = false;
+
+  // collection of iterators that must be closed if this stream is closed (iterators are now invalid)
+  private final List<FileBasedRecordIterator> _iterators = new ArrayList<>();
 
   /**
    * Creates a record stream that can provide all records without paging by caching attribute and table query
@@ -94,20 +101,20 @@ public class FileBasedRecordStream implements RecordStream {
    *           if unable to complete population
    */
   public FileBasedRecordStream populateFiles() throws WdkModelException {
-    createTemporaryDirectory();
-    
-    // Make sure the paged attribute SQL actually returns all records.
-    _answerValue.setPageIndex(1, -1);
-    
-    if (_attributes != null && _attributes.size() > 0) {
-      assembleAttributeFiles();
+
+    // throw if files already populated
+    if (_filesPopulated) {
+      LOG.warn("Multiple calls to populateFiles() on open stream.  This method need only be called once.  Ignoring...");
+      return this;
     }
-    if (_tables != null && _tables.size() > 0) {
-      assembleTableFiles();
-    }
-    // temporary measure to allow deletion of this files manually.
-    // TODO Remove world write permission on production
-    makeFilesWorldWriteable();
+
+    // create directory to store temporary files for this stream
+    _temporaryDirectory = createTemporaryDirectory(_answerValue);
+
+    // assemble files
+    _attributeFileMap = assembleAttributeFiles(_answerValue, _temporaryDirectory, _attributes);
+    _tableFileMap = assembleTableFiles(_answerValue, _temporaryDirectory, _tables);
+
     _filesPopulated = true;
     return this;
   }
@@ -117,10 +124,10 @@ public class FileBasedRecordStream implements RecordStream {
    * 
    * @throws WdkModelException
    */
-  private void createTemporaryDirectory() throws WdkModelException {
+  private static Path createTemporaryDirectory(AnswerValue answerValue) throws WdkModelException {
     try {
-      String wdkTempDir = _answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
-      _temporaryDirectory = IoUtil.createOpenPermsTempDir(Paths.get(wdkTempDir), DIRECTORY_PREFIX);
+      String wdkTempDir = answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
+      return IoUtil.createOpenPermsTempDir(Paths.get(wdkTempDir), DIRECTORY_PREFIX);
     }
     catch (IOException ioe) {
       throw new WdkModelException(ioe);
@@ -128,102 +135,53 @@ public class FileBasedRecordStream implements RecordStream {
   }
 
   /**
-   * Some non-column attribute fields may depend on column attribute fields not provided in the given
-   * attribute field list. Those need to be added. While were are at it, we can just provide a column
-   * attribute field list to avoid having to check whether attributes are in fact column attributes.
+   * Returns the set of column attribute fields required to produce the passed set of attributes.  Some
+   * non-column attribute fields may depend on column attribute fields not provided in the given
+   * attribute field list. Those need to be added.
    * 
-   * @param attributes
-   *          - list of attribute fields of any flavor
-   * @param tableAttributes
-   *          - flag to indicate whether these attributes or from a table or not.
-   * @return - subset of original attribute fields list containing only column attribute fields
-   * @throws WdkModelException
+   * @param attributes list of attribute fields of any flavor
+   * @param includeDependedColumns whether to find the needed columns of non-column attributes in the passed list
+   * @return map containing all passed column attribute fields and any depended column attributes
+   * @throws WdkModelException if unable to load depended attribute fields
    */
-  static List<ColumnAttributeField> filterColumnAttributeFields(
-      Collection<AttributeField> attributes, boolean tableAttributes) throws WdkModelException {
+  private static Collection<ColumnAttributeField> getRequiredColumnAttributeFields(
+      Collection<AttributeField> attributes, boolean includeDependedColumns) throws WdkModelException {
     // Using a set to collect column attribute fields because multiple non-column attributes may cite the same
     // column attributes as dependencies and we don't want them counted more than once.
-    Set<ColumnAttributeField> columnAttributes = new HashSet<>();
+    MapBuilder<String, ColumnAttributeField> columnAttributes = new MapBuilder<>(new LinkedHashMap<String, ColumnAttributeField>());
+
     for (AttributeField attribute : attributes) {
       if (attribute instanceof ColumnAttributeField) {
-        columnAttributes.add((ColumnAttributeField) attribute);
+        columnAttributes.put((ColumnAttributeField) attribute, ColumnAttributeField.toMapEntry);
       }
-      // Addition of underlying but unspecified column attributes does not apply to table attributes.
-      if (!tableAttributes) {
-        columnAttributes.addAll(attribute.getColumnAttributeFields().values());
+      else if (includeDependedColumns){
+        // addition of underlying but unspecified column attributes
+        columnAttributes.putAll(attribute.getColumnAttributeFields().values(), ColumnAttributeField.toMapEntry);
       }
     }
-    return new ArrayList<ColumnAttributeField>(columnAttributes);
+
+    // get unique list and then filter out PK columns, which will always be fetched
+    return columnAttributes.toMap().values();
   }
 
   /**
-   * Collect all the queries needed to accommodate the requested attributes. Using a set to avoid dups.
+   * Collect all the queries needed to accommodate the requested attributes and assigns attributes to queries
    * 
-   * @param columnAttributes
-   * @return a set of attribute queries
+   * @param columnAttributes required column attributes
+   * @return a collection of pairs: queries and attribute values available from them
    * @throws WdkModelException
    */
-  private static Set<Query> getAttributeQueries(List<ColumnAttributeField> columnAttributes)
-      throws WdkModelException {
-    Set<Query> queries = new HashSet<>();
+  private static Collection<TwoTuple<Query, List<ColumnAttributeField>>> getAttributeQueryMap(
+      Collection<ColumnAttributeField> columnAttributes) throws WdkModelException {
+    Map<String, TwoTuple<Query, List<ColumnAttributeField>>> queryMap = new HashMap<>();
     for (ColumnAttributeField attribute : columnAttributes) {
-      queries.add(attribute.getColumn().getQuery());
-    }
-    return queries;
-  }
-
-  /**
-   * For a given query, collects all the requested column attributes served by the query, finds their
-   * corresponding column names and returns that list of column names.
-   * 
-   * @param query
-   *          - the query under consideration
-   * @return an ordered list of those column names, served the the given query, that are associated with the
-   *         attributes requested.
-   * @throws WdkModelException
-   */
-  private static List<String> getQueryColumns(Query query, List<ColumnAttributeField> columnAttributes)
-      throws WdkModelException {
-    List<String> columnNames = new ArrayList<>();
-    for (ColumnAttributeField attribute : columnAttributes) {
-      if (query == attribute.getColumn().getQuery()) {
-        columnNames.add(attribute.getColumn().getName());
+      Query query = attribute.getColumn().getQuery();
+      if (!queryMap.containsKey(query.getFullName())) {
+        queryMap.put(query.getFullName(), new TwoTuple<Query, List<ColumnAttributeField>>(query, new ArrayList<ColumnAttributeField>()));
       }
+      queryMap.get(query.getFullName()).getSecond().add(attribute);
     }
-    return columnNames;
-  }
-
-  /**
-   * Produces an ordered map of the queries required to satisfy the attributes requested to the ordered list
-   * of the column names associated with attributes satisfied by each query
-   * 
-   * @param columnAttributes
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  private static Map<Query, List<String>> assembleAttributeQueryColumnMap(List<ColumnAttributeField> columnAttributes)
-      throws WdkModelException, WdkUserException {
-    Map<Query, List<String>> queryColumnNameMap = new LinkedHashMap<>();
-    for (Query query : getAttributeQueries(columnAttributes)) {
-      queryColumnNameMap.put(query, getQueryColumns(query, columnAttributes));
-    }
-    return queryColumnNameMap;
-  }
-
-  /**
-   * Temporary addition for development purpose to chmod all generated files with world write permissions so
-   * they can be deleted from the temporary file directory manually.
-   */
-  private void makeFilesWorldWriteable() {
-    for (Path filePath : _attributeFileMap.keySet()) {	
-      File file = new File(filePath.toString());
-      file.setWritable(true, false);
-    }
-    for (Path filePath : _tableFileMap.keySet()) {
-      File file = new File(filePath.toString());
-      file.setWritable(true, false);
-    }
+    return queryMap.values();
   }
 
   /**
@@ -243,9 +201,8 @@ public class FileBasedRecordStream implements RecordStream {
   private static void assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList)
       throws WdkModelException {
 
-    try (CSVWriter writer = new CSVWriter(
-        new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE), CsvResultList.TAB,
-        CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+    try (CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE),
+          CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
 
       // Create an array sized to handle the attribute columns as this will be used to write out a row
       // to the CSV file. Primary keys are not included since there should be exactly 1 row per primary key
@@ -254,90 +211,102 @@ public class FileBasedRecordStream implements RecordStream {
 
       // For each record in the result list
       while (resultList.next()) {
-        int i = 0;
-        for (String columnName : columnNames) {
-          Object result = resultList.get(columnName);
+        for (int i = 0; i < columnNames.size(); i++) {
+          Object result = resultList.get(columnNames.get(i));
           inputs[i] = (result == null) ? CsvResultList.NULL_REPRESENTATION : String.valueOf(result);
-          i++;
         }
         writer.writeNext(inputs);
       }
     }
     catch (IOException ioe) {
-      throw new WdkModelException(ioe.getMessage());
+      throw new WdkModelException("Unable to write CSV file", ioe);
     }
   }
 
   /**
-   * Writes out one file per executed query to the temporary directory. A may of attribute file paths to their
+   * Writes out one file per executed query to the temporary directory. A map of attribute file paths to their
    * associated list of attribute fields is created to facilitate later population of a record instance.
    * 
-   * @throws WdkModelException
+   * @param answerValue answer value to write files for
+   * @param tempDir temporary directory in which to write the files
+   * @param attributes collection of attributes that are required by the caller
+   * @return map from temporary file path to the ordered list of columns that can be found in that file
+   * @throws WdkModelException if something goes wrong
    */
-  private void assembleAttributeFiles() throws WdkModelException {
+  private static Map<Path, List<ColumnAttributeField>> assembleAttributeFiles(AnswerValue answerValue, Path tempDir,
+      Collection<AttributeField> attributes) throws WdkModelException {
+    Map<Path, List<ColumnAttributeField>> pathMap = new HashMap<>();
+    if (attributes == null || attributes.isEmpty()) {
+      return pathMap;
+    }
+    Timer t = new Timer();
+    LOG.info("Starting attribute file assembly...");
+    Collection<TwoTuple<Query,List<ColumnAttributeField>>> requiredQueries =
+        getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
+    LOG.info("Assembled required queries: " + t.getElapsedString());
+
+    // Iterate over all the queries needed to return all the requested attributes
+    for (TwoTuple<Query,List<ColumnAttributeField>> queryData : requiredQueries) {
+      pathMap.put(writeAttributeFile(answerValue, queryData.getFirst(),
+          queryData.getSecond(), tempDir), queryData.getSecond());
+    }
+
+    LOG.info("Attribute file assembly complete");
+    return pathMap;
+  }
+
+  /**
+   * Queries the database use the passed attribute query and answer value and writes a CSV file containing
+   * only those columns requested to the temporary directory
+   * 
+   * @param answerValue answer value to write file for
+   * @param query attribute query to be executed
+   * @param attributeFields column attribute fields to be fetched
+   * @param tempDir temporary directory in which to write the file
+   * @return path to the file containing the attribute query data
+   * @throws WdkModelException if something goes wrong
+   */
+  private static Path writeAttributeFile(AnswerValue answerValue, Query query,
+      List<ColumnAttributeField> attributeFields, Path tempDir) throws WdkModelException {
+
+    // Obtain path to CSV file that will hold the results of the current query.
+    Path filePath = tempDir.resolve(query.getFullName() + TEMP_FILE_EXT);
+
+    SqlResultList resultList = null;
     try {
       Timer t = new Timer();
-      logger.info("Starting attribute file assembly...");
-      Map<Query, List<String>> queryColumnNameMap = assembleAttributeQueryColumnMap(
-          filterColumnAttributeFields(_attributes, false));
-      logger.info("Assembled query column map : " + t.getElapsedString());
-      SqlResultList resultList = null;
-      DataSource dataSource = _answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
+      LOG.info("Starting query " + query.getName());
 
-      // Iterate over all the queries needed to return all the requested attributes
-      for (Query query : queryColumnNameMap.keySet()) {
+      // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
+      String sql = answerValue.getPagedAttributeSql(query, true);
 
-        // Obtain path to CSV file that will hold the results of the current query.
-        Path filePath = _temporaryDirectory.resolve(query.getName() + TEMP_FILE_EXT);
+      // Get the result list for the current attribute query
+      DataSource dataSource = answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
+      resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__attr-full"));
 
-        try {
-          t.restart();
-          logger.info("Starting query " + query.getName());
+      // Generate full list of columns to fetch, including both PK columns and requested columns
+      List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getQuestion()
+          .getRecordClass().getPrimaryKeyAttributeField().getColumnRefs())
+          .addAll(ColumnAttributeField.getColumnNames(attributeFields))
+          .toList();
 
-          // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
-          String sql = _answerValue.getPagedAttributeSql(query);
+      // Transfer the result list content to the CSV file provided
+      LOG.info("Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+      assembleCsvFile(filePath, columnsToTransfer, resultList);
+      LOG.info("Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
 
-          // Get the result list for the current attribute query
-          resultList = new SqlResultList(
-              SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__attr-full"));
-
-          // Collect together all the columns representing the column attribute fields to be included
-          List<String> columnNames = queryColumnNameMap.get(query);
-
-          // Create a entry relating the file name to an ordered list of the attribute fields
-          List<ColumnAttributeField> attributeFields = new ArrayList<>();
-          for (String columnName : columnNames) {
-            ColumnAttributeField attributeField = (ColumnAttributeField) _answerValue.getQuestion().getAttributeFieldMap().get(
-                query.getColumnMap().get(columnName).getName());
-            attributeFields.add(attributeField);
-          }
-
-          // Add the path to the temporary CSV file and an ordered list of the attribute fields
-          // to a map to be used when restoring the data to record instances.
-          _attributeFileMap.put(filePath, attributeFields);
-
-          // Transfer the result list content to the CSV file provided.
-          logger.info("Starting iteration over result list for query " + query.getName() + ": " +
-              t.getElapsedString());
-          assembleCsvFile(filePath, columnNames, resultList);
-          logger.info("Finished iteration over result list for query " + query.getName() + ": " +
-              t.getElapsedString());
-        }
-        catch (WdkModelException | SQLException e) {
-          throw new WdkModelException(e.getMessage());
-        }
-        finally {
-
-          // Close the result list for the table query if one exists.
-          if (resultList != null) {
-            resultList.close();
-          }
-        }
-      }
-      logger.info("Attribute file assembly complete");
+      // open file permissions and return the path to the temporary CSV file
+      filePath.toFile().setWritable(true, false);
+      return filePath;
     }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
+    catch (WdkUserException | SQLException e) {
+      throw new WdkModelException("Unable to transfer attribute query result to CSV file", e);
+    }
+    finally {
+      // close the result list for the table query if one exists.
+      if (resultList != null) {
+        resultList.close();
+      }
     }
   }
 
@@ -345,75 +314,102 @@ public class FileBasedRecordStream implements RecordStream {
    * Constructs one temporary CSV file for each table requested. A map of table file paths to their associated
    * table field is created to facilitate later population of a record instance.
    * 
-   * @throws WdkModelException
-   * @throws WdkUserException
+   * @param answerValue answer value to write tables for
+   * @param tempDir temporary directory in which to write the files
+   * @param tables collection of tables for which files will be written
+   * @return map of data file paths to the fields they contain data for
+   * @throws WdkModelException if something goes wrong
    */
-  private void assembleTableFiles() throws WdkModelException {
-    Timer t = new Timer();
-    logger.info("Starting table file assembly...");
+  private static Map<Path, TwoTuple<TableField,List<String>>> assembleTableFiles(AnswerValue answerValue,
+      Path tempDir, Collection<TableField> tables) throws WdkModelException {
+    Map<Path, TwoTuple<TableField,List<String>>> pathMap = new HashMap<>();
+    if (tables == null || tables.isEmpty()) {
+      return pathMap;
+    }
+    LOG.info("Starting table file assembly...");
 
     // Iterate over all the tables requested
-    for (TableField table : _tables) {
-      t.restart();
-      logger.info("Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
+    for (TableField table : tables) {
+      TwoTuple<Path,List<String>> fileInfo = writeTableFile(answerValue, tempDir, table);
+      pathMap.put(fileInfo.getFirst(), new TwoTuple<TableField, List<String>>(table, fileInfo.getSecond()));
+    }
+    LOG.info("Table file assembly complete");
+    return pathMap;
+  }
 
-      // Appending table designation to query name for file to more easily distinguish
-      // these files from those supporting attribute queries and to avoid name collisions.
-      Path filePath = _temporaryDirectory.resolve(
-          table.getWrappedQuery().getName() + TABLE_DESIGNATION + TEMP_FILE_EXT);
+  /**
+   * Queries the database for the table field rows of the passed table for the passed answer value and writes
+   * a CSV file containing those rows (PK and table columns included) to the temporary directory
+   * 
+   * @param answerValue answer value to write table for
+   * @param tempDir temporary directory in which to write the file
+   * @param table table field for which data will be generated
+   * @return path to the file containing the table field data
+   * @throws WdkModelException if something goes wrong
+   */
+  private static TwoTuple<Path,List<String>> writeTableFile(AnswerValue answerValue, Path tempDir, TableField table) throws WdkModelException {
+    Timer t = new Timer();
+    LOG.info("Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
 
-      // Add the path to the temporary CSV file and the table field to a map to be used when
-      // restoring the data to record instances. Not cherry-picking columns here so we can
-      // rely on the order in which column attribute fields are returned in the API.
-      _tableFileMap.put(filePath, table);
+    // Appending table designation to query name for file to more easily distinguish
+    // these files from those supporting attribute queries and to avoid name collisions.
+    Path filePath = tempDir.resolve(table.getName() + TABLE_DESIGNATION + TEMP_FILE_EXT);
+    List<String> columnNames = getTableColumnNames(getPkColumnNames(answerValue), table);
+    ResultList resultList = null;
+    try {
 
-      ResultList resultList = null;
-      try {
+      // Get the result list for the current table query
+      resultList = answerValue.getTableFieldResultList(table);
 
-        // Get the result list for the current table query
-        resultList = _answerValue.getTableFieldResultList(table);
+      // Transfer the result list content to the CSV file provided.
+      LOG.info("Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
+      assembleCsvFile(filePath, columnNames, resultList);
+      LOG.info("Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
 
-        // Collect together all the columns representing the primary key attribute fields.
-        PrimaryKeyAttributeField pkField = _answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField();
-        String[] pkColumns = pkField.getColumnRefs();
-
-        // Collect together all the columns representing the column attribute fields to be included
-        List<String> attributeColumns = new ArrayList<>();
-        List<ColumnAttributeField> fields = filterColumnAttributeFields(
-            Arrays.asList(table.getAttributeFields()), true);
-        for (ColumnAttributeField field : fields) {
-          // This should be prevented by upstream validation.
-          if (field.getColumn() == null) {
-            throw new WdkModelException(
-                "The column attribute field " + field.getName() + " has no column object.");
-          }
-          attributeColumns.add(field.getName());
-        }
-
-        // Combine the primary key columns and column attribute columns into a single list
-        List<String> columnNames = new ArrayList<>(Arrays.asList(pkColumns));
-        columnNames.addAll(attributeColumns);
-
-        // Transfer the result list content to the CSV file provided.
-        logger.info("Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " +
-            t.getElapsedString());
-        assembleCsvFile(filePath, columnNames, resultList);
-        logger.info("Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " +
-            t.getElapsedString());
-
-      }
-      catch (WdkUserException e) {
-        throw new WdkModelException(e);
-      }
-      finally {
-
-        // Close the result list for the table query if one exists.
-        if (resultList != null) {
-          resultList.close();
-        }
+      // open file permissions and return the path to the temporary CSV file
+      filePath.toFile().setWritable(true, false);
+      return new TwoTuple<Path,List<String>>(filePath, columnNames);
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Unable to transfer attribute query result to CSV file", e);
+    }
+    finally {
+      // Close the result list for the table query if one exists.
+      if (resultList != null) {
+        resultList.close();
       }
     }
-    logger.info("Table file assembly complete");
+  }
+
+  /**
+   * Collects together all the columns representing the primary key attribute fields.
+   * 
+   * @param answerValue reference answer value
+   * @return list of column names for primary key
+   */
+  private static List<String> getPkColumnNames(AnswerValue answerValue) {
+    return Arrays.asList(answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs());
+  }
+
+  /**
+   * Returns a list of the columns that will be written to the table CSV file.  This list includes the primary
+   * key values for the record class passed, and the column attributes for the table field.
+   * 
+   * @param recordClass recordclass this table is for
+   * @param table table field
+   * @return list of columns
+   * @throws WdkModelException if error occurs querying model
+   */
+  private static List<String> getTableColumnNames(List<String> pkColumns, TableField table) throws WdkModelException {
+  
+    // Collect together all the columns representing the column attribute fields to be included
+    // Not cherry-picking columns here so we can rely on the order of the column attribute fields in the table
+    Collection<ColumnAttributeField> fields = getRequiredColumnAttributeFields(table.getAttributeFieldMap().values(), false);
+  
+    // Combine the primary key columns and column attribute columns into a single list
+    List<String> columnNames = new ArrayList<>(pkColumns);
+    columnNames.addAll(ColumnAttributeField.getColumnNames(fields));
+    return columnNames;
   }
 
   /**
@@ -447,16 +443,17 @@ public class FileBasedRecordStream implements RecordStream {
   public void close() {
     _filesPopulated = false;
     for (FileBasedRecordIterator iter : _iterators) {
+      // close each iterator; will disallow further record reading
       iter.close();
     }
-
-    // TODO Uncomment for production
-    // Removing temporary dir and resident files created to populate on the fly record instances.
-    // try {
-    // FileUtils.forceDelete(new File(_temporaryDirectory.toString()));
-    // }
-    // catch(IOException ioe) {
-    // logger.warn("Unable to remove temporary directory");
-    // }
+    // remove temporary dir and resident files created to populate on the fly record instances
+    if (DELETE_TEMPORARY_FILES) {
+      try {
+        IoUtil.deleteDirectoryTree(_temporaryDirectory);
+      }
+      catch (IOException e) {
+        LOG.error("Unable to completely remove temporary directory: " + _temporaryDirectory, e);
+      }
+    }
   }
 }

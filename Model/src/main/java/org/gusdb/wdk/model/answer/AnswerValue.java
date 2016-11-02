@@ -557,7 +557,7 @@ public class AnswerValue {
     // if (attributeQuery instanceof SqlQuery)
     // logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
 
-    String sql = getPagedAttributeSql(attributeQuery);
+    String sql = getPagedAttributeSql(attributeQuery, false);
     int count = 0;
 
     // get and run the paged attribute query sql
@@ -639,7 +639,7 @@ public class AnswerValue {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public String getPagedAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
+  public String getPagedAttributeSql(Query attributeQuery, boolean sortPage) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -647,7 +647,7 @@ public class AnswerValue {
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
-    StringBuffer sql = new StringBuffer(" /* the desired attributes, for a page of sorted results */ "
+    StringBuilder sql = new StringBuilder(" /* the desired attributes, for a page of sorted results */ "
         + " SELECT aq.* FROM (");
     sql.append(idSql);
     sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
@@ -660,6 +660,10 @@ public class AnswerValue {
       else
         sql.append(" AND ");
       sql.append("aq.").append(column).append(" = pidq.").append(column);
+    }
+    if (sortPage) {
+      // sort by underlying idq row_index if requested
+      sql.append(" ORDER BY pidq.row_index");
     }
     return sql.toString();
   }
