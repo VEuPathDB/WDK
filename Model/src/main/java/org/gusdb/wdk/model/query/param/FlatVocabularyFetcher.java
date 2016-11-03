@@ -86,6 +86,10 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
       String paramName = paramNames.next();
       dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
+    return fetchItem(dependedParamValues);
+  }
+
+  public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues);
     populateVocabInstance(vocabInstance);
