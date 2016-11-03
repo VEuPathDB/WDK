@@ -531,7 +531,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @return
    * @throws WdkModelException
    */
-  private Param getUserParam() throws WdkModelException {
+  public Param getUserParam() throws WdkModelException {
     // create the missing user_id param for the attribute query
     ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     if (paramSet.contains(Utilities.PARAM_USER_ID))
