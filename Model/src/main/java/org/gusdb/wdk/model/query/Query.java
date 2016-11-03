@@ -600,6 +600,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       buffer.append(column.getName());
     }
     buffer.append("}");
+    buffer.append(System.lineSeparator() + "isCacheable: " + getIsCacheable() + System.lineSeparator());
     return buffer.toString();
   }
 
