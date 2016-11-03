@@ -935,6 +935,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         attributeFieldsMap.put(fieldName, field);
       }
 
+      // add user param into the original table query, if needed
+      if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
+        query.addParam(query.getUserParam());
+      }
+
       Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       attributeQueries.put(query.getFullName(), attributeQuery);
     }
