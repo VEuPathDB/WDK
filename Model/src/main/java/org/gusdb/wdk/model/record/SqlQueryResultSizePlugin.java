@@ -63,7 +63,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 
     // must have only one parameter, and return only one column, the result size
     Param[] params = query.getParams();
-    if (params.length != 1 || params[0].getFullName().equals(WDK_ID_SQL_PARAM))
+    if (params.length != 1 || !params[0].getName().equals(WDK_ID_SQL_PARAM))
       throw new WdkModelException("ResultSizeQuery '" + query.getFullName() +
           "' must have exactly one paramter, with name '" + WDK_ID_SQL_PARAM + "'");
 
