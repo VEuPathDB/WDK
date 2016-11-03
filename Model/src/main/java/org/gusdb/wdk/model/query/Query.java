@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -454,9 +456,14 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     if (!setCache)
       isCacheable = getQuerySet().isCacheable();
 
-    // resolve the params
     for (ParamReference paramRef : paramRefList) {
-      Param param = ParamReference.resolveReference(wdkModel, paramRef, this);
+
+      Param param;
+      if (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET)
+	  && (paramRef.getElementName().equals(Utilities.PARAM_USER_ID)))
+	param = getUserParam();
+      else
+	param = ParamReference.resolveReference(wdkModel, paramRef, this);
       String paramName = param.getName();
       if (paramMap.containsKey(paramName)) {
         throw new WdkModelException("The param '" + paramName + "' is duplicated in query " + getFullName());
@@ -515,6 +522,30 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
                 Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
     }
     _resolved = true;
+  }
+
+  /**
+   * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
+   * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
+   * 
+   * @return
+   * @throws WdkModelException
+   */
+  private Param getUserParam() throws WdkModelException {
+    // create the missing user_id param for the attribute query
+    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    if (paramSet.contains(Utilities.PARAM_USER_ID))
+      return paramSet.getParam(Utilities.PARAM_USER_ID);
+
+    StringParam userParam = new StringParam();
+    userParam.setName(Utilities.PARAM_USER_ID);
+    userParam.setNumber(true);
+
+    userParam.excludeResources(_wdkModel.getProjectId());
+    userParam.resolveReferences(_wdkModel);
+    userParam.setResources(_wdkModel);
+    paramSet.addParam(userParam);
+    return userParam;
   }
 
   /**

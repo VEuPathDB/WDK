@@ -934,10 +934,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         }
         attributeFieldsMap.put(fieldName, field);
       }
-      // add user param into the original attribute query, if needed
-      if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
-        query.addParam(getUserParam());
-      }
 
       Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       attributeQueries.put(query.getFullName(), attributeQuery);
@@ -989,10 +985,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
       Query query = tableField.getUnwrappedQuery();
 
-      // add user param into the original table query, if needed
-      if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
-        query.addParam(getUserParam());
-      }
       Query tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       tableQueries.put(query.getFullName(), tableQuery);
     }
@@ -1054,30 +1046,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     else {
       throw new WdkModelException("The filter ref '" + name + "', declared at " + location + ", is not a stepFilter.");
     }
-  }
-
-  /**
-   * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
-   * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
-   * 
-   * @return
-   * @throws WdkModelException
-   */
-  private Param getUserParam() throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(_wdkModel.getProjectId());
-    userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
   }
 
   /**
