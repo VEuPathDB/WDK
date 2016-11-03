@@ -935,7 +935,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         attributeFieldsMap.put(fieldName, field);
       }
 
-      // add user param into the original table query, if needed
+      // add user param into the original attr query, if needed
+      // note: we should lose this magic, and add only to queries that need it (via paramRef)
+      // see basket factory for one example
       if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
         query.addParam(query.getUserParam());
       }
