@@ -166,7 +166,7 @@ public class RecordService extends WdkService {
       RecordClass recordClass = getRecordClass(recordClassName);
       JSONObject requestJson = new JSONObject(body);
       RecordRequest request = RecordRequest.createFromJson(recordClass, requestJson);
-
+      
       // check to see if PKs specified map to multiple records
       try {
         List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
@@ -176,6 +176,9 @@ public class RecordService extends WdkService {
           String idDisplay = FormatUtil.join(idList.toArray(), "\n");
           return Response.status(new MultipleChoicesStatusType()).type(MediaType.TEXT_PLAIN).entity(idDisplay).build();
         }
+      }
+      catch(RecordNotFoundException rnfe) {
+    	throw new NotFoundException(rnfe);
       }
       catch(WdkUserException e) {
         throw new BadRequestException(e);
