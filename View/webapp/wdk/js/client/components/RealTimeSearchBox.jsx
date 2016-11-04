@@ -25,7 +25,14 @@ export default class RealTimeSearchBox extends Component {
     this.handleResetClick = this.handleResetClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.debounceOnSearchTermSet = debounce(this.props.onSearchTermChange, this.props.delayMs);
-    this.state = { searchTerm: this.props.initialSearchTerm };
+    this.state = { searchTerm: this.props.searchTerm };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.searchTerm !== this.state.searchTerm) {
+      this.debounceOnSearchTermSet(nextProps.searchTerm);
+      this.setState({ searchTerm: nextProps.searchTerm });
+    }
   }
 
   /**
@@ -92,7 +99,7 @@ export default class RealTimeSearchBox extends Component {
 }
 
 RealTimeSearchBox.defaultProps = {
-  initialSearchTerm: '',
+  searchTerm: '',
   onSearchTermChange: () => {},
   placeholderText: '',
   helpText: '',
@@ -105,7 +112,7 @@ RealTimeSearchBox.propTypes = {
   className: PropTypes.string,
 
   /** Initial search text; defaults to ''.  After mounting, search text is maintained by the component */
-  initialSearchTerm: PropTypes.string,
+  searchTerm: PropTypes.string,
 
   /** Called when user alters text in the search box  */
   onSearchTermChange: PropTypes.func,

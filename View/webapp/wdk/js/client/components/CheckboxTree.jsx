@@ -22,7 +22,7 @@ let TreeLinks = props => {
     selectAll, selectNone, expandAll, expandNone, selectCurrentList, selectDefaultList
   } = props;
   return (
-    <div className="wdk-CheckboxTree-links">
+    <div className="wdk-CheckboxTreeLinks">
       <div>
         { showSelectionLinks &&
           <span>
@@ -428,22 +428,24 @@ export default class CheckboxTree extends Component {
     );
     let myNodeComponent = (nodeComponent != null ? nodeComponent :
       (props => <span>{getNodeId(props.node)}</span>));
+    let listClassName = 'fa-ul wdk-CheckboxTreeList' + (isSelectable ? ' wdk-CheckboxTreeList__selectable' : '');
     return (
       <div className="wdk-CheckboxTree">
         {treeLinks}
         {!isSearchable || !showSearchBox ? "" : (
           <RealTimeSearchBox
-            initialSearchTerm={searchTerm}
+            searchTerm={searchTerm}
             onSearchTermChange={onSearchTermChange}
             placeholderText={searchBoxPlaceholder}
             helpText={searchBoxHelp} />
         )}
-        <ul className="fa-ul wdk-CheckboxTree-list">
+        <ul className={listClassName}>
           {topLevelNodes.map(node =>
             <CheckboxTreeNode
               key={"node_" + getNodeId(node)}
               name={name}
               node={node}
+              listClassName={listClassName}
               getNodeState={getNodeState}
               isSelectable={isSelectable}
               isMultiPick={isMultiPick}

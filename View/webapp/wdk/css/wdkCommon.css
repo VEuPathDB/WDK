@@ -724,12 +724,12 @@ div.param-group div#grp-descr{
   line-height: 2;
 }
 
-.param ul {
+.enumParam ul {
   padding: 0;
   margin: 0;
   list-style: none;
 }
-.param ul li {
+.enumParam ul li {
   margin-top: .4em;
   margin-bottom: .4em;
 }

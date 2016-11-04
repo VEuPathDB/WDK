@@ -281,7 +281,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterService.updateFilters(validFilters);
     filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
-    if (validFilters[0]) filterService.selectField(validFilters[0].field);
+    filterService.selectField(validFilters[0] ? validFilters[0].field :
+      findLeaf(filterService.getState().fields).field);
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -336,6 +337,11 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     filterService.addListener(updateInputFromFilterService);
 
     console.timeEnd('intialize render :: ' + name);
+
+    // traverse the left-most branch of the tree to find the first leaf
+    function findLeaf([ node ]) {
+      return node.field.leaf === 'true' ? node : findLeaf(node.children)
+    }
   }
 
   function renderFilterParam(filterService, options, invalidFilters, el) {
