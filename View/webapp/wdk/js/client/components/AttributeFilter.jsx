@@ -1,12 +1,14 @@
 import $ from 'jquery';
 import _ from 'lodash';
 import React from 'react';
+import { preorderSeq } from '../utils/TreeUtils';
 import { findDOMNode } from 'react-dom';
 import FixedDataTable from 'fixed-data-table';
 import Loading from './Loading';
 import Tooltip from './Tooltip';
 import Dialog from './Dialog';
 import Table from './Table';
+import CheckboxTree from './CheckboxTree';
 
 var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 
@@ -104,11 +106,48 @@ var FilterList = React.createClass({
   }
 });
 
+const FieldListNode = ({ node, onFieldSelect, isActive }) =>
+  node.children.length > 0
+    ? (
+      <div className="wdk-AttributeFilterFieldParent">{node.field.display}</div>
+    )
+    : (
+      <a
+        className={'wdk-Link wdk-AttributeFilterFieldItem wdk-AttributeFilterFieldItem__' +
+          (isActive ? 'active' : 'inactive')}
+        href={'#' + node.field.term}
+        onClick={e => {
+          e.preventDefault();
+          onFieldSelect(node.field);
+        }}>
+        {node.field.display}
+      </a>
+    )
+
+
 var FieldList = React.createClass({
   propTypes: {
     fieldTree: PropTypes.array.isRequired,
     onFieldSelect: PropTypes.func.isRequired,
     selectedField: PropTypes.object
+  },
+
+  getInitialState() {
+    return {
+      expandedNodes: preorderSeq({
+                       field: { term: 'root' },
+                       children: this.props.fieldTree
+                     })
+                     .filter(node => node.children.length)
+                     .map(node => node.field.term)
+                     .toArray(),
+      searchTerm: ''
+    };
+  },
+
+  handleFieldSelect(field) {
+    this.props.onFieldSelect(field);
+    this.setState({ searchTerm: '' });
   },
 
   render: function() {
@@ -118,7 +157,23 @@ var FieldList = React.createClass({
     return (
       <div className="field-list">
         <div className="toggle-links"> </div>
-        <FieldTree {...restProps} ItemComponent={PanelItem} treeNodes={fieldTree}/>
+        <CheckboxTree
+          tree={{ field: { term: 'root', display: 'root' }, children: fieldTree }}
+          expandedList={this.state.expandedNodes}
+          getNodeId={node => node.field.term}
+          getNodeChildren={node => node.children}
+          onExpansionChange={expandedNodes => this.setState({ expandedNodes })}
+          isSelectable={false}
+          nodeComponent={({node}) =>
+            <FieldListNode node={node} onFieldSelect={this.handleFieldSelect} isActive={this.props.selectedField === node.field} />}
+          isSearchable={true}
+          searchBoxPlaceholder="Find a quality"
+          searchTerm={this.state.searchTerm}
+          onSearchTermChange={searchTerm => this.setState({searchTerm})}
+          searchPredicate={(node, searchTerms) =>
+            searchTerms.every(searchTerm =>
+              node.field.display.toLowerCase().includes(searchTerm.toLowerCase()))}
+        />
       </div>
     );
   }

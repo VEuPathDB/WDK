@@ -84,7 +84,7 @@
   width: 200px;
   position: absolute;
   left: 0;
-  top: 18em;
+  top: 20em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
@@ -96,16 +96,16 @@
   -o-transform-origin: 0;
   transform-origin: 0;
 }
+.filter-param .filters {
+  position: relative;
+  min-height: 36em;
+}
 .filter-param .filters .field-list,
 .filter-param .filters .field-detail {
-  float: left;
-  min-height: 25em;
   padding-top: 20px;
 }
 .filter-param .filters .field-list {
   width: 25%;
-  min-height: 36em;
-  max-height: 55em;
   overflow-y: auto;
   padding-left: 8px;
   padding-right: 8px;
@@ -114,85 +114,49 @@
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -o-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: linear-gradient(to left, #f6f6f6 0%, #fff 8px);
+  position: absolute;
+  top: 0;
+  bottom: 0;
 }
-.filter-param .field-list > ul {
-  margin-top: 1em;
+.filter-param .wdk-CheckboxTree > .wdk-CheckboxTreeList {
+  margin: 1.5em 0;
 }
-.filter-param .field-list > ul > li > a {
-  margin-left: .8em;
-}
-.filter-param .field-list h4 {
-  cursor: pointer;
-  margin: 0;
-  padding: .5em 0;
-  border: 1px solid transparent;
-  /* font-weight: normal; */
-  position: relative;
-}
-.filter-param .field-list h4:before {
-  /* down pointing triangle */
-  font-family: FontAwesome;
-  content: "\f0d7";
-  display: inline-block;
-  width: 1em;
-}
-.filter-param .field-list h4.collapsed:before {
-  /* right pointing triangle */
-  content: "\f0da";
-  position: relative;
-  right: -.2em;
-}
-.filter-param .field-list h4.collapsed + div {
-  display:none;
-}
-.filter-param .field-list ul {
-  font-weight: bold;
+.filter-param .wdk-CheckboxTreeItem {
+  white-space: normal;
   text-transform: capitalize;
-  list-style: none;
-  padding-left: 0;
 }
-.filter-param .field-list > ul ul {
-  padding-left: 1.2em;
+.filter-param .wdk-CheckboxTreeItem__expanded:after {
+  display: none;
 }
-.filter-param .field-list ul li {
-  margin: 0;
+.filter-param .wdk-CheckboxTreeToggle {
+  line-height: 1.5em;
 }
-.filter-param .field-list li a, .field-list li label {
-  font-weight: normal;
+.filter-param .wdk-CheckboxTreeToggle__collapsed {
+  left: -2px;
 }
-.filter-param .field-list li label {
-  padding: .4em 1em;
-  display: inline-block;
+.filter-param .wdk-CheckboxTreeToggle__expanded {
+  left: -5px;
 }
-.filter-param .field-list li a {
+.filter-param .field-list li .wdk-AttributeFilterFieldParent,
+.filter-param .field-list li .wdk-AttributeFilterFieldItem {
   display: block;
-  padding: .5em 1em;
-  /* border-radius: 2px;
-  border-left: 2px solid transparent;*/
-  border: 1px solid transparent;
-  text-decoration: none;
+  padding: .5em;
+  padding-right: 1em;
 }
-.filter-param .field-list li a:hover,
-.filter-param .field-list li a:focus,
-.filter-param .field-list li a:active {
-  /* border-left: 2px solid; */
-  background-color: #f6f6f6;
-  border: 1px solid #f0f0f0;
+.filter-param .field-list li .wdk-AttributeFilterFieldItem__inactive {
+  border-color: 1px solid transparent;
 }
-.filter-param .field-list li.active a {
-  /*
-  background-color: white;
-  border-right: 1px solid white;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  */
-  background-color: #ececec;
-  border: 1px solid #e0e0e0;
+.filter-param .field-list .wdk-AttributeFilterFieldItem__active {
+  background-color: #eee;
+  border-right: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-left: 1px solid #ddd;
   font-weight: bold;
-  /* border-left: 2px solid; */
 }
 .filter-param .field-detail {
   width: 75%;
+  margin-left: 25%;
   padding: 1em 2em 0;
   position: relative;
 }
@@ -224,6 +188,11 @@
 .filter-param .field-detail .description .read-more.visible {
   display: inline-block;
   vertical-align: top;
+}
+.filter-param .membership-filter,
+.filter-param .range-filter {
+  min-height: 20em;
+  padding: .5em 0;
 }
 .filter-param .membership-filter .text,
 .filter-param .membership-filter .distribution {
@@ -454,9 +423,6 @@
 .filter-param .filter-results ul {
   list-style: none;
   padding-left: 1em;
-}
-.filter-param .filter-results.field-list h4 {
-  margin-left: 0;
 }
 .wdk-AttributeFilter-Collapse {
   padding-left: 1em;
