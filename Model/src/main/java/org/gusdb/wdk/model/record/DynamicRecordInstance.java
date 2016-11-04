@@ -153,7 +153,6 @@ public class DynamicRecordInstance extends DynamicAttributeValueContainer implem
     Map<String, String> paramValues = primaryKey.getValues();
     // put user id in the attribute query
     String userId = Integer.toString(user.getUserId());
-    paramValues.put(Utilities.PARAM_USER_ID, userId);
 
     ResultList resultList = null;
     try {
