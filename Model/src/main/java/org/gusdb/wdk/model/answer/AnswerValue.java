@@ -746,7 +746,6 @@ public class AnswerValue {
     // recordClass.
     Map<String, String> params = new LinkedHashMap<String, String>();
     String userId = Integer.toString(_user.getUserId());
-    params.put(Utilities.PARAM_USER_ID, userId);
     QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, params, true, 0,
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
@@ -787,7 +786,6 @@ public class AnswerValue {
       // recordClass.
       Map<String, String> params = new LinkedHashMap<String, String>();
       String userId = Integer.toString(_user.getUserId());
-      params.put(Utilities.PARAM_USER_ID, userId);
       QueryInstance<?> attributeQueryInstance;
       try {
         attributeQueryInstance = attributeQuery.makeInstance(_user, params, true, 0,

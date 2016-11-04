@@ -125,7 +125,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     // all param in the vocab param should match the depended params;
     for (Param param : query.getParams()) {
       String paramName = param.getName();
-      if (paramName.equals(PARAM_SERVED_QUERY))
+      if (paramName.equals(PARAM_SERVED_QUERY) || paramName.equals(Utilities.PARAM_USER_ID))
         continue;
 
       if (!paramNames.contains(paramName))

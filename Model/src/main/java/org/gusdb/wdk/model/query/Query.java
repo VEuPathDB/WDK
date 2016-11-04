@@ -461,7 +461,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       Param param;
       if (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET)
 	  && (paramRef.getElementName().equals(Utilities.PARAM_USER_ID)))
-	param = getUserParam();
+	param = getUserParam(wdkModel);
       else
 	param = ParamReference.resolveReference(wdkModel, paramRef, this);
       String paramName = param.getName();
@@ -531,6 +531,23 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @return
    * @throws WdkModelException
    */
+  public static Param getUserParam(WdkModel wdkModel) throws WdkModelException {
+    // create the missing user_id param for the attribute query
+    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    if (paramSet.contains(Utilities.PARAM_USER_ID))
+      return paramSet.getParam(Utilities.PARAM_USER_ID);
+
+    StringParam userParam = new StringParam();
+    userParam.setName(Utilities.PARAM_USER_ID);
+    userParam.setNumber(true);
+
+    userParam.excludeResources(wdkModel.getProjectId());
+    userParam.resolveReferences(wdkModel);
+    userParam.setResources(wdkModel);
+    paramSet.addParam(userParam);
+    return userParam;
+  }
+
   public Param getUserParam() throws WdkModelException {
     // create the missing user_id param for the attribute query
     ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);

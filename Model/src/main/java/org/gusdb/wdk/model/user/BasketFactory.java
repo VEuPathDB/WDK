@@ -645,6 +645,7 @@ public class BasketFactory {
     query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false); // cache the boolean query
+    query.addParam(query.getUserParam(wdkModel));
 
     String prefix = Utilities.COLUMN_PK_PREFIX;
 
