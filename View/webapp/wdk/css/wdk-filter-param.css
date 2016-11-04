@@ -126,7 +126,7 @@
   margin: 0;
   padding: .5em 0;
   border: 1px solid transparent;
-  /* font-weight: normal; */
+  font-weight: normal;
   position: relative;
 }
 .field-list h4:before {

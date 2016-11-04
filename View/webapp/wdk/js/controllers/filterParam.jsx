@@ -106,7 +106,7 @@ wdk.namespace('wdk.controllers', function(ns) {
 
       var selectedField = options.filter && options.filters.length
         ? options.filters[0].field
-        : null;
+        : getFirstLeaf(options, options.fields);
         // : _.find(options.fields, { leaf: 'true' });
 
 
@@ -144,5 +144,16 @@ wdk.namespace('wdk.controllers', function(ns) {
     }
 
   });
+
+  function getFirstLeaf(options, fields) {
+    return findLeaf(wdk.models.filter.Fields.getTree(options, fields));
+
+    function findLeaf(nodes) {
+      for (var node of nodes) {
+        if (node.field.leaf === 'true') return node.field;
+        return findLeaf(node.children);
+      }
+    }
+  }
 
 });
