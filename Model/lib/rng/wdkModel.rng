@@ -1373,12 +1373,12 @@
   <define name="primaryKeyAttribute">
     <element name="primaryKeyAttribute">
       <ref name="AttributeFieldContent" />
-      <optional>
+      
         <choice>
           <attribute name="aliasQueryRef" />
           <attribute name="aliasPluginClassName" />
         </choice>
-      </optional>
+     
       <oneOrMore>
         <choice>
           <element name="columnRef">
