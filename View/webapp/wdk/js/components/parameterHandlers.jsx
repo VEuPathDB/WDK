@@ -221,8 +221,10 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
     var filterParamContainer = $param.find('.filter-param-container')[0];
     var $data = $param.data();
+    var $loading = $param.find('.loading').remove();
     $param.one(PARAM_DESTROY_EVENT, () => {
       ReactDOM.unmountComponentAtNode(filterParamContainer)
+      $param.append($loading);
     });
 
     var form = $param.closest('form');
