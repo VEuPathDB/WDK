@@ -1773,16 +1773,30 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
    
-
+    List<Map<String,Object>> primaryKeys = new ArrayList<>();
     if (aliasQuery != null) {
-      return getPrimaryKeyFromAliasQuery(user, pkValues);
-    } else if (aliasPlugin != null) {
-      return getPrimaryKeyFromAliasPlugin(user, pkValues);
-    } else {
-      List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
-      records.add(pkValues);
-      return records;
+      primaryKeys = getPrimaryKeyFromAliasQuery(user, pkValues);
     }
+    else if (aliasPlugin != null) {
+      primaryKeys = getPrimaryKeyFromAliasPlugin(user, pkValues);
+    }
+    if(primaryKeys.isEmpty()) {
+      throw new RecordNotFoundException("No " + this.getDisplayName() + " record found for the primary key values: " + displayPkValues(pkValues));
+    }
+    return primaryKeys;
+  }
+  
+  /**
+   * Provides a human readable version of the primary key values;
+   * @param pkValues
+   * @return
+   */
+  private String displayPkValues(Map<String,Object> pkValues) {
+	StringBuilder display = new StringBuilder(); 
+	for(String key : pkValues.keySet()) {
+	  display.append(key + "=" + pkValues.get(key) + " ");
+	}
+	return display.toString();
   }
     
   List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
@@ -1817,8 +1831,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         records.add(newValue);
       }
       // no alias found, use the original ones
-      if (records.size() == 0)
-        records.add(pkValues);
+//      if (records.size() == 0)
+//        records.add(pkValues);
     }
     finally {
       if (resultList != null)
