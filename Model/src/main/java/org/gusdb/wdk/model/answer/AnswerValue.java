@@ -23,6 +23,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
@@ -745,7 +746,6 @@ public class AnswerValue {
     // attribute query is different from the attribute query held by the
     // recordClass.
     Map<String, String> params = new LinkedHashMap<String, String>();
-    String userId = Integer.toString(_user.getUserId());
     QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, params, true, 0,
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
@@ -785,7 +785,6 @@ public class AnswerValue {
       // attribute query is different from the attribute query held by the
       // recordClass.
       Map<String, String> params = new LinkedHashMap<String, String>();
-      String userId = Integer.toString(_user.getUserId());
       QueryInstance<?> attributeQueryInstance;
       try {
         attributeQueryInstance = attributeQuery.makeInstance(_user, params, true, 0,
@@ -1198,22 +1197,44 @@ public class AnswerValue {
   }
 
   public Map<String, Integer> getFilterDisplaySizes() {
-    return getFilterSizes(true);
+    return getFilterSizes(null, true);
   }
 
   public Map<String, Integer> getFilterSizes() {
-    return getFilterSizes(false);
+    return getFilterSizes(null, false);
   }
 
-  private Map<String, Integer> getFilterSizes(boolean useDisplay) {
-    RecordClass recordClass = _question.getRecordClass();
-    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
-    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
+  public Map<String, Integer> getFilterDisplaySizes(List<String> filterNames) {
+    return getFilterSizes(filterNames, true);
+  }
+
+  public Map<String, Integer> getFilterSizes(List<String> filterNames) {
+    return getFilterSizes(filterNames, false);
+  }
+
+  private Map<String, Integer> getFilterSizes(Collection<String> filterNames, boolean useDisplay) {
+    Map<String, AnswerFilterInstance> allFilters = _question.getRecordClass().getFilterMap();
+    if (filterNames == null) {
+      // sizes requested for all filters
+      filterNames = allFilters.keySet();
+    }
+    else {
+      // check to make sure requested names are actually filters
+      for (String name : filterNames) {
+        if (!allFilters.containsKey(name)) {
+          throw new WdkRuntimeException("Requested filter '" + name +
+              "' is not a filter instance in " + _question.getRecordClassName());
+        }
+      }
+    }
+
+    // create a map to hold results
+    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filterNames.size());
 
     // use a thread pool to get filter sizes in parallel
     ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-    for (AnswerFilterInstance filter : filters) {
-      executor.execute(new FilterSizeTask(this, sizes, filter.getName(), useDisplay));
+    for (String filterName : filterNames) {
+      executor.execute(new FilterSizeTask(this, sizes, filterName, useDisplay));
     }
 
     // wait for executor to finish.
