@@ -55,11 +55,15 @@ public class ShowResultSizeAction extends Action {
   }
 
   // no filter is specified, will return all (legacy) filter sizes for the given step
-  private String getFilterResultSizes(int stepId)
+  protected String getFilterResultSizes(int stepId)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
     Map<String, Integer> sizes = CacheMgr.get().getFilterSizeCache()
         .getFilterSizes(stepId, wdkModel);
+    return getFilterSizesJson(sizes);
+  }
+
+  protected String getFilterSizesJson(Map<String, Integer> sizes) {
     JSONObject json = new JSONObject();
     for (Entry<String, Integer> entry : sizes.entrySet()) {
       json.put(entry.getKey(), entry.getValue());
