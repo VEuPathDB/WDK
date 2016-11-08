@@ -31,11 +31,6 @@
     </sanityRecord>
 
 
-    <sanityRecord ref="SampleRecords.NestedRecord"
-            primaryKey="2">
-    </sanityRecord>
-
-
     <sanityQuestion ref="SampleQuestions.SampleQuestion"
             pageStart="1" pageEnd="20"
             minOutputLength="1" maxOutputLength="1000">
