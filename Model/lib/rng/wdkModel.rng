@@ -1164,16 +1164,6 @@
             </zeroOrMore>
           </element>
 
-          <element name="nestedRecord">
-            <attribute name="questionRef" />
-            <ref name="IncludeExclude" />
-          </element>
-
-          <element name="nestedRecordList">
-            <attribute name="questionRef" />
-            <ref name="IncludeExclude" />
-          </element>
-
           <!-- reference to step filter -->
           <element name="filterRef">
             <ref name="IncludeExclude" />
