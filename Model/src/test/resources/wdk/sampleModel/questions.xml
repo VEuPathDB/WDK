@@ -153,21 +153,6 @@
                   recordClassRef="SampleRecords.SampleRecord"
                   excludeProjects="TestDB,SampleDB">
         </question>
-        
-         <question name="NestedQuestion" 
-                   queryRef="SampleQueries.SampleWsQuery" 
-                   recordClassRef="SampleRecords.NestedRecord" 
-                   displayName="Nested Record">
-              <description> Question that returns a single Nested Record</description>
-         </question>
-
-        
-         <question name="NestedListQuestion" 
-                   queryRef="SampleQueries.NestedListQuery" 
-                   recordClassRef="SampleRecords.NestedRecord" 
-                   displayName="Nested Record List">
-              <description> Question that returns a list of Nested Record</description>
-         </question>
 
     </questionSet>
 

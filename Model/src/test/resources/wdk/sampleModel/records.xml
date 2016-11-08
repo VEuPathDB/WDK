@@ -154,43 +154,12 @@
                    queryRef="SampleQueries.SampleTableQuery">
                 <columnAttribute displayName="Query ID" name="query_instance_id"/>
             </table>
-            
-            <nestedRecord questionRef="SampleQuestions.NestedQuestion" excludeProjects="ToyDB"/>
-            
-            <nestedRecord questionRef="SampleQuestions.NestedQuestion" includeProjects="ToyDB"/>
-            
-            <nestedRecordList questionRef="SampleQuestions.NestedListQuestion" excludeProjects="ToyDB"/>
-            
-            <nestedRecordList questionRef="SampleQuestions.NestedListQuestion" includeProjects="ToyDB"/>
 
         </recordClass>
 
         <recordClass name="SampleRecord"  
                      type="Infrastructure" 
                      includeProjects="ToyDB" />
-
-        <recordClass name="NestedRecord" 
-          type="Infrastructure"
-          attributeOrdering="query_instance_id"
-          excludeProjects="ToyDB">
-
-          <reporter name="tabular" 
-                    displayName="Summary - Tab delimited"
-                    implementation="org.gusdb.wdk.model.report.AttributesTabularReporter"
-                    includeProjects="SampleDB">
-          </reporter>
-                    
-            <attributeQueryRef ref="SampleQueries.SampleAttributeQuery" excludeProjects="ToyDB">
-                <columnAttribute displayName="Query ID" name="query_instance_id"/>
-                <columnAttribute displayName="Query Name" name="query_name" excludeProjects="ToyDB"/>
-                <columnAttribute displayName="Query Name" name="query_name" includeProjects="ToyDB"/>
-                <columnAttribute displayName="Is Cached" name="cached"/>
-                <columnAttribute displayName="Result Table" name="result_table"/>
-                <columnAttribute displayName="Query Checksum" name="query_checksum"/>
-                <columnAttribute displayName="Result Message" name="result_message" includeProjects="SampleDB"/>
-            </attributeQueryRef>
-            
-        </recordClass>
 
     </recordClassSet>
 
