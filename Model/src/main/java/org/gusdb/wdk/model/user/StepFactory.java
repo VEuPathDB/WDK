@@ -1821,7 +1821,8 @@ public class StepFactory {
 
   public List<Integer> getStepAndParents(final int stepId) throws WdkModelException {
     final List<Integer> ids = new ArrayList<>();
-    new SQLRunner(_userDb.getDataSource(), selectStepAndParents(stepId)).executeQuery(new ResultSetHandler() {
+    new SQLRunner(_userDb.getDataSource(), selectStepAndParents(stepId), "select-step-and-parent-ids")
+        .executeQuery(new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
         while (rs.next()) {
