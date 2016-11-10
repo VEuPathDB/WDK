@@ -1,4 +1,5 @@
 import { seq, map } from './IterableUtils';
+import { curry } from 'lodash';
 
 export interface Node {
   children: Array<Node>;
@@ -113,6 +114,9 @@ export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChil
   }, getChildren(root));
   return mapFn(root, Array.from(mappedChildren));
 }
+
+export const foldStructure = curry(<T extends Node, U>(fn: (value: U, node: T) => U, seed: U, root: T): U =>
+  fn(root.children.reduce(foldStructure(fn), seed), root))
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with
