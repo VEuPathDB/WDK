@@ -157,13 +157,13 @@ class WdkViewController extends PureComponent {
   render() {
     let page;
     if (this.isRenderDataLoadError(this.state)) {
-      page = ( <Page {...this.store.getState()} {...this.eventHandlers}><LoadError/></Page> );
+      page = ( <Page><LoadError/></Page> );
     }
     else if (!this.isRenderDataLoaded(this.state)) {
-      page = ( <Page {...this.store.getState()} {...this.eventHandlers}><Loading/></Page> );
+      page = ( <Page><Loading/></Page> );
     }
     else {
-      page = ( <Page {...this.store.getState()} {...this.eventHandlers}>{this.renderView(this.state, this.eventHandlers)}</Page> );
+      page = ( <Page>{this.renderView(this.state, this.eventHandlers)}</Page> );
     }
     return cloneElement(this.contextElement, null, page);
   }

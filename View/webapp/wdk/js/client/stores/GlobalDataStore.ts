@@ -2,12 +2,14 @@
  * Created by dfalke on 8/17/16.
  */
 
-import { invert } from 'lodash';
+import { invert, pick } from 'lodash';
+import { Location } from '~react-router~history';
 import { ReduceStore } from 'flux/utils';
 import {Action} from '../dispatcher/Dispatcher';
 import { StaticDataProps } from '../utils/StaticDataUtils';
 import {staticDataConfigMap, StaticDataConfigMap} from '../actioncreators/StaticDataActionCreators';
 import { actionTypes as userActionTypes } from '../actioncreators/UserActionCreators';
+import { actionTypes as routerActionTypes } from '../actioncreators/RouterActionCreators';
 import {User, UserPreferences} from "../utils/WdkUser";
 import {RecordClass, Question} from "../utils/WdkModel";
 import {Ontology} from "../utils/OntologyUtils";
@@ -18,13 +20,15 @@ import {CategoryNode} from "../utils/CategoryUtils";
 let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
   Object.assign(actionMap, { [staticDataConfigMap[key].actionType]: staticDataConfigMap[key] }), <StaticDataConfigMap>{});
 let userActionMap = invert(userActionTypes);
+let routerActionMap = invert(routerActionTypes);
 
 type GlobalDataItem = ServiceConfig
                     | Ontology<CategoryNode>
                     | RecordClass[]
                     | Question[]
                     | User
-                    | UserPreferences;
+                    | UserPreferences
+                    | Location;
 
 export interface GlobalData  {
   config: ServiceConfig;
@@ -33,8 +37,9 @@ export interface GlobalData  {
   questions: Question[];
   user: User;
   preferences: UserPreferences;
+  location: Location;
   [key: string]: GlobalDataItem;
-};
+}
 
 export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
 
@@ -82,6 +87,19 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
     }
   }
 
+  /**
+   * Default handler of router actions
+   * @param state
+   * @param action
+   */
+  handleRouterAction(state: GlobalData, action: Action) {
+    switch (action.type) {
+      case routerActionTypes.LOCATION_UPDATED: return Object.assign( {}, state,
+        pick(action.payload, 'location'));
+      default: return state;
+    }
+  }
+
   /*------------- Methods that should probably not be overridden -------------*/
 
   /**
@@ -97,6 +115,9 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
     // special cases for updates to user data (static but not const)
     else if (type in userActionMap) {
       return this.handleUserAction(state, action)
+    }
+    else if (type in routerActionMap) {
+      return this.handleRouterAction(state, action);
     }
     else {
       return this.handleAction(state, action);
