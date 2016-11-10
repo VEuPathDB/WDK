@@ -7,6 +7,7 @@ import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
 import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
+import { updateLocation } from './actioncreators/RouterActionCreators';
 import WdkStore from './stores/WdkStore';
 
 import * as Components from './components';
@@ -55,6 +56,10 @@ export function initialize(options) {
       let container = rootElement instanceof HTMLElement
         ? rootElement
         : document.querySelector(rootElement);
+      let handleLocationChange = location => {
+        onLocationChange(location);
+        dispatchAction(updateLocation(location));
+      };
       if (container != null) {
         let applicationElement = createElement(
           Root, {
@@ -62,7 +67,7 @@ export function initialize(options) {
             makeDispatchAction,
             stores,
             wrapRoutes,
-            onLocationChange
+            onLocationChange: handleLocationChange
           });
         ReactDOM.render(applicationElement, container);
       }
