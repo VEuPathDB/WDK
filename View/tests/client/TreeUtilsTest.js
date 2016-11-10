@@ -1,5 +1,9 @@
-import test from 'tape';
+import tape from 'tape';
 import * as TreeUtils from '../../webapp/wdk/js/client/utils/TreeUtils';
+
+const test = (label, testFn) => {
+  tape('TreeUtils#' + label, testFn);
+}
 
 test('preorderSeq', function(t) {
   let tree = {
@@ -73,6 +77,33 @@ test('mapStructure', function(t) {
   t.deepEqual(mappedStructure, expectedStructure, 'mappedStructure does not match expectedStructure');
   t.end();
 });
+
+test('foldStructure', t => {
+  /*
+   *          (id: 1)
+   *         /       \
+   *     (id: 2)   (id: 3)
+   *                   \
+   *                 (id: 4)
+   */
+  let tree = {
+    id: 1,
+    children: [
+      { id: 2, children: [] },
+      { id: 3, children: [
+        { id: 4, children: [
+          { id: 5, children: [] },
+          { id: 6, children: [] }
+        ] }
+      ]}
+    ]
+  };
+  let expected = [ 1, 3, 4, 6 ]
+  let fold = (path, node) => node.id === 6 || path.length ? [ node, ...path ] :  path;
+  let result = TreeUtils.foldStructure(fold, [], tree).map(node => node.id)
+  t.deepEqual(result, expected);
+  t.end();
+})
 
 test('compactRootNodes', function(t) {
   let tree = {
