@@ -81,9 +81,9 @@ public class ResultListArgBatchTest {
   private void runTest(final int insertCount, int batchSize) throws Exception {
     DataSource ds = TestUtil.getTestDataSource("batchDb");
     new SQLRunner(ds, TABLE_SQL).executeStatement();
-    ResultList rs = new SimpleResultList(insertCount);
+    ResultList resultList = new SimpleResultList(insertCount);
     List<Column> cols = getColumns();
-    ResultListArgumentBatch argBatch = new ResultListArgumentBatch(rs, cols, batchSize);
+    ResultListArgumentBatch argBatch = new ResultListArgumentBatch(resultList, cols, batchSize);
     new SQLRunner(ds, INSERT_SQL).executeStatementBatch(argBatch);
     new SQLRunner(ds, COUNT_SQL).executeQuery(new ResultSetHandler() {
       @Override

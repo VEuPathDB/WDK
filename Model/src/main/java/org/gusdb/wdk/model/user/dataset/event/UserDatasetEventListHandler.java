@@ -56,7 +56,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   private void handleEventList(List<UserDatasetEvent> eventList,
       Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
-          throws WdkModelException, SAXException, IOException {
+          throws WdkModelException {
     
     Integer lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
     int count = 0;
@@ -104,24 +104,23 @@ public class UserDatasetEventListHandler extends BaseCLI {
     ResultSetHandler handler = new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
-        if (rs.next())  ids.add(rs.getInt(1)); // one row will be returned
+        if (rs.next()) ids.add(rs.getInt(1)); // one row will be returned
       }
     };
-    
+
     // first confirm there are no failed events from the last run.  (They'll have a null completed time)
     String sql = "select min(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent where completed is null";
-    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql);
-    Object[] args = {};
-    sqlRunner.executeQuery(args, handler); 
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "find-earliest-incomplete-event-id");
+    sqlRunner.executeQuery(handler); 
     if (ids.get(0) != 0) {
       throw new WdkModelException("Event id " + ids.get(0) + " failed to complete in a previous run");
     }
-    
+
     // find highest previously handled event id
     ids.remove(0);
     sql = "select max(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent";
-    sqlRunner = new SQLRunner(appDbDataSource, sql);
-    sqlRunner.executeQuery(args, handler); 
+    sqlRunner = new SQLRunner(appDbDataSource, sql, "find-latest-event-id");
+    sqlRunner.executeQuery(handler); 
     return ids.get(0);
   }
 

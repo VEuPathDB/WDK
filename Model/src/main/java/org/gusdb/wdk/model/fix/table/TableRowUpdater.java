@@ -225,7 +225,8 @@ public class TableRowUpdater<T extends TableRow> {
       _exec.shutdown();
   
       // execute query to read all records from DB and submit them to handler threads
-      new SQLRunner(userDb.getDataSource(), _factory.getRecordsSql(getUserSchema(_wdkModel), _wdkModel.getProjectId()))
+      String sql = _factory.getRecordsSql(getUserSchema(_wdkModel), _wdkModel.getProjectId());
+      new SQLRunner(userDb.getDataSource(), sql, "select-records-to-migrate")
           .executeQuery(new RecordQueuer<T>(_wdkModel, _factory, recordQueue, threads));
   
       // wait for queue to empty unless all threads exited early
@@ -520,7 +521,7 @@ public class TableRowUpdater<T extends TableRow> {
         // if updates enabled, execute argument batch
         if (!UPDATES_DISABLED) {
           new SQLRunner(_userDs, _writers.get(i).getWriteSql(
-              _schema), true).executeUpdateBatch(batch);
+              _schema), true, "migration-update-rows").executeUpdateBatch(batch);
         }
       }
     }

@@ -66,12 +66,12 @@ public class StepDataTestWriter extends StepDataWriter {
     if (userDb.getPlatform().checkTableExists(dataSource, TEST_TABLE_SCHEMA, TEST_TABLE_NAME)) {
       // clear previous run's records
       LOG.info(TEST_TABLE + " exists. Emptying...");
-      new SQLRunner(dataSource, DELETE_TEST_RECORDS).executeStatement();
+      new SQLRunner(dataSource, DELETE_TEST_RECORDS, "clear-step-data-test-table").executeStatement();
     }
     else {
       // create empty table
       LOG.info(TEST_TABLE + " does not exist. Creating...");
-      new SQLRunner(dataSource, CREATE_TABLE_SQL).executeStatement();
+      new SQLRunner(dataSource, CREATE_TABLE_SQL, "create-step-data-test-table").executeStatement();
     }
   }
 
