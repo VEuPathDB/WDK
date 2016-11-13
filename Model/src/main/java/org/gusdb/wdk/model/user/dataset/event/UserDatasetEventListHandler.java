@@ -30,11 +30,12 @@ import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent;
+import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.gusdb.wdk.model.user.dataset.event.UserDatasetAccessControlEvent.AccessControlAction;
+import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.xml.sax.SAXException;
 
 public class UserDatasetEventListHandler extends BaseCLI {
@@ -240,13 +241,22 @@ public class UserDatasetEventListHandler extends BaseCLI {
 	}
 
 	// event_id accessControl projects user_dataset_id ud_type_name ud_type_version user_id grant
-	else if (columns[1].equals("accessControl")) {
+	else if (columns[1].equals("share")) {
 	  Integer userId = new Integer(columns[6]);
-	  AccessControlAction action = columns[7].equals("grant") ? AccessControlAction.GRANT
-            : AccessControlAction.REVOKE;
-	  events.add(new UserDatasetAccessControlEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
+	  ShareAction action = columns[7].equals("grant") ? ShareAction.GRANT
+            : ShareAction.REVOKE;
+	  events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
 						       action));
 	}
+
+    // event_id accessControl projects user_dataset_id ud_type_name ud_type_version user_id grant
+    else if (columns[1].equals("externalDataset")) {
+      Integer userId = new Integer(columns[6]);
+      ExternalDatasetAction action = columns[7].equals("create") ? ExternalDatasetAction.CREATE
+            : ExternalDatasetAction.DELETE;
+      events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
+                               action));
+    }
 
 	else {
 	  throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
