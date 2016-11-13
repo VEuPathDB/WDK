@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
+import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
@@ -82,10 +83,16 @@ public class UserDatasetEventListHandler extends BaseCLI {
             getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
       }
 
-      else if (event instanceof UserDatasetAccessControlEvent) {
-        UserDatasetEventHandler.handleAccessControlEvent((UserDatasetAccessControlEvent) event,
+      else if (event instanceof UserDatasetShareEvent) {
+        UserDatasetEventHandler.handleShareEvent((UserDatasetShareEvent) event,
             getAppDbDataSource(), getUserDatasetSchemaName());
       }
+      
+      else if (event instanceof UserDatasetExternalDatasetEvent) {
+        UserDatasetEventHandler.handleExternalDatasetEvent((UserDatasetExternalDatasetEvent) event,
+            getAppDbDataSource(), getUserDatasetSchemaName());
+      }
+
       count++;
     }
     logger.info("Handled " + count + " new events");
