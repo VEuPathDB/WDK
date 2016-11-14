@@ -1,4 +1,4 @@
-NODE_BIN     := $(shell pwd)/node_modules/.bin
+PATH         := $(PATH):$(shell pwd)/node_modules/.bin
 SHELL        := /bin/bash
 
 yarn_exec    := $(GUS_HOME)/bin/yarn
@@ -36,7 +36,7 @@ libs_sources := node_modules/babel-polyfill/dist/polyfill.min.js \
 css_sources  := webapp/wdk/css/wdk.css $(shell find webapp/wdk/css -name '*.css')
 test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
-.PHONY: all clean test test-server
+.PHONY: all clean test test-server node_modules
 
 bundles: $(wdk_bundle) $(css_bundle)
 
@@ -55,16 +55,15 @@ node_modules/%: node_modules;
 # Install typescript type definitions
 # =============================================================================
 typings: typings.json node_modules
-	$(NODE_BIN)/typings prune
-	$(NODE_BIN)/typings install
-	touch typings
+	typings prune
+	typings install
 
 # =============================================================================
 # Webpack bundles. See webpack.config.js for details
 # =============================================================================
 
 $(wdk_bundle): $(wdk_sources) node_modules typings
-	$(NODE_BIN)/webpack
+	webpack
 
 # =============================================================================
 # Concatenate libs into a single file, separated by newline
@@ -81,7 +80,7 @@ $(libs_bundle): $(libs_sources)
 
 $(css_bundle): $(css_sources) node_modules
 	mkdir -p $(dir $@)
-	cd $(dir $<) && $(NODE_BIN)/cleancss --skip-rebase --source-map -o $@ $(notdir $<)
+	cd $(dir $<) && cleancss --skip-rebase --source-map -o $@ $(notdir $<)
 
 
 # =============================================================================
@@ -89,7 +88,7 @@ $(css_bundle): $(css_sources) node_modules
 # =============================================================================
 
 $(test_bundle): $(test_sources) $(wdk_sources) node_modules
-	$(NODE_BIN)/webpack --config webpack-test.config.js $< $@
+	webpack --config webpack-test.config.js $< $@
 
 test: $(test_bundle) $(libs_bundle) node_modules
 	cp $(libs_bundle) test/dist
@@ -100,7 +99,7 @@ test: $(test_bundle) $(libs_bundle) node_modules
 # =============================================================================
 
 test-server: $(test_sources) $(test_bundle) $(wdk_sources) $(libs_bundle)
-	$(NODE_BIN)/webpack-dev-server --config webpack-test.config.js $<
+	webpack-dev-server --config webpack-test.config.js $<
 	cp $(libs_bundle) test/dist
 
 
@@ -109,7 +108,7 @@ test-server: $(test_sources) $(test_bundle) $(wdk_sources) $(libs_bundle)
 # =============================================================================
 
 examples-server: node_modules
-	cd client-examples && $(NODE_BIN)/webpack-dev-server --content-base public/
+	cd client-examples && webpack-dev-server --content-base public/
 
 
 # =============================================================================
@@ -117,7 +116,7 @@ examples-server: node_modules
 # =============================================================================
 
 client-tests: node_modules
-	$(NODE_BIN)/tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js
+	tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js
 
 
 # =============================================================================
