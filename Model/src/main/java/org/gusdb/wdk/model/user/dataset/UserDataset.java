@@ -55,25 +55,7 @@ public interface UserDataset {
    * @return
    */
   Set<UserDatasetShare> getSharedWith() throws WdkModelException;
-  
-  /**
-   * Share this dataset with the specified user
-   * @param user
-   */
-  void shareWith(Integer userId) throws WdkModelException;
-  
-  /**
-   * Unshare this dataset with the specified user
-   * @param user
-   */
-  void unshareWith(Integer userId) throws WdkModelException;
-  
-  /**
-   * Unshare this dataset with all users it was shared with
-   * @param user
-   */
-  void unshareWithAllUsers() throws WdkModelException;
-  
+    
   /**
    * Get the date this dataset was created, by whatever application created it.
    * Storing this date with the dataset is the responsibility of that program, not the wdk.

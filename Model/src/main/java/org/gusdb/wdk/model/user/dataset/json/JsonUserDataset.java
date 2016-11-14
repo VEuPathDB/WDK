@@ -74,15 +74,7 @@ public class JsonUserDataset implements UserDataset {
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
         dependencies.add(new JsonUserDatasetDependency(dependenciesJson.getJSONObject(i)));
-      
-      // shares is optional on input.  create an empty one if absent.
-      if (!datasetJsonObj.has(SHARES)) datasetJsonObj.put(SHARES, new JSONArray());
-      JSONArray sharesJson = datasetJsonObj.getJSONArray(SHARES);
-      for (int i=0; i<sharesJson.length(); i++) {
-        JsonUserDatasetShare s = new JsonUserDatasetShare(sharesJson.getJSONObject(i));
-        sharesMap.put(s.getUserId(), s);   
-      }
-      
+          
     } catch (JSONException e) {
       throw new WdkModelException(e);
     }
@@ -128,26 +120,6 @@ public class JsonUserDataset implements UserDataset {
     Set<UserDatasetShare> shares = new HashSet<UserDatasetShare>();
     for (JsonUserDatasetShare share : sharesMap.values()) shares.add(share);
     return Collections.unmodifiableSet(shares);
-  }
-
-  @Override
-  public void shareWith(Integer userId) {
-   if (!sharesMap.containsKey(userId)) {
-     JsonUserDatasetShare s = new JsonUserDatasetShare(userId);
-     sharesMap.put(userId, s);
-   }
-  }
-
-  @Override
-  public void unshareWith(Integer userId) {
-    if (sharesMap.containsKey(userId)) {
-      sharesMap.remove(userId);
-    }
-  }
-
-  @Override
-  public void unshareWithAllUsers() {
-    sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   }
 
   @Override

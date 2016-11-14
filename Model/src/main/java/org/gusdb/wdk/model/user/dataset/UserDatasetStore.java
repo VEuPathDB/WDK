@@ -39,6 +39,16 @@ public interface UserDatasetStore {
   UserDataset getUserDataset(Integer userId, Integer datasetId) throws WdkModelException;
   
   /**
+   * Get the users a dataset is shared with.
+   * @param userId
+   * @param datasetId
+   * @return Set of userId
+   * @throws WdkModelException
+   */
+  public Set<UserDatasetShare> getSharedWith(Integer userId, Integer datasetId) throws WdkModelException;
+
+  
+  /**
    * Get the external user datasets shared with this user.
    * @param userId
    * @return Map of datasetId -> dataset
@@ -63,7 +73,20 @@ public interface UserDatasetStore {
    * @param recipientUserIds
    */
   void shareUserDatasets(Integer ownerUserId, Set<Integer>datasetIds, Set<Integer>recipientUserIds) throws WdkModelException;
-
+  
+  /**
+   * Unshare this dataset with the specified user
+   * @param ownerUserId The owner of the user dataset
+   * @param datasetId The dataset to unshare
+   * @param recipientUserId The user who will lose the sharing
+   */
+  void unshareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
+  
+  /**
+   * Unshare this dataset with all users it was shared with
+   * @param user
+   */
+  void unshareUserDataset(Integer ownerUserId, Integer datasetId) throws WdkModelException;
   
   /**
    * Delete the specified userDataset from the store.  Must unshare the dataset from 
