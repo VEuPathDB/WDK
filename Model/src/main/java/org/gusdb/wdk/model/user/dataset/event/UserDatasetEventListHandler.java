@@ -216,6 +216,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
       while ((line = reader.readLine()) != null) {
 	line = line.trim();
 	if (line.length() == 0) break;
+	if (line.startsWith("#")) continue;
 	String[] columns = line.split("\t");
 	
 	Integer eventId = new Integer(columns[0]);
@@ -240,7 +241,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 	  events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
 	}
 
-	// event_id accessControl projects user_dataset_id ud_type_name ud_type_version user_id grant
+	// event_id share projects user_dataset_id ud_type_name ud_type_version user_id grant
 	else if (columns[1].equals("share")) {
 	  Integer userId = new Integer(columns[6]);
 	  ShareAction action = columns[7].equals("grant") ? ShareAction.GRANT
@@ -249,7 +250,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 						       action));
 	}
 
-    // event_id accessControl projects user_dataset_id ud_type_name ud_type_version user_id grant
+    // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
     else if (columns[1].equals("externalDataset")) {
       Integer userId = new Integer(columns[6]);
       ExternalDatasetAction action = columns[7].equals("create") ? ExternalDatasetAction.CREATE
