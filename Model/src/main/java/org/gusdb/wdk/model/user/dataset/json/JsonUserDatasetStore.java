@@ -42,6 +42,9 @@ import org.json.JSONObject;
            blah.profile
         dataset.json
         meta.json      # we have this as a separate file to avoid race conditions with sharing updates
+        /sharedWith
+          54145        # a an empty file, named for the user that is shared with
+          90912
     externalDatasets/
       43425.12592    # reference to dataset in another user.  empty file, name: user_id.dataset_id
       691056.53165 
@@ -59,6 +62,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected static final String DATASET_JSON_FILE = "dataset.json";
   protected static final String META_JSON_FILE = "meta.json";
   protected static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
+  protected static final String SHARED_WITH_DIR = "sharedWith";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
   
@@ -101,6 +105,31 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     Map<Integer, UserDataset> datasetsMap = new HashMap<Integer, UserDataset>();
     fillDatasetsMap(userDatasetsDir, datasetsMap);
     return Collections.unmodifiableMap(datasetsMap);
+  }
+  
+  @Override
+  public Set<UserDatasetShare> getSharedWith(Integer userId, Integer datasetId) throws WdkModelException {
+
+    Set<UserDatasetShare> sharedWithUsers = new HashSet<UserDatasetShare>();
+
+    Path sharedWithDir = getSharedWithDir(userId, datasetId);
+    
+    List<Path> sharedWithPaths = adaptor.getPathsInDir(sharedWithDir);
+    for (Path sharedWithPath : sharedWithPaths) {
+      String userIdString = sharedWithPath.getFileName().toString();
+      Long timestamp = adaptor.getModificationTime(sharedWithPath);
+      sharedWithUsers.add(new JsonUserDatasetShare(new Integer(userIdString), timestamp));
+    }
+    return Collections.unmodifiableSet(sharedWithUsers);
+  }
+  
+  private Path getSharedWithDir(Integer userId, Integer datasetId) throws WdkModelException {
+    Path userDatasetDir = getUserDatasetDir(userId, datasetId);
+    Path sharedWithDir = userDatasetDir.resolve(SHARED_WITH_DIR);
+    if (!adaptor.fileExists(sharedWithDir)) {
+      adaptor.createDirectory(sharedWithDir);
+    }
+    return sharedWithDir;
   }
   
   @Override
@@ -201,6 +230,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getUserDataset(datasetDir);
   }
   
+  private Path getUserDatasetDir(Integer userId, Integer datasetId) throws WdkModelException {
+    Path userDatasetsDir = getUserDatasetsDir(userId);
+    return userDatasetsDir.resolve(datasetId.toString());
+  }
+  
   /**
    * Put all data files found in the provided directory into the map (from name to file)
    * @param dataFilesDir
@@ -290,7 +324,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
       for (Integer recipientUserId : recipientUserIds) {
         if (recipientUserId.equals(ownerUserId)) continue;  // don't think this is worth throwing an error on
-        dataset.shareWith(recipientUserId);
+        writeShareFile(ownerUserId, datasetId, recipientUserId);
         Integer[] linkInfo = {datasetId, recipientUserId};
         externalDatasetLinks.add(linkInfo);
       }
@@ -298,6 +332,21 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       for (Integer[] linkInfo : externalDatasetLinks) 
         writeExternalDatasetLink(ownerUserId, linkInfo[0], linkInfo[1]);
     }    
+  }
+  
+  @Override
+  public void unshareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+    Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
+    
+    Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
+    if (adaptor.fileExists(sharedWithFile)) adaptor.deleteFileOrDirectory(sharedWithFile);
+  }
+  
+  @Override
+  public void unshareUserDataset(Integer ownerUserId, Integer datasetId) throws WdkModelException {
+    Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
+    for (Path shareFilePath : adaptor.getPathsInDir(sharedWithDir))
+      adaptor.deleteFileOrDirectory(shareFilePath);
   }
   
   /**
@@ -310,6 +359,21 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return ownerUserId + "." + datasetId;
   }
 
+  /**
+   * Write a file in a dataset dir, indicating that this dataset is shared with another user.
+   * @param ownerUserId
+   * @param datasetId
+   * @param recipientUserId
+   * @throws WdkModelException
+   */
+  protected void writeShareFile(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+
+    Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
+
+    Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
+    if (!adaptor.fileExists(sharedWithFile)) adaptor.writeEmptyFile(sharedWithFile);
+  }
+  
   /**
    * Write a file in a user's space, indicating that this user can see another user's dataset.
    * @param ownerUserId

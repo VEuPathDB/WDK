@@ -110,8 +110,11 @@ public class UserDatasetService extends UserService {
   public Response unshareWith(@PathParam("datasetId") String datasetIdStr, String body)
       throws WdkModelException, DataValidationException {
 
-    Integer shareWithUserId = new Integer(body);
-    getUserDataset(datasetIdStr).unshareWith(shareWithUserId);
+    JSONObject jsonObj = new JSONObject(body);
+
+    Integer shareWithUserId = new Integer(jsonObj.getString("targetUser"));
+    getUserDatasetStore().unshareUserDataset(getUserId(), new Integer(datasetIdStr), shareWithUserId);
+
     return Response.ok("").build();
   }
   
@@ -121,8 +124,6 @@ public class UserDatasetService extends UserService {
     getUserDatasetStore().deleteUserDataset(getUserId(), datasetId);
     return Response.ok().build();
   }
-
-
   
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
