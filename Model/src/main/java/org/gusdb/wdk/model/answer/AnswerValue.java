@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -1220,6 +1221,7 @@ public class AnswerValue {
     }
     else {
       // check to make sure requested names are actually filters
+      LOG.debug("Filter sizes requested for: " + FormatUtil.arrayToString(filterNames.toArray()));
       for (String name : filterNames) {
         if (!allFilters.containsKey(name)) {
           throw new WdkRuntimeException("Requested filter '" + name +
