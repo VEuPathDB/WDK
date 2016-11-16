@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -47,6 +49,10 @@ public class CacheFactory {
 
   private static Logger logger = Logger.getLogger(CacheFactory.class);
 
+  private static boolean USE_QUERY_INFO_CACHE = true;
+  private static ItemCache<String, QueryInfo> QUERY_INFO_CACHE = new ItemCache<String, QueryInfo>();
+  private final QueryInfoFetcher queryInfoFetcher;
+
   private WdkModel wdkModel;
   private DBPlatform platform;
   private DataSource dataSource;
@@ -55,6 +61,7 @@ public class CacheFactory {
     this.wdkModel = wdkModel;
     this.platform = database.getPlatform();
     this.dataSource = database.getDataSource();
+    this.queryInfoFetcher = new QueryInfoFetcher(this);
   }
 
   public void createCache() {
@@ -372,6 +379,18 @@ public class CacheFactory {
   public QueryInfo getQueryInfo(Query query) throws WdkModelException {
     String checksum = getChecksum(query);
     String queryName = query.getFullName();
+    try {
+      return USE_QUERY_INFO_CACHE ?
+          QUERY_INFO_CACHE.getItem(QueryInfoFetcher.getKey(queryName, checksum), queryInfoFetcher) :
+          createQueryInfo(queryName, checksum);
+    }
+    catch (UnfetchableItemException e) {
+      throw (WdkModelException)e.getCause();
+    }
+  }
+
+  public QueryInfo createQueryInfo(String queryName, String checksum) throws WdkModelException {
+
     QueryInfo queryInfo = new QueryInfo(queryName, checksum);
 
     StringBuffer sql = new StringBuffer("SELECT * FROM " + TABLE_QUERY);

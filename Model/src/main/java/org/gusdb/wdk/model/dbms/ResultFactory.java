@@ -4,12 +4,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -29,6 +32,21 @@ public class ResultFactory {
   @SuppressWarnings("unused")
   private Logger logger = Logger.getLogger(ResultFactory.class);
 
+  public static class InstanceInfo {
+    int instanceId;
+    String message;
+    final long creationDate;
+    public InstanceInfo(int instanceId, String message) {
+      this.instanceId = instanceId;
+      this.message = message;
+      creationDate = new Date().getTime();
+    }
+  }
+
+  private static boolean USE_INSTANCE_INFO_CACHE = true;
+  private static ItemCache<String, InstanceInfo> INSTANCE_INFO_CACHE = new ItemCache<String, InstanceInfo>();
+  private final InstanceInfoFetcher instanceInfoFetcher;
+
   private DatabaseInstance database;
   private DBPlatform platform;
   private CacheFactory cacheFactory;
@@ -39,6 +57,7 @@ public class ResultFactory {
     this.platform = database.getPlatform();
     this.cacheFactory = new CacheFactory(wdkModel, database);
     this.wdkModel = wdkModel;
+    this.instanceInfoFetcher = new InstanceInfoFetcher(this);
   }
 
   public CacheFactory getCacheFactory() {
@@ -55,7 +74,7 @@ public class ResultFactory {
     try {
       if (queryInfo.isExist()) { // cache table exists
         instanceId = getInstanceId(queryInfo, queryInstance);
-				//logger.debug("   ..... EXISTING table,  instanceid?: " + instanceId + "(if 0 we need a new one)");
+        //logger.debug("   ..... EXISTING table,  instanceid?: " + instanceId + "(if 0 we need a new one)");
         if (instanceId == 0) { // instance doesn't exist
           //logger.debug("creating cache instance and cache...");
           // create cache
@@ -67,7 +86,7 @@ public class ResultFactory {
         //logger.debug("creating cache query, instance and cache...");
         // get a new instance id, and created cache
         instanceId = createCache(queryInfo, queryInstance);
-				//logger.debug("   ..... NEW table and instanceid: " + instanceId);
+        //logger.debug("   ..... NEW table and instanceid: " + instanceId);
         // create query info
         cacheFactory.createQueryInfo(queryInfo);
         createCacheInstance(queryInfo, queryInstance, instanceId);
@@ -108,7 +127,7 @@ public class ResultFactory {
   public ResultList getCachedResults(QueryInstance<?> queryInstance)
       throws WdkModelException, WdkUserException {
     String sql = getCachedSql(queryInstance);
-		//logger.debug("********* SQL to get the IDs from datasetparam: " + sql);
+    //logger.debug("********* SQL to get the IDs from datasetparam: " + sql);
 
     // get the resultList
     try {
@@ -116,44 +135,62 @@ public class ResultFactory {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource,
           sql.toString(), queryInstance.getQuery().getFullName()
               + "__select-cache");
-    return new SqlResultList(resultSet);
-    } catch (SQLException e) {
+      return new SqlResultList(resultSet);
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Unable to retrieve cached results.", e);
-  }
+    }
   }
 
   private int getInstanceId(QueryInfo queryInfo, QueryInstance<?> instance)
       throws WdkModelException, WdkUserException {
-    // get the query instance id; null if not exist
-    String checksum = instance.getChecksum();
-    StringBuffer sql = new StringBuffer("SELECT ");
+    try {
+      // get the query instance id; null if not exist
+      String checksum = instance.getChecksum();
+      int queryId = queryInfo.getQueryId();
+      InstanceInfo instanceInfo = USE_INSTANCE_INFO_CACHE ?
+          INSTANCE_INFO_CACHE.getItem(InstanceInfoFetcher.getKey(checksum, queryId), instanceInfoFetcher) :
+          getInstanceInfo(checksum, queryId);
+      if (instanceInfo.message != null) {
+        instance.setResultMessage(instanceInfo.message);
+      }
+      return instanceInfo.instanceId;
+    }
+    catch (UnfetchableItemException e) {
+      throw (WdkModelException)e.getCause();
+    }
+  }
+
+  public InstanceInfo getInstanceInfo(String checksum, int queryId) throws WdkModelException {
+
+    StringBuilder sql = new StringBuilder("SELECT ");
     sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
     sql.append(CacheFactory.COLUMN_RESULT_MESSAGE);
     sql.append(" FROM ").append(CacheFactory.TABLE_INSTANCE);
     sql.append(" WHERE ").append(CacheFactory.COLUMN_QUERY_ID);
-    sql.append(" = ").append(queryInfo.getQueryId());
+    sql.append(" = ").append(queryId);
     sql.append(" AND " + CacheFactory.COLUMN_INSTANCE_CHECKSUM);
     sql.append(" = '").append(checksum).append("'");
     sql.append(" ORDER BY " + CacheFactory.COLUMN_INSTANCE_ID);
 
     DataSource dataSource = database.getDataSource();
     ResultSet resultSet = null;
-		//logger.debug("testing if we should reuse a wdk_instance_id in cache table: " +  sql.toString());
+    //logger.debug("testing if we should reuse a wdk_instance_id in cache table: " +  sql.toString());
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
           "wdk-check-instance-exist");
 
-      int instanceId = 0;
+      InstanceInfo instanceInfo = new InstanceInfo(0, null);
       if (resultSet.next()) {
-        instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
-        String message = platform.getClobData(resultSet,
-            CacheFactory.COLUMN_RESULT_MESSAGE);
-        instance.setResultMessage(message);
+        instanceInfo.instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
+        instanceInfo.message = platform.getClobData(resultSet, CacheFactory.COLUMN_RESULT_MESSAGE);
       }
-      return instanceId;
-    } catch (SQLException e) {
+      return instanceInfo;
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Unable to check instance ID.", e);
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
@@ -172,7 +209,8 @@ public class ResultFactory {
       // disable the stats on the new cache table
       platform.disableStatistics(dataSource, schema, cacheTable);
       createCacheTableIndex(queryInfo.getCacheTable(), instance.getQuery());
-    } else {// insert result into existing cache table
+    }
+    else {// insert result into existing cache table
       instance.insertToCache(cacheTable, instanceId);
     }
 
