@@ -3,23 +3,27 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.util.Date;
+
 /**
  * @author xingao
  * 
  */
 public class QueryInfo {
 
-  private final String queryName;
-  private final String queryChecksum;
-  
+    private final String queryName;
+    private final String queryChecksum;
+    public final long creationDate;
+
     private int queryId;
     private String cacheTable;
-    
+
     private boolean exist = false;
-    
+
     public QueryInfo(String queryName, String checksum) {
       this.queryName = queryName;
       this.queryChecksum = checksum;
+      creationDate = new Date().getTime();
     }
 
     /**
