@@ -109,11 +109,11 @@ var FilterList = React.createClass({
 const FieldListNode = ({ node, onFieldSelect, isActive }) =>
   node.children.length > 0
     ? (
-      <div className="wdk-AttributeFilterFieldParent">{node.field.display}</div>
+      <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
     )
     : (
       <a
-        className={'wdk-Link wdk-AttributeFilterFieldItem wdk-AttributeFilterFieldItem__' +
+        className={'wdk-AttributeFilterFieldItem wdk-AttributeFilterFieldItem__' +
           (isActive ? 'active' : 'inactive')}
         href={'#' + node.field.term}
         onClick={e => {
