@@ -119,7 +119,9 @@
   bottom: 0;
 }
 .filter-param .wdk-CheckboxTree > .wdk-CheckboxTreeList {
-  margin: 1.5em 0;
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid #ccc;
 }
 .filter-param .wdk-CheckboxTreeItem {
   white-space: normal;
@@ -147,12 +149,12 @@
   border-color: 1px solid transparent;
 }
 .filter-param .field-list .wdk-AttributeFilterFieldItem__active {
-  background-color: #eee;
-  border-right: 1px solid #ddd;
+  background-color: white;
+  border-right: 1px solid white;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
   border-left: 1px solid #ddd;
-  font-weight: bold;
+  margin-right: -10px;
 }
 .filter-param .field-detail {
   width: 75%;
