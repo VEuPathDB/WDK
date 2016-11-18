@@ -3,7 +3,7 @@
  */
 
 import { invert, pick } from 'lodash';
-import { Location } from '~react-router~history';
+import { Location } from 'history';
 import { ReduceStore } from 'flux/utils';
 import {Action} from '../dispatcher/Dispatcher';
 import { StaticDataProps } from '../utils/StaticDataUtils';

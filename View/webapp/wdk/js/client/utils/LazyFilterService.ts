@@ -138,7 +138,7 @@ export default class LazyFilterService extends FilterService {
           // Each key is the sample term, and each value is an array of values
           // for the given term. If a term does not have values associated with
           // it, an empty array is used.
-          fieldMetadata = _.indexBy(fieldMetadata, 'sample');
+          fieldMetadata = _.keyBy(fieldMetadata, 'sample');
           this.fieldMetadataMap[term] = this.data.reduce((parsedMetadata, d) =>
             Object.assign(parsedMetadata, {
               [d.term]: _.get(fieldMetadata, [ d.term, 'values' ], [])
@@ -158,9 +158,9 @@ export default class LazyFilterService extends FilterService {
   }
 
   getFilteredData(filters: Filter[]) {
-      return Promise.all(_.map(filters, function(filter) {
-        return this.getFieldMetadata(filter.field);
-      }, this)).then(() => {
+      return Promise.all(
+        _.map(filters, filter => this.getFieldMetadata(filter.field))
+      ).then(() => {
 
         // Map filters to a list of predicate functions to call on each data item
         var predicates = filters

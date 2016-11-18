@@ -1059,7 +1059,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       }
       else {
         display = filters.length
-          ? _.pluck(filters, 'display').join(', <br>')
+          ? filters.map(filter => filter.display).join(', <br>')
           : 'All ' + param.prompt;
       }
     }

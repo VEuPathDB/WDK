@@ -9,9 +9,8 @@
     "noImplicitReturns": true,
     "sourceMap": true,
     "jsx": "react",
-    "strictNullChecks": true
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "strictNullChecks": true,
+    "lib": [ "dom", "es2015", "es2016" ],
+    "moduleResolution": "node"
+  }
 }

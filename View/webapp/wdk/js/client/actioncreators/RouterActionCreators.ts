@@ -5,7 +5,7 @@
  * propagate router state to stores.
  */
 
-import { Location } from '~react-router~history';
+import { Location } from 'history';
 import { ActionCreator } from '../ActionCreator';
 
 const LOCATION_UPDATED = 'router/location-updated';

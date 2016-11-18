@@ -1,5 +1,21 @@
 import $ from 'jquery';
-import _ from 'lodash';
+import {
+  debounce,
+  find,
+  includes,
+  isEmpty,
+  isEqual,
+  map,
+  noop,
+  omit,
+  partial,
+  partition,
+  property,
+  reduce,
+  result,
+  sortBy,
+  throttle
+} from 'lodash';
 import React from 'react';
 import { preorderSeq } from '../utils/TreeUtils';
 import { findDOMNode } from 'react-dom';
@@ -75,10 +91,10 @@ var FilterList = React.createClass({
           {filteredDataCount} of {dataCount} selected
         </span>
         <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
-          {_.map(filters, filter => {
-            var className = _.result(selectedField, 'term') === filter.field.term ? 'selected' : '';
-            var handleSelectClick = _.partial(this.handleFilterSelectClick, filter);
-            var handleRemoveClick = _.partial(this.handleFilterRemoveClick, filter);
+          {map(filters, filter => {
+            var className = result(selectedField, 'term') === filter.field.term ? 'selected' : '';
+            var handleSelectClick = partial(this.handleFilterSelectClick, filter);
+            var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
             var display = getFilterDisplay(filter);
 
             return (
@@ -152,7 +168,6 @@ var FieldList = React.createClass({
 
   render: function() {
     var { fieldTree } = this.props;
-    var restProps = _.omit(this.props, 'fieldTree');
 
     return (
       <div className="field-list">
@@ -570,13 +585,13 @@ var AttributeFilter = React.createClass({
     } = this.state;
 
     var displayName = this.props.displayName;
-    var selectedFilter = _.find(filters, filter => {
-      return filter.field.term === _.result(activeField, 'term');
+    var selectedFilter = find(filters, filter => {
+      return filter.field.term === result(activeField, 'term');
     });
 
     var filteredNotIgnored = filteredData.filter(datum => ignoredData.indexOf(datum) === -1);
 
-    var sortedFilteredData = _.sortBy(filteredData, function(datum) {
+    var sortedFilteredData = sortBy(filteredData, function(datum) {
       var term = datum.term;
       return sortTerm == '__primary_key__' ? term : fieldMetadataMap[sortTerm][term];
     });
@@ -668,13 +683,13 @@ var InvalidFilterList = React.createClass({
   render: function() {
     var { filters } = this.props;
 
-    if (_.isEmpty(filters)) return null;
+    if (isEmpty(filters)) return null;
 
     return (
       <div className="invalid-values">
         <p>Some of the options you previously selected are no longer available:</p>
         <ul>
-          {_.map(filters, function(filter) {
+          {map(filters, function(filter) {
             return (
               <li className="invalid">{getFilterDisplay(filter)}</li>
             );
@@ -695,7 +710,7 @@ var FieldTree = React.createClass({
 
   render: function() {
     var { treeNodes } = this.props;
-    var restProps = _.omit(this.props, 'treeNodes');
+    var restProps = omit(this.props, 'treeNodes');
     return (
       <ul role="tree">
         {treeNodes.map(node => {
@@ -728,23 +743,23 @@ var TreeNode = React.createClass({
 
   render: function() {
     var { node } = this.props;
-    var restProps = _.omit(this.props, 'node');
+    var restProps = omit(this.props, 'node');
     var { ItemComponent } = this.props;
 
-    var className = _.result(this.props.selectedField, 'term') === node.field.term
+    var className = result(this.props.selectedField, 'term') === node.field.term
       ? 'active' : '';
 
     return (
       <li key={node.field.term} className={className}>
         { node.children.length > 0
           ? [
-            <h4 onClick={_.partial(this.handleToggleClick, node)}
+            <h4 onClick={partial(this.handleToggleClick, node)}
               key={node.field.term}
               role="treeitem"
               className={this.state.isCollapsed ? "collapsed" : ""}>{node.field.display}</h4>,
               <div key={node.field.term + '-children'}>
                 <ul>
-                  {_.map(node.children, child => (
+                  {map(node.children, child => (
                     <TreeNode key={child.field.term} node={child} {...restProps}/>
                   ))}
                 </ul>
@@ -851,9 +866,9 @@ var Histogram = React.createClass({
       yaxisLabel: 'Y-Axis',
       selectedMin: null,
       selectedMax: null,
-      onSelected: _.noop,
-      onSelecting: _.noop,
-      onUnselected: _.noop
+      onSelected: noop,
+      onSelecting: noop,
+      onUnselected: noop
     };
   },
 
@@ -872,7 +887,7 @@ var Histogram = React.createClass({
   },
 
   componentWillMount() {
-    this.handleResize = _.throttle(this.handleResize, 100);
+    this.handleResize = throttle(this.handleResize, 100);
   },
 
   componentDidMount: function() {
@@ -897,7 +912,7 @@ var Histogram = React.createClass({
    *  1. Call createPlot if distribution changed
    */
   componentDidUpdate: function(prevProps) {
-    if (!_.isEqual(this.props.distribution, prevProps.distribution)) {
+    if (!isEqual(this.props.distribution, prevProps.distribution)) {
       this.createPlot();
       this.drawPlotSelection();
     }
@@ -944,8 +959,8 @@ var Histogram = React.createClass({
     } else {
       this.plot.setSelection({
         xaxis: {
-          from: selectedMin === null ? _.min(values) : selectedMin,
-          to: selectedMax === null ? _.max(values) : selectedMax
+          from: selectedMin === null ? min(values) : selectedMin,
+          to: selectedMax === null ? max(values) : selectedMax
         }
       }, true);
     }
@@ -955,8 +970,8 @@ var Histogram = React.createClass({
     var { distribution, chartType, timeformat } = this.props;
 
     var values = distribution.map(entry => entry.value);
-    var min = _.min(values);
-    var max = _.max(values);
+    var min = Math.min(...values);
+    var max = Math.max(...values);
 
     var barWidth = (max - min) * 0.005;
 
@@ -1125,7 +1140,7 @@ var HistogramField = React.createClass({
   },
 
   componentWillMount() {
-    this.updateFilter = _.debounce(this.updateFilter, 50);
+    this.updateFilter = debounce(this.updateFilter, 50);
     this.cacheDistributionOperations(this.props);
   },
 
@@ -1267,7 +1282,7 @@ fieldComponents.string = React.createClass({
     var values = $(findDOMNode(this))
       .find('input[type=checkbox]:checked')
       .toArray()
-      .map(_.property('value'))
+      .map(property('value'))
       .map(value => value === UNKNOWN_VALUE ? null : value);
     this.emitChange(values);
   },
@@ -1275,7 +1290,7 @@ fieldComponents.string = React.createClass({
   handleSelectAll: function(event) {
     event.preventDefault();
     var { distribution } = this.props;
-    var values = _.pluck(distribution, 'value');
+    var values = map(distribution, property('value'));
     this.emitChange(values);
   },
 
@@ -1294,10 +1309,10 @@ fieldComponents.string = React.createClass({
 
   render: function() {
     var dist = this.props.distribution;
-    var total = _.reduce(dist, (acc, item) => acc + item.count, 0);
+    var total = reduce(dist, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
-    var sortedDistribution = _.sortBy(this.props.distribution, function({ value }) {
+    var sortedDistribution = sortBy(this.props.distribution, function({ value }) {
       return value === null ? '\u200b' : value;
     })
 
@@ -1321,11 +1336,11 @@ fieldComponents.string = React.createClass({
                 </tr>
               </thead>
               <tbody>
-                {_.map(sortedDistribution, item => {
+                {map(sortedDistribution, item => {
                   // compute frequency, percentage, filteredPercentage
                   var percentage = (item.count / total) * 100;
                   var filteredPercentage = (item.filteredCount / total) * 100;
-                  var isChecked = !this.props.filter || _.contains(this.props.filter.values, item.value);
+                  var isChecked = !this.props.filter || includes(this.props.filter.values, item.value);
                   var trClassNames = 'member' + (isChecked ? ' selected' : '');
                   var value = item.value || UNKNOWN_VALUE;
                   var display = item.value || UNKNOWN_DISPLAY;
@@ -1379,7 +1394,7 @@ fieldComponents.number = React.createClass({
   },
 
   render() {
-    var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
+    var [ knownDist, unknownDist ] = partition(this.props.distribution, function(entry) {
       return entry.value !== null;
     });
 
@@ -1447,7 +1462,7 @@ fieldComponents.date = React.createClass({
   },
 
   render: function() {
-    var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
+    var [ knownDist, unknownDist ] = partition(this.props.distribution, function(entry) {
       return entry.value !== null;
     });
 
@@ -1503,7 +1518,7 @@ var EmptyField = React.createClass({
 });
 
 function getFieldDetail(field) {
-  return fieldComponents[_.result(field, 'type')];
+  return fieldComponents[result(field, 'type')];
 }
 
 function getFilterDisplay({ field, values }) {

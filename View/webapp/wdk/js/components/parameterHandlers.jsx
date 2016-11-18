@@ -256,7 +256,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     var fields = _.keys(filterData.metadataSpec)
       .map(function(name) {
-        return _.extend({
+        return Object.assign({
           term: name,
           display: name
         }, filterData.metadataSpec[name]);
@@ -322,8 +322,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var ignored = filterService.data.filter(datum => datum.isIgnored);
       var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
       input.val(JSON.stringify({
-        values: _.pluck(filteredData, 'term'),
-        ignored: _.pluck(ignored, 'term'),
+        values: _.map(filteredData, entry => entry.term),
+        ignored: _.map(ignored, entry => entry.term),
         filters: _.map(filterService.filters, filter => ({
           value: filter.values,
           field: filter.field.term
@@ -389,7 +389,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       multiple: $param.data('multiple'),
       id: 'term',
       createSearchChoice: function(term) {
-        return _.findWhere(vocab.values, { term: term.trim() });
+        return _.find(vocab.values, value => value.term === term.trim());
       },
       tokenSeparators: [ ',', ';', '\n' ],
       data: { results: vocab.values, text: 'display' },

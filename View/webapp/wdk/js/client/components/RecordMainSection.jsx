@@ -1,5 +1,5 @@
 import { PropTypes } from 'react';
-import { compose } from 'lodash';
+import { flowRight } from 'lodash';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { pure, wrappable } from '../utils/componentUtils';
 import { getId, getLabel } from '../utils/CategoryUtils';
@@ -61,6 +61,6 @@ RecordMainSection.propTypes = {
 
 // Append `$` so we can refer to this component recursively. We want to reserve
 // the normal name `RecordMainSection` for the inner function for debugging purposes.
-RecordMainSection$ = compose(wrappable, pure)(RecordMainSection);
+RecordMainSection$ = flowRight(wrappable, pure)(RecordMainSection);
 
 export default RecordMainSection$;

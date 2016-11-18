@@ -1,4 +1,11 @@
-import _ from 'lodash';
+import {
+  default as _,
+  flowRight as compose,
+  constant,
+  mapValues,
+  sortBy,
+  reject
+} from 'lodash';
 import {MemberFilter, RangeFilter} from "./FilterService";
 
 type Metadata = {
@@ -11,7 +18,7 @@ type Datum = {
 
 type Predicate<T> = (value: T) => boolean;
 
-const T = _.constant(true);
+const T = constant(true);
 
 /**
  * Returns a lodash-wrapped array of metadata values.
@@ -69,8 +76,8 @@ export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) 
 
 export function getRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
   var { min, max } = filter.field.type === 'number'
-    ? _.mapValues(filter.values, s => Number(s))
-    : _.mapValues(filter.values, s => new Date(s));
+    ? mapValues(filter.values, s => Number(s))
+    : mapValues(filter.values, s => new Date(s));
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
            : max !== null ? makeLte(max)
@@ -144,21 +151,21 @@ export function makeTree(fields: Field[], options: Options = { trimMetadataTerms
 
   // Create tree, then prune it so it's easier to read
   var make = options.trimMetadataTerms
-    ? _.compose(/* sortTree, */ removeParentsWithSingleChild, removeSingleTopNode, constructTree)
-    : _.compose(/* sortTree, */ constructTree);
+    ? compose(/* sortTree, */ removeParentsWithSingleChild, removeSingleTopNode, constructTree)
+    : compose(/* sortTree, */ constructTree);
 
   // get all ontology terms starting from `filterable` fields
   // and traversing upwards by the `parent` attribute
-  var prunedFields: Field[] = _.sortBy(pruneFields(fields), 'term');
+  var prunedFields: Field[] = sortBy(pruneFields(fields), 'term');
 
   // get root tree
-  var parentFields: Field[] = _.reject(prunedFields, 'parent');
+  var parentFields: Field[] = reject(prunedFields, 'parent');
 
   // construct tree
   var groupedFields = make(parentFields, prunedFields);
 
   // sort node such that leaves are first
-  groupedFields = _.sortBy(groupedFields, function(node: FieldTreeNode) {
+  groupedFields = sortBy(groupedFields, function(node: FieldTreeNode) {
     return node.field.leaf === 'true' ? 0 : 1;
   });
 

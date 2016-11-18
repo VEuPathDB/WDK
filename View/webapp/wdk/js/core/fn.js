@@ -2,7 +2,7 @@
 wdk.namespace('wdk.fn', function(ns) {
   'use strict';
 
-  var compose = _.compose,
+  var compose = _.flowRight,
       result = _.result;
 
   // Decorates (or wraps) a function such that it prevents default event
@@ -44,7 +44,7 @@ wdk.namespace('wdk.fn', function(ns) {
   // Helper to stop and prevent event behavior
   var killEvent = compose(preventEvent, stopEvent);
 
-  _.extend(ns, {
+  Object.assign(ns, {
     preventEvent: preventEvent,
     stopEvent: stopEvent,
     killEvent: killEvent

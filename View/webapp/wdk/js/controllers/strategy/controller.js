@@ -32,7 +32,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   };
 
   function setUIState(newState) {
-    _.extend(uiState, newState);
+    Object.assign(uiState, newState);
   }
 
   function init(element, attrs) {

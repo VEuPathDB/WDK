@@ -649,7 +649,7 @@ wdk.namespace("window.wdk", function(ns, $) {
     invokeControllers($el);
   }
 
-  _.extend(ns, {
+  Object.assign(ns, {
     VERSION: wdkConfig.version,
     MODEL_NAME: wdkConfig.modelName,
     $: $,
