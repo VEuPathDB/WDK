@@ -1,3 +1,4 @@
+import WdkViewController from './WdkViewController';
 import { wrappable } from '../utils/componentUtils';
 import Link from '../components/Link';
 
@@ -20,18 +21,23 @@ import Link from '../components/Link';
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-function IndexController() {
-  return (
-    <div>
-      <p>This is the future home of WDK 3.0</p>
-      <h2>Resources under development</h2>
-      <ul>
-        <li><Link to="/question-list">Question list</Link></li>
-        <li><Link to="/user/profile">User Profile</Link></li>
-        <li><Link to="/data-finder">Data Finder</Link></li>
-      </ul>
-    </div>
-  );
+class IndexController extends WdkViewController {
+  getStoreName() {
+    return "IndexStore";
+  }
+  renderView() {
+    return (
+      <div>
+        <p>This is the future home of WDK 3.0</p>
+        <h2>Resources under development</h2>
+        <ul>
+          <li><Link to="/question-list">Question list</Link></li>
+          <li><Link to="/user/profile">User Profile</Link></li>
+          <li><Link to="/data-finder">Data Finder</Link></li>
+        </ul>
+      </div>
+    );
+  }
 }
 
 export default wrappable(IndexController);

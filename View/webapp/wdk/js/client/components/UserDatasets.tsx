@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter, InjectedRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import DataTable from './DataTable';
 import Loading from './Loading';
@@ -6,7 +7,8 @@ import Loading from './Loading';
 type UserDataset = any;
 
 type Props = {
-  userDatasets: UserDataset[]
+  userDatasets: UserDataset[],
+  router: InjectedRouter
 };
 
 const getRowId = (row: { id: number }) => row.id;
@@ -25,9 +27,9 @@ const columns = [
   { name: 'quota', displayName: 'Quota Usage' }
 ];
 
-const mapUserDatasets = (userDatasets: UserDataset[]) =>
+const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter) =>
   userDatasets.length === 0 ? userDatasets : userDatasets.map(ud => ({
-    id: ud.id,
+    id: `<a href="${router.createHref(`/workspace/datasets/${ud.id}`)}">${ud.id}</a>`,
     name: ud.meta.name,
     summary: ud.meta.summary,
     type: Object.keys(ud.type)[0],
@@ -44,7 +46,7 @@ const UserDatasets = (props: Props) =>
   <div>
     <h1>User Data Sets</h1>
     <DataTable columns={columns}
-               data={mapUserDatasets(props.userDatasets)}
+               data={mapUserDatasets(props.userDatasets, props.router)}
                getRowId={getRowId} />
 
     {/* TODO For development - remove before release */}
@@ -56,4 +58,4 @@ const UserDatasets = (props: Props) =>
     </div>
   </div>
 
-export default wrappable(UserDatasets);
+export default wrappable(withRouter(UserDatasets));
