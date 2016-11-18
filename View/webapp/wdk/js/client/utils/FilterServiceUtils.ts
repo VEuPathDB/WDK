@@ -45,7 +45,7 @@ export function countByValues(metadata: Metadata) {
  * Create a array of unique metadata values
  */
 export function uniqMetadataValues(metadata: Metadata) {
-  return flattenMetadataValues(metadata).sortBy().uniq(true).value() as string[];
+  return flattenMetadataValues(metadata).sortBy().sortedUniq().value() as string[];
 }
 
 export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
