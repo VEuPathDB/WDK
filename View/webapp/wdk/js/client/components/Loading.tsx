@@ -1,4 +1,3 @@
-import Spinner from 'spin.js';
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
