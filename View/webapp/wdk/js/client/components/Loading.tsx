@@ -1,6 +1,5 @@
-/* global Spinner */
+import Spinner from 'spin.js';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { wrappable } from '../utils/componentUtils';
 
 /**
@@ -42,13 +41,13 @@ let Loading = React.createClass({
       left: '50%' // Left position relative to parent
     };
 
-    new Spinner(opts).spin(ReactDOM.findDOMNode(this));
+    new Spinner(opts).spin(this.refs.node);
   },
 
   render() {
     let { className } = this.props;
     return (
-      <div className={`wdk-Loading ${className}`}/>
+      <div ref="node" className={`wdk-Loading ${className}`}/>
     );
   }
 });
