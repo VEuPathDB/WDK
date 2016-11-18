@@ -36,9 +36,6 @@ function flattenMetadataValues(metadata: Metadata) {
 
 /**
  * Calculate the occurrence of each value present in metadata.
- *
- * @param {object} metadata A key-value map of { sample: [ { value } ] }
- * @returns {object} A key-value map of { value: count }
  */
 export function countByValues(metadata: Metadata) {
   return flattenMetadataValues(metadata).countBy().value();
