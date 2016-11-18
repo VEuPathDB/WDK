@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import {difference, indexBy, memoize} from 'lodash';
+import {difference, keyBy, memoize} from 'lodash';
 import localforage from 'localforage';
 import {Ontology} from './OntologyUtils';
 import {CategoryTreeNode, normalizeOntology} from './CategoryUtils';
@@ -174,8 +174,8 @@ export default class WdkService {
         // since it cannot reliably serialize Maps
         return recordClasses.map(recordClass =>
           Object.assign(recordClass, {
-            attributesMap: indexBy(recordClass.attributes, 'name'),
-            tablesMap: indexBy(recordClass.tables, 'name')
+            attributesMap: keyBy(recordClass.attributes, 'name'),
+            tablesMap: keyBy(recordClass.tables, 'name')
           }));
     }));
   }
@@ -350,8 +350,8 @@ export default class WdkService {
   }
 
   getOntology(name = '__wdk_categories__') {
-    let recordClasses$ = this.getRecordClasses().then(rs => indexBy(rs, 'name'));
-    let questions$ = this.getQuestions().then(qs => indexBy(qs, 'name'));
+    let recordClasses$ = this.getRecordClasses().then(rs => keyBy(rs, 'name'));
+    let questions$ = this.getQuestions().then(qs => keyBy(qs, 'name'));
     let ontology$ = this._getFromCache('ontology/' + name, () => {
       return this._fetchJson<Ontology<CategoryTreeNode>>('get', '/ontology/' + name);
     });

@@ -124,7 +124,17 @@ export default class FilterService {
     this.fieldMetadataMap = attrs.fieldMetadataMap || {};
 
     // bind all methods
-    _.bindAll(this);
+    _.bindAll(this, [
+      'addListener',
+      'getState',
+      'selectField',
+      'updateFilters',
+      'updateColumns',
+      'updateIgnoredData',
+      'getFieldDistribution',
+      'getFilteredData',
+      'getFieldMetadata'
+    ]);
   }
 
   addListener(listener: () => void) {

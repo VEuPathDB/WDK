@@ -40,7 +40,7 @@ wdk.namespace('wdk.components.wdkAjax', function(ns, $) {
       .each(function(i, e) { load(e); });
   }
 
-  ns = _.extend(ns, {
+  ns = Object.assign(ns, {
     load: load,
     init: init
   });

@@ -1,31 +1,133 @@
 import $ from 'jquery';
 import { eq } from 'lodash';
-import {PropTypes} from 'react';
+import React, {PropTypes, Component, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, wrappable, PureComponent} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
 const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
 const expandColumn = {
+  data: undefined,
   className: 'wdk-DataTableCell wdk-DataTableCell__childRowToggle',
   orderable: false,
   title: expandButton,
   defaultContent: expandButton
 };
 
+type ColumnDef = {
+  name: string;
+  displayName: string;
+  help?: string;
+  sortType?: string;
+  isDisplayable?: boolean;
+  isSortable?: boolean;
+}
+
+type Row = { [key: string]: any };
+
+type SortingDef = {
+  name: string;
+  direction: 'ASC' | 'DESC';
+}
+
+type ChildRowProps = {
+  rowIndex: number;
+  rowData: Object;
+}
+
+type Props = {
+  /**
+   * Array of descriptors used for table column headers.
+   * `name` is used as a key for looking up cell data in `data`.
+   * `displayName` is an optional property used for the header text (`name` is
+   * used as a fallback).
+   */
+  columns: ColumnDef[];
+
+  /**
+   * The data to display in the table. An array of objects whose keys correspond
+   * to the `name` property in the `columns` prop.
+   */
+  data: Row[];
+
+  /**
+   * Default sorting for the table. Each item indicates the column and direction.
+   */
+  sorting?: SortingDef[];
+
+  onSortingChange?: (sorting: SortingDef[]) => void;
+
+  /** width of the table - if a string, treated as a CSS unit; if a number, treated as px */
+  width?: string | number;
+
+  /** height of the table - if a string, treated as a CSS unit; if a number, treated as px */
+  height?: string | number;
+
+  /** can users search the table */
+  searchable?: boolean;
+
+  /**
+   * Determines the body of child rows. If this is provided, each table row will
+   * be rendered with an expansion toggle. This can be a string, a function, or
+   * a React Component. If it is a function, the function will receive the same
+   * props argument that the React Component would receive as props:
+   *
+   *    props: {
+   *      rowIndex: number;
+   *      rowData: Object;
+   *    }
+   */
+  childRow?: string | ((props: ChildRowProps) => ReactElement<ChildRowProps>);
+
+  /** Array of row ids that should be expanded */
+  expandedRows?: number[];
+
+  /** Called when expanded rows change */
+  onExpandedRowsChange?: (indexes: number[]) => void;
+
+  getRowId: (row: Row) => number;
+}
+
 /**
  * Sortable table for WDK-formatted data.
  *
  * This uses DataTables jQuery plugin
  */
-class DataTable extends PureComponent {
+class DataTable extends PureComponent<Props, void> {
+
+  /** Default DataTables jQuery plugin options. */
+  static defaultDataTableOpts = {
+    dom: 'lript',
+    autoWidth: false,
+    deferRender: true,
+    paging: false,
+    searching: true,
+    language: {
+      info: 'Showing _TOTAL_ ',
+      infoFiltered: 'of _MAX_ ',
+      infoEmpty: 'Showing 0 ',
+      infoPostFix: 'rows'
+    }
+  };
+
+  _childRowContainers: Map<Node, HTMLElement>;
+
+  _isRedrawing: boolean;
+
+  _dataTable: DataTables.DataTable;
+
+  _table: HTMLElement;
+
+  node: HTMLElement;
+
+  columns: DataTables.ColumnSettings[];
 
   componentDidMount() {
     this._childRowContainers = new Map();
     this._setup();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     let columnsChanged = didPropChange(this, prevProps, 'columns')
     let dataChanged = didPropChange(this, prevProps, 'data');
     let childRowChanged = didPropChange(this, prevProps, 'childRow');
@@ -86,8 +188,8 @@ class DataTable extends PureComponent {
     let {
       childRow,
       data,
-      sorting,
-      searchable,
+      sorting = [],
+      searchable = true,
       height,
       width
     } = this.props;
@@ -105,7 +207,7 @@ class DataTable extends PureComponent {
       order,
       searching: searchable,
       info: searchable,
-      headerCallback: (thead) => {
+      headerCallback: (thead: HTMLTableHeaderCellElement) => {
         let i = 0;
         let $ths = $(thead).find('th');
         if (childRow) {
@@ -124,19 +226,12 @@ class DataTable extends PureComponent {
         scrollCollapse: !childRow
       });
 
-    this._$table = $('<table class="wdk-DataTable">')
-    .width(width)
-    .appendTo(this.node);
-
-    this._dataTable = this._$table.DataTable(tableOpts);
-
-    if (childRow != null) {
-      this._updateExpandedRows();
-      this._dataTable.draw();
-    }
-
+    this._dataTable = $(this._table = document.createElement('table'))
+    .addClass('wdk-DataTable')
+    .width(width || '')
+    .appendTo(this.node)
     // click handler for expand single row
-    this._$table.on('click', 'td .wdk-DataTableCellExpand', e => {
+    .on('click', 'td .wdk-DataTableCellExpand', (e: JQueryEventObject) => {
       let tr = $(e.target).closest('tr');
       let row = this._dataTable.row(tr);
       if (row.child.isShown()) {
@@ -147,10 +242,9 @@ class DataTable extends PureComponent {
       }
       this._updateChildRowClassNames();
       this._callExpandedRowsCallback();
-    });
-
+    })
     // click handler for expand all rows
-    this._$table.on('click', 'th .wdk-DataTableCellExpand', () => {
+    .on('click', 'th .wdk-DataTableCellExpand', () => {
       // if all are shown, then hide all, otherwise show any that are hidden
       let allShown = areAllChildRowsShown(this._dataTable);
       let update = allShown ? this._hideChildRow : this._renderChildRow;
@@ -159,17 +253,22 @@ class DataTable extends PureComponent {
       }
       this._updateChildRowClassNames();
       this._callExpandedRowsCallback();
-    });
-
-    this._$table.on('order.dt', () => {
-      if (this._isRedrawing) return;
+    })
+    .on('order.dt', () => {
+      if (this._isRedrawing || !this.props.onSortingChange) return;
 
       let sorting = this._dataTable.order().map(entry => ({
-        name: columns[entry[0]].data,
-        direction: entry[1].toUpperCase()
+        name: columns[entry[0] as number].data as string,
+        direction: (entry[1] as string).toUpperCase() as 'ASC' | 'DESC'
       }));
       this.props.onSortingChange(sorting);
-    });
+    })
+    .DataTable(tableOpts);
+
+    if (childRow != null) {
+      this._updateExpandedRows();
+      this._dataTable.draw();
+    }
   }
 
   _rerenderChildRows() {
@@ -183,25 +282,25 @@ class DataTable extends PureComponent {
   }
 
   _updateWidth() {
-    this._$table.width(this.props.width);
+    $(this._table).width(this.props.width || '');
     this._dataTable.columns.adjust();
   }
 
   _updateExpandedRows() {
-    if (this.props.expandedRows != null) {
-      this._dataTable.rows().every((index) => {
-        let row = this._dataTable.row(index);
-        let tr = row.node();
-        let data = row.data();
-        if (this.props.expandedRows.includes(this.props.getRowId(data))) {
-          this._renderChildRow(tr);
-        }
-        else {
-          this._hideChildRow(tr);
-        }
-      });
-      this._updateChildRowClassNames();
-    }
+    let { getRowId, expandedRows = [] } = this.props;
+
+    this._dataTable.rows().every((index) => {
+      let row = this._dataTable.row(index);
+      let tr = row.node();
+      let data = row.data() as Row;
+      if (expandedRows.includes(getRowId(data))) {
+        this._renderChildRow(tr);
+      }
+      else {
+        this._hideChildRow(tr);
+      }
+    });
+    this._updateChildRowClassNames();
   }
 
   /** Update class names of child row expand buttons based on datatable state */
@@ -209,19 +308,20 @@ class DataTable extends PureComponent {
     let allShown = true;
     for (let tr of this._dataTable.rows().nodes().toArray()) {
       let row = this._dataTable.row(tr);
-      let isShown = row.child.isShown();
+      let isShown = Boolean(row.child.isShown());
       $(tr).toggleClass('wdk-DataTableRow__expanded', isShown);
       allShown = allShown && isShown;
     }
-    this._$table
+    $(this._table)
       .find('th .wdk-DataTableCellExpand')
       .closest('tr')
       .toggleClass('wdk-DataTableRow__expanded', allShown);
   }
 
   /** Append child row container node to table row and show it */
-  _renderChildRow(tableRowNode, openRow = true) {
+  _renderChildRow(tableRowNode: Node, openRow = true) {
     let { childRow } = this.props;
+    if (childRow == null) return;
     let row = this._dataTable.row(tableRowNode);
     let childRowContainer = this._getChildRowContainer(tableRowNode);
     row.child(childRowContainer);
@@ -238,29 +338,32 @@ class DataTable extends PureComponent {
   }
 
   /** Hide child row */
-  _hideChildRow(tableRowNode) {
+  _hideChildRow(tableRowNode: Node) {
     let row = this._dataTable.row(tableRowNode);
     row.child.hide();
   }
 
   _callExpandedRowsCallback() {
+    let { onExpandedRowsChange } = this.props;
+    if (onExpandedRowsChange == null) return;
+
     let expandedRows =  this._dataTable.rows().indexes().toArray()
       .reduce((expandedRows, index) => {
         let row = this._dataTable.row(index);
         if (row.child.isShown()) {
-          expandedRows.push(this.props.getRowId(row.data()));
+          expandedRows.push(this.props.getRowId(row.data() as Row));
         }
         return expandedRows;
       }, []);
-    this.props.onExpandedRowsChange(expandedRows);
+    onExpandedRowsChange(expandedRows);
   }
 
   /** Get child row container from cache, or create and add to cache first */
-  _getChildRowContainer(tableRowNode) {
+  _getChildRowContainer(tableRowNode: Node) {
     if (!this._childRowContainers.has(tableRowNode)) {
       this._childRowContainers.set(tableRowNode, document.createElement('div'));
     }
-    return this._childRowContainers.get(tableRowNode);
+    return this._childRowContainers.get(tableRowNode) as HTMLElement;
   }
 
   /** Unmount all child row components and destroy the datatable instance */
@@ -273,13 +376,14 @@ class DataTable extends PureComponent {
   }
 
   render() {
+    let { searchable = true } = this.props;
     return (
       <div>
-        {this.props.searchable && (
+        {searchable && (
           <RealTimeSearchBox
             className="wdk-DataTableSearchBox"
             placeholderText="Search this table..."
-            onSearchTermChange={term => this._dataTable.search(term).draw()}
+            onSearchTermChange={(term: string) => this._dataTable.search(term).draw()}
             delayMs={0}
           />
         )}
@@ -290,102 +394,6 @@ class DataTable extends PureComponent {
 
 }
 
-
-// Component Properties
-// --------------------
-
-let CSSPropType = PropTypes.oneOfType([
-  PropTypes.string,
-  PropTypes.number
-]);
-
-DataTable.propTypes = {
-  /**
-   * Array of descriptors used for table column headers.
-   * `name` is used as a key for looking up cell data in `data`.
-   * `displayName` is an optional property used for the header text (`name` is
-   * used as a fallback).
-   */
-  columns: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      displayName: PropTypes.string
-    })
-  ),
-
-  /**
-   * The data to display in the table. An array of objects whose keys correspond
-   * to the `name` property in the `columns` prop.
-   */
-  data: PropTypes.arrayOf(PropTypes.object).isRequired,
-
-  /**
-   * Default sorting for the table. Each item indicates the column and direction.
-   */
-  sorting: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    direction: PropTypes.oneOf(['ASC', 'DESC']).isRequired
-  })),
-
-  onSortingChange: PropTypes.func,
-
-  /** width of the table - if a string, treated as a CSS unit; if a number, treated as px */
-  width: CSSPropType,
-
-  /** height of the table - if a string, treated as a CSS unit; if a number, treated as px */
-  height: CSSPropType,
-
-  /** can users search the table */
-  searchable: PropTypes.bool,
-
-  /**
-   * Determines the body of child rows. If this is provided, each table row will
-   * be rendered with an expansion toggle. This can be a string, a function, or
-   * a React Component. If it is a function, the function will receive the same
-   * props argument that the React Component would receive as props:
-   *
-   *    props: {
-   *      rowIndex: number;
-   *      rowData: Object;
-   *    }
-   */
-  childRow: PropTypes.oneOfType([
-    PropTypes.node,
-    PropTypes.func
-  ]),
-
-  /** Array of row ids that should be expanded */
-  expandedRows: PropTypes.array,
-
-  /** Called when expanded rows change */
-  onExpandedRowsChange: PropTypes.func
-
-};
-
-DataTable.defaultProps = {
-  width: undefined,
-  height: undefined,
-  searchable: true,
-  sorting: [],
-  onSortingChange: () => {},
-  onExpandedRowsChange: () => {}
-};
-
-/** Default DataTables jQuery plugin options. */
-DataTable.defaultDataTableOpts = {
-  dom: 'lript',
-  autoWidth: false,
-  deferRender: true,
-  paging: false,
-  searching: true,
-  language: {
-    info: 'Showing _TOTAL_ ',
-    infoFiltered: 'of _MAX_ ',
-    infoEmpty: 'Showing 0 ',
-    infoPostFix: 'rows'
-  }
-};
-
 export default wrappable(DataTable);
 
 
@@ -393,12 +401,12 @@ export default wrappable(DataTable);
 // -------
 
 /** helper to determine if all child rows are visible */
-function areAllChildRowsShown(dataTable) {
-  return dataTable.rows().indexes().toArray().every(i => dataTable.row(i).child.isShown());
+function areAllChildRowsShown(dataTable: DataTables.DataTable) {
+  return dataTable.rows().indexes().toArray().every((i: number) => !!dataTable.row(i).child.isShown());
 }
 
 /** Map WDK table attribute fields to datatable data format */
-function formatColumns(columns) {
+function formatColumns(columns: ColumnDef[]): DataTables.ColumnSettings[] {
   return columns.map(
     column => ({
       data: column.name,
@@ -408,7 +416,7 @@ function formatColumns(columns) {
       visible: column.isDisplayable,
       searchable: column.isDisplayable,
       orderable: column.isSortable,
-      render(data, type) {
+      render(data: any, type: string) {
         let value = formatAttributeValue(data);
         if (type === 'display' && value != null) {
           return '<div class="wdk-DataTableCellContent">' + value + '</div>'
@@ -420,7 +428,7 @@ function formatColumns(columns) {
 }
 
 /** Map WDK table sorting to datatable data format */
-function formatSorting(columns, sorting = []) {
+function formatSorting(columns: DataTables.ColumnSettings[], sorting: SortingDef[] = []) {
   return sorting.length === 0 ? [ [0, 'asc'] ] : sorting.map(sort => {
     let index = columns.findIndex(column => column.data === sort.name);
     if (index === -1) {
@@ -432,6 +440,6 @@ function formatSorting(columns, sorting = []) {
 }
 
 /** Return boolean indicating if a prop's value has changed. */
-function didPropChange(component, prevProps, propName) {
-  return component.props[propName] !== prevProps[propName];
+function didPropChange(component: Component<Props, any>, prevProps: Props, propName: string) {
+  return (component.props as any)[propName] !== (prevProps as any)[propName];
 }

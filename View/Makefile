@@ -52,17 +52,10 @@ node_modules: $(yarn_exec)
 node_modules/%: node_modules;
 
 # =============================================================================
-# Install typescript type definitions
-# =============================================================================
-typings: typings.json node_modules
-	typings prune
-	typings install
-
-# =============================================================================
 # Webpack bundles. See webpack.config.js for details
 # =============================================================================
 
-$(wdk_bundle): $(wdk_sources) node_modules typings
+$(wdk_bundle): $(wdk_sources) node_modules
 	webpack
 
 # =============================================================================

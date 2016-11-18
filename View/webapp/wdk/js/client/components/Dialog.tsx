@@ -154,6 +154,4 @@ class Dialog extends Component<Props, void> {
 
 }
 
-let a: React.ComponentClass<Props> = Dialog;
-
 export default wrappable(Dialog);
