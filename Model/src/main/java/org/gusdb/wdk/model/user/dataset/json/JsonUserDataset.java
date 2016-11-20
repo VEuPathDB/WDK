@@ -122,13 +122,6 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Set<UserDatasetShare> getSharedWith() {
-    Set<UserDatasetShare> shares = new HashSet<UserDatasetShare>();
-    for (JsonUserDatasetShare share : sharesMap.values()) shares.add(share);
-    return Collections.unmodifiableSet(shares);
-  }
-
-  @Override
   public Long getCreatedDate() {
     return created;
   }

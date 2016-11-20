@@ -82,7 +82,7 @@ public class UserDatasetFormatter {
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
 
-    JSONArray dependenciesJson = new JSONArray();    
+    JSONArray dependenciesJson = new JSONArray(); 
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
       JSONObject dependencyJson = new JSONObject();
       dependencyJson.put("resourceIdentifier", dependency.getResourceIdentifier());
@@ -110,7 +110,7 @@ public class UserDatasetFormatter {
     json.put("percentQuotaUsed", new Integer(dataset.getSize() * 100 / quota));
     
     JSONArray sharesJson = new JSONArray();
-    for (UserDatasetShare share : dataset.getSharedWith()) {
+    for (UserDatasetShare share : store.getSharedWith(dataset.getOwnerId(), dataset.getUserDatasetId())) {
       JSONObject shareJson = new JSONObject();
       shareJson.put("user", share.getUserId());
       shareJson.put("time", share.getTimeShared());

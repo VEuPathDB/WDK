@@ -108,11 +108,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   @Override
-  public Set<UserDatasetShare> getSharedWith(Integer userId, Integer datasetId) throws WdkModelException {
+  public Set<UserDatasetShare> getSharedWith(Integer ownerUserId, Integer datasetId) throws WdkModelException {
 
     Set<UserDatasetShare> sharedWithUsers = new HashSet<UserDatasetShare>();
 
-    Path sharedWithDir = getSharedWithDir(userId, datasetId);
+    Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
     
     List<Path> sharedWithPaths = adaptor.getPathsInDir(sharedWithDir);
     for (Path sharedWithPath : sharedWithPaths) {
@@ -163,7 +163,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
         
         // find the original dataset, and grab its declared shares
         UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
-        Set<UserDatasetShare> shares = originalDataset.getSharedWith();
+        Set<UserDatasetShare> shares = getSharedWith(link.externalUserId, link.datasetId);
 
         // see if our user is among the declared shares
         boolean found = false;
@@ -316,7 +316,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId()).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
     writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
-    
+
   @Override
   public void shareUserDatasets(Integer ownerUserId, Set<Integer> datasetIds, Set<Integer> recipientUserIds) throws WdkModelException {
     Set<Integer[]> externalDatasetLinks = new HashSet<Integer[]>();
