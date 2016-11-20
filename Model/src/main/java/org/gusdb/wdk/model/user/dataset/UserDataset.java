@@ -48,13 +48,6 @@ public interface UserDataset {
    * a dataset, it is just a flat set of files.
    */
   UserDatasetFile getFile(String name) throws WdkModelException;
-  
-  /**
-   * Get the list of users this dataset is shared with
-   * (Should this return a User or a user ID?)
-   * @return
-   */
-  Set<UserDatasetShare> getSharedWith() throws WdkModelException;
     
   /**
    * Get the date this dataset was created, by whatever application created it.
