@@ -81,6 +81,7 @@ public class UserDatasetFormatter {
     typeJson.put("version", type.getVersion());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
+
     JSONArray dependenciesJson = new JSONArray();    
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
       JSONObject dependencyJson = new JSONObject();
@@ -90,6 +91,11 @@ public class UserDatasetFormatter {
       dependenciesJson.put(dependencyJson);
     }
     json.put("dependencies", dependenciesJson);
+    
+    JSONArray projectsJson = new JSONArray(); 
+    for (String project : dataset.getProjects()) projectsJson.put(project);
+    json.put("projects", projectsJson);
+    
     JSONObject metaJson = new JSONObject();
     metaJson.put("name", dataset.getMeta().getName());
     metaJson.put("description", dataset.getMeta().getDescription());
