@@ -85,6 +85,12 @@ public interface UserDataset {
   Set<UserDatasetDependency> getDependencies() throws WdkModelException;
     
   /**
+   * Get the set of projects this dataset applies to.  Null if all
+   */
+  
+  Set<String> getProjects() throws WdkModelException;
+  
+  /**
    * Get the size of the datafiles for this dataset.
    * @return
    */

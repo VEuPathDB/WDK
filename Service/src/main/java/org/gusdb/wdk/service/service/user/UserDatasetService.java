@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -51,7 +52,18 @@ public class UserDatasetService extends UserService {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
     Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
     Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, expandDatasets).toString()).build();
+    String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, getWdkModel().getUserDb().getDataSource(), userSchema, expandDatasets).toString()).build();
+  }
+
+  @GET
+  @Path("user-dataset/{datasetId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
+    UserDatasetStore userDatasetStore = getUserDatasetStore();
+    UserDataset userDataset = getUserDatasetStore().getUserDataset(getUserId(), new Integer(datasetIdStr));
+    String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
+    return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, getWdkModel().getUserDb().getDataSource(), userSchema).toString()).build();
   }
 
   @PUT
@@ -131,7 +143,13 @@ public class UserDatasetService extends UserService {
     return userDatasetStore;
   }
   
-  private UserDataset getUserDataset(String datasetIdStr) throws WdkModelException {
+  private DataSource getAppDbDataSource() throws WdkModelException {
+    DataSource appDbDataSource = getWdkModel().getAppDb().getDataSource();
+    return appDbDataSource;
+  }
+
+  /* not used yet.
+  private UserDataset getUserDatasetObj(String datasetIdStr) throws WdkModelException {
     try {
       Integer datasetId = new Integer(datasetIdStr);
       UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
@@ -140,9 +158,9 @@ public class UserDatasetService extends UserService {
     }
     catch (NumberFormatException e) {
       throw new BadRequestException(e);
-    }
-    
+    }   
   }
+  */
 
   private Integer getUserId() throws WdkModelException {
     return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();

@@ -33,7 +33,8 @@ public class JsonUserDataset implements UserDataset {
   private static final String UPLOADED  = "uploaded";
   private static final String DEPENDENCIES  = "dependencies";
   private static final String SIZE  = "size";
-  
+  private static final String PROJECTS  = "projects";
+   
   private Integer userDatasetId;
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
@@ -45,6 +46,7 @@ public class JsonUserDataset implements UserDataset {
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
   private Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
+  private Set<String> projects = new HashSet<String>();
   private JSONObject datasetJsonObject;
   private JSONObject metaJsonObject;
   
@@ -74,6 +76,10 @@ public class JsonUserDataset implements UserDataset {
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
         dependencies.add(new JsonUserDatasetDependency(dependenciesJson.getJSONObject(i)));
+          
+      JSONArray projectsJson = datasetJsonObj.getJSONArray(PROJECTS);
+      for (int i=0; i<projectsJson.length(); i++) 
+        projects.add(projectsJson.getString(i));
           
     } catch (JSONException e) {
       throw new WdkModelException(e);
@@ -172,5 +178,10 @@ public class JsonUserDataset implements UserDataset {
    */
   public JSONObject getMetaJsonObject() {
     return metaJsonObject;
+  }
+
+  @Override
+  public Set<String> getProjects() throws WdkModelException {
+    return  Collections.unmodifiableSet(projects);
   }
 }
