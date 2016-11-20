@@ -147,7 +147,7 @@ public class UserDatasetFormatter {
       }
     };
 
-    String sql = "select email from " + userSchema + ".users where user_id = ?";
+    String sql = "select email from " + userSchema + "users where user_id = ?";
     SQLRunner runner = new SQLRunner(userDbDataSource, sql, "user-email-ud-svc");
     Object[] args = {userId};
     runner.executeQuery(args, handler);
