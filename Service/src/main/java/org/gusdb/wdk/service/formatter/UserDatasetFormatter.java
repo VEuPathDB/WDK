@@ -118,7 +118,7 @@ public class UserDatasetFormatter {
       JSONObject fileJson = new JSONObject();
       fileJson.put("name", file.getFileName());
       fileJson.put("size", file.getFileSize());
-      filesJson.put(filesJson);
+      filesJson.put(fileJson);
     }
     json.put("datafiles", filesJson);
     
