@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetMeta;
-import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONException;
