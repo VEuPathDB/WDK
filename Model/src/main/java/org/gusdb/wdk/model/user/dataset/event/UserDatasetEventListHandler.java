@@ -45,7 +45,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   private UserDatasetStore userDatasetStore;
   private DataSource appDbDataSource;
-  private String userDatasetSchemaName = "ApiDBUserDatasets";
   private ModelConfig modelConfig;
   private String projectId;
   private String wdkTempDirName;
@@ -166,8 +165,9 @@ public class UserDatasetEventListHandler extends BaseCLI {
   }
   */
 
+  // TODO: get from model config
   private String getUserDatasetSchemaName() {
-    return userDatasetSchemaName;
+    return  "ApiDBUserDatasets";
   }
   
   private String getWdkTempDirName() throws WdkModelException {
