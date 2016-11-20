@@ -6,10 +6,11 @@ import WdkDispatcher, {Action} from '../dispatcher/Dispatcher';
 import GlobalDataStore from './GlobalDataStore';
 import {GlobalData} from "./GlobalDataStore";
 
-interface BaseState {
+export interface BaseState {
   globalData: GlobalData;
 }
-export default class WdkStore<State> extends ReduceStore<State & BaseState, Action> {
+
+export default class WdkStore<State extends BaseState> extends ReduceStore<State, Action> {
 
   /** The name of the channel on which this store listens to actions. */
   channel: string;
@@ -21,7 +22,7 @@ export default class WdkStore<State> extends ReduceStore<State & BaseState, Acti
   /*--------------- Methods that should probably be overridden ---------------*/
 
   getInitialState() {
-    return <State & BaseState>{
+    return <State>{
       globalData: {}
     };
   }
@@ -31,7 +32,7 @@ export default class WdkStore<State> extends ReduceStore<State & BaseState, Acti
    * override. This is the store's opportunity to handle channel specific
    * actions.
    */
-  handleAction(state: State & BaseState, action: Action) {
+  handleAction(state: State, action: Action) {
     return state;
   }
 
@@ -56,7 +57,7 @@ export default class WdkStore<State> extends ReduceStore<State & BaseState, Acti
     this.globalDataStore = globalDataStore;
   }
 
-  reduce(state: State & BaseState, action: Action) {
+  reduce(state: State, action: Action) {
     this.getDispatcher().waitFor([ this.globalDataStore.getDispatchToken() ]);
     if (this.globalDataStore.hasChanged()) {
       state = Object.assign({}, state, {
