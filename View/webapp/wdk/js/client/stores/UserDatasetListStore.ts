@@ -1,8 +1,7 @@
 import { Action } from '../dispatcher/Dispatcher';
 import WdkStore, { BaseState } from './WdkStore';
 import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
-
-type UserDataset = any;
+import { UserDataset } from '../utils/WdkModel';
 
 interface State extends BaseState {
   userDatasetsLoading: boolean;
@@ -22,16 +21,16 @@ export default class UserDatasetListStore extends WdkStore<State> {
 
   handleAction(state: State, {type, payload}: Action) {
     switch (type) {
-      case actionTypes.LOADING: return Object.assign({}, state, {
+      case actionTypes.DATASET_LIST_LOADING: return Object.assign({}, state, {
         userDatasetsLoading: true
       });
 
-      case actionTypes.LOAD_SUCCESS: return Object.assign({}, state, {
+      case actionTypes.DATASET_LIST_RECEIVED: return Object.assign({}, state, {
         userDatasetsLoading: false,
         userDatasets: payload.userDatasets
       });
 
-      case actionTypes.LOAD_ERROR: return Object.assign({}, state, {
+      case actionTypes.DATASET_LIST_ERROR_RECEIVED: return Object.assign({}, state, {
         userDatasetsLoading: false,
         loadError: payload.error
       });

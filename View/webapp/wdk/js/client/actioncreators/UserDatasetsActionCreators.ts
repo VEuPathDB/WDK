@@ -1,15 +1,19 @@
 import {ActionCreator} from "../ActionCreator";
 
-const LOADING = 'user-datasets/loading'
-const LOAD_SUCCESS = 'user-datasets/loaded'
-const LOAD_ERROR = 'user-datasets/error'
+const DATASET_LIST_LOADING = 'user-datasets/list-loading';
+const DATASET_LIST_RECEIVED = 'user-datasets/list-received';
+const DATASET_LIST_ERROR_RECEIVED = 'user-datasets/list-error';
 
-export const actionTypes = { LOADING, LOAD_SUCCESS, LOAD_ERROR }
+export const actionTypes = {
+  DATASET_LIST_LOADING,
+  DATASET_LIST_RECEIVED,
+  DATASET_LIST_ERROR_RECEIVED
+};
 
-const createLoadAction = () => ({ type: LOADING })
+const createLoadAction = () => ({ type: DATASET_LIST_LOADING });
 
-export const loadUserDatasets: ActionCreator = () => (dispatch, { wdkService }) =>
+export const loadUserDatasetList: ActionCreator = () => (dispatch, { wdkService }) =>
   wdkService.getCurrentUserDatasets()
-  .then(userDatasets => ({ type: LOAD_SUCCESS, payload: { userDatasets } }),
-        error => ({ type: LOAD_ERROR, payload: { error } }))
-  .then(dispatch)
+  .then(userDatasets => ({ type: DATASET_LIST_RECEIVED, payload: { userDatasets } }),
+        error => ({ type: DATASET_LIST_ERROR_RECEIVED, payload: { error } }))
+  .then(dispatch);
