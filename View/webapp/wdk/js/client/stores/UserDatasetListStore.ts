@@ -1,18 +1,26 @@
-import WdkStore from './WdkStore';
+import { Action } from '../dispatcher/Dispatcher';
+import WdkStore, { BaseState } from './WdkStore';
 import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
 
-export default class UserDatasetsStore extends WdkStore {
+type UserDataset = any;
 
-  // defines the structure of this store's data
+interface State extends BaseState {
+  userDatasetsLoading: boolean;
+  userDatasets: UserDataset[];
+  loadError: Error | null;
+}
+
+export default class UserDatasetListStore extends WdkStore<State> {
+
   getInitialState() {
-    return {
+    return Object.assign({
       userDatasetsLoading: false,
       userDatasets: [],
       loadError: null
-    };
+    }, super.getInitialState());
   }
 
-  handleAction(state, {type, payload}) {
+  handleAction(state: State, {type, payload}: Action) {
     switch (type) {
       case actionTypes.LOADING: return Object.assign({}, state, {
         userDatasetsLoading: true
