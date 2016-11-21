@@ -1,8 +1,8 @@
 import { pick } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-import { loadUserDatasets } from '../actioncreators/UserDatasetsActionCreators';
-import UserDatasets from '../components/UserDatasets';
+import { loadUserDatasetList } from '../actioncreators/UserDatasetsActionCreators';
+import UserDatasetList from '../components/UserDatasetList';
 
 class UserDatasetListController extends WdkViewController {
 
@@ -20,12 +20,12 @@ class UserDatasetListController extends WdkViewController {
 
   getActionCreators() {
     return {
-      loadUserDatasets
+      loadUserDatasetList
     };
   }
 
   loadData() {
-    this.eventHandlers.loadUserDatasets();
+    this.eventHandlers.loadUserDatasetList();
   }
 
   isRenderDataLoaded(state) {
@@ -33,7 +33,7 @@ class UserDatasetListController extends WdkViewController {
   }
 
   renderView(state) {
-    return ( <UserDatasets userDatasets={state.userDatasets} /> );
+    return ( <UserDatasetList userDatasets={state.userDatasets} /> );
   }
 }
 

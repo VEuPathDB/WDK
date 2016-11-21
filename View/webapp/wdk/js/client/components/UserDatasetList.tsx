@@ -1,10 +1,9 @@
 import React from 'react';
 import { withRouter, InjectedRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
+import { UserDataset } from '../utils/WdkModel';
 import DataTable from './DataTable';
 import Loading from './Loading';
-
-type UserDataset = any;
 
 type Props = {
   userDatasets: UserDataset[],
@@ -42,7 +41,7 @@ const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter) =>
     quota: ud.percentQuotaUsed
   }));
 
-const UserDatasets = (props: Props) =>
+const UserDatasetList = (props: Props) =>
   <div>
     <h1>User Data Sets</h1>
     <DataTable columns={columns}
@@ -58,4 +57,4 @@ const UserDatasets = (props: Props) =>
     </div>
   </div>
 
-export default wrappable(withRouter(UserDatasets));
+export default wrappable(withRouter(UserDatasetList));
