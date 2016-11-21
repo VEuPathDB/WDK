@@ -341,6 +341,10 @@ export default class WdkService {
     return this._fetchJson<UserDataset[]>('get', '/user/current/user-dataset?expandDetails=true');
   }
 
+  getUserDataset(id: number) {
+    return this._fetchJson<UserDataset>('get', `/user/current/user-dataset/${id}`)
+  }
+
   getOauthStateToken() {
     return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/stateToken');
   }
