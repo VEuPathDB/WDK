@@ -167,7 +167,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   // TODO: get from model config
   private String getUserDatasetSchemaName() {
-    return  "ApiDBUserDatasets";
+    return  "ApiDBUserDatasets.";
   }
   
   private String getWdkTempDirName() throws WdkModelException {
