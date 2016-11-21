@@ -21,7 +21,7 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
 
   /*--------------- Methods that should probably be overridden ---------------*/
 
-  getInitialState() {
+  getInitialState(): State {
     return <State>{
       globalData: {}
     };
@@ -32,7 +32,7 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
    * override. This is the store's opportunity to handle channel specific
    * actions.
    */
-  handleAction(state: State, action: Action) {
+  handleAction(state: State, action: Action): State {
     return state;
   }
 
@@ -45,7 +45,7 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
    * store's channel name.  To receive actions on channels intended for other
    * stores, override this method.
    */
-  storeShouldReceiveAction(channel?: string) {
+  storeShouldReceiveAction(channel?: string): boolean {
     return (channel === undefined /* broadcast */ || channel === this.channel);
   }
 
@@ -57,12 +57,12 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
     this.globalDataStore = globalDataStore;
   }
 
-  reduce(state: State, action: Action) {
+  reduce(state: State, action: Action): State {
     this.getDispatcher().waitFor([ this.globalDataStore.getDispatchToken() ]);
     if (this.globalDataStore.hasChanged()) {
-      state = Object.assign({}, state, {
+      state = Object.assign({
         globalData: this.globalDataStore.getState()
-      });
+      }, state);
       return this.handleAction(state, action);
     }
     else if (this.storeShouldReceiveAction(action.channel)) {
