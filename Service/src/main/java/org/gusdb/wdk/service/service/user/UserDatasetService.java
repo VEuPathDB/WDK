@@ -53,6 +53,7 @@ public class UserDatasetService extends UserService {
   @Path("user-dataset")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
+    if (expandDatasets == null) expandDatasets = false;
     UserDatasetStore userDatasetStore = getUserDatasetStore();
     Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
     Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
