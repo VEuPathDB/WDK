@@ -31,7 +31,7 @@ public class UserDatasetEventHandler {
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
     UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
 
-    String sql = "insert into " + userDatasetSchemaName + "." + installedTable + " (user_dataset_id, name) values (?, ?)";
+    String sql = "insert into " + userDatasetSchemaName + installedTable + " (user_dataset_id, name) values (?, ?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
     Object[] args = {event.getUserDatasetId(), userDataset.getMeta().getName()};
     sqlRunner.executeUpdate(args);
@@ -48,7 +48,7 @@ public class UserDatasetEventHandler {
 
     revokeAllAccess(event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName);
     typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir);
-    String sql = "delete from " + userDatasetSchemaName + "." + installedTable + " where user_dataset_id = ?";
+    String sql = "delete from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
 
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "delete-user-dataset-row");
     Object[] args = {event.getUserDatasetId()};
@@ -82,7 +82,7 @@ public class UserDatasetEventHandler {
 
   private static void grantAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Granting access to user dataset " + userDatasetId + " to user " + userId + " in table " + tableName);
-    String sql = "insert into " + userDatasetSchemaName + "." + tableName + " (user_id, user_dataset_id) values (?, ?)";
+    String sql = "insert into " + userDatasetSchemaName + tableName + " (user_id, user_dataset_id) values (?, ?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
     Object[] args = {userId, userDatasetId};
     sqlRunner.executeUpdate(args);
@@ -90,7 +90,7 @@ public class UserDatasetEventHandler {
 
   private static void revokeAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Revoking access to user dataset " + userDatasetId + " from user " + userId);
-    String sql = "delete from " + userDatasetSchemaName + "." + tableName + " where user_id = ? and user_dataset_id = ?";
+    String sql = "delete from " + userDatasetSchemaName + tableName + " where user_id = ? and user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
     Object[] args = {userId, userDatasetId};
     sqlRunner.executeUpdate(args);
@@ -100,29 +100,29 @@ public class UserDatasetEventHandler {
     logger.info("Revoking all access to user dataset " + userDatasetId);
     Object[] args = {userDatasetId};
     
-    String sql = "delete from " + userDatasetSchemaName + "." + ownerTable + " where user_dataset_id = ?";
+    String sql = "delete from " + userDatasetSchemaName + ownerTable + " where user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
     
-    sql = "delete from " + userDatasetSchemaName + "." + sharedTable + " where user_dataset_id = ?";
+    sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
     sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
 
-    sql = "delete from " + userDatasetSchemaName + "." + externalTable + " where user_dataset_id = ?";
+    sql = "delete from " + userDatasetSchemaName + externalTable + " where user_dataset_id = ?";
     sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
   }
 
   private static void openEventHandling(Integer eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Start handling event: " + eventId);
-    String sql = "insert into " + userDatasetSchemaName + "." + eventTable + " (event_id) values (?)";
+    String sql = "insert into " + userDatasetSchemaName + eventTable + " (event_id) values (?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-event");
     Object[] args = {eventId};
     sqlRunner.executeUpdate(args);
   }
 
   private static void closeEventHandling(Integer eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
-    String sql = "update " + userDatasetSchemaName + "." + eventTable + " set completed = sysdate where event_id = ?";
+    String sql = "update " + userDatasetSchemaName + eventTable + " set completed = sysdate where event_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "complete-user-dataset-event-handling");
     Object[] args = {eventId};
     sqlRunner.executeUpdate(args);
