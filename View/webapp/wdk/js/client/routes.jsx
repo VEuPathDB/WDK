@@ -9,6 +9,7 @@ import UserProfileController from './controllers/UserProfileController';
 import UserPasswordChangeController from './controllers/UserPasswordChangeController';
 import SiteMapController from './controllers/SiteMapController';
 import UserDatasetListController from './controllers/UserDatasetListController';
+import UserDatasetItemController from './controllers/UserDatasetItemController';
 
 export default (
   <Route path="/">
@@ -20,6 +21,7 @@ export default (
     <Route path="user/profile" component={UserProfileController}/>
     <Route path="user/profile/password" component={UserPasswordChangeController}/>
     <Route path="workspace/datasets" component={UserDatasetListController}/>
+    <Route path="workspace/datasets/:id" component={UserDatasetItemController}/>
     <Route path="data-finder" component={SiteMapController}/>
     <Route path="question-list" component={QuestionListController}/>
     <Route path="*" component={NotFoundController}/>
