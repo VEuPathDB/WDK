@@ -115,6 +115,11 @@ export type UserDataset = {
     resourceIdentifier: string;
     resourceVersion: string;
   }>;
+  datafiles: Array<{
+    name: string;
+    size: number;
+  }>;
+  projects: string[];
   id: number;
   meta: {
     description: string;
@@ -130,7 +135,8 @@ export type UserDataset = {
   }>;
   size: number;
   type: {
-    example: string;
+    name: string;
+    version: string;
   };
   updloaded: number;
 }
