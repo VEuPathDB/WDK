@@ -142,7 +142,7 @@
 .filter-param .field-list li .wdk-AttributeFilterFieldParent,
 .filter-param .field-list li .wdk-AttributeFilterFieldItem {
   display: block;
-  padding: .4em;
+  padding: .3em;
   padding-right: 1em;
 }
 .filter-param .field-list li .wdk-AttributeFilterFieldItem__inactive {
@@ -151,9 +151,9 @@
 .filter-param .field-list .wdk-AttributeFilterFieldItem__active {
   background-color: white;
   border-right: 1px solid white;
-  border-top: 1px solid #a2a2a2;
+  border-top: 1px inset #696969;
   border-bottom: 1px solid #ddd;
-  border-left: 1px solid #a2a2a2;
+  border-left: 1px inset #696969;
   margin-right: -11px;
 }
 .filter-param .field-detail {
