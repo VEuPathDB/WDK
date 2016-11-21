@@ -48,14 +48,14 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
   /**
    * Provides an empty object as initial state.
    */
-  getInitialState() {
+  getInitialState(): GlobalData {
     return <GlobalData>{};
   }
 
   /**
    * Does nothing by default for other actions; subclasses will probably override
    */
-  handleAction(state: GlobalData, action: Action) {
+  handleAction(state: GlobalData, action: Action): GlobalData {
     return state;
   }
 
@@ -64,14 +64,14 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
   /**
    * Default handling of each static data item load.
    */
-  handleStaticDataItemAction(state: GlobalData, itemName: string, payload: any) {
+  handleStaticDataItemAction(state: GlobalData, itemName: string, payload: any): GlobalData {
     return Object.assign({}, state, { [itemName]: payload[itemName] });
   }
 
   /**
    * Default handle of user actions
    */
-  handleUserAction(state: GlobalData, action: Action) {
+  handleUserAction(state: GlobalData, action: Action): GlobalData {
     let { type, payload } = action;
     switch(type) {
       case userActionTypes.USER_UPDATE:
@@ -92,7 +92,7 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
    * @param state
    * @param action
    */
-  handleRouterAction(state: GlobalData, action: Action) {
+  handleRouterAction(state: GlobalData, action: Action): GlobalData {
     switch (action.type) {
       case routerActionTypes.LOCATION_UPDATED: return Object.assign( {}, state,
         pick(action.payload, 'location'));
@@ -106,7 +106,7 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
    * Handles requested static data item loads and passes remaining actions to
    * handleAction(), which will usually be overridden by the subclass
    */
-  reduce(state: GlobalData, action: Action) {
+  reduce(state: GlobalData, action: Action): GlobalData {
     let { type, payload } = action;
     if (type in actionMap) {
       // this action corresponds to a static data item that this store needs
