@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +20,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
@@ -53,7 +57,8 @@ public class UserDatasetService extends UserService {
     Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
     Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
     String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, getWdkModel().getUserDb().getDataSource(), userSchema, expandDatasets).toString()).build();
+    Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, expandDatasets).toString()).build();
   }
 
   @GET
@@ -63,7 +68,8 @@ public class UserDatasetService extends UserService {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
     UserDataset userDataset = getUserDatasetStore().getUserDataset(getUserId(), new Integer(datasetIdStr));
     String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
-    return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, getWdkModel().getUserDb().getDataSource(), userSchema).toString()).build();
+    Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
+    return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, false).toString()).build();
   }
 
   @PUT
@@ -143,9 +149,9 @@ public class UserDatasetService extends UserService {
     return userDatasetStore;
   }
   
-  private DataSource getAppDbDataSource() throws WdkModelException {
-    DataSource appDbDataSource = getWdkModel().getAppDb().getDataSource();
-    return appDbDataSource;
+  // TODO: get this from config
+  private String getUserDatasetSchemaName() throws WdkModelException {
+    return "ApiDBUserDatasets.";
   }
 
   /* not used yet.
@@ -172,5 +178,32 @@ public class UserDatasetService extends UserService {
       throw new NotFoundException(WdkService.formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
     }
   }
+  
+  // this probably doesn't belong here, but it is not obvious where it does belong
+  /**
+   * Return the dataset IDs the provided user can see in the provided app db, ie, that are installed and has access to
+   * @param userId
+   * @param userDatasetSchema
+   * @param appDbDataSource
+   * @return
+   * @throws WdkModelException
+   */
+  private static Set<Integer> getInstalledUserDatasets(Integer userId, DataSource appDbDataSource, String userDatasetSchema) throws WdkModelException {
+    
+    final Set<Integer> datasetIds = new HashSet<Integer>();
+    ResultSetHandler handler = new ResultSetHandler() {
+      @Override
+      public void handleResult(ResultSet rs) throws SQLException {
+        while (rs.next()) datasetIds.add(rs.getInt(1)); 
+      }
+    };
+
+    String sql = "select user_dataset_id from " + userDatasetSchema + "userDatasetAccessControl where user_id = ?";
+    SQLRunner runner = new SQLRunner(appDbDataSource, sql, "installed-datasets-ud-svc");
+    Object[] args = {userId};
+    runner.executeQuery(args, handler);
+    return datasetIds;
+  }
+
 
 }
