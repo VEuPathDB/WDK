@@ -2,9 +2,11 @@ package org.gusdb.wdk.service.formatter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -22,20 +24,20 @@ import org.json.JSONObject;
 
 public class UserDatasetFormatter {
 
-  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, Map<Integer, UserDataset> externalUserDatasetsMap, UserDatasetStore userDatasetStore, DataSource userDbDataSource, String userSchema, boolean expand) throws WdkModelException {
+  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, Map<Integer, UserDataset> externalUserDatasetsMap, UserDatasetStore userDatasetStore, Set<Integer> installedUserDatasets, DataSource userDbDataSource, String userSchema, boolean expand) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
-    putDatasetsIntoJsonArray(datasetsJson, userDatasetsMap, userDatasetStore, userDbDataSource, userSchema, expand); 
-    putDatasetsIntoJsonArray(datasetsJson, externalUserDatasetsMap, userDatasetStore, userDbDataSource, userSchema, expand); 
+    putDatasetsIntoJsonArray(datasetsJson, userDatasetsMap, userDatasetStore, installedUserDatasets, userDbDataSource, userSchema, false, expand); 
+    putDatasetsIntoJsonArray(datasetsJson, externalUserDatasetsMap, userDatasetStore, installedUserDatasets, userDbDataSource, userSchema, true, expand); 
     return datasetsJson;
   }
   
-  static void putDatasetsIntoJsonArray(JSONArray datasetsJson, Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, DataSource userDbDataSource, String userSchema, boolean expand) throws WdkModelException {
+  private static void putDatasetsIntoJsonArray(JSONArray datasetsJson, Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, Set<Integer> installedUserDatasets, DataSource userDbDataSource, String userSchema, boolean isExternalDataset, boolean expand) throws WdkModelException {
     for (Integer datasetId : userDatasetsMap.keySet()) {
       if (!expand) datasetsJson.put(datasetId);
       else {
         UserDataset dataset = userDatasetsMap.get(datasetId);
 //        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset, appDbDataSource);
-        datasetsJson.put(getUserDatasetJson(dataset, userDatasetStore, userDbDataSource, userSchema));
+        datasetsJson.put(getUserDatasetJson(dataset, userDatasetStore, installedUserDatasets, userDbDataSource, userSchema, isExternalDataset));
       }
     }
   }
@@ -69,11 +71,11 @@ public class UserDatasetFormatter {
   uploaded: 1231398508344,
   sharedWith: [{user: 829424, emailName: "sfischer", time: 13252342341}, {user: 989921, emailName: "dfalke", time: 12332532332}],
   dataFiles: [{name: "blah", size: "10M"}],
-  compatibility: { isCompatible: true, notCompatibleReason: "" }
+  isInstalled: true
 }
 
    */
-  public static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetStore store, DataSource userDbDataSource, String userSchema) throws WdkModelException {
+  public static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetStore store, Set<Integer> installedUserDatasets, DataSource userDbDataSource, String userSchema, boolean isExternalDataset) throws WdkModelException {
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
@@ -81,6 +83,7 @@ public class UserDatasetFormatter {
     typeJson.put("version", type.getVersion());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
+    json.put("isInstalled", installedUserDatasets.contains(dataset.getUserDatasetId()));
 
     JSONArray dependenciesJson = new JSONArray(); 
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
@@ -101,23 +104,27 @@ public class UserDatasetFormatter {
     metaJson.put("description", dataset.getMeta().getDescription());
     metaJson.put("summary", dataset.getMeta().getSummary());
     json.put("meta", metaJson);
-    json.put("owner", dataset.getOwnerId()); // same as user id
+    json.put("owner", getUserEmailName( dataset.getOwnerId(),  userSchema,  userDbDataSource)); 
     json.put("size", dataset.getSize());
     json.put("modified", dataset.getModifiedDate());
     json.put("created", dataset.getCreatedDate());
     json.put("uploaded", dataset.getUploadedDate());
     int quota = store.getQuota(dataset.getOwnerId());
-    json.put("percentQuotaUsed", new Integer(dataset.getSize() * 100 / quota));
+    DecimalFormat df = new DecimalFormat("#.####");
+    json.put("percentQuotaUsed", df.format(dataset.getSize() * 100.0 / quota));
     
-    JSONArray sharesJson = new JSONArray();
-    for (UserDatasetShare share : store.getSharedWith(dataset.getOwnerId(), dataset.getUserDatasetId())) {
-      JSONObject shareJson = new JSONObject();
-      shareJson.put("user", share.getUserId());
-      shareJson.put("time", share.getTimeShared());
-      shareJson.put("emailName", getUserEmailName( share.getUserId(),  userSchema,  userDbDataSource));
-      sharesJson.put(shareJson);
+    // external users don't get to know who else it is shared with
+    if (!isExternalDataset) {
+      JSONArray sharesJson = new JSONArray();
+      for (UserDatasetShare share : store.getSharedWith(dataset.getOwnerId(), dataset.getUserDatasetId())) {
+        JSONObject shareJson = new JSONObject();
+        shareJson.put("user", share.getUserId());
+        shareJson.put("time", share.getTimeShared());
+        shareJson.put("emailName", getUserEmailName(share.getUserId(), userSchema, userDbDataSource));
+        sharesJson.put(shareJson);
+      }
+      json.put("sharedWith", sharesJson);
     }
-    json.put("sharedWith", sharesJson);
     
     JSONArray filesJson = new JSONArray();
     for (UserDatasetFile file : dataset.getFiles().values()) {
@@ -137,6 +144,7 @@ public class UserDatasetFormatter {
     return json;
   }
   
+  // this probably doesn't belong here, but it is not obvious where it does belong
   private static String getUserEmailName(Integer userId, String userSchema, DataSource userDbDataSource) throws WdkModelException {
     
     final List<String> emails = new ArrayList<String>();
@@ -156,4 +164,5 @@ public class UserDatasetFormatter {
     if (emailParts.length != 2) return emails.get(0); // if can't parse email, return whole thing.  
     return emailParts[0];
   }
+ 
 }
