@@ -4,6 +4,9 @@ import WdkViewController from './WdkViewController';
 import { loadUserDatasetItem } from '../actioncreators/UserDatasetsActionCreators';
 import UserDatasetItem from '../components/UserDatasetItem';
 
+/**
+ * View Controller for User Dataset record
+ */
 class UserDatasetItemController extends WdkViewController {
 
   getStoreName() {
