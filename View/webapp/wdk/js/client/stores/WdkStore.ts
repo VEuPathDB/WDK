@@ -60,9 +60,9 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
   reduce(state: State, action: Action): State {
     this.getDispatcher().waitFor([ this.globalDataStore.getDispatchToken() ]);
     if (this.globalDataStore.hasChanged()) {
-      state = Object.assign({
+      state = Object.assign({}, state, {
         globalData: this.globalDataStore.getState()
-      }, state);
+      });
       return this.handleAction(state, action);
     }
     else if (this.storeShouldReceiveAction(action.channel)) {
