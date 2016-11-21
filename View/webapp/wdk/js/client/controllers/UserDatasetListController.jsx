@@ -4,10 +4,10 @@ import WdkViewController from './WdkViewController';
 import { loadUserDatasets } from '../actioncreators/UserDatasetsActionCreators';
 import UserDatasets from '../components/UserDatasets';
 
-class UserDatasetsController extends WdkViewController {
+class UserDatasetListController extends WdkViewController {
 
   getStoreName() {
-    return "UserDatasetsStore";
+    return "UserDatasetListStore";
   }
 
   getStateFromStore(store) {
@@ -37,4 +37,4 @@ class UserDatasetsController extends WdkViewController {
   }
 }
 
-export default wrappable(UserDatasetsController);
+export default wrappable(UserDatasetListController);

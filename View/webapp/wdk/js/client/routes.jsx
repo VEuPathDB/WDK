@@ -8,7 +8,7 @@ import DownloadFormController from './controllers/DownloadFormController';
 import UserProfileController from './controllers/UserProfileController';
 import UserPasswordChangeController from './controllers/UserPasswordChangeController';
 import SiteMapController from './controllers/SiteMapController';
-import UserDatasetsController from './controllers/UserDatasetsController';
+import UserDatasetListController from './controllers/UserDatasetListController';
 
 export default (
   <Route path="/">
@@ -19,7 +19,7 @@ export default (
     <Route path="step/:stepId/download" component={DownloadFormController}/>
     <Route path="user/profile" component={UserProfileController}/>
     <Route path="user/profile/password" component={UserPasswordChangeController}/>
-    <Route path="workspace/datasets" component={UserDatasetsController}/>
+    <Route path="workspace/datasets" component={UserDatasetListController}/>
     <Route path="data-finder" component={SiteMapController}/>
     <Route path="question-list" component={QuestionListController}/>
     <Route path="*" component={NotFoundController}/>
