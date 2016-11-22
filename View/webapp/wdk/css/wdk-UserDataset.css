@@ -1,0 +1,18 @@
+.wdk-UserDatasetHeading {
+  padding-bottom: 0;
+}
+
+.wdk-UserDatasetSummary {
+  font-weight: 300;
+  font-size: 1.6em;
+  margin-top: 0;
+}
+
+.wdk-UserDatasetDescription {
+  font-size: 1.2em;
+}
+
+.wdk-UserDatasetSectionHeading {
+  font-size: 1.6em;
+  padding-top: 20px;
+}
