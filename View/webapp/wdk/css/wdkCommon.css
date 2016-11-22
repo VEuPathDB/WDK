@@ -28,8 +28,8 @@ html {
 }
 */
 
-body { 
-  font-size: 12px; 
+body {
+  font-size: 12px;
   text-align: left;
 	color: #000000;
 	background-color: #ffffff;
@@ -66,6 +66,11 @@ h3 {
 	margin-left: 11px;
 }
 
+ul {
+  padding: 0;
+  margin: 0 0 0 1.5em;
+}
+
 a:link, a:visited {
 	text-decoration: none;
 }
@@ -78,7 +83,7 @@ p {
 	margin: 1em 0;
 }
 
-td { 
+td {
   padding: 4px 4px 4px 4px;
   vertical-align: baseline;
 }
@@ -95,7 +100,7 @@ img[data-assets-src][src] {
 	font-size: 150%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	color:  black; 
+	color:  black;
 	margin-bottom: 11px;
  	text-align: center;
 	margin-left: 11px;
@@ -104,7 +109,7 @@ img[data-assets-src][src] {
 	font-size: 120%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	color:  black;    
+	color:  black;
 	margin-bottom: 5px;
  	text-align: center;
 }
@@ -113,7 +118,7 @@ img[data-assets-src][src] {
 	font-size: 120%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	color:  black;    
+	color:  black;
 	margin-bottom: 11px;
  	text-align: left;
 	margin-left: 5px;
@@ -124,14 +129,14 @@ img[data-assets-src][src] {
 /*	font-size: 130%; */
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	color:  black;    
+	color:  black;
  	text-align: left;
 }
 .h4center {
 /*	font-size: 130%; */
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	color:  black;    
+	color:  black;
  	text-align: center;
 }
 .large {
@@ -146,7 +151,7 @@ img[data-assets-src][src] {
 }
 
 .small {
-	font-size: 95%;	
+	font-size: 95%;
 }
 
 .tiny-text {
@@ -166,11 +171,11 @@ img[data-assets-src][src] {
    clear:both;
 }
 
-.fltrt { 
+.fltrt {
 	float: right;
 	margin-left: 8px;
 }
-.fltlft { 
+.fltlft {
 	float: left;
 	margin-right: 8px;
 }
@@ -346,7 +351,7 @@ button.wdk-Link {
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    =Styling for the Login pop-up box 
+    =Styling for the Login pop-up box
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #login table {
@@ -366,7 +371,7 @@ button.wdk-Link {
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   =smallMenu 
+   =smallMenu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /***** Styling for the header links *****/
@@ -414,13 +419,13 @@ button.wdk-Link {
 }
 #nav-top a:link, #nav-top a:visited {
   display: block;
-  color: black; 
+  color: black;
   width: auto;
   text-decoration: none;
 }
 #nav-top a:hover, #nav-top a:active {
   display: block;
-  color: #0000CD; 
+  color: #0000CD;
   width: auto;
   text-decoration: none;
 }
@@ -612,7 +617,7 @@ ul.menubar {
   display: none;
 }
 
-.group-title {	
+.group-title {
 /*	text-align: center;*/
 /*	padding: 0 0 5px;  */
 /*	padding: 3px;  */
@@ -774,10 +779,10 @@ img.plus-minus {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =STRUCTURE STRATEGY WORKSPACE 
+	 =STRUCTURE STRATEGY WORKSPACE
    == happens to also be used by api sites for all pages.*****..
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
- 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 #contentwrapper {
 	float: left;
 	width: 100%;
@@ -790,7 +795,7 @@ img.plus-minus {
 }
 
 .innertube{
-	margin: 6px; 
+	margin: 6px;
 }
 
 
@@ -918,8 +923,8 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-form[name=questionForm] .filter-button { 
-	text-align: center; 
+form[name=questionForm] .filter-button {
+	text-align: center;
 	padding-top: 1em;
 }
 
@@ -965,7 +970,7 @@ form[name=questionForm] .filter-button {
      = Advanced Paging Pop Up initial style
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .advanced-paging {
-  display:none; 
+  display:none;
   position:absolute;
   border:solid 2px #888888;   /* #B2BFD4;   */
   background-color:#c2cee1;
@@ -1022,11 +1027,11 @@ td.subheaderrow {
 	height: 30px;
 	font-size: 13px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #474747;  
+	color: #474747;
 	background-repeat: repeat-x;
 	background-position: top;
 	font-weight: bold;
-	padding: 4px; 
+	padding: 4px;
 }
 
 tr.subheaderrow {
@@ -1035,7 +1040,7 @@ tr.subheaderrow {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 /*	color: #474747; */
 	font-weight: bold;
-	padding: 4px; 
+	padding: 4px;
 }
 
 tr.subheaderrow th {
@@ -1047,7 +1052,7 @@ td.lines {
 }
 
 td.linesalt {
-	background-color: #EEEEEE; 
+	background-color: #EEEEEE;
 	padding: 4px;
 }
 
@@ -1062,7 +1067,7 @@ tr.subheaderrow th {
 	border-style: solid;
 }
 
-tr.headerrow th { 
+tr.headerrow th {
 /*	white-space: nowrap; */
 	font-size: 12px;
 	vertical-align:	middle;
@@ -1073,7 +1078,7 @@ tr.headerrow th {
 }
 
 /* result column headers */
-tr.headerrow th table tbody tr td { 
+tr.headerrow th table tbody tr td {
 	padding: 1px;
 /*	white-space: nowrap; */
 	vertical-align: middle;
@@ -1103,10 +1108,10 @@ tr.lines td, tr.linesalt td {
 
 div.Workspace {
    position: relative;
- 	border: 2px solid #0B4796; 
+ 	border: 2px solid #0B4796;
 	margin-top:5px;
 	padding: 6px;
-	
+
 }
 
 .step {background-image: url(../images/loading_step.png);}
@@ -1131,7 +1136,7 @@ tr.headerRow th {
 	background-color: #FFFFFF;
 	background-repeat: repeat-x;
 	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
-	border: 1px solid #888888;	
+	border: 1px solid #888888;
 	padding: 0 8px 8px 8px;
 	z-index: 190;   /* as good as 1000... in select columns popup to cover results */
 }
@@ -1204,7 +1209,7 @@ tr.headerRow th {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 table#title-links {
-	font-size:12px; 
+	font-size:12px;
 /*we need to figure out why the font size in this table becomes different when used in basket vs results table */
 }
 div#Summary_Views {
@@ -1525,7 +1530,7 @@ table.recordTable {
 
 .toggle {display: none;}
 .boggle {
-	margin: 6px 20px 20px 20px; 
+	margin: 6px 20px 20px 20px;
 	display: none;
 	overflow-x: auto;
 }
@@ -1628,7 +1633,7 @@ tr.headerRow > td,th {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =blockUI popups 
+	 =blockUI popups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .blockMsg{
@@ -1686,7 +1691,7 @@ img.basket {
 }
 
 #basket-menu > .ui-tabs-panel{
-	padding:0; 
+	padding:0;
 }
 
 #basket #basket-control-panel { display: none; }
@@ -1720,10 +1725,10 @@ span.basket-warning {
 table.mytableStyle {
 	empty-cells:show;
 	border-width:1px;
-	border-style:solid;	  
+	border-style:solid;
 	border-color:black;
-	border-collapse:collapse; 
-	table-layout: auto;      
+	border-collapse:collapse;
+	table-layout: auto;
 }
 tr.mytdStyle {
 	text-align:center;
@@ -1821,7 +1826,7 @@ color:darkred;font-style:italic;font-size:95%;
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = jQuery 
+     = jQuery
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .ui-front {
@@ -1837,11 +1842,11 @@ color:darkred;font-style:italic;font-size:95%;
     border-bottom: 1px solid;
 }
 
-.dataTables_wrapper .ui-widget-header { 
+.dataTables_wrapper .ui-widget-header {
 	/*padding:0;*/
 	background:none;
-	border:0; 
-} 
+	border:0;
+}
 .ui-tabs .ui-tabs-panel {
 	padding:0.5em 0.5em 0.5em;
 	border-width: 1px;
@@ -1926,7 +1931,7 @@ label.error {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =MISC 
+	 =MISC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 span.marker a:link, span.marker a:visited {
