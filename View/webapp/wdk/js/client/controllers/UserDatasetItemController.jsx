@@ -5,16 +5,20 @@ import { loadUserDatasetItem } from '../actioncreators/UserDatasetsActionCreator
 import UserDatasetItem from '../components/UserDatasetItem';
 
 /**
- * View Controller for User Dataset record
+ * View Controller for User Dataset record.
+ *
+ * Note that we are accessing the userDataset from an object keyed by the
+ * userDataset's id. This avoids race conditions that arise when ajax requests
+ * complete in a different order than they were invoked.
  */
 class UserDatasetItemController extends WdkViewController {
 
   getStoreName() {
-    return "UserDatasetItemStore";
+    return 'UserDatasetItemStore';
   }
 
   getStateFromStore(store) {
-    return pick(store.getState(), 'userDataset');
+    return pick(store.getState(), 'userDatasetsById');
   }
 
   getTitle(state) {
@@ -27,16 +31,19 @@ class UserDatasetItemController extends WdkViewController {
     };
   }
 
-  loadData(state, props) {
-    this.eventHandlers.loadUserDatasetItem(props.params.id);
+  loadData(state, props, nextProps) {
+    const idChanged = nextProps && nextProps.params.id !== props.params.id;
+    if (idChanged || !state.userDatasetsById[props.params.id]) {
+      this.eventHandlers.loadUserDatasetItem(Number(props.params.id));
+    }
   }
 
   isRenderDataLoaded(state) {
-    return !!state.userDataset;
+    return state.userDatasetsById[this.props.params.id];
   }
 
   renderView(state) {
-    return ( <UserDatasetItem userDataset={state.userDataset} /> );
+    return ( <UserDatasetItem userDataset={state.userDatasetsById[this.props.params.id]} /> );
   }
 }
 

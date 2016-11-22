@@ -4,16 +4,21 @@ import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
 import { UserDataset } from '../utils/WdkModel';
 
 interface State extends BaseState {
-  userDatasetLoading: boolean;
-  userDataset: UserDataset;
+  userDatasetsById: { [key: number]: UserDataset };
   loadError?: Error;
 }
 
+/**
+ * Stores a map of userDatasets by id. By not storing the current userDataset,
+ * we avoid race conditions where the DATASET_ITEM_RECEIVED actions are
+ * dispatched in a different order than the corresponding action creators are
+ * invoked.
+ */
 export default class UserDatasetItemStore extends WdkStore<State> {
 
   getInitialState() {
     return Object.assign({
-      userDataset: undefined
+      userDatasetsById: {}
     }, super.getInitialState());
   }
 
@@ -25,7 +30,9 @@ export default class UserDatasetItemStore extends WdkStore<State> {
 
       case actionTypes.DATASET_ITEM_RECEIVED: return Object.assign({}, state, {
         userDatasetLoading: false,
-        userDataset: payload.userDataset
+        userDatasetsById: Object.assign({}, state.userDatasetsById, {
+          [payload.userDataset.id]: payload.userDataset
+        })
       });
 
       case actionTypes.DATASET_ITEM_ERROR: return Object.assign({}, state, {
