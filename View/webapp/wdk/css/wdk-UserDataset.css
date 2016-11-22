@@ -1,4 +1,13 @@
+.wdk-UserDataset {
+  margin: auto;
+  max-width: 1000px;
+}
+
+.wdk-UserDatasetCrumbs {
+}
+
 .wdk-UserDatasetHeading {
+  padding-top: 12px;
   padding-bottom: 0;
 }
 
@@ -6,6 +15,20 @@
   font-weight: 300;
   font-size: 1.6em;
   margin-top: 0;
+  margin-bottom: .4em;
+}
+
+.wdk-UserDatasetOverviewItem {
+  margin: .2em 0;
+}
+
+.wdk-UserDatasetOverviewItemPrompt {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.wdk-UserDatasetOverviewItemPrompt, .wdk-UserDatasetOverviewItemText {
+  display: inline-block;
 }
 
 .wdk-UserDatasetDescription {

@@ -2,6 +2,7 @@ import React from 'react';
 import { withRouter, InjectedRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import { UserDataset } from '../utils/WdkModel';
+import { bytesToHuman } from '../utils/Converters';
 import DataTable from './DataTable';
 import Loading from './Loading';
 
@@ -19,11 +20,11 @@ const columns = [
   { name: 'type', displayName: 'Type' },
   { name: 'installed', displayName: 'Installed' },
   { name: 'owner', displayName: 'Owner' },
-  { name: 'shared', displayName: 'Shared' },
+  { name: 'shared', displayName: 'Shared With' },
   { name: 'created', displayName: 'Created' },
   { name: 'modified', displayName: 'Modified' },
   { name: 'size', displayName: 'Size' },
-  { name: 'quota', displayName: 'Quota Usage' }
+  { name: 'quota', displayName: 'Quota Usage %' }
 ];
 
 const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter) =>
@@ -31,14 +32,14 @@ const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter) =>
     id: `<a href="${router.createHref(`/workspace/datasets/${ud.id}`)}">${ud.id}</a>`,
     name: ud.meta.name,
     summary: ud.meta.summary,
-    type: Object.keys(ud.type)[0],
-    installed: '&mdash;',
+    type: `${ud.type.name} ${ud.type.version}`,
+    installed: ud.isInstalled.toString(),
     owner: ud.owner,
-    shared: ud.sharedWith.join(', '),
-    created: new Date(ud.created).toDateString(),
-    modified: new Date(ud.modified).toDateString(),
-    size: ud.size,
-    quota: ud.percentQuotaUsed
+    shared: ud.sharedWith.map(share => share.emailName).join(', '),
+    created: new Date(ud.created).toLocaleDateString(),
+    modified: new Date(ud.modified).toLocaleDateString(),
+    size: bytesToHuman(ud.size),
+    quota: `${ud.percentQuotaUsed}%`
   }));
 
 const UserDatasetList = (props: Props) =>

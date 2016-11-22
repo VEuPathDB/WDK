@@ -110,6 +110,7 @@ export interface AnswerFormatting {
 
 export type UserDataset = {
   created: number;
+  isInstalled: boolean;
   dependencies: Array<{
     resourceDisplayName: string;
     resourceIdentifier: string;
@@ -130,6 +131,7 @@ export type UserDataset = {
   owner: number;
   percentQuotaUsed: number;
   sharedWith: Array<{
+    emailName: string;
     time: number;
     user: number;
   }>;
