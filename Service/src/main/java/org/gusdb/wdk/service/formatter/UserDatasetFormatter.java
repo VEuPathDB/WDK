@@ -105,6 +105,7 @@ public class UserDatasetFormatter {
     metaJson.put("summary", dataset.getMeta().getSummary());
     json.put("meta", metaJson);
     json.put("owner", getUserEmailName( dataset.getOwnerId(),  userSchema,  userDbDataSource)); 
+    json.put("ownerUserId", dataset.getOwnerId());
     json.put("size", dataset.getSize());
     json.put("modified", dataset.getModifiedDate());
     json.put("created", dataset.getCreatedDate());
