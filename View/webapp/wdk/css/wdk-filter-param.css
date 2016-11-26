@@ -142,7 +142,7 @@
 .filter-param .field-list li .wdk-AttributeFilterFieldParent,
 .filter-param .field-list li .wdk-AttributeFilterFieldItem {
   display: block;
-  padding: .3em;
+  padding: .25em;
   padding-right: 1em;
 }
 .filter-param .field-list li .wdk-AttributeFilterFieldItem__inactive {
