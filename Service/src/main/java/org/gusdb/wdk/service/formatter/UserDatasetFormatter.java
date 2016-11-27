@@ -99,6 +99,10 @@ public class UserDatasetFormatter {
     for (String project : dataset.getProjects()) projectsJson.put(project);
     json.put("projects", projectsJson);
     
+    JSONArray questionsJson = new JSONArray(); 
+    for (String questionName : store.getTypeHandler(type).getRelevantQuestionNames()) questionsJson.put(questionName);
+    json.put("questions", questionsJson);
+    
     JSONObject metaJson = new JSONObject();
     metaJson.put("name", dataset.getMeta().getName());
     metaJson.put("description", dataset.getMeta().getDescription());
