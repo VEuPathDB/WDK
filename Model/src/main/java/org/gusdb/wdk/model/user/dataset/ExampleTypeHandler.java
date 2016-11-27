@@ -36,6 +36,12 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
     return null;
   }
 
+  @Override
+  public String[] getRelevantQuestionNames() {
+    String[] empty = {};
+    return empty;
+  }
+
 
 
 

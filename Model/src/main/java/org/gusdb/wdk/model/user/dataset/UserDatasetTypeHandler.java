@@ -44,6 +44,8 @@ public abstract class UserDatasetTypeHandler {
   public abstract Set<String> getInstallInAppDbFileNames(UserDataset userDataset);
   
   public abstract String[] getUninstallInAppDbCommand(Integer userDatasetId);
+  
+  public abstract String[] getRelevantQuestionNames();
 
   public void installInAppDb(UserDataset userDataset, Path tmpDir) throws WdkModelException {
 
