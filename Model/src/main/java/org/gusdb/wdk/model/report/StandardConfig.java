@@ -198,18 +198,34 @@ public class StandardConfig {
     else {
       if (config.containsKey(SELECTED_ATTRS)) {
         String attrFlds = config.get(SELECTED_ATTRS);
-        if (attrFlds.equals("all"))
+        if (attrFlds.equals("all")) {
           allAttributes = true;
-        else
-          attributes = Arrays.asList(attrFlds.split(","));
+        }
+        else {
+          String[] tmpAttrs = attrFlds.split(",");
+          for (String attr : tmpAttrs) {
+            // only add attr if it is a real field (no categories)
+            if (fieldMap.get(attr).getClass().getName().contains("AttributeField")) {
+              attributes.add(attr);
+            }
+          }
+        }
       }
 
       if (config.containsKey(SELECTED_TABLES)) {
         String tableFlds = config.get(SELECTED_TABLES);
-        if (tableFlds.equals("all"))
+        if (tableFlds.equals("all")) {
           allTables = true;
-        else
-          tables = Arrays.asList(tableFlds.split(","));
+        }
+        else {
+          String[] tmpTables = tableFlds.split(",");
+          for (String table : tmpTables) {
+            // only add table if it is a real field (no categories)
+            if (fieldMap.get(table).getClass().getName().contains("TableField")) {
+              tables.add(table);
+            }
+          }
+        }
       }
     }
 
