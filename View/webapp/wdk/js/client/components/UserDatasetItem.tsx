@@ -25,7 +25,7 @@ const OverviewItem: StatelessComponent<{prompt: string}> = props =>
   </div>
 
 const SectionItem: StatelessComponent<{heading: string}> = props =>
-  <div>
+  <div className={makeClassName('Section')}>
     <h2 className={makeClassName('SectionHeading')}>{props.heading}</h2>
     {props.children}
   </div>
@@ -46,7 +46,7 @@ const UserDatasetItem: StatelessComponent<Props> = ({userDataset}) =>
         {userDataset.id}
       </OverviewItem>
 
-      <OverviewItem prompt="Type">
+      <OverviewItem prompt="Version">
         {userDataset.type.name} {userDataset.type.version}
       </OverviewItem>
 
