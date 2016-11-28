@@ -1,5 +1,4 @@
 import React, { StatelessComponent } from 'react';
-import { Link } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import { UserDataset } from '../utils/WdkModel';
 import { bytesToHuman } from '../utils/Converters';
@@ -19,7 +18,7 @@ const displayDate = (time: number) =>
 const tooltipDate = (time: number) =>
   new Date(time).toString();
 
-const OverViewItem: StatelessComponent<{prompt: string}> = props =>
+const OverviewItem: StatelessComponent<{prompt: string}> = props =>
   <div className={makeClassName('OverviewItem')}>
     <div className={makeClassName('OverviewItemPrompt')}>{props.prompt}:&nbsp;</div>
     <div className={makeClassName('OverviewItemText')}>{props.children}</div>
@@ -33,36 +32,39 @@ const SectionItem: StatelessComponent<{heading: string}> = props =>
 
 const UserDatasetItem: StatelessComponent<Props> = ({userDataset}) =>
   <div className={makeClassName()}>
-    <div className={makeClassName('Crumbs')}>
-      <Link to="workspace/datasets">User Data Sets</Link> &raquo; {userDataset.id}
-    </div>
-
     <h1 className={makeClassName('Heading')}>
-      {userDataset.meta.name}
+      User Data Set: {userDataset.meta.name}
     </h1>
 
-    <p className={makeClassName('Summary')}>{userDataset.meta.summary}</p>
 
-    <div>
-      <OverViewItem prompt="Type">
+    <div className={makeClassName('Overview')}>
+      <OverviewItem prompt="Summary">
+        {userDataset.meta.summary}
+      </OverviewItem>
+
+      <OverviewItem prompt="Identifier">
+        {userDataset.id}
+      </OverviewItem>
+
+      <OverviewItem prompt="Type">
         {userDataset.type.name} {userDataset.type.version}
-      </OverViewItem>
+      </OverviewItem>
 
-      <OverViewItem prompt="Dependencies">
+      <OverviewItem prompt="Dependencies">
         {userDataset.dependencies.map(d => `${d.resourceDisplayName} ${d.resourceVersion}`).join(', ')}
-      </OverViewItem>
+      </OverviewItem>
 
-      <OverViewItem prompt="Created">
+      <OverviewItem prompt="Created">
         <span title={tooltipDate(userDataset.created)}>{displayDate(userDataset.created)}</span>
-      </OverViewItem>
+      </OverviewItem>
 
-      <OverViewItem prompt="Modified">
+      <OverviewItem prompt="Modified">
         <span title={tooltipDate(userDataset.modified)}>{displayDate(userDataset.modified)}</span>
-      </OverViewItem>
+      </OverviewItem>
 
-      <OverViewItem prompt="Size">
+      <OverviewItem prompt="Size">
         <span title={`${userDataset.percentQuotaUsed}% of quota`}>{bytesToHuman(userDataset.size)}</span>
-      </OverViewItem>
+      </OverviewItem>
     </div>
 
     <SectionItem heading="Description">
