@@ -31,7 +31,28 @@
   </c:choose>
 </c:set>
 
+<c:set var="dataProps">
+  <c:forEach items="${wdkQuestion.propertyLists}" var="propertyListEntry">
+    <c:set var="values" value=""/>
+    <c:set var="search" value='"'/>
+    <c:set var="replace" value='\\"'/>
+    <c:forEach items="${propertyListEntry.value}" var="value" varStatus="loop">
+      <c:set var="escapedValue" value="${fn:replace(value, search, replace)}"/>
+      <c:choose>
+        <c:when test="${loop.first}">
+          <c:set var="values" value='"${escapedValue}"'/>
+        </c:when>
+        <c:otherwise>
+          <c:set var="values" value='${values}, "${escapedValue}"'/>
+        </c:otherwise>
+      </c:choose>
+    </c:forEach>
+    data-${propertyListEntry.key}='[${values}]'
+  </c:forEach>
+</c:set>
+
 <div class="params"
+    ${dataProps}
     data-controller="wdk.question.init"
     data-question-full-name="${wdkQuestion.fullName}"
     data-show-params="${showParamsAttr}">
