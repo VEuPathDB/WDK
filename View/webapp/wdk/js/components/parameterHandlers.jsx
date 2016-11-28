@@ -6,6 +6,7 @@ import AttributeFilter from '../client/components/AttributeFilter';
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
+  var QUESTION_INITIALIZE_EVENT = ns.QUESTION_INITIALIZE_EVENT = 'initialize.wdk-param';
   var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
   var PARAM_DESTROY_EVENT = ns.PARAM_DESTROY_EVENT = 'destroy.wdk-param';
 
@@ -18,8 +19,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     termDisplayMap = [];
 
     attachLoadingListener(element);
-    initTypeAhead(element);
     initDependentParamHandlers(element);
+    initTypeAhead(element);
     initFilterParam(element);
 
     // need to trigger the click event so that the stage is set correctly on revise.
@@ -29,6 +30,9 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     element.closest('form').one(wdk.addStepPopup.FORM_DESTROY_EVENT, () => {
       element.find('.param').trigger(PARAM_DESTROY_EVENT);
     });
+
+    // trigger initialize event
+    element.trigger(QUESTION_INITIALIZE_EVENT);
   }
 
   //==============================================================================
