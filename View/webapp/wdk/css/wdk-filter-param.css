@@ -150,10 +150,10 @@
 }
 .filter-param .field-list .wdk-AttributeFilterFieldItem__active {
   background-color: white;
+  border-left: 1px inset #eee;
+  border-top: 1px inset #eee;
+  border-bottom: 1px inset #ddd;
   border-right: 1px solid white;
-  border-top: 1px inset #696969;
-  border-bottom: 1px solid #ddd;
-  border-left: 1px inset #696969;
   margin-right: -11px;
 }
 .filter-param .field-detail {
