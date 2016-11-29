@@ -255,7 +255,7 @@ class DataTable extends PureComponent<Props, void> {
       this._callExpandedRowsCallback();
     })
     .on('order.dt', () => {
-      if (this._isRedrawing || !this.props.onSortingChange) return;
+      if (this._isRedrawing || !this.props.onSortingChange || !this._dataTable) return;
 
       let sorting = this._dataTable.order().map(entry => ({
         name: columns[entry[0] as number].data as string,
