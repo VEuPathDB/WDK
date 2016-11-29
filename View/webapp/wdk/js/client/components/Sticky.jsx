@@ -65,7 +65,7 @@ let Sticky = React.createClass({
     return (
       // This node is used to track scroll position
       <div style={{ height }}>
-        <div ref="content" {...this.props} className={className}>
+        <div ref="content" className={className}>
           {this.props.children}
         </div>
       </div>
