@@ -108,7 +108,7 @@ public class UserDatasetFormatter {
     metaJson.put("description", dataset.getMeta().getDescription());
     metaJson.put("summary", dataset.getMeta().getSummary());
     json.put("meta", metaJson);
-    json.put("owner", getUserEmailName( dataset.getOwnerId(),  userSchema,  userDbDataSource)); 
+    json.put("owner", getUserDisplayName( dataset.getOwnerId(),  userSchema,  userDbDataSource)); 
     json.put("ownerUserId", dataset.getOwnerId());
     json.put("size", dataset.getSize());
     json.put("modified", dataset.getModifiedDate());
@@ -125,7 +125,7 @@ public class UserDatasetFormatter {
         JSONObject shareJson = new JSONObject();
         shareJson.put("user", share.getUserId());
         shareJson.put("time", share.getTimeShared());
-        shareJson.put("emailName", getUserEmailName(share.getUserId(), userSchema, userDbDataSource));
+        shareJson.put("userDisplayName", getUserDisplayName(share.getUserId(), userSchema, userDbDataSource));
         sharesJson.put(shareJson);
       }
       json.put("sharedWith", sharesJson);
@@ -150,24 +150,38 @@ public class UserDatasetFormatter {
   }
   
   // this probably doesn't belong here, but it is not obvious where it does belong
-  private static String getUserEmailName(Integer userId, String userSchema, DataSource userDbDataSource) throws WdkModelException {
-    
-    final List<String> emails = new ArrayList<String>();
+  private static String getUserDisplayName(Integer userId, String userSchema, DataSource userDbDataSource) throws WdkModelException {
+
+    final List<String[]> info = new ArrayList<String[]>();
     ResultSetHandler handler = new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
-        if (rs.next()) emails.add(rs.getString(1)); // one row will be returned
+	if (rs.next()) {
+	  String[] row = {rs.getString(1), rs.getString(2), rs.getString(3) };
+	  info.add(row); // one row will be returned
+	}
       }
     };
 
-    String sql = "select email from " + userSchema + "users where user_id = ?";
+    String sql = "select email, first_name, last_name from " + userSchema + "users where user_id = ?";
     SQLRunner runner = new SQLRunner(userDbDataSource, sql, "user-email-ud-svc");
     Object[] args = {userId};
     runner.executeQuery(args, handler);
-    if (emails.isEmpty()) throw new WdkModelException("Can't find user id " + userId + "in user database");
-    String [] emailParts = emails.get(0).split("@");
-    if (emailParts.length != 2) return emails.get(0); // if can't parse email, return whole thing.  
-    return emailParts[0];
+    if (info.isEmpty()) throw new WdkModelException("Can't find user id " + userId + "in user database");
+    
+    String[] row = info.get(0);
+    String [] emailParts = row[0].split("@");
+    String emailUserName = emailParts.length == 2? emailParts[0] : row[0]; // if can't parse email, use whole thing.  
+
+    String firstName = row[1].trim();
+    firstName = firstName == null? "" : firstName + " ";
+    String lastName = row[2].trim();
+    lastName = lastName == null? "" : lastName;
+    String name = (firstName + lastName).trim();
+    if (name.length() == 0) name = emailUserName;
+    
+    return name;
+    
   }
  
 }
