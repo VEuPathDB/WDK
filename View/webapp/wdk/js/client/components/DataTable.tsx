@@ -208,14 +208,15 @@ class DataTable extends PureComponent<Props, void> {
       searching: searchable,
       info: searchable,
       headerCallback: (thead: HTMLTableHeaderCellElement) => {
-        let i = 0;
         let $ths = $(thead).find('th');
         if (childRow) {
-          $ths.eq(i++).attr('title', 'Show or hide all row details');
+          $ths.eq(0).attr('title', 'Show or hide all row details');
         }
-        for (let column of this.props.columns) {
-          if (column.help != null) $ths.eq(i++).attr('title', column.help);
-        }
+        this.props.columns
+        .filter(column => column.isDisplayable)
+        .forEach((column, index) => {
+          if (column.help != null) $ths.eq(index).attr('title', column.help);
+        });
       }
     });
 
