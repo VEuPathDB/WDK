@@ -5,6 +5,8 @@ import { UserDataset } from '../utils/WdkModel';
 
 interface State extends BaseState {
   userDatasetsById: { [key: number]: UserDataset };
+  userDatasetUpdating: boolean;
+  userDatasetUpdateError?: Error;
   loadError?: Error;
 }
 
@@ -18,7 +20,8 @@ export default class UserDatasetItemStore extends WdkStore<State> {
 
   getInitialState() {
     return Object.assign({
-      userDatasetsById: {}
+      userDatasetsById: {},
+      userDatasetUpdating: false
     }, super.getInitialState());
   }
 
@@ -38,6 +41,19 @@ export default class UserDatasetItemStore extends WdkStore<State> {
       case actionTypes.DATASET_ITEM_ERROR: return Object.assign({}, state, {
         userDatasetLoading: false,
         loadError: payload.error
+      });
+
+      case actionTypes.DATASET_ITEM_UPDATING: return Object.assign({}, state, {
+        userDatasetUpdating: true
+      });
+
+      case actionTypes.DATASET_ITEM_UPDATE_SUCCESS: return Object.assign({}, state, {
+        userDatasetUpdating: false,
+        userDatasetsById: Object.assign({}, state.userDatasetsById, {
+          [payload.id]: Object.assign({}, state.userDatasetsById[payload.id], {
+            meta: payload.meta
+          })
+        })
       });
 
       default:

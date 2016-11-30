@@ -2,7 +2,7 @@ import { Dispatcher } from 'flux';
 
 export interface Action {
   type: string;
-  payload: any;
+  payload?: any;
   channel?: string;
   broadcast?: boolean;
 };

@@ -108,6 +108,18 @@ export interface AnswerFormatting {
   contentDisposition?: 'inline' | 'attatchment';
 }
 
+export type UserDatasetMeta = {
+  description: string;
+  name: string;
+  summary: string;
+};
+
+export type UserDatasetShare = {
+  time: number;
+  user: number;
+  userDisplayName: string;
+};
+
 export type UserDataset = {
   created: number;
   isInstalled: boolean;
@@ -122,19 +134,12 @@ export type UserDataset = {
   }>;
   projects: string[];
   id: number;
-  meta: {
-    description: string;
-    name: string;
-    summary: string;
-  };
+  meta: UserDatasetMeta;
   modified: number;
-  owner: number;
+  owner: string;
+  ownerUserId: number;
   percentQuotaUsed: number;
-  sharedWith: Array<{
-    emailName: string;
-    time: number;
-    user: number;
-  }>;
+  sharedWith: UserDatasetShare[];
   size: number;
   type: {
     name: string;

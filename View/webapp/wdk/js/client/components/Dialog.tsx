@@ -10,6 +10,11 @@ type Props = {
   onOpen?: Function;
   onClose?: Function;
   children?: React.ReactChild;
+  width?: number;
+  height?: number | string;
+  draggable?: boolean;
+  resizable?: boolean;
+  className?: string;
 };
 
 /**
@@ -91,7 +96,12 @@ class Dialog extends Component<Props, void> {
     modal: true,
     title: '',
     onOpen() {},
-    onClose() {}
+    onClose() {},
+    width: 600,
+    height: "auto",
+    draggable: false,
+    resizable: false,
+    className: ''
   };
 
   node: HTMLElement;
@@ -127,7 +137,12 @@ class Dialog extends Component<Props, void> {
       close: this.props.onClose,
       open: this.props.onOpen,
       title: this.props.title,
-      autoOpen: false
+      autoOpen: false,
+      width: this.props.width,
+      height: this.props.height,
+      draggable: this.props.draggable,
+      resizable: this.props.resizable,
+      dialogClass: this.props.className
     };
     $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
     this.handlePropsChanged();
