@@ -11,7 +11,8 @@ import {
   Question,
   RecordClass,
   Record,
-  UserDataset
+  UserDataset,
+  UserDatasetMeta
 } from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 
@@ -343,6 +344,10 @@ export default class WdkService {
 
   getUserDataset(id: number) {
     return this._fetchJson<UserDataset>('get', `/user/current/user-dataset/${id}`)
+  }
+
+  updateUserDataset(id: number, meta: UserDatasetMeta) {
+    return this._fetchJson<void>('put', `/user/current/user-dataset/${id}/meta`, JSON.stringify(meta));
   }
 
   getOauthStateToken() {

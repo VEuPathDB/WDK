@@ -1,7 +1,7 @@
 import { pick } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-import { loadUserDatasetItem } from '../actioncreators/UserDatasetsActionCreators';
+import { loadUserDatasetItem, updateUserDatasetItem } from '../actioncreators/UserDatasetsActionCreators';
 import UserDatasetItem from '../components/UserDatasetItem';
 
 /**
@@ -18,7 +18,11 @@ class UserDatasetItemController extends WdkViewController {
   }
 
   getStateFromStore(store) {
-    return pick(store.getState(), 'userDatasetsById');
+    let state = store.getState();
+    return Object.assign(
+      pick(state, 'userDatasetsById'),
+      pick(state.globalData, 'user')
+    );
   }
 
   getTitle(state) {
@@ -27,7 +31,8 @@ class UserDatasetItemController extends WdkViewController {
 
   getActionCreators() {
     return {
-      loadUserDatasetItem
+      loadUserDatasetItem,
+      updateUserDatasetItem
     };
   }
 
@@ -39,11 +44,18 @@ class UserDatasetItemController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return state.userDatasetsById[this.props.params.id];
+    return state.userDatasetsById[this.props.params.id] && state.user;
   }
 
   renderView(state) {
-    return ( <UserDatasetItem userDataset={state.userDatasetsById[this.props.params.id]} /> );
+    let userDataset = state.userDatasetsById[this.props.params.id];
+    return (
+      <UserDatasetItem
+        userDataset={userDataset}
+        updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
+        isOwner={userDataset.ownerUserId === state.user.id}
+      />
+    );
   }
 }
 

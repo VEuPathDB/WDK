@@ -1,3 +1,84 @@
+.wdk-UserDatasetActionItem {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.wdk-UserDatasetSharedNote {
+  color: #666;
+}
+
+.wdk-UserDatasetEditDialog {
+  padding: 0;
+  border: 1px solid #999;
+  box-shadow: 0 0 20px rgba(0,0,0,.4);
+}
+
+.wdk-UserDatasetEditDialog .ui-dialog-titlebar {
+  border: none;
+  font-size: 1.2em;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #ccc;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.wdk-UserDatasetDetailFormContainer * {
+  box-sizing: border-box;
+}
+
+.wdk-UserDatasetDetailFormGroup {
+  margin: 10px 0 15px 0;
+}
+
+.wdk-UserDatasetDetailFormLabel {
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.wdk-UserDatasetDetailFormInput {
+  width: 100%;
+}
+
+.wdk-UserDatasetShareEntry {
+  margin: 10px 0;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.wdk-UserDatasetShareEntryName {
+  display: inline-block;
+  width: 150px;
+  font-weight: bold;
+}
+
+.wdk-UserDatasetShareEntryTime {
+  display: inline-block;
+  width: 150px;
+}
+
+.wdk-UserDatasetShareEntryRemove {
+  display: inline-block;
+  width: 150px;
+  text-align: right;
+}
+
+.wdk-UserDatasetRemoveShare {
+  color: darkred;
+}
+
+.wdk-UserDatasetAddShareContainer {
+  padding: 10px;
+  text-align: right;
+}
+
+.wdk-UserDatasetAddShareNote {
+  padding: 0 10px;
+  color: #666;
+}
+
 .wdk-UserDatasetHeading {
   padding-top: 10px;
   padding-bottom: 10px;

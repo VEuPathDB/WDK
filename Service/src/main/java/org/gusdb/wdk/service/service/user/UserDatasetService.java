@@ -81,7 +81,7 @@ public class UserDatasetService extends UserService {
     try {
       JSONObject metaJson = new JSONObject(body);
       getUserDatasetStore().updateMetaFromJson(getUserId(), new Integer(datasetIdStr), metaJson);
-      return Response.ok("").build();
+      return Response.noContent().build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
@@ -118,7 +118,7 @@ public class UserDatasetService extends UserService {
     }
     getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
 
-    return Response.ok("").build();
+    return Response.noContent().build();
 
   }
   
@@ -134,7 +134,7 @@ public class UserDatasetService extends UserService {
     Integer shareWithUserId = new Integer(jsonObj.getString("targetUser"));
     getUserDatasetStore().unshareUserDataset(getUserId(), new Integer(datasetIdStr), shareWithUserId);
 
-    return Response.ok("").build();
+    return Response.noContent().build();
   }
   
   @DELETE
