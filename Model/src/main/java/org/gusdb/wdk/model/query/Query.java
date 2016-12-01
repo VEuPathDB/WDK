@@ -621,32 +621,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  public Map<String, String> getStableValues(User user, Map<String, String> rawValues)
-      throws WdkModelException, WdkUserException {
-    // initialize the stable values with raw values first, then replace them one
-    // by one.
-    Map<String, String> stableValues = new LinkedHashMap<String, String>(rawValues);
-    for (String paramName : rawValues.keySet()) {
-      Param param = paramMap.get(paramName);
-      if (param == null) {
-        // instead of throwing an error, wdk will silently ignore it
-        // throw new WdkModelException("Invalid param name '" +
-        // paramName
-        // + "' in query " + getFullName());
-        logger.warn("Param " + paramName + " does not exist in query " + getFullName());
-        continue;
-      }
-      String rawValue = rawValues.get(paramName);
-      String stableValue = param.getStableValue(user, rawValue, stableValues);
-      stableValues.put(paramName, stableValue);
-    }
-    if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
-      if (!stableValues.containsKey(Utilities.PARAM_USER_ID))
-        stableValues.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
-    }
-    return stableValues;
-  }
-
   public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();

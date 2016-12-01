@@ -123,12 +123,12 @@ public class AnswerValueTest {
         Step step = UnitTestHelper.createNormalStep(user);
         AnswerValue answerValue = step.getAnswerValue();
         AnswerFilterInstance currentFilter = answerValue.getFilter();
-        int size = answerValue.getResultSize();
+        int size = answerValue.getResultSizeFactory().getResultSize();
 
         AnswerFilterInstance[] filters = answerValue.getQuestion()
                 .getRecordClass().getFilterInstances();
         for (AnswerFilterInstance filter : filters) {
-            int filterSize = answerValue.getFilterSize(filter.getName());
+            int filterSize = answerValue.getResultSizeFactory().getFilterSize(filter.getName());
             if (filter.equals(currentFilter)) {
                 Assert.assertEquals(size, filterSize);
             } else {

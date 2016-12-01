@@ -1,6 +1,4 @@
-/**
- * 
- */
+
 package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
@@ -16,10 +14,6 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * @author xingao
- * 
- */
 public class FavoriteTest {
 
     private static final int POOL_SIZE = 10;
@@ -43,7 +37,7 @@ public class FavoriteTest {
         List<Favorite> favorites = user.getFavorites().get(recordClass);
         Assert.assertEquals(added.size(), favorites.size());
         for (Favorite favorite : favorites) {
-            RecordClass actual = favorite.getPrimaryKey().getAttributeField().getRecordClass();
+            RecordClass actual = favorite.getRecordClass();
             Assert.assertEquals(rcName, actual.getFullName());
         }
     }

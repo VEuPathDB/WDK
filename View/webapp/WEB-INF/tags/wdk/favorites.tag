@@ -85,7 +85,7 @@
                 height="16px" style="vertical-align:text-bottom"
                 onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
               <%-- opportunity for WDK users to use different PKvalues fields for diff recordtypes --%>
-              <imp:recordLink recordClass="${recordClass}" primaryKeyAttributeValue="${primaryKey}" displayValue="${primaryKey.display}" /> 
+              <imp:recordLink recordClass="${recordClass}" primaryKeyAttributeValue="${primaryKey}" displayValue="${favorite.display}" /> 
             </td>
             <!-- NOTES -->
             <td width="60%"  class="mytdStyle" >

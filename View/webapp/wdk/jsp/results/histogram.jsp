@@ -7,6 +7,7 @@
 
 <c:set var="attribute" value="${requestScope.attribute}" />
 <c:set var="plugin" value="${requestScope.plugin}" />
+<c:set var="question" value="${requestScope.question}" />
 <c:set var="data" value="${requestScope.histogramData}" />
 <c:set var="type" value="${requestScope.histogramType}" />
 <c:set var="binSize" value="${requestScope.histogramBinSize}" />
@@ -50,7 +51,7 @@
       <thead>
         <tr>
           <th class="label">${attribute.displayName}</th>
-          <th class="count"># of ${attribute.recordClass.displayNamePlural}</th>
+          <th class="count"># of ${question.recordClass.displayNamePlural}</th>
 
         </tr>
       </thead>

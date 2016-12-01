@@ -1,22 +1,16 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * A TableValue object represents the values of the table that are associated
@@ -36,81 +30,50 @@ import org.gusdb.wdk.model.user.User;
  * @author jerric
  * 
  */
-public class TableValue implements Collection<Map<String, AttributeValue>> {
+public class TableValue implements Iterable<Map<String, AttributeValue>> {
 
-  private static final Logger logger = Logger.getLogger(TableValue.class);
+  protected final TableField _tableField;
+  protected List<Map<String, AttributeValue>> _rows;
 
-  // private User user;
-  private PrimaryKeyAttributeValue primaryKey;
-  private TableField tableField;
-  QueryInstance<?> instance;
-
-  private List<Map<String, AttributeValue>> rows;
-
-  /**
-   * @param user
-   * @param primaryKey
-   * @param tableField
-   * @param bulk
-   *          the table value is used in the context of an answer, and in this
-   *          case, the values cannot be accessed from table value. the caller
-   *          is responsible for combining the table query with sorted & paged
-   *          id query, and read the values directly.
-   * @throws WdkUserException
-   */
-  public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
-      TableField tableField, boolean bulk) throws WdkModelException,
-      WdkUserException {
-    // this.user = user;
-    this.primaryKey = primaryKey;
-    this.tableField = tableField;
-
-    if (bulk) {
-      // bulk model, no need to create query instance, the rows will be
-      // initialized outside of TableValue.
-      rows = new ArrayList<Map<String, AttributeValue>>();
-    } else {
-      // not bulk model, need to create query instance, and initialize
-      // rows by the TableValue itself.
-      Query query = tableField.getWrappedQuery();
-      this.instance = query.makeInstance(user, primaryKey.getValues(), true, 0,
-          new LinkedHashMap<String, String>());
-    }
+  public TableValue(TableField tableField) {
+    _tableField = tableField;
+    _rows = new ArrayList<Map<String, AttributeValue>>();
   }
 
   public TableField getTableField() {
-    return tableField;
+    return _tableField;
   }
 
   public String getName() {
-    return tableField.getName();
+    return _tableField.getName();
   }
 
   public String getDisplayName() {
-    return tableField.getDisplayName();
+    return _tableField.getDisplayName();
+  }
+
+  public int getNumRows() {
+    return _rows.size();
   }
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    String classnm = this.getClass().getName();
-    StringBuffer buf = new StringBuffer(classnm + ": name='"
-        + tableField.getName() + "'" + newline + "  displayName='"
-        + tableField.getDisplayName() + "'" + newline + "  help='"
-        + tableField.getHelp() + "'" + newline);
-    return buf.toString();
+    return new StringBuilder(getClass().getName())
+        .append(": name='").append(_tableField.getName()).append("'").append(NL)
+        .append("  displayName='").append(_tableField.getDisplayName()).append("'").append(NL)
+        .append("  help='").append(_tableField.getHelp()).append("'").append(NL)
+        .toString();
   }
 
-  public void write(StringBuffer buf) {
-    String newline = System.getProperty("line.separator");
+  public void write(StringBuilder buf) {
     // display the headers of the table
-    AttributeField[] fields = tableField.getAttributeFields();
+    AttributeField[] fields = _tableField.getAttributeFields();
     for (AttributeField attributeField : fields) {
       buf.append('[');
       buf.append(attributeField.getDisplayName());
       buf.append("]\t");
     }
-    buf.append(newline);
+    buf.append(NL);
     // print rows
     for (Map<String, AttributeValue> row : this) {
       for (String name : row.keySet()) {
@@ -119,215 +82,38 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         buf.append(value);
         buf.append("'\t");
       }
-      buf.append(newline);
+      buf.append(NL);
     }
   }
 
-  public void toXML(StringBuffer buf, String rowTag, String ident) {
-    String newline = System.getProperty("line.separator");
+  public void toXML(StringBuilder buf, String rowTag, String ident) {
     for (Map<String, AttributeValue> row : this) {
-      buf.append(ident + "<" + rowTag + ">" + newline);
+      buf.append(ident + "<" + rowTag + ">" + NL);
       for (String name : row.keySet()) {
         // get the value
         AttributeValue value = row.get(name);
         buf.append(ident + "    " + "<" + name + ">");
         buf.append(value);
-        buf.append("</" + name + ">" + newline);
+        buf.append("</" + name + ">" + NL);
       }
-      buf.append(ident + "</" + rowTag + ">" + newline);
+      buf.append(ident + "</" + rowTag + ">" + NL);
     }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#add(java.lang.Object)
-   */
-  @Override
-  public boolean add(Map<String, AttributeValue> e) {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#addAll(java.util.Collection)
-   */
-  @Override
-  public boolean addAll(Collection<? extends Map<String, AttributeValue>> c) {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#clear()
-   */
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#contains(java.lang.Object)
-   */
-  @Override
-  public boolean contains(Object o) {
-    try {
-      initializeRows();
-      return rows.contains(o);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#containsAll(java.util.Collection)
-   */
-  @Override
-  public boolean containsAll(Collection<?> c) {
-    try {
-      initializeRows();
-      return rows.containsAll(c);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#isEmpty()
-   */
-  @Override
-  public boolean isEmpty() {
-    try {
-      initializeRows();
-      return rows.isEmpty();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#remove(java.lang.Object)
-   */
-  @Override
-  public boolean remove(Object o) {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#removeAll(java.util.Collection)
-   */
-  @Override
-  public boolean removeAll(Collection<?> c) {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#retainAll(java.util.Collection)
-   */
-  @Override
-  public boolean retainAll(Collection<?> c) {
-    throw new UnsupportedOperationException("Not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#size()
-   */
-  @Override
-  public int size() {
-    try {
-      initializeRows();
-      return rows.size();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#toArray()
-   */
-  @Override
-  public Object[] toArray() {
-    try {
-      initializeRows();
-      return rows.toArray();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#toArray(T[])
-   */
-  @Override
-  public <T> T[] toArray(T[] a) {
-    try {
-      initializeRows();
-      return rows.toArray(a);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
-  }
-
-  private void initializeRows() throws WdkModelException, WdkUserException {
-    if (rows != null) return;
-
-    rows = new ArrayList<Map<String, AttributeValue>>();
-    ResultList resultList = instance.getResults();
-    try {
-      while (resultList.next()) {
-        initializeRow(resultList);
-      }
-    } finally {
-      resultList.close();
-    }
-    logger.debug("Table value rows initialized.");
   }
 
   public void initializeRow(ResultList resultList) throws WdkModelException {
-    TableValueRow row = new TableValueRow(primaryKey, getTableField());
+    TableValueRow row = new TableValueRow(getTableField());
     row.initializeFromResultList(resultList);
-    rows.add(row);
+    _rows.add(row);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.util.Collection#iterator()
-   */
+  // TODO: remove once JSPs are retired (used in (at least) questionDescription.tag)
+  public Iterator<Map<String, AttributeValue>> getIterator() {
+    return iterator();
+  }
+
   @Override
   public Iterator<Map<String, AttributeValue>> iterator() {
-    try {
-      initializeRows();
-      return rows.iterator();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw new RuntimeException(ex);
-    }
+    return _rows.iterator();
   }
 }
+

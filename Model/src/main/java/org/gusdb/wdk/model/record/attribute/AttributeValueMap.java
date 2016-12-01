@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.record.attribute;
 
+import java.util.Map;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -9,7 +11,7 @@ import org.gusdb.wdk.model.WdkUserException;
  * @author jerric
  * 
  */
-public interface AttributeValueMap {
+public interface AttributeValueMap extends Map<String, AttributeValue>{
 
   public void addAttributeValue(AttributeValue value);
 

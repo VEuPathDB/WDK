@@ -1,15 +1,13 @@
 package org.gusdb.wdk.model.record;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.DynamicRecordInstanceList;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -17,12 +15,8 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.AttributeValueMap;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
-import org.gusdb.wdk.model.record.attribute.DynamicAttributeValueContainer;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -33,114 +27,45 @@ import org.gusdb.wdk.model.user.User;
  * @author jerric
  * 
  */
-public class DynamicRecordInstance extends DynamicAttributeValueContainer implements RecordInstance, AttributeValueMap {
+public class DynamicRecordInstance extends StaticRecordInstance {
 
-  private static Logger logger = Logger.getLogger(RecordInstance.class);
+  private static final long serialVersionUID = 1L;
 
-  private RecordClass recordClass;
+  private static Logger logger = Logger.getLogger(DynamicRecordInstance.class);
 
-  private PrimaryKeyAttributeValue primaryKey;
+  private final User _user;
+  private DynamicRecordInstanceList _container;
 
-  private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
-
-  private User user;
-
-  private AnswerValue answerValue;
-
-  private boolean isValidRecord;
-
-  /**
-   * 
-   * @param recordClass
-   * @param primaryKey
-   * @throws WdkUserException
-   */
-  public DynamicRecordInstance(User user, RecordClass recordClass,
-      Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
-    this.user = user;
-    this.recordClass = recordClass;
-    this.isValidRecord = true;
-
-    List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user, pkValues);
-    if (records.size() != 1)
-      throw new WdkUserException("The primary key doesn't map to "
-          + "singular record: " + pkValues);
-
-    pkValues = records.get(0);
-
-    PrimaryKeyAttributeValue primaryKeyValue = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
-    setPrimaryKey(primaryKeyValue);
+  public DynamicRecordInstance(User user, RecordClass recordClass, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+    super(user, recordClass, recordClass, pkValues, true);
+    _user = user;
   }
 
-  public DynamicRecordInstance(AnswerValue answerValue, Map<String, Object> pkValues) {
-    this.answerValue = answerValue;
-    this.recordClass = answerValue.getQuestion().getRecordClass();
-    this.isValidRecord = true;
-
-    // the record instance from answer doesn't need the pk value translation
-    PrimaryKeyAttributeValue primaryKeyValue = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
-    setPrimaryKey(primaryKeyValue);
-  }
-
-  void setPrimaryKey(PrimaryKeyAttributeValue primaryKey) {
-    this.primaryKey = primaryKey;
-    addAttributeValue(primaryKey);
+  public DynamicRecordInstance(User user, Question question, DynamicRecordInstanceList container, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+    super(user, question.getRecordClass(), question, pkValues, false);
+    _user = user;
+    _container = container;
   }
 
   @Override
-  public boolean isValidRecord() {
-    return isValidRecord;
+  protected Collection<TableField> getAvailableTableFields() {
+    return _recordClass.getTableFieldMap().values();
   }
 
-  /**
-   * @return
-   */
-  @Override
-  public RecordClass getRecordClass() {
-    return recordClass;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
-   */
-  @Override
-  public Map<String, AttributeField> getAttributeFieldMap() {
-    return getAttributeFieldMap(FieldScope.ALL);
-  }
-
-  @Override
-  public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    if (answerValue != null) {
-      return answerValue.getQuestion().getAttributeFieldMap(scope);
-    }
-    else {
-      return recordClass.getAttributeFieldMap(scope);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues
-   * (org.gusdb.wdk.model.query.Query)
-   */
-  @Override
-  protected void fillColumnAttributeValues(Query attributeQuery)
+  private void fillColumnAttributeValues(Query attributeQuery)
       throws WdkModelException, WdkUserException {
     logger.debug("filling column attribute values...");
-    if (answerValue != null) {
-      answerValue.integrateAttributesQuery(attributeQuery);
+    if (_container != null) {
+      _container.integrateAttributesQuery(attributeQuery);
       return;
     }
 
     // prepare the attribute query, and make a new one,
     String queryName = attributeQuery.getFullName();
 
-    Query query = recordClass.getAttributeQuery(queryName);
+    Query query = _recordClass.getAttributeQuery(queryName);
 
     logger.debug("filling attribute values from record on query: "
         + query.getFullName());
@@ -150,25 +75,23 @@ public class DynamicRecordInstance extends DynamicAttributeValueContainer implem
     if (query instanceof SqlQuery)
       logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
 
-    Map<String, String> paramValues = primaryKey.getValues();
-    // put user id in the attribute query
-    String userId = Integer.toString(user.getUserId());
+    Map<String, String> paramValues = _primaryKey.getValues();
 
     ResultList resultList = null;
     try {
-      QueryInstance<?> instance = query.makeInstance(user, paramValues, true, 0,
+      // put user id in the attribute query
+      QueryInstance<?> instance = query.makeInstance(_user, paramValues, true, 0,
           new LinkedHashMap<String, String>());
       resultList = instance.getResults();
 
       if (!resultList.next()) {
-        // throwing exception prevents proper handling in front
-        // end...just return?
-        isValidRecord = false;
-        throw new WdkModelException("Attribute query " + queryName
-            + " doesn't return any row: \n" + instance.getSql());
+        // throwing exception prevents proper handling in front end...just return?
+        _isValidRecord = false;
+        throw new WdkModelException("Attribute query " + queryName +
+            " doesn't return any row: \n" + instance.getSql());
       }
 
-      Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
+      Map<String, AttributeField> fields = getAttributeFieldMap();
       for (Column column : query.getColumns()) {
         if (!fields.containsKey(column.getName())) continue;
         AttributeField field = fields.get(column.getName());
@@ -187,348 +110,55 @@ public class DynamicRecordInstance extends DynamicAttributeValueContainer implem
     logger.debug("column attributes are cached.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.AttributeValueContainer#getAttributeField(java.lang
-   * .String)
-   */
-  public AttributeField getAttributeField(String fieldName)
-      throws WdkModelException {
-    Map<String, AttributeField> attributeFields = getAttributeFieldMap();
-    if (!attributeFields.containsKey(fieldName))
-      throw new WdkModelException("The attribute field '" + fieldName
-          + "' does not exist in record instance " + recordClass.getFullName());
-    return attributeFields.get(fieldName);
-  }
-
-  @Override
-  public PrimaryKeyAttributeValue getPrimaryKey() {
-    return primaryKey;
-  }
-
   @Override
   public TableValue getTableValue(String tableName) throws WdkModelException,
       WdkUserException {
-    TableField tableField = recordClass.getTableField(tableName);
+    TableField tableField = _recordClass.getTableField(tableName);
 
     // check if the table value has been cached
-    if (tableValueCache.containsKey(tableName))
-      return tableValueCache.get(tableName);
+    if (_tableValueCache.containsKey(tableName)) {
+      logger.debug("Requested table '" + tableName + "' exists in cache; returning");
+      return _tableValueCache.get(tableName);
+    }
 
     // not cached, if it's in the context of an answer, integrate it.
-    if (answerValue != null) {
-      answerValue.integrateTableQuery(tableField);
-      return tableValueCache.get(tableName);
+    if (_container != null) {
+      logger.debug("Table '" + tableName + "' requested but not present.  AnswerValue present; integrating...");
+      _container.integrateTableQuery(tableField);
+      logger.debug("Does cache now contain table? " + (_tableValueCache.get(tableName) == null ? "nope!" : "yep!"));
+      return _tableValueCache.get(tableName);
     }
 
     // in the context of record, create the value
-    TableValue value = new TableValue(user, primaryKey, tableField, false);
+    logger.debug("Creating single record table value '" + tableName + "' for PK " + _primaryKey.getValuesAsString());
+    TableValue value = new DynamicTableValue(_primaryKey, tableField, _user);
     addTableValue(value);
     return value;
   }
 
-  public void addTableValue(TableValue tableValue) {
-    tableValueCache.put(tableValue.getTableField().getName(), tableValue);
-  }
-
-  /**
-   * @return Map of tableName -> TableFieldValue
-   */
   @Override
-  public Map<String, TableValue> getTables() throws WdkModelException,
-      WdkUserException {
-    Map<String, TableValue> values = new LinkedHashMap<String, TableValue>();
-    for (TableField field : recordClass.getTableFields()) {
-      String name = field.getName();
-      TableValue value = getTableValue(name);
-      values.put(name, value);
+  public ColumnAttributeValue getColumnAttributeValue(ColumnAttributeField field)
+      throws WdkModelException, WdkUserException {
+    Query query = field.getColumn().getQuery();
+    logFill(query);
+    fillColumnAttributeValues(query);
+    if (!containsKey(field.getName())) {
+      // something is wrong here, need further investigation.
+      throw new WdkModelException("Attribute query for field " + field.getName() + " exists, but does not " +
+          "return a value for that field; needs investigation.");
     }
-    return values;
+    return (ColumnAttributeValue) get(field.getName());
   }
 
-  /**
-   * @return Map of attributeName -> AttributeFieldValue
-   * @throws WdkUserException
-   */
-
-  @Override
-  public Map<String, AttributeValue> getAttributeValueMap()
-      throws WdkModelException, WdkUserException {
-    return getAttributeValueMap(FieldScope.ALL);
-  }
-
-  /**
-   * @param scope
-   * @return
-   * @throws WdkUserException
-   */
-  public Map<String, AttributeValue> getAttributeValueMap(FieldScope scope)
-      throws WdkModelException, WdkUserException {
-    Map<String, AttributeField> fields = getAttributeFieldMap(scope);
-    Map<String, AttributeValue> values = new LinkedHashMap<String, AttributeValue>();
-
-    for (AttributeField field : fields.values()) {
-      String name = field.getName();
-      values.put(name, getAttributeValue(name));
-    }
-    return values;
-  }
-
-  // change name of method?
-  @Override
-  public Map<String, RecordInstance> getNestedRecordInstances()
-      throws WdkModelException, WdkUserException {
-
-    Map<String, RecordInstance> riMap = new LinkedHashMap<String, RecordInstance>();
-    Question nq[] = this.recordClass.getNestedRecordQuestions();
-
-    if (nq != null) {
-      for (int i = 0; i < nq.length; i++) {
-        Question nextNq = nq[i];
-        AnswerValue a = getNestedRecordAnswer(nextNq);
-
-        // the reset function is no longer available; instead call
-        // cloneAnswer() to get a new answer object and work on it
-        // a.resetRecordInstanceCounter();
-        RecordInstance[] records = a.getRecordInstances();
-
-        if (records.length > 1) {
-          throw new WdkModelException("NestedQuestion " + nextNq.getName()
-              + " returned more than one " + "RecordInstance when called from "
-              + this.recordClass.getName());
-        }
-        if (records.length > 0) {
-          riMap.put(nextNq.getName(), records[0]);
-        }
+  private void logFill(Query query) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Filling column attribute values from query " + query.getFullName());
+      for (Column column : query.getColumns()) {
+        logger.trace("column: " + column.getName());
+      }
+      if (query instanceof SqlQuery) {
+        logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
       }
     }
-    return riMap;
-  }
-
-  @Override
-  public Map<String, RecordInstance[]> getNestedRecordInstanceLists()
-      throws WdkModelException, WdkUserException {
-
-    Question nql[] = this.recordClass.getNestedRecordListQuestions();
-    Map<String, RecordInstance[]> riListMap = new LinkedHashMap<String, RecordInstance[]>();
-
-    if (nql != null) {
-      for (int i = 0; i < nql.length; i++) {
-        Question nextNql = nql[i];
-        AnswerValue a = getNestedRecordAnswer(nextNql);
-        RecordInstance[] records = a.getRecordInstances();
-        if (records != null) riListMap.put(nextNql.getName(), records);
-      }
-    }
-    return riListMap;
-  }
-
-  private AnswerValue getNestedRecordAnswer(Question question)
-      throws WdkModelException {
-    Map<String, String> params = primaryKey.getValues();
-    int pageStart = 1;
-    int pageEnd = Utilities.MAXIMUM_RECORD_INSTANCES;
-    Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
-    AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
-    // create an answer with maximium allowed rows
-    try {
-      return question.makeAnswerValue(user, params, pageStart, pageEnd,
-          sortingMap, filter, true, 0);
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
-  }
-
-  // maybe change this to RecordInstance[][] for jspwrap purposes?
-  /*
-   * public Vector getNestedRecordListInstances() throws WdkModelException,
-   * WdkUserException{ NestedRecordList nrLists[] =
-   * this.recordClass.getNestedRecordLists(); Vector nrVector = new Vector(); if
-   * (nrLists != null){ for (int i = 0; i < nrLists.length; i++){
-   * NestedRecordList nextNrList = nrLists[i]; RecordInstance riList[] =
-   * nextNrList.getRecordInstances(this); nrVector.add(riList); } } return
-   * nrVector; }
-   */
-
-  @Override
-  public String print() throws WdkModelException, WdkUserException {
-
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer();
-
-    Map<String, AttributeValue> attributeValues = getAttributeValueMap();
-
-    Map<String, AttributeValue> summaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
-    Map<String, AttributeValue> nonSummaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
-
-    splitSummaryAttributeValue(attributeValues, summaryAttributeValues,
-        nonSummaryAttributeValues);
-
-    printAtts_Aux(buf, summaryAttributeValues);
-    printAtts_Aux(buf, nonSummaryAttributeValues);
-
-    Map<String, TableValue> tableValues = getTables();
-    for (TableValue tableValue : tableValues.values()) {
-      String displayName = tableValue.getTableField().getDisplayName();
-      buf.append(newline);
-      buf.append("[Table]: " + displayName).append(newline);
-      tableValue.write(buf);
-    }
-
-    buf.append(newline);
-    buf.append("Nested Records belonging to this RecordInstance:" + newline);
-    Map<String, RecordInstance> nestedRecords = getNestedRecordInstances();
-    for (String nextRecordName : nestedRecords.keySet()) {
-      RecordInstance nextNr = nestedRecords.get(nextRecordName);
-      buf.append("***" + nextRecordName + "***" + newline
-          + nextNr.printSummary() + newline);
-    }
-
-    buf.append("Nested Record Lists belonging to this RecordInstance:"
-        + newline);
-
-    Map<String, RecordInstance[]> nestedRecordLists = getNestedRecordInstanceLists();
-    for (String nextRecordListName : nestedRecordLists.keySet()) {
-      RecordInstance nextNrList[] = nestedRecordLists.get(nextRecordListName);
-      buf.append("***" + nextRecordListName + "***" + newline);
-      for (int i = 0; i < nextNrList.length; i++) {
-        buf.append(nextNrList[i].printSummary() + newline);
-      }
-    }
-
-    return buf.toString();
-  }
-  
-  @Override
-  public String printSummary() throws WdkModelException, WdkUserException {
-
-    StringBuffer buf = new StringBuffer();
-
-    Map<String, AttributeValue> attributeValues = getAttributeValueMap();
-
-    Map<String, AttributeValue> summaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
-    Map<String, AttributeValue> nonSummaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
-
-    splitSummaryAttributeValue(attributeValues, summaryAttributeValues,
-        nonSummaryAttributeValues);
-
-    printAtts_Aux(buf, summaryAttributeValues);
-    return buf.toString();
-  }
-
-  public String toXML() throws WdkModelException, WdkUserException {
-    return toXML("");
-  }
-
-  @Override
-  public String toXML(String ident) throws WdkModelException, WdkUserException {
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer();
-
-    String rootStart = ident + "<" + getRecordClass().getFullName() + ">"
-        + newline + ident + "<li>" + newline;
-    String rootEnd = ident + "</li>" + newline + ident + "</"
-        + getRecordClass().getFullName() + ">" + newline;
-    ident = ident + "    ";
-    buf.append(rootStart);
-
-    Map<String, AttributeValue> attributeFields = getAttributeValueMap();
-    for (String fieldName : attributeFields.keySet()) {
-      AttributeValue value = attributeFields.get(fieldName);
-      AttributeField field = value.getAttributeField();
-      buf.append(ident + "<" + field.getName() + ">" + value.getValue() + "</"
-          + field.getName() + ">" + newline);
-    }
-
-    Map<String, TableValue> tableFields = getTables();
-    for (String fieldName : tableFields.keySet()) {
-      buf.append(ident + "<" + fieldName + ">" + newline);
-
-      TableValue tableValue = tableFields.get(fieldName);
-      tableValue.toXML(buf, "li", ident);
-      buf.append(ident + "</" + fieldName + ">" + newline);
-    }
-
-    Map<String, RecordInstance> nestedRecords = getNestedRecordInstances();
-    for (String nextRecordName : nestedRecords.keySet()) {
-      RecordInstance nextNr = nestedRecords.get(nextRecordName);
-      buf.append(nextNr.toXML(ident));
-    }
-
-    Map<String, RecordInstance[]> nestedRecordLists = getNestedRecordInstanceLists();
-    for (String nextRecordListName : nestedRecordLists.keySet()) {
-      RecordInstance nextNrList[] = nestedRecordLists.get(nextRecordListName);
-      for (int i = 0; i < nextNrList.length; i++) {
-        buf.append(nextNrList[i].toXML(ident) + newline);
-      }
-    }
-
-    buf.append(rootEnd);
-
-    return buf.toString();
-  }
-
-  // /////////////////////////////////////////////////////////////////////////
-  // package methods
-  // /////////////////////////////////////////////////////////////////////////
-
-  @Override
-  public String[] getSummaryAttributeNames() {
-    Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
-    String[] names = new String[summaryFields.size()];
-    summaryFields.keySet().toArray(names);
-    return names;
-  }
-
-  public Map<String, AttributeValue> getSummaryAttributeValueMap()
-      throws WdkModelException, WdkUserException {
-    return getAttributeValueMap(FieldScope.NON_INTERNAL);
-  }
-    
-  // /////////////////////////////////////////////////////////////////////////
-  // protected methods
-  // /////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Given a map of all attributes in this recordInstance, separate them into
-   * those that are summary attributes and those that are not summary
-   * attributes. Place results into
-   * 
-   * @param summaryAttributes
-   *          and
-   * @param nonSummaryAttributes
-   *          .
-   */
-  private void splitSummaryAttributeValue(
-      Map<String, AttributeValue> attributes,
-      Map<String, AttributeValue> summaryAttributes,
-      Map<String, AttributeValue> nonSummaryAttributes) {
-    for (String fieldName : attributes.keySet()) {
-      AttributeValue attribute = attributes.get(fieldName);
-      if (attribute.getAttributeField().isInternal()) {
-        summaryAttributes.put(fieldName, attribute);
-      } else {
-        nonSummaryAttributes.put(fieldName, attribute);
-      }
-    }
-  }
-
-  private void printAtts_Aux(StringBuffer buf,
-      Map<String, AttributeValue> attributes) throws WdkModelException, WdkUserException {
-    String newline = System.getProperty("line.separator");
-    for (String attributeName : attributes.keySet()) {
-      AttributeValue attribute = attributes.get(attributeName);
-      buf.append(attribute.getAttributeField().getDisplayName());
-      buf.append(":   " + attribute.getBriefDisplay());
-      buf.append(newline);
-    }
-  }
-
-  @Override
-  public AnswerValue getAnswerValue() {
-    return answerValue;
   }
 }

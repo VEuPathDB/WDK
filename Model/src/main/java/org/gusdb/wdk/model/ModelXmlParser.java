@@ -90,8 +90,7 @@ import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
-import org.gusdb.wdk.model.record.NestedRecord;
-import org.gusdb.wdk.model.record.NestedRecordList;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordView;
@@ -102,7 +101,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.report.ReporterRef;
@@ -657,13 +656,6 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertyQueryRef",
         ResultPropertyQueryReference.class, "setResultPropertyQueryRef");
 
-        // nested record and record list
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class,
-        "addNestedRecordQuestionRef");
-
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecordList", NestedRecordList.class,
-        "addNestedRecordListQuestionRef");
-
     configureNode(digester, "wdkModel/recordClassSet/recordClass/summaryView", SummaryView.class,
         "addSummaryView");
 
@@ -921,16 +913,20 @@ public class ModelXmlParser extends XmlParser {
   }
 
   private static void configureAttributeFields(Digester digester) {
-    // primary key attribute
-    String prefixPK = "wdkModel/recordClassSet/recordClass/primaryKeyAttribute";
-    configureNode(digester, prefixPK, PrimaryKeyAttributeField.class, "addAttributeField");
-    configureNode(digester, prefixPK + "/columnRef", WdkModelText.class, "addColumnRef");
-    digester.addCallMethod(prefixPK + "/columnRef", "setText", 0);
-    configureNode(digester, prefixPK + "/text", WdkModelText.class, "addText");
-    digester.addCallMethod(prefixPK + "/text", "setText", 0);
-		configureNode(digester, prefixPK + "/display", WdkModelText.class, "addDisplay");
-    digester.addCallMethod(prefixPK + "/display", "setText", 0);
-		configureAttributePlugins(digester, "primaryKeyAttribute");
+    // primary key
+    String prefixPk = "wdkModel/recordClassSet/recordClass/primaryKey";
+    configureNode(digester, prefixPk, PrimaryKeyDefinition.class, "setPrimaryKeyDefinition");
+    configureNode(digester, prefixPk + "/columnRef", WdkModelText.class, "addColumnRef");
+    digester.addCallMethod(prefixPk + "/columnRef", "setText", 0);
+
+    // id attribute
+    String prefixIdAttr = "wdkModel/recordClassSet/recordClass/idAttribute";
+    configureNode(digester, prefixIdAttr, IdAttributeField.class, "addAttributeField");
+    configureNode(digester, prefixIdAttr + "/text", WdkModelText.class, "addText");
+    digester.addCallMethod(prefixIdAttr + "/text", "setText", 0);
+    configureNode(digester, prefixIdAttr + "/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod(prefixIdAttr + "/display", "setText", 0);
+    configureAttributePlugins(digester, "primaryKeyAttribute");
 
     configureNode(digester, "*/columnAttribute", ColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");

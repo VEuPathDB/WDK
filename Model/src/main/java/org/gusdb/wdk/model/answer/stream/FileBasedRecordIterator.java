@@ -18,8 +18,10 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -27,16 +29,17 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.CsvResultList;
-import org.gusdb.wdk.model.record.DynamicRecordInstance;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
 class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
 
@@ -136,8 +139,8 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
       List<String> columnNames = new ListBuilder<String>(answerValue.getQuestion()
-          .getRecordClass().getPrimaryKeyAttributeField().getColumnRefs())
-          .addAll(ColumnAttributeField.getColumnNames(entry.getValue()))
+          .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
+          .addAll(Functions.mapToList(entry.getValue(), Named.TO_NAME))
           .toList();
 
       ResultList csvResultList = new CsvResultList(
@@ -211,16 +214,20 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
       }
 
       // Construct the primary key values for this record
-      PrimaryKeyAttributeField pkField = _answerValue.getPrimaryKeyAttributeField();
-      Map<String, Object> pkValues = AnswerValue.getPrimaryKeyFromResultList(_idResultList, pkField).getRawValues();
+      Question question = _answerValue.getQuestion();
+      PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
+      Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(_idResultList).getRawValues();
 
-      // Create a new record instance that will contain all the requested column attributes and tables for the provided primary key values  
-      DynamicRecordInstance aggregateRecordInstance = new DynamicRecordInstance(_answerValue, pkValues);
+      // Create a new record instance that will contain all the requested column attributes
+      //   and tables for the provided primary key values
+      StaticRecordInstance aggregateRecordInstance = new StaticRecordInstance(
+          _answerValue.getUser(), question.getRecordClass(), question, pkValues, false);
 
-      // Iterate over all the CSV file result lists.  Note that the next item in the result list should correspond
-      // to the primary key values provided.  There is no primary key information in the attribute CSV files themselves.
+      // Iterate over all the CSV file result lists.  Note that the next item in the
+      //   result list should correspond to the primary key values provided.  There is
+      //   no primary key information in the attribute CSV files themselves.
       for (AttributeRowStreamData attributeData : _attributeIteratorList) {
-        attachAttributes(aggregateRecordInstance, attributeData, pkField, pkValues);
+        attachAttributes(aggregateRecordInstance, attributeData, pkDef, pkValues);
       }
 
       // Iterate over all the tables for which iterators exist and pull out the iterator and the next record
@@ -250,14 +257,14 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
     }
   }
 
-  private static void attachAttributes(DynamicRecordInstance recordInstance, AttributeRowStreamData attributeData,
-      PrimaryKeyAttributeField pkField, Map<String, Object> expectedPkValues) throws WdkModelException {
+  private static void attachAttributes(StaticRecordInstance recordInstance, AttributeRowStreamData attributeData,
+      PrimaryKeyDefinition pkDef, Map<String, Object> expectedPkValues) throws WdkModelException {
     // There should always be a row in the result list for the primary key given.  The conditional should always
     // be satisfied.  Since primary keys are not included in the attribute CSV files, no direct comparison can be made.
     ResultList resultList = attributeData.resultList;
     if (resultList.next()) {
-      PrimaryKeyAttributeValue attrListPk = AnswerValue.getPrimaryKeyFromResultList(resultList, pkField);
-      if (PrimaryKeyAttributeValue.rawValuesDiffer(expectedPkValues, attrListPk.getRawValues())) {
+      PrimaryKeyValue attrListPk = pkDef.getPrimaryKeyFromResultList(resultList);
+      if (PrimaryKeyValue.rawValuesDiffer(expectedPkValues, attrListPk.getRawValues())) {
         throw new WdkModelException("Record ordering in attribute query data [" + attributeData.fileName +
             "] does not match ID query.  Expected: " + FormatUtil.prettyPrint(expectedPkValues) +
             ", Found: " + FormatUtil.prettyPrint(attrListPk.getRawValues()));
@@ -286,7 +293,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
    * @throws WdkModelException if something goes wrong
    * @throws WdkUserException if something else goes wrong
    */
-  private static void attachTable(DynamicRecordInstance aggregateRecordInstance,
+  private static void attachTable(StaticRecordInstance aggregateRecordInstance,
       TableRecordStreamData tableData, Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
     // If the next record instance for a given table is null, no current or subsequent record instances will have this table, in
     // which case, we need to create an empty one (to avoid any lazy db calls)
@@ -296,7 +303,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
       // the next record instance applies to an aggregate record instance that is as yet downstream, in which case, create an
       // empty table value.
       Map<String,Object> nextPkValues = tableRecord.getPrimaryKey().getRawValues();
-      if (!PrimaryKeyAttributeValue.rawValuesDiffer(pkValues, nextPkValues)) {
+      if (!PrimaryKeyValue.rawValuesDiffer(pkValues, nextPkValues)) {
         // Collect the table value from the next record instance to be applied to the aggregate record instance.
         aggregateRecordInstance.addTableValue(tableRecord.getTableValue(tableData.field.getName()));
         tableData.lastRecord = tableData.iterator.hasNext() ? tableData.iterator.next() : null;
@@ -304,8 +311,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
       }
     }
     // otherwise, add empty table
-    aggregateRecordInstance.addTableValue(
-        new TableValue(null, aggregateRecordInstance.getPrimaryKey(), tableData.field, true));
+    aggregateRecordInstance.addTableValue(new TableValue(tableData.field));
   }
 
   /**

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.sql.PreparedStatement;
@@ -33,12 +30,11 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
-import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
 /**
  * @author xingao
@@ -103,7 +99,7 @@ public class BasketFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlInsert = "INSERT INTO " + schema + TABLE_BASKET + " ("
         + COLUMN_BASKET_ID + ", " + COLUMN_USER_ID + ", " + COLUMN_PROJECT_ID
         + ", " + COLUMN_RECORD_CLASS;
@@ -198,7 +194,7 @@ public class BasketFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlDelete = "DELETE FROM " + schema + TABLE_BASKET + " WHERE "
         + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " = ?";
@@ -327,7 +323,7 @@ public class BasketFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlCount = "SELECT count(*) FROM " + schema + TABLE_BASKET
         + " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
         + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
@@ -395,8 +391,7 @@ public class BasketFactory {
             "wdk-basket-factory-select-all", start);
 
         List<RecordInstance> records = new ArrayList<>();
-        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-        String[] columns = pkField.getColumnRefs();
+        String[] columns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
         while (rs.next()) {
 
           Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -404,7 +399,7 @@ public class BasketFactory {
             Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
             pkValues.put(columns[i - 1], columnValue);
           }
-          RecordInstance record = new DynamicRecordInstance(user, recordClass, pkValues);
+          RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
           records.add(record);
         }
         return records;
@@ -414,20 +409,6 @@ public class BasketFactory {
     } catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
-  }
-
-  public String getBasketContent(User user, RecordClass recordClass) {
-    StringBuilder buffer = new StringBuilder();
-    List<RecordInstance> records = new ArrayList<>();
-    for (RecordInstance record : records) {
-      Map<String, String> values = record.getPrimaryKey().getValues();
-      for (String value : values.values()) {
-        if (buffer.length() > 0) buffer.append(Utilities.COLUMN_DIVIDER);
-        buffer.append(value);
-      }
-      buffer.append(Utilities.RECORD_DIVIDER);
-    }
-    return buffer.toString();
   }
 
   /**
@@ -460,7 +441,7 @@ public class BasketFactory {
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
 
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     // check if the boolean query already exists
     String queryName = rcName.replace('.', '_')
@@ -549,7 +530,7 @@ public class BasketFactory {
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
 
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     // check if the boolean query already exists
     String queryName = rcName.replace('.', '_')
@@ -621,7 +602,7 @@ public class BasketFactory {
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
 
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     // check if the boolean query already exists
     String queryName = rcName.replace('.', '_') + BASKET_ATTRIBUTE_QUERY_SUFFIX;
@@ -645,7 +626,7 @@ public class BasketFactory {
     query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false); // cache the boolean query
-    query.addParam(query.getUserParam(wdkModel));
+    query.addParam(Query.getUserParam(wdkModel));
 
     String prefix = Utilities.COLUMN_PK_PREFIX;
 

@@ -6,7 +6,7 @@
 <%@ attribute name="attributeValue"
               type="org.gusdb.wdk.model.record.attribute.AttributeValue"
               required="true"
-              description="the attribute value to be rendered."
+              description="the attribute value to be rendered"
 %>
 
 <%@ attribute name="truncate"
@@ -54,17 +54,17 @@
   <c:choose>
 
 <%-- PRIMARY KEY --%>
-    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue'}">
+    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.IdAttributeValue'}">
       <!-- store the primary key pairs here - used by basket link -->
       <div class="primaryKey" fvalue="${briefValue}" style="display:none;">
-        <c:forEach items="${attributeValue.values}" var="pkValue">
+        <c:forEach items="${attributeValue.primaryKey.values}" var="pkValue">
           <span key="${pkValue.key}">${pkValue.value}</span>
         </c:forEach>
       </div>
 
       <!-- display a link to record page, will include the line:  <a href="${recordLink}">${displayValue}</a> -->
       <imp:recordLink
-        primaryKeyAttributeValue="${attributeValue}"
+        primaryKeyValue="${attributeValue.primaryKey}"
         recordClass="${recordClass}"
         displayValue = "${displayValue}"
       />

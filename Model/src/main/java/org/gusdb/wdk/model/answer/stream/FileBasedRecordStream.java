@@ -21,9 +21,11 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -152,11 +154,11 @@ public class FileBasedRecordStream implements RecordStream {
 
     for (AttributeField attribute : attributes) {
       if (attribute instanceof ColumnAttributeField) {
-        columnAttributes.put((ColumnAttributeField) attribute, ColumnAttributeField.toMapEntry);
+        columnAttributes.put(attribute.getName(), (ColumnAttributeField)attribute);
       }
       else if (includeDependedColumns){
         // addition of underlying but unspecified column attributes
-        columnAttributes.putAll(attribute.getColumnAttributeFields().values(), ColumnAttributeField.toMapEntry);
+        columnAttributes.putAll(attribute.getColumnAttributeFields());
       }
     }
 
@@ -286,8 +288,8 @@ public class FileBasedRecordStream implements RecordStream {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
       List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getQuestion()
-          .getRecordClass().getPrimaryKeyAttributeField().getColumnRefs())
-          .addAll(ColumnAttributeField.getColumnNames(attributeFields))
+          .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
+          .addAll(Functions.mapToList(attributeFields, Named.TO_NAME))
           .toList();
 
       // Transfer the result list content to the CSV file provided
@@ -388,7 +390,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @return list of column names for primary key
    */
   private static List<String> getPkColumnNames(AnswerValue answerValue) {
-    return Arrays.asList(answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs());
+    return Arrays.asList(answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs());
   }
 
   /**
@@ -408,7 +410,7 @@ public class FileBasedRecordStream implements RecordStream {
   
     // Combine the primary key columns and column attribute columns into a single list
     List<String> columnNames = new ArrayList<>(pkColumns);
-    columnNames.addAll(ColumnAttributeField.getColumnNames(fields));
+    columnNames.addAll(Functions.mapToList(fields, Named.TO_NAME));
     return columnNames;
   }
 

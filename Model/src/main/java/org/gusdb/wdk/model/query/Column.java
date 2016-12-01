@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query;
 
 import java.io.PrintWriter;
 
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -20,77 +21,79 @@ import org.json.JSONObject;
  * @author jerric
  * 
  */
-public class Column extends WdkModelBase {
+public class Column extends WdkModelBase implements NamedObject {
 
-  // private static Logger logger = Logger.getLogger( Column.class );
-
-  private String name;
-  private Query query;
-  private ColumnType type = ColumnType.STRING;
-  private int width = 0; // for wsColumns (width of datatype)
+  private String _name;
+  private Query _query;
+  private ColumnType _type = ColumnType.STRING;
+  private int _width = 0; // for wsColumns (width of datatype)
 
   /**
    * The name is used by WSF service.
    */
-  private String wsName;
+  private String _wsName;
 
-  private boolean ignoreCase = false;
+  private boolean _ignoreCase = false;
 
-  private String sortingColumn;
+  private String _sortingColumn;
+
+  private boolean _isPkColumn = false;
 
   public Column() {}
 
   public Column(Column column) {
-    this.name = column.name;
-    this.query = column.query;
-    this.type = column.type;
-    this.width = column.width;
-    this.wsName = column.wsName;
-    this.ignoreCase = column.ignoreCase;
-    this.sortingColumn = column.sortingColumn;
+    _name = column._name;
+    _query = column._query;
+    _type = column._type;
+    _width = column._width;
+    _wsName = column._wsName;
+    _ignoreCase = column._ignoreCase;
+    _sortingColumn = column._sortingColumn;
+    _isPkColumn = column._isPkColumn;
   }
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
+  @Override
   public String getName() {
-    return name;
+    return _name;
   }
 
   public void setColumnType(String typeName) throws WdkModelException {
-    this.type = ColumnType.parse(typeName);
+    _type = ColumnType.parse(typeName);
   }
 
   public void setType(ColumnType type) {
-    this.type = type;
+    _type = type;
   }
 
   public ColumnType getType() {
-    return type;
+    return _type;
   }
 
   public void setQuery(Query query) {
-    this.query = query;
+    _query = query;
   }
 
   public void setWidth(int width) {
-    this.width = width;
+    _width = width;
   }
 
   public Query getQuery() {
-    return query;
+    return _query;
   }
 
   public int getWidth() {
-    return (width == 0) ? type.getDefaultWidth() : width;
+    return (_width == 0) ? _type.getDefaultWidth() : _width;
   }
 
   /**
    * @return Returns the wsName if defined, or column name, if the wsName is not defined.
    */
   public String getWsName() {
-    return (wsName == null)? name : wsName;
+    return (_wsName == null)? _name : _wsName;
   }
 
   /**
@@ -98,23 +101,23 @@ public class Column extends WdkModelBase {
    *          The wsName to set.
    */
   public void setWsName(String wsName) {
-    this.wsName = wsName;
+    _wsName = wsName;
   }
 
   public JSONObject getJSONContent() throws JSONException {
     JSONObject jsColumn = new JSONObject();
-    jsColumn.put("name", name);
-    jsColumn.put("type", type);
-    jsColumn.put("width", width);
+    jsColumn.put("name", _name);
+    jsColumn.put("type", _type);
+    jsColumn.put("width", _width);
     return jsColumn;
   }
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
-    String classnm = this.getClass().getSimpleName();
-    StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "', "
-        + "  dataTypeName='" + type + "'" + newline);
+    String classnm = getClass().getSimpleName();
+    StringBuffer buf = new StringBuffer(classnm + ": name='" + _name + "', "
+        + "  dataTypeName='" + _type + "'" + newline);
 
     return buf.toString();
   }
@@ -144,7 +147,7 @@ public class Column extends WdkModelBase {
    * @return the sortingColumn
    */
   public String getSortingColumn() {
-    return sortingColumn;
+    return _sortingColumn;
   }
 
   /**
@@ -152,14 +155,14 @@ public class Column extends WdkModelBase {
    *          the sortingColumn to set
    */
   public void setSortingColumn(String sortingColumn) {
-    this.sortingColumn = sortingColumn;
+    _sortingColumn = sortingColumn;
   }
 
   /**
    * @return the ignoreCase
    */
   public boolean isIgnoreCase() {
-    return ignoreCase;
+    return _ignoreCase;
   }
 
   /**
@@ -167,7 +170,7 @@ public class Column extends WdkModelBase {
    *          the ignoreCase to set
    */
   public void setIgnoreCase(boolean ignoreCase) {
-    this.ignoreCase = ignoreCase;
+    _ignoreCase = ignoreCase;
   }
 
   public final void printDependency(PrintWriter writer, String indent) {
@@ -175,8 +178,22 @@ public class Column extends WdkModelBase {
     printDependencyContent(writer, indent + WdkModel.INDENT);
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
-  
+
+  /**
+   * Prints nothing
+   * 
+   * @param writer
+   * @param indent
+   */
   protected void printDependencyContent(PrintWriter writer, String indent) {
     // by default, nothing to print out.
+  }
+
+  public void setPrimaryKeyColumn(boolean isPkColumn) {
+    _isPkColumn = isPkColumn;
+  }
+
+  public boolean isPrimaryKeyColumn() {
+    return _isPkColumn;
   }
 }

@@ -72,14 +72,14 @@ public class XMLReporter extends StandardReporter {
       writer.println("<response>");
       String type = normalizeProperty(getQuestion().getRecordClass().getDisplayName());
       writer.println("<recordset id='" + _baseAnswer.getChecksum() + "' count='" +
-          _baseAnswer.getResultSize() + "' type='" + type + "'>");
+          _baseAnswer.getResultSizeFactory().getResultSize() + "' type='" + type + "'>");
       if (_tableCache != null) {
         _tableCache.open();
       }
       for (RecordInstance record : records) {
 
         recordCount++;
-        String id = normalizeProperty(record.getPrimaryKey().getValue().toString());
+        String id = normalizeProperty(record.getIdAttributeValue().getValue().toString());
         writer.println("<record id='" + id + "'>");
 
         // print out attributes of the record first

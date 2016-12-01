@@ -95,7 +95,7 @@ export function getAttributesChangeHandler(inputName, onParentChange, previousSt
  * the first element.  If not, simply returns the passed array.
  */
 export function addPk(attributesArray, recordClass) {
-  return prependAttrib(recordClass.primaryKeyAttributeName, attributesArray);
+  return prependAttrib(recordClass.recordIdAttributeName, attributesArray);
 }
 
 export function prependAttrib(attribName, attributesArray) {

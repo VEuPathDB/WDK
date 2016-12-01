@@ -94,7 +94,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 		StringBuilder sql = new StringBuilder("SELECT idq.*, aq. " + columnName);
 
 		// need to join with idsql here to get extra (dynamic) columns from idq
-		String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+		String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 		sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
 		for (int i = 0; i < pkColumns.length; i++) {
 			sql.append((i == 0) ? " WHERE " : " AND ");

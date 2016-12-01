@@ -59,8 +59,8 @@ public class RecordClassFormatter {
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
-      .put(Keys.PRIMARY_KEY_ATTRIBUTE_NAME, recordClass.getPrimaryKeyAttributeField().getName())
-      .put(Keys.PRIMARY_KEY_REFS, recordClass.getPrimaryKeyAttributeField().getColumnRefs())
+      .put(Keys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
+      .put(Keys.PRIMARY_KEY_REFS, recordClass.getPrimaryKeyDefinition().getColumnRefs())
       .put(Keys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
         FieldScope.ALL, expandTables, expandTableAttributes))
       .put(Keys.CATEGORIES, getAttributeCategoriesJson(recordClass));

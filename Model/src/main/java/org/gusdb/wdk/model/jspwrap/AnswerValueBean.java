@@ -181,20 +181,20 @@ public class AnswerValueBean {
     }
 
     public int getPageCount() throws WdkModelException, WdkUserException {
-        return answerValue.getPageCount();
+        return answerValue.getResultSizeFactory().getPageCount();
     }
 
     public int getResultSize() throws WdkModelException, WdkUserException {
-        return answerValue.getResultSize();
+        return answerValue.getResultSizeFactory().getResultSize();
     }
 
     public int getDisplayResultSize() throws WdkModelException, WdkUserException {
-        return answerValue.getDisplayResultSize();
+        return answerValue.getResultSizeFactory().getDisplayResultSize();
     }
 
    public Map<String, Integer> getResultSizesByProject()
             throws WdkModelException, WdkUserException {
-        return answerValue.getResultSizesByProject();
+        return answerValue.getResultSizeFactory().getResultSizesByProject();
     }
 
     public boolean getIsBoolean() {
@@ -296,9 +296,9 @@ public class AnswerValueBean {
 	  // adding "yes" will hint RecordClass to use table display names 
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER,"yes");
-				// sorting alphabetically by internal table name
-				Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
+        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER, true);
+        // sorting alphabetically by internal table name
+        Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
         Iterator<String> ti = treeMapTables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
@@ -332,25 +332,7 @@ public class AnswerValueBean {
     }
 
     public boolean getIsDynamic() {
-        return answerValue.isDynamic();
-    }
-
-    /**
-     * for controller: reset counter for download purpose
-     */
-    public void resetAnswerRowCursor() {
-        logger.debug("reset answer cursor");
-        int startIndex = answerValue.getStartIndex();
-        int endIndex = answerValue.getEndIndex();
-        answerValue = new AnswerValue(answerValue, startIndex, endIndex);
-    }
-
-    /**
-     * for controller: reset counter for download purpose
-     */
-    public boolean getResetAnswerRowCursor() {
-        resetAnswerRowCursor();
-        return true;
+        return answerValue.getQuestion().isDynamic();
     }
 
     /*
@@ -414,20 +396,20 @@ public class AnswerValueBean {
 
     public int getFilterSize(String filterName)
             throws WdkModelException, WdkUserException {
-        return answerValue.getFilterSize(filterName);
+        return answerValue.getResultSizeFactory().getFilterSize(filterName);
     }
 
     public Map<String, Integer> getFilterSizes() {
-      return answerValue.getFilterSizes();
+      return answerValue.getResultSizeFactory().getFilterSizes();
     }
 
     public int getFilterDisplaySize(String filterName)
             throws WdkModelException, WdkUserException {
-        return answerValue.getFilterDisplaySize(filterName);
+        return answerValue.getResultSizeFactory().getFilterDisplaySize(filterName);
     }
 
     public Map<String, Integer> getFilterDisplaySizes() {
-      return answerValue.getFilterDisplaySizes();
+      return answerValue.getResultSizeFactory().getFilterDisplaySizes();
     }
 
     public AnswerFilterInstanceBean getFilter() {
@@ -459,8 +441,7 @@ public class AnswerValueBean {
     }
 
     public AnswerValueBean makeAnswerValue(int pageStart, int pageEnd) {
-        AnswerValue pagedCopy = new AnswerValue(answerValue, pageStart, pageEnd);
-        return new AnswerValueBean(pagedCopy);
+        return new AnswerValueBean(answerValue.cloneWithNewPaging(pageStart, pageEnd));
     }
 
     /**

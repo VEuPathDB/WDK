@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
 
@@ -105,9 +106,9 @@ public class DynamicAttributeSet extends WdkModelBase {
         String fieldName = field.getName();
 
         // the attribute name must be unique
-        if (attributeFieldMap.containsKey(fieldName))
-          throw new WdkModelException("DynamicAttributes contain a "
-              + "duplicate attribute '" + fieldName + "'");
+        if (attributeFieldMap.containsKey(fieldName)) {
+          throw new WdkModelException("DynamicAttributes contain a duplicate attribute '" + fieldName + "'");
+        }
 
         attributeFieldMap.put(fieldName, field);
       }
@@ -148,30 +149,26 @@ public class DynamicAttributeSet extends WdkModelBase {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
     Query dynamicAttributeQuery = question.getDynamicAttributeQuery();
     Map<String, Column> columns = dynamicAttributeQuery.getColumnMap();
 
-    // make sure the dynamic attribute set doesn't have duplicated
-    // attributes
+    // make sure the dynamic attribute set doesn't have duplicated attributes
     Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
     for (String fieldName : attributeFieldMap.keySet()) {
-      if (fields.containsKey(fieldName))
-        throw new WdkModelException("Dynamic attribute field " + fieldName
-            + " in question " + question.getFullName()
-            + " already exists in recordClass " + recordClass.getFullName());
+      if (fields.containsKey(fieldName)) {
+        throw new WdkModelException("Dynamic attribute field " + fieldName +
+            " in question " + question.getFullName() +
+            " already exists in recordClass " + recordClass.getFullName());
+      }
       AttributeField field = attributeFieldMap.get(fieldName);
-      field.setRecordClass(recordClass);
-      field.setContainer(question);
-      if (field instanceof ColumnAttributeField) {
+      field.setContainerName(question.getFullName());
+      if (field instanceof DerivedAttributeField) {
+        ((DerivedAttributeField)field).setContainer(question);
+      }
+      else if (field instanceof ColumnAttributeField) {
         // need to set the column before resolving references
         Column column = columns.get(fieldName);
         if (column == null)
@@ -181,7 +178,7 @@ public class DynamicAttributeSet extends WdkModelBase {
               + " have the column '" + fieldName + "'");
         ((ColumnAttributeField) field).setColumn(column);
       }
-      field.resolveReferences(wodkModel);
+      field.resolveReferences(wdkModel);
     }
   }
 }

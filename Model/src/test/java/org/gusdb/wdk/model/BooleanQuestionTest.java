@@ -46,9 +46,9 @@ public class BooleanQuestionTest {
 
     @Before
     public void createOperands() throws Exception {
-        User user = UnitTestHelper.getRegisteredUser();
-        Step left = UnitTestHelper.createNormalStep(user);
-        Step right = UnitTestHelper.createNormalStep(user);
+        User regUser = UnitTestHelper.getRegisteredUser();
+        Step left = UnitTestHelper.createNormalStep(regUser);
+        Step right = UnitTestHelper.createNormalStep(regUser);
 
         leftStepId = Integer.toString(left.getStepId());
         rightStepId = Integer.toString(right.getStepId());
@@ -76,12 +76,12 @@ public class BooleanQuestionTest {
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
-        int size = answerValue.getResultSize();
+        int size = answerValue.getResultSizeFactory().getResultSize();
 
         Assert.assertTrue("bigger than left",
-                size >= leftAnswerValue.getResultSize());
+                size >= leftAnswerValue.getResultSizeFactory().getResultSize());
         Assert.assertTrue("bigger than right",
-                size >= rightAnswerValue.getResultSize());
+                size >= rightAnswerValue.getResultSizeFactory().getResultSize());
     }
 
     @Test
@@ -103,12 +103,12 @@ public class BooleanQuestionTest {
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
-        int size = answerValue.getResultSize();
+        int size = answerValue.getResultSizeFactory().getResultSize();
 
         Assert.assertTrue("smaller than left",
-                size <= leftAnswerValue.getResultSize());
+                size <= leftAnswerValue.getResultSizeFactory().getResultSize());
         Assert.assertTrue("smaller than right",
-                size <= rightAnswerValue.getResultSize());
+                size <= rightAnswerValue.getResultSizeFactory().getResultSize());
     }
 
     @Test
@@ -130,10 +130,10 @@ public class BooleanQuestionTest {
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
-        int size = answerValue.getResultSize();
+        int size = answerValue.getResultSizeFactory().getResultSize();
 
         Assert.assertTrue("smaller than left",
-                size <= leftAnswerValue.getResultSize());
+                size <= leftAnswerValue.getResultSizeFactory().getResultSize());
     }
 
     @Test
@@ -155,9 +155,9 @@ public class BooleanQuestionTest {
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
                 paramValues, true, 0);
-        int size = answerValue.getResultSize();
+        int size = answerValue.getResultSizeFactory().getResultSize();
 
         Assert.assertTrue("smaller than right",
-                size <= rightAnswerValue.getResultSize());
+                size <= rightAnswerValue.getResultSizeFactory().getResultSize());
     }
 }

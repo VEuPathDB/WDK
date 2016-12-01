@@ -8,26 +8,16 @@ import org.gusdb.wdk.model.WdkModelException;
  * {@link Query}.
  * 
  * @author Jerric Gao
- * 
  */
 public class ColumnAttributeValue extends AttributeValue {
 
-  private Object _value;
+  private final Object _value;
 
-  /**
-   * @param instance
-   * @param field
-   */
   public ColumnAttributeValue(ColumnAttributeField field, Object value) {
     super(field);
     _value = value;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeValue#getValue()
-   */
   @Override
   public String getValue() throws WdkModelException {
     return Utilities.parseValue(_value);

@@ -9,7 +9,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,9 +45,7 @@ public class RecordRequest {
   private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
       RecordClass recordClass) throws WdkUserException {
 
-    PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
-    String[] columnRefs =  pkAttrField.getColumnRefs();
-
+    String[] columnRefs = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     int providedLength = primaryKeyJson.length();
     int expectedLength = columnRefs.length;
 

@@ -48,7 +48,7 @@
       </table>
 
       <br />
-      <div class="help"><i>Mouse over a word to see its occurence in the column</i></div>
+      <div class="help"><i>Mouse over a word to see its occurrence in the column</i></div>
       <div id="layout"> </div>
     </div>
 
@@ -57,7 +57,7 @@
         <thead>
           <tr>
             <th class="label">Word</th>
-            <th class="count">Occurence</th>
+            <th class="count">Occurrence</th>
         </tr>
       </thead>
       <tbody>
@@ -72,7 +72,7 @@
         <tfoot>
           <tr>
             <th>Word</th>
-            <th>Occurence</th>
+            <th>Occurrence</th>
           </tr>
         </tfoot>
       </c:if>

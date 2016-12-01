@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 
 /**
  * A table field defines a table of data associated with a recordClass. It defines what attributes the table
@@ -37,6 +38,13 @@ public class TableField extends Field implements AttributeFieldContainer {
   private String _description;
   private String _categoryName;
 
+  private RecordClass _recordClass;
+
+  public void setRecordClass(RecordClass recordClass) {
+    _recordClass = recordClass;
+    setContainerName(recordClass.getFullName());
+  }
+
   public Query getUnwrappedQuery() {
     return _unwrappedQuery;
   }
@@ -54,7 +62,9 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public void addAttributeField(AttributeField attributeField) {
-    attributeField.setContainer(this);
+    if (attributeField instanceof DerivedAttributeField) {
+      ((DerivedAttributeField)attributeField).setContainer(this);
+    }
     _attributeFieldList.add(attributeField);
   }
 
@@ -82,11 +92,6 @@ public class TableField extends Field implements AttributeFieldContainer {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeFieldContainer#getAttributeFieldMap()
-   */
   @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
@@ -110,11 +115,6 @@ public class TableField extends Field implements AttributeFieldContainer {
     return _attributeFieldMap.get(fieldName);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     if (_resolved)
@@ -128,7 +128,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     _recordClass.validateBulkQuery(_unwrappedQuery);
 
     // prepare the query and add primary key params
-    String[] paramNames = _recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] paramNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
     _wrappedQuery = RecordClass.prepareQuery(wdkModel, _unwrappedQuery, paramNames);
 
     Column[] columns = _wrappedQuery.getColumns();
@@ -140,28 +140,17 @@ public class TableField extends Field implements AttributeFieldContainer {
     }
 
     for (AttributeField field : _attributeFieldMap.values()) {
-      // set recordClass
-      field.setRecordClass(_recordClass);
+      field.setContainerName(_recordClass.getFullName() + "." + _name);
     }
 
     _resolved = true;
   }
 
-  /*
-   * (non-Javadoc) Should never be called, but is necessary because TableField implements FieldI.
-   * 
-   * @see org.gusdb.wdk.model.FieldI#getTruncateTo()
-   */
   @Override
   public int getTruncateTo() {
-    throw new RuntimeException("getTruncate does not apply to TableField");
+    throw new UnsupportedOperationException("getTruncate does not apply to TableField");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);

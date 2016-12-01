@@ -67,7 +67,7 @@ public class FilterSizeCache {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
         AnswerValue answerValue = step.getAnswerValue(false);
-        int size = answerValue.getFilterDisplaySize(_filterToFetch);
+        int size = answerValue.getResultSizeFactory().getFilterDisplaySize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
         return previousVersion;
       }
@@ -103,7 +103,7 @@ public class FilterSizeCache {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
         AnswerValue answer = step.getAnswerValue(false);
-        Map<String, Integer> sizes = answer.getFilterDisplaySizes();
+        Map<String, Integer> sizes = answer.getResultSizeFactory().getFilterDisplaySizes();
         previousVersion.sizeMap = sizes;
         previousVersion.allFiltersLoaded = true;
         return previousVersion;

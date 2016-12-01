@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -105,7 +105,7 @@ public class AnswerValueAttributes {
 
   public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
     if (_summaryAttributeMap == null) {
-      PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
+      IdAttributeField pkField = _question.getRecordClass().getIdAttributeField();
       _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField });
     }
     //LOG.debug("Returning summary field map with keys: " +

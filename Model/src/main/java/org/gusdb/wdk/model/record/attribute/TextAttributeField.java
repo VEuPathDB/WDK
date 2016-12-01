@@ -2,8 +2,9 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
@@ -16,25 +17,15 @@ import org.gusdb.wdk.model.WdkModelText;
  * 
  * @author jerric
  */
-public class TextAttributeField extends AttributeField {
+public class TextAttributeField extends DerivedAttributeField {
 
-  private List<WdkModelText> _texts;
-  /**
-   * The text are used in the download, and should not include any html tags.
-   */
+  // fields set by XML parsing
+  private List<WdkModelText> _texts = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _displays = new ArrayList<WdkModelText>();
+
+  // resolved fields
   private String _text;
-
-  private List<WdkModelText> _displays;
-  /**
-   * the display are used on the website, and html tags are allowed. display is
-   * optional, and if not set, text will be used instead.
-   */
   private String _display;
-
-  public TextAttributeField() {
-    _texts = new ArrayList<WdkModelText>();
-    _displays = new ArrayList<WdkModelText>();
-  }
 
   public void addText(WdkModelText text) {
     _texts.add(text);
@@ -52,67 +43,19 @@ public class TextAttributeField extends AttributeField {
     return (_display != null) ? _display : _text;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
-
-
-
-    String rcName = (_recordClass == null) ? ""
-        : (_recordClass.getFullName() + ".");
-
-
-
-    // exclude texts
-    boolean hasText = false;
-    for (WdkModelText text : _texts) {
-      if (text.include(projectId)) {
-        if (hasText) {
-          throw new WdkModelException("The textAttribute " + rcName + getName()
-              + " has more than one <text> for " + "project " + projectId);
-        } else {
-          _text = text.getText();
-          hasText = true;
-        }
-      }
-    }
-    // check if all texts are excluded
-    if (_text == null)
-      throw new WdkModelException("The text attribute " + rcName + getName()
-          + " does not have a <text> tag for project " + projectId);
-    _texts = null;
-
-    // exclude display, display is optional
-    boolean hasDisplay = false;
-    for (WdkModelText display : _displays) {
-      if (display.include(projectId)) {
-        if (hasDisplay) {
-          throw new WdkModelException("The textAttribute " + rcName + getName()
-              + " has more than one <display> for " + "project " + projectId);
-        } else {
-          _display = display.getText();
-          hasDisplay = true;
-        }
-      }
-    }
-    _displays = null;
+    _text = excludeModelText(_texts, projectId, "text", true);
+    _display = excludeModelText(_displays, projectId, "display", false);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeField#getDependents()
-   */
   @Override
-  public Collection<AttributeField> getDependents() throws WdkModelException {
-    String content = _text;
-    if (_display != null)
-      content += "\n" + _display;
-    return parseFields(content).values();
+  public Collection<AttributeField> getDependencies() throws WdkModelException {
+    // combine text and display values to look for attribute macros
+    Map<String, AttributeField> dependents = new HashMap<>();
+    if (_text != null) dependents.putAll(parseFields(_text));
+    if (_display!= null) dependents.putAll(parseFields(_display));
+    return dependents.values();
   }
 }

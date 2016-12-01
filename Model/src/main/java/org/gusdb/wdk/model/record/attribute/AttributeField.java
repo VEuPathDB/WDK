@@ -1,18 +1,11 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.Field;
@@ -39,16 +32,6 @@ import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
  */
 public abstract class AttributeField extends Field implements Cloneable {
 
-  public static final Pattern MACRO_PATTERN = Pattern.compile(
-      "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
-
-  /**
-   * The dependent fields are the ones that are embedded in the current field.
-   */
-  protected abstract Collection<AttributeField> getDependents() throws WdkModelException;
-
-  protected AttributeFieldContainer _container;
-
   private boolean _sortable = true;
   private String _align;
   private boolean _nowrap = false;
@@ -58,13 +41,11 @@ public abstract class AttributeField extends Field implements Cloneable {
   private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> _pluginMap;
 
+  public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
+
   @Override
   public AttributeField clone() {
     return (AttributeField) super.clone();
-  }
-
-  public AttributeFieldContainer getContainer() {
-    return _container;
   }
 
   /**
@@ -144,12 +125,8 @@ public abstract class AttributeField extends Field implements Cloneable {
     _categoryName = categoryName;
   }
 
-  /**
-   * @param container
-   *          the container to set
-   */
-  public void setContainer(AttributeFieldContainer container) {
-    _container = container;
+  public boolean isDerived() {
+    return false;
   }
 
   public void addAttributePluginReference(AttributePluginReference reference) {
@@ -164,51 +141,6 @@ public abstract class AttributeField extends Field implements Cloneable {
     return new LinkedHashMap<String, AttributePluginReference>(_pluginMap);
   }
 
-  public Map<String, ColumnAttributeField> getColumnAttributeFields()
-      throws WdkModelException {
-    Map<String, ColumnAttributeField> leaves = new LinkedHashMap<String, ColumnAttributeField>();
-    for (AttributeField dependent : getDependents()) {
-      if (dependent instanceof ColumnAttributeField) {
-        leaves.put(dependent.getName(), (ColumnAttributeField) dependent);
-      } else {
-        leaves.putAll(dependent.getColumnAttributeFields());
-      }
-    }
-    return leaves;
-  }
-
-  /**
-   * Several kinds of fields can embed other fields in their text. this method
-   * parse out the embedded fields from the text.
-   * 
-   * @param text
-   * @return
-   */
-  protected Map<String, AttributeField> parseFields(String text) throws WdkModelException {
-    Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
-    Map<String, AttributeField> fields = _container.getAttributeFieldMap();
-
-    Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
-    while (matcher.find()) {
-      String fieldName = matcher.group(1);
-      if (!fields.containsKey(fieldName)) {
-        throw new WdkModelException("Invalid field macro in attribute" + " [" + _name + "] of ["
-            + _recordClass.getFullName() + "]: " + fieldName);
-      }
-
-      AttributeField field = fields.get(fieldName);
-      children.put(fieldName, field);
-      if (!children.containsKey(fieldName))
-        children.put(fieldName, field);
-    }
-    return children;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -239,12 +171,6 @@ public abstract class AttributeField extends Field implements Cloneable {
     return super.getPropertyLists();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel )
-   */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
@@ -253,53 +179,5 @@ public abstract class AttributeField extends Field implements Cloneable {
     for (AttributePluginReference plugin : _pluginMap.values()) {
       plugin.resolveReferences(wdkModel);
     }
-
-    // check dependency loops
-    traverseDependeny(this, new Stack<String>());
-  }
-
-  /**
-   * Make sure the attribute doesn't embed other attributes that may cause
-   * cross-dependency.
-   * 
-   * @param attribute
-   *          the attribute to be checked
-   * @param path
-   *          the path from root to the attribute (attribute is not included)
-   */
-  private void traverseDependeny(AttributeField attribute, Stack<String> path)
-      throws WdkModelException {
-    if (path.contains(attribute._name))
-      // NOTE: if you got this exception on a LinkAttribute, make sure you are
-      //   not self-referencing the LinkAttribute.  LinkAttributes need to only
-      //   reference existing ColumnAttributes (i.e. values pulled from SQL)
-      throw new WdkModelException("Attribute '" + attribute._name +
-          "' has circular reference: " +  FormatUtil.NL + "   Previous = [ " +
-          FormatUtil.join(new ArrayList<String>(path).toArray(), ", ") + " ]");
-
-    path.push(attribute._name);
-    for (AttributeField dependent : attribute.getDependents()) {
-      traverseDependeny(dependent, path);
-    }
-    path.pop();
-  }
-  
-  @Override
-  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
-    super.printDependencyContent(writer, indent);
-    
-    List<AttributeField> depends = new ArrayList<>(getDependents());
-    Collections.sort(depends, new Comparator<AttributeField>() {
-
-      @Override
-      public int compare(AttributeField attribute1, AttributeField attribute2) {
-        return attribute1.getName().compareToIgnoreCase(attribute2.getName());
-      }});
-    writer.println(indent + "<dependOn count=\"" + depends.size() + "\">");
-    String indent1 = indent + WdkModel.INDENT;
-    for (AttributeField depend : depends) {
-      depend.printDependency(writer, indent1);
-    }
-    writer.println(indent + "</dependOn>");
   }
 }

@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import static org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue.rawValuesDiffer;
+import static org.gusdb.wdk.model.record.PrimaryKeyValue.rawValuesDiffer;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -15,11 +15,12 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.record.DynamicRecordInstance;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
 public class SingleTableRecordStream implements RecordStream {
 
@@ -27,7 +28,7 @@ public class SingleTableRecordStream implements RecordStream {
 
   private AnswerValue _answerValue;
   private TableField _tableField;
-  private PrimaryKeyAttributeField _pkField;
+  private PrimaryKeyDefinition _pkDef;
   private Wrapper<Map<String,Object>> _lastPkValues;
   private ResultList _resultList;
   private boolean _iteratorCalled;
@@ -48,7 +49,7 @@ public class SingleTableRecordStream implements RecordStream {
   private void init(AnswerValue answerValue, TableField tableField, ResultList resultList) {
     _answerValue = answerValue;
     _tableField = tableField;
-    _pkField = _answerValue.getQuestion().getRecordClass().getPrimaryKeyAttributeField();
+    _pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
     _lastPkValues = new Wrapper<>();
     _resultList = resultList;
     _iteratorCalled = false;
@@ -62,7 +63,7 @@ public class SingleTableRecordStream implements RecordStream {
     _iteratorCalled = true;
     try {
       if (_resultList.next()) {
-        Map<String, Object> firstPk = AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField).getRawValues();
+        Map<String, Object> firstPk = _pkDef.getPrimaryKeyFromResultList(_resultList).getRawValues();
         LOG.debug("First row PK = " + FormatUtil.prettyPrint(firstPk));
         _lastPkValues.set(firstPk);
       }
@@ -80,8 +81,10 @@ public class SingleTableRecordStream implements RecordStream {
           try {
             // start new record instance
             Map<String, Object> currentRecordPkValues = _lastPkValues.get();
-            DynamicRecordInstance record = new DynamicRecordInstance(_answerValue, currentRecordPkValues);
-            TableValue tableValue = new TableValue(_answerValue.getUser(), record.getPrimaryKey(), _tableField, true);
+            Question question = _answerValue.getQuestion();
+            StaticRecordInstance record = new StaticRecordInstance(_answerValue.getUser(),
+                question.getRecordClass(), question, currentRecordPkValues, false);
+            TableValue tableValue = new TableValue(_tableField);
             record.addTableValue(tableValue);
   
             // add the row from the last call to next and clear lastPkValues
@@ -91,7 +94,7 @@ public class SingleTableRecordStream implements RecordStream {
 
             // loop through the ResultList's rows and add to table until PK values differ
             while (_resultList.next()) {
-              Map<String,Object> rowPkValues = AnswerValue.getPrimaryKeyFromResultList(_resultList, _pkField).getRawValues();
+              Map<String,Object> rowPkValues = _pkDef.getPrimaryKeyFromResultList(_resultList).getRawValues();
               LOG.debug("Will compare previous with " + FormatUtil.prettyPrint(rowPkValues));
               if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
                 // save off next record's primary keys and return this record

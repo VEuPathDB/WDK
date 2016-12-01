@@ -1033,8 +1033,9 @@
       </optional>
       <zeroOrMore>
         <choice>
-
-          <ref name="primaryKeyAttribute" />
+          <ref name="primaryKey" />
+          <ref name="idAttribute" />
+          <ref name="pkColumnAttribute" />
           <ref name="textAttribute" />
           <ref name="linkAttribute" />
           <ref name="table" />
@@ -1357,24 +1358,29 @@
     </zeroOrMore>
   </define>
 
+  <define name="primaryKey">
+    <element name="primaryKey">
+      <ref name="IncludeExclude" />
+      <choice>
+        <attribute name="aliasQueryRef" />
+        <attribute name="aliasPluginClassName" />
+      </choice>
+      <oneOrMore>
+        <element name="columnRef">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+
   <!-- if displayName is empty ("") this column will be skipped by the jsp, but then no access to a recordpage -->
   <!-- in the text element we may add any attribute defined in record.xml -->
-  <!--    we need to add display like we have for textAttributes -->
-  <define name="primaryKeyAttribute">
-    <element name="primaryKeyAttribute">
+  <define name="idAttribute">
+    <element name="idAttribute">
       <ref name="AttributeFieldContent" />
-      
-        <choice>
-          <attribute name="aliasQueryRef" />
-          <attribute name="aliasPluginClassName" />
-        </choice>
-     
       <oneOrMore>
         <choice>
-          <element name="columnRef">
-            <ref name="IncludeExclude" />
-            <text />
-          </element>
           <element name="text">
             <ref name="IncludeExclude" />
             <text />
@@ -1403,7 +1409,27 @@
     </element>
   </define>
 
-  <!--  textAttribute can be defined outside an attributeQueryRef using macros representing other attributes -->
+  <!-- pkColumnAttribute must be defined outside an attributeQueryRef using macros representing other attributes -->
+  <!--   These are optional; if omitted, WDK will auto-generate them for the PK columns, but with internal=true -->
+  <define name="pkColumnAttribute">
+    <element name="pkColumnAttribute">
+      <ref name="AttributeFieldContent" />
+      <zeroOrMore>
+        <choice>
+          <element name="display">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="text">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!--  textAttribute must be defined outside an attributeQueryRef using macros representing other attributes -->
   <!--  both textAttribute and columnAttribute can be used as columns in a question (summaryAttributes) -->
   <define name="textAttribute">
     <element name="textAttribute">

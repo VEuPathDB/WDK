@@ -36,7 +36,7 @@ public class TableQueryTest extends QueryTest {
         for (String queryFullName : rc.getTableQueries().keySet()) {
           if (query.getFullName().equals(queryFullName)) {
             // found a RecordClass using this table query
-            return rc.getPrimaryKeyAttributeField().getColumnRefs();
+            return rc.getPrimaryKeyDefinition().getColumnRefs();
           }
         }
       }

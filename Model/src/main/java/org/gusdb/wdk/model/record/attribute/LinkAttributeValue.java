@@ -7,8 +7,8 @@ import org.gusdb.wdk.model.WdkUserException;
  * <p>
  * A value of a {@link LinkedAttributeField} that represents a hyperlink in the
  * web page. The values of the embedded {@link AttributeField}s will be
- * substituted into the {@link LinkAttributeField#displayText} and
- * {@link LinkAttributeField#url}.
+ * substituted into the {@link LinkAttributeField#_displayText} and
+ * {@link LinkAttributeField#_url}.
  * </p>
  * 
  * <p>
@@ -19,44 +19,31 @@ import org.gusdb.wdk.model.WdkUserException;
  * url, which is only useful when downloading the url data in download report.
  * </p>
  */
-public class LinkAttributeValue extends AttributeValue {
+public class LinkAttributeValue extends DerivedAttributeValue {
 
-  private AttributeValueContainer container;
-  private String displayText;
-  private String url;
+  private String _displayText;
+  private String _url;
 
-  public LinkAttributeValue(LinkAttributeField field,
-      AttributeValueContainer container) {
-    super(field);
-    this.container = container;
+  public LinkAttributeValue(LinkAttributeField field, AttributeValueContainer container) {
+    super(field, container);
   }
 
   public String getDisplayText() throws WdkModelException, WdkUserException {
-    if (displayText == null) {
-      String baseText = ((LinkAttributeField)field).getDisplayText();
-      String label = "attribute" + " [" + field.getName() + "] of ["
-            + field.getRecordClass().getFullName() + "]";
-      displayText = replaceMacrosWithAttributeValues(baseText, container, label);
+    if (_displayText == null) {
+      _displayText = populateMacros(((LinkAttributeField)_field).getDisplayText());
     }
-    return displayText;
+    return _displayText;
   }
 
   public String getUrl() throws WdkModelException, WdkUserException {
-    if (url == null) {
-      String baseUrl = ((LinkAttributeField)field).getUrl();
-      String label = "attribute" + " [" + field.getName() + "] of ["
-          + field.getRecordClass().getFullName() + "]";
-      url = replaceMacrosWithAttributeValues(baseUrl, container, label);
+    if (_url == null) {
+      _url = populateMacros(((LinkAttributeField)_field).getUrl());
     }
-    return url;
+    return _url;
   }
 
   /**
-   * Get the text representation of the url.
-   * 
-   * @throws WdkUserException
-   * 
-   * @see org.gusdb.wdk.model.record.attribute.AttributeValue#getValue()
+   * Get the text representation of the url (e.g. for reports).
    */
   @Override
   public String getValue() throws WdkModelException, WdkUserException {

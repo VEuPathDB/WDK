@@ -1,10 +1,7 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -16,43 +13,35 @@ import org.gusdb.wdk.model.record.RecordInstance;
  * to the properties of the referenced {@link AttributeField}.
  * 
  * @author jerric
- * 
  */
-public abstract class AttributeValue {
+public abstract class AttributeValue implements NamedObject {
 
   protected static final Logger logger = Logger.getLogger(AttributeValue.class.getName());
 
-  protected AttributeField field;
+  protected AttributeField _field;
 
   public abstract Object getValue() throws WdkModelException, WdkUserException;
 
   public AttributeValue(AttributeField field) {
-    this.field = field;
+    _field = field;
   }
 
   public AttributeField getAttributeField() {
-    return this.field;
+    return _field;
   }
 
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.record.Field#getDisplayName()
-   */
   public String getDisplayName() {
-    return field.getDisplayName();
+    return _field.getDisplayName();
   }
 
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.record.Field#getName()
-   */
+  @Override
   public String getName() {
-    return field.getName();
+    return _field.getName();
   }
 
   public String getBriefDisplay() throws WdkModelException, WdkUserException {
-		String display = getDisplay();
-    int truncateTo = field.getTruncateTo();
+    String display = getDisplay();
+    int truncateTo = _field.getTruncateTo();
     switch (truncateTo) {
     case -1:
       return display;
@@ -70,41 +59,14 @@ public abstract class AttributeValue {
     return (value != null) ? value.toString() : "";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     try {
       Object value = getValue();
-      return (value == null) ? "" : value.toString();
-    } catch (WdkModelException | WdkUserException ex) {
+      return (value == null ? "" : value.toString());
+    }
+    catch (WdkModelException | WdkUserException ex) {
       throw new RuntimeException(ex);
     }
-  }
-
-  public static String replaceMacrosWithAttributeValues(String text, AttributeValueContainer container, String label)
-      throws WdkModelException, WdkUserException {
-    Map<String, Object> values = new LinkedHashMap<String, Object>();
-    Map<String, AttributeField> fields = container.getAttributeFieldMap();
-
-    Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
-    while (matcher.find()) {
-      String fieldName = matcher.group(1);
-
-      if (!values.containsKey(fieldName)) {
-
-        if (!fields.containsKey(fieldName)) {
-          logger.warn("Invalid field macro in " + label + ": " + fieldName);
-          continue;
-        }
-
-        AttributeValue value = container.getAttributeValue(fieldName);
-        values.put(fieldName, value.toString());
-      }
-    }
-    return Utilities.replaceMacros(text, values);
   }
 }

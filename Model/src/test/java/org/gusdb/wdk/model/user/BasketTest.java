@@ -68,10 +68,10 @@ public class BasketTest {
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
         AnswerValue answerValue = question.makeAnswerValue(user, params, true, 0);
-        Assert.assertTrue("answer size >= 5", answerValue.getResultSize() >= 5);
+        Assert.assertTrue("answer size >= 5", answerValue.getResultSizeFactory().getResultSize() >= 5);
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
-            String pkValue = (String) instance.getPrimaryKey().getValue();
+            String pkValue = instance.getPrimaryKey().getValuesAsString();
             AttributeValue attribute = instance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
             int value = Integer.parseInt(attribute.getValue().toString());
             Assert.assertEquals("record basket: " + pkValue, 1, value);
@@ -116,7 +116,7 @@ public class BasketTest {
         Step step = UnitTestHelper.createNormalStep(user);
         AnswerValue answerValue = step.getAnswerValue();
         RecordClass recordClass = step.getQuestion().getRecordClass();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
         List<String[]> ids = new ArrayList<String[]>();
 
         int count = 0;

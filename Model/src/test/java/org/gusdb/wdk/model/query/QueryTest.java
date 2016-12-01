@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.test.QueryTester;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -100,7 +101,7 @@ public class QueryTest {
       int minRows = valueSet.getMinRows();
       int maxRows = valueSet.getMaxRows();
       Map<String, String> rawValues = valueSet.getParamValues();
-      Map<String, String> stableValues = query.getStableValues(user, rawValues);
+      Map<String, String> stableValues = QueryTester.getStableValues(query, user, rawValues);
 
       // try to make a query instance
       QueryInstance<?> instance = query.makeInstance(user, stableValues, true, 0,

@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
-import org.gusdb.wdk.service.request.answer.SortItem.Direction;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -171,9 +171,9 @@ public class AnswerDetailsFactory {
 
   private static List<SortItem> ensureElements(List<SortItem> sorting, Question question) {
     if (!sorting.isEmpty()) return sorting;
-    AttributeField pkAttribute = question.getRecordClass().getPrimaryKeyAttributeField();
+    AttributeField pkAttribute = question.getRecordClass().getIdAttributeField();
     return SortItem.convertSorting(
-        question.getRecordClass().getPrimaryKeySortingAttributeMap(),
+        question.getRecordClass().getIdSortingAttributeMap(),
         new MapBuilder<String, AttributeField>(pkAttribute.getName(), pkAttribute).toMap());
   }
 
@@ -192,12 +192,12 @@ public class AnswerDetailsFactory {
       if (!attributes.containsKey(attributeName)) {
         LOG.warn("Attribute '" + attributeName + "' was listed in sorting but is not a returned attribute.  Skipping...");
       }
-      if (!Direction.isDirection(directionStr)) {
+      if (!SortDirection.isDirection(directionStr)) {
         throw new RequestMisformatException("Bad value: '" + directionStr +
-            "' is not a direction. Only " + FormatUtil.join(Direction.values(), ", ") + " supported.");
+            "' is not a direction. Only " + FormatUtil.join(SortDirection.values(), ", ") + " supported.");
       }
       // this entry passed; add sorting item
-      sorting.add(new SortItem(attributes.get(attributeName), Direction.valueOf(directionStr)));
+      sorting.add(new SortItem(attributes.get(attributeName), SortDirection.valueOf(directionStr)));
     }
     return sorting;
   }

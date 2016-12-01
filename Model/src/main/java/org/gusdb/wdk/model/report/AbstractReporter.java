@@ -39,7 +39,7 @@ public abstract class AbstractReporter implements Reporter {
   }
 
   protected int getResultSize() throws WdkModelException, WdkUserException {
-    return _baseAnswer.getResultSize();
+    return _baseAnswer.getResultSizeFactory().getResultSize();
   }
 
   @Override

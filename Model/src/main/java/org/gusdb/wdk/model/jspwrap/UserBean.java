@@ -1047,11 +1047,6 @@ public class UserBean /* implements Serializable */{
     factory.clearBasket(user, recordClass.recordClass);
   }
 
-  public String getBasket(RecordClassBean recordClass) {
-    BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
-    return basketFactory.getBasketContent(user, recordClass.recordClass);
-  }
-
   public Map<RecordClassBean, Integer> getBasketCounts() throws WdkModelException {
     Map<RecordClass, Integer> counts = user.getBasketCounts();
     Map<RecordClassBean, Integer> beans = new LinkedHashMap<RecordClassBean, Integer>();

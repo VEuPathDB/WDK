@@ -12,6 +12,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -33,6 +34,8 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTester {
+
+  private static final Logger LOG = Logger.getLogger(QueryTester.class);
 
   WdkModel wdkModel;
   User user;
@@ -177,8 +180,7 @@ public class QueryTester {
       } else {
         Map<String, String> rawValues = QueryTester.parseParamArgs(tester.user, params,
             useDefaults, query);
-        Map<String, String> stableValues = query.getStableValues(tester.user,
-            rawValues);
+        Map<String, String> stableValues = getStableValues(query, tester.user, rawValues);
         if (showQuery) {
           String querySql = tester.showSql(query, stableValues);
           String newline = System.getProperty("line.separator");
@@ -196,6 +198,33 @@ public class QueryTester {
         }
       }
     }
+  }
+
+  public static Map<String, String> getStableValues(Query query, User user, Map<String, String> rawValues)
+      throws WdkModelException, WdkUserException {
+    // initialize the stable values with raw values first, then replace them one
+    // by one.
+    Map<String, Param> paramMap = query.getParamMap();
+    Map<String, String> stableValues = new LinkedHashMap<String, String>(rawValues);
+    for (String paramName : rawValues.keySet()) {
+      Param param = paramMap.get(paramName);
+      if (param == null) {
+        // instead of throwing an error, wdk will silently ignore it
+        // throw new WdkModelException("Invalid param name '" +
+        // paramName
+        // + "' in query " + getFullName());
+        LOG.warn("Param " + paramName + " does not exist in query " + query.getFullName());
+        continue;
+      }
+      String rawValue = rawValues.get(paramName);
+      String stableValue = param.getStableValue(user, rawValue, stableValues);
+      stableValues.put(paramName, stableValue);
+    }
+    if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
+      if (!stableValues.containsKey(Utilities.PARAM_USER_ID))
+        stableValues.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+    }
+    return stableValues;
   }
 
   private static void print(Query query, ResultList resultList)

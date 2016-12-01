@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.ResultSizeFactory;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -140,8 +141,9 @@ public class SummaryTester {
           System.out.println("page " + pageCount);
 
         // print the size of the answer
-        System.out.println("Total # of records: " + answerValue.getResultSize());
-        System.out.println("Display Size: " + answerValue.getDisplayResultSize());
+        ResultSizeFactory resultSizes = answerValue.getResultSizeFactory();
+        System.out.println("Total # of records: " + resultSizes.getResultSize());
+        System.out.println("Display Size: " + resultSizes.getDisplayResultSize());
         ResultProperty rp = answerValue.getQuestion().getRecordClass().getResultPropertyPlugin();
         /* temp for debugging */
         if (rp != null) {
@@ -150,7 +152,7 @@ public class SummaryTester {
           System.out.println("Result Property : " + missingTrans);
         }
 
-        System.out.println("Display Size: " + answerValue.getDisplayResultSize());
+        System.out.println("Display Size: " + resultSizes.getDisplayResultSize());
         System.out.println("Answer Checksum: " + answerValue.getChecksum());
 
         AnswerValueBean answerValueBean = new AnswerValueBean(answerValue);
@@ -202,7 +204,7 @@ public class SummaryTester {
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
     AnswerValue answerValue = question.makeAnswerValue(user, paramValues, 1, 2, sortingMap, filter, true, 0);
-    int resultSize = answerValue.getResultSize();
+    int resultSize = answerValue.getResultSizeFactory().getResultSize();
     answerValue = question.makeAnswerValue(user, paramValues, 1, resultSize, sortingMap, filter, false, 0);
     FileWriter fw = new FileWriter(new File(xmlFile), false);
 
