@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+
+use strict;
+use Getopt::Long;
+
+my ($startDate, $endDate, $report, $emailsFile, $singleFilter, $filtersFile);
+
+&GetOptions('sd=s' => \$startDate,
+            'ed=s' => \$endDate,
+            'r!' =>  \$report,
+            'ef=s' => \$emailsFile,
+            'sf=s' => \$singleFilter,
+            'ff=s' => \$filtersFile,
+            );
+
+usage() unless ($emailsFile && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
+
+my $emailDelim = "---------------------";
+
+my @filtersAsStrings; # to preserve input order
+my %filtersInfo; # key is filterAsString, value is hash ref w/ info about the filter
+
+#
+# parse filters
+#
+if ($singleFilter) {
+    &parseFilterLine($singleFilter, \@filtersAsStrings, \%filtersInfo);
+}
+
+else {
+  open(FF, $filtersFile) || die "Can't open filters file '$filtersFile'\n";
+  while(<FF>) {
+    &parseFilterLine($_, \@filtersAsStrings, \%filtersInfo);
+  }
+}
+
+#
+# scan emails file, apply filters, and output appropriate emails
+#
+open(F, $emailsFile) || die "Can't open emails file '$emailsFile'\n";
+my @currentEmail;
+while(<F>) {
+  if (/$emailDelim/) {
+    &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
+    @currentEmail = ();
+  } else {
+    push(@currentEmail, $_);
+  }
+}
+close(F);
+
+#
+# optionally, print report
+#
+if ($report) {
+  foreach my $filterAsString (@filtersAsStrings) {
+    print STDOUT $filtersInfo{$filterAsString}->{count} . "\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
+  }
+}
+
+
+##########################################################################################
+
+
+sub parseFilterLine {
+  my ($filterLine, $filtersAsStringsRef, $filtersInfoRef) = @_;
+
+  chomp($filterLine);
+  next unless $filterLine;
+  my @row = split(/\t/, $filterLine);
+  my $filterAsString = $row[0];
+  push(@$filtersAsStringsRef, $filterAsString);
+
+  # each filter can have more than one string to match, separated by &&
+  my @filterTerms = split(/\&\&/, $filterAsString);
+
+  $filtersInfoRef->{$filterAsString} = {orig => $filterLine, terms => \@filterTerms, count => 0};
+}
+
+sub handleEmail {
+  my ($emailArray, $filtersAsStringsRef, $filtersInfoRef, $emailDelim, $printIfMatch, $report) = @_;
+
+  my $matchedFilterAsString;
+  foreach my $filterAsString (@$filtersAsStringsRef) {
+    my $filterInfo = $filtersInfoRef->{$filterAsString};
+    my $filterTerms = $filterInfo->{terms};
+    my $matched;
+    foreach my $emailLine (@$emailArray) {
+      foreach my $filterTerm (@$filterTerms) {
+	if (index($emailLine, $filterTerm) != -1) {
+	  $matched = 1;
+	  last;
+	}
+      }
+      last if ($matched);
+    }
+    if ($matched) {
+      if ($matchedFilterAsString) { # already matched a filter
+	my $emailAsString = join("", @$emailArray);
+	die "\n$emailAsString\n\nnaughty, naughty: the above email matches more than one filter.\n  $matchedFilterAsString\n  $filterAsString\n";
+      }
+      $filterInfo->{count} += 1 ;
+      $matchedFilterAsString = $filterAsString;
+    }
+  }
+  if (!$report && (($printIfMatch && $matchedFilterAsString) || (!$printIfMatch && !$matchedFilterAsString)))  {
+    print STDOUT join("", @$emailArray) . $emailDelim . "\n";
+  }
+}
+
+
+sub usage {
+  die "
+Filter a file of wdk error emails.
+
+There are three modes of use:
+  1) filter hunting.  Provide a filters file.  Output is mails that match no filter, so you can create new filters (to add to the filters file).
+  2) reporting.  Provide a filters file.  Ouput is a report showing counts of each filter, so you can decide which filter issue to debug
+  3) single filter.  Provide a single filter.  Output is mails that match that filter, so you can start debugging.
+
+Usage: wdkFilterErrorEmails --ef emails_file <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]
+
+Where:
+  emails_file:     file containing wdk error emails
+  single_filter:   string to use as a filter
+  filter_file:     file containing one or more filters (see below for format)
+  --r:             write a report to stdout
+  start_date:      date in mm/dd/yyyy format.  Exclude emails before this date.
+  end_date:        date in mm/dd/yyyy format. Exclude emails after this date
+
+Filters file format: tab delimited, with first column being on or more filters (delimited by \&\&).  Other columns are ignored.
+
+";
+}
