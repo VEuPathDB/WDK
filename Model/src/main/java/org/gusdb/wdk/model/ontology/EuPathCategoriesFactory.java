@@ -81,6 +81,7 @@ public class EuPathCategoriesFactory {
 
   // record classes whose individuals all have both scope website and menu
   private String[][] otherRecordClassInfo = {
+      { "RFLP Genotype Isolates", "RflpIsolateRecordClasses.RflpIsolateRecordClass" },
       { "Popset Isolate Sequences", "PopsetRecordClasses.PopsetRecordClass" },
       { "Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass" },
       { "Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass" },

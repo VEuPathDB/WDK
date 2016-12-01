@@ -692,7 +692,9 @@ public class StepFactory {
     //   new steps, but may not have been applied to steps already in the DB.  This allows model XML
     //   authors to add default filters to the model without worrying about existing steps in the DB (as
     //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
-    applyAlwaysOnFiltersToExistingStep(step);
+
+    // this was done in live branch wit log: unfixed steps (with no filters) are entering into an infinite loop, temp fix
+    //applyAlwaysOnFiltersToExistingStep(step);
 
     LOG.debug("loaded step #" + stepId);
     return step;
