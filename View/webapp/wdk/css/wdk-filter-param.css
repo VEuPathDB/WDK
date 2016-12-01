@@ -131,7 +131,7 @@
   display: none;
 }
 .filter-param .wdk-CheckboxTreeToggle {
-  line-height: 1.5em;
+  line-height: 1em;
 }
 .filter-param .wdk-CheckboxTreeToggle__collapsed {
   left: -2px;
@@ -142,19 +142,14 @@
 .filter-param .field-list li .wdk-AttributeFilterFieldParent,
 .filter-param .field-list li .wdk-AttributeFilterFieldItem {
   display: block;
-  padding: .25em;
-  padding-right: 1em;
+  padding: 3px 5px;
+  font-weight: bold;
 }
 .filter-param .field-list li .wdk-AttributeFilterFieldItem__inactive {
   border-color: 1px solid transparent;
 }
 .filter-param .field-list .wdk-AttributeFilterFieldItem__active {
-  background-color: white;
-  border-left: 1px inset #eee;
-  border-top: 1px inset #eee;
-  border-bottom: 1px inset #ddd;
-  border-right: 1px solid white;
-  margin-right: -11px;
+  background-color: #f0f0f0;
 }
 .filter-param .field-detail {
   width: 75%;
@@ -337,9 +332,12 @@
   width: 10px;
   height: 10px;
 }
-.filter-param .membership-filter .member.selected td {
+.filter-param .membership-filter .member.member__selected td {
   font-weight: bold;
   /*background-color: #66A4E7;*/
+}
+.filter-param .membership-filter .member.member__disabled {
+  opacity: .4;
 }
 .filter-param .results {
   padding: 1em;

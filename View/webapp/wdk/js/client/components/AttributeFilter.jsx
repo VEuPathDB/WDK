@@ -1339,15 +1339,18 @@ fieldComponents.string = React.createClass({
                 {map(sortedDistribution, item => {
                   // compute frequency, percentage, filteredPercentage
                   var percentage = (item.count / total) * 100;
+                  var disabled = item.filteredCount === 0;
                   var filteredPercentage = (item.filteredCount / total) * 100;
                   var isChecked = !this.props.filter || includes(this.props.filter.values, item.value);
-                  var trClassNames = 'member' + (isChecked ? ' selected' : '');
+                  var trClassNames = 'member' +
+                    (isChecked & !disabled ? ' member__selected' : '') +
+                    (disabled ? ' member__disabled' : '');
                   var value = item.value || UNKNOWN_VALUE;
                   var display = item.value || UNKNOWN_DISPLAY;
 
                   return (
-                    <tr key={value} className={trClassNames} onClick={this.handleClick}>
-                      <td><input value={value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
+                    <tr key={value} className={trClassNames} onClick={disabled ? noop : this.handleClick}>
+                      <td><input value={value} disabled={disabled} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
                       <td><span className="value">{display}</span></td>
                       <td><span className="frequency">{item.count}</span></td>
                       <td><span className="frequency">{item.filteredCount}</span></td>
