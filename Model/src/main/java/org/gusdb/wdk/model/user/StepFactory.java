@@ -694,7 +694,7 @@ public class StepFactory {
     //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
 
     // this was done in live branch wit log: unfixed steps (with no filters) are entering into an infinite loop, temp fix
-    //applyAlwaysOnFiltersToExistingStep(step);
+    applyAlwaysOnFiltersToExistingStep(step);
 
     LOG.debug("loaded step #" + stepId);
     return step;
