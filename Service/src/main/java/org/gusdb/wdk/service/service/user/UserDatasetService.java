@@ -141,7 +141,7 @@ public class UserDatasetService extends UserService {
   @Path("{id}")
   public Response deleteById(@PathParam("id") int datasetId) throws WdkModelException {
     getUserDatasetStore().deleteUserDataset(getUserId(), datasetId);
-    return Response.ok().build();
+    return Response.noContent().build();
   }
   
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
