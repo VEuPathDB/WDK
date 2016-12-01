@@ -10,7 +10,7 @@ type Props = {
   onOpen?: Function;
   onClose?: Function;
   children?: React.ReactChild;
-  width?: number;
+  width?: number | string;
   height?: number | string;
   draggable?: boolean;
   resizable?: boolean;
@@ -97,7 +97,7 @@ class Dialog extends Component<Props, void> {
     title: '',
     onOpen() {},
     onClose() {},
-    width: 600,
+    width: "auto",
     height: "auto",
     draggable: false,
     resizable: false,
@@ -142,7 +142,8 @@ class Dialog extends Component<Props, void> {
       height: this.props.height,
       draggable: this.props.draggable,
       resizable: this.props.resizable,
-      dialogClass: this.props.className
+      dialogClass: this.props.className,
+      position: { my: 'top', at: 'top+100' }
     };
     $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
     this.handlePropsChanged();
