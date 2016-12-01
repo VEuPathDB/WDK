@@ -1,11 +1,12 @@
 package org.gusdb.wdk.model.xml;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 
 /**
  * @author Jerric
@@ -49,21 +50,15 @@ public class XmlAttributeField extends AttributeField {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.AttributeField#getDependents()
-     */
-    @Override
-    public Collection<AttributeField> getDependents() throws WdkModelException {
-        // TODO Auto-generated method stub
-        return new ArrayList<AttributeField>();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // do nothing
+    }
+
+    @Override
+    public Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException {
+      return Collections.EMPTY_MAP;
     }
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,27 +28,25 @@ import org.gusdb.wdk.model.record.RecordClass;
  * @author jerric
  * 
  */
-public class LinkAttributeField extends AttributeField {
+public class LinkAttributeField extends DerivedAttributeField {
 
   private static final String DEFAULT_TYPE = "link";
-  
-  private List<WdkModelText> _urls;
-  private String _url;
 
-  private List<WdkModelText> _displayTexts;
+  // fields set by XML parsing
+  private List<WdkModelText> _urls = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _displayTexts = new ArrayList<WdkModelText>();
+
+  // resolved fields
+  private String _url;
   private String _displayText;
 
   private boolean _newWindow = false;
 
   public LinkAttributeField() {
-    _displayTexts = new ArrayList<WdkModelText>();
-    _urls = new ArrayList<WdkModelText>();
     // by default, don't show linked attributes in the download
     _inReportMaker = false;
-    
-    if (_type == null) {
-      _type = DEFAULT_TYPE;
-    }
+    // set type to default for this subclass
+    _type = DEFAULT_TYPE;
   }
 
   public void setNewWindow(boolean newWindow) {
@@ -71,82 +70,26 @@ public class LinkAttributeField extends AttributeField {
     return _url;
   }
 
-  /**
-   * @return the displayText
-   */
-  public String getDisplayText() {
-    return _displayText;
-  }
-  
-  /**
-   * @param displayText
-   *          the displayText to set
-   */
   public void addDisplayText(WdkModelText displayText) {
     _displayTexts.add(displayText);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
+  public String getDisplayText() {
+    return _displayText;
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
-
-    String rcName = (_recordClass == null) ? ""
-        : (_recordClass.getFullName() + ".");
-
-    // exclude urls
-    boolean hasUrl = false;
-    for (WdkModelText url : _urls) {
-      if (url.include(projectId)) {
-        if (hasUrl) {
-          throw new WdkModelException("The linkAttribute " + rcName + getName()
-              + " has more than one <url> for " + "project " + projectId);
-        } else {
-          _url = url.getText();
-          hasUrl = true;
-        }
-      }
-    }
-    // check if all urls are excluded
-    if (!hasUrl)
-      throw new WdkModelException("The linkAttribute " + rcName + _name
-          + " does not have a <url> tag for project " + projectId);
-    _urls = null;
-
-    // exclude display texts
-    boolean hasText = false;
-    for (WdkModelText text : _displayTexts) {
-      if (text.include(projectId)) {
-        if (hasText) {
-          throw new WdkModelException("The linkAttribute " + rcName + getName()
-              + " has more than one <displayText> " + "for project "
-              + projectId);
-        } else {
-          _displayText = text.getText();
-          hasText = true;
-        }
-      }
-    }
-    // check if all texts are excluded
-    if (!hasText)
-      throw new WdkModelException("The linkAttribute " + rcName + _name
-          + " does not have a <displayText> tag for project " + projectId);
-    _displayTexts = null;
+    _url = excludeModelText(_urls, projectId, "url", true);
+    _displayText = excludeModelText(_displayTexts, projectId, "displayText", true);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeField#getDependents()
-   */
   @Override
-  protected Collection<AttributeField> getDependents() throws WdkModelException {
-    Map<String, AttributeField> dependents = parseFields(_displayText);
-    dependents.putAll(parseFields(_url));
+  protected Collection<AttributeField> getDependencies() throws WdkModelException {
+    Map<String, AttributeField> dependents = new HashMap<>();
+    if (_displayText != null) dependents.putAll(parseFields(_displayText));
+    if (_url != null) dependents.putAll(parseFields(_url));
     return dependents.values();
   }
 }

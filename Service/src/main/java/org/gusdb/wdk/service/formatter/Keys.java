@@ -16,7 +16,7 @@ public class Keys {
   public static final String ID = "id";
   public static final String NAME = "name";
   public static final String URL_SEGMENT = "urlSegment";
-  public static final String PRIMARY_KEY_ATTRIBUTE_NAME = "primaryKeyAttributeName";
+  public static final String RECORD_ID_ATTRIBUTE_NAME = "recordIdAttributeName";
   public static final String PRIMARY_KEY_REFS = "primaryKeyColumnRefs";
 
   // descriptive keys

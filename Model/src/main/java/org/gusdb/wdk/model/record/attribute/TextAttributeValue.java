@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record.attribute;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,56 +12,41 @@ import org.gusdb.wdk.model.WdkUserException;
  * @author Jerric Gao
  * 
  */
-public class TextAttributeValue extends AttributeValue {
-
-  private AttributeValueContainer container;
+public class TextAttributeValue extends DerivedAttributeValue {
 
   /**
    * The text will be used in the download report.
    */
-  private String text;
+  private String _text;
 
   /**
    * The display will be used in the summary and record page display. if a
    * display is not specified in the model, the text will be used as display.
    */
-  private String display;
+  private String _display;
 
   /**
    * @param attributeValueContainer
    * @param field
    */
-  public TextAttributeValue(TextAttributeField field,
-      AttributeValueContainer container) {
-    super(field);
-    this.container = container;
+  public TextAttributeValue(TextAttributeField field, AttributeValueContainer container) {
+    super(field, container);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributeValue#getValue()
-   */
   @Override
   public String getValue() throws WdkModelException, WdkUserException {
-    if (this.text == null) {
-      String fieldText = ((TextAttributeField)field).getText();
-      String label = "attribute [" + field.getName() + "] of ["
-          + field.getRecordClass().getFullName() + "]";
-      this.text = replaceMacrosWithAttributeValues(fieldText, container, label);
+    if (_text == null) {
+      _text = populateMacros(((TextAttributeField)_field).getText());
     }
-    return this.text;
+    return _text;
   }
 
   @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
-    if (this.display == null) {
-      String fieldDisplay = ((TextAttributeField)field).getDisplay();
-      String label = "attribute [" + field.getName() + "] of ["
-            + field.getRecordClass().getFullName() + "]";
-      this.display = replaceMacrosWithAttributeValues(fieldDisplay, container, label);
+    if (_display == null) {
+      _display = populateMacros(((TextAttributeField)_field).getDisplay());
     }
-    return this.display;
+    return _display;
   }
 
 }

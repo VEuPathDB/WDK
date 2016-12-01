@@ -203,7 +203,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    */
   protected String[] getPkColumns() {
 	  RecordClass rc = booleanQuery.getRecordClass();
-	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
+	  return rc.getPrimaryKeyDefinition().getColumnRefs();
   }
   
     protected String getLeftSql ()  throws WdkModelException, WdkUserException {

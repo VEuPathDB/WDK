@@ -288,7 +288,7 @@ public class Step {
    * responsible for caching, if any
    */
   public int getResultSize() throws WdkModelException, WdkUserException {
-    estimateSize = getAnswerValue().getDisplayResultSize();
+    estimateSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
     return estimateSize;
   }
 
@@ -706,7 +706,8 @@ public class Step {
     // check previous and child steps if still valid
     Step myPrevStep, myChildStep;
     if (valid &&
-        (((myPrevStep = getPreviousStep()) != null && !myPrevStep.isValid()) || ((myChildStep = getChildStep()) != null && !myChildStep.isValid()))) {
+        (((myPrevStep = getPreviousStep()) != null && !myPrevStep.isValid()) ||
+         ((myChildStep = getChildStep()) != null && !myChildStep.isValid()))) {
       invalidateStep();
       return false;
     }

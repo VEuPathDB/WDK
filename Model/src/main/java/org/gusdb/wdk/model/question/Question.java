@@ -350,7 +350,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     AnswerValue answerValue = makeAnswerValue(user, dependentValues, pageStart,
         pageEnd, sortingMap, filter, validate, assignedWeight);
     if (_fullAnswer) {
-      int resultSize = answerValue.getResultSize();
+      int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
         answerValue.setPageIndex(pageStart, resultSize);
     }
@@ -586,8 +586,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public Map<String, AttributeField> getSummaryAttributeFieldMap() {
     Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 
-    // always put primary key as the first field
-    AttributeField pkField = _recordClass.getPrimaryKeyAttributeField();
+    // always put ID as the first field
+    AttributeField pkField = _recordClass.getIdAttributeField();
     attributeFields.put(pkField.getName(), pkField);
 
     if (_defaultSummaryAttributeFields.size() > 0) {
@@ -622,7 +622,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 
     // always put primary key as the first field
-    AttributeField pkField = _recordClass.getPrimaryKeyAttributeField();
+    AttributeField pkField = _recordClass.getIdAttributeField();
     attributeFields.put(pkField.getName(), pkField);
 
     attributeFields.putAll(_recordClass.getAttributeFieldMap(scope));
@@ -760,7 +760,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
       // make sure this question's query provides columns for each part of the primary key
       Set<String> queryColumnNames = _query.getColumnMap().keySet();
-      String[] requiredColumns = _recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+      String[] requiredColumns = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
       for (String requiredColumn : requiredColumns) {
         if (!queryColumnNames.contains(requiredColumn)) {
           throw new WdkModelException("Question '" + getFullName() + "' refers to query '" +

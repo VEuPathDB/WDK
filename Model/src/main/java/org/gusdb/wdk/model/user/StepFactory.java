@@ -272,7 +272,7 @@ public class StepFactory {
     int estimateSize;
     Exception exception = null;
     try {
-        estimateSize = answerValue.getDisplayResultSize();
+        estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
     }
     catch (Exception ex) {
       estimateSize = 0;

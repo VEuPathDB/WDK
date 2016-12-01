@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.user.User;
 
 public class SingleRecordQuestion extends Question {
@@ -35,6 +34,10 @@ public class SingleRecordQuestion extends Question {
 
   public static boolean isSingleQuestionName(String questionName, WdkModel wdkModel) {
     return parseQuestionName(questionName, wdkModel).isValid;
+  }
+
+  private static String getSingleRecordQuestionName(RecordClass recordClass) {
+    return SINGLE_RECORD_QUESTION_NAME_PREFIX + recordClass.getFullName() + SINGLE_RECORD_QUESTION_NAME_SUFFIX;
   }
 
   private static QuestionNameParts parseQuestionName(String questionName, WdkModel wdkModel) {
@@ -56,15 +59,23 @@ public class SingleRecordQuestion extends Question {
     return parts;
   }
 
+  public SingleRecordQuestion(RecordClass recordClass) {
+    init(recordClass, getSingleRecordQuestionName(recordClass));
+  }
+
   public SingleRecordQuestion(String questionName, WdkModel wdkModel) {
     QuestionNameParts parts = parseQuestionName(questionName, wdkModel);
     if (!parts.isValid) {
       throw new WdkRuntimeException("Invalid single record question name passed to constructor: " + questionName);
     }
-    setWdkModel(wdkModel);
-    setRecordClass(parts.recordClass);
+    init(parts.recordClass, questionName);
+  }
+
+  private void init(RecordClass recordClass, String questionName) {
+    setWdkModel(recordClass.getWdkModel());
+    setRecordClass(recordClass);
     setName(questionName);
-    setDisplayName("Single" + parts.recordClass.getDisplayName());
+    setDisplayName("Single" + recordClass.getDisplayName());
     _dynamicAttributeSet = new DynamicAttributeSet();
     _dynamicAttributeSet.setQuestion(this);
   }
@@ -78,8 +89,7 @@ public class SingleRecordQuestion extends Question {
     
     // build valid PK value list
     String[] pkValues = params.get(PRIMARY_KEY_PARAM_NAME).split(",");
-    PrimaryKeyAttributeField pkAttrField = _recordClass.getPrimaryKeyAttributeField();
-    String[] columnRefs =  pkAttrField.getColumnRefs();
+    String[] columnRefs =  _recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     if (columnRefs.length != pkValues.length) {
       throw new WdkUserException("RecordClass '" + _recordClass.getFullName() +

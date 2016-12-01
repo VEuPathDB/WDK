@@ -4,10 +4,10 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core">
 
   <jsp:directive.attribute
-    name="primaryKeyAttributeValue"
-    type="org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue"
+    name="primaryKeyValue"
+    type="org.gusdb.wdk.model.record.PrimaryKeyValue"
     required="true"
-    description="The primary key AttributeValue instance"
+    description="The primary key value"
   />
   <jsp:directive.attribute
     name="recordClass"
@@ -22,7 +22,7 @@
   />
 
   <c:set var="recordLinkKeys" value="" />
-  <c:forEach items="${primaryKeyAttributeValue.values}" var="pkValue">
+  <c:forEach items="${primaryKeyValue.values}" var="pkValue">
     <c:set var="recordLinkKeys" value="${recordLinkKeys}&amp;${pkValue.key}=${pkValue.value}" />
   </c:forEach>
 

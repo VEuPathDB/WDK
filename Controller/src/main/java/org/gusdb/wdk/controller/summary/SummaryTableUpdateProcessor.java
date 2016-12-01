@@ -79,7 +79,7 @@ public class SummaryTableUpdateProcessor {
           if (command.equalsIgnoreCase("update")) {
             Set<String> attributeNamesList = new LinkedHashSet<String>(Arrays.asList(attributeNames));
             // always add back primary key in case it is not present in input list
-            attributeNamesList.add(question.getRecordClass().getPrimaryKeyAttributeField().getName());
+            attributeNamesList.add(question.getRecordClass().getIdAttributeField().getName());
             for (String summaryName : summary) {
               if (attributeNamesList.contains(summaryName)) {
                 summaryList.add(summaryName);

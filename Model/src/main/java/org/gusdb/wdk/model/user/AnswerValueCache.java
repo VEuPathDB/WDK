@@ -53,7 +53,7 @@ public class AnswerValueCache {
 
   public AnswerValue getAnswerValue(boolean validate)
       throws WdkModelException, WdkUserException {
-    _answerValues = getAnswerValuePair(_answerValues, _step, validate, false);
+    _answerValues = getAnswerValuePair(_answerValues, validate, false);
     return (validate ? _answerValues.getFirst() : _answerValues.getSecond());
   }
 
@@ -62,12 +62,12 @@ public class AnswerValueCache {
     if (_step.getViewFilterOptions().getSize() == 0) {
       return getAnswerValue(validate);
     }
-    _viewAnswerValues = getAnswerValuePair(_viewAnswerValues, _step, validate, true);
+    _viewAnswerValues = getAnswerValuePair(_viewAnswerValues, validate, true);
     return (validate ? _viewAnswerValues.getFirst() : _viewAnswerValues.getSecond());
   }
 
   private TwoTuple<AnswerValue, AnswerValue> getAnswerValuePair(
-      TwoTuple<AnswerValue, AnswerValue> currentValues, Step step,
+      TwoTuple<AnswerValue, AnswerValue> currentValues,
       boolean validate, boolean applyViewFilters)
           throws WdkModelException, WdkUserException {
     AnswerValue validated = currentValues.getFirst();
@@ -106,7 +106,7 @@ public class AnswerValueCache {
       answerValue.setViewFilterOptions(step.getViewFilterOptions());
     }
     try {
-      int displayResultSize = answerValue.getDisplayResultSize();
+      int displayResultSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       if (!applyViewFilters) {
         // saves updated estimate size
         step.setEstimateSize(displayResultSize);

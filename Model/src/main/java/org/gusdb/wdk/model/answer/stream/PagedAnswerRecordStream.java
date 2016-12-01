@@ -48,7 +48,7 @@ public class PagedAnswerRecordStream implements RecordStream {
     public PagedAnswerIterator(AnswerValue answerValue, int pageSize)
         throws WdkModelException, WdkUserException {
       _baseAnswer = answerValue;
-      int resultSize = _baseAnswer.getResultSize();
+      int resultSize = _baseAnswer.getResultSizeFactory().getResultSize();
       _startIndex = answerValue.getStartIndex();
       // determine the end index, which should be no bigger result size, since the index starts from 1
       int avEndIndex = _baseAnswer.getEndIndex();

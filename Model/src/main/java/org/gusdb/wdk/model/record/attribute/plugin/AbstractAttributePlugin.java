@@ -15,12 +15,14 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
+import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -140,7 +142,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     String column = formatColumn(step, attributeField, queries);
 
     RecordClass recordClass = step.getQuestion().getRecordClass();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     AnswerValue answerValue = getAnswerValue(step, step.getUser());
     String idSql = answerValue.getIdSql();
 
@@ -181,13 +183,13 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    *         primary key of a record instance.
    * @throws WdkUserException 
    */
-  protected Map<PrimaryKeyAttributeValue, Object> getAttributeValues(Step step)
+  protected Map<PrimaryKeyValue, Object> getAttributeValues(Step step)
       throws WdkModelException, SQLException, WdkUserException {
     WdkModel wdkModel = step.getRecordClass().getWdkModel();
-    Map<PrimaryKeyAttributeValue, Object> values = new LinkedHashMap<PrimaryKeyAttributeValue, Object>();
+    Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
     RecordClass recordClass = step.getQuestion().getRecordClass();
-    PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-    String[] pkColumns = pkField.getColumnRefs();
+    PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
+    String[] pkColumns = pkDef.getColumnRefs();
     String sql = getAttributeSql(step);
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
@@ -200,8 +202,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         for (String pkColumn : pkColumns) {
           pkValues.put(pkColumn, resultSet.getObject(pkColumn));
         }
-        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
-            pkField, pkValues);
+        PrimaryKeyValue pkValue = new PrimaryKeyValue(pkDef, pkValues);
         Object value = resultSet.getObject(ATTRIBUTE_COLUMN);
         values.put(pkValue, value);
       }
@@ -229,8 +230,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     String content;
     if (attribute instanceof LinkAttributeField) {
       content = ((LinkAttributeField) attribute).getDisplayText();
-    } else if (attribute instanceof PrimaryKeyAttributeField) {
-      content = ((PrimaryKeyAttributeField) attribute).getText();
+    } else if (attribute instanceof IdAttributeField) {
+      content = ((IdAttributeField) attribute).getText();
     } else if (attribute instanceof TextAttributeField) {
       content = ((TextAttributeField) attribute).getText();
     } else {
@@ -244,7 +245,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     StringBuilder builder = new StringBuilder("'");
     int pos = 0;
     Map<String, AttributeField> fields = step.getQuestion().getAttributeFieldMap();
-    Matcher matcher = AttributeField.MACRO_PATTERN.matcher(content);
+    Matcher matcher = DerivedAttributeField.MACRO_PATTERN.matcher(content);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
       AttributeField field = fields.get(fieldName);

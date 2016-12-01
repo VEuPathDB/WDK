@@ -197,7 +197,7 @@ public class StepBean {
     }
 
     public String getQueryChecksum() throws WdkModelException, WdkUserException {
-        return step.getAnswerValue().getQueryChecksum(true);
+        return step.getAnswerValue().getIdsQueryInstance().getQuery().getChecksum(true);
     }
 
     public String getChecksum() throws WdkModelException, WdkUserException {
@@ -490,29 +490,25 @@ public class StepBean {
         return step.toString();
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Step#isUncollapsible()
-     */
-    public boolean isUncollapsible() {
-        return step.isUncollapsible();
-    }
-    
-    public Exception getException() {
-        return step.getException();
-    }
-    
-    public Map<Integer, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
-        return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
-    }
+  public boolean isUncollapsible() {
+      return step.isUncollapsible();
+  }
+  
+  public Exception getException() {
+      return step.getException();
+  }
+  
+  public Map<Integer, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
+      return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
+  }
 
-	public void setValid(boolean valid){
-		step.setValid(valid);
-	}
-	
-	public boolean getHasCompleteAnalyses() throws WdkModelException {
-	  return step.getHasCompleteAnalyses();
-	}
+  public void setValid(boolean valid){
+    step.setValid(valid);
+  }
+
+  public boolean getHasCompleteAnalyses() throws WdkModelException {
+    return step.getHasCompleteAnalyses();
+  }
 
   public void setQuestionName(String questionName) {
     step.setQuestionName(questionName);
@@ -538,7 +534,7 @@ public class StepBean {
     step.setAssignedWeight(assignedWeight);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     return step.getFilterOptions();
   }
 

@@ -45,7 +45,7 @@ public class TableRowProvider implements RowsProvider {
       @Override public List<Object> apply(Map<String, AttributeValue> tableRow) {
         try {
           List<Object> values = new ArrayList<Object>();
-          values.add(record.getPrimaryKey().getDisplay());
+          values.add(record.getIdAttributeValue().getDisplay());
           AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
           for (AttributeField field : fields) {
             AttributeValue attrValue = tableRow.get(field.getName());

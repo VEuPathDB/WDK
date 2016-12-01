@@ -22,11 +22,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
 public class FavoriteFactory {
 
@@ -62,7 +62,7 @@ public class FavoriteFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlInsert = "INSERT INTO " + schema + TABLE_FAVORITES + " ("
         + COLUMN_FAVORTIE_ID + ", " + COLUMN_USER_ID + ", " + COLUMN_PROJECT_ID
         + ", " + COLUMN_RECORD_CLASS;
@@ -147,7 +147,7 @@ public class FavoriteFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlDelete = "DELETE FROM " + schema + TABLE_FAVORITES + " WHERE "
         + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " = ?";
@@ -271,15 +271,14 @@ public class FavoriteFactory {
               favorites.put(recordClass, list);
             }
          
-            String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            String[] columns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
             Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
             for (int i = 1; i <= columns.length; i++) {
               Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
               primaryKeys.put(columns[i - 1], value);
             }
-            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys);
-            Favorite favorite = new Favorite(user);
-            favorite.setPrimaryKeys(pkValue);
+            PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), primaryKeys);
+            Favorite favorite = new Favorite(user, recordClass, pkValue);
             favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
             favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
             list.add(favorite);
@@ -301,7 +300,7 @@ public class FavoriteFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sqlCount = "SELECT count(*) FROM " + schema + TABLE_FAVORITES
         + " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
         + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
@@ -340,7 +339,7 @@ public class FavoriteFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sql = "UPDATE " + schema + TABLE_FAVORITES + " SET "
         + COLUMN_RECORD_NOTE + " = ? WHERE " + COLUMN_USER_ID + "= ? AND "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
@@ -386,7 +385,7 @@ public class FavoriteFactory {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String sql = "UPDATE " + schema + TABLE_FAVORITES + " SET "
         + COLUMN_RECORD_GROUP + " = ? WHERE " + COLUMN_USER_ID + "= ? AND "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";

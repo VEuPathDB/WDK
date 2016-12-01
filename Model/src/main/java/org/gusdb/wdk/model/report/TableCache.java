@@ -32,7 +32,7 @@ public class TableCache {
   private boolean _uncommittedRows = false;
 
   public TableCache(RecordClass recordClass, DatabaseInstance cacheDb, String dbTableName) {
-    _pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    _pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     _cacheDb = cacheDb;
     _querySql = getQuerySql(_pkColumns, dbTableName);
     _insertSql = getInsertSql(_pkColumns, dbTableName, _cacheDb.getPlatform());

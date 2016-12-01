@@ -20,13 +20,13 @@ import org.gusdb.wdk.model.user.User;
  */
 public class GenericRecordPrimaryKeyAliasPlugin implements org.gusdb.wdk.model.record.PrimaryKeyAliasPlugin {
 
-	@Override
-	public List<Map<String, Object>> getPrimaryKey(User user, Map<String, Object> inputPkValues)
-			throws WdkModelException, WdkUserException {
+  @Override
+  public List<Map<String, Object>> getPrimaryKey(User user, Map<String, Object> inputPkValues)
+      throws WdkModelException, WdkUserException {
 
-	  List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-	  result.add(inputPkValues);
-	  return result;
-	}
+    List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+    result.add(inputPkValues);
+    return result;
+  }
 
 }

@@ -15,13 +15,13 @@ public class FilterSizeTask implements Runnable {
 
   private static final Logger LOG = Logger.getLogger(FilterSizeTask.class);
 
-  private final AnswerValue _answer;
+  private final ResultSizeFactory _factory;
   private final ConcurrentMap<String, Integer> _sizes;
   private final String _filterName;
   private final boolean _useDisplay;
 
-  public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
-    _answer = answer;
+  public FilterSizeTask(ResultSizeFactory factory, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
+    _factory = factory;
     _sizes = sizes;
     _filterName = filterName;
     _useDisplay = useDisplay;
@@ -31,8 +31,8 @@ public class FilterSizeTask implements Runnable {
   public void run() {
     try {
       int size = (_useDisplay ?
-          _answer.getFilterDisplaySize(_filterName) :
-          _answer.getFilterSize(_filterName));
+          _factory.getFilterDisplaySize(_filterName) :
+          _factory.getFilterSize(_filterName));
       _sizes.put(_filterName, size);
     }
     catch (Exception ex) {

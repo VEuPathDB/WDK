@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
 
@@ -21,54 +22,15 @@ public class SortItem {
   private static final Logger LOG = Logger.getLogger(SortItem.class);
 
   private AttributeField _attributeField;
-  private Direction _direction;
+  private SortDirection _direction;
 
-  public SortItem(AttributeField attributeField, Direction direction) {
+  public SortItem(AttributeField attributeField, SortDirection direction) {
     _attributeField = attributeField;
     _direction = direction;
   }
 
   public AttributeField getAttributeField() { return _attributeField; }
-  public Direction getDirection() { return _direction; }
-
-  /**
-   * Enumeration of sort directions. Also provides translation between legacy
-   * sort direction indicators (booleans) and these values.
-   * 
-   * @author rdoherty
-   */
-  public static enum Direction {
-
-    ASC  (true),
-    DESC (false);
-
-    private boolean _boolValue;
-
-    private Direction(boolean boolValue) {
-      _boolValue = boolValue;
-    }
-
-    public boolean getBoolValue() {
-      return _boolValue;
-    }
-
-    public static boolean isDirection(String str) {
-      try {
-        valueOf(str);
-        return true;
-      }
-      catch (IllegalArgumentException | NullPointerException e) {
-        return false;
-      }
-    }
-
-    public static Direction fromBoolean(Boolean value) {
-      for (Direction d : values()) {
-        if (d._boolValue == value) return d;
-      }
-      throw new IllegalArgumentException("No direction has bool value " + value);
-    }
-  }
+  public SortDirection getDirection() { return _direction; }
 
   public static List<SortItem> convertSorting(Map<String, Boolean> sortingAttributeMap, Map<String, AttributeField> allowedValues) {
     List<SortItem> sorting = new ArrayList<>();
@@ -76,7 +38,7 @@ public class SortItem {
       if (allowedValues.containsKey(sortingAttribute.getKey())) {
         sorting.add(new SortItem(
             allowedValues.get(sortingAttribute.getKey()),
-            Direction.fromBoolean(sortingAttribute.getValue())));
+            SortDirection.fromBoolean(sortingAttribute.getValue())));
       }
       else {
         LOG.warn("Sort attribute [ " + sortingAttribute.getKey() + "] passed in but not found in allowed values.  Skipping...");

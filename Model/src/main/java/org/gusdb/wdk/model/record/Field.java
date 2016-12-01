@@ -1,10 +1,8 @@
 package org.gusdb.wdk.model.record;
 
 import java.io.PrintWriter;
-import java.util.Map.Entry;
 
-import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -16,17 +14,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author Jerric
  * @created Jan 17, 2006
  */
-public abstract class Field extends WdkModelBase implements ScopedField {
-
-  public static <T extends Field> Function<T, Entry<String, T>> getToMapEntry(
-      @SuppressWarnings("unused") Class<T> fieldClass) { // used by compiler to determine type of T
-    return new Function<T, Entry<String, T>>() {
-      @Override
-      public Entry<String, T> apply(T field) {
-        return new TwoTuple<String, T>(field._name, field);
-      }
-    };
-  }
+public abstract class Field extends WdkModelBase implements ScopedField, NamedObject {
 
   protected String _name;
   protected String _displayName;
@@ -36,7 +24,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   protected int _truncateTo;
   protected boolean _internal;
   protected boolean _inReportMaker;
-  protected RecordClass _recordClass;
+  protected String _containerName = "unknown container";
 
   public Field() {
     // initialize the optional properties
@@ -48,6 +36,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   @Override
   public Field clone() {
     return (Field) super.clone();
+  }
+
+  public String getContainerName() {
+    return _containerName;
+  }
+
+  public void setContainerName(String containerName) {
+    _containerName = containerName;
   }
 
   /**
@@ -135,6 +131,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   /**
    * @return Returns the name.
    */
+  @Override
   public String getName() {
     return _name;
   }
@@ -177,43 +174,35 @@ public abstract class Field extends WdkModelBase implements ScopedField {
     _type = type;
   }
 
-  /**
-   * @return the recordClass
-   */
-  public RecordClass getRecordClass() {
-    return _recordClass;
-  }
-
-  /**
-   * @param recordClass
-   *          the recordClass to set
-   */
-  public void setRecordClass(RecordClass recordClass) {
-    _recordClass = recordClass;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return getDisplayName();
   }
 
-  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+  /**
+   * Poorly named method that prints "dependency information" of fields.  Really seems to just
+   * print general information about the field that is different than the string representation.
+   * See ModelXmlParser's main method for the top-level call that trickles down to this method.
+   * 
+   * @param writer where to write data
+   * @param indent how much to indent
+   * @throws WdkModelException if unable to get nested dependency information
+   */
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
   /**
-   * @param writer where to write content
-   * @param indent how much to indent output
-   * @throws WdkModelException if unable to print dependency content 
+   * Prints the dependency tree of this attribute field.
+   * 
+   * @param writer where to write
+   * @param indent current indentation
+   * @throws WdkModelException if unable to resolve dependencies
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
-    // by default, no content to print out
+    // only derived attribute fields have dependencies
+    writer.write(indent + "<dependOn count=\"0\"/>");
   }
 }

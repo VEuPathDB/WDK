@@ -270,10 +270,11 @@
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
 <%--------- BASKET COLUMN  ----------%>
-                      <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">            
+                      <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
-                          <c:set var="basketId" value="basket${fn:replace(primaryKey.value,'.','_')}" />
+                          <%-- RRD: this looks fishy.  Why use the display value of the ID as the html id?  No guarantee of uniqueness. See also basketClick below. --%>
+                          <c:set var="basketId" value="basket${fn:replace(record.idAttributeValue.value,'.','_')}" />
                           <c:choose>
                             <c:when test="${!wdkUser.guest}">
                               <c:set value="${record.attributes['in_basket']}" var="is_basket"/>
@@ -282,7 +283,7 @@
                                 <c:set var="basket_img" value="basket_color.png"/>
                                 <c:set var="basketTitle" value="Click to remove this item from the basket." />
                               </c:if>
-                              <c:set var="basketClick" value="wdk.basket.updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recordName}')" />
+                              <c:set var="basketClick" value="wdk.basket.updateBasket(this, 'single', '${record.idAttributeValue.value}', '${modelName}', '${recordName}')" />
                             </c:when>
                             <c:otherwise>
                               <c:set var="basketClick" value="wdk.user.login('use baskets');" />

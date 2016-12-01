@@ -89,7 +89,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       return dvSql;
 
     // use the recordClass primary keys as the column name
-    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     StringBuilder sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("dv.data" + (i + 1) + " AS " + pkColumns[i] + ", ");

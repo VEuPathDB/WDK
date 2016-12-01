@@ -71,6 +71,6 @@ public class AnswerParamTest {
     }
     AnswerValue answerValue = question.makeAnswerValue(user, paramValues, true, 0);
 
-    Assert.assertTrue("result size", answerValue.getResultSize() >= 0);
+    Assert.assertTrue("result size", answerValue.getResultSizeFactory().getResultSize() >= 0);
   }
 }

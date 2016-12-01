@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
 
 /**
@@ -85,12 +86,12 @@ public class RecordClassBean {
         return reporters;
     }
 
-    public PrimaryKeyAttributeFieldBean getPrimaryKeyAttribute() {
-    	return new PrimaryKeyAttributeFieldBean(recordClass.getPrimaryKeyAttributeField());
+    public IdAttributeField getPrimaryKeyAttribute() {
+        return recordClass.getIdAttributeField();
     }
-    
+
     public String[] getPrimaryKeyColumns() {
-        return recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        return recordClass.getPrimaryKeyDefinition().getColumnRefs();
     }
 
     /**

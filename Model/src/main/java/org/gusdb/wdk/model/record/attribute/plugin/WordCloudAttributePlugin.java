@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.user.Step;
 
 /**
@@ -70,7 +70,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
     resolveProperties();
     try {
       Map<String, WordTag> tagMap = new HashMap<String, WordTag>();
-      Map<PrimaryKeyAttributeValue, Object> values = getAttributeValues(step);
+      Map<PrimaryKeyValue, Object> values = getAttributeValues(step);
       for (Object value : values.values()) {
         if (value == null)
           continue;

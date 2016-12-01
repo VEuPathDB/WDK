@@ -52,7 +52,7 @@ public class QuestionTest implements ElementTest {
     _question.getQuery().setIsCacheable(false);
     AnswerValue answerValue = _question.makeAnswerValue(_user,
         _paramValuesSet.getParamValues(), true, 0);
-    int resultSize = answerValue.getResultSize();
+    int resultSize = answerValue.getResultSizeFactory().getResultSize();
 
     // get the summary attribute list
     Map<String, AttributeField> summary = answerValue.getAttributes().getSummaryAttributeFieldMap();

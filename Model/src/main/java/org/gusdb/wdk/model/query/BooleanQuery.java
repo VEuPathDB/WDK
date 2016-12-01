@@ -10,7 +10,6 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -177,9 +176,7 @@ public class BooleanQuery extends SqlQuery {
   }
 
   protected void prepareColumns(RecordClass recordClass) {
-    PrimaryKeyAttributeField primaryKey = recordClass.getPrimaryKeyAttributeField();
-
-    for (String columnName : primaryKey.getColumnRefs()) {
+    for (String columnName : recordClass.getPrimaryKeyDefinition().getColumnRefs()) {
       Column column = new Column();
       column.setName(columnName);
       column.setQuery(this);
@@ -187,11 +184,6 @@ public class BooleanQuery extends SqlQuery {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendJSONContent(JSONObject jsQuery, boolean extra)
       throws JSONException {
@@ -199,21 +191,11 @@ public class BooleanQuery extends SqlQuery {
     jsQuery.append("recordClass", recordClass.getFullName());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#clone()
-   */
   @Override
   public Query clone() {
     return new BooleanQuery(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#makeInstance()
-   */
   @Override
   public BooleanQueryInstance makeInstance(User user, Map<String, String> values,
       boolean validate, int assignedWeight, Map<String, String> context)
@@ -222,11 +204,6 @@ public class BooleanQuery extends SqlQuery {
         assignedWeight, context);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#isBoolean()
-   */
   @Override
   public boolean isBoolean() {
     return true;
