@@ -20,13 +20,14 @@ class UserDatasetItemController extends WdkViewController {
   getStateFromStore(store) {
     let state = store.getState();
     return Object.assign(
-      pick(state, 'userDatasetsById'),
+      pick(state, 'userDatasetsById', 'loadError'),
       pick(state.globalData, 'user')
     );
   }
 
   getTitle(state) {
-    return `User Data Set ${state.userDataset ? state.userDataset.meta.name : '...'}`;
+    const entry = state.userDatasetsById[this.props.params.id];
+    return `User Data Set ${entry && entry.resource ? entry.resource.meta.name : '...'}`;
   }
 
   getActionCreators() {
@@ -43,17 +44,23 @@ class UserDatasetItemController extends WdkViewController {
     }
   }
 
+  isRenderDataLoadError(state) {
+    return state.loadError;
+  }
+
   isRenderDataLoaded(state) {
-    return state.userDatasetsById[this.props.params.id] && state.user;
+    const entry = state.userDatasetsById[this.props.params.id];
+    return entry && !entry.isLoading && state.user;
   }
 
   renderView(state) {
-    let userDataset = state.userDatasetsById[this.props.params.id];
+    const entry = state.userDatasetsById[this.props.params.id];
+    const isOwner = entry.resource && entry.resource.ownerUserId === state.user.id;
     return (
       <UserDatasetItem
-        userDataset={userDataset}
+        userDataset={entry.resource}
         updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
-        isOwner={userDataset.ownerUserId === state.user.id}
+        isOwner={isOwner}
       />
     );
   }

@@ -3,8 +3,17 @@ import WdkStore, { BaseState } from './WdkStore';
 import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
 import { UserDataset } from '../utils/WdkModel';
 
+/**
+ * If isLoading is false, and resource is undefined,
+ * then assume the user dataset does not exist
+ */
+type UserDatasetEntry = {
+  isLoading: boolean;
+  resource: UserDataset | void;
+};
+
 interface State extends BaseState {
-  userDatasetsById: { [key: number]: UserDataset };
+  userDatasetsById: { [key: number]: UserDatasetEntry };
   userDatasetUpdating: boolean;
   userDatasetUpdateError?: Error;
   loadError?: Error;
@@ -28,13 +37,20 @@ export default class UserDatasetItemStore extends WdkStore<State> {
   handleAction(state: State, {type, payload}: Action) {
     switch (type) {
       case actionTypes.DATASET_ITEM_LOADING: return Object.assign({}, state, {
-        userDatasetLoading: true
+        userDatasetsById: Object.assign({}, state.userDatasetsById, {
+          [payload.id]: {
+            isLoading: true
+          }
+        })
       });
 
       case actionTypes.DATASET_ITEM_RECEIVED: return Object.assign({}, state, {
         userDatasetLoading: false,
         userDatasetsById: Object.assign({}, state.userDatasetsById, {
-          [payload.userDataset.id]: payload.userDataset
+          [payload.id]: {
+            isLoading: false,
+            resource: payload.userDataset
+          }
         })
       });
 
@@ -50,9 +66,12 @@ export default class UserDatasetItemStore extends WdkStore<State> {
       case actionTypes.DATASET_ITEM_UPDATE_SUCCESS: return Object.assign({}, state, {
         userDatasetUpdating: false,
         userDatasetsById: Object.assign({}, state.userDatasetsById, {
-          [payload.id]: Object.assign({}, state.userDatasetsById[payload.id], {
-            meta: payload.meta
-          })
+          [payload.id]: {
+            isLoading: false,
+            resource: Object.assign({}, state.userDatasetsById[payload.id].resource, {
+              meta: payload.meta
+            })
+          }
         })
       });
 
