@@ -35,8 +35,10 @@ export const loadUserDatasetList: ActionCreator = () => (dispatch, { wdkService 
 
 export const loadUserDatasetItem: ActionCreator = (id: number) => (dispatch, { wdkService }) =>
   wdkService.getUserDataset(id)
-  .then(userDataset => ({ type: DATASET_ITEM_RECEIVED, payload: { userDataset } }),
-        error => ({ type: DATASET_ITEM_ERROR, payload: { error } }))
+  .then(userDataset => ({ type: DATASET_ITEM_RECEIVED, payload: { id, userDataset } }),
+        // FIXME Uncomment below once 404s are returned by service
+        // error => ({ type: DATASET_ITEM_ERROR, payload: { error } }))
+        error => ({ type: DATASET_ITEM_RECEIVED, payload: { id, userDataset: undefined } }))
   .then(dispatch);
 
 export const updateUserDatasetItem: ActionCreator = (id: number, meta: UserDatasetMeta) => (dispatch, { wdkService }) => {

@@ -35,7 +35,7 @@ const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter) =>
     type: `${ud.type.name} ${ud.type.version}`,
     installed: ud.isInstalled.toString(),
     owner: ud.owner,
-    shared: ud.sharedWith.map(share => share.emailName).join(', '),
+    shared: ud.sharedWith.map(share => share.userDisplayName).join(', '),
     created: new Date(ud.created).toLocaleDateString(),
     modified: new Date(ud.modified).toLocaleDateString(),
     size: bytesToHuman(ud.size),
@@ -48,14 +48,6 @@ const UserDatasetList = (props: Props) =>
     <DataTable columns={columns}
                data={mapUserDatasets(props.userDatasets, props.router)}
                getRowId={getRowId} />
-
-    {/* TODO For development - remove before release */}
-    <div style={{ marginTop: '1em' }}>
-      <details>
-        <summary>Raw data used for table</summary>
-        <pre>{JSON.stringify(props.userDatasets, null, 4)}</pre>
-      </details>
-    </div>
   </div>
 
 export default wrappable(withRouter(UserDatasetList));

@@ -1,4 +1,5 @@
 import React, { Component, MouseEvent,  StatelessComponent } from 'react';
+import Link from './Link';
 import { wrappable } from '../utils/componentUtils';
 import { UserDataset , UserDatasetMeta } from '../utils/WdkModel';
 import { bytesToHuman } from '../utils/Converters';
@@ -77,6 +78,16 @@ class UserDatasetItem extends Component<Props, State> {
   render() {
     let { userDataset, isOwner } = this.props;
     let { edit } = this.state;
+
+    if (userDataset == null) {
+      return (
+        <div>
+          <h1>The User Data Set you are looking for does not exist, or has been removed.</h1>
+          <p style={{ fontSize: '1.2em' }}>You might be interested in the <Link to="workspace/datasets">list of User Data Sets</Link> available to you.</p>
+        </div>
+      );
+    }
+
     return (
       <div className={makeClassName()}>
 
@@ -90,6 +101,11 @@ class UserDatasetItem extends Component<Props, State> {
             <div className={makeClassName('ActionItem')}>
               <a href="#" onClick={this.handleEditSharesClick}>
                 Manage sharing ({userDataset.sharedWith.length}) <i className="fa fa-share-alt"/>
+              </a>
+            </div>
+            <div className={makeClassName('ActionItem')}>
+              <a href="#" style={{ color: 'darkred' }} title="Delete this data set and all associated files" onClick={todo}>
+                Delete data set <i className="fa fa-trash"/>
               </a>
             </div>
           </div>
