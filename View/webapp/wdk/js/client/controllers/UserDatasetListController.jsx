@@ -1,4 +1,3 @@
-import { pick } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import { loadUserDatasetList } from '../actioncreators/UserDatasetsActionCreators';
@@ -11,7 +10,19 @@ class UserDatasetListController extends WdkViewController {
   }
 
   getStateFromStore(store) {
-    return pick(store.getState(), 'userDatasetsLoading', 'userDatasets', 'loadError');
+    const {
+      globalData: { user },
+      userDatasetsLoading,
+      userDatasets,
+      loadError
+    } = store.getState();
+
+    return {
+      user,
+      userDatasetsLoading,
+      userDatasets,
+      loadError
+    };
   }
 
   getTitle() {
@@ -29,11 +40,11 @@ class UserDatasetListController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return state.userDatasetsLoading === false;
+    return state.user && state.userDatasetsLoading === false;
   }
 
   renderView(state) {
-    return ( <UserDatasetList userDatasets={state.userDatasets} /> );
+    return ( <UserDatasetList userDatasets={state.userDatasets} user={state.user} /> );
   }
 }
 
