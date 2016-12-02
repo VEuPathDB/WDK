@@ -1347,11 +1347,11 @@ fieldComponents.string = React.createClass({
                     (disabled ? ' member__disabled' : '');
                   var value = item.value || UNKNOWN_VALUE;
                   var display = item.value || UNKNOWN_DISPLAY;
-                  var tooltip = disabled ? `This option has been disabled because it does not match any of the other criteria you have selected.` : ``;
+                  var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
 
                   return (
-                    <tr key={value} className={trClassNames} onClick={disabled ? noop : this.handleClick} title={tooltip}>
-                      <td><input value={value} disabled={disabled} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
+                    <tr key={value} className={trClassNames} onClick={this.handleClick} title={tooltip}>
+                      <td><input value={value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
                       <td><span className="value">{display}</span></td>
                       <td><span className="frequency">{item.count}</span></td>
                       <td><span className="frequency">{item.filteredCount}</span></td>
