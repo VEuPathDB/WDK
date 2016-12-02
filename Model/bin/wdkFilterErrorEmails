@@ -19,6 +19,7 @@ my $emailDelim = "---------------------";
 
 my @filtersAsStrings; # to preserve input order
 my %filtersInfo; # key is filterAsString, value is hash ref w/ info about the filter
+my ($startM, $startD, $startY, $endM, $endD, $endY) = parseStartEndDates($startDate, $endDate);
 
 #
 # parse filters
@@ -30,6 +31,7 @@ if ($singleFilter) {
 else {
   open(FF, $filtersFile) || die "Can't open filters file '$filtersFile'\n";
   while(<FF>) {
+    next if /^#/;
     &parseFilterLine($_, \@filtersAsStrings, \%filtersInfo);
   }
 }
@@ -39,11 +41,15 @@ else {
 #
 open(F, $emailsFile) || die "Can't open emails file '$emailsFile'\n";
 my @currentEmail;
+my $currentDate;
 while(<F>) {
   if (/$emailDelim/) {
-    &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
+    if (&dateFilter($currentDate)) {
+      &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
+    }
     @currentEmail = ();
   } else {
+    $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
     push(@currentEmail, $_);
   }
 }
@@ -61,6 +67,21 @@ if ($report) {
 
 ##########################################################################################
 
+sub parseStartEndDates {
+  my ($startDate, $endDate) = @_;
+
+  my ($startM, $startD, $startY, $endM, $endD, $endY);
+
+  if ($startDate) {
+    die "Invalid start date '$startDate'.  Must be in m/d/yyyy format\n" unless $startDate =~ /(\d+)\/(\d+)\/(\d\d\d\d)/;
+    ($startM, $startD, $startY) = ($1, $2, $3);
+  }
+  if ($endDate) {
+    die "Invalid end date '$endDate'.  Must be in m/d/yyyy format\n" unless $endDate =~ /(\d+)\/(\d+)\/(\d\d\d\d)/;
+    ($endM, $endD, $endY) = ($1, $2, $3);
+  }
+  return ($startM, $startD, $startY, $endM, $endD, $endY);
+}
 
 sub parseFilterLine {
   my ($filterLine, $filtersAsStringsRef, $filtersInfoRef) = @_;
@@ -75,6 +96,18 @@ sub parseFilterLine {
   my @filterTerms = split(/\&\&/, $filterAsString);
 
   $filtersInfoRef->{$filterAsString} = {orig => $filterLine, terms => \@filterTerms, count => 0};
+}
+
+sub dateFilter {
+  my ($date) = @_;
+
+  $date =~ /(\d+)\/(\d+)\/(\d+)/;
+  my ($m, $d, $y) = ($1, $2, $3);
+
+  return 0 if ($startDate && ($y < $startY || $m < $startM || $d < $startD));
+  return 0 if ($endDate && ($y > $endY || $m > $endM || $d > $endD));
+
+  return 1;
 }
 
 sub handleEmail {
@@ -94,6 +127,7 @@ sub handleEmail {
       }
       last if ($matched);
     }
+
     if ($matched) {
       if ($matchedFilterAsString) { # already matched a filter
 	my $emailAsString = join("", @$emailArray);
@@ -103,6 +137,7 @@ sub handleEmail {
       $matchedFilterAsString = $filterAsString;
     }
   }
+
   if (!$report && (($printIfMatch && $matchedFilterAsString) || (!$printIfMatch && !$matchedFilterAsString)))  {
     print STDOUT join("", @$emailArray) . $emailDelim . "\n";
   }
@@ -128,7 +163,7 @@ Where:
   start_date:      date in mm/dd/yyyy format.  Exclude emails before this date.
   end_date:        date in mm/dd/yyyy format. Exclude emails after this date
 
-Filters file format: tab delimited, with first column being on or more filters (delimited by \&\&).  Other columns are ignored.
+Filters file format: tab delimited, with first column being on or more filters (delimited by \&\&).  Other columns are ignored.  Lines beginning with # are ignored.
 
 ";
 }
