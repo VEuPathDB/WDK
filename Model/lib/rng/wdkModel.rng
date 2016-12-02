@@ -1035,7 +1035,7 @@
         <choice>
           <ref name="primaryKey" />
           <ref name="idAttribute" />
-          <ref name="pkColumnAttribute" />
+          <!--<ref name="pkColumnAttribute" />-->
           <ref name="textAttribute" />
           <ref name="linkAttribute" />
           <ref name="table" />
