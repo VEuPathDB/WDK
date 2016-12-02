@@ -104,14 +104,21 @@ class UserDatasetItem extends Component<Props, State> {
               </a>
             </div>
             <div className={makeClassName('ActionItem')}>
-              <a href="#" style={{ color: 'darkred' }} title="Delete this data set and all associated files" onClick={todo}>
-                Delete data set <i className="fa fa-trash"/>
+              <a href="#" title="Delete this data set and all associated files" onClick={todo}>
+                Remove data set <i className="fa fa-trash"/>
               </a>
             </div>
           </div>
         ) : (
-          <div className={makeClassName('SharedNote')}>
-            shared from {userDataset.owner} <i className="fa fa-share-alt"/>
+          <div className={makeClassName('Actions')}>
+            <div className={makeClassName('SharedNote') + ' ' + makeClassName('ActionItem')} title="It is not possible to edit the details of a data set that you do not own.">
+              Shared by {userDataset.owner} <i className="fa fa-share-alt"/>
+            </div>
+            <div className={makeClassName('ActionItem')}>
+              <a href="#" title="Delete this data set and all associated files" onClick={todo}>
+                Remove data set <i className="fa fa-trash"/>
+              </a>
+            </div>
           </div>
         )}
 
@@ -168,6 +175,16 @@ class UserDatasetItem extends Component<Props, State> {
 
           <OverviewItem prompt="Size">
             <span title={`${userDataset.percentQuotaUsed}% of quota`}>{bytesToHuman(userDataset.size)}</span>
+          </OverviewItem>
+
+          {userDataset.percentQuotaUsed && (
+            <OverviewItem prompt="Quota Used">
+              {userDataset.percentQuotaUsed} %
+            </OverviewItem>
+          )}
+
+          <OverviewItem prompt="Installed">
+            {userDataset.isInstalled ? 'Yes' : 'No'}
           </OverviewItem>
         </div>
 
