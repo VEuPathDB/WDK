@@ -114,9 +114,6 @@ public class UserDatasetFormatter {
     json.put("modified", dataset.getModifiedDate());
     json.put("created", dataset.getCreatedDate());
     json.put("uploaded", dataset.getUploadedDate());
-    int quota = store.getQuota(dataset.getOwnerId());
-    DecimalFormat df = new DecimalFormat("#.####");
-    json.put("percentQuotaUsed", df.format(dataset.getSize() * 100.0 / quota));
     
     // external users don't get to know who else it is shared with
     if (!isExternalDataset) {
@@ -128,7 +125,11 @@ public class UserDatasetFormatter {
         shareJson.put("userDisplayName", getUserDisplayName(share.getUserId(), userSchema, userDbDataSource));
         sharesJson.put(shareJson);
       }
+
       json.put("sharedWith", sharesJson);
+      int quota = store.getQuota(dataset.getOwnerId());
+      DecimalFormat df = new DecimalFormat("#.####");
+      json.put("percentQuotaUsed", df.format(dataset.getSize() * 100.0 / quota));
     }
     
     JSONArray filesJson = new JSONArray();
