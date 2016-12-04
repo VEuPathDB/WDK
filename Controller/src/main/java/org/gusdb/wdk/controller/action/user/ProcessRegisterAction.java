@@ -92,6 +92,8 @@ public class ProcessRegisterAction extends WdkAction {
           result.setRequestAttribute(param, globalPreferences.get(param));
         }
       }
+			logger.debug("GOT HERE *************************");
+
       return result;
     }
     else {
