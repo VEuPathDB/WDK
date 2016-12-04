@@ -273,6 +273,14 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getUserDataset(datasetDir);
   }
   
+  @Override
+  public boolean getUserDatasetExists(Integer userId, Integer datasetId) throws WdkModelException {
+    Path userDatasetsDir = getUserDatasetsDir(userId);
+    if (!directoryExists(userDatasetsDir)) return false;
+    Path datasetDir = userDatasetsDir.resolve(datasetId.toString());
+    return directoryExists(datasetDir);
+  }
+  
   private Path getUserDatasetDir(Integer userId, Integer datasetId) throws WdkModelException {
     Path userDatasetsDir = getUserDatasetsDir(userId);
     return userDatasetsDir.resolve(datasetId.toString());
