@@ -27,7 +27,13 @@ class UserDatasetItemController extends WdkViewController {
 
   getTitle(state) {
     const entry = state.userDatasetsById[this.props.params.id];
-    return `User Data Set ${entry && entry.resource ? entry.resource.meta.name : '...'}`;
+    if (entry && entry.resource) {
+      return `User Data Set ${entry.resource.meta.name}`;
+    }
+    if (entry && !entry.resource) {
+      return `User Data Set not found`;
+    }
+    return `User Data Set ...`;
   }
 
   getActionCreators() {
