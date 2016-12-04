@@ -145,6 +145,8 @@ public interface UserDatasetStore {
   
   UserDatasetFile getUserDatasetFile(Path path, Integer userDatasetId);
 
+  boolean getUserDatasetExists(Integer userId, Integer datasetId) throws WdkModelException;
+
   /** not needed yet, and maybe never
   UserDataset getExternalUserDataset(Integer userId, Integer ownerUserId, Integer userDatasetId)
       throws WdkModelException;

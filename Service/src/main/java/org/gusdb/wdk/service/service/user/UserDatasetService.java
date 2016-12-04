@@ -68,8 +68,12 @@ public class UserDatasetService extends UserService {
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
     Integer datasetId = new Integer(datasetIdStr);
-    UserDataset userDataset = getUserDatasetStore().getUserDataset(getUserId(), datasetId);
-    if (userDataset == null) userDataset = userDatasetStore.getExternalUserDatasets(getUserId()).get(datasetId);
+    UserDataset userDataset;
+    if (getUserDatasetStore().getUserDatasetExists(getUserId(), datasetId)) 
+      userDataset = getUserDatasetStore().getUserDataset(getUserId(), datasetId);
+    else
+      userDataset = userDatasetStore.getExternalUserDatasets(getUserId()).get(datasetId);
+    if (userDataset == null) throw new NotFoundException("user-dataset/" + datasetIdStr);
     String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
     Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
     return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, false).toString()).build();
@@ -80,9 +84,11 @@ public class UserDatasetService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
+    Integer datasetId = new Integer(datasetIdStr);
+    if (!getUserDatasetStore().getUserDatasetExists(getUserId(), datasetId)) throw new NotFoundException("user-dataset/" + datasetIdStr);
     try {
       JSONObject metaJson = new JSONObject(body);
-      getUserDatasetStore().updateMetaFromJson(getUserId(), new Integer(datasetIdStr), metaJson);
+      getUserDatasetStore().updateMetaFromJson(getUserId(), datasetId, metaJson);
       return Response.noContent().build();
     }
     catch (JSONException e) {
