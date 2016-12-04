@@ -143,67 +143,110 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     
     List<Path> externalLinkPaths = adaptor.getPathsInDir(externalDatasetsDir);
     for (Path externalLinkPath : externalLinkPaths) {
-      ExternalDatasetLink link = getExternalLinkFromPath(externalLinkPath.getFileName());
+      ExternalDatasetLink link = new ExternalDatasetLink(externalLinkPath.getFileName());
       if (!checkUserDirExists(link.externalUserId)) throw new WdkModelException("User ID in external dataset link " + externalLinkPath.getFileName() + " is not a user in the datasets store");
 
-      // get the datasets belonging to the external user.  (use cache to avoid re-querying repeated user IDs)
-      Map<Integer, UserDataset> datasetsOfExternalUser;
-      if (otherUsersCache.containsKey(link.externalUserId)) {
-        datasetsOfExternalUser = otherUsersCache.get(link.externalUserId);
-      } else {
-        datasetsOfExternalUser = getUserDatasets(link.externalUserId);
-        otherUsersCache.put(link.externalUserId, datasetsOfExternalUser);
-      }
+      UserDataset originalDataset = followExternalDatasetLink(userId, link, otherUsersCache);
 
-      // if the external dataset does exist in the other user,
-      // and if it is in fact shared with our user, then add it to the
-      // map of found external datasets
-      // TODO: report if we can't follow the link, because owner removed or unshared it
-      if (datasetsOfExternalUser.containsKey(link.datasetId)) {
-        
-        // find the original dataset, and grab its declared shares
-        UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
-        Set<UserDatasetShare> shares = getSharedWith(link.externalUserId, link.datasetId);
-
-        // see if our user is among the declared shares
-        boolean found = false;
-        for (UserDatasetShare share : shares) {
-          if (share.getUserId().equals(userId)) {
-            found = true;
-            break;
-          }
-        }
-        if (found) extDsMap.put(originalDataset.getUserDatasetId(), originalDataset);
-      }
+      if (originalDataset != null) extDsMap.put(originalDataset.getUserDatasetId(), originalDataset);
     }
-
     return Collections.unmodifiableMap(extDsMap);
   }
   
-  ExternalDatasetLink getExternalLinkFromPath(Path externalLinkPath) throws WdkModelException {
-    String linkName = externalLinkPath.getFileName().toString();
-    String[] words = linkName.split(Pattern.quote("."));
-    if (words.length != 2)
-      throw new WdkModelException("Illegal external dataset link: " + linkName);
-    Integer externalUserId;
-    Integer externalDatasetId;
-    try {
-      externalUserId = new Integer(words[0]);
-      externalDatasetId = new Integer(words[1]);
+  /**
+   * Get the user dataset pointed to by an external link
+   * @param userId
+   * @param ownerUserId
+   * @param userDatasetId
+   * @return null if this user doesn't have such an external link, or, if the linked dataset doesn't exist or isn't shared.
+   * @throws WdkModelException
+   * TODO: this method might not be needed here (or in the super class).
+ 
+  @Override
+  public UserDataset getExternalUserDataset(Integer userId, Integer ownerUserId, Integer userDatasetId) throws WdkModelException {
+
+    Map<Integer, Map<Integer, UserDataset>> otherUsersCache = new HashMap<Integer, Map<Integer, UserDataset>>();
+
+    Path externalDatasetsDir = getUserDir(userId).resolve(EXTERNAL_DATASETS_DIR);
+    if (!adaptor.isDirectory(externalDatasetsDir)) return null;
+    
+    ExternalDatasetLink link = new ExternalDatasetLink(ownerUserId, userDatasetId);
+    
+    return followExternalDatasetLink(userId, link, otherUsersCache);
+  }
+  */
+  
+  /**
+   * Find the user dataset pointed to by an external link
+   * @param userId
+   * @param link
+   * @param otherUsersCache
+   * @return null if not found
+   * @throws WdkModelException
+   */
+  private UserDataset followExternalDatasetLink(Integer userId, ExternalDatasetLink link, Map<Integer, Map<Integer, UserDataset>> otherUsersCache) throws WdkModelException {
+    if (!checkUserDirExists(link.externalUserId)) return null;
+    
+    // get the datasets belonging to the external user.  (use cache to avoid re-querying repeated user IDs)
+    Map<Integer, UserDataset> datasetsOfExternalUser;
+    
+    if (otherUsersCache.containsKey(link.externalUserId)) {
+      datasetsOfExternalUser = otherUsersCache.get(link.externalUserId);
+    } else {
+      datasetsOfExternalUser = getUserDatasets(link.externalUserId);
+      otherUsersCache.put(link.externalUserId, datasetsOfExternalUser);
     }
-    catch (NumberFormatException e) {
-      throw new WdkModelException("Illegal external dataset link: " + linkName);
+
+    // if the external dataset does exist in the other user,
+    // and if it is in fact shared with our user, then add it to the
+    // map of found external datasets
+    // TODO: report if we can't follow the link, because owner removed or unshared it
+    if (datasetsOfExternalUser.containsKey(link.datasetId)) {
+      
+      // find the original dataset, and grab its declared shares
+      UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
+      Set<UserDatasetShare> shares = getSharedWith(link.externalUserId, link.datasetId);
+
+      // see if our user is among the declared shares
+      boolean found = false;
+      for (UserDatasetShare share : shares) {
+        if (share.getUserId().equals(userId)) {
+          found = true;
+          break;
+        }
+      }
+      if (found) return originalDataset;
     }
-    return new ExternalDatasetLink(externalUserId, externalDatasetId);
+    return null;
   }
   
   class ExternalDatasetLink {
+    Integer externalUserId;
+    Integer datasetId;
+    
+    
     ExternalDatasetLink(Integer  externalUserId, Integer datasetId) {
       this.externalUserId = externalUserId;
       this.datasetId = datasetId;
     }
-    Integer externalUserId;
-    Integer datasetId;
+    
+    ExternalDatasetLink(Path externalLinkPath) throws WdkModelException {
+      String linkName = externalLinkPath.getFileName().toString();
+      String[] words = linkName.split(Pattern.quote("."));
+      if (words.length != 2)
+        throw new WdkModelException("Illegal external dataset link: " + linkName);
+      try {
+        externalUserId = new Integer(words[0]);
+        datasetId = new Integer(words[1]);
+      }
+      catch (NumberFormatException e) {
+        throw new WdkModelException("Illegal external dataset link: " + linkName);
+      }  
+    }
+    
+    String getFileName() {
+      return "" + externalUserId + "." + datasetId;
+    }
   }
   
   

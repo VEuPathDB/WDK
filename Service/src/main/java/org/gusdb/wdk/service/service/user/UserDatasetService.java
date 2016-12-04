@@ -67,7 +67,9 @@ public class UserDatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
-    UserDataset userDataset = getUserDatasetStore().getUserDataset(getUserId(), new Integer(datasetIdStr));
+    Integer datasetId = new Integer(datasetIdStr);
+    UserDataset userDataset = getUserDatasetStore().getUserDataset(getUserId(), datasetId);
+    if (userDataset == null) userDataset = userDatasetStore.getExternalUserDatasets(getUserId()).get(datasetId);
     String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
     Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
     return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, false).toString()).build();
