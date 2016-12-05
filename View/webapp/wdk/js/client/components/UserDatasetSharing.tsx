@@ -27,7 +27,7 @@ class UserDatasetSharing extends Component<Props, void> {
         {shares.length && (
           <div>
             {shares.map(share =>
-              <div className={makeClassName('ShareEntry')}>
+              <div key={share.user} className={makeClassName('ShareEntry')}>
                 <span className={makeClassName('ShareEntryName')}>
                   {share.userDisplayName}
                 </span>
