@@ -355,7 +355,7 @@ var FilteredData = React.createClass({
     };
     let checkboxStyle = { visibility: 'hidden' };
     return (
-      <label>
+      <label style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
         <input
           type="checkbox"
           style={checkboxStyle}
