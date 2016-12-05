@@ -6,6 +6,7 @@ import { bytesToHuman } from '../utils/Converters';
 import Dialog from './Dialog';
 import UserDatasetDetailForm from './UserDatasetDetailForm';
 import UserDatasetSharing from './UserDatasetSharing';
+import NotFound from './NotFound';
 
 type Props = {
   userDataset: UserDataset;
@@ -81,10 +82,9 @@ class UserDatasetItem extends Component<Props, State> {
 
     if (userDataset == null) {
       return (
-        <div>
-          <h1>The User Data Set you are looking for does not exist, or has been removed.</h1>
-          <p style={{ fontSize: '1.2em' }}>You might be interested in the <Link to="workspace/datasets">list of User Data Sets</Link> available to you.</p>
-        </div>
+        <NotFound>
+          <p>The User Data Set you requested does not exist, or has been deleted. You might be interested in the <Link to="workspace/datasets">list of User Data Sets</Link> available to you.</p>
+        </NotFound>
       );
     }
 
