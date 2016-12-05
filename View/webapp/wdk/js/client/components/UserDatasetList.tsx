@@ -1,4 +1,5 @@
 import React from 'react';
+import { escape } from 'lodash';
 import { withRouter, InjectedRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import { UserDataset } from '../utils/WdkModel';
@@ -32,8 +33,8 @@ const columns = [
 const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter, user: User) =>
   userDatasets.length === 0 ? userDatasets : userDatasets.map(ud => ({
     id: `<a href="${router.createHref(`/workspace/datasets/${ud.id}`)}">${ud.id}</a>`,
-    name: ud.meta.name,
-    summary: ud.meta.summary,
+    name: escape(ud.meta.name),
+    summary: escape(ud.meta.summary),
     type: `${ud.type.name} ${ud.type.version}`,
     installed: ud.isInstalled ? 'Yes' : 'No',
     owner: user.id === ud.ownerUserId ? '' : ud.owner,
