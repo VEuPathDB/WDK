@@ -127,7 +127,7 @@
 
                 <a class="step-download-link" style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
 
-                <c:if test="${recHasBasket}">
+                <c:if test="${recHasBasket && !isBasket}">
                   <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
                     <b>Add to Basket</b>
                   </a>
