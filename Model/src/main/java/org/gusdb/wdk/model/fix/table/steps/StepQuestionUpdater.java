@@ -12,7 +12,6 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
-import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 
 public class StepQuestionUpdater {
 
@@ -35,11 +34,10 @@ public class StepQuestionUpdater {
     }
   }
 
-  public boolean updateQuestionName(RowResult<StepData> result) {
-    String questionName  = result.getRow().getQuestionName();
+  public boolean updateQuestionName(StepData step) {
+    String questionName  = step.getQuestionName();
     if (_mapping.containsKey(questionName)) {
-      result.getRow().setQuestionName(_mapping.get(questionName));
-      result.setShouldWrite(true);
+      step.setQuestionName(_mapping.get(questionName));
       return true;
     }
     return false;
