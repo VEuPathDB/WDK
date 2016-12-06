@@ -37,7 +37,7 @@ public class Functions {
    * @throws WdkUserException 
    */
   public static Collection<Collection<Map<String, AttributeValue>>>
-      groupAttributeRecordsBySource(Collection<Map<String, AttributeValue>> recordCollection, String primaryKeyName)
+      groupAttributeRecordsBySource(Iterable<Map<String, AttributeValue>> recordCollection, String primaryKeyName)
           throws WdkModelException, WdkUserException {
     
     List<Collection<Map<String, AttributeValue>>> groups =
