@@ -131,6 +131,9 @@ public class UserDatasetFormatter {
       DecimalFormat df = new DecimalFormat("#.####");
       json.put("percentQuotaUsed", df.format(dataset.getSize() * 100.0 / quota));
     }
+    else {
+      json.put("percentQuotaUsed", 0);
+    }
     
     JSONArray filesJson = new JSONArray();
     for (UserDatasetFile file : dataset.getFiles().values()) {

@@ -16,6 +16,8 @@ type Props = {
 
 const getRowId = (row: { id: number }) => row.id;
 
+const na = '<span style="color: lightgray">N/A</span>';
+
 const columns = [
   { name: 'id', displayName: 'ID' },
   { name: 'name', displayName: 'Name' },
@@ -23,7 +25,7 @@ const columns = [
   { name: 'type', displayName: 'Type' },
   { name: 'installed', displayName: 'Installed' },
   { name: 'owner', displayName: 'Shared By' },
-  { name: 'shared', displayName: 'Is Shared' },
+  { name: 'shared', displayName: 'Shared With Others' },
   { name: 'created', displayName: 'Created' },
   { name: 'modified', displayName: 'Modified' },
   { name: 'size', displayName: 'Size' },
@@ -37,8 +39,8 @@ const mapUserDatasets = (userDatasets: UserDataset[], router: InjectedRouter, us
     summary: escape(ud.meta.summary),
     type: `${ud.type.name} ${ud.type.version}`,
     installed: ud.isInstalled ? 'Yes' : 'No',
-    owner: user.id === ud.ownerUserId ? '' : ud.owner,
-    shared: user.id === ud.ownerUserId ? (ud.sharedWith.length ? 'Yes' : 'No') : '',
+    owner: user.id === ud.ownerUserId ? na : ud.owner,
+    shared: user.id === ud.ownerUserId ? (ud.sharedWith.length ? 'Yes' : 'No') : na,
     created: new Date(ud.created).toLocaleDateString(),
     modified: new Date(ud.modified).toLocaleDateString(),
     size: bytesToHuman(ud.size),
