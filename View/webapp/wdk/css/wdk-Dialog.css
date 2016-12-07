@@ -1,0 +1,15 @@
+.wdk-Dialog {
+  padding: 0;
+  border: 1px solid #999;
+  box-shadow: 0 0 20px rgba(0,0,0,.4);
+}
+
+.wdk-Dialog .ui-dialog-titlebar {
+  border: none;
+  font-size: 1.2em;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #ccc;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
