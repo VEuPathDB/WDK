@@ -142,8 +142,8 @@ class Dialog extends Component<Props, void> {
       height: this.props.height,
       draggable: this.props.draggable,
       resizable: this.props.resizable,
-      dialogClass: this.props.className,
-      position: { my: 'top', at: 'top+100' }
+      dialogClass: 'wdk-Dialog ' + this.props.className,
+      position: { my: 'top', at: 'top+100', of: window }
     };
     $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
     this.handlePropsChanged();
