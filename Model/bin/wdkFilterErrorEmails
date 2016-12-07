@@ -42,10 +42,13 @@ else {
 open(F, $emailsFile) || die "Can't open emails file '$emailsFile'\n";
 my @currentEmail;
 my $currentDate;
+my $totalEmails;
+my $matchedEmails;
 while(<F>) {
   if (/$emailDelim/) {
     if (&dateFilter($currentDate)) {
-      &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
+      $totalEmails++;
+      $matchedEmails += &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
     }
     @currentEmail = ();
   } else {
@@ -62,6 +65,14 @@ if ($report) {
   foreach my $filterAsString (@filtersAsStrings) {
     print STDOUT $filtersInfo{$filterAsString}->{count} . "\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
   }
+
+  my $unmatchedEmails = $totalEmails - $matchedEmails;
+  print "
+Total emails in date range: $totalEmails
+                 # matched: $matchedEmails
+               # unmatched: $unmatchedEmails
+";
+
 }
 
 
@@ -113,11 +124,10 @@ sub dateFilter {
 sub handleEmail {
   my ($emailArray, $filtersAsStringsRef, $filtersInfoRef, $emailDelim, $printIfMatch, $report) = @_;
 
-  my $matchedFilterAsString;
+  my $matched;
   foreach my $filterAsString (@$filtersAsStringsRef) {
     my $filterInfo = $filtersInfoRef->{$filterAsString};
     my $filterTerms = $filterInfo->{terms};
-    my $matched;
     foreach my $emailLine (@$emailArray) {
       foreach my $filterTerm (@$filterTerms) {
 	if (index($emailLine, $filterTerm) != -1) {
@@ -129,18 +139,15 @@ sub handleEmail {
     }
 
     if ($matched) {
-      if ($matchedFilterAsString) { # already matched a filter
-	my $emailAsString = join("", @$emailArray);
-	die "\n$emailAsString\n\nnaughty, naughty: the above email matches more than one filter.\n  $matchedFilterAsString\n  $filterAsString\n";
-      }
       $filterInfo->{count} += 1 ;
-      $matchedFilterAsString = $filterAsString;
+      last;
     }
   }
 
-  if (!$report && (($printIfMatch && $matchedFilterAsString) || (!$printIfMatch && !$matchedFilterAsString)))  {
+  if (!$report && (($printIfMatch && $matched) || (!$printIfMatch && !$matched)))  {
     print STDOUT join("", @$emailArray) . $emailDelim . "\n";
   }
+  return $matched;
 }
 
 
@@ -164,6 +171,8 @@ Where:
   end_date:        date in mm/dd/yyyy format. Exclude emails after this date
 
 Filters file format: tab delimited, with first column being on or more filters (delimited by \&\&).  Other columns are ignored.  Lines beginning with # are ignored.
+
+Filters are applied in the order found in the file.  Only the first matching filter is effective.
 
 ";
 }
