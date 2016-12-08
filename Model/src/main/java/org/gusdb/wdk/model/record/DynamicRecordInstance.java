@@ -117,7 +117,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
     // check if the table value has been cached
     if (_tableValueCache.containsKey(tableName)) {
-      logger.debug("Requested table '" + tableName + "' exists in cache; returning");
+      //logger.debug("Requested table '" + tableName + "' exists in cache; returning");
       return _tableValueCache.get(tableName);
     }
 
