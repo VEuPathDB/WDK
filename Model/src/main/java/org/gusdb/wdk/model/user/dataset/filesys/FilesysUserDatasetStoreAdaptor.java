@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 
 public class FilesysUserDatasetStoreAdaptor
-    implements org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor {
+    implements org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor {
 
   @Override
   public List<Path> getPathsInDir(Path dir) throws WdkModelException {

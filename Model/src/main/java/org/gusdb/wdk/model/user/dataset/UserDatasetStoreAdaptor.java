@@ -1,10 +1,10 @@
-package org.gusdb.wdk.model.user.dataset.json;
+package org.gusdb.wdk.model.user.dataset;
 
 import java.nio.file.Path;
 import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
 
-public interface JsonUserDatasetStoreAdaptor {
+public interface UserDatasetStoreAdaptor {
   
   /**
    * Move a file, atomically

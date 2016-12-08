@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.json.JSONException;
@@ -69,9 +70,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   private static final String NL = System.lineSeparator();
 
   protected Path usersRootDir;
-  private JsonUserDatasetStoreAdaptor adaptor;
+  private UserDatasetStoreAdaptor adaptor;
   
-  public JsonUserDatasetStore(JsonUserDatasetStoreAdaptor adaptor) {
+  public JsonUserDatasetStore(UserDatasetStoreAdaptor adaptor) {
     this.adaptor = adaptor;
   }
   
@@ -560,4 +561,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return builder.toString();
   }
 
+  @Override
+  public UserDatasetStoreAdaptor getUserDatasetStoreAdaptor() {
+    return adaptor;
+  }
 }

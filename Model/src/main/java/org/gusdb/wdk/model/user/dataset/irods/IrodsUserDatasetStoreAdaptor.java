@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.TransferOptions.ForceOption;
@@ -28,7 +28,7 @@ import org.irods.jargon.core.transfer.TransferControlBlock;
  * @author crisl-adm
  *
  */
-public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor {
+public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   private static IRODSFileSystem system;
   private static IRODSAccount account;
   private static IRODSFileFactory factory;

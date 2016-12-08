@@ -152,4 +152,6 @@ public interface UserDatasetStore {
       throws WdkModelException;
   */
   
+  UserDatasetStoreAdaptor getUserDatasetStoreAdaptor();
+  
 }
