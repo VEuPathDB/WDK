@@ -106,9 +106,9 @@
 }
 .filter-param .filters .field-list {
   width: 25%;
-  overflow-y: auto;
   padding-left: 8px;
   padding-right: 8px;
+  padding-top: 60px;
   box-shadow: inset -1px 0px 0px #eee;
   background-image: -webkit-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
@@ -118,8 +118,30 @@
   top: 0;
   bottom: 0;
 }
+.filter-param .wdk-CheckboxTree {
+  overflow-y: auto;
+  height: 100%;
+}
+.filter-param .wdk-CheckboxTreeLinks:first-of-type {
+  position: absolute;
+  top: 5px;
+  z-index: 1;
+  left: 10px;
+  right: 8px;
+  background: white;
+  margin: 0;
+  padding: 7px;
+}
+.filter-param .wdk-CheckboxTree .wdk-RealTimeSearchBox {
+  position: absolute;
+  top: 32px;
+  left: 10px;
+  right: 8px;
+  width: auto;
+  z-index: 1;
+}
 .filter-param .wdk-CheckboxTree > .wdk-CheckboxTreeList {
-  padding-top: 1.5em;
+  padding-top: .5em;
   padding-bottom: 1.5em;
   border-bottom: 1px solid #ccc;
 }
