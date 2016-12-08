@@ -79,7 +79,7 @@ public class StepFactory {
   private static final String COLUMN_IS_COLLAPSIBLE = "is_collapsible";
   private static final String COLUMN_DISPLAY_PARAMS = "display_params";
   private static final String COLUMN_IS_VALID = "is_valid";
-  private static final String COLUMN_IS_VALID_AGGREGATED = "is_valid_aggregated";
+  private static final String COLUMN_IS_ALL_STEPS_VALID = "is_all_steps_valid";
   private static final String COLUMN_SIGNATURE = "signature";
   private static final String COLUMN_DESCRIPTION = "description";
   private static final String COLUMN_LAST_VIEWED_TIME = "last_view_time";
@@ -187,7 +187,7 @@ public class StepFactory {
 
     // basic select with required joins
     basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
-        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_VALID_AGGREGATED + " FROM " + 
+        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " + 
         _userSchema + TABLE_STRATEGY + " sr, " + _userSchema + TABLE_STEP + " sp, " + invalidStratSubquerySql +
         " sv WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID + " AND sr." + COLUMN_USER_ID +
         " = sp." + COLUMN_USER_ID + " AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID + " AND sr." +
@@ -1071,7 +1071,7 @@ public class StepFactory {
       strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
       strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
       strategy.setVersion(resultSet.getString(COLUMN_VERSION));
-      strategy.setValidBasedOnStepFlags(resultSet.getBoolean(COLUMN_IS_VALID_AGGREGATED));
+      strategy.setValidBasedOnStepFlags(resultSet.getBoolean(COLUMN_IS_ALL_STEPS_VALID));
       if (resultSet.getObject(COLUMN_IS_VALID) != null)
         strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
       if (resultSet.getObject(COLUMN_IS_PUBLIC) != null)
