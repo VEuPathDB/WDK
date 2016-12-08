@@ -1,5 +1,5 @@
 import WdkService from './WdkService';
-import { Question, RecordClass } from './WdkModel';
+import { Question, RecordClass, Record } from './WdkModel';
 
 /**
  * Fetches the step for the given ID and also finds the question and recordClass
@@ -31,13 +31,14 @@ export function getStepBundlePromise(stepId: number, service: WdkService) {
  * passed primary key to create a step of that question.  Returns a promise
  * whose value is an object with properties { step, question, recordClass }.
  */
-export function getSingleRecordStepBundlePromise(recordClass: RecordClass, primaryKeyString: string) {
+export function getSingleRecordStepBundlePromise([ recordClass, record, primaryKeyString ]: [ RecordClass, Record, string]) {
 
   // create single-record question and step for this record class
-  let questionName = '__' + recordClass.name + '__singleRecordQuestion__';
+  let questionName: string = '__' + recordClass.name + '__singleRecordQuestion__';
+  let displayName = record.attributes[recordClass.recordIdAttributeName];
   let step = {
-      // fill primary key string so we know which single record this question is
-    displayName: primaryKeyString,
+    // fill primary key string so we know which single record this question is
+    displayName: (displayName === undefined ? primaryKeyString : displayName),
     answerSpec: {
       questionName: questionName,
       parameters: {

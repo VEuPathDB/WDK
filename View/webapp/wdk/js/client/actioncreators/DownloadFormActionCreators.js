@@ -52,8 +52,25 @@ export function loadPageDataFromStepId(stepId) {
 export function loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.DOWNLOAD_FORM_LOADING });
-    wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then(recordClass =>
-      getSingleRecordStepBundlePromise(recordClass, primaryKeyString)).then(stepBundle => {
+
+    // create promise for recordClass
+    let recordClassPromise = wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
+
+    // create promise for record, dependent on result of recordClass promise
+    let recordPromise = recordClassPromise.then(recordClass => {
+      let pkValues = primaryKeyString.split(',');
+      let pkArray = recordClass.primaryKeyColumnRefs.map((ref, index) => ({ name: ref, value: pkValues[index] }));
+      return wdkService.getRecord(recordClass.name, pkArray, { attributes: [recordClass.recordIdAttributeName ] })
+    });
+
+    // create promise for bundle, dependent on previous two promises and primaryKeyString
+    let bundlePromise = Promise
+      .all([ recordClassPromise, recordPromise, primaryKeyString ])
+      .then(getSingleRecordStepBundlePromise);
+
+    // dispatch appropriate actions
+    return bundlePromise.then(
+      stepBundle => {
         return dispatch({
           type: actionTypes.DOWNLOAD_FORM_INITIALIZE_STORE,
           payload: Object.assign(stepBundle, { scope: 'record' })
@@ -61,7 +78,7 @@ export function loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) 
       },
       error => {
         console.error(error);
-        dispatch({
+        return dispatch({
           type: actionTypes.APP_ERROR,
           payload: { error }
         });
