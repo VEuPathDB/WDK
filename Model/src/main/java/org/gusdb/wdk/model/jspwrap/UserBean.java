@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
@@ -854,12 +855,26 @@ public class UserBean /* implements Serializable */{
 
   public Map<String, List<StrategyBean>> getSavedStrategiesByCategory() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+    logFoundStrategies(strategies, "saved");
     return convertMap(strategies);
   }
 
   public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+    logFoundStrategies(strategies, "unsaved");
     return convertMap(strategies);
+  }
+
+  private void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
+      int total = 0;
+      for (Entry<String, List<Strategy>> entry : strategies.entrySet()) {
+        logger.debug("   " + entry.getKey() + ": " + entry.getValue().size() + " strategies.");
+        total += entry.getValue().size();
+      }
+      logger.debug("   Total: " + total);
+    }
   }
 
   public Map<String, List<StrategyBean>> getRecentStrategiesByCategory() throws WdkModelException {
