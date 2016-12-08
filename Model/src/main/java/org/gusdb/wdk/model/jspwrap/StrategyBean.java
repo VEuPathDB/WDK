@@ -113,11 +113,6 @@ public class StrategyBean {
     return latestStep.getMainBranch();
   }
 
-  // public void addStep(StepBean step) throws WdkUserException,
-  // WdkModelException, SQLException, JSONException {
-  // strategy.addStep(step.step);
-  // }
-
   public void setLatestStep(StepBean step) throws WdkModelException {
     strategy.setLatestStep(step.step);
   }
@@ -186,20 +181,29 @@ public class StrategyBean {
   public String getSignature() {
     return strategy.getSignature();
   }
-    /**
-     * @return
-     * @throws WdkModelException 
-     * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
-     */
-    public int getEstimateSize() throws WdkModelException {
-        return strategy.getEstimateSize();
-    }
+
+  /**
+   * @return
+   * @throws WdkModelException 
+   * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
+   */
+  public int getEstimateSize() throws WdkModelException {
+    return strategy.getEstimateSize();
+  }
+
+  public String getEstimateSizeNoCalculate() {
+    return strategy.getEstimateSizeNoCalculate();
+  }
 
   private String formatDate(Date date) {
     if (date == null)
       return "-";
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     return formatter.format(date);
+  }
+
+  public boolean isValidBasedOnStepFlags() {
+    return strategy.isValidBasedOnStepFlags();
   }
 
   /**

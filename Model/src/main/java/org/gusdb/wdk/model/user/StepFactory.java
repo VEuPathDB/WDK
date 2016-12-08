@@ -65,6 +65,7 @@ public class StepFactory {
   private static final String TABLE_STEP = "steps";
   private static final String TABLE_STRATEGY = "strategies";
 
+  private static final String COLUMN_USER_ID = Utilities.COLUMN_USER_ID;
   private static final String COLUMN_STEP_ID = "step_id";
   static final String COLUMN_LEFT_CHILD_ID = "left_child_id";
   static final String COLUMN_RIGHT_CHILD_ID = "right_child_id";
@@ -78,6 +79,7 @@ public class StepFactory {
   private static final String COLUMN_IS_COLLAPSIBLE = "is_collapsible";
   private static final String COLUMN_DISPLAY_PARAMS = "display_params";
   private static final String COLUMN_IS_VALID = "is_valid";
+  private static final String COLUMN_IS_VALID_AGGREGATED = "is_valid_aggregated";
   private static final String COLUMN_SIGNATURE = "signature";
   private static final String COLUMN_DESCRIPTION = "description";
   private static final String COLUMN_LAST_VIEWED_TIME = "last_view_time";
@@ -137,6 +139,7 @@ public class StepFactory {
 
   // define SQL snippet "constants" to avoid building SQL each time
   private String modTimeSortSql;
+  private String invalidStratSubquerySql;
   private String basicStratsSql;
   private String isNotDeletedCondition;
   private String byProjectCondition;
@@ -173,18 +176,22 @@ public class StepFactory {
 
     /* define "static" SQL statements dependent only on schema name */
 
-    String userColumn = Utilities.COLUMN_USER_ID;
-
     // sort options
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
 
+    // estimate validity of strategies by executing subquery against steps in the strategy
+    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(nvl(" + COLUMN_IS_VALID +
+        ", 1)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
+        TABLE_STEP + " sp WHERE sp." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID + " GROUP BY sr." +
+        COLUMN_STRATEGY_ID + " )";
+
     // basic select with required joins
-    basicStratsSql = new StringBuilder().append("SELECT sr.*").append(", sp.").append(COLUMN_ESTIMATE_SIZE).append(
-        ", sp.").append(COLUMN_IS_VALID).append(", sp.").append(COLUMN_QUESTION_NAME).append(" FROM ").append(
-        _userSchema).append(TABLE_STRATEGY).append(" sr, ").append(_userSchema).append(TABLE_STEP).append(" sp").append(
-        " WHERE sr.").append(COLUMN_ROOT_STEP_ID).append(" = sp.").append(COLUMN_STEP_ID).append(" AND sr.").append(
-        userColumn).append(" = sp.").append(userColumn).append(" AND sr.").append(COLUMN_PROJECT_ID).append(
-        " = sp.").append(COLUMN_PROJECT_ID).toString();
+    basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
+        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_VALID_AGGREGATED + " FROM " + 
+        _userSchema + TABLE_STRATEGY + " sr, " + _userSchema + TABLE_STEP + " sp, " + invalidStratSubquerySql +
+        " sv WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID + " AND sr." + COLUMN_USER_ID +
+        " = sp." + COLUMN_USER_ID + " AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID + " AND sr." +
+        COLUMN_STRATEGY_ID + " = sv." + COLUMN_STRATEGY_ID;
 
     // conditions for strategies
 
@@ -194,7 +201,7 @@ public class StepFactory {
     // adds wildcard for project ID (string)
     byProjectCondition = new StringBuilder(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?").toString();
     // adds wildcard for user ID (integer)
-    byUserCondition = new StringBuilder(" AND sr.").append(userColumn).append(" = ?").toString();
+    byUserCondition = new StringBuilder(" AND sr.").append(COLUMN_USER_ID).append(" = ?").toString();
     // adds wildcard for strategy ID (integer)
     byStratIdCondition = new StringBuilder(" AND sr.").append(COLUMN_STRATEGY_ID).append(" = ?").toString();
     // adds wildcard for isSaved (boolean)
@@ -692,8 +699,6 @@ public class StepFactory {
     //   new steps, but may not have been applied to steps already in the DB.  This allows model XML
     //   authors to add default filters to the model without worrying about existing steps in the DB (as
     //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
-
-    // this was done in live branch wit log: unfixed steps (with no filters) are entering into an infinite loop, temp fix
     applyAlwaysOnFiltersToExistingStep(step);
 
     LOG.debug("loaded step #" + stepId);
@@ -1066,6 +1071,7 @@ public class StepFactory {
       strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
       strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
       strategy.setVersion(resultSet.getString(COLUMN_VERSION));
+      strategy.setValidBasedOnStepFlags(resultSet.getBoolean(COLUMN_IS_VALID_AGGREGATED));
       if (resultSet.getObject(COLUMN_IS_VALID) != null)
         strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
       if (resultSet.getObject(COLUMN_IS_PUBLIC) != null)

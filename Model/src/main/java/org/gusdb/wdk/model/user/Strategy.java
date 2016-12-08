@@ -39,6 +39,7 @@ public class Strategy {
   private int estimateSize;
   private String version;
   private boolean valid = true;
+  private boolean isValidBasedOnStepFlags;
   private Date lastRunTime;
   private RecordClass recordClass;
 
@@ -443,7 +444,7 @@ public class Strategy {
         setLatestStep(previousStep);
         update(false);
       }
-      else if (step == null) { // no more steps left in the strategy, delete the strategy itself.
+      else { // no more steps left in the strategy, delete the strategy itself.
         stepFactory.deleteStrategy(strategyId);
         rootMap.clear();
       }
@@ -658,6 +659,14 @@ public class Strategy {
     return jsStrategy;
   }
 
+  public boolean isValidBasedOnStepFlags() {
+    return isValidBasedOnStepFlags;
+  }
+
+  public void setValidBasedOnStepFlags(boolean isValidBasedOnStepFlags) {
+    this.isValidBasedOnStepFlags = isValidBasedOnStepFlags;
+  }
+
   /**
    * @return the valid
    * @throws JSONException
@@ -747,6 +756,10 @@ public class Strategy {
     if (latestStep != null)
       estimateSize = latestStep.getEstimateSize();
     return estimateSize;
+  }
+
+  public String getEstimateSizeNoCalculate() {
+    return (estimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(estimateSize));
   }
 
   void setEstimateSize(int estimateSize) {
