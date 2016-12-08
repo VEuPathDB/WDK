@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import java.util.List;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -20,11 +21,14 @@ import org.json.JSONObject;
  *   shortDisplayName: String,
  *   shortDisplayNamePlural: String,
  *   urlSegment: String,
+ *   useBasket: Boolean
  *   description: String,
- *   formats: [ String ],
+ *   formats: [ see getAnswerFormatsJson() ],
+ *   primaryKeyColumnRefs: [ String ],
+ *   recordIdAttributeName: String,
  *   attributes: [ see AttributeFieldFormatter ],
  *   tables: [ see TableFieldFormatter ],
- *   categories: Array (nested tree of categories)
+ *   categories: [ see getAttributeCategoriesJson() ]
  * }
  * 
  * @author rdoherty
@@ -57,10 +61,10 @@ public class RecordClassFormatter {
       .put(Keys.USE_BASKET, recordClass.isUseBasket())
       .put(Keys.DESCRIPTION, recordClass.getDescription())
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
+      .put(Keys.PRIMARY_KEY_REFS, JsonUtil.toJsonStringArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
+      .put(Keys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
-      .put(Keys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
-      .put(Keys.PRIMARY_KEY_REFS, recordClass.getPrimaryKeyDefinition().getColumnRefs())
       .put(Keys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
         FieldScope.ALL, expandTables, expandTableAttributes))
       .put(Keys.CATEGORIES, getAttributeCategoriesJson(recordClass));
