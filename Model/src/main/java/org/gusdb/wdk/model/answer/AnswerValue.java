@@ -1,10 +1,9 @@
 package org.gusdb.wdk.model.answer;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,11 +21,12 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.report.ReporterRef;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -52,7 +52,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.report.AttributesTabularReporter;
-import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -1223,22 +1222,35 @@ public class AnswerValue {
   }
 
   public Map<String, Integer> getFilterDisplaySizes() {
-    return getFilterSizes(true);
+    return getFilterSizes(getAllFilterNames(), true);
   }
 
   public Map<String, Integer> getFilterSizes() {
-    return getFilterSizes(false);
+    return getFilterSizes(getAllFilterNames(), false);
   }
 
-  private Map<String, Integer> getFilterSizes(boolean useDisplay) {
+  private List<String> getAllFilterNames() {
     RecordClass recordClass = _question.getRecordClass();
     AnswerFilterInstance[] filters = recordClass.getFilterInstances();
-    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
+    return Functions.mapToList(Arrays.asList(filters), new Function<AnswerFilterInstance, String>() {
+      @Override
+      public String apply(AnswerFilterInstance filter) {
+        return filter.getName();
+      }
+    });
+  }
+
+  public Map<String, Integer> getFilterDisplaySizes(List<String> requestedFilters) {
+    return getFilterSizes(requestedFilters, true);
+  }
+
+  private Map<String, Integer> getFilterSizes(List<String> filterNames, boolean useDisplay) {
+    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filterNames.size());
 
     // use a thread pool to get filter sizes in parallel
     ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-    for (AnswerFilterInstance filter : filters) {
-      executor.execute(new FilterSizeTask(this, sizes, filter.getName(), useDisplay));
+    for (String filterName : filterNames) {
+      executor.execute(new FilterSizeTask(this, sizes, filterName, useDisplay));
     }
 
     // wait for executor to finish.

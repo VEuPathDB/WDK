@@ -33,13 +33,13 @@ public class FilterSizeCache {
   // These are the items being cached in the ItemCache.  Depending on the order
   // of calls to getFilterSize() and getFilterSizes(), the sizeMap might be
   // fully or partially populated
-  private static class FilterSizeGroup {
+  public static class FilterSizeGroup {
 
     // set to true if the entire size map has been populated by getFilterSizes()
-    boolean allFiltersLoaded = false;
+    public boolean allFiltersLoaded = false;
 
     // map from filter name to filter size (count of records when that filter is applied)
-    Map<String, Integer> sizeMap = new HashMap<>();
+    public Map<String, Integer> sizeMap = new HashMap<>();
   }
 
   // Fetches size of a single filter on a single step and populates a
@@ -83,9 +83,9 @@ public class FilterSizeCache {
     }
   }
 
-  private static class AllSizesFetcher implements ItemFetcher<Integer, FilterSizeGroup> {
+  public static class AllSizesFetcher implements ItemFetcher<Integer, FilterSizeGroup> {
 
-    private final WdkModel _wdkModel;
+    protected final WdkModel _wdkModel;
 
     public AllSizesFetcher(WdkModel wdkModel) {
       _wdkModel = wdkModel;
@@ -164,14 +164,20 @@ public class FilterSizeCache {
   }
 
   @SuppressWarnings("unchecked")
-  public Map<String, Integer> getFilterSizes(int stepId, WdkModel wdkModel)
-    throws WdkModelException, WdkUserException {
+  public Map<String, Integer> getFilterSizes(int stepId, AllSizesFetcher fetcher)
+      throws WdkModelException, WdkUserException {
     try {
-      return _cache.getItem(stepId, new AllSizesFetcher(wdkModel)).sizeMap;
+      return _cache.getItem(stepId, fetcher).sizeMap;
     }
     catch (UnfetchableItemException e) {
       return handleUnfetchableItem(e, Map.class);
     }
+    
+  }
+
+  public Map<String, Integer> getFilterSizes(int stepId, WdkModel wdkModel)
+      throws WdkModelException, WdkUserException {
+    return getFilterSizes(stepId, new AllSizesFetcher(wdkModel));
   }
 
   /**
