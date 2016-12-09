@@ -118,7 +118,7 @@ Stdin must contain one or more lines specifying log files.   Each line has three
   - log file glob
   - access log file name
 
-wdkSlowQueryReport uses ssh to login into that server and read all the log files implied by the log file glob.
+wdkSlowQueryReport uses ssh to log in to that server and read all the log files implied by the log file glob.
 
 The access log is used to get a count of pages, which are shown in the page-requests column in the Statistics section at the bottom of the report.  This is useful if we know that certain queries only happen on that page.  Right now this is hard coded to look for EuPathDB gene pages.  It is useful for the gbrowseSlowQueryReport which tags queries as belonging to the gene page.
 
