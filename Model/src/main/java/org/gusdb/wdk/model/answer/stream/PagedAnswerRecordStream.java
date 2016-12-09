@@ -13,6 +13,8 @@ public class PagedAnswerRecordStream implements RecordStream {
 
   private static final Logger LOG = Logger.getLogger(PagedAnswerRecordStream.class);
 
+  public static final int MAX_IN_MEMORY_PAGE_SIZE = 500;
+
   private final AnswerValue _answerValue;
   private final int _pageSize;
 

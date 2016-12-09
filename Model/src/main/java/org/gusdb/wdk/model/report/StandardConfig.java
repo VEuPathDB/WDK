@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class StandardConfig {
 
   public static enum StreamStrategy {
-    PAGED_ANSWER, FILE_BASED;
+    PAGED_ANSWER, FILE_BASED, SMART;
   }
 
   // configuration props
@@ -52,7 +52,7 @@ public class StandardConfig {
   private List<String> tables = new ArrayList<String>(); // table and attribute field names
   private boolean allTables = false;
   private String attachmentType = null;
-  protected StreamStrategy streamStrategy = StreamStrategy.FILE_BASED;
+  protected StreamStrategy streamStrategy = StreamStrategy.SMART;
 
   public StandardConfig(Question question) {
     _question = question;

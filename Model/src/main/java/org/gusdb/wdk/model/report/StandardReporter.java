@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -106,8 +107,11 @@ public abstract class StandardReporter extends AbstractReporter {
         }
         return new PagedAnswerRecordStream(_baseAnswer, pageSize);
       case FILE_BASED:
-      default:
         return new FileBasedRecordStream(_baseAnswer, getSelectedAttributes(), getSelectedTables()).populateFiles();
+      case SMART:
+      default:
+        // unspecified; let factory decide for us
+        return RecordStreamFactory.getRecordStream(_baseAnswer, getSelectedAttributes(), getSelectedTables());
     }
   }
 

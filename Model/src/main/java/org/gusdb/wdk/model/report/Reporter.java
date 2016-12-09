@@ -20,7 +20,7 @@ public interface Reporter {
     INLINE, ATTACHMENT;
   }
 
-  // NOTE: implementing classes must have a constructor which takes a single AnswerValue argument
+  // NOTE: implementing classes MUST have a constructor which takes a single AnswerValue argument
   // public Reporter(AnswerValue answerValue);
 
   // methods to configure reporter

@@ -15,7 +15,8 @@ import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -99,11 +100,8 @@ public class AnswerFormatter extends AbstractReporter {
 
     // create output writer and initialize record stream
     try (JsonWriter writer = new JsonWriter(new BufferedWriter(new OutputStreamWriter(out)));
-         FileBasedRecordStream recordStream = new FileBasedRecordStream(
+         RecordStream recordStream = RecordStreamFactory.getRecordStream(
             _baseAnswer, _attributes.values(), _tables.values())) {
-
-      // write temporary files to be aggregated into record instances
-      recordStream.populateFiles();
 
       // start parent object and records array
       writer.object().key(Keys.RECORDS).array();
