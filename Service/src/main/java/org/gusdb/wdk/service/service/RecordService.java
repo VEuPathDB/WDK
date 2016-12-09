@@ -169,7 +169,7 @@ public class RecordService extends WdkService {
       
       // check to see if PKs specified map to multiple records
       try {
-        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
+        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKeyValues());
         if (ids.size() > 1) {
           // more than one record found; return multi-choice status and give user IDs from which to choose
           List<String> idList = getDisplayableIds(ids);
@@ -225,7 +225,7 @@ public class RecordService extends WdkService {
   }
 
   private static RecordInstance getRecordInstance(User user, RecordRequest recordRequest) throws WdkModelException, WdkUserException {
-    return new DynamicRecordInstance(user, recordRequest.getRecordClass(), recordRequest.getPrimaryKey());
+    return new DynamicRecordInstance(user, recordRequest.getRecordClass(), recordRequest.getPrimaryKeyValues());
   }
 
   private Response getTableResponse(String recordClassName, String tableName,

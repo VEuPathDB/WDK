@@ -121,7 +121,7 @@ public class RecordRequest {
     _tableNames = tableNames;
   }
   
-  public Map<String, Object> getPrimaryKey() {
+  public Map<String, Object> getPrimaryKeyValues() {
     return _primaryKey;
   }
 

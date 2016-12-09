@@ -44,6 +44,10 @@ public class SingleRecordAnswerValue extends AnswerValue {
     _resultSizeFactory = new SingleRecordResultSizeFactory(this);
   }
 
+  public Map<String, Object> getPrimaryKeyValueMap() {
+    return _pkMap;
+  }
+
   @Override
   public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
     return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };

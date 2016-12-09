@@ -19,7 +19,7 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
 
   public static final String PROPERTY_PAGE_SIZE = "page_size";
 
-  private static final int DEFAULT_PAGE_SIZE = 100;
+  private static final int DEFAULT_PAGE_SIZE = 200;
 
   protected int _pageSize = DEFAULT_PAGE_SIZE;
 
