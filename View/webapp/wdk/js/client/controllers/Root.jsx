@@ -27,6 +27,8 @@ export default class Root extends Component {
   }
 
   handleGlobalClick(event) {
+    if (!event.currentTarget.href) return;
+
     let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.which !== 1;
     let href = event.currentTarget.getAttribute('href').replace(RELATIVE_LINK_REGEXP, '');
     if (!hasModifiers && href.startsWith(this.props.rootUrl)) {
