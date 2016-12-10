@@ -95,8 +95,6 @@ class Dialog extends Component<Props, void> {
     open: false,
     modal: true,
     title: '',
-    onOpen() {},
-    onClose() {},
     width: "auto",
     height: "auto",
     draggable: false,
@@ -111,14 +109,22 @@ class Dialog extends Component<Props, void> {
    */
   handlePropsChanged() {
     render(
-      Children.only(this.props.children),
-      this.node
+      <div onKeyDown={e => this.handleKeyDown(e)}>
+        {this.props.children}
+      </div>,
+      this.refs.node
     );
     if (this.props.open) {
-      $(this.node).dialog('open');
+      $(this.refs.node).dialog('open');
     }
     else {
-      $(this.node).dialog('close');
+      $(this.refs.node).dialog('close');
+    }
+  }
+
+  handleKeyDown(e) {
+    if (e.key === 'Escape') {
+      $(this.refs.node).dialog('close');
     }
   }
 
@@ -134,8 +140,14 @@ class Dialog extends Component<Props, void> {
   componentDidMount() {
     var options = {
       modal: this.props.modal,
-      close: this.props.onClose,
-      open: this.props.onOpen,
+      close: () => {
+        if (this.props.onClose) this.props.onClose();
+        document.body.style.overflow = '';
+      },
+      open: () => {
+        if (this.props.onOpen) this.props.onOpen();
+        document.body.style.overflow = 'hidden';
+      },
       title: this.props.title,
       autoOpen: false,
       width: this.props.width,
@@ -143,9 +155,10 @@ class Dialog extends Component<Props, void> {
       draggable: this.props.draggable,
       resizable: this.props.resizable,
       dialogClass: 'wdk-Dialog ' + this.props.className,
-      position: { my: 'top', at: 'top+100', of: window }
+      position: { my: 'top', at: 'top+100', of: window, collision: 'fit' },
+      closeOnEscape: false
     };
-    $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
+    $(this.refs.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
     this.handlePropsChanged();
   }
 
@@ -154,8 +167,8 @@ class Dialog extends Component<Props, void> {
    * which will cause its componentWillUnmount hook to be called.
    */
   componentWillUnmount() {
-    $(this.node).dialog('destroy');
-    unmountComponentAtNode(this.node);
+    $(this.refs.node).dialog('destroy');
+    unmountComponentAtNode(this.refs.node);
   }
 
   /**
@@ -165,7 +178,7 @@ class Dialog extends Component<Props, void> {
    * we are doing with the jQueryUI plugin).
    */
   render() {
-    return <div ref={node => this.node = node}/>;
+    return <div ref="node"/>;
   }
 
 }
