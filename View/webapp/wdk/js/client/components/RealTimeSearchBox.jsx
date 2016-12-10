@@ -28,6 +28,10 @@ export default class RealTimeSearchBox extends Component {
     this.state = { searchTerm: this.props.searchTerm };
   }
 
+  componentDidMount() {
+    if (this.props.autoFocus) this.refs.input.autofocus = true;
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.searchTerm !== this.state.searchTerm) {
       this.debounceOnSearchTermSet(nextProps.searchTerm);
@@ -52,6 +56,7 @@ export default class RealTimeSearchBox extends Component {
     if (e.key === 'Escape') {
       this.setState({ searchTerm: '' });
       this.props.onSearchTermChange('');
+      e.stopPropagation();
     }
   }
 
@@ -76,6 +81,7 @@ export default class RealTimeSearchBox extends Component {
         + ' ' + classname(className, activeModifier, helpModifier)}>
         <label className={labelClassName}>
           <input type="search"
+            ref="input"
             className={inputClassName}
             onChange={this.handleSearchTermChange}
             onKeyDown={this.handleKeyDown}
@@ -110,6 +116,9 @@ RealTimeSearchBox.propTypes = {
 
   /** Class name to include with default class name */
   className: PropTypes.string,
+
+  /** Set the autofocus property of the underlying HTMLTextInputElement */
+  autoFocus: PropTypes.bool,
 
   /** Initial search text; defaults to ''.  After mounting, search text is maintained by the component */
   searchTerm: PropTypes.string,
