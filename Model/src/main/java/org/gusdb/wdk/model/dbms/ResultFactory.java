@@ -42,6 +42,7 @@ public class ResultFactory {
       creationDate = new Date().getTime();
     }
   }
+  public static final int UNKNOWN_INSTANCE_ID = 0;
 
   private static boolean USE_INSTANCE_INFO_CACHE = true;
   private static ItemCache<String, InstanceInfo> INSTANCE_INFO_CACHE = new ItemCache<String, InstanceInfo>();
@@ -75,7 +76,7 @@ public class ResultFactory {
       if (queryInfo.isExist()) { // cache table exists
         instanceId = getInstanceId(queryInfo, queryInstance);
         //logger.debug("   ..... EXISTING table,  instanceid?: " + instanceId + "(if 0 we need a new one)");
-        if (instanceId == 0) { // instance doesn't exist
+        if (instanceId == UNKNOWN_INSTANCE_ID) { // instance doesn't exist
           //logger.debug("creating cache instance and cache...");
           // create cache
           instanceId = createCache(queryInfo, queryInstance);
@@ -180,7 +181,7 @@ public class ResultFactory {
       resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
           "wdk-check-instance-exist");
 
-      InstanceInfo instanceInfo = new InstanceInfo(0, null);
+      InstanceInfo instanceInfo = new InstanceInfo(UNKNOWN_INSTANCE_ID, null);
       if (resultSet.next()) {
         instanceInfo.instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
         instanceInfo.message = platform.getClobData(resultSet, CacheFactory.COLUMN_RESULT_MESSAGE);

@@ -43,6 +43,6 @@ public class InstanceInfoFetcher implements ItemFetcher<String, InstanceInfo> {
 
   @Override
   public boolean itemNeedsUpdating(InstanceInfo item) {
-    return item.instanceId == 0 || (new Date().getTime() - item.creationDate) >= (EXPIRATION_SECS * 1000);
+    return item.instanceId == ResultFactory.UNKNOWN_INSTANCE_ID || (new Date().getTime() - item.creationDate) >= (EXPIRATION_SECS * 1000);
   }
 }
