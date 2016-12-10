@@ -414,7 +414,7 @@ export default class CheckboxTree extends Component {
     let {
       name, showRoot, getNodeId, nodeComponent, isSelectable, isMultiPick,
       isSearchable, currentList, defaultList, showSearchBox, searchTerm,
-      searchBoxPlaceholder, searchBoxHelp, onSearchTermChange
+      searchBoxPlaceholder, searchBoxHelp, onSearchTermChange, autoFocusSearchBox
     } = this.props;
     let treeLinkHandlers =
       pick(this, [ 'selectAll', 'selectNone', 'expandAll', 'expandNone',
@@ -434,6 +434,7 @@ export default class CheckboxTree extends Component {
         {treeLinks}
         {!isSearchable || !showSearchBox ? "" : (
           <RealTimeSearchBox
+            autoFocus={autoFocusSearchBox}
             searchTerm={searchTerm}
             onSearchTermChange={onSearchTermChange}
             placeholderText={searchBoxPlaceholder}
@@ -532,6 +533,9 @@ CheckboxTree.propTypes = {
 
   /** Indicates whether this is a searchable CBT.  If so, then show boxes and respect the optional parameters below, also turn off expansion; default to false */
   isSearchable: PropTypes.bool,
+
+  /** Indicates if the search box should have autoFocus set to true */
+  autoFocusSearchBox: PropTypes.bool,
 
   /** Whether to show search box; defaults to true (but only if isSearchable is true).  Useful if searching is controlled elsewhere */
   showSearchBox: PropTypes.bool,

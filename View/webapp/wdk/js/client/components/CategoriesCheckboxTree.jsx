@@ -6,7 +6,7 @@ import CheckboxTree from './CheckboxTree';
 
 let CategoriesCheckboxTree = props => {
 
-  let { title, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
+  let { title, autoFocusSearchBox, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
     isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange, isSelectable, leafType } = props;
 
   if (tree.children.length == 0) {
@@ -19,7 +19,7 @@ let CategoriesCheckboxTree = props => {
     searchBoxHelp: `Each ${leafType} name will be searched. The ${leafType} names will contain all your terms. Your terms are partially matched; for example, the term typ will match typically, type, atypical.`,
 
     // set hard-coded values for searchable, selectable, expandable tree
-    isSearchable: true, isSelectable,
+    isSearchable: true, isSelectable, autoFocusSearchBox,
 
     // set values from category utils since we know tree is a category tree
     getNodeId, getNodeChildren, searchPredicate: nodeSearchPredicate, nodeComponent,
@@ -43,6 +43,7 @@ let CategoriesCheckboxTree = props => {
 
 CategoriesCheckboxTree.propTypes = {
   title: PropTypes.string,
+  autoFocusSearchBox: PropTypes.bool,
   searchBoxPlaceholder: PropTypes.string,
   tree: CheckboxTree.propTypes.tree,
   /** String name representing what is being searched */
