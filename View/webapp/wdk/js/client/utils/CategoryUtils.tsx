@@ -1,6 +1,6 @@
 import {flowRight as compose, kebabCase, memoize} from 'lodash';
 import * as React from 'react';
-import {preorderSeq} from './TreeUtils';
+import {preorderSeq, getBranches} from './TreeUtils';
 import {
   getTree,
   nodeHasChildren,
@@ -231,6 +231,10 @@ function getAllLeafIdsNoCheck(ontologyTreeRoot: CategoryNode): string[] {
     (!nodeHasChildren(node) ? leafIds.concat(getNodeId(node)) :
       getNodeChildren(node).reduce(collectIds, leafIds));
   return collectIds([], ontologyTreeRoot);
+}
+
+export function getAllBranchIds(categoryTree: CategoryNode): string[] {
+  return getBranches(categoryTree, (node: CategoryNode) => node.children).map(getNodeId);
 }
 
 export const normalizeOntology = memoize(compose(sortOntology, pruneUnresolvedReferences, resolveWdkReferences));
