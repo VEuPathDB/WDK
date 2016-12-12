@@ -113,7 +113,7 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
   }
 
-  private static void openEventHandling(Integer eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private static void openEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Start handling event: " + eventId);
     String sql = "insert into " + userDatasetSchemaName + eventTable + " (event_id) values (?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-event");
@@ -121,7 +121,7 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
   }
 
-  private static void closeEventHandling(Integer eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private static void closeEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
     String sql = "update " + userDatasetSchemaName + eventTable + " set completed = sysdate where event_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "complete-user-dataset-event-handling");
     Object[] args = {eventId};
