@@ -203,6 +203,21 @@ public class UserDatasetEventListHandler extends BaseCLI {
       System.exit(1);
     }
   }
+  
+  /**
+   * Accepts an array list of events from a Jenkins job that composes the one-line content a series of
+   * event files into a single list and returns a corresponding list of UserDatasetEvent objects.
+   * @param eventListing
+   * @return
+   * @throws WdkModelException
+   */
+  public List<UserDatasetEvent> parseEventsList(List<String> eventListing) throws WdkModelException {
+	List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
+	for(String item : eventListing) {
+	  parseEventLine(item, events);
+	}
+	return events;
+  }
 
   public List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
 
@@ -214,12 +229,13 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
       String line = null;
       while ((line = reader.readLine()) != null) {
+    // TODO potentially content of this while loop can be replaced with parseEventLine method
 	line = line.trim();
 	if (line.length() == 0) break;
 	if (line.startsWith("#")) continue;
 	String[] columns = line.split("\t");
 	
-	Integer eventId = new Integer(columns[0]);
+	Long eventId = new Long(columns[0]);
 	String project = columns[2].length() > 0 ? columns[2] : null;
 	Set<String> projectsFilter = new HashSet<String>();
 	projectsFilter.add(project);
@@ -268,6 +284,58 @@ public class UserDatasetEventListHandler extends BaseCLI {
     }
     
     return events;
+  }
+  
+  private boolean parseEventLine(String line, List<UserDatasetEvent> events) throws WdkModelException {
+    line = line.trim();
+    if (line.length() == 0) return true;
+	if (line.startsWith("#")) return false;
+	String[] columns = line.split("\t");
+	
+	// EventId from IRODS will be a timestamp - so a Long is needed
+	Long eventId = new Long(columns[0]);
+	String project = columns[2].length() > 0 ? columns[2] : null;
+	Set<String> projectsFilter = new HashSet<String>();
+	projectsFilter.add(project);
+	Integer userDatasetId = new Integer(columns[3]);
+	UserDatasetType userDatasetType = UserDatasetTypeFactory.getUserDatasetType(columns[4], columns[5]);
+
+	// event_id install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
+	if (columns[1].equals("install")) {
+	  Integer ownerUserId = new Integer(columns[6]);
+	  String[] dependencyArr = columns[7].split(" "); // for now, support just one dependency
+	  Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
+	  dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
+	  events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId,
+						 dependencies));
+	}
+
+	// event_id uninstall projects user_dataset_id ud_type_name ud_type_version
+	else if (columns[1].equals("uninstall")) {
+	  events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
+	}
+
+	// event_id share projects user_dataset_id ud_type_name ud_type_version user_id grant
+	else if (columns[1].equals("share")) {
+	  Integer userId = new Integer(columns[6]);
+	  ShareAction action = columns[7].equals("grant") ? ShareAction.GRANT
+	           : ShareAction.REVOKE;
+	  events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
+							       action));
+	}
+
+    // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
+    else if (columns[1].equals("externalDataset")) {
+      Integer userId = new Integer(columns[6]);
+      ExternalDatasetAction action = columns[7].equals("create") ? ExternalDatasetAction.CREATE
+            : ExternalDatasetAction.DELETE;
+      events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId,
+	                               action));
+    }
+	else {
+	  throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
+	}
+	return false;
   }
   
   private void setProjectId(String projectId) {this.projectId = projectId;}
