@@ -204,7 +204,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     }
   }
 
-  private List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
+  public List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
 
     List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
 
