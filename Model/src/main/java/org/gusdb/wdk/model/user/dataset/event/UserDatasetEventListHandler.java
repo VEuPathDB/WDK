@@ -55,7 +55,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     super(command, "Handle a list of user dataset events.");
   }
 
-  private void handleEventList(List<UserDatasetEvent> eventList,
+  public void handleEventList(List<UserDatasetEvent> eventList,
       Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
           throws WdkModelException {
     
