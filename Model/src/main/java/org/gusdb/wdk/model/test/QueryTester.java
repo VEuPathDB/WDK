@@ -60,10 +60,13 @@ public class QueryTester {
         new LinkedHashMap<String, String>());
     ResultFactory resultFactory = wdkModel.getResultFactory();
     CacheFactory cacheFactory = resultFactory.getCacheFactory();
+    int instanceId = instance.getInstanceId();
+    return "QueryResult" + instanceId;
+    /*
     QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
     String cacheTable = queryInfo.getCacheTable();
-    int instanceId = instance.getInstanceId();
     return cacheTable + ":" + instanceId;
+    */
   }
 
   // ////////////////////////////////////////////////////////////////////

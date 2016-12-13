@@ -697,6 +697,34 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return new LinkedHashMap<>(sortingMap);
   }
 
+  /**
+   * The only info we need for the query checksum is the columns to make sure we have correct columns to store
+   * info we need.
+   * 
+   * @param query
+   * @return
+   * @throws JSONException
+   * @throws WdkModelException
+   */
+  public String getChecksum() throws WdkModelException {
+    JSONObject jsQuery = new JSONObject();
+    try {
+      jsQuery.put("name", getFullName());
+
+      JSONArray jsColumns = new JSONArray();
+      for (Column column : getColumns()) {
+        jsColumns.put(column.getJSONContent());
+      }
+      jsQuery.put("columns", jsColumns);
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+    return Utilities.encrypt(jsQuery.toString());
+  }
+
+
+
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
