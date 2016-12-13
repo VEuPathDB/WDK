@@ -65,9 +65,7 @@ public class CacheCLI extends BaseCLI {
                 + "cache index table, sorting table, and sequences.");
         addSingleValueOption(ARG_DROP_SINGLE, false, null, "drop a single "
                 + "cache table or a group of cache tables with the same query "
-                + "name. The input can be a cache id (query_instance_id, to "
-                + "drop a single cache table), or a full queryName (to drop "
-                + "all cache table created by the same query).");
+                + "name.");
         addNonValueOption(ARG_DROP_PURGE, false, "Optional argument, it will "
                 + "affect the WDK behavior when dropping cache tables. This "
                 + "option works on Oracle component database only, which "
@@ -105,6 +103,7 @@ public class CacheCLI extends BaseCLI {
         // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
         boolean purgeCache = (Boolean) getOptionValue(ARG_DROP_PURGE);
         boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
+        String singleQuery = (String) getOptionValue(ARG_DROP_SINGLE);
 
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
@@ -119,13 +118,7 @@ public class CacheCLI extends BaseCLI {
               case DROP:     factory.dropCache(purgeCache, forceDrop); break;
               case RECREATE: factory.recreateCache(purgeCache, true); break;
               case SHOW:     factory.showCache(); break;
-              case DROP_SINGLE:
-                String value = (String) getOptionValue(ARG_DROP_SINGLE);
-                if (value.matches("\\d+")) {
-                  factory.dropCache(Integer.parseInt(value), purgeCache);
-                } else {
-                  factory.dropCache(value, purgeCache);
-                }
+              case DROP_SINGLE: factory.dropCache(singleQuery, purgeCache);
             }
             
             long end = System.currentTimeMillis();

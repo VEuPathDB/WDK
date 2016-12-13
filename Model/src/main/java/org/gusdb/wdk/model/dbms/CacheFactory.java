@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.dbms;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
@@ -9,35 +8,18 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.cache.ItemCache;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-/**
- * @author Jerric Gao
- */
 public class CacheFactory {
 
-  private static final String CACHE_TABLE_PREFIX = "QueryResult";
-
-  private static final String TABLE_QUERY = "Query";
+  static final String CACHE_TABLE_PREFIX = "QueryResult";
 
   static final String COLUMN_QUERY_ID = "query_id";
-  private static final String COLUMN_QUERY_NAME = "query_name";
-  private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-  private static final String COLUMN_TABLE_NAME = "table_name";
+  static final String COLUMN_QUERY_NAME = "query_name";
+  static final String COLUMN_TABLE_NAME = "table_name";
 
   static final String TABLE_INSTANCE = "QueryInstance";
 
@@ -49,10 +31,6 @@ public class CacheFactory {
 
   private static Logger logger = Logger.getLogger(CacheFactory.class);
 
-  private static boolean USE_QUERY_INFO_CACHE = true;
-  private static ItemCache<String, QueryInfo> QUERY_INFO_CACHE = new ItemCache<String, QueryInfo>();
-  private final QueryInfoFetcher queryInfoFetcher;
-
   private WdkModel wdkModel;
   private DBPlatform platform;
   private DataSource dataSource;
@@ -61,12 +39,10 @@ public class CacheFactory {
     this.wdkModel = wdkModel;
     this.platform = database.getPlatform();
     this.dataSource = database.getDataSource();
-    this.queryInfoFetcher = new QueryInfoFetcher(this);
   }
 
   public void createCache() {
-    // create index tables for query and query instance;
-    createQueryTable();
+  
     createQueryInstanceTable();
 
     // create the id sequence for the query & instance index
@@ -78,14 +54,6 @@ public class CacheFactory {
       logger.error("Cannot create sequence [" + sequenceName + "]. " + ex.getMessage());
     }
 
-    sequenceName = TABLE_QUERY + DBPlatform.ID_SEQUENCE_SUFFIX;
-    try {
-      platform.createSequence(dataSource, sequenceName, 1, 1);
-    }
-    catch (Exception ex) {
-      logger.error("Cannot create sequence [" + sequenceName + "]. " + ex.getMessage());
-    }
-    
     // create results table for step analysis
     createStepAnalysisCache();
   }
@@ -121,96 +89,38 @@ public class CacheFactory {
     catch (Exception ex) {
       logger.error("Cannot drop sequence [" + instanceSeq + "]. " + ex.getMessage());
     }
-
-    // drop index tables and sequences
-    try {
-      platform.dropTable(dataSource, null, TABLE_QUERY, purge);
-    }
-    catch (Exception ex) {
-      logger.error("Cannot drop table [" + TABLE_QUERY + "]. " + ex.getMessage());
-    }
-
-    String querySeq = TABLE_QUERY + DBPlatform.ID_SEQUENCE_SUFFIX;
-    try {
-      SqlUtils.executeUpdate(dataSource, "DROP SEQUENCE " + querySeq, "wdk-cache-drop-query-seq");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot drop sequence [" + querySeq + "]. " + ex.getMessage());
-    }
     
     // drop step analysis results cache
     dropStepAnalysisCache(purge);
   }
 
   public void dropCache(int instanceId, boolean purge) {
-    // get cache table name
-    String sql = "SELECT q." + COLUMN_TABLE_NAME 
-        + " FROM " + TABLE_QUERY + " q, " + TABLE_INSTANCE + " qi " 
-        + " WHERE q." + COLUMN_QUERY_ID + " = qi." + COLUMN_QUERY_ID 
-        + "   AND qi." + COLUMN_INSTANCE_ID + " = " + instanceId;
-    String cacheTable;
-    try {
-      cacheTable = (String) SqlUtils.executeScalar(dataSource, sql, "wdk-cache-select-table-name");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot get cache table for query instance " + instanceId, ex);
-      return;
-    }
-
-    // no need to drop cache table, since it may be used by other queries
-    // from the same question; just delete rows from instance table.
-    sql = "DELETE FROM " +cacheTable + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
-    try {
-      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-by-instance");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + cacheTable + "]. ", ex);
-    }
 
     // delete the instance index
-    sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
+    String sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
     try {
       SqlUtils.executeUpdate(dataSource, sql, "wdk_cache_delete_instance_index");
     }
     catch (Exception ex) {
       logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. ", ex);
     }
-  }
 
-  public void dropCache(String queryName, boolean purge) {
-    String whereClause = " FROM " + TABLE_QUERY + " WHERE " + COLUMN_QUERY_NAME +" ='" + queryName + "'";
-    // get cache table name
-    String cacheTable = null;
-    String sql = "SELECT " + COLUMN_TABLE_NAME + whereClause; 
+    // drop result table
+    String cacheTable = ResultFactory.getCacheTableName(instanceId);
     try {
-      cacheTable = (String) SqlUtils.executeScalar(dataSource, sql, "wdk-select-cache-table-by-query");
       platform.dropTable(dataSource, null, cacheTable, purge);
     }
     catch (Exception ex) {
-      logger.error("Cannot drop table [" + cacheTable + "] for query: " + queryName, ex);
+      logger.error("Cannot crop table " + cacheTable, ex);
     }
-    
-    // delete instance index
-    sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_QUERY_ID + " IN " 
-        + "(SELECT " + COLUMN_QUERY_ID + whereClause + ")"; 
-    try {
-      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-instances-by-name");
-    }
-    catch (SQLException ex) {
-      logger.error("Cannot delete rows from " + TABLE_INSTANCE + " for query " + queryName, ex);
-    }
-
-    // delete query index
-    sql = "DELETE " + whereClause;
-    try {
-      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-query-by-name");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot delete rows from " + TABLE_QUERY + " for query " + queryName, ex);
-    }
-    finally {}
   }
 
+  public void dropCache(String queryName, boolean purge) {
+    dropCacheTables(purge, " where " + COLUMN_QUERY_NAME + " = '" + queryName + "'");
+
+  }
+
+  // TODO: fix this method
   public void showCache() throws SQLException {
     // get query instance summary
     StringBuffer sqlInstance = new StringBuffer("SELECT ");
@@ -219,9 +129,9 @@ public class CacheFactory {
     sqlInstance.append("q.").append(COLUMN_TABLE_NAME).append(", ");
     sqlInstance.append("count(*) AS instances FROM ");
     sqlInstance.append(TABLE_INSTANCE).append(" i, ");
-    sqlInstance.append(TABLE_QUERY).append(" q ");
+    //    sqlInstance.append(TABLE_QUERY).append(" q ");
     sqlInstance.append(" WHERE q.").append(COLUMN_QUERY_ID);
-    sqlInstance.append(" = i.").append(COLUMN_QUERY_ID);
+      sqlInstance.append(" = i.").append(COLUMN_QUERY_ID);
     sqlInstance.append(" GROUP BY i.").append(COLUMN_QUERY_ID).append(", ");
     sqlInstance.append(" q.").append(COLUMN_QUERY_NAME).append(", ");
     sqlInstance.append(" q.").append(COLUMN_TABLE_NAME);
@@ -253,28 +163,6 @@ public class CacheFactory {
     }
   }
 
-  private void createQueryTable() {
-    // create the cache index table
-    StringBuffer sql = new StringBuffer("CREATE TABLE ");
-    sql.append(TABLE_QUERY).append(" ( ");
-    sql.append(COLUMN_QUERY_ID).append(" ");
-    sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
-    sql.append(COLUMN_QUERY_NAME).append(" ");
-    sql.append(platform.getStringDataType(200)).append(" NOT NULL, ");
-    sql.append(COLUMN_QUERY_CHECKSUM).append(" ");
-    sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
-    sql.append(COLUMN_TABLE_NAME).append(" ");
-    sql.append(platform.getStringDataType(30)).append(" NOT NULL, ");
-    sql.append(" CONSTRAINT PK_").append(COLUMN_QUERY_ID);
-    sql.append(" PRIMARY KEY (").append(COLUMN_QUERY_ID).append(") )");
-    try {
-      SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-cache-create-query");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot create table [" + TABLE_QUERY + "]. " + ex.getMessage());
-    }
-  }
-
   private void createQueryInstanceTable() {
     // create the cache index table
     StringBuffer sql = new StringBuffer("CREATE TABLE ");
@@ -283,8 +171,10 @@ public class CacheFactory {
     // define columns
     sql.append(COLUMN_INSTANCE_ID).append(" ");
     sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
-    sql.append(COLUMN_QUERY_ID).append(" ");
-    sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
+    sql.append(COLUMN_QUERY_NAME).append(" ");
+    sql.append(platform.getStringDataType(200)).append(" NOT NULL, ");
+    sql.append(COLUMN_TABLE_NAME).append(" ");
+    sql.append(platform.getStringDataType(30)).append(" NOT NULL, ");
     sql.append(COLUMN_INSTANCE_CHECKSUM).append(" ");
     sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
     sql.append(COLUMN_PARAMS).append(" ");
@@ -294,13 +184,8 @@ public class CacheFactory {
 
     // define primary key
     sql.append(", CONSTRAINT PK_").append(COLUMN_INSTANCE_ID);
-    sql.append(" PRIMARY KEY (").append(COLUMN_INSTANCE_ID).append("), ");
+    sql.append(" PRIMARY KEY (").append(COLUMN_INSTANCE_ID).append(")) ");
 
-    // define foreign key to Query table
-    sql.append(" CONSTRAINT FK_").append(COLUMN_QUERY_ID);
-    sql.append(" FOREIGN KEY (").append(COLUMN_QUERY_ID).append(")");
-    sql.append(" REFERENCES ").append(TABLE_QUERY);
-    sql.append("(").append(COLUMN_QUERY_ID).append(") )");
     try {
       SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-cache-create-instance");
     }
@@ -310,10 +195,16 @@ public class CacheFactory {
   }
 
   private void dropCacheTables(boolean purge, boolean forceDrop) {
+    dropCacheTables(purge, "");
+    if (forceDrop) dropDanglingTables(purge);
+
+  }
+
+  private void dropCacheTables(boolean purge, String whereClause) {
+
     // get a list of cache tables
     StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
-    sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
-
+    sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_INSTANCE).append(" " + whereClause);
     ResultSet resultSet = null;
     Set<String> cacheTables = new LinkedHashSet<String>();
     try {
@@ -323,10 +214,18 @@ public class CacheFactory {
       }
     }
     catch (Exception ex) {
-      logger.error("Cannot query on table [" + TABLE_QUERY + "]. " + ex.getMessage());
+      logger.error("Cannot query on table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
+    }
+
+    // delete rows from cache index table
+    try {
+      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
+    }
+    catch (Exception ex) {
+      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
 
     // drop the cache tables
@@ -338,163 +237,20 @@ public class CacheFactory {
         logger.error("Cannot drop table [" + cacheTable + "]. " + ex.getMessage());
       }
     }
-
-    // delete rows from cache index table
-    try {
-      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_INSTANCE, "wdk-cache-delete-instances");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
-    }
-    try {
-      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_QUERY, "wdk-cache-delete-queries");
-    }
-    catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_QUERY + "]. " + ex.getMessage());
-    }
-
-    if (forceDrop)
-      dropDanglingTables();
   }
 
-  private void dropDanglingTables() {
+  private void dropDanglingTables(boolean purge) {
     String schema = wdkModel.getModelConfig().getAppDB().getLogin();
     try {
       String[] tables = platform.queryTableNames(dataSource, schema, CACHE_TABLE_PREFIX + "%");
       logger.info("Dropping " + tables.length + " dangling tables...");
-      for (String table : tables) {
-        try {
-          SqlUtils.executeUpdate(dataSource, "DROP TABLE " + table, "wdk-cache-drop-dangling-cache");
-        }
-        catch (Exception ex) {
-          logger.error("Cannot drop table [" + table + "]. " + ex.getMessage());
-        }
-      }
+      for (String table : tables)  platform.dropTable(dataSource, null, table, purge);
     }
     catch (Exception ex) {
       logger.error(ex.getMessage());
     }
   }
-
-  public QueryInfo getQueryInfo(Query query) throws WdkModelException {
-    String checksum = getChecksum(query);
-    String queryName = query.getFullName();
-    try {
-      return USE_QUERY_INFO_CACHE ?
-          QUERY_INFO_CACHE.getItem(QueryInfoFetcher.getKey(queryName, checksum), queryInfoFetcher) :
-          createQueryInfo(queryName, checksum);
-    }
-    catch (UnfetchableItemException e) {
-      throw (WdkModelException)e.getCause();
-    }
-  }
-
-  public QueryInfo createQueryInfo(String queryName, String checksum) throws WdkModelException {
-
-    QueryInfo queryInfo = new QueryInfo(queryName, checksum);
-
-    StringBuffer sql = new StringBuffer("SELECT * FROM " + TABLE_QUERY);
-    sql.append(" WHERE ").append(COLUMN_QUERY_NAME).append(" = ? ");
-    sql.append("   AND ").append(COLUMN_QUERY_CHECKSUM).append(" = ? ");
-    sql.append(" ORDER BY " + COLUMN_QUERY_ID);
-
-    PreparedStatement ps = null;
-    ResultSet resultSet = null;
-    try {
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-      ps.setString(1, queryName);
-      ps.setString(2, checksum);
-      resultSet = ps.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql.toString(), "wdk-cache-select-query-info", start, resultSet);
-
-      if (resultSet.next()) {
-        queryInfo.setExist(true);
-
-        queryInfo.setQueryId(resultSet.getInt(COLUMN_QUERY_ID));
-        queryInfo.setCacheTable(resultSet.getString(COLUMN_TABLE_NAME));
-      }
-      else {
-        queryInfo.setExist(false);
-
-        int queryId = platform.getNextId(dataSource, null, TABLE_QUERY);
-        queryInfo.setQueryId(queryId);
-        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryId);
-      }
-      //logger.debug("Get QueryInfo: " + queryInfo);
-    }
-    catch (SQLException e) {
-      logger.debug("Bad sql: " + sql);
-      throw new WdkModelException("Unable to check query info.", e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, ps);
-    }
-
-    return queryInfo;
-  }
-
-  /**
-   * The only info we need for the query checksum is the columns to make sure we have correct columns to store
-   * info we need.
-   * 
-   * @param query
-   * @return
-   * @throws JSONException
-   * @throws WdkModelException
-   */
-  private String getChecksum(Query query) throws WdkModelException {
-    JSONObject jsQuery = new JSONObject();
-    try {
-      jsQuery.put("name", query.getFullName());
-
-      JSONArray jsColumns = new JSONArray();
-      for (Column column : query.getColumns()) {
-        jsColumns.put(column.getJSONContent());
-      }
-      jsQuery.put("columns", jsColumns);
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-    return Utilities.encrypt(jsQuery.toString());
-  }
-
-  public void createQueryInfo(QueryInfo queryInfo) {
-    // query already exists don't need to create
-    if (queryInfo.isExist())
-      return;
-
-    PreparedStatement psInsert = null;
-    try {
-      // cache table doesn't exist, create one
-      StringBuffer sql = new StringBuffer("INSERT INTO ");
-      sql.append(TABLE_QUERY).append(" (");
-      sql.append(COLUMN_QUERY_ID).append(", ");
-      sql.append(COLUMN_QUERY_NAME).append(", ");
-      sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-      sql.append(COLUMN_TABLE_NAME).append(") ");
-      sql.append("VALUES (?, ?, ?, ?)");
-
-      long start = System.currentTimeMillis();
-      psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-      psInsert.setInt(1, queryInfo.getQueryId());
-      psInsert.setString(2, queryInfo.getQueryName());
-      psInsert.setString(3, queryInfo.getQueryChecksum());
-      psInsert.setString(4, queryInfo.getCacheTable());
-      psInsert.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql.toString(), "wdk-cache-insert-instance", start);
-
-      queryInfo.setExist(true);
-    }
-    catch (SQLException e) {
-      throw new WdkRuntimeException("Unable to create update table.", e);
-    }
-    finally {
-      SqlUtils.closeStatement(psInsert);
-    }
-  }
-
+ 
   private void createStepAnalysisCache() {
     try {
       logger.info("Creating step analysis results cache.");
@@ -524,4 +280,5 @@ public class CacheFactory {
       logger.error("Unable to drop step analysis results cache (purge = " + purge + "). " + ex.getMessage());
     }
   }
+
 }

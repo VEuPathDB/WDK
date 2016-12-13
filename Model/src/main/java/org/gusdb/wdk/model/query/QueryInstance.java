@@ -149,6 +149,7 @@ public abstract class QueryInstance<T extends Query> {
       JSONObject jsInstance = new JSONObject();
       jsInstance.put("project", wdkModel.getProjectId());
       jsInstance.put("query", query.getFullName());
+      jsInstance.put("queryChecksum", query.getChecksum());
 
       jsInstance.put("params", getParamSignatures());
       jsInstance.put("assignedWeight", assignedWeight);

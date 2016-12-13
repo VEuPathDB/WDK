@@ -24,13 +24,17 @@ public class QueryInfoFetcher implements ItemFetcher<String, QueryInfo> {
 
   @Override
   public QueryInfo fetchItem(String id) throws UnfetchableItemException {
+    return null;
+    /*
     try {
       String[] parts = id.split(KEY_DELIMITER);
       return _cacheFactory.createQueryInfo(parts[0], parts[1]);
+      return null;
     }
     catch(WdkModelException e) {
       throw new UnfetchableItemException(e);
     }
+    */
   }
 
   @Override
