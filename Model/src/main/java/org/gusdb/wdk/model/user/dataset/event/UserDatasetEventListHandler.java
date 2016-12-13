@@ -213,6 +213,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
    */
   public List<UserDatasetEvent> parseEventsList(List<String> eventListing) throws WdkModelException {
 	logger.debug("Parsing the events list");
+	System.exit(1);
 	List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
 	for(String item : eventListing) {
 	  parseEventLine(item, events);
