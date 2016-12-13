@@ -80,7 +80,7 @@ class CheckboxTreeNode extends Component {
             onClick={this.handleLabelClick}
           />}
 
-        <div className="wdk-CheckboxTreeNodeWrapper" onClick={this.handleLabelClick}>
+        <div className="wdk-CheckboxTreeNodeWrapper" onClick={isSelectable ? undefined : this.handleLabelClick}>
           {!isSelectable || (!isMultiPick && !isLeafNode) ? (
             <NodeComponent node={node} />
           ) : (
