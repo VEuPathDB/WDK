@@ -97,6 +97,14 @@
   <c:set var="segregateLeaves" value="false"/>
 </c:if>
 
+<%@ attribute name="depthExpanded"
+              required="false"
+              type="java.lang.Integer"
+              description="maximum depth to expand tree on initial load" %>
+<c:if test="${empty depthExpanded}">
+  <c:set var="depthExpanded" value="0"/>
+</c:if>
+
 <%-- Must set the following as request scope vars so included jsp has access (unset at bottom) --%>
 
 <c:set var="recurseTermNode" value="${tree.root}" scope="request"/>
@@ -106,7 +114,7 @@
 <!-- JSTree/Checkbox configuration -->
 <div style="display:none" data-controller="wdk.checkboxTree.setUpCheckboxTree"
     data-id="${id}" data-name="${checkboxName}" data-useicons="${useIcons}"
-    data-isallselected="${tree.allLeavesSelected}" data-leafimage="${leafImage}"
+    data-depth-expanded="${depthExpanded}" data-leafimage="${leafImage}"
     data-selectednodes="[${tree.selectedAsList}]" data-defaultnodes="[${tree.defaultAsList}]"
     data-initialnodes="[${initiallySetList}]" data-onload="${onload};"
     data-onchange="setTimeout(function() { ${onchange}; }, 0);"><jsp:text/></div>

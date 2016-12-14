@@ -73,6 +73,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public boolean getCountOnlyLeaves() {
     return param.getCountOnlyLeaves();
   }
+  
+  public int getDepthExpanded() {
+    return param.getDepthExpanded();
+  }
 
   public boolean isDependentParam() {
     return param.isDependentParam();

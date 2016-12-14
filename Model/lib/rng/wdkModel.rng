@@ -588,6 +588,12 @@
         <data type="boolean" />
       </attribute>
     </optional>
+    <!-- used by treeBox to determine which nodes should be expanded by default -->
+    <optional>
+      <attribute name="depthExpanded">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
   </define>
 
   <define name="EnumParamDisplayType">

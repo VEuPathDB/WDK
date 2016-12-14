@@ -1,4 +1,6 @@
 /* jshint evil:true */
+import { range, repeat } from 'lodash';
+
 wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
   "use strict";
 
@@ -17,7 +19,7 @@ wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
     checkboxTree.id = id;
     checkboxTree.checkboxName = $attrs.name;
     checkboxTree.useIcons = $attrs.useicons;
-    checkboxTree.collapseOnLoad = $attrs.isallselected;
+    checkboxTree.depthExpanded = $attrs.depthExpanded;
     checkboxTree.leafImgUrl = wdk.assetsUrl($attrs.leafimage);
     checkboxTree.currentList = parseJsonArray($attrs.selectednodes);
     checkboxTree.defaultList = parseJsonArray($attrs.defaultnodes);
@@ -42,9 +44,7 @@ wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
         .bind("loaded.jstree", function () {
           // need to check all selected nodes, but wait to ensure page is ready
           selectListOfNodes(treeId, checkboxTree.initiallySetList);
-          if (checkboxTree.collapseOnLoad) {
-            collapseAll(treeId);
-          }
+          expandNodesUpToDepth(treeId, checkboxTree.depthExpanded);
           $('#'+treeId).find('ins.jstree-checkbox').click(checkboxTree.onchange);
           $('#'+treeId).show();
           checkboxTree.onload();
@@ -56,11 +56,11 @@ wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
         })
         .jstree({
           "plugins" : [ "html_data", "themes", "types", "checkbox" ],
-          "core" : { "initially_open" : [ "root" ] },
           "themes" : { "theme" : "classic", "icons" : checkboxTree.useIcons },
           "types" : { "types" : { "leaf" : { "icon" : { "image" : checkboxTree.leafImgUrl }}}},
           "checkbox" : {
             "two_state" : false,
+            "checked_parent_open": false,
             "real_checkboxes" : true,
             "real_checkboxes_names" : function(node) {
               return [checkboxTree.checkboxName, (node[0].id || "")];
@@ -106,6 +106,13 @@ wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
 
     // trigger event with mo
     $tree.trigger('change', [ reason ]);
+  }
+
+  function expandNodesUpToDepth(treeId, depth) {
+    var selector = range(depth).map(function(i) {
+      return repeat('>ul >li', i + 1);
+    }).join(', ');
+    $('#' + treeId).jstree('open_node', selector, false, true);
   }
 
   function checkAll(treeId) {

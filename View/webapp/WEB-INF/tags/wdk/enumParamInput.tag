@@ -86,8 +86,15 @@ Otherwise a standard select menu is used.
         <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
-          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" tree="${qP.paramTree}" checkboxName="array(${pNam})"
-              buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
+            <imp:checkboxTree
+              id="${pNam}CBT${idgen.nextId}"
+              tree="${qP.paramTree}"
+              checkboxName="array(${pNam})"
+              depthExpanded="${qP.depthExpanded}"
+              buttonAlignment="left"
+              onchange="${updateCountFunc}"
+              onload="${updateCountFunc}"
+            />
         </div>
       </c:when>
 
@@ -150,8 +157,15 @@ Otherwise a standard select menu is used.
         <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
-          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" tree="${qP.paramTree}" checkboxName="array(${pNam})"
-              buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
+            <imp:checkboxTree
+              id="${pNam}CBT${idgen.nextId}"
+              tree="${qP.paramTree}"
+              checkboxName="array(${pNam})"
+              depthExpanded="${qP.depthExpanded}"
+              buttonAlignment="left"
+              onchange="${updateCountFunc}"
+              onload="${updateCountFunc}"
+            />
         </div>
       </c:when>
 
