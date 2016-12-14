@@ -142,6 +142,8 @@ public abstract class AbstractEnumParam extends Param {
   
   private boolean skipValidation = false;
 
+  private int depthExpanded = 0;
+
   protected abstract EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException;
 
@@ -165,6 +167,7 @@ public abstract class AbstractEnumParam extends Param {
     this.minSelectedCount = param.minSelectedCount;
     this.maxSelectedCount = param.maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
+    this.depthExpanded = param.depthExpanded;
   }
 
   /**
@@ -333,6 +336,14 @@ public abstract class AbstractEnumParam extends Param {
    */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
     this.countOnlyLeaves = countOnlyLeaves;
+  }
+  
+  public void setDepthExpanded(int depthExpanded) {
+    this.depthExpanded = depthExpanded;
+  }
+  
+  public int getDepthExpanded() {
+    return this.depthExpanded;
   }
 
   public boolean isDependentParam() {

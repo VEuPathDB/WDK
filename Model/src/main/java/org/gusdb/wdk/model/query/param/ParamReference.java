@@ -89,6 +89,7 @@ public class ParamReference extends Reference {
     Integer maxSelectedCount = paramRef.getMaxSelectedCount();
     Boolean countOnlyLeaves = paramRef.getCountOnlyLeaves();
     Long interval = paramRef.getInterval();
+    Integer depthExpanded = paramRef.getDepthExpanded();
     
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
@@ -148,14 +149,17 @@ public class ParamReference extends Reference {
       
       if (countOnlyLeaves != null)
         enumParam.setCountOnlyLeaves(countOnlyLeaves);
+      
+      if (depthExpanded != null)
+        enumParam.setDepthExpanded(depthExpanded);
 
     } else { // or other param types
       if (multiPick != null || quote != null || displayType != null
-          || selectMode != null || queryRef != null)
+          || selectMode != null || queryRef != null || depthExpanded != null)
         throw new WdkModelException("The paramRef to '" + twoPartName
             + "' is not a flatVocabParam nor enumParam. The "
             + "'multiPick', 'displayType', 'quote',"
-            + " 'selectMode', 'queryRef' properties can only be "
+            + " 'selectMode', 'queryRef', 'depthExpanded' properties can only be "
             + "applied to paramRefs of flatVocabParams or " + "enumParams.");
       if (param instanceof StringParam) {
         // if quote is set, it overrides the value of the param
@@ -206,6 +210,7 @@ public class ParamReference extends Reference {
   private Integer maxSelectedCount;
   private Boolean countOnlyLeaves;
   private String prompt;
+  private Integer depthExpanded;
 
   private List<WdkModelText> helps = new ArrayList<WdkModelText>();
   private String help;
@@ -400,6 +405,14 @@ public class ParamReference extends Reference {
    */
   public void setSuppressNode(Boolean suppressNode) {
     this.suppressNode = suppressNode;
+  }
+  
+  public Integer getDepthExpanded() {
+    return this.depthExpanded;
+  }
+  
+  public void setDepthExpanded(Integer depthExpanded) {
+    this.depthExpanded = depthExpanded;
   }
 
   public Boolean getMultiPick() {
