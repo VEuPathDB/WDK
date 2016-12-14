@@ -61,7 +61,9 @@ public class UserDatasetEventListHandler extends BaseCLI {
     
     Integer lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
     int count = 0;
+    
     for (UserDatasetEvent event : eventList) {
+    	
 
       if (event.getEventId() <= lastHandledEventId) continue;
       
@@ -116,7 +118,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     };
 
     // first confirm there are no failed events from the last run.  (They'll have a null completed time)
-    String sql = "select min(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent where completed is null";
+    String sql = "select min(event_id) from " + userDatasetSchemaName + "UserDatasetEvent where completed is null";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "find-earliest-incomplete-event-id");
     sqlRunner.executeQuery(handler); 
     if (ids.get(0) != 0) {
@@ -125,7 +127,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
     // find highest previously handled event id
     ids.remove(0);
-    sql = "select max(event_id) from " + userDatasetSchemaName + ".UserDatasetEvent";
+    sql = "select max(event_id) from " + userDatasetSchemaName + "UserDatasetEvent";
     sqlRunner = new SQLRunner(appDbDataSource, sql, "find-latest-event-id");
     sqlRunner.executeQuery(handler); 
     return ids.get(0);
@@ -170,7 +172,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     return  "ApiDBUserDatasets.";
   }
   
-  private String getWdkTempDirName() throws WdkModelException {
+  public String getWdkTempDirName() throws WdkModelException {
     if (wdkTempDirName == null) {
       wdkTempDirName = getModelConfig().getWdkTempDir();
     }
@@ -212,7 +214,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
    * @throws WdkModelException
    */
   public List<UserDatasetEvent> parseEventsList(List<String> eventListing) throws WdkModelException {
-	logger.debug("Parsing the events list");
 	List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
 	for(String item : eventListing) {
 	  parseEventLine(item, events);
@@ -339,7 +340,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 	return false;
   }
   
-  private void setProjectId(String projectId) {this.projectId = projectId;}
+  public void setProjectId(String projectId) {this.projectId = projectId;}
   private String getProjectId() { return projectId;}
   
   @Override
