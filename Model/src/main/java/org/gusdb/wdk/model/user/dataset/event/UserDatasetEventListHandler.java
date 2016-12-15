@@ -59,7 +59,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
       Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
           throws WdkModelException {
     
-    Integer lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
+    Long lastHandledEventId = findLastHandledEvent(getAppDbDataSource(), getUserDatasetSchemaName());
     int count = 0;
     
     for (UserDatasetEvent event : eventList) {
@@ -107,13 +107,13 @@ public class UserDatasetEventListHandler extends BaseCLI {
    * @return
    * @throws WdkModelException if the log has a failed event (no complete date) from a previous run.
    */
-  private Integer findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
+  private Long findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
     
-    final List<Integer> ids = new ArrayList<Integer>();
+    final List<Long> ids = new ArrayList<>();
     ResultSetHandler handler = new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
-        if (rs.next()) ids.add(rs.getInt(1)); // one row will be returned
+        if (rs.next()) ids.add(rs.getLong(1)); // one row will be returned
       }
     };
 
