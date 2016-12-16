@@ -104,7 +104,7 @@ sub parseFilterLine {
   push(@$filtersAsStringsRef, $filterAsString);
 
   # each filter can have more than one string to match, separated by &&
-  my @filterTerms = split(/\&\&/, $filterAsString);
+  my @filterTerms = split(/\s+\&\&\s+/, $filterAsString);
 
   $filtersInfoRef->{$filterAsString} = {orig => $filterLine, terms => \@filterTerms, count => 0};
 }
@@ -127,17 +127,7 @@ sub handleEmail {
   my $matched;
   foreach my $filterAsString (@$filtersAsStringsRef) {
     my $filterInfo = $filtersInfoRef->{$filterAsString};
-    my $filterTerms = $filterInfo->{terms};
-    foreach my $emailLine (@$emailArray) {
-      foreach my $filterTerm (@$filterTerms) {
-	if (index($emailLine, $filterTerm) != -1) {
-	  $matched = 1;
-	  last;
-	}
-      }
-      last if ($matched);
-    }
-
+    $matched = matchesFilter($filterInfo->{terms}, $emailArray);
     if ($matched) {
       $filterInfo->{count} += 1 ;
       last;
@@ -150,6 +140,22 @@ sub handleEmail {
   return $matched;
 }
 
+sub matchesFilter {
+  my ($filterTerms, $emailArray) = @_;
+
+  my $matched = 1;
+  foreach my $filterTerm (@$filterTerms) {
+    my $matchedTerm = 0;
+    foreach my $emailLine (@$emailArray) {
+      if (index($emailLine, $filterTerm) != -1) {
+	$matchedTerm = 1;
+	last;
+      }
+    }
+    $matched &= $matchedTerm;
+  }
+  return $matched;
+}
 
 sub usage {
   die "
