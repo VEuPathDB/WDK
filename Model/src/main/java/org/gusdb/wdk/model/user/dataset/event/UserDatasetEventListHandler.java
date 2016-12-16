@@ -73,7 +73,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
           throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " +
               event.getUserDatasetType() + " which is not present in the wdk configuration");
         UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler,
-            getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
+            getUserDatasetStore(), getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
       }
 
       else if (event instanceof UserDatasetUninstallEvent) {
@@ -82,7 +82,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
           throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " +
               event.getUserDatasetType() + " which is not present in the wdk configuration");
         UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
-            getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir);
+            getAppDbDataSource(), getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
       }
 
       else if (event instanceof UserDatasetShareEvent) {

@@ -25,7 +25,7 @@ public class UserDatasetEventHandler {
   private static final String externalTable = "UserDatasetExternalDataset";
   private static final String eventTable = "UserDatasetEvent";
 
-  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore userDatasetStore, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir) throws WdkModelException {
+  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore userDatasetStore, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir, String projectId) throws WdkModelException {
 
     logger.info("Installing user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
@@ -36,18 +36,18 @@ public class UserDatasetEventHandler {
     Object[] args = {event.getUserDatasetId(), userDataset.getMeta().getName()};
     sqlRunner.executeUpdate(args);
 
-    typeHandler.installInAppDb(userDataset, tmpDir);
+    typeHandler.installInAppDb(userDataset, tmpDir, projectId);
     grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName, "UserDatasetOwner");
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
 
-  public static void handleUninstallEvent (UserDatasetUninstallEvent event, UserDatasetTypeHandler typeHandler, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir) throws WdkModelException {
+  public static void handleUninstallEvent (UserDatasetUninstallEvent event, UserDatasetTypeHandler typeHandler, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir, String projectId) throws WdkModelException {
 
     logger.info("Uninstalling user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
 
     revokeAllAccess(event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName);
-    typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir);
+    typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir, projectId);
     String sql = "delete from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
 
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "delete-user-dataset-row");

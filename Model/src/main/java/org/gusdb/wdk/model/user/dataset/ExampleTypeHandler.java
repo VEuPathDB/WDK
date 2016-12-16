@@ -19,13 +19,13 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
   }
 
   @Override
-  public String[] getUninstallInAppDbCommand(Integer userDatasetId) {
+  public String[] getUninstallInAppDbCommand(Integer userDatasetId, String projectId) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap) {
+  public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String projectid) {
     // TODO Auto-generated method stub
     return null;
   }

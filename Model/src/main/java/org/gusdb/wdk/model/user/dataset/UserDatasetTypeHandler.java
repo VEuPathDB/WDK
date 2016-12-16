@@ -39,15 +39,15 @@ public abstract class UserDatasetTypeHandler {
    */
   public abstract UserDatasetType getUserDatasetType();
   
-  public abstract String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap);
+  public abstract String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String project);
   
   public abstract Set<String> getInstallInAppDbFileNames(UserDataset userDataset);
   
-  public abstract String[] getUninstallInAppDbCommand(Integer userDatasetId);
+  public abstract String[] getUninstallInAppDbCommand(Integer userDatasetId, String projectName);
   
   public abstract String[] getRelevantQuestionNames();
 
-  public void installInAppDb(UserDataset userDataset, Path tmpDir) throws WdkModelException {
+  public void installInAppDb(UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
     Map<String, Path> nameToTempFileMap = new HashMap<String, Path>();
     
@@ -59,13 +59,13 @@ public abstract class UserDatasetTypeHandler {
       Path tmpFile = udf.getLocalCopy(workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
-    runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap), workingDir);
+    runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId), workingDir);
     deleteWorkingDir(workingDir);
    }
   
-  public void uninstallInAppDb(Integer userDatasetId, Path tmpDir) throws WdkModelException {
+  public void uninstallInAppDb(Integer userDatasetId, Path tmpDir, String projectId) throws WdkModelException {
     Path workingDir = createWorkingDir(tmpDir, userDatasetId);
-    runCommand(getUninstallInAppDbCommand(userDatasetId), workingDir);    
+    runCommand(getUninstallInAppDbCommand(userDatasetId, projectId), workingDir);    
     deleteWorkingDir(workingDir);
   }
 
