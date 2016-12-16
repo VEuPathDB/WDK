@@ -65,7 +65,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     for (UserDatasetEvent event : eventList) {
     	
 
-      if (event.getEventId() <= lastHandledEventId) continue;
+      if ((long)event.getEventId() <= (long)lastHandledEventId) continue;
       
       if (event instanceof UserDatasetInstallEvent) {
         UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
