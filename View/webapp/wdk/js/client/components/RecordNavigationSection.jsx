@@ -1,15 +1,11 @@
 import React from 'react';
-import classnames from 'classnames';
 import {includes, memoize, throttle} from 'lodash';
 import { seq } from '../utils/IterableUtils';
-import { preorderSeq, postorderSeq } from '../utils/TreeUtils';
+import { preorderSeq, pruneDescendantNodes } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
-import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
-import { getId, getDisplayName } from '../utils/CategoryUtils';
-import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
+import { getId, isIndividual } from '../utils/CategoryUtils';
 import RecordNavigationItem from './RecordNavigationItem';
-import Tree from './Tree';
-import RealTimeSearchBox from './RealTimeSearchBox';
+import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 
 /** Navigation panel for record page */
 class RecordNavigationSection extends PureComponent {
@@ -36,69 +32,67 @@ class RecordNavigationSection extends PureComponent {
     }
   }
 
-  // If showChildren is true, iterate postorder to get the first left-most child
-  // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
-    let categories = this.props.showChildren
-      ? preorderSeq(this.props.categoryTree)
-        .filter(node => node.children.length > 0)
-      : seq(this.props.categoryTree.children);
-
-    let activeCategory = categories.findLast(node => {
-      let id = getId(node);
-      let domNode = document.getElementById(id);
-      if (domNode == null) return;
-      let rect = domNode.getBoundingClientRect();
-      return rect.top <= 70;
-    });
+    let { categoryTree, navigationCategoriesExpanded } = this.props;
+    let activeCategory = seq(removeFields(categoryTree).children)
+      // transform each top-level node into a list of all nodes of that branch
+      // of the tree that are visible in this section
+      .flatMap(topLevelNode => [
+        topLevelNode,
+        ...preorderSeq(topLevelNode)
+          .filter(node => navigationCategoriesExpanded.includes(getId(node)))
+          .flatMap(node => node.children)
+      ])
+      // find the category whose content is near the top of the viewport
+      .findLast(node => {
+        let id = getId(node);
+        let domNode = document.getElementById(id);
+        if (domNode == null) return;
+        let rect = domNode.getBoundingClientRect();
+        return rect.top <= 70;
+      });
 
     this.setState({ activeCategory });
   }
 
   handleSearchTermChange(term) {
     this.props.onNavigationQueryChange(term);
-    this.props.onNavigationSubcategoryVisibilityChange(true);
   }
 
   render() {
-    let { collapsedSections, heading, navigationQuery, navigationSubcategoriesExpanded } = this.props;
-    let searchQueryTerms = parseSearchQueryString(navigationQuery);
-    let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
-    let expandClassName = classnames({
-      'wdk-RecordNavigationExpand fa': true,
-      'fa-plus-square': !navigationSubcategoriesExpanded,
-      'fa-minus-square': navigationSubcategoriesExpanded
-    });
+    let {
+      categoryTree,
+      collapsedSections,
+      heading,
+      navigationQuery,
+      navigationCategoriesExpanded,
+      onNavigationCategoryExpansionChange,
+      onSectionToggle
+    } = this.props;
 
     return (
       <div className="wdk-RecordNavigationSection">
         <h2 className="wdk-RecordNavigationSectionHeader">
-          <button type="button" className={expandClassName}
-            onClick={() => {
-              this.props.onNavigationSubcategoryVisibilityChange(
-                !this.props.navigationSubcategoriesExpanded);
-            }}
-          /> {heading}
+          {heading}
         </h2>
-        <RealTimeSearchBox
-          placeholderText={'Search section names...'}
+        <CategoriesCheckboxTree
+          searchBoxPlaceholder="Search section names..."
+          tree={removeFields(categoryTree)}
+          leafType="section"
+          isSelectable={false}
+          expandedBranches={navigationCategoriesExpanded}
+          onUiChange={onNavigationCategoryExpansionChange}
           searchTerm={navigationQuery}
           onSearchTermChange={this.handleSearchTermChange}
-          delayMs={100}
+          nodeComponent={props =>
+            <RecordNavigationItem
+              {...props}
+              onSectionToggle={onSectionToggle}
+              activeCategory={this.state.activeCategory}
+              checked={!includes(collapsedSections, getId(props.node))}
+            />
+          }
         />
-        <div className="wdk-RecordNavigationCategories">
-          <Tree
-            tree={this.props.categoryTree.children}
-            id={c => getId(c)}
-            childNodes={c => c.children}
-            node={RecordNavigationItem}
-            showChildren={navigationSubcategoriesExpanded}
-            onSectionToggle={this.props.onSectionToggle}
-            isCollapsed={category => includes(collapsedSections, getId(category))}
-            isVisible={category => areTermsInString(searchQueryTerms, categoryWordsMap.get(category.properties))}
-            activeCategory={this.state.activeCategory}
-          />
-        </div>
       </div>
     );
   }
@@ -117,27 +111,5 @@ RecordNavigationSection.defaultProps = {
 
 export default wrappable(RecordNavigationSection);
 
-let makeCategoryWordsMap = memoize((root) =>
-  postorderSeq(root).reduce((map, node) => {
-    let words = [];
-
-    // add current node's displayName and description
-    words.push(
-      getDisplayName(node),
-      ...getPropertyValues('hasDefinition', node),
-      ...getPropertyValues('hasExactSynonym', node),
-      ...getPropertyValues('hasNarrowSynonym', node)
-    );
-
-    // add displayName and desription of attribute or table
-    if (nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node)) {
-      words.push(node.wdkReference.displayName, node.wdkReference.description);
-    }
-
-    // add words from any children
-    for (let child of node.children) {
-      words.push(map.get(child.properties));
-    }
-
-    return map.set(node.properties, words.join('\0').toLowerCase());
-  }, new Map));
+const removeFields = memoize(root =>
+  pruneDescendantNodes(node => !isIndividual(node), root));

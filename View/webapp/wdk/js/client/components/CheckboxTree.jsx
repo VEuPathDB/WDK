@@ -428,7 +428,7 @@ export default class CheckboxTree extends Component {
     );
     let myNodeComponent = (nodeComponent != null ? nodeComponent :
       (props => <span>{getNodeId(props.node)}</span>));
-    let listClassName = 'fa-ul wdk-CheckboxTreeList' + (isSelectable ? ' wdk-CheckboxTreeList__selectable' : '');
+    let listClassName = 'wdk-CheckboxTreeList' + (isSelectable ? ' wdk-CheckboxTreeList__selectable' : '');
     return (
       <div className="wdk-CheckboxTree">
         {treeLinks}
@@ -441,11 +441,12 @@ export default class CheckboxTree extends Component {
             helpText={searchBoxHelp} />
         )}
         <ul className={listClassName}>
-          {topLevelNodes.map(node =>
+          {topLevelNodes.map((node, index) =>
             <CheckboxTreeNode
               key={"node_" + getNodeId(node)}
               name={name}
               node={node}
+              path={[index]}
               listClassName={listClassName}
               getNodeState={getNodeState}
               isSelectable={isSelectable}

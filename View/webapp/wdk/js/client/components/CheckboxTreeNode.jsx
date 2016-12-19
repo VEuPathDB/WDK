@@ -5,7 +5,6 @@ import IndeterminateCheckbox from './IndeterminateCheckbox';
 const visibleElement = {display: ""};
 const hiddenElement = {display: "none"};
 
-
 /**
  * Expects the following props:
  *   name: string
@@ -16,7 +15,7 @@ const hiddenElement = {display: "none"};
  */
 class TreeRadio extends Component {
 
-  handleClick(event) {
+  handleClick() {
     let { checked, onChange, node } = this.props;
     if (!checked) {
       onChange(node, false);
@@ -35,7 +34,7 @@ class CheckboxTreeNode extends Component {
 
   constructor(props) {
     super(props);
-    this.handleLabelClick = () => {
+    this.toggleExpansion = () => {
       this.props.toggleExpansion(this.props.node);
     };
   }
@@ -48,6 +47,7 @@ class CheckboxTreeNode extends Component {
     let {
       name,
       node,
+      path,
       listClassName,
       getNodeState,
       isSelectable,
@@ -73,18 +73,22 @@ class CheckboxTreeNode extends Component {
 
     return (
       <li className={classNames} style={nodeVisibilityCss}>
-        {isLeafNode || isActiveSearch ? "" :
-          <i
-            className={'fa fa-li fa-caret-' + (isExpanded ? 'down ' : 'right ') +
-              'wdk-CheckboxTreeToggle wdk-CheckboxTreeToggle__' + (isExpanded ? 'expanded' : 'collapsed') }
-            onClick={this.handleLabelClick}
-          />}
-
-        <div className="wdk-CheckboxTreeNodeWrapper" onClick={isSelectable ? undefined : this.handleLabelClick}>
-          {!isSelectable || (!isMultiPick && !isLeafNode) ? (
-            <NodeComponent node={node} />
+        <div className="wdk-CheckboxTreeNodeWrapper">
+          {isLeafNode || isActiveSearch ? (
+            <i className="wdk-CheckboxTreeToggle"/>
           ) : (
-            <label>
+            <i
+              className={'fa fa-caret-' + (isExpanded ? 'down ' : 'right ') +
+                'wdk-CheckboxTreeToggle wdk-CheckboxTreeToggle__' + (isExpanded ? 'expanded' : 'collapsed') }
+              onClick={this.toggleExpansion}
+            />
+          )}
+          {!isSelectable || (!isMultiPick && !isLeafNode) ? (
+            <div className="wdk-CheckboxTreeNodeContent" onClick={this.toggleExpansion}>
+              <NodeComponent node={node} path={path} />
+            </div>
+          ) : (
+            <label className="wdk-CheckboxTreeNodeContent">
               {isMultiPick ?
                 <IndeterminateCheckbox
                   className="wdk-CheckboxTreeCheckbox"
@@ -101,18 +105,18 @@ class CheckboxTreeNode extends Component {
                   value={getNodeId(node)}
                   node={node}
                   onChange={toggleSelection} />
-              }
-              <NodeComponent node={node} />
+              } <NodeComponent node={node} />
             </label>
           )}
         </div>
         {isLeafNode ? "" :
           <ul className={listClassName} style={childrenVisibilityCss}>
-            {getNodeChildren(node).map(child =>
+            {getNodeChildren(node).map((child, index) =>
               <CheckboxTreeNode
                 key={"node_" + getNodeId(child)}
                 name={name}
                 node={child}
+                path={path.concat(index)}
                 listClassName={listClassName}
                 getNodeState={getNodeState}
                 isSelectable={isSelectable}
@@ -129,6 +133,6 @@ class CheckboxTreeNode extends Component {
       </li>
     );
   }
-};
+}
 
 export default CheckboxTreeNode;

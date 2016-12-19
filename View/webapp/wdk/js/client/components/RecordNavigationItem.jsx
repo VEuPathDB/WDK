@@ -1,60 +1,35 @@
 import React from 'react';
-import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
 import { getId, getDisplayName } from '../utils/CategoryUtils';
 
-let RecordNavigationItem = props => {
-  if (props.node.children.length === 0) {
-    return <noscript/>
-  }
-
-  let category = props.node;
-  let parentEnumeration = props.parentEnumeration;
+let RecordNavigationItem = ({node: category, path, activeCategory, checked, onSectionToggle}) => {
   let id = getId(category);
+  let activeId = activeCategory && getId(activeCategory);
   let displayName = getDisplayName(category)
 
-  let titleClassnames = classnames({
-    'wdk-Record-sidebar-title': true,
-    'wdk-Record-sidebar-title__active': props.activeCategory === category
-  });
-
-  let visible = props.isVisible(category);
-  let collapsed = props.isCollapsed(category);
-
-  let enumeration = parentEnumeration == null
-    ? [ props.index + 1 ]
-    : [ ...parentEnumeration, props.index + 1 ];
+  let enumeration = path.map(n => n + 1).join('.');
 
   return (
     <div className="wdk-RecordNavigationItem">
-
-      {parentEnumeration == null && visible &&
+      {activeId === id ? (
+        <i className="fa fa-circle wdk-Link wdk-RecordNavigationIndicator"/>
+      ) : null}
+      {path.length == 1 &&
         <input
           className="wdk-Record-sidebar-checkbox"
           type="checkbox"
-          checked={!collapsed}
-          onChange={(e) => void props.onSectionToggle(id, e.target.checked)}
+          checked={checked}
+          onChange={(e) => void onSectionToggle(id, e.target.checked)}
         />
       }
-
-      {visible &&
-        <a
-          href={'#' + id}
-          className={titleClassnames}
-          onClick={() => {
-            if (collapsed) props.onSectionToggle(id, true);
-          }}
-        > {enumeration.join('.') + ' ' + displayName} </a>
-      }
-
-      {props.showChildren &&
-        <div style={{ paddingLeft: enumeration.length + 'em' }}>
-          {React.Children.map(props.children, child => React.cloneElement(
-            child,
-            { parentEnumeration: enumeration }
-          ))}
-        </div>
-      }
+      <a
+        href={'#' + id}
+        className="wdk-Record-sidebar-title"
+        onClick={event => {
+          if (checked) onSectionToggle(id, true);
+          event.stopPropagation();
+        }}
+      > {enumeration} {displayName} </a>
     </div>
   );
 };
