@@ -9,6 +9,7 @@ interface ModelEntity {
 }
 
 export interface RecordClass extends ModelEntity {
+  recordIdAttributeName: string;
   description: string;
   attributes: AttributeField[];
   tables: TableField[];
