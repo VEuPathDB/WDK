@@ -128,17 +128,20 @@ const FieldListNode = ({ node, onFieldSelect, isActive }) =>
       <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
     )
     : (
-      <a
-        className={'wdk-AttributeFilterFieldItem wdk-AttributeFilterFieldItem__' +
-          (isActive ? 'active' : 'inactive')}
-        href={'#' + node.field.term}
-        onClick={e => {
-          e.preventDefault();
-          onFieldSelect(node.field);
-        }}>
-        {node.field.display}
-      </a>
-    )
+      <div>
+        {isActive ? <div className="wdk-AttributeFilterActiveMask"/> : null}
+        <a
+          className={'wdk-AttributeFilterFieldItem' +
+            (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
+          href={'#' + node.field.term}
+          onClick={e => {
+            e.preventDefault();
+            onFieldSelect(node.field);
+          }}>
+          {node.field.display}
+        </a>
+      </div>
+    );
 
 
 var FieldList = React.createClass({

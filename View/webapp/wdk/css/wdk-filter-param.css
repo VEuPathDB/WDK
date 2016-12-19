@@ -144,34 +144,23 @@
   padding-top: .5em;
   padding-bottom: 1.5em;
   border-bottom: 1px solid #ccc;
+  position: relative;
 }
-.filter-param .wdk-CheckboxTreeItem {
+.filter-param .wdk-AttributeFilterFieldParent,
+.filter-param .wdk-AttributeFilterFieldItem {
+  font-weight: bold;
+  position: relative;
   white-space: normal;
   text-transform: capitalize;
-}
-.filter-param .wdk-CheckboxTreeItem__expanded:after {
-  display: none;
-}
-.filter-param .wdk-CheckboxTreeToggle {
-  line-height: 1em;
-}
-.filter-param .wdk-CheckboxTreeToggle__collapsed {
-  left: -2px;
-}
-.filter-param .wdk-CheckboxTreeToggle__expanded {
-  left: -5px;
-}
-.filter-param .field-list li .wdk-AttributeFilterFieldParent,
-.filter-param .field-list li .wdk-AttributeFilterFieldItem {
   display: block;
-  padding: 3px 5px;
-  font-weight: bold;
 }
-.filter-param .field-list li .wdk-AttributeFilterFieldItem__inactive {
-  border-color: 1px solid transparent;
+.filter-param .wdk-AttributeFilterFieldParent,
+.filter-param .wdk-AttributeFilterFieldItem,
+.filter-param .wdk-CheckboxTreeToggle {
+  padding: 4px;
 }
-.filter-param .field-list .wdk-AttributeFilterFieldItem__active {
-  background-color: #f0f0f0;
+.filter-param .wdk-AttributeFilterFieldItem__active {
+  background: #eaeaea;
 }
 .filter-param .field-detail {
   width: 75%;

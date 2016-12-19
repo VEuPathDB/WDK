@@ -6,7 +6,7 @@ import {
   updateSectionVisibility,
   updateNavigationQuery,
   updateAllFieldVisibility,
-  updateNavigationSubcategoryVisibility,
+  updateNavigationCategoryExpansion,
   updateNavigationVisibility
 } from '../actioncreators/RecordViewActionCreators';
 import * as UserActionCreators from '../actioncreators/UserActionCreators';
@@ -31,7 +31,7 @@ class RecordController extends WdkViewController {
       updateSectionVisibility,
       updateNavigationQuery,
       updateAllFieldVisibility,
-      updateNavigationSubcategoryVisibility,
+      updateNavigationCategoryExpansion,
       updateNavigationVisibility
     }, UserActionCreators);
   }

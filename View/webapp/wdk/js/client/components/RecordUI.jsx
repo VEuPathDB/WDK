@@ -1,5 +1,4 @@
 import {Component} from 'react';
-import {findDOMNode} from 'react-dom';
 import {debounce, get, throttle} from 'lodash';
 import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
@@ -111,10 +110,10 @@ class RecordUI extends Component {
             activeSection={this.props.activeSection}
             navigationQuery={this.props.navigationQuery}
             navigationExpanded={this.props.navigationExpanded}
-            navigationSubcategoriesExpanded={this.props.navigationSubcategoriesExpanded}
+            navigationCategoriesExpanded={this.props.navigationCategoriesExpanded}
             onSectionToggle={this.props.updateSectionVisibility}
             onNavigationVisibilityChange={this.props.updateNavigationVisibility}
-            onNavigationSubcategoryVisibilityChange={this.props.updateNavigationSubcategoryVisibility}
+            onNavigationCategoryExpansionChange={this.props.updateNavigationCategoryExpansion}
             onNavigationQueryChange={this.props.updateNavigationQuery}
           />
         </Sticky>

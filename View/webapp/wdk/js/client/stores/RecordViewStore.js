@@ -26,7 +26,7 @@ export default class RecordViewStore extends WdkStore {
       // navigation panel state
       navigationVisible: true,
       navigationQuery: '',
-      navigationSubcategoriesExpanded: false,
+      navigationCategoriesExpanded: [],
 
       // basket state
       inBasket: undefined,
@@ -108,9 +108,9 @@ export default class RecordViewStore extends WdkStore {
         })
       }
 
-      case actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED:
+      case actionTypes.NAVIGATION_CATEGORY_EXPANSION_CHANGED:
         return Object.assign({}, state, {
-          navigationSubcategoriesExpanded: action.payload.isVisible
+          navigationCategoriesExpanded: action.payload.expandedCategories
         })
 
       case userActionTypes.BASKET_STATUS_LOADING:

@@ -12,7 +12,7 @@ export let actionTypes = {
   SECTION_VISIBILITY_CHANGED: 'record-view/section-visibility-changed',
   ALL_FIELD_VISIBILITY_CHANGED: 'record-view/all-field-visibility-changed',
   NAVIGATION_VISIBILITY_CHANGED: 'record-view/navigation-visibility-changed',
-  NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED: 'record-view/navigation-subcategory-visbility-changed',
+  NAVIGATION_CATEGORY_EXPANSION_CHANGED: 'record-view/navigation-category-expansion-changed',
   NAVIGATION_QUERY_CHANGED: 'record-view/navigation-query-changed'
 };
 
@@ -117,10 +117,10 @@ export function updateNavigationVisibility(isVisible) {
 }
 
 /** Change the visibility of subcategories in the navigation section */
-export function updateNavigationSubcategoryVisibility(isVisible) {
+export function updateNavigationCategoryExpansion(expandedCategories) {
   return {
-    type: actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED,
-    payload: { isVisible }
+    type: actionTypes.NAVIGATION_CATEGORY_EXPANSION_CHANGED,
+    payload: { expandedCategories }
   }
 }
 

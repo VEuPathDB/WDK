@@ -4,22 +4,22 @@
 }
 
 
+.wdk-CheckboxTreeList {
+  margin: 0;
+  list-style: none;
+}
+
 .wdk-CheckboxTree > .wdk-CheckboxTreeList {
   margin-top: 0.5em;
 }
 
-.wdk-CheckboxTreeList {
-  margin-left: 1.3em;
-}
-
-.wdk-CheckboxTreeList__selectable {
-  margin-left: 2.3em;
-}
-
 .wdk-CheckboxTreeItem {
   line-height: 15px;
-  /* white-space:nowrap; */
-  padding-left: 0.2em;
+  padding-left: 1.2em;
+}
+
+.wdk-CheckboxTreeItem__selectable {
+  padding-left: 1.5em;
 }
 
 .wdk-CheckboxTreeItem .wdk-CheckboxTreeNodeWrapper:hover {
@@ -33,20 +33,17 @@
   text-decoration: none;
 }
 
-.wdk-CheckboxTreeCheckbox {
-  margin: 0 4px;
-}
-
-.wdk-CheckboxTreeItem__expanded {
-  position:relative;
+.wdk-CheckboxTreeNodeWrapper {
+  padding: 1px 0;
 }
 
 /* Provdes vertical lines between vertically aligned checkboxes */
-.wdk-CheckboxTreeItem__expanded:after {
+/*
+.wdk-CheckboxTreeItem__selectable.wdk-CheckboxTreeItem__expanded:after {
   content:"";
   position:absolute;
-  top: 20px;
-  left: 8px;
+  top: 1.2em;
+  left: 1.6em;
   right: 0;
   bottom: 0;
   width: 5px;
@@ -56,23 +53,29 @@
 .wdk-CheckboxTreeItem__expanded:last-of-type:after {
   background: none;
 }
+*/
 
 /* Modifies size and color of accordion (expand/collapse) icon */
 .wdk-CheckboxTreeToggle {
   cursor: pointer;
   color: #AAA;
   font-size: 1.2em;
-  /* Attempt to center arrow vertically with checkbox */
-  line-height: 12px;
-  width: 0em;
+  position: absolute;
+  width: 1.2em;
 }
 
+/*
 .wdk-CheckboxTreeToggle__collapsed {
-  left: -5px;
+  left: 1.2em;
 }
 
 .wdk-CheckboxTreeToggle__expanded {
-  left: -7px;
+  left: 2px;
+}
+*/
+
+.wdk-CheckboxTreeNodeContent {
+  margin-left: 1em;
 }
 
 .wdk-CheckboxTreeLinks {
