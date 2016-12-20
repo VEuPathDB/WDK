@@ -188,8 +188,8 @@ export default class FilterService {
       Promise<Distribution|undefined>
     ] = [
       this.getFilteredData(this.filters),
-      filter ? this.getFilteredData([filter]) : Promise.resolve(),
-      this.selectedField ? this.getFieldDistribution(this.selectedField) : Promise.resolve()
+      filter ? this.getFilteredData([filter]) : Promise.resolve(undefined),
+      this.selectedField ? this.getFieldDistribution(this.selectedField) : Promise.resolve(undefined)
     ];
 
     Promise.all(promises).then(([ filteredData, filterSelection, distribution ]) => {

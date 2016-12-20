@@ -18,9 +18,9 @@ export function getStepBundlePromise(stepId: number, service: WdkService) {
       return question;
     })
   });
-  let recordClassPromise = questionPromise.then(question => {
-    return service.findRecordClass( rc => rc.name === question.recordClassName );
-  });
+  let recordClassPromise = questionPromise.then(question =>
+    question ? service.findRecordClass( rc => rc.name === question.recordClassName ) : undefined
+  );
 
   return Promise.all([ stepPromise, questionPromise, recordClassPromise ])
     .then(([ step, question, recordClass ]) => ({ step, question, recordClass }));
