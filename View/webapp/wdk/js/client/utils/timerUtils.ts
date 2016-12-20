@@ -7,18 +7,11 @@ export let cancelAnimationFrame: (handle: number) => void;
 
 /** Normalize requestAnimationFrame functions */
 (function() {
-  requestAnimationFrame = window.requestAnimationFrame;
-  cancelAnimationFrame = window.cancelAnimationFrame;
+  requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+  cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame;
 
-  let lastTime = 0;
-  let vendors = ['webkit', 'moz'];
-  for(let x = 0; x < vendors.length && !requestAnimationFrame; ++x) {
-    // Lots of casting to any to avoid complicated casting and types that would never be exported.
-    requestAnimationFrame = <any>window[<any>(vendors[x]+'RequestAnimationFrame')];
-    cancelAnimationFrame = <any>window[<any>(vendors[x]+'CancelAnimationFrame')] || window[<any>(vendors[x]+'CancelRequestAnimationFrame')];
-  }
-
-  if (!requestAnimationFrame)
+  if (!requestAnimationFrame) {
+    let lastTime = 0;
     requestAnimationFrame = function(callback) {
       let currTime = new Date().getTime();
       let timeToCall = Math.max(0, 16 - (currTime - lastTime));
@@ -27,11 +20,11 @@ export let cancelAnimationFrame: (handle: number) => void;
       lastTime = currTime + timeToCall;
       return id;
     };
+    cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+  }
 
-    if (!cancelAnimationFrame)
-      cancelAnimationFrame = function(id) {
-        clearTimeout(id);
-      };
 }());
 
 
