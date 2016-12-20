@@ -71,6 +71,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   protected Path usersRootDir;
   private UserDatasetStoreAdaptor adaptor;
+  protected String id;
   
   public JsonUserDatasetStore(UserDatasetStoreAdaptor adaptor) {
     this.adaptor = adaptor;
@@ -564,5 +565,10 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   @Override
   public UserDatasetStoreAdaptor getUserDatasetStoreAdaptor() {
     return adaptor;
+  }
+  
+  @Override
+  public String getUserDatasetStoreId() {
+	return id;
   }
 }
