@@ -154,4 +154,6 @@ public interface UserDatasetStore {
   
   UserDatasetStoreAdaptor getUserDatasetStoreAdaptor();
   
+  String getUserDatasetStoreId();
+  
 }
