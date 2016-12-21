@@ -45,8 +45,7 @@ module.exports = {
           }
         }),
         new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-common',
-          // filename: 'wdk-common.bundle.js'
+          name: 'wdk-common'
         })
       ]
 
@@ -66,8 +65,7 @@ module.exports = {
           }
         }),
         new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-common',
-          // filename: 'wdk-common.bundle.js'
+          name: 'wdk-common'
         })
       ]
 };
