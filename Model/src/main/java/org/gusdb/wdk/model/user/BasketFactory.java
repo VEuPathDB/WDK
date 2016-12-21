@@ -34,7 +34,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 /**
  * @author xingao
@@ -655,7 +655,7 @@ public class BasketFactory {
   }
 
   /**
-   * this method has to be called before resolving the mdoel.
+   * this method has to be called before resolving the model
    * 
    * @param recordClass
    */
@@ -665,7 +665,7 @@ public class BasketFactory {
     String queryName = Utilities.INTERNAL_QUERY_SET + "."
         + rcName.replace('.', '_') + BASKET_ATTRIBUTE_QUERY_SUFFIX;
 
-    ColumnAttributeField attribute = new ColumnAttributeField();
+    QueryColumnAttributeField attribute = new QueryColumnAttributeField();
     attribute.setName(BASKET_ATTRIBUTE);
     attribute.setDisplayName("In Basket");
     attribute.setInternal(true);

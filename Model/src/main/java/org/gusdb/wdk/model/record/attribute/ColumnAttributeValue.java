@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * 
  * @author Jerric Gao
  */
-public class ColumnAttributeValue extends AttributeValue {
+public abstract class ColumnAttributeValue extends AttributeValue {
 
   private final Object _value;
 

@@ -19,10 +19,10 @@ import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -215,8 +215,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
   private String formatColumn(Step step, AttributeField attribute,
       Map<String, String> queries) throws WdkModelException {
     // if column attribute can be formatted directly.
-    if (attribute instanceof ColumnAttributeField) {
-      Column column = ((ColumnAttributeField) attribute).getColumn();
+    if (attribute instanceof QueryColumnAttributeField) {
+      Column column = ((QueryColumnAttributeField) attribute).getColumn();
       String queryName = column.getQuery().getFullName();
       String sqlId = queries.get(queryName);
       if (sqlId == null) {

@@ -50,10 +50,10 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -840,12 +840,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         }
 
         // link columnAttributes with columns
-        if (field instanceof ColumnAttributeField) {
+        if (field instanceof QueryColumnAttributeField) {
           Column column = columns.get(fieldName);
-          if (column == null)
-            throw new WdkModelException("Column is missing for " + "the columnAttributeField " + fieldName +
-                " in recordClass " + getFullName());
-          ((ColumnAttributeField) field).setColumn(column);
+          if (column == null) {
+            throw new WdkModelException("Column is missing for " + "the QueryColumnAttributeField " +
+                fieldName + " in recordClass " + getFullName());
+          }
+          ((QueryColumnAttributeField) field).setColumn(column);
         }
         attributeFieldsMap.put(fieldName, field);
       }
@@ -1660,8 +1661,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public ColumnFilter getColumnFilter(String key) {
     for (AttributeField attribute : getAttributeFields()) {
-      if (attribute instanceof ColumnAttributeField) {
-        ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+      if (attribute instanceof QueryColumnAttributeField) {
+        QueryColumnAttributeField columnAttribute = (QueryColumnAttributeField) attribute;
         for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
           if (filter.getKey().equals(key))
             return filter;
@@ -1695,8 +1696,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // get all column filters
     for (AttributeField attribute : getAttributeFields()) {
-      if (attribute instanceof ColumnAttributeField) {
-        ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+      if (attribute instanceof QueryColumnAttributeField) {
+        QueryColumnAttributeField columnAttribute = (QueryColumnAttributeField) attribute;
         for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
           if (!filter.getIsViewOnly())
             filters.put(filter.getKey(), filter);

@@ -14,12 +14,12 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValueContainer;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeValue;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 import org.gusdb.wdk.model.user.User;
 
 public class StaticRecordInstance extends AttributeValueContainer implements RecordInstance {
@@ -144,12 +144,12 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
   }
 
   @Override
-  public ColumnAttributeValue getColumnAttributeValue(ColumnAttributeField field)
+  public QueryColumnAttributeValue getQueryColumnAttributeValue(QueryColumnAttributeField field)
       throws WdkModelException, WdkUserException {
     if (containsKey(field.getName())) {
       throw new WdkModelException("Requested column attribute [" + field.getName() + "] is not loaded into container.");
     }
-    return (ColumnAttributeValue)get(field.getName());
+    return (QueryColumnAttributeValue)get(field.getName());
   }
 
   public void addTableValue(TableValue tableValue) {

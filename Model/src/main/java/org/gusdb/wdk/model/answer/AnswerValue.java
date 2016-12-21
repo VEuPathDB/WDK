@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -584,48 +585,58 @@ public class AnswerValue {
     Map<String, String> orderClauses = new LinkedHashMap<String, String>();
     WdkModel wdkModel = _question.getWdkModel();
     LOG.debug("sorting map: " + _sortingMap);
+    final String idQueryNameStub = "answer_id_query";
+    queryNames.put(idQueryNameStub, "idq");
     for (String fieldName : _sortingMap.keySet()) {
       AttributeField field = fields.get(fieldName);
-      if (field == null)
-        continue;
+      if (field == null) continue;
       boolean ascend = _sortingMap.get(fieldName);
       Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
       for (ColumnAttributeField dependent : dependents.values()) {
-        Column column = dependent.getColumn();
-        //logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
-        Query query = column.getQuery();
-        String queryName = query.getFullName();
-        // cannot use the attribute query from record, need to get it
-        // back from wdkModel, since the query has pk params appended
-        query = (Query) wdkModel.resolveReference(queryName);
 
-        // handle query
-        if (!queryNames.containsKey(queryName)) {
-          // query not processed yet, process it
-          String shortName = "aq" + queryNames.size();
-          String sql = getAttributeSql(query);
+        // set default values for PK and simple columns
+        String queryName = idQueryNameStub;
+        String sortingColumn = dependent.getName();
+        boolean ignoreCase = false;
+        
+        // handle query columns
+        if (dependent instanceof QueryColumnAttributeField) {
+          Column column = ((QueryColumnAttributeField)dependent).getColumn();
+          //logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
+          Query query = column.getQuery();
+          queryName = query.getFullName();
+          // cannot use the attribute query from record, need to get it
+          // back from wdkModel, since the query has pk params appended
+          query = (Query) wdkModel.resolveReference(queryName);
 
-          // add comments to sql
-          sql = " /* attribute query used for sorting: " + queryName + " */ " + sql;
-          queryNames.put(queryName, shortName);
-          querySqls.put(queryName, sql);
+          // handle query
+          if (!queryNames.containsKey(queryName)) {
+            // query not processed yet, process it
+            String shortName = "aq" + queryNames.size();
+            String sql = getAttributeSql(query);
+
+            // add comments to sql
+            sql = " /* attribute query used for sorting: " + queryName + " */ " + sql;
+            queryNames.put(queryName, shortName);
+            querySqls.put(queryName, sql);
+          }
+
+          // handle column
+          String customSortingColumn = column.getSortingColumn();
+          if (customSortingColumn != null) {
+            sortingColumn = customSortingColumn;
+          }
+          ignoreCase = column.isIgnoreCase();
         }
 
-        // handle column
-        String sortingColumn = column.getSortingColumn();
-        if (sortingColumn == null)
-          sortingColumn = column.getName();
-        boolean ignoreCase = column.isIgnoreCase();
         if (!orderClauses.containsKey(sortingColumn)) {
           // dependent not processed, process it
-          StringBuffer clause = new StringBuffer();
-          if (ignoreCase)
-            clause.append("lower(");
+          StringBuilder clause = new StringBuilder();
+          if (ignoreCase) clause.append("lower(");
           clause.append(queryNames.get(queryName));
           clause.append(".");
           clause.append(sortingColumn);
-          if (ignoreCase)
-            clause.append(")");
+          if (ignoreCase) clause.append(")");
           clause.append(ascend ? " ASC" : " DESC");
           orderClauses.put(sortingColumn, clause.toString());
         }
@@ -634,9 +645,10 @@ public class AnswerValue {
 
     // fill the map of short name and sqls
     for (String queryName : queryNames.keySet()) {
-      String shortName = queryNames.get(queryName);
-      String sql = querySqls.get(queryName);
-      sqls.put(shortName, sql);
+      if (querySqls.containsKey(queryName)) {
+        // generating a map from short name (e.g. aq1) to attribute query SQL
+        sqls.put(queryNames.get(queryName), querySqls.get(queryName));
+      }
     }
     orders.addAll(orderClauses.values());
   }

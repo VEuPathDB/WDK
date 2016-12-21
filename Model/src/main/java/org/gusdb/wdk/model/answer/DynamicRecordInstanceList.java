@@ -30,8 +30,8 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
 public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, DynamicRecordInstance> {
 
@@ -169,10 +169,10 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
         // fill in the column attributes
         for (String columnName : attributeQuery.getColumnMap().keySet()) {
           AttributeField field = fields.get(columnName);
-          if (field != null && (field instanceof ColumnAttributeField)) {
+          if (field != null && (field instanceof QueryColumnAttributeField)) {
             // valid attribute field, fill it in
             Object objValue = resultList.get(columnName);
-            ColumnAttributeValue value = new ColumnAttributeValue((ColumnAttributeField) field, objValue);
+            QueryColumnAttributeValue value = new QueryColumnAttributeValue((QueryColumnAttributeField) field, objValue);
             record.addAttributeValue(value);
           }
         }

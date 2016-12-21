@@ -14,8 +14,8 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 /**
  * A table field defines a table of data associated with a recordClass. It defines what attributes the table
@@ -134,8 +134,8 @@ public class TableField extends Field implements AttributeFieldContainer {
     Column[] columns = _wrappedQuery.getColumns();
     for (Column column : columns) {
       AttributeField field = _attributeFieldMap.get(column.getName());
-      if (field != null && field instanceof ColumnAttributeField) {
-        ((ColumnAttributeField) field).setColumn(column);
+      if (field != null && field instanceof QueryColumnAttributeField) {
+        ((QueryColumnAttributeField) field).setColumn(column);
       } // else, it's okay to have unmatched columns
     }
 
