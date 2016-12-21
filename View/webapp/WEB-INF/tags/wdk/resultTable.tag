@@ -95,8 +95,10 @@
         <table  width="100%">
           <tr class="subheaderrow">
 
-            <th style="text-align: left; white-space: nowrap; width: 33%;"> 
-              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="top"/> 
+            <th style="text-align: left; white-space: nowrap; width: 33%;">
+              <c:if test="${not wdkAnswer.question.fullAnswer}">
+                <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="top"/>
+              </c:if>
             </th>
 
             <th style="text-align: right; white-space: nowrap; width: 33px;">
@@ -323,8 +325,10 @@
         <%--------- PAGING BOTTOM BAR ----------%>
         <table style="width:100%">
           <tr class="subheaderrow">
-            <th style="text-align:left;white-space:nowrap;"> 
-              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="bottom"/> 
+            <th style="text-align:left;white-space:nowrap;">
+              <c:if test="${not wdkAnswer.question.fullAnswer}">
+                <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="bottom"/>
+              </c:if>
             </th>
           </tr>
         </table>
