@@ -55,7 +55,7 @@ examples-server: node_modules
 # =============================================================================
 
 tests: node_modules
-	tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/**/*.js
+	tape "tests/**/*.{j,t}s{,x}"
 
 
 # =============================================================================
