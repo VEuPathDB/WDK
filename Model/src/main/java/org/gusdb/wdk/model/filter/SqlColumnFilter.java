@@ -7,13 +7,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 public abstract class SqlColumnFilter extends ColumnFilter {
 
@@ -23,7 +23,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(SqlColumnFilter.class);
 
-	public SqlColumnFilter(String name, ColumnAttributeField attribute) {
+	public SqlColumnFilter(String name, QueryColumnAttributeField attribute) {
 		super(name, attribute);
 	}
 

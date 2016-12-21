@@ -6,7 +6,7 @@ import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,7 +29,7 @@ public class ListColumnFilter extends SqlColumnFilter {
     return definition;
   }
 
-  public ListColumnFilter(ColumnAttributeField attribute) {
+  public ListColumnFilter(QueryColumnAttributeField attribute) {
     super(FILTER_NAME, attribute);
   }
 

@@ -37,7 +37,9 @@ public abstract class AttributeValueContainer extends LinkedHashMap<String, Attr
   protected final Map<String,AttributeField> _attributeFieldMap;
 
   public abstract IdAttributeValue getIdAttributeValue(IdAttributeField field);
-  public abstract ColumnAttributeValue getColumnAttributeValue(ColumnAttributeField field) throws WdkModelException, WdkUserException;
+
+  public abstract QueryColumnAttributeValue getQueryColumnAttributeValue(QueryColumnAttributeField field)
+      throws WdkModelException, WdkUserException;
 
   public AttributeValueContainer(Map<String,AttributeField> attributeFieldMap) {
     _attributeFieldMap = attributeFieldMap;
@@ -69,6 +71,10 @@ public abstract class AttributeValueContainer extends LinkedHashMap<String, Attr
     }
 
     // value not present; try to generate it
+    if (field instanceof PkColumnAttributeField) {
+      // throw exception; PK column values should always be present in a container
+      throw new WdkModelException("Value for PK column '" + field.getName() + "' not present in attribute value container.");
+    }
     if (field instanceof IdAttributeField) {
       return addValue(getIdAttributeValue((IdAttributeField) field));
     }
@@ -78,8 +84,8 @@ public abstract class AttributeValueContainer extends LinkedHashMap<String, Attr
     if (field instanceof TextAttributeField) {
       return addValue(new TextAttributeValue((TextAttributeField) field, this));
     }
-    if (field instanceof ColumnAttributeField) {
-      return addValue(getColumnAttributeValue((ColumnAttributeField) field));
+    if (field instanceof QueryColumnAttributeField) {
+      return addValue(getQueryColumnAttributeValue((QueryColumnAttributeField) field));
     }
 
     // not a supported attribute field type

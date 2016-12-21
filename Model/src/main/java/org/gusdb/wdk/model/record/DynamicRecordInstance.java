@@ -15,8 +15,9 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -95,10 +96,10 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       for (Column column : query.getColumns()) {
         if (!fields.containsKey(column.getName())) continue;
         AttributeField field = fields.get(column.getName());
-        if (!(field instanceof ColumnAttributeField)) continue;
+        if (!(field instanceof QueryColumnAttributeField)) continue;
         Object objValue = resultList.get(column.getName());
-        ColumnAttributeValue value = new ColumnAttributeValue(
-            (ColumnAttributeField) field, objValue);
+        ColumnAttributeValue value = new QueryColumnAttributeValue(
+            (QueryColumnAttributeField) field, objValue);
         addAttributeValue(value);
       }
     }
@@ -137,7 +138,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
   }
 
   @Override
-  public ColumnAttributeValue getColumnAttributeValue(ColumnAttributeField field)
+  public QueryColumnAttributeValue getQueryColumnAttributeValue(QueryColumnAttributeField field)
       throws WdkModelException, WdkUserException {
     Query query = field.getColumn().getQuery();
     logFill(query);
@@ -147,7 +148,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       throw new WdkModelException("Attribute query for field " + field.getName() + " exists, but does not " +
           "return a value for that field; needs investigation.");
     }
-    return (ColumnAttributeValue) get(field.getName());
+    return (QueryColumnAttributeValue) get(field.getName());
   }
 
   private void logFill(Query query) {

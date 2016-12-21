@@ -38,8 +38,8 @@ import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
 class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
 
@@ -54,9 +54,9 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
 
     public final String fileName;
     public final ResultList resultList;
-    public final List<ColumnAttributeField> attributes;
+    public final List<QueryColumnAttributeField> attributes;
 
-    public AttributeRowStreamData(String filename, ResultList resultList, List<ColumnAttributeField> attributes) {
+    public AttributeRowStreamData(String filename, ResultList resultList, List<QueryColumnAttributeField> attributes) {
       this.fileName = filename;
       this.resultList = resultList;
       this.attributes = attributes;
@@ -116,7 +116,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public FileBasedRecordIterator(AnswerValue answerValue, Map<Path, List<ColumnAttributeField>> attributeFileMap, Map<Path, TwoTuple<TableField,List<String>>> tableFileMap) throws WdkModelException, WdkUserException {
+  public FileBasedRecordIterator(AnswerValue answerValue, Map<Path, List<QueryColumnAttributeField>> attributeFileMap, Map<Path, TwoTuple<TableField,List<String>>> tableFileMap) throws WdkModelException, WdkUserException {
     try {
       _answerValue = answerValue;
       _attributeIteratorList = initializeAttributeProviders(answerValue, attributeFileMap);
@@ -133,9 +133,9 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
   }
 
   private static AutoCloseableList<AttributeRowStreamData> initializeAttributeProviders(AnswerValue answerValue,
-      Map<Path, List<ColumnAttributeField>> attributeFileMap) throws WdkModelException, FileNotFoundException {
+      Map<Path, List<QueryColumnAttributeField>> attributeFileMap) throws WdkModelException, FileNotFoundException {
     AutoCloseableList<AttributeRowStreamData> attributeIteratorList = new AutoCloseableList<>();
-    for (Entry<Path,List<ColumnAttributeField>> entry : attributeFileMap.entrySet()) {
+    for (Entry<Path,List<QueryColumnAttributeField>> entry : attributeFileMap.entrySet()) {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
       List<String> columnNames = new ListBuilder<String>(answerValue.getQuestion()
@@ -269,8 +269,8 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
             "] does not match ID query.  Expected: " + FormatUtil.prettyPrint(expectedPkValues) +
             ", Found: " + FormatUtil.prettyPrint(attrListPk.getRawValues()));
       }
-      for (ColumnAttributeField field : attributeData.attributes) {
-        AttributeValue attributeValue = new ColumnAttributeValue(field, resultList.get(field.getName()));
+      for (QueryColumnAttributeField field : attributeData.attributes) {
+        AttributeValue attributeValue = new QueryColumnAttributeValue(field, resultList.get(field.getName()));
         recordInstance.addAttributeValue(attributeValue);
       }
     }

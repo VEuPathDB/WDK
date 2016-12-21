@@ -6,9 +6,10 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValueContainer;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeValue;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
 public class TableValueRow extends AttributeValueContainer {
 
@@ -27,19 +28,19 @@ public class TableValueRow extends AttributeValueContainer {
         continue;
       }
       Object value = resultList.get(field.getName());
-      ColumnAttributeValue attributeValue = new ColumnAttributeValue(
-          (ColumnAttributeField) field, value);
+      QueryColumnAttributeValue attributeValue = new QueryColumnAttributeValue(
+          (QueryColumnAttributeField) field, value);
       addAttributeValue(attributeValue);
     }
   }
 
   @Override
-  public ColumnAttributeValue getColumnAttributeValue(ColumnAttributeField field)
+  public QueryColumnAttributeValue getQueryColumnAttributeValue(QueryColumnAttributeField field)
       throws WdkModelException, WdkUserException {
     if (!containsKey(field.getName())) {
       throw new WdkModelException("Requested column attribute [" + field.getName() + " not loaded into container.");
     }
-    return (ColumnAttributeValue)get(field.getName());
+    return (QueryColumnAttributeValue)get(field.getName());
   }
 
   @Override

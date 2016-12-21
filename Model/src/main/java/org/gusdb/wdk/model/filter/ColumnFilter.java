@@ -5,15 +5,15 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 public abstract class ColumnFilter extends AbstractFilter {
 
-  protected final ColumnAttributeField attribute;
+  protected final QueryColumnAttributeField attribute;
 
-  public ColumnFilter(String name, ColumnAttributeField attribute) {
+  public ColumnFilter(String name, QueryColumnAttributeField attribute) {
     super(name + "-" + attribute.getName());
     this.attribute = attribute;
   }

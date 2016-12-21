@@ -37,6 +37,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -69,7 +70,7 @@ public class FileBasedRecordStream implements RecordStream {
 
   // fields populated by populateFiles
   private Path _temporaryDirectory;
-  private Map<Path, List<ColumnAttributeField>> _attributeFileMap = new HashMap<>();
+  private Map<Path, List<QueryColumnAttributeField>> _attributeFileMap = new HashMap<>();
   private Map<Path, TwoTuple<TableField,List<String>>> _tableFileMap = new HashMap<>();
   private boolean _filesPopulated = false;
 
@@ -173,15 +174,19 @@ public class FileBasedRecordStream implements RecordStream {
    * @return a collection of pairs: queries and attribute values available from them
    * @throws WdkModelException
    */
-  private static Collection<TwoTuple<Query, List<ColumnAttributeField>>> getAttributeQueryMap(
+  private static Collection<TwoTuple<Query, List<QueryColumnAttributeField>>> getAttributeQueryMap(
       Collection<ColumnAttributeField> columnAttributes) throws WdkModelException {
-    Map<String, TwoTuple<Query, List<ColumnAttributeField>>> queryMap = new HashMap<>();
+    Map<String, TwoTuple<Query, List<QueryColumnAttributeField>>> queryMap = new HashMap<>();
     for (ColumnAttributeField attribute : columnAttributes) {
-      Query query = attribute.getColumn().getQuery();
-      if (!queryMap.containsKey(query.getFullName())) {
-        queryMap.put(query.getFullName(), new TwoTuple<Query, List<ColumnAttributeField>>(query, new ArrayList<ColumnAttributeField>()));
+      // only need to add query if QueryColumnAttributeField (not PK)
+      if (attribute instanceof QueryColumnAttributeField) {
+        QueryColumnAttributeField queryAttr = (QueryColumnAttributeField)attribute;
+        Query query = queryAttr.getColumn().getQuery();
+        if (!queryMap.containsKey(query.getFullName())) {
+          queryMap.put(query.getFullName(), new TwoTuple<Query, List<QueryColumnAttributeField>>(query, new ArrayList<QueryColumnAttributeField>()));
+        }
+        queryMap.get(query.getFullName()).getSecond().add(queryAttr);
       }
-      queryMap.get(query.getFullName()).getSecond().add(attribute);
     }
     return queryMap.values();
   }
@@ -235,20 +240,20 @@ public class FileBasedRecordStream implements RecordStream {
    * @return map from temporary file path to the ordered list of columns that can be found in that file
    * @throws WdkModelException if something goes wrong
    */
-  private static Map<Path, List<ColumnAttributeField>> assembleAttributeFiles(AnswerValue answerValue, Path tempDir,
+  private static Map<Path, List<QueryColumnAttributeField>> assembleAttributeFiles(AnswerValue answerValue, Path tempDir,
       Collection<AttributeField> attributes) throws WdkModelException {
-    Map<Path, List<ColumnAttributeField>> pathMap = new HashMap<>();
+    Map<Path, List<QueryColumnAttributeField>> pathMap = new HashMap<>();
     if (attributes == null || attributes.isEmpty()) {
       return pathMap;
     }
     Timer t = new Timer();
     LOG.info("Starting attribute file assembly...");
-    Collection<TwoTuple<Query,List<ColumnAttributeField>>> requiredQueries =
+    Collection<TwoTuple<Query,List<QueryColumnAttributeField>>> requiredQueries =
         getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
     LOG.info("Assembled required queries: " + t.getElapsedString());
 
     // Iterate over all the queries needed to return all the requested attributes
-    for (TwoTuple<Query,List<ColumnAttributeField>> queryData : requiredQueries) {
+    for (TwoTuple<Query,List<QueryColumnAttributeField>> queryData : requiredQueries) {
       pathMap.put(writeAttributeFile(answerValue, queryData.getFirst(),
           queryData.getSecond(), tempDir), queryData.getSecond());
     }
@@ -269,7 +274,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @throws WdkModelException if something goes wrong
    */
   private static Path writeAttributeFile(AnswerValue answerValue, Query query,
-      List<ColumnAttributeField> attributeFields, Path tempDir) throws WdkModelException {
+      List<QueryColumnAttributeField> attributeFields, Path tempDir) throws WdkModelException {
 
     // Obtain path to CSV file that will hold the results of the current query.
     Path filePath = tempDir.resolve(query.getFullName() + TEMP_FILE_EXT);

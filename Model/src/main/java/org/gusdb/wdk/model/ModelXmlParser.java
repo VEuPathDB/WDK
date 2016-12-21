@@ -52,6 +52,7 @@ import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.filter.StepFilterDefinition;
+import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.PostCacheUpdateSql;
 import org.gusdb.wdk.model.query.ProcessQuery;
@@ -86,7 +87,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
-import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
@@ -94,14 +94,14 @@ import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordView;
-import org.gusdb.wdk.model.record.ResultSizeQueryReference;
 import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
+import org.gusdb.wdk.model.record.ResultSizeQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
+import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.report.ReporterRef;
@@ -646,7 +646,7 @@ public class ModelXmlParser extends XmlParser {
         "addPropertyList");
 
     configureNode(digester, "wdkModel/recordClassSet/recordClass/table/columnAttribute",
-        ColumnAttributeField.class, "addAttributeField");
+        QueryColumnAttributeField.class, "addAttributeField");
 
     // result size query ref
     configureNode(digester, "wdkModel/recordClassSet/recordClass/resultSizeQueryRef",
@@ -834,7 +834,7 @@ public class ModelXmlParser extends XmlParser {
         "addDynamicAttributeSet");
 
     configureNode(digester, "wdkModel/questionSet/question/dynamicAttributes/columnAttribute",
-        ColumnAttributeField.class, "addAttributeField");
+        QueryColumnAttributeField.class, "addAttributeField");
 
     configureNode(digester, "wdkModel/questionSet/question/paramRef", ParamReference.class, "addParamRef");
 
@@ -928,7 +928,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(prefixIdAttr + "/display", "setText", 0);
     configureAttributePlugins(digester, "primaryKeyAttribute");
 
-    configureNode(digester, "*/columnAttribute", ColumnAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
     configureAttributePlugins(digester, "columnAttribute");
 

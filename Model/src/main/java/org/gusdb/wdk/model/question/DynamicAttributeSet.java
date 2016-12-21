@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
 
@@ -118,7 +119,7 @@ public class DynamicAttributeSet extends WdkModelBase {
     // check if weight is defined, if not, create it
     if (!attributeFieldMap.containsKey(Utilities.COLUMN_WEIGHT)) {
       // always have weight as a dynamic attribute
-      ColumnAttributeField attribute = new ColumnAttributeField();
+      ColumnAttributeField attribute = new QueryColumnAttributeField();
       attribute.setName(Utilities.COLUMN_WEIGHT);
       attribute.setDisplayName("Search Weight");
       attribute.setInternal(false);
@@ -168,7 +169,7 @@ public class DynamicAttributeSet extends WdkModelBase {
       if (field instanceof DerivedAttributeField) {
         ((DerivedAttributeField)field).setContainer(question);
       }
-      else if (field instanceof ColumnAttributeField) {
+      else if (field instanceof QueryColumnAttributeField) {
         // need to set the column before resolving references
         Column column = columns.get(fieldName);
         if (column == null)
@@ -176,7 +177,7 @@ public class DynamicAttributeSet extends WdkModelBase {
               + "question [" + question.getFullName() + "] is "
               + "defined, but the underlying id query doesn't"
               + " have the column '" + fieldName + "'");
-        ((ColumnAttributeField) field).setColumn(column);
+        ((QueryColumnAttributeField) field).setColumn(column);
       }
       field.resolveReferences(wdkModel);
     }
