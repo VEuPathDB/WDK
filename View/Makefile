@@ -24,8 +24,6 @@ $(yarn_exec):
 node_modules: $(yarn_exec)
 	yarn
 
-node_modules/%: node_modules;
-
 
 # =============================================================================
 # Webpack bundles. See webpack.config.js for details
