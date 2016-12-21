@@ -126,21 +126,17 @@ const FieldListNode = ({ node, onFieldSelect, isActive }) =>
   node.children.length > 0
     ? (
       <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
-    )
-    : (
-      <div>
-        {isActive ? <div className="wdk-AttributeFilterActiveMask"/> : null}
-        <a
-          className={'wdk-AttributeFilterFieldItem' +
-            (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
-          href={'#' + node.field.term}
-          onClick={e => {
-            e.preventDefault();
-            onFieldSelect(node.field);
-          }}>
-          {node.field.display}
-        </a>
-      </div>
+    ) : (
+      <a
+        className={'wdk-AttributeFilterFieldItem' +
+          (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
+        href={'#' + node.field.term}
+        onClick={e => {
+          e.preventDefault();
+          onFieldSelect(node.field);
+        }}>
+        {node.field.display}
+      </a>
     );
 
 
