@@ -41,7 +41,7 @@ test_sources := test/tests.js $(shell find test/tests -name '*.js')
 bundles: $(wdk_bundle) $(css_bundle)
 
 $(yarn_exec):
-	npm install -g --prefix=$(GUS_HOME) yarn
+	npm install -g --prefix=$(GUS_HOME) yarn@0.18.0
 
 # =============================================================================
 # Install npm packages. This target will prevent unneeded http requests.
