@@ -1,6 +1,8 @@
 PATH         := $(PATH):$(shell pwd)/node_modules/.bin
 SHELL        := /bin/bash
 
+yarn_exec    := $(GUS_HOME)/bin/yarn
+
 # The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.client.js.
 # wdk.common.js contains common code between wdk.app.js and wdk.client.js.
 wdk_bundle    := $(shell pwd)/dist/wdk/js/wdk.bundle.js
@@ -38,10 +40,13 @@ test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
 bundles: $(wdk_bundle) $(css_bundle)
 
+$(yarn_exec):
+	npm install -g --prefix=$(GUS_HOME) yarn
+
 # =============================================================================
 # Install npm packages. This target will prevent unneeded http requests.
 # =============================================================================
-node_modules:
+node_modules: $(yarn_exec)
 	yarn
 
 node_modules/%: node_modules;
