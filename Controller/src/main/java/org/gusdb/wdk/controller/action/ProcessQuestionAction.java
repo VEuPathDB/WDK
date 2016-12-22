@@ -112,7 +112,7 @@ public class ProcessQuestionAction extends Action {
       logger.debug("Leaving ProcessQuestionAction successfully, forward to " + forward.getPath());
       return forward;
     }
-    catch (Exception ex) {
+    catch (WdkUserException ex) {
       logger.error("Error while processing question", ex);
 
       ActionMessages messages = new ActionErrors();
