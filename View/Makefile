@@ -16,7 +16,9 @@ css_sources  := webapp/wdk/css/wdk.css $(shell find webapp/wdk/css -name '*.css'
 bundles: $(wdk_bundle) $(css_bundle)
 
 $(yarn_exec):
-	npm install -g --prefix=$(GUS_HOME) yarn@0.18.1
+	mkdir -p target/yarn-staging
+	cd target/yarn-staging && tar xzf ../../yarn.tar.gz
+	cp -r target/yarn-staging/dist/* $(GUS_HOME)
 
 # =============================================================================
 # Install npm packages. This target will prevent unneeded http requests.
