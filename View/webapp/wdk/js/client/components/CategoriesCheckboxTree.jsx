@@ -7,7 +7,7 @@ import CheckboxTree from './CheckboxTree';
 let CategoriesCheckboxTree = props => {
 
   let { title, autoFocusSearchBox, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
-    isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange, isSelectable, leafType } = props;
+    isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange, isSelectable, leafType, disableHelp } = props;
 
   if (tree.children.length == 0) {
     return ( <noscript/> );
@@ -16,7 +16,7 @@ let CategoriesCheckboxTree = props => {
   let treeProps = {
 
     // set help
-    searchBoxHelp: `Each ${leafType} name will be searched. The ${leafType} names will contain all your terms. Your terms are partially matched; for example, the term typ will match typically, type, atypical.`,
+    searchBoxHelp: disableHelp ? '' : `Each ${leafType} name will be searched. The ${leafType} names will contain all your terms. Your terms are partially matched; for example, the term typ will match typically, type, atypical.`,
 
     // set hard-coded values for searchable, selectable, expandable tree
     isSearchable: true, isSelectable, autoFocusSearchBox,
@@ -56,13 +56,15 @@ CategoriesCheckboxTree.propTypes = {
   onChange: PropTypes.func,
   onUiChange: PropTypes.func,
   onSearchTermChange: PropTypes.func,
-  isSelectable: PropTypes.bool
+  isSelectable: PropTypes.bool,
+  disableHelp: PropTypes.bool
 };
 CategoriesCheckboxTree.defaultProps = {
   nodeComponent: BasicNodeComponent,
   isMultiPick: true,
   isSelectable: true,
-  leafType: 'column' // TODO remove once all consumers are passing in a value for this
+  leafType: 'column', // TODO remove once all consumers are passing in a value for this
+  disableHelp: false
 }
 
 export default wrappable(CategoriesCheckboxTree);

@@ -76,6 +76,7 @@ class RecordNavigationSection extends PureComponent {
           {heading}
         </h2>
         <CategoriesCheckboxTree
+          disableHelp
           searchBoxPlaceholder="Search section names..."
           tree={removeFields(categoryTree)}
           leafType="section"
