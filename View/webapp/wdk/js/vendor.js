@@ -15,6 +15,7 @@ import '!!script!../lib/flot/jquery.flot.categories.min';
 import '!!script!../lib/flot/jquery.flot.selection.min';
 import '!!script!../lib/flot/jquery.flot.time.min';
 import '!!script!../lib/datatables.min';
+import '!!script!../lib/datatables-natural-type-plugin';
 import '!!script!../lib/spin.min';
 import '!!script!../lib/zynga-scroller/Animate';
 import '!!script!../lib/zynga-scroller/Scroller';
