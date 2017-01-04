@@ -414,7 +414,7 @@ function formatColumns(columns: ColumnDef[]): DataTables.ColumnSettings[] {
       data: column.name,
       className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
       title: column.displayName || column.name,
-      type: column.sortType,
+      type: column.sortType || 'natural-ci',
       visible: column.isDisplayable,
       searchable: column.isDisplayable,
       orderable: column.isSortable,
@@ -423,7 +423,7 @@ function formatColumns(columns: ColumnDef[]): DataTables.ColumnSettings[] {
         if (type === 'display' && value != null) {
           return '<div class="wdk-DataTableCellContent">' + value + '</div>'
         }
-        return value;
+        return value || '';
       }
     })
   );
