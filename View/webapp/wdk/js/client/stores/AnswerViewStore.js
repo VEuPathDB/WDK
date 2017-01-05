@@ -40,7 +40,7 @@ export default class AnswerViewStore extends WdkStore {
         return updateSorting(state, payload);
 
       case actionTypes.ANSWER_LOADING:
-        return answerLoading(state, { isLoading: true });
+        return Object.assign({}, state, { isLoading: true, error: undefined });
 
       case actionTypes.ANSWER_MOVE_COLUMN:
         return moveTableColumn(state, payload);
@@ -48,8 +48,10 @@ export default class AnswerViewStore extends WdkStore {
       case actionTypes.ANSWER_UPDATE_FILTER:
         return updateFilter(state, payload);
 
-      case actionTypes.APP_ERROR:
-        return answerLoading(state, { isLoading: false });
+      case actionTypes.ANSWER_ERROR:
+        return Object.assign(this.getInitialState(), {
+          error: payload.error
+        });
 
       default:
         return state;
@@ -160,8 +162,4 @@ function updateFilter(state, payload) {
   return Object.assign({}, state, filterSpec, {
     records: filterRecords(state.unfilteredRecords, filterSpec)
   });
-}
-
-function answerLoading(state, payload) {
-  return Object.assign({}, state, { isLoading: payload.isLoading });
 }
