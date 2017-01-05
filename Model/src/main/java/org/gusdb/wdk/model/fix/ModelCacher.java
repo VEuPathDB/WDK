@@ -74,6 +74,7 @@ public class ModelCacher extends BaseCLI {
     addNonValueOption("drop", false, "drop the local cache table for storing "
         + "model definition. It affects all projects.");
     addNonValueOption("expand", false, "load the model definition into " + "the cache tables.");
+    addNonValueOption("skipParams", false, "if expanding, just load question table, and skip param table");
     addSingleValueOption("schema", false, null, "optional. the name of the"
         + " schema where the tables will be created/dropped/used.");
     addNonValueOption(ARG_KEEP_CACHE, false, "option. if this flag is present, the question data from"
@@ -96,6 +97,7 @@ public class ModelCacher extends BaseCLI {
     boolean create = (Boolean) getOptionValue("create");
     boolean drop = (Boolean) getOptionValue("drop");
     boolean expand = (Boolean) getOptionValue("expand");
+    boolean skipParams = (Boolean) getOptionValue("skipParams");
     String schema = (String) getOptionValue("schema");
     if (schema == null)
       schema = "";
@@ -122,7 +124,7 @@ public class ModelCacher extends BaseCLI {
       for (String projectId : projects) {
         logger.info("Expanding model for project " + projectId);
         try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
-          exitCode = expand(wdkModel, schema, keepCache);
+          exitCode = expand(wdkModel, schema, keepCache, skipParams);
         }
         logger.info("=========================== done ============================");
       }
@@ -135,7 +137,7 @@ public class ModelCacher extends BaseCLI {
     System.exit(exitCode);
   }
 
-  public int expand(WdkModel wdkModel, String schema, boolean keepCache) throws SQLException {
+  public int expand(WdkModel wdkModel, String schema, boolean keepCache, boolean skipParams) throws SQLException {
     // need to reset the cache first
     wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
 
@@ -171,7 +173,7 @@ public class ModelCacher extends BaseCLI {
       psSelect = connection.prepareStatement(sql);
 
       int length = schema.length();
-      String s = (length == 0) ? null : schema.substring(0, length - 1);
+      String schemaWithoutDot = (length == 0) ? null : schema.substring(0, length - 1);
 
       for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
         for (Question question : questionSet.getQuestions()) {
@@ -180,7 +182,7 @@ public class ModelCacher extends BaseCLI {
               questionsAlreadyPresent++;
               continue;
             }
-            saveQuestion(question, psQuestion, psParam, psEnum, s);
+            saveQuestion(question, psQuestion, psParam, psEnum, schemaWithoutDot, skipParams);
             connection.commit();
             questionsWritten++;
           }
@@ -345,7 +347,7 @@ public class ModelCacher extends BaseCLI {
   }
 
   private void saveQuestion(Question question, PreparedStatement psQuestion, PreparedStatement psParam,
-      PreparedStatement psEnum, String schemaWithoutDot) throws WdkModelException, SQLException {
+      PreparedStatement psEnum, String schemaWithoutDot, boolean skipParams) throws WdkModelException, SQLException {
     logger.debug("Caching question [" + question.getFullName() + "]...");
     WdkModel wdkModel = question.getWdkModel();
     DatabaseInstance userDb = wdkModel.getUserDb();
@@ -360,9 +362,11 @@ public class ModelCacher extends BaseCLI {
     psQuestion.setString(6, question.getRecordClass().getFullName());
     psQuestion.executeUpdate();
 
-    // save the params
-    for (Param param : question.getParams()) {
-      saveParam(wdkModel, question, param, questionId, psParam, psEnum, schemaWithoutDot);
+    if (!skipParams) {
+      // save the params
+      for (Param param : question.getParams()) {
+        saveParam(wdkModel, question, param, questionId, psParam, psEnum, schemaWithoutDot);
+      }
     }
   }
 
