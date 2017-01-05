@@ -43,8 +43,9 @@ public class WdkSqlScriptRunner {
       db = new DatabaseInstance(dbConfig);
       conn = db.getDataSource().getConnection();
 
-      SqlScriptRunner runner = new SqlScriptRunner(db.getDataSource().getConnection(), autoCommit, stopOnError);
-      runner.setLogWriter(new PrintWriter(System.err));
+      SqlScriptRunner runner = new SqlScriptRunner(conn, autoCommit, stopOnError);
+      runner.setLogWriter(new PrintWriter(System.out));
+      runner.setErrorLogWriter(new PrintWriter(System.err));
       runner.runScript(sqlReader);
     }
     catch (Exception e) {
