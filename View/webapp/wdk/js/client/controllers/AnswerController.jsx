@@ -51,8 +51,14 @@ class AnswerController extends WdkViewController {
     return state.records != null;
   }
 
+  isRenderDataLoadError(state) {
+    return state.error != null;
+  }
+
   getTitle(state) {
-    return (state.question == null ? "Loading..." : state.displayInfo.customName || state.question.displayName);
+    return state.error ? 'Error loading results'
+         : state.records ? state.displayInfo.customName || state.question.displayName
+         : 'Loading...';
   }
 
   renderLoading(state) {

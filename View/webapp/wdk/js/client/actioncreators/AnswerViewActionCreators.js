@@ -7,7 +7,7 @@ export let actionTypes = {
   ANSWER_LOADING: 'answer/loading',
   ANSWER_MOVE_COLUMN: 'answer/column-moved',
   ANSWER_UPDATE_FILTER: 'answer/filtered',
-  APP_ERROR: 'answer/error'
+  ANSWER_ERROR: 'answer/error'
 };
 
 let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
@@ -93,10 +93,9 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
       })
     }, error => {
       dispatch({
-        type: actionTypes.APP_ERROR,
+        type: actionTypes.ANSWER_ERROR,
         payload: { error }
       });
-      throw error;
     });
   }
 }
