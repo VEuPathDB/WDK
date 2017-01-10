@@ -89,22 +89,12 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       int expected = _answerValue.getPageSize();
 
       if (expected != size()) {
-        StringBuffer buffer = new StringBuffer();
-        for (String name : _answerValue.getAttributes().getSummaryAttributeFieldMap().keySet()) {
-          if (buffer.length() > 0)
-            buffer.append(", ");
-          buffer.append(name);
-        }
-        LOG.debug("resultSize: " + _answerValue.getResultSizeFactory().getResultSize() +
-            ", start: " + _answerValue.getStartIndex() + ", end: " + _answerValue.getEndIndex());
-        LOG.debug("expected: " + expected + ", actual: " + size());
-        LOG.debug("Paged ID SQL:\n" + sql);
-        throw new WdkModelException("The number of results returned " + "by the id query " +
-            _idsQueryInstance.getQuery().getFullName() +
-            " changes when it is joined to the query (or queries) " + "for attribute set (" + buffer +
-            ").\n" + "id query: " + expected + " records\n" + "join(id query, attribute query): " +
-            size() + " records\n" + "Check that the ID query returns no nulls or duplicates, " +
-            "and that the attribute-query join " + "does not change the row count.");
+        String message = "Expected to find " + expected + " records in paged id query result." + NL +
+            "ResultSize: " + _answerValue.getResultSizeFactory().getResultSize() + NL +
+            "Start: " + _answerValue.getStartIndex() + ", End: " + _answerValue.getEndIndex() + NL +
+            "Expected: " + expected + ", Actual: " + size() + NL +
+            "Paged ID SQL:" + NL + sql + NL;
+        throw new WdkModelException(message);
       }
     }
     catch (WdkModelException | WdkUserException ex) {
@@ -189,8 +179,14 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     }
 
     if (count != size()) {
-      throw new WdkModelException("The integrated attribute query '" + attributeQuery.getFullName() +
-          "' doesn't return the same number of records in the current " + "page. Paged attribute sql:\n" + sql);
+      String message = "The integrated attribute query '" + attributeQuery.getFullName() +
+          "' doesn't return the same number of records as ID SQL for the current page.  Check that the ID " +
+          "query returns no nulls or duplicates, and that the attribute-query join does not change the row count." + NL +
+          "ResultSize: " + _answerValue.getResultSizeFactory().getResultSize() + NL +
+          "Start: " + _answerValue.getStartIndex() + ", End: " + _answerValue.getEndIndex() + NL +
+          "Expected (page size): " + size() + ", Actual (returned from attribute query): " + count + NL +
+          "Paged attribute SQL:" + NL + sql + NL;
+      throw new WdkModelException(message);
     }
     LOG.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
