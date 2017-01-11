@@ -140,7 +140,7 @@ Otherwise a standard select menu is used.
     <c:choose>
       <%-- use radio boxes --%>
       <c:when test="${displayType eq 'checkBox'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
+        <div class="param enumParam ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <ul>
             <c:forEach items="${qP.displayMap}" var="entity">
               <li ${v}>
