@@ -30,6 +30,7 @@ Otherwise a standard select menu is used.
 
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
+  <c:set var="pPrompt" value="${qP.prompt}"/>
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
 <c:set var="dependedParams" value="${qP.dependedParamNames}"/>
@@ -49,7 +50,7 @@ Otherwise a standard select menu is used.
     <c:choose>
       <%-- use checkboxes --%>
       <c:when test="${displayType eq 'checkBox'}">
-        <div class="param enumParam param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param enumParam param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>
@@ -83,7 +84,7 @@ Otherwise a standard select menu is used.
 
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
             <imp:checkboxTree
@@ -101,7 +102,7 @@ Otherwise a standard select menu is used.
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
           <div class="param ${dependentClass}" data-type="type-ahead"
-              data-multiple="true" dependson="${dependedParam}" name="${pNam}">
+            data-multiple="true" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <div class="loading">Loading...</div>
           <html:hidden property="value(${pNam})" style="width:450px"/>
             <!-- <input type="hidden" style="width:450px" name="value(${pNam})"/> -->
@@ -117,7 +118,7 @@ Otherwise a standard select menu is used.
 
       <%-- use a multi-select box --%>
       <c:when test="${displayType eq 'select'}">
-        <div class="param ${dependentClass}" data-type="multi-pick" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" data-type="multi-pick" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountSelect('${qP.name}aaa')"/>
@@ -139,7 +140,7 @@ Otherwise a standard select menu is used.
     <c:choose>
       <%-- use radio boxes --%>
       <c:when test="${displayType eq 'checkBox'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <ul>
             <c:forEach items="${qP.displayMap}" var="entity">
               <li ${v}>
@@ -154,7 +155,7 @@ Otherwise a standard select menu is used.
 
       <%-- use a tree list; only one value allowed --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
             <imp:checkboxTree
@@ -172,7 +173,7 @@ Otherwise a standard select menu is used.
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
         <div class="param ${dependentClass}" data-multiple="false" data-type="type-ahead"
-            dependson="${dependedParam}" name="${pNam}">
+          dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <div class="loading">Loading...</div>
           <html:hidden property="value(${pNam})" style="width:450px"/>
           <div class="type-ahead-help" style="margin:2px;">
@@ -184,7 +185,7 @@ Otherwise a standard select menu is used.
 
       <%-- use a pull down menu --%>
       <c:when test="${displayType eq 'select'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
           <html:select property="array(${pNam})" styleId="${pNam}">
             <c:set var="opt" value="${opt+1}"/>
             <c:set var="sel" value=""/>
