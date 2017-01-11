@@ -21,6 +21,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -65,7 +66,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
       for (UserDatasetEvent event : eventList) {
 
-        if (event.getEventId() <= lastHandledEventId) continue;
+        if (lastHandledEventId != null && event.getEventId() <= lastHandledEventId) continue;
 
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
@@ -120,7 +121,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     String sql = "select min(event_id) from " + userDatasetSchemaName + "UserDatasetEvent where completed is null";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "find-earliest-incomplete-event-id");
     sqlRunner.executeQuery(handler);
-    if (handler.getRetrievedValue() != 0) {
+    if (!handler.getStatus().equals(Status.NULL_VALUE)) {
       throw new WdkModelException("Event id " + handler.getRetrievedValue() + " failed to complete in a previous run");
     }
 
