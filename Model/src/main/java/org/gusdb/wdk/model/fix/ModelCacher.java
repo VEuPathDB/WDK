@@ -341,7 +341,7 @@ public class ModelCacher extends BaseCLI {
       return (count > 0);
     }
     finally {
-      resultSet.close();
+      if (resultSet != null) resultSet.close();
     }
 
   }
