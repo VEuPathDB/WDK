@@ -85,7 +85,7 @@ public class StepParamExpander extends BaseCLI {
       connection = ds.getConnection();
       connection.setAutoCommit(false);
 
-      String selectSql = getSelectSql(userSchema);
+      String selectSql = getSelectSql(userSchema, wdkModel.getProjectId());
 
       selectStmt = connection.createStatement();
       selectStmt.setFetchSize(1000);
@@ -165,15 +165,16 @@ public class StepParamExpander extends BaseCLI {
     }
   }
 
-  private static String getSelectSql(String userSchema) {
-    return getSelectForColumns(userSchema, "step_id,display_params");
+  private static String getSelectSql(String userSchema, String projectId) {
+    return getSelectForColumns(userSchema, projectId, "step_id,display_params");
   }
 
-  public static String getSelectForColumns(String userSchema, String columns) {
+  public static String getSelectForColumns(String userSchema, String projectId, String columns) {
+    String projectIdCondition = (projectId != null ? " AND s.project_id = '" + projectId + "'" : "");
     return
         "SELECT " + columns +
         " FROM " + userSchema + "steps s, " + userSchema + "users u" +
-        " WHERE s.user_id = u.user_id AND u.is_guest = 0 AND is_deleted = 0" +
+        " WHERE s.user_id = u.user_id AND u.is_guest = 0 AND s.is_deleted = 0" + projectIdCondition +
         "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
   }
 
@@ -207,7 +208,8 @@ public class StepParamExpander extends BaseCLI {
           "CREATE TABLE step_params (" +
               " step_id NUMBER(12) NOT NULL, " +
               " param_name VARCHAR(200) NOT NULL, " +
-              " param_value VARCHAR(4000), migration NUMBER(12))",
+              " param_value VARCHAR(4000), " +
+              " migration NUMBER(12))",
           "wdk-create-param-table");
   
       SqlUtils.executeUpdate(dataSource,
