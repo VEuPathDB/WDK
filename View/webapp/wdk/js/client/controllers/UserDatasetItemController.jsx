@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import { keyBy, pick } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import { loadUserDatasetItem, updateUserDatasetItem } from '../actioncreators/UserDatasetsActionCreators';
@@ -21,7 +21,7 @@ class UserDatasetItemController extends WdkViewController {
     let state = store.getState();
     return Object.assign(
       pick(state, 'userDatasetsById', 'loadError'),
-      pick(state.globalData, 'user')
+      pick(state.globalData, 'user', 'questions')
     );
   }
 
@@ -56,7 +56,7 @@ class UserDatasetItemController extends WdkViewController {
 
   isRenderDataLoaded(state) {
     const entry = state.userDatasetsById[this.props.params.id];
-    return entry && !entry.isLoading && state.user;
+    return entry && !entry.isLoading && state.user && state.questions;
   }
 
   renderView(state) {
@@ -67,6 +67,7 @@ class UserDatasetItemController extends WdkViewController {
         userDataset={entry.resource}
         updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
         isOwner={isOwner}
+        questionMap={keyBy(state.questions, 'name')}
       />
     );
   }

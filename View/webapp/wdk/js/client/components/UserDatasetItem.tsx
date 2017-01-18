@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent,  StatelessComponent } from 'react';
 import Link from './Link';
 import { wrappable } from '../utils/componentUtils';
-import { UserDataset , UserDatasetMeta } from '../utils/WdkModel';
+import { Question, UserDataset , UserDatasetMeta } from '../utils/WdkModel';
 import { bytesToHuman } from '../utils/Converters';
 import Dialog from './Dialog';
 import UserDatasetDetailForm from './UserDatasetDetailForm';
@@ -12,6 +12,7 @@ type Props = {
   userDataset: UserDataset;
   isOwner: boolean;
   updateUserDatasetItem: (id: number, details: UserDatasetMeta) => void;
+  questionMap: { [key: string]: Question };
 };
 
 type State = {
@@ -77,8 +78,12 @@ class UserDatasetItem extends Component<Props, State> {
   }
 
   render() {
-    let { userDataset, isOwner } = this.props;
+    let { userDataset, isOwner, questionMap } = this.props;
     let { edit } = this.state;
+
+    let releventQuestions = userDataset.questions
+    .map(name => questionMap[name])
+    .filter(q => q)
 
     if (userDataset == null) {
       return (
@@ -203,6 +208,21 @@ class UserDatasetItem extends Component<Props, State> {
             )}
           </ul>
         </SectionItem>
+
+        {releventQuestions.length && (
+          <SectionItem heading="Relevent Questions">
+            <ul>
+              {releventQuestions.map(question =>
+                <li key={question.name}>
+                  {/* FIXME Replace `/a` with something route link */}
+                  <a href={`/a/showQuestion.do?questionFullName=${question.name}`}>
+                    {question.displayName}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </SectionItem>
+        )}
 
         <SectionItem heading="Projects">
           <ul>
