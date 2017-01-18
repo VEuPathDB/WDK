@@ -37,6 +37,9 @@ const displayDate = (time: number) =>
 const tooltipDate = (time: number) =>
   new Date(time).toString();
 
+const normalizeBaseUrl = baseUrl =>
+  baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+
 const OverviewItem: StatelessComponent<{prompt: string}> = props =>
   <div className={makeClassName('OverviewItem')}>
     <div className={makeClassName('OverviewItemPrompt')}>{props.prompt}:&nbsp;</div>
@@ -217,7 +220,7 @@ class UserDatasetItem extends Component<Props, State> {
               {releventQuestions.map(question =>
                 <li key={question.name}>
                   {/* FIXME Replace webAppUel with something route link */}
-                  <a href={url.resolve(webAppUrl, `showQuestion.do?questionFullName=${question.name}`)}>
+                  <a href={url.resolve(normalizeBaseUrl(webAppUrl), `showQuestion.do?questionFullName=${question.name}`)}>
                     {question.displayName}
                   </a>
                 </li>
