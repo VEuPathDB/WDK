@@ -118,6 +118,8 @@ class DataTable extends PureComponent<Props, void> {
 
   _table: HTMLElement;
 
+  _searchTerm = '';
+
   node: HTMLElement;
 
   columns: DataTables.ColumnSettings[];
@@ -383,9 +385,13 @@ class DataTable extends PureComponent<Props, void> {
       <div>
         {searchable && (
           <RealTimeSearchBox
+            searchTerm={this._searchTerm}
             className="wdk-DataTableSearchBox"
             placeholderText="Search this table..."
-            onSearchTermChange={(term: string) => this._dataTable.search(term).draw()}
+            onSearchTermChange={(searchTerm: string) => {
+              this._searchTerm = searchTerm;
+              this._dataTable.search(searchTerm).draw();
+            }}
             delayMs={0}
           />
         )}
