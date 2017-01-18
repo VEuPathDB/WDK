@@ -141,6 +141,7 @@ export type UserDataset = {
   ownerUserId: number;
   percentQuotaUsed: number;
   sharedWith: UserDatasetShare[];
+  questions: string[];
   size: number;
   type: {
     name: string;
