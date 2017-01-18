@@ -28,12 +28,10 @@ public class StepDataTestWriter extends StepDataWriter {
 
   public static final Logger LOG = Logger.getLogger(StepDataTestWriter.class);
   
-  private static final String TEST_TABLE_SCHEMA = "wdkmaint";
   private static final String TEST_TABLE_NAME = "STEP_UPDATER_PLUGIN_TEST";
-  private static final String TEST_TABLE = TEST_TABLE_SCHEMA + "." + TEST_TABLE_NAME;
 
   private static final String CREATE_TABLE_SQL =
-      "CREATE TABLE " + TEST_TABLE + " (" +
+      "CREATE TABLE " + TEST_TABLE_NAME + " (" +
           "\"STEP_ID\"            NUMBER(12,0) NOT NULL ENABLE," +
           "\"LEFT_CHILD_ID\"      NUMBER(12,0)," +
           "\"RIGHT_CHILD_ID\"     NUMBER(12,0)," +
@@ -49,28 +47,28 @@ public class StepDataTestWriter extends StepDataWriter {
   private static final String INSERT_WILDCARDS = join(mapToList(SQLTYPES.keySet(), new Function<String, String>() {
     @Override public String apply(String obj) { return "?"; }}).toArray(), ",") + ",?";
 
-  private static final String INSERT_SQL = "INSERT INTO " + TEST_TABLE + " (" +
+  private static final String INSERT_SQL = "INSERT INTO " + TEST_TABLE_NAME + " (" +
       INSERT_COLS_TEXT + ") VALUES (" + INSERT_WILDCARDS + ")";
 
   private static final Integer[] INSERT_PARAMETER_TYPES = append(
       SQLTYPES.values().toArray(new Integer[SQLTYPES.size()]), Types.CLOB);
 
-  private static final String DELETE_TEST_RECORDS = "DELETE FROM " + TEST_TABLE;
+  private static final String DELETE_TEST_RECORDS = "DELETE FROM " + TEST_TABLE_NAME;
 
   @Override
   public void setUp(WdkModel wdkModel) throws DBStateException, SQLException {
     // need to create the test table if it doesn't exit and clear it if it does
     DatabaseInstance userDb = wdkModel.getUserDb();
     DataSource dataSource = userDb.getDataSource();
-    LOG.info("Checking for existence of " + TEST_TABLE);
-    if (userDb.getPlatform().checkTableExists(dataSource, TEST_TABLE_SCHEMA, TEST_TABLE_NAME)) {
+    LOG.info("Checking for existence of " + TEST_TABLE_NAME);
+    if (userDb.getPlatform().checkTableExists(dataSource, wdkModel.getUserDb().getDefaultSchema(), TEST_TABLE_NAME)) {
       // clear previous run's records
-      LOG.info(TEST_TABLE + " exists. Emptying...");
+      LOG.info(TEST_TABLE_NAME + " exists. Emptying...");
       new SQLRunner(dataSource, DELETE_TEST_RECORDS, "clear-step-data-test-table").executeStatement();
     }
     else {
       // create empty table
-      LOG.info(TEST_TABLE + " does not exist. Creating...");
+      LOG.info(TEST_TABLE_NAME + " does not exist. Creating...");
       new SQLRunner(dataSource, CREATE_TABLE_SQL, "create-step-data-test-table").executeStatement();
     }
   }
