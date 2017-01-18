@@ -21,7 +21,7 @@ class UserDatasetItemController extends WdkViewController {
     let state = store.getState();
     return Object.assign(
       pick(state, 'userDatasetsById', 'loadError'),
-      pick(state.globalData, 'user', 'questions')
+      pick(state.globalData, 'user', 'questions', 'config')
     );
   }
 
@@ -56,7 +56,7 @@ class UserDatasetItemController extends WdkViewController {
 
   isRenderDataLoaded(state) {
     const entry = state.userDatasetsById[this.props.params.id];
-    return entry && !entry.isLoading && state.user && state.questions;
+    return entry && !entry.isLoading && state.user && state.questions && state.config;
   }
 
   renderView(state) {
@@ -68,6 +68,7 @@ class UserDatasetItemController extends WdkViewController {
         updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
         isOwner={isOwner}
         questionMap={keyBy(state.questions, 'name')}
+        webAppUrl={state.config.webAppUrl}
       />
     );
   }

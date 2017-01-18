@@ -1,5 +1,6 @@
 import React, { Component, MouseEvent,  StatelessComponent } from 'react';
 import Link from './Link';
+import url from 'url';
 import { wrappable } from '../utils/componentUtils';
 import { Question, UserDataset , UserDatasetMeta } from '../utils/WdkModel';
 import { bytesToHuman } from '../utils/Converters';
@@ -13,6 +14,7 @@ type Props = {
   isOwner: boolean;
   updateUserDatasetItem: (id: number, details: UserDatasetMeta) => void;
   questionMap: { [key: string]: Question };
+  webAppUrl: string;
 };
 
 type State = {
@@ -78,7 +80,7 @@ class UserDatasetItem extends Component<Props, State> {
   }
 
   render() {
-    let { userDataset, isOwner, questionMap } = this.props;
+    let { userDataset, isOwner, questionMap, webAppUrl } = this.props;
     let { edit } = this.state;
 
     let releventQuestions = userDataset.questions
@@ -214,8 +216,8 @@ class UserDatasetItem extends Component<Props, State> {
             <ul>
               {releventQuestions.map(question =>
                 <li key={question.name}>
-                  {/* FIXME Replace `/a` with something route link */}
-                  <a href={`/a/showQuestion.do?questionFullName=${question.name}`}>
+                  {/* FIXME Replace webAppUel with something route link */}
+                  <a href={url.resolve(webAppUrl, `showQuestion.do?questionFullName=${question.name}`)}>
                     {question.displayName}
                   </a>
                 </li>
