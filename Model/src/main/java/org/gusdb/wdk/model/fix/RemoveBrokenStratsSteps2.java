@@ -89,7 +89,7 @@ public class RemoveBrokenStratsSteps2 extends BaseCLI {
 
       // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
       SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
-          userSchema + "steps st, " + userSchema + ".strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
+          userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
           "(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
       // deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
