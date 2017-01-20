@@ -37,7 +37,7 @@ const displayDate = (time: number) =>
 const tooltipDate = (time: number) =>
   new Date(time).toString();
 
-const normalizeBaseUrl = baseUrl =>
+const normalizeBaseUrl = (baseUrl: string) =>
   baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
 
 const OverviewItem: StatelessComponent<{prompt: string}> = props =>
