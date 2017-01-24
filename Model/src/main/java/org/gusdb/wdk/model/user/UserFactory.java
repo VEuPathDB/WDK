@@ -139,24 +139,29 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences, boolean resetPwd)
       throws WdkUserException, WdkModelException {
+
+    // trim and validate passed email address and extract stable name
     if (email == null)
       throw new WdkUserException("The user's email cannot be empty.");
     // format the info
     email = email.trim();
     if (email.length() == 0)
       throw new WdkUserException("The user's email cannot be empty.");
+    int atSignIndex = email.indexOf("@");
+    if (atSignIndex < 1) // must be present and not the first char
+      throw new WdkUserException("The user's email address is invalid.");
+    // check whether the user exist in the database already exist.
+    // if loginId exists, the operation failed
+    if (isExist(email))
+      throw new WdkUserException("The email '" + email
+          + "' has already been registered. " + "Please choose another one.");
 
     PreparedStatement psUser = null;
     try {
-      // check whether the user exist in the database already exist.
-      // if loginId exists, the operation failed
-      if (isExist(email))
-        throw new WdkUserException("The email '" + email
-            + "' has already been registered. " + "Please choose another one.");
-
       // get a new userId
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       String signature = encrypt(userId + "_" + email);
+      String stableName = email.substring(0, atSignIndex) + "." + userId;
       Date registerTime = new Date();
 
       String sql = "INSERT INTO " + userSchema + TABLE_USER + " ("
@@ -178,7 +183,7 @@ public class UserFactory {
       psUser.setString(8, title);
       psUser.setString(9, organization);
       psUser.setString(10, department);
-      psUser.setString(11, address);
+      psUser.setString(11, stableName);
       psUser.setString(12, city);
       psUser.setString(13, state);
       psUser.setString(14, zipCode);
@@ -189,7 +194,8 @@ public class UserFactory {
       QueryLogger.logEndStatementExecution(sql, "wdk-user-register", start);
 
       // create user object
-      User user = new User(wdkModel, userId, email, signature);
+      User user = new User(wdkModel, userId, email, signature, stableName);
+      user.setStableName(stableName);
       user.setLastName(lastName);
       user.setFirstName(firstName);
       user.setMiddleName(middleName);
@@ -257,7 +263,7 @@ public class UserFactory {
    * @return
    */
   User createTemporaryUser(String guestEmailPrefix) {
-    User guest = new User(wdkModel, 0, guestEmailPrefix, null);
+    User guest = new User(wdkModel, 0, guestEmailPrefix, null, null);
     guest.setGuest(true);
     guest.setFirstName("WDK Guest");
     guest.setEmailPrefix(guestEmailPrefix);
@@ -279,15 +285,17 @@ public class UserFactory {
       // get a new user id
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       user.setUserId(userId);
-      user.setEmail(user.getEmailPrefix() + userId);
+      String stableId = user.getEmailPrefix() + userId;
+      user.setEmail(stableId);
       user.setSignature(encrypt(userId + "_" + user.getEmail()));
+      user.setStableName(stableId);
       
       Date registerTime = new Date();
       Date lastActiveTime = new Date();
       String sql = "INSERT INTO " + userSchema
           + "users (user_id, email, passwd, is_guest, "
-          + "register_time, last_active, first_name, signature) "
-          + "VALUES (?, ?, ' ', ?, ?, ?, ?, ?)";
+          + "register_time, last_active, first_name, signature, address) "
+          + "VALUES (?, ?, ' ', ?, ?, ?, ?, ?, ?)";
       long start = System.currentTimeMillis();
       psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setInt(1, userId);
@@ -297,6 +305,7 @@ public class UserFactory {
       psUser.setTimestamp(5, new Timestamp(lastActiveTime.getTime()));
       psUser.setString(6, user.getFirstName());
       psUser.setString(7, user.getSignature());
+      psUser.setString(8,  user.getStableName());
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-create-guest", start);
 
@@ -501,7 +510,8 @@ public class UserFactory {
       // read user info
       String email = rsUser.getString("email");
       String signature = rsUser.getString("signature");
-      User user = new User(wdkModel, userId, email, signature);
+      String stableName = rsUser.getString("address");
+      User user = new User(wdkModel, userId, email, signature, stableName);
       user.setGuest(rsUser.getBoolean("is_guest"));
       user.setLastName(rsUser.getString("last_name"));
       user.setFirstName(rsUser.getString("first_name"));
@@ -509,7 +519,7 @@ public class UserFactory {
       user.setTitle(rsUser.getString("title"));
       user.setOrganization(rsUser.getString("organization"));
       user.setDepartment(rsUser.getString("department"));
-      user.setAddress(rsUser.getString("address"));
+      //user.setAddress(rsUser.getString("address"));
       user.setCity(rsUser.getString("city"));
       user.setState(rsUser.getString("state"));
       user.setZipCode(rsUser.getString("zip_code"));
@@ -560,49 +570,6 @@ public class UserFactory {
     User[] array = new User[users.size()];
     users.toArray(array);
     return array;
-  }
-
-  public void checkConsistancy() throws WdkUserException {
-    ResultSet rs = null;
-    PreparedStatement psUser = null;
-    try {
-      // update user's register time
-      int count = SqlUtils.executeUpdate(dataSource, "UPDATE "
-          + userSchema + "users SET register_time = last_active "
-          + "WHERE register_time is null", "wdk-user-update-register-time");
-      System.out.println(count + " users with empty register_time have "
-          + "been updated");
-
-      // update history's is_delete field
-      count = SqlUtils.executeUpdate(dataSource, "UPDATE "
-          + userSchema + "histories SET is_deleted = 0 "
-          + "WHERE is_deleted is null", "wdk-user-update-deleted");
-      System.out.println(count + " histories with empty is_deleted have "
-          + "been updated");
-
-      // update user's signature
-      String sql = "Update " + userSchema
-          + "users SET signature = ? WHERE user_id = ?";
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      rs = SqlUtils.executeQuery(dataSource, sql,
-          "wdk-user-update-signature");
-      while (rs.next()) {
-        int userId = rs.getInt("user_id");
-
-        String email = rs.getString("email");
-        String signature = encrypt(userId + "_" + email);
-        psUser.setString(1, signature);
-        psUser.setInt(2, userId);
-        psUser.executeUpdate();
-        System.out.println("User [" + userId + "] " + email
-            + "'s signature is updated");
-      }
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs, null);
-      SqlUtils.closeStatement(psUser);
-    }
   }
 
   private Set<String> getUserRoles(User user) throws WdkUserException, WdkModelException {
@@ -722,7 +689,7 @@ public class UserFactory {
       psUser.setString(6, user.getOrganization());
       psUser.setString(7, user.getDepartment());
       psUser.setString(8, user.getTitle());
-      psUser.setString(9, user.getAddress());
+      psUser.setString(9, user.getStableName());
       psUser.setString(10, user.getCity());
       psUser.setString(11, user.getState());
       psUser.setString(12, user.getZipCode());
@@ -819,7 +786,7 @@ public class UserFactory {
     updatePreferences(userId, projectId, oldSpecific, newSpecific);
   }
 
-  private void updatePreferences(int userId, String projectId,
+  private void updatePreferences(int userId, String prefProjectId,
       Map<String, String> oldPreferences, Map<String, String> newPreferences)
       throws WdkModelException {
     // determine whether to delete, insert or update
@@ -831,16 +798,16 @@ public class UserFactory {
         toDelete.add(key);
       } else { // key exist, check if need to update
         String newValue = newPreferences.get(key);
-	String oldValue = oldPreferences.get(key);
-	if (newValue == null || oldValue == null) 
-	  throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
-	if (!oldPreferences.get(key).equals(newValue))
+        String oldValue = oldPreferences.get(key);
+        if (newValue == null || oldValue == null) 
+          throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
+        if (!oldPreferences.get(key).equals(newValue))
           toUpdate.put(key, newValue);
       }
     }
     for (String key : newPreferences.keySet()) {
       if (newPreferences.get(key) == null) 
-	  throw new WdkModelException("Null values not allowed for new preference values. Key: " + key);
+        throw new WdkModelException("Null values not allowed for new preference values. Key: " + key);
       if (!oldPreferences.containsKey(key))
         toInsert.put(key, newPreferences.get(key));
     }
@@ -858,7 +825,7 @@ public class UserFactory {
       long start = System.currentTimeMillis();
       for (String key : toDelete) {
         psDelete.setInt(1, userId);
-        psDelete.setString(2, projectId);
+        psDelete.setString(2, prefProjectId);
         psDelete.setString(3, key);
         psDelete.addBatch();
       }
@@ -875,7 +842,7 @@ public class UserFactory {
       for (String key : toInsert.keySet()) {
         start = System.currentTimeMillis();
         psInsert.setInt(1, userId);
-        psInsert.setString(2, projectId);
+        psInsert.setString(2, prefProjectId);
         psInsert.setString(3, key);
         psInsert.setString(4, toInsert.get(key));
         psInsert.addBatch();
@@ -894,7 +861,7 @@ public class UserFactory {
         start = System.currentTimeMillis();
         psUpdate.setString(1, toUpdate.get(key));
         psUpdate.setInt(2, userId);
-        psUpdate.setString(3, projectId);
+        psUpdate.setString(3, prefProjectId);
         psUpdate.setString(4, key);
         psUpdate.addBatch();
       }
@@ -933,12 +900,12 @@ public class UserFactory {
       resultSet = psSelect.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-preference", start, resultSet);
       while (resultSet.next()) {
-        String projectId = resultSet.getString("project_id");
+        String prefProjectId = resultSet.getString("project_id");
         String prefName = resultSet.getString("preference_name");
         String prefValue = resultSet.getString("preference_value");
-        if (projectId.equals(GLOBAL_PREFERENCE_KEY))
+        if (prefProjectId.equals(GLOBAL_PREFERENCE_KEY))
           global.put(prefName, prefValue);
-        else if (projectId.equals(this.projectId))
+        else if (prefProjectId.equals(projectId))
           specific.put(prefName, prefValue);
       }
     }

@@ -71,6 +71,7 @@ public class User /* implements Serializable */{
   private DatasetFactory datasetFactory;
   private int _userId = 0;
   private String signature;
+  private String stableName;
 
   // basic user information
   private String emailPrefix;
@@ -99,10 +100,11 @@ public class User /* implements Serializable */{
   private Integer frontStrategy = null;
   private Integer frontStep = null;
 
-  User(WdkModel model, int userId, String email, String signature) {
+  User(WdkModel model, int userId, String email, String signature, String stableName) {
     this._userId = userId;
     setEmail(email);
     this.signature = signature;
+    this.stableName = stableName;
 
     userRoles = new LinkedHashSet<String>();
 
@@ -159,6 +161,20 @@ public class User /* implements Serializable */{
 
   public void setSignature(String signature) {
     this.signature = signature;
+  }
+
+  /**
+   * @return Returns the stable name.
+   * @throws WdkModelException
+   */
+  public synchronized String getStableName() throws WdkModelException {
+    if (stableName == null)
+      userFactory.saveTemporaryUser(this);
+    return stableName;
+  }
+
+  public void setStableName(String stableName) {
+    this.stableName = stableName;
   }
 
   /**
@@ -1249,6 +1265,8 @@ public class User /* implements Serializable */{
       if (!this.profile.get(UserProfileProperty.EMAIL).equals(user.profile.get(UserProfileProperty.EMAIL)))
         return false;
       if (!signature.equals(user.signature))
+        return false;
+      if (!stableName.equals(user.stableName))
         return false;
 
       return true;

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.Map;
@@ -42,7 +39,9 @@ public class UserTest {
         Assert.assertTrue("Different guest ids",
                 guest1.getUserId() != guest2.getUserId());
         Assert.assertTrue("Different guest signatures",
-                guest1.getSignature() != guest2.getSignature());
+                !guest1.getSignature().equals(guest2.getSignature()));
+        Assert.assertTrue("Different guest stableNames",
+                !guest1.getStableName().equals(guest2.getStableName()));
     }
 
     @Test
