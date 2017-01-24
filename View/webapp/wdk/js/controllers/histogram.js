@@ -7,21 +7,28 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
   var previousPoint = null;
 
   var init = function(histogram, attrs) {
-    // initialize the properties
-    type = attrs.type;
-    if (type == "int") {
-      min = parseInt(attrs.min);
-      max = parseInt(attrs.max);
-    } else if (type == "float") {
-      min = parseFloat(attrs.min);
-      max = parseFloat(attrs.max);
-    }
+    require([
+      'lib/jquery-flot',
+      'lib/jquery-flot-categories',
+      'lib/jquery-flot-selection',
+      'lib/jquery-flot-time'
+    ], function() {
+      // initialize the properties
+      type = attrs.type;
+      if (type == "int") {
+        min = parseInt(attrs.min);
+        max = parseInt(attrs.max);
+      } else if (type == "float") {
+        min = parseFloat(attrs.min);
+        max = parseFloat(attrs.max);
+      }
 
-    // initialize UI controls
-    initializeControls(histogram);
+      // initialize UI controls
+      initializeControls(histogram);
 
-    // draw the graph
-    drawPlot(histogram);
+      // draw the graph
+      drawPlot(histogram);
+    });
   };
 
 

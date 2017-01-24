@@ -140,10 +140,47 @@ export function wrappable<P>(Component: any): ComponentWrapper<P> {
   };
 }
 
+interface LoadCallback {
+  (render: (props?: {}) => void): void
+}
+
+/**
+ * A higher order component that allows a component to be rendered lazily.
+ *
+ * @example
+ * lazy(function(render) {
+ *   loadData('/some/data').then(function(data) {
+ *     render({ data });
+ *   })
+ * })(ComponentThatNeedsData);
+ */
+export function lazy(load: LoadCallback): <P>(Component: React.ComponentClass<P>) => React.ComponentClass<P>;
+export function lazy(load: LoadCallback): <P>(Component: React.StatelessComponent<P>) => React.ComponentClass<P>;
+export function lazy(load: LoadCallback) {
+  return function<P>(Component: any) {
+    return class Lazy extends React.Component<P, { loading: boolean, props: P }> {
+      displayName = `Lazy(${Component.displayName || Component.name})`;
+      constructor(props: P) {
+        super(props);
+        this.state = { loading: true, props }
+      }
+      componentDidMount() {
+        load((props: P) => {
+          this.setState({ loading: false, props: props || {} });
+        })
+      }
+      render() {
+        return this.state.loading ? null :
+          <Component {...this.props} {...this.state.props}/>
+      }
+    }
+  }
+}
+
+
 interface InstrumentOptions {
   compareProps?: boolean;
 }
-
 /**
  * Takes a component and returns an intrumented wrapper component
  * that will log details about props, etc.

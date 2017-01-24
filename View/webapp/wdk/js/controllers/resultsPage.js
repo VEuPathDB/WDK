@@ -7,6 +7,8 @@ resultsPage.js
 Provides functions to support results table
 */
 
+import _ from 'lodash';
+
 wdk.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 

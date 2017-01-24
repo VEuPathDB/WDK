@@ -1,4 +1,4 @@
-/* global Spinner */
+import Spinner from 'spin.js';
 
 // TODO Use customElement API (not supported by IE8)
 

@@ -1,6 +1,8 @@
 /* global customShowError, customSampleTab, customHelpTab */
 /* jshint evil:true */
 
+import _ from 'lodash';
+
 /**
  * This file contains functions used to communicate strategy operations between
  * the client and the server.

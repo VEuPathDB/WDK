@@ -1,9 +1,12 @@
 /* global Scroller */
+import 'lib/zynga-scroller/Animate';
+import 'lib/zynga-scroller/Scroller';
 import {partial, values, sum, noop} from 'lodash';
-import { Table } from 'fixed-data-table';
 import React from 'react';
 import TouchableArea from './TouchableArea';
-import { wrappable } from '../utils/componentUtils';
+
+import { Table as FDTable } from 'fixed-data-table';
+export { Column, ColumnGroup, Cell } from 'fixed-data-table';
 
 // import css file
 import 'fixed-data-table/dist/fixed-data-table.css';
@@ -30,7 +33,7 @@ function isTouchDevice() {
       || 'onmsgesturechange' in window; // works on ie10
 }
 
-let WdkTable = React.createClass({
+export let Table = React.createClass({
 
   propTypes: {
 
@@ -174,7 +177,7 @@ let WdkTable = React.createClass({
 
     return (
       <TouchableArea scroller={this.scroller}>
-        <Table {...tableProps} onScrollStart={this.handleScrollStart} onScrollEnd={this.handleScrollEnd}>
+        <FDTable {...tableProps} onScrollStart={this.handleScrollStart} onScrollEnd={this.handleScrollEnd}>
           {React.Children.map(this.props.children, child => {
             let headerRenderer = partial(this.renderHeader, child);
             let isResizable = child.props.isResizable != null
@@ -186,11 +189,9 @@ let WdkTable = React.createClass({
               width: this.state.columnWidths[child.props.dataKey]
             });
           })}
-        </Table>
+        </FDTable>
       </TouchableArea>
     );
   }
 
 });
-
-export default wrappable(WdkTable);
