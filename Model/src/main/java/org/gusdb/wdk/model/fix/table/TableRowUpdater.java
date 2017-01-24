@@ -372,6 +372,7 @@ public class TableRowUpdater<T extends TableRow> {
   private static class Stats {
 
     public int numProcessed = 0;
+    public int numQueuedToWrite = 0;
     public int numWritten = 0;
     public int numRecordErrors = 0;
 
@@ -382,6 +383,7 @@ public class TableRowUpdater<T extends TableRow> {
      */
     public void incorporate(Stats stats) {
       numProcessed += stats.numProcessed;
+      numQueuedToWrite += stats.numQueuedToWrite;
       numWritten += stats.numWritten;
       numRecordErrors += stats.numRecordErrors;
     }
@@ -389,7 +391,7 @@ public class TableRowUpdater<T extends TableRow> {
     @Override
     public String toString() {
       return "Processed " + numProcessed + " total records" +
-          " (" + numWritten + " written, " + numRecordErrors + " errors)";
+          " (" + numWritten + " written, " + numQueuedToWrite + " queuedToWrite, " + numRecordErrors + " errors)";
     }
   }
 
@@ -457,10 +459,11 @@ public class TableRowUpdater<T extends TableRow> {
               if (result.shouldWrite()) {
                 // record has been modified
                 modifiedRecords.add(result.getRow());
-                stats.numWritten++;
+                stats.numQueuedToWrite++;
               }
               if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
                 _batchUpdater.update(modifiedRecords);
+                stats.numWritten += modifiedRecords.size();
                 modifiedRecords.clear();
               }
             }
@@ -469,7 +472,9 @@ public class TableRowUpdater<T extends TableRow> {
             }
           }
         }
+        log("Writing " + modifiedRecords.size() + " leftover records.");
         _batchUpdater.update(modifiedRecords);
+        stats.numWritten += modifiedRecords.size();
         log("Shutting down. " + stats.toString());
         return stats;
       }
