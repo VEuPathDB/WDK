@@ -141,6 +141,7 @@ public class OAuthClient {
       Claims claims = Jwts.parser().setSigningKey(encodedKey).parseClaimsJws(idToken).getBody();
       // TODO: verify additional claims for security
       String userIdStr = claims.getSubject();
+      LOG.debug("Received token for sub '" + userIdStr + "' and preferred_username '" + claims.get("preferred_username"));
       if (FormatUtil.isInteger(userIdStr)) {
         return Integer.valueOf(userIdStr);
       }
