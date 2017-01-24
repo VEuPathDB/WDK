@@ -1,4 +1,5 @@
-/* global _, wdk */
+/* global wdk */
+import _ from 'lodash';
 import * as ReactDOM from 'react-dom';
 import LazyFilterService from '../client/utils/LazyFilterService';
 import AttributeFilter from '../client/components/AttributeFilter';

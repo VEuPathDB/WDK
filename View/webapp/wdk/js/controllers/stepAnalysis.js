@@ -1,4 +1,5 @@
-/* global Spinner */
+import _ from 'lodash';
+import Spinner from 'spin.js';
 wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 

@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { lazy } from '../utils/componentUtils';
 import {
   debounce,
   find,
@@ -19,11 +20,9 @@ import {
 import React from 'react';
 import { preorderSeq } from '../utils/TreeUtils';
 import { findDOMNode } from 'react-dom';
-import FixedDataTable from 'fixed-data-table';
 import Loading from './Loading';
 import Tooltip from './Tooltip';
 import Dialog from './Dialog';
-import Table from './Table';
 import CheckboxTree from './CheckboxTree';
 
 var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
@@ -59,7 +58,6 @@ function formatDate(format, date) {
 
 
 var { PropTypes } = React;
-var { Column } = FixedDataTable;
 
 var FilterList = React.createClass({
 
@@ -253,8 +251,10 @@ var FieldFilter = React.createClass({
   }
 });
 
-var FilteredData = React.createClass({
-
+var FilteredData = lazy(function(render) {
+  require(['./Table'], render);
+})(React.createClass({
+  displayName: 'FilteredData',
   propTypes: {
     tabWidth: PropTypes.number,
     totalSize: PropTypes.number.isRequired,
@@ -406,7 +406,7 @@ var FilteredData = React.createClass({
           </div>
         </Dialog>
 
-        <Table
+        <this.props.Table
           width={tabWidth - 10}
           maxHeight={500}
           rowsCount={filteredData.length}
@@ -419,7 +419,7 @@ var FilteredData = React.createClass({
           sortDataKey={this.props.sortTerm}
           sortDirection={this.props.sortDirection}
         >
-        <Column
+        <this.props.Column
           label="Name"
           dataKey="__primary_key__"
           fixed={true}
@@ -431,7 +431,7 @@ var FilteredData = React.createClass({
         />
         {selectedFields.map(field => {
           return (
-            <Column
+            <this.props.Column
               label={field.display}
               dataKey={field.term}
               width={200}
@@ -441,11 +441,11 @@ var FilteredData = React.createClass({
             />
           );
         })}
-        </Table>
+        </this.props.Table>
       </div>
     );
   }
-});
+}));
 
 var AttributeFilter = React.createClass({
 
@@ -843,7 +843,13 @@ var distributionEntryPropType = React.PropTypes.shape({
   filteredCount: React.PropTypes.number.isRequired
 });
 
-var Histogram = React.createClass({
+var Histogram = lazy(function(render) {
+  require([
+    'lib/jquery-flot',
+    'lib/jquery-flot-categories',
+    'lib/jquery-flot-selection',
+    'lib/jquery-flot-time'], render)
+})(React.createClass({
 
   propTypes: {
     distribution: React.PropTypes.arrayOf(distributionEntryPropType).isRequired,
@@ -1110,7 +1116,7 @@ var Histogram = React.createClass({
       </div>
     );
   }
-});
+}));
 
 // TODO Add binning
 var HistogramField = React.createClass({

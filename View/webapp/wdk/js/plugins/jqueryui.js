@@ -5,6 +5,7 @@
 // 2. Cache content (when successfully loaded)
 
 import $ from 'jquery';
+import Spinner from 'spin.js';
 
 var uiLoad = $.ui.tabs.prototype.load;
 

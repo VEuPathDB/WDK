@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 wdk.namespace("window.wdk.util", function(ns, $) {
   "use strict";
 

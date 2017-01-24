@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 // functional utility functions
 wdk.namespace('wdk.fn', function(ns) {
   'use strict';

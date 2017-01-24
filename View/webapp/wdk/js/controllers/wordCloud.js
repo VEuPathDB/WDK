@@ -3,6 +3,8 @@ Cary  Feb. 15, 2010
 Basket Button
 */
 
+import _ from 'lodash';
+
 wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
   "use strict";
 
