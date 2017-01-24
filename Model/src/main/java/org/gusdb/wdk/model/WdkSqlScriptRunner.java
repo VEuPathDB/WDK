@@ -2,7 +2,6 @@ package org.gusdb.wdk.model;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.PrintWriter;
 import java.sql.Connection;
 
 import org.gusdb.fgputil.IoUtil;
@@ -44,8 +43,6 @@ public class WdkSqlScriptRunner {
       conn = db.getDataSource().getConnection();
 
       SqlScriptRunner runner = new SqlScriptRunner(conn, autoCommit, stopOnError);
-      runner.setLogWriter(new PrintWriter(System.out));
-      runner.setErrorLogWriter(new PrintWriter(System.err));
       runner.runScript(sqlReader);
     }
     catch (Exception e) {
