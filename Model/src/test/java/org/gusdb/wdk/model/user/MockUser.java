@@ -9,7 +9,7 @@ public class MockUser extends User {
   private static final Random random = new Random();
 
   public MockUser(WdkModel model) {
-    super(model, random.nextInt(Integer.MAX_VALUE) + 1, "mock@email", "mock signatur");
+    super(model, random.nextInt(Integer.MAX_VALUE) + 1, "mock@email", "mock signature", "mock stable name");
   }
 
 }
