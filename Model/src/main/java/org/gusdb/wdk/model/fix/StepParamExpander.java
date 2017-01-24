@@ -207,8 +207,8 @@ public class StepParamExpander extends BaseCLI {
       SqlUtils.executeUpdate(dataSource,
           "CREATE TABLE step_params (" +
               " step_id NUMBER(12) NOT NULL, " +
-              " param_name VARCHAR(200) NOT NULL, " +
-              " param_value VARCHAR(4000), " +
+              " param_name VARCHAR(200 CHAR) NOT NULL, " +
+              " param_value VARCHAR(4000 CHAR), " +
               " migration NUMBER(12))",
           "wdk-create-param-table");
   
