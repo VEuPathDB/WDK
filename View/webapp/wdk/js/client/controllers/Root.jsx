@@ -14,7 +14,6 @@ export default class Root extends Component {
   constructor(props, context) {
     super(props, context);
     this.history = useRouterHistory(createHistory)({ basename: this.props.rootUrl });
-    this.removeHistoryListener = this.history.listen(location => this.props.onLocationChange(location));
     // Used to inject wdk content as props of Route Component
     this.createElement = (RouteComponent, routerProps) => {
       let { makeDispatchAction, stores } = this.props;
@@ -24,6 +23,8 @@ export default class Root extends Component {
     };
     this.routes = this.props.wrapRoutes(wdkRoutes);
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
+    this.removeHistoryListener = this.history.listen(location => this.props.onLocationChange(location));
+    this.props.onLocationChange(this.history.getCurrentLocation());
   }
 
   handleGlobalClick(event) {

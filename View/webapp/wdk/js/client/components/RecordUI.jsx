@@ -39,6 +39,9 @@ class RecordUI extends Component {
   componentWillUnmount() {
     this.unmonitorActiveSection();
     window.removeEventListener('resize', this._scrollToActiveSection, { passive: true });
+    this._updateActiveSection.cancel();
+    this._scrollToActiveSection.cancel();
+    this.monitorActiveSection.cancel();
   }
 
   monitorActiveSection() {
@@ -58,7 +61,8 @@ class RecordUI extends Component {
       return rect.top <= 50 && rect.bottom > 50;
     });
     let activeSection = get(activeElement, 'id');
-    history.replaceState(null, null, activeSection ? '#' + activeSection : location.pathname);
+    let newUrl = location.pathname + location.search + (activeSection ? '#' + activeSection : '');
+    history.replaceState(null, null, newUrl);
   }
 
   _scrollToActiveSection() {
