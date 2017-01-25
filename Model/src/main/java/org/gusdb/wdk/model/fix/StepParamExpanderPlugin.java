@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.fix;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,8 +12,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowUpdaterPlugin;
@@ -43,24 +43,30 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
     private static final int MAX_PARAM_VALUE_LENGTH = 2000;
 
-    public Map<String, Set<String>> params;
+    public Map<String, Set<String>> params = new HashMap<>();
     public int valueCount;
 
     public StepWithParams(StepData base) {
       super(base);
-      params = StepParamExpander.parseDisplayParams(getStepId().intValue(), getParamFilters());
-      valueCount = Functions.reduce(params.values().iterator(), new Reducer<Set<String>, Integer>() {
-        @Override
-        public Integer reduce(Set<String> paramValues, Integer incomingValue) {
-          // add warning if value found that exceeds 1000 chars
-          for (String paramValue : paramValues) {
-            if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
-              LOG.warn("Parameter value found that exceeds " + MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
-            }
+      Map<String, Set<String>> fullParams = StepParamExpander.parseDisplayParams(getStepId().intValue(), getParamFilters());
+      // truncate param values that are too big- most likely BLAST sequence values
+      valueCount = 0;
+      for (String paramName : fullParams.keySet()) {
+        Set<String> newValues = new HashSet<>();
+        for (String paramValue : fullParams.get(paramName)) {
+          if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
+            LOG.warn("Skipping value for parameter '" + paramName + "' that exceeds " +
+                MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
           }
-          return incomingValue + paramValues.size();
+          //else {
+            newValues.add(paramValue);
+            valueCount++;
+          //}
         }
-      }, 0);
+        if (!newValues.isEmpty()) {
+          params.put(paramName, newValues);
+        }
+      }
     }
   }
 
