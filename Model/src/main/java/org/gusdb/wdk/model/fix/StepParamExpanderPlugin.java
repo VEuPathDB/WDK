@@ -41,6 +41,8 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
   public static class StepWithParams extends StepData {
 
+    private static final int MAX_PARAM_VALUE_LENGTH = 2000;
+
     public Map<String, Set<String>> params;
     public int valueCount;
 
@@ -49,8 +51,14 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
       params = StepParamExpander.parseDisplayParams(getStepId().intValue(), getParamFilters());
       valueCount = Functions.reduce(params.values().iterator(), new Reducer<Set<String>, Integer>() {
         @Override
-        public Integer reduce(Set<String> obj, Integer incomingValue) {
-          return incomingValue + obj.size();
+        public Integer reduce(Set<String> paramValues, Integer incomingValue) {
+          // add warning if value found that exceeds 1000 chars
+          for (String paramValue : paramValues) {
+            if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
+              LOG.warn("Parameter value found that exceeds " + MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
+            }
+          }
+          return incomingValue + paramValues.size();
         }
       }, 0);
     }
