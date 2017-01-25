@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowUpdaterPlugin;
@@ -41,7 +42,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
   public static class StepWithParams extends StepData {
 
-    private static final int MAX_PARAM_VALUE_LENGTH = 2000;
+    private static final int MAX_PARAM_VALUE_LENGTH = 4000;
 
     public Map<String, Set<String>> params = new HashMap<>();
     public int valueCount;
@@ -54,23 +55,29 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
       for (String paramName : fullParams.keySet()) {
         Set<String> newValues = new HashSet<>();
         for (String paramValue : fullParams.get(paramName)) {
-          if (paramValue.length() > MAX_PARAM_VALUE_LENGTH && paramName.equals("BlastQuerySequence")) {
-            LOG.warn("Skipping value for parameter '" + paramName + "' that exceeds " +
-                MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
+          int dbSize = FormatUtil.getUtf8EncodedBytes(paramValue).length;
+          if (dbSize > MAX_PARAM_VALUE_LENGTH) {
+            LOG.warn("Truncating value for parameter '" + paramName + "' (size=" + dbSize +
+                ") that exceeds " + MAX_PARAM_VALUE_LENGTH + " bytes: " + paramValue);
+            paramValue = shrinkUtf8String(paramValue, MAX_PARAM_VALUE_LENGTH);
           }
-          else {
-            if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
-              LOG.warn("Value for parameter '" + paramName + "' exceeds " +
-                  MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
-            }
-            newValues.add(paramValue);
-            valueCount++;
-          }
+          newValues.add(paramValue);
+          valueCount++;
         }
         if (!newValues.isEmpty()) {
           params.put(paramName, newValues);
         }
       }
+    }
+
+    private static String shrinkUtf8String(String str, int maxBytes) {
+      // can assume passed value is too big; cut chars until small enough to fit
+      int newSize = maxBytes + 1;
+      do {
+        str = str.substring(0, str.length()-1);
+        newSize = FormatUtil.getUtf8EncodedBytes(str).length;
+      } while (newSize > maxBytes);
+      return str;
     }
   }
 
