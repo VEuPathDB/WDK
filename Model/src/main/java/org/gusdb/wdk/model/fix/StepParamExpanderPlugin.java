@@ -54,14 +54,18 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
       for (String paramName : fullParams.keySet()) {
         Set<String> newValues = new HashSet<>();
         for (String paramValue : fullParams.get(paramName)) {
-          if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
+          if (paramValue.length() > MAX_PARAM_VALUE_LENGTH && paramName.equals("BlastQuerySequence")) {
             LOG.warn("Skipping value for parameter '" + paramName + "' that exceeds " +
                 MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
           }
-          //else {
+          else {
+            if (paramValue.length() > MAX_PARAM_VALUE_LENGTH) {
+              LOG.warn("Value for parameter '" + paramName + "' exceeds " +
+                  MAX_PARAM_VALUE_LENGTH + " chars: " + paramValue);
+            }
             newValues.add(paramValue);
             valueCount++;
-          //}
+          }
         }
         if (!newValues.isEmpty()) {
           params.put(paramName, newValues);
