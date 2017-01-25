@@ -464,6 +464,7 @@ public class TableRowUpdater<T extends TableRow> {
               if (modifiedRecords.size() >= BATCH_COMMIT_SIZE) {
                 _batchUpdater.update(modifiedRecords);
                 stats.numWritten += modifiedRecords.size();
+                stats.numQueuedToWrite -= modifiedRecords.size();
                 modifiedRecords.clear();
               }
             }
@@ -475,6 +476,7 @@ public class TableRowUpdater<T extends TableRow> {
         log("Writing " + modifiedRecords.size() + " leftover records.");
         _batchUpdater.update(modifiedRecords);
         stats.numWritten += modifiedRecords.size();
+        stats.numQueuedToWrite -= modifiedRecords.size();
         log("Shutting down. " + stats.toString());
         return stats;
       }
