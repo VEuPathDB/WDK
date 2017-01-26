@@ -33,14 +33,14 @@ var alias = globals.reduce(function(alias, global) {
 var globalLoaders = globals.map(function(global) {
   return {
     test: global.path,
-    loader: 'script'
+    loader: 'script-loader'
   };
 });
 
 module.exports = {
   entry: {
-    'wdk-client': './webapp/wdk/js/client',
-    'wdk': './webapp/wdk/js'
+    'wdk-client': './webapp/wdk/js/client/index.js',
+    'wdk': './webapp/wdk/js/index.js'
   },
   output: {
     path: outputPath,
@@ -49,37 +49,82 @@ module.exports = {
   },
   bail: true,
   resolve: {
-    extensions: ["", ".ts", ".tsx", ".js", ".jsx"],
+    extensions: [".ts", ".tsx", ".js", ".jsx"],
     alias: alias
   },
   externals: [
     { jquery: 'jQuery' }
   ],
   module: {
-    loaders: globalLoaders.concat([
+    rules: globalLoaders.concat([
       // expose libs as properties on `window` object in the browser
-      { test: require.resolve('lodash'), loader: 'expose?_' },
-      { test: require.resolve('react'), loader: 'expose?React' },
-      { test: require.resolve('react-dom'), loader: 'expose?ReactDOM' },
-      { test: require.resolve('react-router'), loader: 'expose?ReactRouter' },
-      { test: require.resolve('react-addons-perf'), loader: 'expose?ReactPerf' },
-
-      { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory!ts' },
-      { test: /\.jsx?$/, exclude: [/node_modules/, /wdk\/lib/], loader: 'babel?cacheDirectory' },
-      { test: /\.css$/,  loader: "style-loader!css-loader?sourceMap" },
-      { test: /\.png$/,  exclude: /node_modules/, loader: "url-loader?limit=100000" },
-      { test: /\.gif$/,  exclude: /node_modules/, loader: "url-loader?limit=100000" },
-      { test: /\.jpg$/,  exclude: /node_modules/, loader: "file-loader" }
+      makeExposeRule('lodash', '_'),
+      makeExposeRule('react', 'React'),
+      makeExposeRule('react-dom', 'ReactDOM'),
+      makeExposeRule('react-router/es', 'ReactRouter'),
+      makeExposeRule('react-addons-perf', 'ReactPerf'),
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true
+            }
+          },
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
+      {
+        test: /\.jsx?$/,
+        exclude: [/node_modules/, /wdk\/lib/],
+        loader: 'babel-loader',
+        options: {
+          cacheDirectory: true
+        }
+      },
+      {
+        test: /\.css$/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(gif|png)$/,
+        exclude: /node_modules/,
+        loader: 'url-loader',
+        options: {
+          limit: 100000
+        }
+      },
+      {
+        test: /\.jpg$/,
+        exclude: /node_modules/,
+        loader: 'file-loader'
+      }
     ])
   },
   node: {
     console: true,
     fs: 'empty'
   },
-  debug: node_env !== 'production',
   devtool: 'source-map',
   plugins: node_env !== 'production'
     ? [
+        new webpack.LoaderOptionsPlugin({
+          debug: true
+        }),
         new webpack.DefinePlugin({
           __DEV__: "true",
           "process.env": {
@@ -87,19 +132,17 @@ module.exports = {
           }
         }),
         new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-common'
+          name: 'wdk-client'
         })
       ]
 
     : [
-        new webpack.optimize.UglifyJsPlugin({
-          //mangle: false,
-          compress: {
-            warnings: false
-          }
+        new webpack.LoaderOptionsPlugin({
+          debug: false
         }),
-        new webpack.optimize.DedupePlugin(),
-        new webpack.optimize.OccurenceOrderPlugin(true),
+        new webpack.optimize.UglifyJsPlugin({
+          sourceMap: true
+        }),
         new webpack.DefinePlugin({
           __DEV__: "false",
           "process.env": {
@@ -107,7 +150,14 @@ module.exports = {
           }
         }),
         new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-common'
+          name: 'wdk-client'
         })
       ]
 };
+
+function makeExposeRule(moduleIdent, globalIdent) {
+  return {
+    test: require.resolve(moduleIdent),
+    loader: 'expose-loader?' + globalIdent
+  }
+}

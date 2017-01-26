@@ -1,3 +1,5 @@
+__webpack_public_path__ = wdkConfig.assetsUrl + '/';
+
 import $ from 'jquery';
 import _ from 'lodash';
 

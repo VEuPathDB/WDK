@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { eq } from 'lodash';
 import React, {PropTypes, Component, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
-import {formatAttributeValue, wrappable, PureComponent} from '../utils/componentUtils';
+import {formatAttributeValue, lazy, wrappable, PureComponent} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
 const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
@@ -402,7 +402,10 @@ class DataTable extends PureComponent<Props, void> {
 
 }
 
-export default wrappable(DataTable);
+const withLibs = lazy(function(render) {
+  (require as any)([ 'lib/jquery-datatables', 'lib/jquery-datatables-natural-type-plugin' ], render);
+});
+export default wrappable(withLibs(DataTable));
 
 
 // helpers
