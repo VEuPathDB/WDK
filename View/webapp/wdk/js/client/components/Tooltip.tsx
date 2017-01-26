@@ -28,28 +28,24 @@ let defaultOptions = {
   }
 };
 
-let Tooltip = React.createClass({
+type Props = {
+  content: string | React.ReactElement<any>;
+}
 
-  propTypes: {
-    // string or ReactElement
-    content: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element
-    ])
-  },
+class Tooltip extends React.Component<Props, void> {
 
   componentDidMount() {
     this._setupTooltip();
-  },
+  }
 
   componentDidUpdate() {
     this._destroyTooltip();
     this._setupTooltip();
-  },
+  }
 
   componentWillUnmount() {
     this._destroyTooltip();
-  },
+  }
 
   _setupTooltip() {
     let { content } = this.props;
@@ -63,16 +59,16 @@ let Tooltip = React.createClass({
     $(ReactDOM.findDOMNode(this)).qtip(Object.assign({
       content: { text }
     }, defaultOptions));
-  },
+  }
 
   _destroyTooltip() {
     $(ReactDOM.findDOMNode(this)).qtip('destroy');
-  },
+  }
 
   render() {
     return React.Children.only(this.props.children);
   }
 
-});
+}
 
 export default wrappable(Tooltip);

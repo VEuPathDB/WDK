@@ -1,5 +1,8 @@
 {
-  presets: [ 'react', 'es2015' ],
+  presets: [
+    'react',
+    ['es2015', { "modules": false }]
+  ],
   plugins: [
     ['transform-es2015-classes', {loose: true}]  // needed to make super() in constructor work in IE <= 10
   ]
