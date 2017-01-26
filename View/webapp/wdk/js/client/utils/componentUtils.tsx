@@ -144,6 +144,9 @@ interface LoadCallback {
   (render: (props?: {}) => void): void
 }
 
+type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) => React.ComponentClass<P>
+
+
 /**
  * A higher order component that allows a component to be rendered lazily.
  *
@@ -154,9 +157,7 @@ interface LoadCallback {
  *   })
  * })(ComponentThatNeedsData);
  */
-export function lazy(load: LoadCallback): <P>(Component: React.ComponentClass<P>) => React.ComponentClass<P>;
-export function lazy(load: LoadCallback): <P>(Component: React.StatelessComponent<P>) => React.ComponentClass<P>;
-export function lazy(load: LoadCallback) {
+export function lazy(load: LoadCallback): LazyEnhance {
   return function<P>(Component: any) {
     return class Lazy extends React.Component<P, { loading: boolean, props: P }> {
       displayName = `Lazy(${Component.displayName || Component.name})`;
