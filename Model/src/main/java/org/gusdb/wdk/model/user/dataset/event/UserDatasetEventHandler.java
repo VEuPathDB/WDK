@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
-
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
@@ -29,15 +29,27 @@ public class UserDatasetEventHandler {
 
     logger.info("Installing user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-    UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
+    
+    // there is a theoretical race condition here, because this check is not in the same
+    // transaction as the rest of this method.   but that risk is very small.
+    if (!userDatasetStore.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
+      logger.info("User dataset " + event.getUserDatasetId() + " not found in store.  Was probably deleted.  Skipping install.");
+    } 
+    
+    else {
+      UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(),
+          event.getUserDatasetId());
 
-    String sql = "insert into " + userDatasetSchemaName + installedTable + " (user_dataset_id, name) values (?, ?)";
-    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
-    Object[] args = {event.getUserDatasetId(), userDataset.getMeta().getName()};
-    sqlRunner.executeUpdate(args);
+      String sql = "insert into " + userDatasetSchemaName + installedTable +
+          " (user_dataset_id, name) values (?, ?)";
+      SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
+      Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
+      sqlRunner.executeUpdate(args);
 
-    typeHandler.installInAppDb(userDataset, tmpDir, projectId);
-    grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName, "UserDatasetOwner");
+      typeHandler.installInAppDb(userDataset, tmpDir, projectId);
+      grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+          "UserDatasetOwner");
+    }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
 
@@ -61,10 +73,17 @@ public class UserDatasetEventHandler {
     logger.info("Updating share of user dataset " + event.getUserDatasetId() );
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
 
-    if (event.getAction() == ShareAction.GRANT) 
-      grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName, sharedTable);
-    else 
-      revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName, sharedTable);
+    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
+      // this can happen if the install was skipped, because the ud was deleted first
+      logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
+    } else {
+      if (event.getAction() == ShareAction.GRANT)
+        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+            sharedTable);
+      else
+        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+            sharedTable);
+    }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
 
@@ -73,11 +92,38 @@ public class UserDatasetEventHandler {
     logger.info("Updating access to user dataset " + event.getUserDatasetId() );
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
 
-    if (event.getAction() == ExternalDatasetAction.CREATE) 
-      grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName, externalTable);
-    else 
-      revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName, externalTable);
+    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
+      // this can happen if the install was skipped, because the ud was deleted first
+      logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
+    } else {
+      if (event.getAction() == ExternalDatasetAction.CREATE)
+        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+            externalTable);
+      else
+        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+            externalTable);
+    }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+  }
+  
+  /**
+   * check if a user dataset is installed (in the installed table).
+   * operations that call this method are at theoretical risk of a race condition, since this check
+   * is in its own transaction.  but the chance that a ud will be uninstalled in the intervening millisecond is
+   * small, not worth engineering for.
+   * @param userDatasetId
+   * @param appDbDataSource
+   * @param userDatasetSchemaName
+   * @return
+   */
+  private static boolean checkUserDatasetInstalled(Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
+    logger.info("Checking if user dataset " + userDatasetId + " is installed");
+    BasicResultSetHandler handler = new BasicResultSetHandler();
+    String sql = "select user_dataset_id from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
+    Object[] args = {userDatasetId};
+    new SQLRunner(appDbDataSource, sql, "check-user-dataset-exists").executeQuery(args, handler);
+
+    return handler.getNumRows() > 0;
   }
 
   private static void grantAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
