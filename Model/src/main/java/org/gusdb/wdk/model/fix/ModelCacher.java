@@ -145,7 +145,12 @@ public class ModelCacher extends BaseCLI {
     CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
     cacheFactory.recreateCache(true, true);
 
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    DatabaseInstance database = wdkModel.getUserDb();
+    DataSource dataSource = database.getDataSource();
+    
+    if (schema.length() == 0)
+      schema = database.getDefaultSchema();
+
     String projectId = wdkModel.getProjectId();
     if (!keepCache)
       deleteCache(dataSource, projectId, schema);
@@ -212,10 +217,14 @@ public class ModelCacher extends BaseCLI {
   }
 
   public void dropTables(WdkModel wdkModel, String schema) throws SQLException {
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
     DatabaseInstance database = wdkModel.getUserDb();
+    DataSource dataSource = database.getDataSource();
     DBPlatform platform = database.getPlatform();
-     String[] sequences = new String[] { "wdk_questions_pkseq", "wdk_params_pkseq" };
+
+    if (schema.length() == 0)
+      schema = database.getDefaultSchema();
+
+    String[] sequences = new String[] { "wdk_questions_pkseq", "wdk_params_pkseq" };
     for (String sequence : sequences) {
       try {
         SqlUtils.executeUpdate(dataSource, "DROP SEQUENCE " + schema + sequence, "wdk-drop-sequence");
@@ -226,8 +235,9 @@ public class ModelCacher extends BaseCLI {
     }
     String[] tables = new String[] { "wdk_enum_params", "wdk_params", "wdk_questions" };
     for (String table : tables) {
-      if (platform.checkTableExists(dataSource, schema, table))
-	SqlUtils.executeUpdate(dataSource, "DROP TABLE " + schema + table, "wdk-drop-table");
+      if (platform.checkTableExists(dataSource, schema, table)) {
+        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + schema + table, "wdk-drop-table");
+      }
     }
   }
 
@@ -240,14 +250,14 @@ public class ModelCacher extends BaseCLI {
       schema = database.getDefaultSchema();
 
     if (!platform.checkTableExists(dataSource, schema, "wdk_questions"))
-      createQuestionTable(wdkModel, dataSource, schema);
+      createQuestionTable(dataSource, schema);
     if (!platform.checkTableExists(dataSource, schema, "wdk_params"))
-      createParamTable(wdkModel, dataSource, schema);
+      createParamTable(dataSource, schema);
     if (!platform.checkTableExists(dataSource, schema, "wdk_enum_params"))
-      createEnumParamTable(wdkModel, dataSource, schema);
+      createEnumParamTable(dataSource, schema);
   }
 
-  private void createQuestionTable(WdkModel wdkModel, DataSource dataSource, String schema)
+  private void createQuestionTable(DataSource dataSource, String schema)
       throws SQLException {
     // create sequence
     String sql = "CREATE SEQUENCE " + schema + "wdk_questions_pkseq " + "INCREMENT BY 1 START WITH 1";
@@ -266,7 +276,7 @@ public class ModelCacher extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, sql, "wdk-create-index");
   }
 
-  private void createParamTable(WdkModel wdkModel, DataSource dataSource, String schema) throws SQLException {
+  private void createParamTable(DataSource dataSource, String schema) throws SQLException {
     // create sequence
     String sql = "CREATE SEQUENCE " + schema + "wdk_params_pkseq " + "INCREMENT BY 1 START WITH 1";
     SqlUtils.executeUpdate(dataSource, sql, "wdk-create-sequence");
@@ -285,7 +295,7 @@ public class ModelCacher extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, sql, "wdk-create-index");
   }
 
-  private void createEnumParamTable(WdkModel wdkModel, DataSource dataSource, String schema)
+  private void createEnumParamTable(DataSource dataSource, String schema)
       throws SQLException {
     // create table
     String sql = "CREATE TABLE " + schema + "wdk_enum_params ( " + "param_id NUMBER(12) NOT NULL, " +
@@ -365,12 +375,12 @@ public class ModelCacher extends BaseCLI {
     if (!skipParams) {
       // save the params
       for (Param param : question.getParams()) {
-        saveParam(wdkModel, question, param, questionId, psParam, psEnum, schemaWithoutDot);
+        saveParam(wdkModel, param, questionId, psParam, psEnum, schemaWithoutDot);
       }
     }
   }
 
-  private void saveParam(WdkModel wdkModel, Question question, Param param, int questionId,
+  private void saveParam(WdkModel wdkModel, Param param, int questionId,
       PreparedStatement psParam, PreparedStatement psEnum, String schemaWithoutDot) throws SQLException,
       WdkModelException {
     DatabaseInstance database = wdkModel.getUserDb();
@@ -389,11 +399,11 @@ public class ModelCacher extends BaseCLI {
     psParam.executeUpdate();
 
     if (param instanceof AbstractEnumParam && !type.endsWith("-TypeAhead")) {
-      saveEnums(question, (AbstractEnumParam) param, paramId, psEnum);
+      saveEnums((AbstractEnumParam) param, paramId, psEnum);
     }
   }
 
-  private void saveEnums(Question question, AbstractEnumParam param, int paramId, PreparedStatement psEnum)
+  private void saveEnums(AbstractEnumParam param, int paramId, PreparedStatement psEnum)
       throws WdkModelException, SQLException {
     // need to handle dependent params
     Set<String> paramValues = param.getAllValues();
