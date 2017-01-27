@@ -216,6 +216,8 @@
       <property name="component" value="View"/>
     </ant>
 
+    <ant target="installYarnBin"/>
+
     <echo message="Making JS and CSS bundles"/>
     <exec dir="${projectsDir}/WDK/View"
           executable="yarn"
@@ -229,6 +231,24 @@
     </exec>
 
   </target>  
+
+  <target name="installYarnBin" depends="yarnBinCheck" unless="hasYarnBin">
+    <!-- unpack yarn tgz into targetDirectory -->
+    <echo message="Installing yarn binary"/>
+    <mkdir dir="${projectsDir}/WDK/View/target/yarn-install"/>
+    <mkdir dir="${targetDir}/bin"/>
+    <exec executable="tar"
+      dir="${projectsDir}/WDK/View/target/yarn-install"
+      failonerror="true"
+      failifexecutionfails="true">
+      <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz"/>
+    </exec>
+    <symlink link="${targetDir}/bin/yarn" resource="${projectsDir}/WDK/View/target/yarn-install/dist/bin/yarn"/>
+  </target>
+
+  <target name="yarnBinCheck">
+    <available property="hasYarnBin" file="${targetDir}/bin/yarn"/>
+  </target>
 
   <target name="WebsitePlusGusHome" depends="WDK-Installation,
                                              WDK/Controller-WebInstallation,
