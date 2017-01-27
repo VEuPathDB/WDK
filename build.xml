@@ -210,13 +210,11 @@
     </ant>
   </target>
 
-  <target name="WDK/View-WebInstallation">
+  <target name="WDK/View-WebInstallation" depends="yarnBinCheck,installYarnBin">
     <ant target="defaultWebComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
-
-    <ant target="installYarnBin"/>
 
     <echo message="Making JS and CSS bundles"/>
     <exec dir="${projectsDir}/WDK/View"
@@ -242,18 +240,18 @@
 
   </target>  
 
-  <target name="installYarnBin" depends="yarnBinCheck" unless="hasYarnBin">
+  <target name="installYarnBin" unless="hasYarnBin">
     <!-- unpack yarn tgz into targetDirectory -->
     <echo message="Installing yarn binary"/>
-    <mkdir dir="${projectsDir}/WDK/View/target/yarn-install"/>
+    <mkdir dir="${targetDir}/lib/yarn"/>
     <mkdir dir="${targetDir}/bin"/>
     <exec executable="tar"
-      dir="${projectsDir}/WDK/View/target/yarn-install"
+      dir="${targetDir}/lib/yarn"
       failonerror="true"
       failifexecutionfails="true">
       <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz"/>
     </exec>
-    <symlink link="${targetDir}/bin/yarn" resource="${projectsDir}/WDK/View/target/yarn-install/dist/bin/yarn"/>
+    <symlink link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/dist/bin/yarn"/>
   </target>
 
   <target name="yarnBinCheck">
