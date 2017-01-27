@@ -2,13 +2,7 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "build": "npm run build-js && npm run build-css",
-    "build-js": "webpack",
-    "build-css": "mkdir -p dist/wdk/css && cd dist/wdk/css && cleancss --skip-rebase --source-map -o wdk.min.css ../../../webapp/wdk/css/wdk.css",
-    "install-build-packages": "npm install --production",
-    "install-test-packages": "npm install",
-    "client-tests": "tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js",
-    "test-server": "webpack-dev-server --config webpack-test.config.js test/tests.js",
+    "tests": "tape tests/**/*.{j,t}s{,x}",
     "examples-server": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
@@ -57,7 +51,8 @@
     "ts-loader": "^2.0.0",
     "typescript": "^2.1.5",
     "url-loader": "~0.5.7",
-    "webpack": "^2.0.0"
+    "webpack": "^2.0.0",
+    "webpack-merge": "^2.5.0"
   },
   "devDependencies": {
     "eslint": "^3.12.2",
