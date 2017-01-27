@@ -3958,6 +3958,12 @@ watchpack@^1.2.0:
     chokidar "^1.4.3"
     graceful-fs "^4.1.2"
 
+webpack-merge@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-2.5.0.tgz#1f4ba25b533f0a9a3be15716b5bd7bd6b6af94fb"
+  dependencies:
+    lodash "^4.17.4"
+
 webpack-sources@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-0.1.4.tgz#ccc2c817e08e5fa393239412690bb481821393cd"

@@ -218,16 +218,15 @@
 
     <echo message="Making JS and CSS bundles"/>
     <exec dir="${projectsDir}/WDK/View"
-          executable="make"
+          executable="yarn"
+          failonerror="true"
+          failifexecutionfails="true"/>
+    <exec dir="${projectsDir}/WDK/View"
+          executable="node_modules/.bin/webpack"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="bundles"/>
+          <arg line="--output-path ${webappTargetDir}"/>
     </exec>
-
-    <echo message="Copying WDK assets to webapp"/>
-    <copy todir="${webappTargetDir}">
-      <fileset dir="${projectsDir}/WDK/View/dist"/>
-    </copy>
 
   </target>  
 

@@ -1,11 +1,7 @@
-var webpack = require('webpack');
-var node_env = process.env.NODE_ENV || 'production';
-var outputPath = './dist';
-
-if (node_env === 'production') console.log('optimizing web assets');
+var baseConfig = require('./base.webpack.config');
 
 // shims for global style scripts
-var globals = [
+var scripts = [
   { alias: 'lib/jquery',                                path : __dirname + '/webapp/wdk/lib/jquery.js' },
   { alias: 'lib/jquery-migrate',                        path : __dirname + '/webapp/wdk/lib/jquery-migrate-1.2.1.min.js' },
   { alias: 'lib/jquery-ui',                             path : __dirname + '/webapp/wdk/lib/jquery-ui.js' },
@@ -22,142 +18,59 @@ var globals = [
   { alias: 'lib/jquery-datatables',                     path : __dirname + '/webapp/wdk/lib/datatables.min.js' },
   { alias: 'lib/jquery-datatables-natural-type-plugin', path : __dirname + '/webapp/wdk/lib/datatables-natural-type-plugin.js' },
   { alias: 'lib/zynga-scroller/Animate',                path : __dirname + '/webapp/wdk/lib/zynga-scroller/Animate.js' },
-  { alias: 'lib/zynga-scroller/Scroller',               path : __dirname + '/webapp/wdk/lib/zynga-scroller/Scroller.js' },
+  { alias: 'lib/zynga-scroller/Scroller',               path : __dirname + '/webapp/wdk/lib/zynga-scroller/Scroller.js' }
 ];
 
-var alias = globals.reduce(function(alias, global) {
-  alias[global.alias + '$'] = global.path;
+var alias = scripts.reduce(function(alias, script) {
+  alias[script.alias + '$'] = script.path;
   return alias;
 }, {});
 
-var globalLoaders = globals.map(function(global) {
+var scriptLoaders = scripts.map(function(script) {
   return {
-    test: global.path,
+    test: script.path,
     loader: 'script-loader'
   };
 });
 
-module.exports = {
+// expose module exports as global vars
+var exposeModules = [
+  { module: 'lodash', expose: '_' },
+  { module: 'react', expose: 'React' },
+  { module: 'react-dom', expose: 'ReactDOM' },
+  { module: 'react-router/es', expose: 'ReactRouter' },
+  { module: 'react-addons-perf', expose: 'ReactPerf' }
+];
+
+var exposeLoaders = exposeModules.map(function(entry) {
+  return {
+    test: require.resolve(entry.module),
+    loader: 'expose-loader?' + entry.expose
+  };
+});
+
+module.exports = baseConfig.merge({
   entry: {
     'wdk-client': './webapp/wdk/js/client/index.js',
     'wdk': './webapp/wdk/js/index.js'
   },
   output: {
-    path: outputPath,
+    path: './dist',
     filename: '[name].bundle.js',
     library: 'Wdk'
   },
-  bail: true,
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx"],
     alias: alias
   },
   externals: [
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: globalLoaders.concat([
-      // expose libs as properties on `window` object in the browser
-      makeExposeRule('lodash', '_'),
-      makeExposeRule('react', 'React'),
-      makeExposeRule('react-dom', 'ReactDOM'),
-      makeExposeRule('react-router/es', 'ReactRouter'),
-      makeExposeRule('react-addons-perf', 'ReactPerf'),
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              cacheDirectory: true
-            }
-          },
-          {
-            loader: 'ts-loader'
-          }
-        ]
-      },
-      {
-        test: /\.jsx?$/,
-        exclude: [/node_modules/, /wdk\/lib/],
-        loader: 'babel-loader',
-        options: {
-          cacheDirectory: true
-        }
-      },
-      {
-        test: /\.css$/,
-        use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              sourceMap: true
-            }
-          }
-        ]
-      },
-      {
-        test: /\.(gif|png)$/,
-        exclude: /node_modules/,
-        loader: 'url-loader',
-        options: {
-          limit: 100000
-        }
-      },
-      {
-        test: /\.jpg$/,
-        exclude: /node_modules/,
-        loader: 'file-loader'
-      }
-    ])
+    rules: scriptLoaders.concat(exposeLoaders)
   },
-  node: {
-    console: true,
-    fs: 'empty'
-  },
-  devtool: 'source-map',
-  plugins: node_env !== 'production'
-    ? [
-        new webpack.LoaderOptionsPlugin({
-          debug: true
-        }),
-        new webpack.DefinePlugin({
-          __DEV__: "true",
-          "process.env": {
-            NODE_ENV: JSON.stringify("development")
-          }
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-client'
-        })
-      ]
-
-    : [
-        new webpack.LoaderOptionsPlugin({
-          debug: false
-        }),
-        new webpack.optimize.UglifyJsPlugin({
-          sourceMap: true
-        }),
-        new webpack.DefinePlugin({
-          __DEV__: "false",
-          "process.env": {
-            NODE_ENV: JSON.stringify("production")
-          }
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-          name: 'wdk-client'
-        })
-      ]
-};
-
-function makeExposeRule(moduleIdent, globalIdent) {
-  return {
-    test: require.resolve(moduleIdent),
-    loader: 'expose-loader?' + globalIdent
-  }
-}
+  plugins: [
+    new baseConfig.webpack.optimize.CommonsChunkPlugin({
+      name: 'wdk-client'
+    })
+  ]
+});
