@@ -223,11 +223,21 @@
           executable="yarn"
           failonerror="true"
           failifexecutionfails="true"/>
+
     <exec dir="${projectsDir}/WDK/View"
           executable="node_modules/.bin/webpack"
           failonerror="true"
           failifexecutionfails="true">
           <arg line="--output-path ${webappTargetDir}"/>
+    </exec>
+
+    <mkdir dir="${webappTargetDir}/wdk/css"/>
+
+    <exec dir="${projectsDir}/WDK/View/webapp/wdk/css"
+      executable="${projectsDir}/WDK/View/node_modules/.bin/cleancss"
+      failonerror="true"
+      failifexecutionfails="true">
+      <arg line="--skip-rebase --source-map -o ${webappTargetDir}/wdk/css/wdk.min.css wdk.css" />
     </exec>
 
   </target>  
