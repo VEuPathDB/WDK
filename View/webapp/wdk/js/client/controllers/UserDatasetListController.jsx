@@ -43,6 +43,10 @@ class UserDatasetListController extends WdkViewController {
     return state.user && state.userDatasetsLoading === false;
   }
 
+  isRenderDataLoadError(state) {
+    return state.loadError;
+  }
+
   renderView(state) {
     return ( <UserDatasetList userDatasets={state.userDatasets} user={state.user} /> );
   }
