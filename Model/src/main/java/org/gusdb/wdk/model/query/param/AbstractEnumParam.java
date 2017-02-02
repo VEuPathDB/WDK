@@ -66,7 +66,7 @@ public abstract class AbstractEnumParam extends Param {
 
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
-  private static final boolean INVALID_DEFAULT_IS_FATAL = true;
+  private static final boolean INVALID_DEFAULT_IS_FATAL = false;
 
   /**
    * @author jerric
