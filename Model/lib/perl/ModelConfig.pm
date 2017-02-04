@@ -56,7 +56,7 @@ sub AUTOLOAD {
 
 
 # return to appDb value, for backward compatibility
-sub getLogin {
+sub getAppDbLogin {
     my ($self) = @_;
     ($self->{appDb})
         ? $self->{appDb}->{login}
@@ -64,11 +64,19 @@ sub getLogin {
 }
 
 # return to appDb value, for backward compatibility
-sub getPassword {
+sub getAppDbPassword {
     my ($self) = @_;
     ($self->{appDb})
         ? $self->{appDb}->{password}
         : $self->{password}
+}
+
+# return to appDb value, for backward compatibility
+sub getAppDbDbiDsn {
+    my ($self) = @_;
+    ($self->{appDb})
+        ? $self->{appDb}->{dbiDsn}
+        : $self->{dbiDsn}
 }
 
 # return to appDb value, for backward compatibility
@@ -80,11 +88,15 @@ sub getDblApicomm {
 }
 
 # return to appDb value, for backward compatibility
-sub getDbiDsn {
-    my ($self) = @_;
-    ($self->{appDb})
-        ? $self->{appDb}->{dbiDsn}
-        : $self->{dbiDsn}
+sub getUserDbLogin {
+  my ($self) = @_;
+  return $self->{userDb}->{login};
+}
+
+sub getUserDbPassword {
+  my ($self) = @_;
+  return $self->{userDb}->{password};
+
 }
 
 # return to appDb value, for backward compatibility
@@ -92,6 +104,8 @@ sub getUserDbiDsn {
     my ($self) = @_;
     return $self->{userDb}->{dbiDsn};
 }
+
+
 
 1;
 

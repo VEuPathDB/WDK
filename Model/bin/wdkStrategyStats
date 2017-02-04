@@ -55,8 +55,8 @@ my $start_run = time();
 if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
 my $model = $ARGV[0];
 my $c = new WDK::Model::ModelConfig($model);
-my $u  = $c->userDb->getLogin;
-my $pw = $c->userDb->getPassword;
+my $u  = $c->userDb->getUserDbLogin;
+my $pw = $c->userDb->getUserDbPassword;
 
 my $database = "dbi:Oracle:$ARGV[1]";
 
