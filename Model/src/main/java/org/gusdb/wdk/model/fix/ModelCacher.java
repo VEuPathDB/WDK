@@ -137,7 +137,7 @@ public class ModelCacher extends BaseCLI {
     System.exit(exitCode);
   }
 
-  public int expand(WdkModel wdkModel, String schema, boolean keepCache, boolean skipParams) throws SQLException {
+  public int expand(WdkModel wdkModel, String schema, boolean keepCache, boolean skipParams) throws SQLException, WdkModelException {
     // need to reset the cache first
     wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
 
