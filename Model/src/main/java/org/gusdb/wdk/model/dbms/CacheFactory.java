@@ -52,6 +52,7 @@ public class CacheFactory {
     }
     catch (Exception ex) {
       logger.error("Cannot create sequence [" + sequenceName + "]. " + ex.getMessage());
+      System.exit(1);
     }
 
     // create results table for step analysis
@@ -191,6 +192,7 @@ public class CacheFactory {
     }
     catch (Exception ex) {
       logger.error("Cannot create table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      System.exit(1);
     }
   }
 
@@ -258,6 +260,7 @@ public class CacheFactory {
     }
     catch (Exception ex) {
       logger.error("Unable to create step analysis results cache. " + ex.getMessage());
+      System.exit(1);
     }
   }
 
