@@ -12,6 +12,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 public class CacheFactory {
 
@@ -41,7 +42,7 @@ public class CacheFactory {
     this.dataSource = database.getDataSource();
   }
 
-  public void createCache() {
+  public void createCache() throws WdkModelException {
   
     createQueryInstanceTable();
 
@@ -50,9 +51,10 @@ public class CacheFactory {
     try {
       platform.createSequence(dataSource, sequenceName, 1, 1);
     }
-    catch (Exception ex) {
-      logger.error("Cannot create sequence [" + sequenceName + "]. " + ex.getMessage());
-      System.exit(1);
+    catch (SQLException ex) {
+      String message = "Cannot create sequence [" + sequenceName + "]. ";
+      logger.error(message + ex.getMessage());
+      throw new WdkModelException(message, ex);
     }
 
     // create results table for step analysis
@@ -66,7 +68,7 @@ public class CacheFactory {
     clearStepAnalysisCache();
   }
 
-  public void recreateCache(boolean purge, boolean forceDrop) {
+  public void recreateCache(boolean purge, boolean forceDrop) throws WdkModelException {
     // drop cache;
     dropCache(purge, forceDrop);
     // create them back
@@ -164,7 +166,7 @@ public class CacheFactory {
     }
   }
 
-  private void createQueryInstanceTable() {
+  private void createQueryInstanceTable() throws WdkModelException {
     // create the cache index table
     StringBuffer sql = new StringBuffer("CREATE TABLE ");
     sql.append(TABLE_INSTANCE).append(" ( ");
@@ -190,9 +192,10 @@ public class CacheFactory {
     try {
       SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-cache-create-instance");
     }
-    catch (Exception ex) {
-      logger.error("Cannot create table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
-      System.exit(1);
+    catch (SQLException ex) {
+      String message = "Cannot create table [" + TABLE_INSTANCE + "]. ";
+      logger.error(message + ex.getMessage());
+      throw new WdkModelException(message, ex);
     }
   }
 
@@ -253,14 +256,14 @@ public class CacheFactory {
     }
   }
  
-  private void createStepAnalysisCache() {
+  private void createStepAnalysisCache() throws WdkModelException {
     try {
       logger.info("Creating step analysis results cache.");
       wdkModel.getStepAnalysisFactory().createResultsTable();
     }
-    catch (Exception ex) {
+    catch (WdkModelException ex) {
       logger.error("Unable to create step analysis results cache. " + ex.getMessage());
-      System.exit(1);
+      throw ex;
     }
   }
 
