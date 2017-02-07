@@ -8,13 +8,12 @@
 import { Location } from 'history';
 import { ActionCreator } from '../ActionCreator';
 
-const LOCATION_UPDATED = 'router/location-updated';
+export type LocationAction = {
+  type: 'router/location-updated',
+  payload: { location: Location }
+}
 
-export const actionTypes = {
-  LOCATION_UPDATED
-};
-
-export const updateLocation: ActionCreator = (location: Location) => ({
-  type: LOCATION_UPDATED,
+export const updateLocation: ActionCreator<LocationAction> = (location: Location) => ({
+  type: 'router/location-updated',
   payload: { location }
 });

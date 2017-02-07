@@ -15,7 +15,7 @@ export let StaticDataProps = {
  *
  * @param {Object} action to be broadcast
  */
-export function broadcast(action: Action): Action {
+export function broadcast<T extends Action>(action: T): T {
   if (action === null || !isPlainObject(action)) {
     throw "Parameter 'action' is null or not an object; only objects are supported by this function.";
   }

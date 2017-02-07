@@ -1,5 +1,7 @@
 import { getTree, nodeHasProperty } from './OntologyUtils';
-import { isQualifying, addSearchSpecificSubtree } from './CategoryUtils';
+import { isQualifying, addSearchSpecificSubtree, CategoryOntology } from './CategoryUtils';
+import { AttributeField, Question, RecordClass, TableField } from './WdkModel';
+import { UserPreferences } from './WdkUser';
 import CheckboxList from '../components/CheckboxList';
 
 /**
@@ -19,7 +21,7 @@ export let tabularAttachmentTypes = [
 /**
  * Predicate to tell whether a given object should be shown in a reporter form
  */
-export function isInReport(obj) {
+export function isInReport(obj: { isInReport: boolean }) {
   return obj.isInReport;
 }
 
@@ -28,7 +30,7 @@ export function isInReport(obj) {
  * the predicate and appends any reporter dynamic attribute metadata (that pass
  * the predicate) from the question.
  */
-export function getAllAttributes(recordClass, question, predicate) {
+export function getAllAttributes(recordClass: RecordClass, question: Question, predicate: (attr: AttributeField) => boolean) {
   let attributes = recordClass.attributes.filter(predicate);
   question.dynamicAttributes.filter(predicate)
     .forEach(reportAttr => { attributes.push(reportAttr); });
@@ -39,7 +41,7 @@ export function getAllAttributes(recordClass, question, predicate) {
  * Retrieves table metadata objects from the passed record class that pass the
  * predicate.
  */
-export function getAllTables(recordClass, predicate) {
+export function getAllTables(recordClass: RecordClass, predicate: (table: TableField) => boolean) {
   return recordClass.tables.filter(predicate);
 }
 
@@ -49,7 +51,7 @@ export function getAllTables(recordClass, predicate) {
  *   2. default columns for the question
  * Then must trim off any non-download-scope attributes
  */
-export function getAttributeSelections(userPrefs, question, allReportScopedAttrs) {
+export function getAttributeSelections(userPrefs: UserPreferences, question: Question, allReportScopedAttrs: string[] = []) {
   // try initializing based on user prefs
   let userPrefKey = question.name + "_summary";
   let initialAttrs = (userPrefKey in userPrefs ?
@@ -61,7 +63,7 @@ export function getAttributeSelections(userPrefs, question, allReportScopedAttrs
   return initialAttrs.filter(attr => allReportScopedAttrs.indexOf(attr) != -1);
 }
 
-export function getAttributeTree(categoriesOntology, recordClassName, question) {
+export function getAttributeTree(categoriesOntology: CategoryOntology, recordClassName: string, question: Question) {
   let categoryTree = getTree(categoriesOntology, isQualifying({
     targetType: 'attribute',
     recordClassName,
@@ -70,7 +72,7 @@ export function getAttributeTree(categoriesOntology, recordClassName, question) 
   return addSearchSpecificSubtree(question, categoryTree);
 }
 
-export function getTableTree(categoriesOntology, recordClassName) {
+export function getTableTree(categoriesOntology: CategoryOntology, recordClassName: string) {
   let categoryTree = getTree(categoriesOntology, isQualifying({
     targetType: 'table',
     recordClassName,
@@ -83,8 +85,13 @@ export function getTableTree(categoriesOntology, recordClassName) {
  * Special implementation of a regular form change handler that adds the
  * recordclass's primary key to any new value passed in
  */
-export function getAttributesChangeHandler(inputName, onParentChange, previousState, recordClass) {
-  return newAttribsArray => {
+export function getAttributesChangeHandler<T extends {}>(
+  inputName: string,
+  onParentChange: (t: T) => void,
+  previousState: T,
+  recordClass: RecordClass
+) {
+  return (newAttribsArray: string[]) => {
     onParentChange(Object.assign({}, previousState, { [inputName]: addPk(newAttribsArray, recordClass) }));
   };
 }
@@ -94,11 +101,11 @@ export function getAttributesChangeHandler(inputName, onParentChange, previousSt
  * attribute is not already in the array, returns a copied array with the PK as
  * the first element.  If not, simply returns the passed array.
  */
-export function addPk(attributesArray, recordClass) {
+export function addPk(attributesArray: string[], recordClass: RecordClass) {
   return prependAttrib(recordClass.recordIdAttributeName, attributesArray);
 }
 
-export function prependAttrib(attribName, attributesArray) {
+export function prependAttrib(attribName: string, attributesArray: string[]) {
   let currentIndex = attributesArray.indexOf(attribName);
   if (currentIndex > -1) {
     // attrib already present, copy passed array and remove existing instance

@@ -1,7 +1,8 @@
-import { Action } from '../dispatcher/Dispatcher';
 import WdkStore, { BaseState } from './WdkStore';
-import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
+import { ListLoadingAction, ListReceivedAction, ListErrorReceivedAction } from '../actioncreators/UserDatasetsActionCreators';
 import { UserDataset } from '../utils/WdkModel';
+
+type Action = ListLoadingAction | ListReceivedAction | ListErrorReceivedAction;
 
 interface State extends BaseState {
   userDatasetsLoading: boolean;
@@ -19,21 +20,24 @@ export default class UserDatasetListStore extends WdkStore<State> {
     }, super.getInitialState());
   }
 
-  handleAction(state: State, {type, payload}: Action) {
-    switch (type) {
-      case actionTypes.DATASET_LIST_LOADING: return Object.assign({}, state, {
+  handleAction(state: State, action: Action): State {
+    switch (action.type) {
+      case 'user-datasets/list-loading': return {
+        ...state,
         userDatasetsLoading: true
-      });
+      };
 
-      case actionTypes.DATASET_LIST_RECEIVED: return Object.assign({}, state, {
+      case 'user-datasets/list-received': return {
+        ...state,
         userDatasetsLoading: false,
-        userDatasets: payload.userDatasets
-      });
+        userDatasets: action.payload.userDatasets
+      };
 
-      case actionTypes.DATASET_LIST_ERROR_RECEIVED: return Object.assign({}, state, {
+      case 'user-datasets/list-error': return {
+        ...state,
         userDatasetsLoading: false,
-        loadError: payload.error
-      });
+        loadError: action.payload.error
+      };
 
       default:
         return state;

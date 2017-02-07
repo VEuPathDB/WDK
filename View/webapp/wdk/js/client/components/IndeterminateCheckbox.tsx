@@ -1,12 +1,23 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
+import FormEvent = React.FormEvent;
+
+type Props<T> = {
+  checked: boolean;
+  className: string;
+  indeterminate: boolean;
+  name: string;
+  node: T;
+  toggleCheckbox: (node: T, selected: boolean) => void;
+  value: string;
+}
 
 /**
  * React Component that provides a 3-state checkbox
  */
-export default class IndeterminateCheckbox extends React.Component {
+export default class IndeterminateCheckbox<T> extends React.Component<Props<T>, void> {
 
-  constructor(props) {
+  constructor(props: Props<T>) {
     super(props);
 
     // hard bind the handleChange functions to the IndeterminateCheckbox object
@@ -17,7 +28,7 @@ export default class IndeterminateCheckbox extends React.Component {
     this.setIndeterminate(this.props.indeterminate);
   }
 
-  componentDidUpdate(previousProps) {
+  componentDidUpdate() {
     this.setIndeterminate(this.props.indeterminate);
   }
 
@@ -26,13 +37,13 @@ export default class IndeterminateCheckbox extends React.Component {
    * This can only be set via JS.
    * @param indeterminate
    */
-  setIndeterminate(indeterminate) {
-    const node = ReactDOM.findDOMNode(this);
+  setIndeterminate(indeterminate: boolean) {
+    const node = ReactDOM.findDOMNode(this) as HTMLInputElement;
     node.indeterminate = indeterminate;
   }
 
-  handleChange(e) {
-    let selected = e.target.checked;
+  handleChange(e: FormEvent<HTMLInputElement>) {
+    let selected = e.currentTarget.checked;
     this.props.toggleCheckbox(this.props.node, selected);
   }
 

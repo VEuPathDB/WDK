@@ -1,48 +1,98 @@
 import {ActionCreator} from "../ActionCreator";
-import { UserDatasetMeta } from "../utils/WdkModel";
+import {UserDatasetMeta, UserDataset} from "../utils/WdkModel";
+import {ServiceError} from "../utils/WdkService";
 
-const DATASET_LIST_LOADING = 'user-datasets/list-loading';
-const DATASET_LIST_RECEIVED = 'user-datasets/list-received';
-const DATASET_LIST_ERROR_RECEIVED = 'user-datasets/list-error';
+export type ListLoadingAction = {
+  type: 'user-datasets/list-loading'
+}
+export type ListReceivedAction = {
+  type: 'user-datasets/list-received',
+  payload: {
+    userDatasets: UserDataset[]
+  }
+}
+export type ListErrorReceivedAction = {
+  type: 'user-datasets/list-error',
+  payload: {
+    error: ServiceError
+  }
+}
+export type ItemLoading = {
+  type: 'user-datasets/item-loading',
+  payload: {
+    id: number
+  }
+}
+export type ItemReceivedAction = {
+  type: 'user-datasets/item-received',
+  payload: {
+    id: number,
+    userDataset?: UserDataset
+  }
+}
+export type ItemErrorAction = {
+  type: 'user-datasets/item-error',
+  payload: {
+    error: ServiceError
+  }
+}
+export type ItemUpdatingAction = {
+  type: 'user-datasets/item-updating'
+}
+export type ItemUpdateSuccessAction = {
+  type: 'user-datasets/item-update-success',
+  payload: {
+    userDataset: UserDataset
+  }
+}
+export type ItemUpdateErrorAction = {
+  type: 'user-datasets/item-update-error',
+  payload: {
+    error: ServiceError
+  }
+}
 
-const DATASET_ITEM_LOADING = 'user-datasets/item-loading';
-const DATASET_ITEM_RECEIVED = 'user-datasets/item-received';
-const DATASET_ITEM_ERROR = 'user-datasets/item-error';
+type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
+type ItemAction = ItemLoading|ItemReceivedAction|ItemErrorAction;
+type UpdateAction = ItemUpdatingAction|ItemUpdateSuccessAction|ItemUpdateErrorAction;
 
-const DATASET_ITEM_UPDATING = 'user-datasets/item-updating';
-const DATASET_ITEM_UPDATE_SUCCESS = 'user-datasets/item-update-success';
-const DATASET_ITEM_UPDATE_ERROR = 'user-datasets/item-update-error';
 
-export const actionTypes = {
-  DATASET_LIST_LOADING,
-  DATASET_LIST_RECEIVED,
-  DATASET_LIST_ERROR_RECEIVED,
-  DATASET_ITEM_LOADING,
-  DATASET_ITEM_RECEIVED,
-  DATASET_ITEM_ERROR,
-  DATASET_ITEM_UPDATING,
-  DATASET_ITEM_UPDATE_SUCCESS,
-  DATASET_ITEM_UPDATE_ERROR
-};
-
-const createLoadAction = () => ({ type: DATASET_LIST_LOADING });
-
-export const loadUserDatasetList: ActionCreator = () => (dispatch, { wdkService }) =>
+export const loadUserDatasetList: ActionCreator<ListAction> = () => (dispatch, { wdkService }) => {
+  dispatch({ type: 'user-datasets/list-loading' });
   wdkService.getCurrentUserDatasets()
-  .then(userDatasets => ({ type: DATASET_LIST_RECEIVED, payload: { userDatasets } }),
-        error => ({ type: DATASET_LIST_ERROR_RECEIVED, payload: { error } }))
-  .then(dispatch);
+    .then(
+      userDatasets => {
+        dispatch({type: 'user-datasets/list-received', payload: {userDatasets}})
+      },
+      (error: ServiceError) => {
+        dispatch({type: 'user-datasets/list-error', payload: {error}})
+      }
+    )
+}
 
-export const loadUserDatasetItem: ActionCreator = (id: number) => (dispatch, { wdkService }) =>
+export const loadUserDatasetItem: ActionCreator<ItemAction> = (id: number) => (dispatch, { wdkService }) => {
+  dispatch({ type: 'user-datasets/item-loading', payload: { id } });
   wdkService.getUserDataset(id)
-  .then(userDataset => ({ type: DATASET_ITEM_RECEIVED, payload: { id, userDataset } }),
-        error => error.status === 404 ? { type: DATASET_ITEM_RECEIVED, payload: { id }}
-                                      : { type: DATASET_ITEM_ERROR, payload: { error }})
-  .then(dispatch);
+    .then(
+      userDataset => {
+        dispatch({type: 'user-datasets/item-received', payload: { id, userDataset }})
+      },
+      (error: ServiceError) => {
+        dispatch(error.status === 404 ? {type: 'user-datasets/item-received', payload: {id, userDataset: undefined }}
+        : {type: 'user-datasets/item-error', payload: {error}})
+      }
+    )
+}
 
-export const updateUserDatasetItem: ActionCreator = (id: number, meta: UserDatasetMeta) => (dispatch, { wdkService }) => {
-  dispatch({ type: DATASET_ITEM_UPDATING });
-  return wdkService.updateUserDataset(id, meta)
-  .then(() => dispatch({ type: DATASET_ITEM_UPDATE_SUCCESS, payload: { id, meta }}),
-        (error) => dispatch({ type: DATASET_ITEM_UPDATE_ERROR, payload: { error }}));
+export const updateUserDatasetItem: ActionCreator<UpdateAction> = (userDataset: UserDataset, meta: UserDatasetMeta) => (dispatch, { wdkService }) => {
+  dispatch({ type: 'user-datasets/item-updating' });
+  wdkService.updateUserDataset(userDataset.id, meta)
+  .then(
+    () => {
+      dispatch({ type: 'user-datasets/item-update-success', payload: { userDataset: { ...userDataset, meta } }} as UpdateAction)
+    },
+    (error: ServiceError) => {
+      dispatch({ type: 'user-datasets/item-update-error', payload: { error }})
+    }
+  )
 }

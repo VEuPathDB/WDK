@@ -1,7 +1,20 @@
-import { Action } from '../dispatcher/Dispatcher';
 import WdkStore, { BaseState } from './WdkStore';
-import { actionTypes } from '../actioncreators/UserDatasetsActionCreators';
+import {
+  ItemLoading,
+  ItemUpdatingAction,
+  ItemErrorAction,
+  ItemReceivedAction,
+  ItemUpdateErrorAction,
+  ItemUpdateSuccessAction
+} from '../actioncreators/UserDatasetsActionCreators';
 import { UserDataset } from '../utils/WdkModel';
+
+type Action = ItemLoading
+            | ItemUpdatingAction
+            | ItemErrorAction
+            | ItemReceivedAction
+            | ItemUpdateErrorAction
+            | ItemUpdateSuccessAction
 
 /**
  * If isLoading is false, and resource is undefined,
@@ -9,14 +22,15 @@ import { UserDataset } from '../utils/WdkModel';
  */
 type UserDatasetEntry = {
   isLoading: boolean;
-  resource: UserDataset | void;
+  resource?: UserDataset | void;
 };
 
-interface State extends BaseState {
+export interface State extends BaseState {
   userDatasetsById: { [key: number]: UserDatasetEntry };
   userDatasetUpdating: boolean;
   userDatasetUpdateError?: Error;
   loadError?: Error;
+  updateError?: Error;
 }
 
 /**
@@ -27,53 +41,66 @@ interface State extends BaseState {
  */
 export default class UserDatasetItemStore extends WdkStore<State> {
 
-  getInitialState() {
+  getInitialState(): State {
     return Object.assign({
       userDatasetsById: {},
       userDatasetUpdating: false
     }, super.getInitialState());
   }
 
-  handleAction(state: State, {type, payload}: Action) {
-    switch (type) {
-      case actionTypes.DATASET_ITEM_LOADING: return Object.assign({}, state, {
-        userDatasetsById: Object.assign({}, state.userDatasetsById, {
-          [payload.id]: {
+  handleAction(state: State, action: Action): State {
+    switch (action.type) {
+      case 'user-datasets/item-loading': return {
+        ...state,
+        userDatasetsById: {
+          ...state.userDatasetsById,
+          [action.payload.id]: {
             isLoading: true
           }
-        })
-      });
+        }
+      };
 
-      case actionTypes.DATASET_ITEM_RECEIVED: return Object.assign({}, state, {
+      case 'user-datasets/item-received': return {
+        ...state,
         userDatasetLoading: false,
-        userDatasetsById: Object.assign({}, state.userDatasetsById, {
-          [payload.id]: {
+        userDatasetsById: {
+          ...state.userDatasetsById,
+          [action.payload.id]: {
             isLoading: false,
-            resource: payload.userDataset
+            resource: action.payload.userDataset
           }
-        })
-      });
+        }
+      };
 
-      case actionTypes.DATASET_ITEM_ERROR: return Object.assign({}, state, {
+      case 'user-datasets/item-error': return {
+        ...state,
         userDatasetLoading: false,
-        loadError: payload.error
-      });
+        loadError: action.payload.error
+      };
 
-      case actionTypes.DATASET_ITEM_UPDATING: return Object.assign({}, state, {
-        userDatasetUpdating: true
-      });
+      case 'user-datasets/item-updating': return {
+        ...state,
+        userDatasetUpdating: true,
+        updateError: undefined
+      };
 
-      case actionTypes.DATASET_ITEM_UPDATE_SUCCESS: return Object.assign({}, state, {
+      case 'user-datasets/item-update-success': return {
+        ...state,
         userDatasetUpdating: false,
-        userDatasetsById: Object.assign({}, state.userDatasetsById, {
-          [payload.id]: {
+        userDatasetsById: {
+          ...state.userDatasetsById,
+          [action.payload.userDataset.id]: {
             isLoading: false,
-            resource: Object.assign({}, state.userDatasetsById[payload.id].resource, {
-              meta: payload.meta
-            })
+            resource: action.payload.userDataset
           }
-        })
-      });
+        }
+      };
+
+      case 'user-datasets/item-update-error': return {
+        ...state,
+        userDatasetUpdating: false,
+        updateError: action.payload.error
+      };
 
       default:
         return state;

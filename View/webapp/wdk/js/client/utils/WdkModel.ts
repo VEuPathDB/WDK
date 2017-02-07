@@ -10,11 +10,23 @@ interface ModelEntity {
 
 export interface RecordClass extends ModelEntity {
   recordIdAttributeName: string;
+  primaryKeyColumnRefs: string[];
   description: string;
+  urlSegment: string;
   attributes: AttributeField[];
   tables: TableField[];
   attributesMap: { [key: string]: AttributeField };
   tablesMap: { [key: string]: TableField };
+  formats: Reporter[];
+  useBasket: boolean;
+}
+
+export interface Reporter {
+  name: string;
+  displayName: string;
+  description: string;
+  isInReport: boolean;
+  scopes: string[];
 }
 
 export interface Question extends ModelEntity {
@@ -84,8 +96,8 @@ export interface TableValue extends Array<AttributeValue> { }
 export interface Answer {
   records: Record[];
   meta: {
-    attributes: AttributeField[];
-    tables: TableField[];
+    attributes: string[];
+    tables: string[];
     recordClassName: string;
     responseCount: number;
     totalCount: number;
@@ -102,11 +114,8 @@ export interface AnswerSpec {
 }
 
 export interface AnswerFormatting {
-  pagination: { offset: number; numRecords: number; };
-  attributes: string[] | '__ALL_ATTRIBUTES__' | '__DISPLAYABLE_ATTRIBUTES__';
-  tables: string[] | '__ALL_TABLES__' | '__DISPLAYABLE_TABLES__';
-  sorting: [ { attributeName: string; direction: 'ASC' | 'DESC' } ];
-  contentDisposition?: 'inline' | 'attatchment';
+  format: string
+  formatConfig: {}
 }
 
 export type UserDatasetMeta = {

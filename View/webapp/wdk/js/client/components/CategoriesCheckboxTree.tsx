@@ -1,10 +1,36 @@
-import {PropTypes} from 'react';
+import React, { ComponentClass, StatelessComponent } from 'react';
 import { wrappable } from '../utils/componentUtils';
-import { getNodeChildren } from '../utils/OntologyUtils';
-import { getNodeId, nodeSearchPredicate, BasicNodeComponent } from '../utils/CategoryUtils';
-import CheckboxTree from './CheckboxTree';
+import {getNodeId, getChildren as getNodeChildren, nodeSearchPredicate, BasicNodeComponent, CategoryTreeNode} from '../utils/CategoryUtils';
+import CheckboxTree from "./CheckboxTree";
 
-let CategoriesCheckboxTree = props => {
+type NodeComponentProps = {
+  node: CategoryTreeNode
+}
+
+type ChangeHandler = (ids: string[]) => void;
+
+type Props = {
+  title: string;
+  autoFocusSearchBox?: boolean;
+  searchBoxPlaceholder: string;
+  tree: CategoryTreeNode;
+  /** String name representing what is being searched */
+  leafType: string, // do not make optional- add this prop to your calling code!
+  selectedLeaves: string[];
+  expandedBranches: string[];
+  searchTerm: string;
+  nodeComponent?: ComponentClass<NodeComponentProps> | StatelessComponent<NodeComponentProps>;
+  isMultiPick?: boolean;
+  onChange: ChangeHandler;
+  onUiChange: ChangeHandler;
+  onSearchTermChange: (term: string) => void;
+  isSelectable?: boolean;
+  disableHelp?: boolean;
+};
+
+let CheckboxTree_ = CheckboxTree as new (props: any) => CheckboxTree<CategoryTreeNode>;
+
+let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
 
   let { title, autoFocusSearchBox, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
     isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange, isSelectable, leafType, disableHelp } = props;
@@ -35,36 +61,18 @@ let CategoriesCheckboxTree = props => {
     <div className="wdk-CategoriesCheckboxTree">
       {title && <h3 className="wdk-CategoriesCheckboxTreeHeading">{title}</h3>}
       <div className="wdk-CategoriesCheckboxTreeWrapper">
-        <CheckboxTree {...treeProps} />
+        <CheckboxTree_ {...treeProps} />
       </div>
     </div>
   );
 };
 
-CategoriesCheckboxTree.propTypes = {
-  title: PropTypes.string,
-  autoFocusSearchBox: PropTypes.bool,
-  searchBoxPlaceholder: PropTypes.string,
-  tree: CheckboxTree.propTypes.tree,
-  /** String name representing what is being searched */
-  leafType: PropTypes.string.isRequired, // do not make optional- add this prop to your calling code!
-  selectedLeaves: PropTypes.array,
-  expandedBranches: PropTypes.array,
-  nodeComponent: PropTypes.func,
-  isMultiPick: PropTypes.bool,
-  searchTerm: PropTypes.string,
-  onChange: PropTypes.func,
-  onUiChange: PropTypes.func,
-  onSearchTermChange: PropTypes.func,
-  isSelectable: PropTypes.bool,
-  disableHelp: PropTypes.bool
-};
 CategoriesCheckboxTree.defaultProps = {
   nodeComponent: BasicNodeComponent,
   isMultiPick: true,
   isSelectable: true,
   leafType: 'column', // TODO remove once all consumers are passing in a value for this
   disableHelp: false
-}
+} as Props
 
 export default wrappable(CategoriesCheckboxTree);

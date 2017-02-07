@@ -40,6 +40,7 @@ export interface CategoryNode extends OntologyNode {
 
 export interface IndividualNode extends OntologyNode {
   type: 'individual';
+  children: CategoryTreeNode[]; // note, this is always empty for an individual
   properties: CategoryNodeProperties & { [key: string]: string[]; };
   wdkReference: {
     name: string;
@@ -50,6 +51,7 @@ export interface IndividualNode extends OntologyNode {
 }
 
 export type CategoryTreeNode = CategoryNode | IndividualNode;
+export type CategoryOntology = Ontology<CategoryTreeNode>
 
 export function getId(node: CategoryTreeNode) {
   return isIndividual(node) ? node.wdkReference.name : kebabCase(getLabel(node));
@@ -95,6 +97,10 @@ export function getSynonyms(node: CategoryTreeNode) {
   .concat(getPropertyValues('hasExactSynonym', node));
 }
 
+export function getChildren(node: CategoryTreeNode) {
+  return node.children;
+}
+
 // TODO Make this more genericL createCategoryNode and createWdkEntityNode (or, createLeafNode??)
 /**
  * Returns a JSON object representing a simplified category tree node that will be properly interpreted
@@ -136,7 +142,7 @@ export function createNode(id: string, displayName: string, description: string,
  * @param question question whose dynamic attributes should be added
  * @param categoryTree root node of a categories ontology tree to modify
  */
-export function addSearchSpecificSubtree(question: Question, categoryTree: CategoryNode): CategoryNode {
+export function addSearchSpecificSubtree(question: Question, categoryTree: CategoryTreeNode): CategoryTreeNode {
   if (question.dynamicAttributes.length > 0) {
     let questionNodes = question.dynamicAttributes.map(attribute => {
       return createNode(attribute.name, attribute.displayName, attribute.help, []);
@@ -160,7 +166,7 @@ export function addSearchSpecificSubtree(question: Question, categoryTree: Categ
  * @param node - given id
  * @returns {*} - id/value of node
  */
-export function getNodeId(node: CategoryNode): string {
+export function getNodeId(node: CategoryTreeNode): string {
   // FIXME: document why the special case for attributes and tables
   let targetType = getTargetType(node);
   return (targetType === 'attribute' || targetType === 'table' ? getRefName(node) : getId(node));
@@ -172,7 +178,7 @@ export function getNodeId(node: CategoryNode): string {
  * distinction is made depending on whether the summary view applies to transcripts or genes.
  */
 export function isQualifying(spec: { targetType?: string; recordClassName?: string; scope?: string; }) {
-  return function(node: CategoryNode) {
+  return function(node: CategoryTreeNode) {
     // We have to cast spec as StringDict to avoid an implicitAny error
     // See http://stackoverflow.com/questions/32968332/how-do-i-prevent-the-error-index-signature-of-object-type-implicitly-has-an-an
     return Object.keys(spec).every(prop => nodeHasProperty(prop, (spec as Dict<string>)[prop], node));
@@ -200,7 +206,7 @@ export function BasicNodeComponent(props: {node: CategoryTreeNode}) {
  * @param searchText search text to match against
  * @returns true if node 'matches' the passed search text
  */
-export function nodeSearchPredicate(node: CategoryNode, searchQueryTerms: string[]): boolean {
+export function nodeSearchPredicate(node: CategoryTreeNode, searchQueryTerms: string[]): boolean {
   return areTermsInString(searchQueryTerms, getDisplayName(node) + ' ' +
                           getTooltipContent(node));
 }
@@ -208,9 +214,9 @@ export function nodeSearchPredicate(node: CategoryNode, searchQueryTerms: string
 /**
  * Finds the "left-most" leaf in the tree and returns its ID using getNodeId()
  */
-export function findFirstLeafId(ontologyTreeRoot: CategoryNode): string {
+export function findFirstLeafId(ontologyTreeRoot: CategoryTreeNode): string {
   if (nodeHasChildren(ontologyTreeRoot)) {
-    return findFirstLeafId(getNodeChildren(ontologyTreeRoot)[0] as CategoryNode);
+    return findFirstLeafId(getNodeChildren(ontologyTreeRoot)[0] as CategoryTreeNode);
   }
   return getNodeId(ontologyTreeRoot);
 }
@@ -219,25 +225,31 @@ export function findFirstLeafId(ontologyTreeRoot: CategoryNode): string {
  * Returns an array of all the IDs of the leaf nodes in the passed tree.  If the
  * root has no children, this function assumes a "null" tree, and returns an empty array.
  */
-export function getAllLeafIds(ontologyTreeRoot: CategoryNode): string[] {
+export function getAllLeafIds(ontologyTreeRoot: CategoryTreeNode): string[] {
   return (!nodeHasChildren(ontologyTreeRoot) ? [] : getAllLeafIdsNoCheck(ontologyTreeRoot));
 }
 
 /**
  * Returns an array of all the IDs of the leaf nodes in the passed tree.
  */
-function getAllLeafIdsNoCheck(ontologyTreeRoot: CategoryNode): string[] {
-  let collectIds = (leafIds: string[], node: CategoryNode): string[] =>
+function getAllLeafIdsNoCheck(ontologyTreeRoot: CategoryTreeNode): string[] {
+  let collectIds = (leafIds: string[], node: CategoryTreeNode): string[] =>
     (!nodeHasChildren(node) ? leafIds.concat(getNodeId(node)) :
       getNodeChildren(node).reduce(collectIds, leafIds));
   return collectIds([], ontologyTreeRoot);
 }
 
-export function getAllBranchIds(categoryTree: CategoryNode): string[] {
-  return getBranches(categoryTree, (node: CategoryNode) => node.children).map(getNodeId);
+export function getAllBranchIds(categoryTree: CategoryTreeNode): string[] {
+  return getBranches(categoryTree, (node: CategoryTreeNode) => node.children).map(getNodeId);
 }
 
-export const normalizeOntology = memoize(compose(sortOntology, pruneUnresolvedReferences, resolveWdkReferences));
+const normalizedOntologies: Dict<CategoryOntology> = { };
+
+export function normalizeOntology(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: CategoryOntology) {
+  if (ontology.name in normalizedOntologies) return normalizedOntologies[ontology.name];
+  return sortOntology(pruneUnresolvedReferences(resolveWdkReferences(
+    recordClasses, questions, ontology )))
+}
 
 /**
  * Adds the related WDK reference to each node. This function mutates the
@@ -245,7 +257,7 @@ export const normalizeOntology = memoize(compose(sortOntology, pruneUnresolvedRe
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: Ontology<CategoryTreeNode>) {
+function resolveWdkReferences(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: CategoryOntology) {
   for (let node of preorderSeq(ontology.tree)) {
     switch (getTargetType(node)) {
       case 'attribute': {
@@ -288,7 +300,7 @@ function isResolved(node: CategoryTreeNode) {
   return isIndividual(node) ? node.wdkReference != null : true;
 }
 
-function pruneUnresolvedReferences(ontology: Ontology<CategoryTreeNode>) {
+function pruneUnresolvedReferences(ontology: CategoryOntology) {
   //ontology.unprunedTree = ontology.tree;
   ontology.tree = getTree(ontology, isResolved);
   return ontology;
@@ -298,7 +310,7 @@ function pruneUnresolvedReferences(ontology: Ontology<CategoryTreeNode>) {
  * Compare nodes based on the "sort order" property. If it is undefined,
  * compare based on displayName.
  */
-function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
+function compareOntologyNodes(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
   if (nodeA.children.length === 0 && nodeB.children.length !== 0)
     return -1;
 
@@ -313,14 +325,14 @@ function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
  * Sort ontology node siblings. This function mutates the tree, so should
  * only be used before caching the ontology.
  */
-function sortOntology(ontology: Ontology<CategoryNode>) {
+function sortOntology(ontology: CategoryOntology) {
   for (let node of preorderSeq(ontology.tree)) {
     node.children.sort(compareOntologyNodes);
   }
   return ontology;
 }
 
-function compareOnotologyNodesBySortNumber(nodeA: CategoryNode, nodeB: CategoryNode) {
+function compareOnotologyNodesBySortNumber(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
   let sortOrderA = getPropertyValue('display order', nodeA);
   let sortOrderB = getPropertyValue('display order', nodeB);
   return sortOrderA && sortOrderB ? Number(sortOrderA) - Number(sortOrderB)
@@ -329,7 +341,7 @@ function compareOnotologyNodesBySortNumber(nodeA: CategoryNode, nodeB: CategoryN
        : 0;
 }
 
-function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryNode) {
+function compareOntologyNodesByDisplayName(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
   // attempt to sort by displayName
   let nameA = getDisplayName(nodeA) || '';
   let nameB = getDisplayName(nodeB) || '';
