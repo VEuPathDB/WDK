@@ -298,9 +298,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     if(!irodsObject.exists()) {
       throw new WdkModelException("No such file/directory exists.");
     }
-    if(irodsObject.isDirectory() && irodsObject.list().length > 0) {
-      throw new WdkModelException("The directory to be deleted is not empty.");
-    }
+    // deleting even non-empty directories
     irodsObject.delete();
   }
 
