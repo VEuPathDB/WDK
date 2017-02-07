@@ -2,7 +2,7 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "tests": "tape tests/**/*.{j,t}s{,x}",
+    "tests": "tape -r ./tests/00-setup.js tests/**/*.{j,t}s{,x}",
     "examples-server": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
@@ -19,6 +19,7 @@
     "@types/react-dom": "^0.14.21",
     "@types/react-router": "^2.0.46",
     "@types/spin": "^2.3.30",
+    "@types/webpack-env": "^1.13.0",
     "babel-core": "^6.22.1",
     "babel-loader": "^6.2.10",
     "babel-plugin-transform-es2015-classes": "^6.22.0",

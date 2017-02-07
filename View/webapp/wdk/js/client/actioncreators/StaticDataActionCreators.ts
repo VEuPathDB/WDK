@@ -1,53 +1,92 @@
 import { StaticDataProps, broadcast } from '../utils/StaticDataUtils';
 import WdkService from "../utils/WdkService";
 import {ActionCreator, DispatchAction} from "../ActionCreator";
+import {ServiceConfig} from "../utils/WdkService";
+import {CategoryOntology} from "../utils/CategoryUtils";
+import {Question, RecordClass} from "../utils/WdkModel";
+import {User, UserPreferences} from "../utils/WdkUser";
 
-export let actionTypes = {
+export type StaticData = {
+  config: ServiceConfig;
+  ontology: CategoryOntology;
+  questions: Question[];
+  recordClasses: RecordClass[];
+  user: User;
+  preferences: UserPreferences;
+}
 
-  // actions triggered by individual static data loads
-  CONFIG_LOADED: "static/config-loaded",
-  ONTOLOGY_LOADED: "static/categories-loaded",
-  QUESTIONS_LOADED: "static/questions-loaded",
-  RECORDCLASSES_LOADED: "static/recordClasses-loaded",
-  USER_LOADED: "static/user-loaded",
-  PREFERENCES_LOADED: "static/preferences-loaded",
+type StaticDataActionTypes = {
+  config: 'static/config-loaded';
+  ontology: 'static/categories-loaded';
+  questions: 'static/questions-loaded';
+  recordClasses: 'static/recordClasses-loaded';
+  user: 'static/user-loaded';
+  preferences: 'static/preferences-loaded';
+}
 
-  // action triggered when all static data loaded
-  STATIC_DATA_LOADED: "static/all-data-loaded",
-
-  // action triggered if static data could not be loaded
-  STATIC_DATA_LOAD_ERROR: "static/load-error"
-};
+type StaticDataActions<K extends keyof StaticData> = {
+  type: StaticDataActionTypes[K];
+  payload: Pick<StaticData, K>
+}
 
 
-export type StaticDataConfigItem = {
-  elementName: string;
+// actions triggered by individual static data loads
+export type ConfigAction = StaticDataActions<'config'>
+export type OntologyAction = StaticDataActions<'ontology'>
+export type QuestionsAction = StaticDataActions<'questions'>
+export type RecordClassesAction = StaticDataActions<'recordClasses'>
+export type UserAction = StaticDataActions<'user'>
+export type PreferencesAction = StaticDataActions<'preferences'>
+
+// action triggered when all static data loaded
+export type AllDataAction = {
+  type: "static/all-data-loaded",
+  payload: StaticData
+}
+
+// action triggered if static data could not be loaded
+export type LoadErrorAction = {
+  type: "static/load-error",
+  payload: { error: Error }
+}
+
+export type StaticDataAction = ConfigAction
+                             | OntologyAction
+                             | QuestionsAction
+                             | RecordClassesAction
+                             | UserAction
+                             | PreferencesAction
+
+type StaticDataKey = keyof StaticData;
+
+type StaticDataConfigMapEntry<K extends keyof StaticData> = {
+  elementName: K;
   serviceCall: string;
-  actionType: string;
-};
+  actionType: StaticDataActions<K>['type']
+}
 
-export type StaticDataConfigMap = {
-  [key: string]: StaticDataConfigItem;
-};
+type StaticDataConfigMap = {
+  [K in keyof StaticData]: StaticDataConfigMapEntry<K>
+}
 
 export let staticDataConfigMap: StaticDataConfigMap = {
-  [StaticDataProps.CONFIG]: {
-    elementName: StaticDataProps.CONFIG, serviceCall: 'getConfig', actionType: actionTypes.CONFIG_LOADED
+  config: {
+    elementName: 'config', serviceCall: 'getConfig', actionType: 'static/config-loaded'
   },
-  [StaticDataProps.ONTOLOGY]: {
-    elementName: StaticDataProps.ONTOLOGY, serviceCall: 'getOntology', actionType: actionTypes.ONTOLOGY_LOADED
+  ontology: {
+    elementName: 'ontology', serviceCall: 'getOntology', actionType: 'static/categories-loaded'
   },
-  [StaticDataProps.QUESTIONS]: {
-    elementName: StaticDataProps.QUESTIONS, serviceCall: 'getQuestions', actionType: actionTypes.QUESTIONS_LOADED
+  questions: {
+    elementName: 'questions', serviceCall: 'getQuestions', actionType: 'static/questions-loaded'
   },
-  [StaticDataProps.RECORDCLASSES]: {
-    elementName: StaticDataProps.RECORDCLASSES, serviceCall: 'getRecordClasses', actionType: actionTypes.RECORDCLASSES_LOADED
+  recordClasses: {
+    elementName: 'recordClasses', serviceCall: 'getRecordClasses', actionType: 'static/recordClasses-loaded'
   },
-  [StaticDataProps.USER]: {
-    elementName: StaticDataProps.USER, serviceCall: 'getCurrentUser', actionType: actionTypes.USER_LOADED
+  user: {
+    elementName: 'user', serviceCall: 'getCurrentUser', actionType: 'static/user-loaded'
   },
-  [StaticDataProps.PREFERENCES]: {
-    elementName: StaticDataProps.PREFERENCES, serviceCall: 'getCurrentUserPreferences', actionType: actionTypes.PREFERENCES_LOADED
+  preferences: {
+    elementName: 'preferences', serviceCall: 'getCurrentUserPreferences', actionType: 'static/preferences-loaded'
   }
 };
 
@@ -59,47 +98,51 @@ export function loadRecordClasses() { return getLoader(StaticDataProps.RECORDCLA
 export function loadUser() { return getLoader(StaticDataProps.USER); }
 export function loadPreferences() { return getLoader(StaticDataProps.PREFERENCES); }
 
-function handleLoadError(error: Error) {
+function handleLoadError(error: Error): LoadErrorAction {
   console.error(error);
   return broadcast({
-    type: actionTypes.STATIC_DATA_LOAD_ERROR,
+    type: 'static/load-error',
     payload: { error }
-  });
+  }) as LoadErrorAction;
 }
 
-function getPromise(dataItemName: string, dispatch: DispatchAction, wdkService: WdkService) {
+function getPromise(
+  dataItemName: StaticDataKey,
+  dispatch: DispatchAction<StaticDataAction>,
+  wdkService: WdkService
+) {
   let { elementName, serviceCall, actionType } = staticDataConfigMap[dataItemName];
-  return (wdkService as any)[serviceCall]().then((element: any) => {
+  return (wdkService as any)[serviceCall]().then((element: StaticData[typeof elementName]) => {
     console.log("WDK " + elementName + " loaded");
     dispatch(broadcast({
       type: actionType,
       payload: { [elementName]: element }
-    }));
+    }) as StaticDataAction);
     return element;
   });
 }
 
-let getLoader: ActionCreator = (dataItemName: string) => {
+let getLoader: ActionCreator<StaticDataAction> = (dataItemName: StaticDataKey) => {
   return function run(dispatch, { wdkService }) {
     return getPromise(dataItemName, dispatch, wdkService)
       .catch((error: Error) => handleLoadError(error));
   };
 };
 
-export let loadAllStaticData: ActionCreator = () => {
+export let loadAllStaticData: ActionCreator<AllDataAction> = () => {
   let dataItemKeys = Object.keys(staticDataConfigMap);
   return function run(dispatch, { wdkService }) {
-    let promiseArray = dataItemKeys.map(key => getPromise(key, dispatch, wdkService));
+    let promiseArray = dataItemKeys.map(key => getPromise(key as StaticDataKey, dispatch as any, wdkService));
     return Promise.all(promiseArray).then(resultArray => {
       let payload: {[key: string]: any} = {};
       for (let i = 0; i < dataItemKeys.length; i++) {
         payload[dataItemKeys[i]] = resultArray[i];
       }
       console.log("WDK static data loaded");
-      return broadcast({
-        type: actionTypes.STATIC_DATA_LOADED,
+      dispatch(broadcast({
+        type: 'static/all-data-loaded',
         payload: payload
-      });
-    }).catch(error => handleLoadError(error));
+      }) as AllDataAction);
+    }).catch((error: Error) => handleLoadError(error));
   };
 };

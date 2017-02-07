@@ -13,6 +13,8 @@ import * as CategoryUtils from './utils/CategoryUtils';
 import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import LazyFilterService from './utils/LazyFilterService';
+import WdkService from './utils/WdkService';
+import * as AuthUtil from './utils/AuthUtil';
 import { wrapComponents, initialize } from './main';
 
 __webpack_public_path__ = window.__asset_path_remove_me_please__;
@@ -32,5 +34,7 @@ export {
   StaticDataUtils,
   Stores,
   TreeUtils,
-  LazyFilterService
+  LazyFilterService,
+  WdkService,
+  AuthUtil
 };

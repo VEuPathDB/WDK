@@ -1,16 +1,81 @@
+import {ActionCreator} from '../ActionCreator';
 import {pick} from 'lodash';
-// Action types
-export let actionTypes = {
-  ANSWER_ADDED: 'answer/added',
-  ANSWER_CHANGE_ATTRIBUTES: 'answer/attributes-changed',
-  ANSWER_SORTING_UPDATED: 'answer/sorting-updated',
-  ANSWER_LOADING: 'answer/loading',
-  ANSWER_MOVE_COLUMN: 'answer/column-moved',
-  ANSWER_UPDATE_FILTER: 'answer/filtered',
-  ANSWER_ERROR: 'answer/error'
-};
+import {AttributeField, RecordClass, Question, Answer, TableField} from '../utils/WdkModel'
 
-let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
+export type DisplayInfo = {
+  customName: string;
+  pagination: { offset: number, numRecords: number};
+  attributes: string[] | '__ALL_ATTRIBUTES__';
+  tables: string[] | '__ALL_TABLES__';
+  sorting: Sorting[];
+}
+
+export type Parameters = {
+  [key: string]: string;
+}
+
+export type Sorting = {
+  attributeName: string
+  direction: 'ASC' | 'DESC'
+}
+
+export type AnswerOptions = {
+  parameters: Parameters;
+  filters: {name: string, value: any}[]
+  viewFilters: {name: string, value: any[]}
+  displayInfo: DisplayInfo
+}
+
+// Action types
+export type LoadingAction = {
+  type: 'answer/loading'
+}
+export type ErrorAction = {
+  type: 'answer/error',
+  payload: {
+    error: Error
+  }
+}
+export type AddedAction = {
+  type: 'answer/added',
+  payload: {
+    answer: Answer,
+    question: Question,
+    recordClass: RecordClass,
+    displayInfo: DisplayInfo,
+    parameters: Parameters,
+  }
+}
+export type TableSortedAction = {
+  type: 'answer/sorting-updated',
+  payload: {
+    sorting: Sorting[]
+  }
+}
+export type ColumnMovedAction = {
+  type: 'answer/column-moved',
+  payload: {
+    columnName: string,
+    newPosition: number
+  }
+}
+export type AttributesChangedAction = {
+  type: 'answer/attributes-changed',
+  payload: {
+    attributes: AttributeField[]
+  }
+}
+export type TableFilteredAction = {
+  type: 'answer/filtered',
+  payload: {
+    terms: string,
+    attributes: string[],
+    tables: string[]
+  }
+}
+
+let hasUrlSegment = (urlSegment: string) => (e: RecordClass | Question) =>
+  e.urlSegment === urlSegment
 
 /**
  * Retrieve's an Answer resource from the WDK REST Service and dispatches an
@@ -41,7 +106,7 @@ let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
  *
  * @param {string} questionUrlSegment
  * @param {Object} opts Addition data to include in request.
- * @param {Array<Object>} opts.parameters Array of param spec objects: { name: string; value: any }
+ * @param {Object} opts.parameters Object map of parameters.
  * @param {Array<Object>} opts.filters Array of filter spec objects: { name: string; value: any }
  * @param {Array<Object>} opts.viewFilters Array of view filter  spec objects: { name: string; value: any }
  * @param {string} opts.displayInfo.customName Custom name for the question to display on the page
@@ -51,9 +116,13 @@ let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
  * @param {Array<string>} opts.displayInfo.attributes Array of attribute names to include.
  * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
  */
-export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {}) {
+export const loadAnswer: ActionCreator<LoadingAction | ErrorAction | AddedAction> = (
+  questionUrlSegment: string,
+  recordClassUrlSegment: string,
+  opts: AnswerOptions
+) => {
   return function run(dispatch, { wdkService }) {
-    let { parameters = {}, filters = [], displayInfo } = opts;
+    let { parameters = {} as Parameters, filters = [], displayInfo } = opts;
 
     // FIXME Set attributes to whatever we're sorting on. This is required by
     // the service, but it doesn't appear to have any effect at this time. We
@@ -61,42 +130,48 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
     displayInfo.attributes = "__ALL_ATTRIBUTES__"; // special string for default attributes
     displayInfo.tables = [];
 
-    dispatch({ type: actionTypes.ANSWER_LOADING });
+    dispatch({ type: 'answer/loading' });
 
     let questionPromise = wdkService.findQuestion(hasUrlSegment(questionUrlSegment));
     let recordClassPromise = wdkService.findRecordClass(hasUrlSegment(recordClassUrlSegment));
     let answerPromise = questionPromise.then(question => {
+
+      if (question == null)
+        throw new Error("Could not find a question identified by `" + questionUrlSegment + "`.");
+
       // Build XHR request data for '/answer'
       let answerSpec = {
         questionName: question.name,
-        parameters: pick(parameters, question.parameters),
+        parameters,
         filters
       };
       let formatting = {
-        formatConfig: pick(displayInfo,
-          [ 'pagination', 'attributes', 'sorting' ])
+        format: 'wdk-service-json',
+        formatConfig: pick(displayInfo, ['attributes', 'pagination', 'sorting'])
       };
       return wdkService.getAnswer(answerSpec, formatting);
     });
 
     return Promise.all([ answerPromise, questionPromise, recordClassPromise ])
-    .then(([ answer, question, recordClass]) => {
-      return dispatch({
-        type: actionTypes.ANSWER_ADDED,
-        payload: {
-          answer,
-          question,
-          recordClass,
-          displayInfo,
-          parameters
-        }
-      })
-    }, error => {
-      dispatch({
-        type: actionTypes.ANSWER_ERROR,
-        payload: { error }
+    .then(
+      ([ answer, question, recordClass]) => {
+        dispatch({
+          type: 'answer/added',
+          payload: {
+            answer,
+            question,
+            recordClass,
+            displayInfo,
+            parameters
+          }
+        });
+      },
+      error => {
+        dispatch({
+          type: 'answer/error',
+          payload: { error }
+        });
       });
-    });
   }
 }
 
@@ -107,9 +182,9 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
  * @param {Object} attribute Record attribute field
  * @param {string} direction Can be 'ASC' or 'DESC'
  */
-export function sort(sorting) {
+export function sort(sorting: Sorting[]): TableSortedAction {
   return {
-    type: actionTypes.ANSWER_SORTING_UPDATED,
+    type: 'answer/sorting-updated',
     payload: { sorting }
   };
 }
@@ -120,9 +195,9 @@ export function sort(sorting) {
  * @param {string} columnName The name of the attribute to move.
  * @param {number} newPosition The new 0-based index position of the attribute.
  */
-export function moveColumn(columnName, newPosition) {
+export function moveColumn(columnName: string, newPosition: number): ColumnMovedAction {
   return {
-    type: actionTypes.ANSWER_MOVE_COLUMN,
+    type: 'answer/column-moved',
     payload: { columnName, newPosition }
   };
 }
@@ -132,9 +207,9 @@ export function moveColumn(columnName, newPosition) {
  *
  * @param {Array<Object>} attributes The new set of attributes to show in the table.
  */
-export function changeAttributes(attributes) {
+export function changeAttributes(attributes: AttributeField[]): AttributesChangedAction {
   return {
-    type: actionTypes.ANSWER_CHANGE_ATTRIBUTES,
+    type: 'answer/attributes-changed',
     payload: { attributes }
   };
 }
@@ -149,9 +224,9 @@ export function changeAttributes(attributes) {
  * @param {Array<string>} spec.attributes The set of attribute names whose values should be queried.
  * @param {Array<string>} spec.tables The set of table names whose values should be queried.
  */
-export function updateFilter(terms, attributes, tables) {
+export function updateFilter(terms: string, attributes: string[], tables: string[]): TableFilteredAction {
   return {
-    type: actionTypes.ANSWER_UPDATE_FILTER,
+    type: 'answer/filtered',
     payload: { terms, attributes, tables }
   };
 }

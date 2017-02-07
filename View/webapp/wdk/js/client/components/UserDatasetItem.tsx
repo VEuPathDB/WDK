@@ -12,9 +12,11 @@ import NotFound from './NotFound';
 type Props = {
   userDataset: UserDataset;
   isOwner: boolean;
-  updateUserDatasetItem: (id: number, details: UserDatasetMeta) => void;
+  updateUserDatasetItem: (userDataset: UserDataset, details: UserDatasetMeta) => void;
   questionMap: { [key: string]: Question };
   webAppUrl: string;
+  userDatasetUpdating: boolean;
+  updateError?: Error;
 };
 
 type State = {
@@ -38,7 +40,7 @@ const tooltipDate = (time: number) =>
   new Date(time).toString();
 
 const normalizeBaseUrl = (baseUrl: string) =>
-  baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+  /\/$/.test(baseUrl) ? baseUrl : baseUrl + '/';
 
 const OverviewItem: StatelessComponent<{prompt: string}> = props =>
   <div className={makeClassName('OverviewItem')}>
@@ -78,12 +80,12 @@ class UserDatasetItem extends Component<Props, State> {
   }
 
   handleDetailFormSubmit(meta: UserDatasetMeta) {
-    this.props.updateUserDatasetItem(this.props.userDataset.id, meta);
+    this.props.updateUserDatasetItem(this.props.userDataset, meta);
     this.setState({ edit: undefined });
   }
 
   render() {
-    let { userDataset, isOwner, questionMap, webAppUrl } = this.props;
+    let { userDataset, isOwner, questionMap, webAppUrl, userDatasetUpdating, updateError } = this.props;
     let { edit } = this.state;
 
     let releventQuestions = userDataset.questions
@@ -100,6 +102,12 @@ class UserDatasetItem extends Component<Props, State> {
 
     return (
       <div className={makeClassName()}>
+
+        {userDatasetUpdating &&
+          <div style={{ textAlign: 'center'}}>Updating...</div>
+        }
+
+        {updateError && <p>Unable to update dataset</p>}
 
         {isOwner ? (
           <div className={makeClassName('Actions')}>

@@ -1,11 +1,44 @@
-import WdkStore from './WdkStore';
+import WdkStore, { BaseState } from './WdkStore';
 import { filterRecords } from '../utils/recordUtils';
-import { actionTypes } from '../actioncreators/AnswerViewActionCreators';
+import {Answer, Question, Record, RecordClass, AttributeField} from '../utils/WdkModel';
+import {
+  AnswerOptions,
+  LoadingAction,
+  AddedAction,
+  ErrorAction,
+  TableSortedAction,
+  AttributesChangedAction,
+  ColumnMovedAction,
+  TableFilteredAction
+} from '../actioncreators/AnswerViewActionCreators';
 
-export default class AnswerViewStore extends WdkStore {
+type Action = LoadingAction
+            | AddedAction
+            | ErrorAction
+            | TableSortedAction
+            | AttributesChangedAction
+            | ColumnMovedAction
+            | TableFilteredAction;
+
+export type FilterState = {
+  filterTerm: string;
+  filterAttributes: string[];
+  filterTables: string[];
+}
+
+export type State = BaseState & Answer & AnswerOptions & FilterState & {
+  question: Question;
+  recordClass: RecordClass;
+  allAttributes: AttributeField[];
+  visibleAttributes: AttributeField[];
+  unfilteredRecords: Record[];
+  isLoading: boolean;
+}
+
+export default class AnswerViewStore extends WdkStore<State> {
 
   getInitialState() {
-    return {
+    return Object.assign({
       meta: undefined,                // Object: meta object from last service response
       records: undefined,             // Record[]: filtered records
       question: undefined,            // Object: question for this answer page
@@ -25,48 +58,32 @@ export default class AnswerViewStore extends WdkStore {
         tables: undefined,
         customName: undefined
       }
-    };
+    }, super.getInitialState());
   }
 
-  handleAction(state, { type, payload }) {
-    switch(type) {
-      case actionTypes.ANSWER_ADDED:
-        return addAnswer(state, payload);
-
-      case actionTypes.ANSWER_CHANGE_ATTRIBUTES:
-        return updateVisibleAttributes(state, payload);
-
-      case actionTypes.ANSWER_SORTING_UPDATED:
-        return updateSorting(state, payload);
-
-      case actionTypes.ANSWER_LOADING:
-        return Object.assign({}, state, { isLoading: true, error: undefined });
-
-      case actionTypes.ANSWER_MOVE_COLUMN:
-        return moveTableColumn(state, payload);
-
-      case actionTypes.ANSWER_UPDATE_FILTER:
-        return updateFilter(state, payload);
-
-      case actionTypes.ANSWER_ERROR:
-        return Object.assign(this.getInitialState(), {
-          error: payload.error
-        });
-
-      default:
-        return state;
+  handleAction(state: State, action: Action) {
+    switch(action.type) {
+      case 'answer/loading': return { ...state, isLoading: true, error: undefined };
+      case 'answer/error': return { ...this.getInitialState(), ...action.payload.error };
+      case 'answer/added': return addAnswer(state, action.payload);
+      case 'answer/attributes-changed': return updateVisibleAttributes(state, action.payload);
+      case 'answer/sorting-updated': return updateSorting(state, action.payload);
+      case 'answer/column-moved': return moveTableColumn(state, action.payload);
+      case 'answer/filtered': return updateFilter(state, action.payload);
+      default: return state;
     }
   }
 }
 
-function addAnswer(state, payload) {
+function addAnswer( state: State, payload: AddedAction["payload"] ) {
   let { answer, displayInfo, question, recordClass, parameters } = payload;
 
   // in case we used a magic string to get attributes, reset fetched attributes in displayInfo
   displayInfo.attributes = answer.meta.attributes;
 
   // need to filter wdk_weight from multiple places;
-  let isNotWeight = attr => attr != 'wdk_weight' && attr.name != 'wdk_weight';
+  let isNotWeight = (attr: string | AttributeField) =>
+    typeof attr === 'string' ? attr != 'wdk_weight' : attr.name != 'wdk_weight';
 
   // collect attributes from recordClass and question
   let allAttributes = recordClass.attributes.concat(question.dynamicAttributes).filter(isNotWeight);
@@ -75,19 +92,8 @@ function addAnswer(state, payload) {
   let visibleAttributes = state.visibleAttributes;
   if (!visibleAttributes || state.meta.recordClassName !== answer.meta.recordClassName) {
     // need to populate attribute details for visible attributes
-    visibleAttributes = question.defaultAttributes.map(attrName => {
-      // first try to find attribute in record class
-      let value = allAttributes.find(attr => attr.name === attrName);
-      if (value === null) {
-        // null value is bad, but we expect itRemove search weight from answer
-        //   meta since it doens't apply to non-Step answers
-        if (isNotWeight({ name: attrName })) {
-          console.warn("Attribute name '" + attrName +
-              "' does not correspond to a known attribute.  Skipping...");
-        }
-      }
-      return value;
-    }).filter(element => element != null); // filter unfound attributes
+    visibleAttributes = allAttributes
+      .filter(attr => isNotWeight(attr) && question.defaultAttributes.includes(attr.name));
   }
 
   // Remove search weight from answer meta since it doens't apply to non-Step answers
@@ -116,7 +122,7 @@ function addAnswer(state, payload) {
  * @param {string} columnName The name of the attribute being moved.
  * @param {number} newPosition The 0-based index to move the attribute to.
  */
-function moveTableColumn(state, { columnName, newPosition }) {
+function moveTableColumn(state: State, { columnName, newPosition }: ColumnMovedAction["payload"]) {
   /* make a copy of list of attributes we will be altering */
   let attributes = [ ...state.visibleAttributes ];
 
@@ -134,26 +140,24 @@ function moveTableColumn(state, { columnName, newPosition }) {
   // then, insert into new position
   attributes.splice(newPosition, 0, attribute);
 
-  return updateVisibleAttributes(state, { attributes });
+  return Object.assign({}, state, { visibleAttributes: attributes });
 }
 
-function updateVisibleAttributes(state, { attributes }) {
+function updateVisibleAttributes(state: State, { attributes }: AttributesChangedAction["payload"]) {
   // Create a new copy of visibleAttributes
   let visibleAttributes = attributes.slice(0);
 
   // Create a new copy of state
-  return Object.assign({}, state, {
-    visibleAttributes
-  });
+  return Object.assign({}, state, { visibleAttributes });
 }
 
-function updateSorting(state, { sorting }) {
+function updateSorting(state: State, { sorting }: TableSortedAction["payload"]) {
   return Object.assign({}, state, {
     displayInfo: Object.assign({}, state.displayInfo, { sorting })
   });
 }
 
-function updateFilter(state, payload) {
+function updateFilter(state: State, payload: TableFilteredAction["payload"]) {
   let filterSpec = {
     filterTerm: payload.terms,
     filterAttributes: payload.attributes || [],

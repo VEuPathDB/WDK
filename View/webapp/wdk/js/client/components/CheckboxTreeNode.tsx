@@ -1,19 +1,22 @@
-import { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { isLeaf } from '../utils/TreeUtils';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
+import ReactElement = React.ReactElement;
+import ComponentClass = React.ComponentClass;
 
 const visibleElement = {display: ""};
 const hiddenElement = {display: "none"};
 
-/**
- * Expects the following props:
- *   name: string
- *   checked: bool
- *   value: string
- *   node: object
- *   onChange: func
- */
-class TreeRadio extends Component {
+type TreeRadioProps<T> = {
+  name: string;
+  checked: boolean;
+  value: string;
+  node: T;
+  onChange: (node: T, checked: boolean) => void;
+  className: string;
+}
+
+class TreeRadio<T> extends Component<TreeRadioProps<T>, void> {
 
   handleClick() {
     let { checked, onChange, node } = this.props;
@@ -30,20 +33,41 @@ class TreeRadio extends Component {
   }
 }
 
-class CheckboxTreeNode extends Component {
 
-  constructor(props) {
-    super(props);
-    this.toggleExpansion = () => {
-      this.props.toggleExpansion(this.props.node);
-    };
+type NodeState = {
+  isSelected: boolean;
+  isIndeterminate: boolean;
+  isVisible: boolean;
+  isExpanded: boolean;
+}
+
+type Props<T> = {
+  node: T;
+  name: string;
+  path: number[];
+  listClassName: string;
+  getNodeState: (node: T) => NodeState;
+  isSelectable: boolean;
+  isMultiPick: boolean;
+  isActiveSearch: boolean;
+  toggleExpansion: (node: T) => void;
+  toggleSelection: (node: T, checked: boolean) => void;
+  getNodeId: (node: T) => string;
+  getNodeChildren: (node: T) => T[];
+  nodeComponent: React.ComponentClass<{ node: T, path?: number[] }> | React.StatelessComponent<{ node: T, path?: number[] }>;
+}
+
+class CheckboxTreeNode<T> extends Component<Props<T>, void> {
+
+  toggleExpansion = () => {
+    this.props.toggleExpansion(this.props.node);
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: Props<T>) {
     return (nextProps.node !== this.props.node);
   }
 
-  render() {
+  render(): ReactElement<Props<T>> {
     let {
       name,
       node,
@@ -59,6 +83,12 @@ class CheckboxTreeNode extends Component {
       getNodeChildren,
       nodeComponent
     } = this.props;
+
+
+    // We have to apply the generic type `T` to these child components. This is
+    // a known TypeScript issue and will likely be solved in the future.
+    const IndeterminateCheckboxT = IndeterminateCheckbox as new () => IndeterminateCheckbox<T>;
+    const TreeRadioT = TreeRadio as new () => TreeRadio<T>;
 
     let { isSelected, isIndeterminate, isVisible, isExpanded } = getNodeState(node);
     let isLeafNode = isLeaf(node, getNodeChildren);
@@ -90,7 +120,7 @@ class CheckboxTreeNode extends Component {
           ) : (
             <label className="wdk-CheckboxTreeNodeContent">
               {isMultiPick ?
-                <IndeterminateCheckbox
+                <IndeterminateCheckboxT
                   className="wdk-CheckboxTreeCheckbox"
                   name={name}
                   checked={isSelected}
@@ -98,7 +128,7 @@ class CheckboxTreeNode extends Component {
                   node={node}
                   value={getNodeId(node)}
                   toggleCheckbox={toggleSelection} /> :
-                <TreeRadio
+                <TreeRadioT
                   className="wdk-CheckboxTreeCheckbox"
                   name={name}
                   checked={isSelected}
@@ -109,7 +139,7 @@ class CheckboxTreeNode extends Component {
             </label>
           )}
         </div>
-        {isLeafNode ? "" :
+        {isLeafNode ? null :
           <ul className={listClassName} style={childrenVisibilityCss}>
             {getNodeChildren(node).map((child, index) =>
               <CheckboxTreeNode

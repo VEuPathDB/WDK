@@ -8,6 +8,7 @@ import {
   Answer,
   AnswerSpec,
   AnswerFormatting,
+  PrimaryKey,
   Question,
   RecordClass,
   Record,
@@ -31,7 +32,7 @@ const CLIENT_OUT_OF_SYNC_TEXT = 'WDK-TIMESTAMP-MISMATCH';
 interface RecordRequest {
   attributes: string[];
   tables: string[];
-  primaryKey: string[];
+  primaryKey: PrimaryKey;
 }
 
 export interface ServiceError extends Error {
@@ -160,7 +161,11 @@ export default class WdkService {
    * @return {Promise<Object?>}
    */
   findQuestion(test: (question: Question) => boolean) {
-    return this.getQuestions().then(qs => qs.find(test));
+    return this.getQuestions().then(qs => {
+      let question = qs.find(test)
+      if (question == null) throw new Error("Could not find question.");
+      return question;
+    });
   }
 
   /**
@@ -188,7 +193,11 @@ export default class WdkService {
    * @return {Promise<Object?>}
    */
   findRecordClass(test: (recordClass: RecordClass) => boolean) {
-    return this.getRecordClasses().then(rs => rs.find(test));
+    return this.getRecordClasses().then(rs => {
+      let record = rs.find(test);
+      if (record == null) throw new Error("Could not find record.")
+      return record;
+    });
   }
 
   /**
@@ -200,7 +209,7 @@ export default class WdkService {
    *
    * XXX Use _getFromCache with key of "recordInstance" so the most recent record is saved??
    */
-  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
+  getRecord(recordClassName: string, primaryKey: PrimaryKey, options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
     let url = '/record/' + recordClassName + '/instance';
@@ -453,8 +462,8 @@ export default class WdkService {
 
 }
 
-function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
-  return recordClassName + ':' + stringify(primaryKeyValues);
+function makeRecordKey(recordClassName: string, primaryKey: PrimaryKey) {
+  return recordClassName + ':' + stringify(primaryKey);
 }
 
 /**

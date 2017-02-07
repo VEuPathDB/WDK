@@ -33,6 +33,8 @@ import * as CategoryUtils from './client/utils/CategoryUtils';
 import * as StaticDataUtils from './client/utils/StaticDataUtils';
 import * as FormSubmitter from './client/utils/FormSubmitter';
 import LazyFilterService from './client/utils/LazyFilterService';
+import * as AuthUtil from './client/utils/AuthUtil';
+import WdkService from './client/utils/WdkService';
 
 /**
  * Initialize the Wdk application.
@@ -55,5 +57,7 @@ export {
   FormSubmitter,
   Stores,
   TreeUtils,
-  LazyFilterService
+  LazyFilterService,
+  WdkService,
+  AuthUtil
 };

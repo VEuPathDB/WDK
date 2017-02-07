@@ -20,7 +20,7 @@ class UserDatasetItemController extends WdkViewController {
   getStateFromStore(store) {
     let state = store.getState();
     return Object.assign(
-      pick(state, 'userDatasetsById', 'loadError'),
+      pick(state, 'userDatasetsById', 'loadError', 'userDatasetUpdating', 'updateError'),
       pick(state.globalData, 'user', 'questions', 'config')
     );
   }
@@ -66,6 +66,8 @@ class UserDatasetItemController extends WdkViewController {
       <UserDatasetItem
         userDataset={entry.resource}
         updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
+        userDatasetUpdating={state.userDatasetUpdating}
+        updateError={state.updateError}
         isOwner={isOwner}
         questionMap={keyBy(state.questions, 'name')}
         webAppUrl={state.config.webAppUrl}
