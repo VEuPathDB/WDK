@@ -251,7 +251,7 @@
       failifexecutionfails="true">
       <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz"/>
     </exec>
-    <symlink link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/dist/bin/yarn"/>
+    <symlink overwrite="true" link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/dist/bin/yarn"/>
   </target>
 
   <target name="yarnBinCheck">
