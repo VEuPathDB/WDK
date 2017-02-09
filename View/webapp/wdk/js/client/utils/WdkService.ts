@@ -35,9 +35,14 @@ interface RecordRequest {
   primaryKey: PrimaryKey;
 }
 
-export interface ServiceError extends Error {
-  response: string;
-  status: number;
+export class ServiceError extends Error {
+  constructor(
+    message: string,
+    public response: string,
+    public status: number
+  ) {
+    super(message);
+  }
 }
 
 export interface ServiceConfig {
@@ -163,7 +168,9 @@ export default class WdkService {
   findQuestion(test: (question: Question) => boolean) {
     return this.getQuestions().then(qs => {
       let question = qs.find(test)
-      if (question == null) throw new Error("Could not find question.");
+      if (question == null) {
+        throw new ServiceError("Could not find question.", "Not found", 404);
+      }
       return question;
     });
   }
@@ -195,7 +202,9 @@ export default class WdkService {
   findRecordClass(test: (recordClass: RecordClass) => boolean) {
     return this.getRecordClasses().then(rs => {
       let record = rs.find(test);
-      if (record == null) throw new Error("Could not find record.")
+      if (record == null) {
+        throw new ServiceError("Could not find record.", "Not found", 404);
+      }
       return record;
     });
   }
@@ -397,9 +406,7 @@ export default class WdkService {
         }
         else {
           let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
-          let error = new Error(msg) as ServiceError;
-          error.response = xhr.responseText;
-          error.status = xhr.status;
+          let error = new ServiceError(msg, xhr.responseText, xhr.status);
           reject(error);
         }
       };
