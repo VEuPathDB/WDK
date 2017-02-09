@@ -99,7 +99,7 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
 
   @Override
   public String[] getSummaryAttributeNames() {
-    Map<String, AttributeField> summaryFields = getAttributeFieldMap();
+    Map<String, AttributeField> summaryFields = _recordClass.getSummaryAttributeFieldMap();
     String[] names = new String[summaryFields.size()];
     summaryFields.keySet().toArray(names);
     return names;
@@ -107,7 +107,11 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
 
   public Map<String, AttributeValue> getSummaryAttributeValueMap()
       throws WdkModelException, WdkUserException {
-    return getAttributeValueMap();
+    Map<String, AttributeValue> attributeValueMap = getAttributeValueMap();
+    Map<String, AttributeValue> summaryAttributeValueMap = new LinkedHashMap<String, AttributeValue>();
+    for (String name: getSummaryAttributeNames())
+      summaryAttributeValueMap.put(name, attributeValueMap.get(name));
+    return summaryAttributeValueMap;
   }
 
   @Override
