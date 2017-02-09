@@ -145,30 +145,38 @@ const setActiveRecord: ActionCreator<LoadRecordAction> = (recordClassName: strin
       wdkService.findRecordClass(r => r.urlSegment === recordClassName),
       getPrimaryKey(wdkService, recordClassName, primaryKeyValues),
       getCategoryTree(wdkService, recordClassName)
-    ]).then(([recordClass, primaryKey, fullCategoryTree]) => {
-      if (recordClass == null)
-        throw new Error("Could not find record class identified by `" + recordClassName + "`.");
+    ]).then(
+      ([recordClass, primaryKey, fullCategoryTree]) => {
+        if (recordClass == null)
+          throw new Error("Could not find record class identified by `" + recordClassName + "`.");
 
-      // Set up promises for actions
-      let baseAction$: Promise<LoadRecordAction> = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
-      // load all subsequent tables in a single request. we were doing it in batches of 4, but that hurts rendering!
-      let tableActions: Promise<LoadRecordAction>[] = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 0);
-      // Helper to handle errors
-      let dispatchError = (error: Error) => dispatch({
-        type: 'record-view/error-received',
-        payload: { error }
-      });
-      // Calls dispatch on the array of promises in the provided order
-      // even if they resolve out of order.
-      seq([baseAction$].concat(tableActions), dispatch, dispatchError)
+        // Set up promises for actions
+        let baseAction$: Promise<LoadRecordAction> = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
+        // load all subsequent tables in a single request. we were doing it in batches of 4, but that hurts rendering!
+        let tableActions: Promise<LoadRecordAction>[] = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 0);
+        // Helper to handle errors
+        let dispatchError = (error: Error) => dispatch({
+          type: 'record-view/error-received',
+          payload: { error }
+        });
+        // Calls dispatch on the array of promises in the provided order
+        // even if they resolve out of order.
+        seq([baseAction$].concat(tableActions), dispatch, dispatchError)
         .catch(error => {
           console.error(error);
           if (process.env.NODE_ENV === 'development')
             alert('Render error. See browser console for details.')
         });
 
-      return baseAction$;
-    });
+        return baseAction$;
+      },
+      (error: Error) => {
+        dispatch({
+          type: 'record-view/error-received',
+          payload: { error }
+        })
+      }
+    );
   }
 }
 
