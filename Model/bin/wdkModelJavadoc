@@ -47,4 +47,4 @@ my $cmd = "javadoc -d $targetDir -classpath $CLASSPATH " .
       "org.gusdb.fgputil.xml "
 ;
 
-system($cmd);
+system($cmd) && exit(1);
