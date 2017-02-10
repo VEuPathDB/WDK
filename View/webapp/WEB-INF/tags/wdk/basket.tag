@@ -11,6 +11,19 @@
 
 <div data-controller="wdk.basket.configureBasket">
 
+  <c:set var="projectId" value="${wdkModel.projectId}"/>
+  <c:if test="${(projectId eq 'TriTrypDB') or (projectId eq 'PlasmoDB') or (projectId eq 'EuPathDB') or (projectId eq 'FungiDB') or (projectId eq 'AmoebaDB')}">
+    <div id="build-30-basket-warning">
+      <div style="margin: 10px;border: solid 1px darkgray;border-radius: 5px;background-color: #fbd9de;padding: 10px;">
+        <strong>Note</strong>: In our recent release the contents of many baskets
+        were inadvertently deleted.  We apologize.  If you need the IDs that were
+        in your basket please <a href="mailto:help@eupathdb.org?Subject=Please%20recover%20my%20basket" target="_top"> contact us</a>.
+        For future reference, you can save the contents of a basket permanently
+        by clicking on the "Save basket to a strategy" button below.
+      </div>
+    </div>
+  </c:if>
+
   <div id="basket-control-panel">
     <imp:basketControls />
   </div>
