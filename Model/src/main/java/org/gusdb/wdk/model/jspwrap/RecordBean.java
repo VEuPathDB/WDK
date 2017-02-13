@@ -75,8 +75,12 @@ public class RecordBean {
      * @return Map of attributeName -->
      *         {@link org.gusdb.wdk.model.AttributeFieldValue}
      */
-    public Map<String, AttributeValue> getSummaryAttributes() {
-        return recordInstance;
+    public Map<String, AttributeValue> getSummaryAttributes() throws WdkModelException, WdkUserException {
+      Map<String, AttributeValue> attributeValueMap = recordInstance.getAttributeValueMap();
+      Map<String, AttributeValue> summaryAttributeValueMap = new LinkedHashMap<String, AttributeValue>();
+      for (String name: getSummaryAttributeNames())
+        summaryAttributeValueMap.put(name, attributeValueMap.get(name));
+      return summaryAttributeValueMap;
     }
 
     /**
