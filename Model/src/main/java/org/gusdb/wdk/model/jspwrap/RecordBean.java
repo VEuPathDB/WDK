@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -59,10 +60,6 @@ public class RecordBean {
         return new RecordClassBean(recordInstance.getRecordClass());
     }
 
-    public String[] getSummaryAttributeNames() {
-        return recordInstance.getSummaryAttributeNames();
-    }
-
     /**
      * @return Map of attributeName -->
      *         {@link org.gusdb.wdk.model.AttributeFieldValue}
@@ -76,10 +73,11 @@ public class RecordBean {
      *         {@link org.gusdb.wdk.model.AttributeFieldValue}
      */
     public Map<String, AttributeValue> getSummaryAttributes() throws WdkModelException, WdkUserException {
-      Map<String, AttributeValue> attributeValueMap = recordInstance.getAttributeValueMap();
+      Set<String> summaryAttributeNames = recordInstance.getRecordClass().getSummaryAttributeFieldMap().keySet();
       Map<String, AttributeValue> summaryAttributeValueMap = new LinkedHashMap<String, AttributeValue>();
-      for (String name: getSummaryAttributeNames())
-        summaryAttributeValueMap.put(name, attributeValueMap.get(name));
+      for (String name: summaryAttributeNames) {
+        summaryAttributeValueMap.put(name, recordInstance.getAttributeValue(name));
+      }
       return summaryAttributeValueMap;
     }
 
