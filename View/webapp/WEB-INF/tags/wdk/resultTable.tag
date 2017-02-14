@@ -303,7 +303,7 @@
                       <c:forEach items="${wdkViewAnswer.summaryAttributeNames}" var="sumAttrName">    
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
                         <c:if test="${not empty showPrimKey ||  j != 0}"> 
-                          <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
+                          <c:set value="${record.attributes[sumAttrName]}" var="recAttr"/>
                           <imp:wdkAttribute columnName = "${sumAttrName}" attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" />
                         </c:if>    
                         <c:set var="j" value="${j+1}"/>
