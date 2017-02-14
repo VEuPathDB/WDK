@@ -85,7 +85,6 @@ public class UserDatasetShareRequest {
     List<String> shareTypes = SHARE_TYPES;
     List<Object> unrecognizedActions = new ArrayList<>();
     List<Object> improperDatasets = new ArrayList<>();
-    List<Object> improperUsers = new ArrayList<>();
     Map<String, Map<Integer, Set<Integer>>> map = new HashMap<>();
     for(Object shareType : userDatasetShare.keySet()) {
       if(shareTypes.contains(((String)shareType).trim())) {
