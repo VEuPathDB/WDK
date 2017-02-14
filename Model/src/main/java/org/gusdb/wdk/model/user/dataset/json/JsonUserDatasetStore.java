@@ -369,6 +369,22 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId()).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
     writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
+  
+  @Override
+  public void shareUserDataset(Integer ownerUserId, Integer datasetId, Set<Integer> recipientUserIds) throws WdkModelException {
+	Set<Integer[]> externalDatasetLinks = new HashSet<Integer[]>();
+	JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
+    for (Integer recipientUserId : recipientUserIds) {
+      if (recipientUserId.equals(ownerUserId)) continue;  // don't think this is worth throwing an error on
+      writeShareFile(ownerUserId, datasetId, recipientUserId);
+      Integer[] linkInfo = {datasetId, recipientUserId};
+      externalDatasetLinks.add(linkInfo);
+    }
+    writeJsonUserDataset(dataset);  // write this before the links
+    for (Integer[] linkInfo : externalDatasetLinks) {
+      writeExternalDatasetLink(ownerUserId, linkInfo[0], linkInfo[1]);
+    }    
+  }
 
   @Override
   public void shareUserDatasets(Integer ownerUserId, Set<Integer> datasetIds, Set<Integer> recipientUserIds) throws WdkModelException {
@@ -393,6 +409,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     
     Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
     if (adaptor.fileExists(sharedWithFile)) adaptor.deleteFileOrDirectory(sharedWithFile);
+  }
+  
+  @Override
+  public void unshareUserDataset(Integer ownerUserId, Integer datasetId, Set<Integer> recipientUserIds) throws WdkModelException {
+    for (Integer recipientUserId : recipientUserIds) {
+	  unshareUserDataset(ownerUserId, datasetId, recipientUserId);
+    }  
   }
   
   @Override
