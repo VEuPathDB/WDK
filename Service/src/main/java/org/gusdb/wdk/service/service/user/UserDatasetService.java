@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.service.user;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,15 +21,21 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
+import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.gusdb.wdk.service.service.WdkService;
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +51,8 @@ import org.json.JSONObject;
  *
  */
 public class UserDatasetService extends UserService {
+	
+  private static Logger LOG = Logger.getLogger(UserDatasetService.class);
 
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -95,6 +104,75 @@ public class UserDatasetService extends UserService {
       throw new BadRequestException(e);
     }
   }
+  
+  /*
+   * This service allows a WDK user to share/unshare owned datasets with
+   * other WDK users.  The JSON object accepted by the service should have the following form:
+   *    {
+   *	  "add": {
+   *	    "dataset_id1": [ "user1", "user2" ]
+   *	    "dataset_id2": [ "user1" ]
+   *	  },
+   *	  "delete" {
+   *	    "dataset_id3": [ "user1", "user3" ]
+   *	  }
+   *	}
+   */	
+  @PATCH
+  @Path("user-dataset/share")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response manageShares(String body) throws WdkModelException {
+	JSONObject jsonObj = new JSONObject(body);
+	try {
+	  UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
+	  Map<String, Map<Integer, Set<Integer>>> userDatasetShareMap = request.getUserDatasetShareMap();
+	  Set<Integer> installedDatasetIds = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
+	  for(String key : userDatasetShareMap.keySet()) {
+		// Find datasets to share  
+	    if("add".equals(key)) {
+	      Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+	      // Ignore any provided dataset ids not owned by this user.
+          targetDatasetIds.retainAll(installedDatasetIds);
+	      for(Integer targetDatasetId : targetDatasetIds) {
+	    	Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+	    	// Since each dataset may be shared with different users, we share datasets one by one
+	    	getUserDatasetStore().shareUserDataset(getUserId(), targetDatasetId, targetUserIds);
+	      }
+	    }
+	    // Fine datasets to unshare
+	    if("delete".equals(key)) {
+	      Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+		  // Ignore any provided dataset ids not owned by this user.
+	      targetDatasetIds.retainAll(installedDatasetIds);
+		  for(Integer targetDatasetId : targetDatasetIds) {
+			Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+		    // Since each dataset may unshared with different users, we unshare datasets one by one.
+		    getUserDatasetStore().unshareUserDataset(getUserId(), targetDatasetId, targetUserIds);
+		  }
+	    }
+      }
+      return Response.noContent().build();
+    }
+    catch(JSONException | RequestMisformatException e) {
+      throw new BadRequestException(e);
+    }
+  }
+  
+  /**
+   * Convenience method to whittle out any non-valid target users
+   * @param providedUserIds - set of user ids provided to the service
+   * @return - subset of those provided user ids that belong to valid users.
+   * @throws WdkModelException
+   */
+  protected Set<Integer> identifyTargetUsers(Set<Integer> providedUserIds) throws WdkModelException {
+  	Set<Integer> targetUserIds = new HashSet<>();
+  	for(Integer providedUserId : providedUserIds) {
+  	  if(validateTargetUserId(providedUserId)) {
+  		targetUserIds.add(providedUserId);
+  	  }
+  	}
+  	return targetUserIds;
+  }
 
   /**
    * {
@@ -118,11 +196,12 @@ public class UserDatasetService extends UserService {
     
     // put target users into a set
     JSONArray jsonTargetUsers = jsonObj.getJSONArray("targetUsers");
-    Set<Integer> targetUserIds = new HashSet<Integer>();
+    Set<Integer> targetUserIds = new HashSet<>();
     for (int i=0; i<jsonTargetUsers.length(); i++) {
       Integer targetUserId = jsonTargetUsers.getInt(i);
-      validateTargetUserId(targetUserId);
-      targetUserIds.add(targetUserId);
+      if(validateTargetUserId(targetUserId)) {
+        targetUserIds.add(targetUserId);
+      }  
     }
     getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
 
@@ -181,11 +260,21 @@ public class UserDatasetService extends UserService {
     return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();
   }
   
-  private void validateTargetUserId(Integer targetUserId) throws WdkModelException {
+  /**
+   * Determines whether the target user is valid.  Any invalid user is noted in the logs.  Seems extreme to trash the whole operation
+   * over one wayward user id.
+   * @param targetUserId - id of target user to check for validity
+   * @return - true is target user is valid and false otherwise.
+   * @throws WdkModelException
+   */
+  private boolean validateTargetUserId(Integer targetUserId) throws WdkModelException {
     UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
     if (!targetUserBundle.isValidUserId()) {
-      throw new NotFoundException(WdkService.formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
+      //throw new NotFoundException(WdkService.formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
+      LOG.warn("This user dataset share service request contains the following invalid user: " + targetUserId);
+      return false;	
     }
+    return true;
   }
   
   // this probably doesn't belong here, but it is not obvious where it does belong
@@ -199,7 +288,7 @@ public class UserDatasetService extends UserService {
    */
   private static Set<Integer> getInstalledUserDatasets(Integer userId, DataSource appDbDataSource, String userDatasetSchema) throws WdkModelException {
     
-    final Set<Integer> datasetIds = new HashSet<Integer>();
+    final Set<Integer> datasetIds = new HashSet<>();
     ResultSetHandler handler = new ResultSetHandler() {
       @Override
       public void handleResult(ResultSet rs) throws SQLException {
