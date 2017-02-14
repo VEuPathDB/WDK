@@ -84,8 +84,7 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
    * @return Map of attributeName -> AttributeFieldValue
    * @throws WdkUserException
    */
-  @Override
-  public Map<String, AttributeValue> getAttributeValueMap()
+  private Map<String, AttributeValue> getAttributeValueMap()
       throws WdkModelException, WdkUserException {
     Map<String, AttributeField> fields = getAttributeFieldMap();
     Map<String, AttributeValue> values = new LinkedHashMap<String, AttributeValue>();
@@ -95,23 +94,6 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
       values.put(name, getAttributeValue(name));
     }
     return values;
-  }
-
-  @Override
-  public String[] getSummaryAttributeNames() {
-    Map<String, AttributeField> summaryFields = _recordClass.getSummaryAttributeFieldMap();
-    String[] names = new String[summaryFields.size()];
-    summaryFields.keySet().toArray(names);
-    return names;
-  }
-
-  public Map<String, AttributeValue> getSummaryAttributeValueMap()
-      throws WdkModelException, WdkUserException {
-    Map<String, AttributeValue> attributeValueMap = getAttributeValueMap();
-    Map<String, AttributeValue> summaryAttributeValueMap = new LinkedHashMap<String, AttributeValue>();
-    for (String name: getSummaryAttributeNames())
-      summaryAttributeValueMap.put(name, attributeValueMap.get(name));
-    return summaryAttributeValueMap;
   }
 
   @Override

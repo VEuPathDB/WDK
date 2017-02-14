@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.user.User;
 
 public class RecordTester {
@@ -55,11 +56,16 @@ public class RecordTester {
           User user = wdkModel.getSystemUser();
           RecordInstance recordInstance = new DynamicRecordInstance(user, recordClass, pkValues);
   
-          // try to get all attributes
-          recordInstance.getAttributeValueMap();
-  
-          // try to get all tables
-          recordInstance.getTableValueMap();
+          // try to get all attributes (force dynamic load with getAttributeValue() call)
+          for (String attributeName: recordInstance.getAttributeFieldMap().keySet()) {
+            recordInstance.getAttributeValue(attributeName);
+          }
+
+          // try to get all tables (force dynamic load with iterator() call)
+          Map<String, TableValue> tables = recordInstance.getTableValueMap();
+          for (TableValue table : tables.values()) {
+            table.iterator();
+          }
   
           System.out.println("Record creation took: "
                   + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
