@@ -188,7 +188,9 @@ public class ProcessRESTAction extends Action {
       for (String m : msg.keySet()) {
         if (c > 0)
           writer.print(",");
-        writer.print("\"" + msg.get(m).substring(1, msg.get(m).length() - 1) + "\"");
+        String message = msg.get(m);
+        if (message != null ) message = message.substring(1, message.length() - 1);
+        writer.print("\"" + message + "\"");
         c++;
       }
       writer.print("]}}}");
