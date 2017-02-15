@@ -459,10 +459,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    */
   protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
 
-    // create user dir, if it doesn't exist
     Path recipientUserDir = getUserDir(recipientUserId);
-    if (!directoryExists(recipientUserDir))
-      adaptor.createDirectory(recipientUserDir);
     
     // create externalDatasets dir, if it doesn't exist
     Path recipientExternalDatasetsDir = recipientUserDir.resolve(EXTERNAL_DATASETS_DIR);
@@ -523,10 +520,10 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
   }
 
-  protected Path getUserDir(Integer userId) throws WdkModelException {
+  private Path getUserDir(Integer userId) throws WdkModelException {
     Path userDir = usersRootDir.resolve(userId.toString());
     if (!directoryExists(userDir)) {
-      throw new WdkModelException("Can't find user directory " + userDir);
+      adaptor.createDirectory(userDir);
     }
     return userDir;
   }
@@ -554,18 +551,16 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
       
   /**
-   * Given a user ID, return a Path to that user's datasets dir.
+   * Given a user ID, return a Path to that user's datasets dir.  Create the dir if doesn't exist.
    * @param userId
-   * @param createPathIfAbsent If the path doesn't exist make it.  If this is false, then err if absent
    * @return
    * @throws WdkModelException
    */
-  protected Path getUserDatasetsDir(Integer userId) throws WdkModelException {
+  private Path getUserDatasetsDir(Integer userId) throws WdkModelException {
     Path userDatasetsDir = getUserDir(userId).resolve("datasets");
 
-    if (!directoryExists(userDatasetsDir))
-        throw new WdkModelException("Can't find user datasets directory " + userDatasetsDir);
-
+    if (!directoryExists(userDatasetsDir)) adaptor.createDirectory(userDatasetsDir);
+ 
     return userDatasetsDir;
   }
   
