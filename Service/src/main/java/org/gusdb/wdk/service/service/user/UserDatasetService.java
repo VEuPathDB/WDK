@@ -35,7 +35,6 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.gusdb.wdk.service.service.WdkService;
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
