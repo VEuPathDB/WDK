@@ -20,6 +20,8 @@ import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
@@ -179,13 +181,19 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     }
 
     if (count != size()) {
+      String uncachedIdSql = "";
+      if (_answerValue.getIdsQueryInstance() instanceof SqlQueryInstance) {
+        uncachedIdSql = "Uncached ID SQL: " + ((SqlQueryInstance)_answerValue.getIdsQueryInstance()).getUncachedSql();
+      }
       String message = "The integrated attribute query '" + attributeQuery.getFullName() +
           "' doesn't return the same number of records as ID SQL for the current page.  Check that the ID " +
           "query returns no nulls or duplicates, and that the attribute-query join does not change the row count." + NL +
           "ResultSize: " + _answerValue.getResultSizeFactory().getResultSize() + NL +
           "Start: " + _answerValue.getStartIndex() + ", End: " + _answerValue.getEndIndex() + NL +
-          "Expected (page size): " + size() + ", Actual (returned from attribute query): " + count + NL +
-          "Paged attribute SQL:" + NL + sql + NL;
+          "Expected (page size): " + size() + ", Actual (returned from attribute query): " + count + NL + NL +
+          "Paged attribute SQL:" + NL + sql + NL +
+          "Question: " + _answerValue.getQuestion().getFullName() + NL + NL + uncachedIdSql;
+          
       throw new WdkModelException(message);
     }
     LOG.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
