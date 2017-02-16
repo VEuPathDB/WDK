@@ -30,10 +30,7 @@ wdk.namespace("window.wdk.basket", function(ns, $) {
       control.find("input#empty-basket-button").attr("disabled",false);
       control.find("input#make-strategy-from-basket-button").attr("disabled",false);
       control.find("input#export-basket-button").attr("disabled",false);
-      // create multi select control for adding columns
       checkPageBasket();
-      wdk.resultsPage.createFlexigridFromTable($("#basket-menu #Results_Table"));
-      wdk.resultsPage.setupAddAttributes(currentDiv);
       try {
         customBasketPage();
       } catch(err) {
