@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.filter.ColumnFilter;
@@ -44,6 +45,7 @@ public class QueryColumnAttributeField extends ColumnAttributeField implements C
    * @param column
    *          The column to set.
    */
+  @RngUndefined
   public void setColumn(Column column) {
     _column = column;
   }

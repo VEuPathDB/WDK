@@ -3,6 +3,9 @@ package org.gusdb.wdk.model.query;
 import java.io.PrintWriter;
 
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.RngAnnotations.RngRequired;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -52,6 +55,7 @@ public class Column extends WdkModelBase implements NamedObject {
     _isPkColumn = column._isPkColumn;
   }
 
+  @RngRequired
   public void setName(String name) {
     _name = name;
   }
@@ -61,10 +65,12 @@ public class Column extends WdkModelBase implements NamedObject {
     return _name;
   }
 
+  @RngOptional
   public void setColumnType(String typeName) throws WdkModelException {
     _type = ColumnType.parse(typeName);
   }
 
+  @RngUndefined
   public void setType(ColumnType type) {
     _type = type;
   }
@@ -73,10 +79,12 @@ public class Column extends WdkModelBase implements NamedObject {
     return _type;
   }
 
+  @RngUndefined
   public void setQuery(Query query) {
     _query = query;
   }
 
+  @RngOptional
   public void setWidth(int width) {
     _width = width;
   }
@@ -100,6 +108,7 @@ public class Column extends WdkModelBase implements NamedObject {
    * @param wsName
    *          The wsName to set.
    */
+  @RngOptional
   public void setWsName(String wsName) {
     _wsName = wsName;
   }
@@ -154,6 +163,7 @@ public class Column extends WdkModelBase implements NamedObject {
    * @param sortingColumn
    *          the sortingColumn to set
    */
+  @RngOptional
   public void setSortingColumn(String sortingColumn) {
     _sortingColumn = sortingColumn;
   }
@@ -169,6 +179,7 @@ public class Column extends WdkModelBase implements NamedObject {
    * @param ignoreCase
    *          the ignoreCase to set
    */
+  @RngOptional
   public void setIgnoreCase(boolean ignoreCase) {
     _ignoreCase = ignoreCase;
   }
@@ -189,11 +200,4 @@ public class Column extends WdkModelBase implements NamedObject {
     // by default, nothing to print out.
   }
 
-  public void setPrimaryKeyColumn(boolean isPkColumn) {
-    _isPkColumn = isPkColumn;
-  }
-
-  public boolean isPrimaryKeyColumn() {
-    return _isPkColumn;
-  }
 }

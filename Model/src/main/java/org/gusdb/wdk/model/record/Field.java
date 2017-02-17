@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.record;
 import java.io.PrintWriter;
 
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.RngAnnotations.RngRequired;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -42,6 +44,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
     return _containerName;
   }
 
+  @RngOptional
   public void setContainerName(String containerName) {
     _containerName = containerName;
   }
@@ -57,6 +60,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param displayName
    *          The displayName to set.
    */
+  @RngOptional
   public void setDisplayName(String displayName) {
     _displayName = displayName;
   }
@@ -73,6 +77,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param _displayName
    *          The displayName to set.
    */
+  @RngOptional
   public void setLongDisplayName(String longDisplayName) {
     _longDisplayName = longDisplayName;
   }
@@ -88,6 +93,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param help
    *          The help to set.
    */
+  @RngOptional
   public void setHelp(String help) {
     _help = help;
   }
@@ -106,6 +112,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param inReportMaker
    *          The inReportMaker to set.
    */
+  @RngOptional
   public void setInReportMaker(boolean inReportMaker) {
     _inReportMaker = inReportMaker;
   }
@@ -124,6 +131,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param internal
    *          The internal to set.
    */
+  @RngOptional
   public void setInternal(boolean internal) {
     _internal = internal;
   }
@@ -140,6 +148,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param name
    *          The name to set.
    */
+  @RngRequired
   public void setName(String name) {
     _name = name;
   }
@@ -155,6 +164,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param truncateTo
    *          The truncateTo to set.
    */
+  @RngOptional
   public void setTruncateTo(int truncateTo) {
     _truncateTo = truncateTo;
   }
@@ -170,6 +180,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * @param type
    *          The type to set.
    */
+  @RngOptional
   public void setType(String type) {
     _type = type;
   }
