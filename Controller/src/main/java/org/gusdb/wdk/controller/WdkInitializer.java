@@ -69,11 +69,11 @@ public class WdkInitializer {
       // shut down thread monitor
       ThreadMonitor.shutDown();
 
-      WdkModelBean wdkModel = getWdkModel(servletContext);
+      WdkModel wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
         // insulate in case model never properly loaded
         LOG.info("Releasing resources for WDK Model.");
-        wdkModel.getModel().close();
+        wdkModel.close();
         LOG.info("WDK resource release complete.");
       }
     }
@@ -85,8 +85,9 @@ public class WdkInitializer {
     }
   }
 
-  public static WdkModelBean getWdkModel(ServletContext servletContext) {
-    return (WdkModelBean)servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+  public static WdkModel getWdkModel(ServletContext servletContext) {
+    Object modelBean = servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+    return modelBean == null ? null : ((WdkModelBean)modelBean).getModel();
   }
 
   private static void assignInitParamToAttribute(ServletContext servletContext, String key) {

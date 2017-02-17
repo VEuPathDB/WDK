@@ -4,11 +4,11 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.Globals;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 
 /**

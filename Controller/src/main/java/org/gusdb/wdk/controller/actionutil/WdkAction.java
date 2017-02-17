@@ -25,6 +25,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.web.HttpRequestData;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;

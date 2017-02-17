@@ -18,7 +18,7 @@ public interface RecordInstance extends AttributeValueMap {
 
   public PrimaryKeyValue getPrimaryKey();
 
-  /*%%%%%%%%%%%%%%%% Attribute-related methods (see also AttributeValueContainer) %%%%%%%%%%%%%%%%*/
+  /*%%%%%%%%%%%%%%%% Attribute-related methods (see also AttributeValueMap) %%%%%%%%%%%%%%%%*/
 
   public IdAttributeValue getIdAttributeValue() throws WdkModelException, WdkUserException;
 
@@ -29,13 +29,5 @@ public interface RecordInstance extends AttributeValueMap {
   public TableValue getTableValue(String fieldName) throws WdkModelException, WdkUserException;
 
   public Map<String, TableValue> getTableValueMap() throws WdkModelException, WdkUserException;
-
-  /*%%%%%%%%%%%%%%%% Logging and formatting methods %%%%%%%%%%%%%%%%*/
-
-  public String print() throws WdkModelException, WdkUserException;
-
-  public String printSummary() throws WdkModelException, WdkUserException;
-
-  public String toXML(String ident) throws WdkModelException, WdkUserException;
 
 }

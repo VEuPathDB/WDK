@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.error;
+package org.gusdb.wdk.errors;
 
 import java.util.Enumeration;
 import java.util.HashMap;
