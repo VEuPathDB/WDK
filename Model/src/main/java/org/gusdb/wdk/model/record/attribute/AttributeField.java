@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.Field;
@@ -61,6 +62,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param removable
    *          the removable to set
    */
+  @RngOptional
   public void setRemovable(boolean removable) {
     _removable = removable;
   }
@@ -76,6 +78,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param sortable
    *          the sortable to set
    */
+  @RngOptional
   public void setSortable(boolean sortable) {
     _sortable = sortable;
   }
@@ -91,6 +94,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param align
    *          the align to set
    */
+  @RngOptional
   public void setAlign(String align) {
     _align = align;
   }
@@ -106,6 +110,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param nowrap
    *          the nowrap to set
    */
+  @RngOptional
   public void setNowrap(boolean nowrap) {
     _nowrap = nowrap;
   }
@@ -121,6 +126,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param categoryName
    *          attribute category name
    */
+  @RngOptional
   public void setAttributeCategory(String categoryName) {
     _categoryName = categoryName;
   }

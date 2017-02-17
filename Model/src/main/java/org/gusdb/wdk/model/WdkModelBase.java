@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 
 /**
  * This class is the common parent for most of the classes that are represented
@@ -76,6 +77,7 @@ public abstract class WdkModelBase {
    * @param excludeProjects
    *          the excludeProjects to set
    */
+  @RngUndefined
   public void setExcludeProjects(String excludeProjects) {
     excludeProjects = excludeProjects.trim();
     if (excludeProjects.length() == 0)
@@ -91,6 +93,7 @@ public abstract class WdkModelBase {
    * @param includeProjects
    *          the includeProjects to set
    */
+  @RngUndefined
   public void setIncludeProjects(String includeProjects) {
     includeProjects = includeProjects.trim();
     if (includeProjects.length() == 0)
