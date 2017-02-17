@@ -27,11 +27,9 @@ import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
@@ -104,6 +102,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       throw ex;
     }
   }
+
   /**
    * Integrate into the page's RecordInstances the attribute values from a particular attributes query. The
    * attributes query result includes only rows for this page.
@@ -235,68 +234,4 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     LOG.debug("Table query [" + tableQuery + "] integrated.");
   }
 
-  // ///////////////////////////////////////////////////////////////////
-  // print methods
-  // ///////////////////////////////////////////////////////////////////
-
-  public String printAsRecords() throws WdkModelException, WdkUserException {
-    String newline = System.getProperty("line.separator");
-    StringBuilder buf = new StringBuilder();
-    for (RecordInstance recordInstance : values()) {
-      buf.append(recordInstance.print());
-      buf.append("---------------------" + newline);
-    }
-    return buf.toString();
-  }
-
-  /**
-   * print summary attributes, one per line Note: not sure why this is needed
-   * 
-   * @throws WdkUserException
-   * 
-   */
-  public String printAsSummary() throws WdkModelException, WdkUserException {
-    StringBuilder buf = new StringBuilder();
-    for (RecordInstance recordInstance : values()) {
-      buf.append(recordInstance.printSummary());
-    }
-    return buf.toString();
-  }
-
-  /**
-   * print summary attributes in tab delimited table with header of attr. names
-   * 
-   * @throws WdkUserException
-   * 
-   */
-  public String printAsTable() throws WdkModelException, WdkUserException {
-    StringBuilder buf = new StringBuilder();
-
-    // print summary info
-    ResultSizeFactory sizes = _answerValue.getResultSizeFactory();
-    buf.append("# of Records: " + sizes.getResultSize() + ",\t# of Pages: " + sizes.getPageCount() +
-        ",\t# Records per Page: " + _answerValue.getPageSize() + NL);
-
-    if (isEmpty())
-      return buf.toString();
-
-    Map<String, AttributeField> attributes = _answerValue.getAttributes().getSummaryAttributeFieldMap();
-    for (String nextAttName : attributes.keySet()) {
-      buf.append(nextAttName + "\t");
-    }
-    buf.append(NL);
-    for (RecordInstance recordInstance : values()) {
-      // only print
-      for (String nextAttName : attributes.keySet()) {
-        // make data row
-        AttributeValue value = recordInstance.getAttributeValue(nextAttName);
-        // only print part of the string
-        String str = value.getBriefDisplay();
-        buf.append(str + "\t");
-      }
-      buf.append(NL);
-    }
-    return buf.toString();
-  }
-  
 }

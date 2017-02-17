@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.user.User;
 
@@ -71,7 +72,7 @@ public class RecordTester {
                   + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
           st = System.currentTimeMillis();
   
-          System.out.println(recordInstance.print());
+          System.out.println(RecordInstanceFormatter.print(recordInstance));
   
           System.out.println("Fields retrieval took: "
                   + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");

@@ -2,11 +2,11 @@ package org.gusdb.wdk.controller.action.analysis;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.web.HttpMethod;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.action.standard.GenericPageAction;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
-import org.gusdb.wdk.controller.actionutil.HttpMethod;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 

@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.record.ResultProperty;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterFactory;
@@ -215,7 +216,7 @@ public class SummaryTester {
     fw.close();
     fw = new FileWriter(new File(xmlFile), true);
     for (RecordInstance ri : answerValue.getRecordInstances()) {
-      fw.write(ri.toXML(ident) + newline);
+      fw.write(RecordInstanceFormatter.toXML(ri,ident) + newline);
     }
     fw.write("</" + question.getFullName() + ">" + newline);
     fw.close();

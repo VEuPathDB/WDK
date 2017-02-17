@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.OAuthClient;
@@ -15,7 +16,6 @@ import org.gusdb.wdk.controller.actionutil.ParamDef.DataType;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParamDefMapBuilder;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;

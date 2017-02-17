@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.TestResult;
@@ -46,7 +47,7 @@ public class RecordClassTest implements ElementTest {
       pkValues.put(key, paramValues.get(key));
     }
     RecordInstance recordInstance = new DynamicRecordInstance(_user, _recordClass, pkValues);
-    recordInstance.print();
+    RecordInstanceFormatter.print(recordInstance);
     result.setReturned("Created RecordInstance");
     result.setPassed(true);
     return result;
