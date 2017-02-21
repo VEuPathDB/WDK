@@ -15,15 +15,13 @@ import java.util.regex.Pattern;
 
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.RngAnnotations;
+import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +49,7 @@ import org.json.JSONObject;
 public class SqlQuery extends Query {
 
   private List<WdkModelText> sqlList;
-  private String sql;
+  private String _sql;
   private List<WdkModelText> sqlMacroList;
   private Map<String, String> sqlMacroMap;
   private boolean clobRow;
@@ -74,7 +72,7 @@ public class SqlQuery extends Query {
   public SqlQuery(SqlQuery query) {
     super(query);
     this.clobRow = query.clobRow;
-    this.sql = query.sql;
+    this._sql = query._sql;
     this.isCacheable = query.isCacheable;
     this._useDBLink = query._useDBLink;
 
@@ -102,7 +100,7 @@ public class SqlQuery extends Query {
   }
 
   public String getSql() {
-    return replaceMacros(sql);
+    return replaceMacros(_sql);
   }
   
   public boolean isUseDBLink() {
@@ -117,7 +115,7 @@ public class SqlQuery extends Query {
    * Sets an optional reference to a meta columns query
    * @param meta columns query ref of the form "set.element"
    */
-  public void setDynColumnsQueryRef(String dynColumnsQueryRef) throws WdkModelException {
+  public void setDynColumnsQueryRef(String dynColumnsQueryRef) {
 	_dynColumnsQueryRef = dynColumnsQueryRef;
   }
 
@@ -130,7 +128,7 @@ public class SqlQuery extends Query {
   public void setSql(String sql) {
     // append new line to the end, in case the last line is a comment;
     // otherwise, all modified sql will fail.
-    this.sql = sql + "\n";
+    this._sql = sql + "\n";
   }
 
   /*
@@ -225,13 +223,13 @@ public class SqlQuery extends Query {
   public void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException {
     // apply the sql macros into sql
-    if (this.sql == null)
+    if (this._sql == null)
       throw new WdkModelException("null sql in " + getQuerySet().getName()
           + "." + getName());
 
     // don't replace the sql here. the macros have to be replaced on the fly
     // in order to inject overridden macros from question.
-    String sql = replaceMacros(this.sql);
+    String sql = replaceMacros(this._sql);
 
     // verify the all param macros have been replaced
     Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
