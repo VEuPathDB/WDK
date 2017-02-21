@@ -52,7 +52,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @see org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject )
    */
   @Override
-  protected void appendSJONContent(JSONObject jsInstance) {
+  protected void appendJSONContent(JSONObject jsInstance) {
     // nothing to add to;
   }
 

@@ -45,7 +45,7 @@ public abstract class QueryInstance<T extends Query> {
 
   public abstract String getSql() throws WdkModelException, WdkUserException;
 
-  protected abstract void appendSJONContent(JSONObject jsInstance) throws JSONException;
+  protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
   protected abstract ResultList getUncachedResults() throws WdkModelException, WdkUserException;
 
@@ -155,7 +155,7 @@ public abstract class QueryInstance<T extends Query> {
       jsInstance.put("assignedWeight", assignedWeight);
 
       // include extra info from child
-      appendSJONContent(jsInstance);
+      appendJSONContent(jsInstance);
 
 			logger.debug("json:\n" + jsInstance.toString(2));
 
