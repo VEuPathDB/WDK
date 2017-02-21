@@ -56,10 +56,10 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject )
+   * @see org.gusdb.wdk.model.query.QueryInstance#appendJSONContent(org.json.JSONObject )
    */
   @Override
-  protected void appendSJONContent(JSONObject jsInstance) throws JSONException {
+  protected void appendJSONContent(JSONObject jsInstance) throws JSONException {
     jsInstance.put("signal", signal);
   }
 
