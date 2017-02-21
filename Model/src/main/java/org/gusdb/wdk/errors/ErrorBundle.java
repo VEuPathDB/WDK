@@ -45,6 +45,16 @@ public class ErrorBundle {
                 !_actionErrors.isEmpty());
     }
 
+    public Exception getException() {
+      Exception pex = getPageException();
+      Exception rex = getRequestException();
+      Exception aex = getActionException();
+      if (pex != null) return pex;
+      if (rex != null) return rex;
+      if (aex != null) return aex;
+      return null;
+    }
+
     public String getStackTraceAsText() {
         Exception pex = getPageException();
         Exception rex = getRequestException();
