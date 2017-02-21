@@ -238,7 +238,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       @Override
       public void eventTriggered(Event event) throws Exception {
         ListenerExceptionEvent errorEvent = (ListenerExceptionEvent)event;
-        LOG.error("Error processing event: " +
+        LOG.error("Error while processing event: " +
             errorEvent.getEvent().getClass().getName(), errorEvent.getException());
       }
     }, ListenerExceptionEvent.class);
