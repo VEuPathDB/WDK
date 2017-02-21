@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.query;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -11,12 +13,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.wdk.model.RngAnnotations;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,6 +57,7 @@ public class SqlQuery extends Query {
   private boolean clobRow;
   private boolean _useDBLink = false;
 
+  private String _dynColumnsQueryRef;
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
 
@@ -103,6 +111,14 @@ public class SqlQuery extends Query {
 
   public void setUseDBLink(boolean useDBLink) {
     _useDBLink = useDBLink;
+  }
+  
+  /**
+   * Sets an optional reference to a meta columns query
+   * @param meta columns query ref of the form "set.element"
+   */
+  public void setDynColumnsQueryRef(String dynColumnsQueryRef) throws WdkModelException {
+	_dynColumnsQueryRef = dynColumnsQueryRef;
   }
 
   /**
@@ -296,5 +312,84 @@ public class SqlQuery extends Query {
         break;
       }
     }
+    
+    // Continue only if a meta columns query reference is provided.  
+ 	if(_dynColumnsQueryRef != null) { 
+ 	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_dynColumnsQueryRef);
+ 	  String sql = query.getSql();
+ 	  ResultSet resultSet = null;
+ 	  Column column = null;
+ 	 List<FieldSetter> fieldSetters = RngAnnotations.getRngFields(Column.class);
+ 	  try {
+ 	    resultSet = SqlUtils.executeQuery(wdkModel.getAppDb().getDataSource(), sql, query.getFullName() + "__meta-cols");
+ 	    ResultSetMetaData metaData = resultSet.getMetaData();
+ 	    int columnCount = metaData.getColumnCount();
+	    while(resultSet.next()) {  
+		  
+		  column = new Column();
+		  column.setQuery(this);
+		  
+		  List<String> columnNames = new ArrayList<>();
+		  for (int i = 1; i <= columnCount; i++ ) {
+		    String columnName = metaData.getColumnName(i).toLowerCase();
+		    columnNames.add(columnName);
+		  }  
+		  
+		  for(FieldSetter fieldSetter : fieldSetters) {
+       	    if(columnNames.contains(fieldSetter.underscoredName)) {
+       	      Class<?> type = fieldSetter.setter.getParameterTypes()[0];
+       	      switch(type.getName()) {
+       	        case "java.lang.String":
+       	      	  String strFieldValue = resultSet.getString(fieldSetter.underscoredName);
+       	    	  if(strFieldValue == null && fieldSetter.isRngRequired) {
+       	      	    throw new WdkModelException("The field "
+                	             + fieldSetter.underscoredName
+                	             + " is required for the Column object");  
+       	    	  }
+       	    	  else if(strFieldValue != null) {
+       	    	    fieldSetter.setter.invoke(column, strFieldValue);
+       	    	  }
+       	    	  break;
+       	    	case "int":
+       	    	  Integer intFieldValue = resultSet.getInt(fieldSetter.underscoredName);
+       	    	  if(resultSet.wasNull() && fieldSetter.isRngRequired) {
+       	    	    throw new WdkModelException("The field "
+                               + fieldSetter.underscoredName
+                 	           + " is required for the Column object");  
+       	    	  }
+       	    	  else if(intFieldValue != null) {
+       	    	    fieldSetter.setter.invoke(column, intFieldValue);
+       	    	  }
+       	    	  break;
+       	    	case "boolean":
+       	    	  Boolean boolFieldValue = resultSet.getBoolean(fieldSetter.underscoredName);
+         	      if(resultSet.wasNull() && fieldSetter.isRngRequired) {
+         	        throw new WdkModelException("The field "
+               	     	       + fieldSetter.underscoredName
+               	    	       + " is required for the Column object");  
+         	   	  }
+         	   	  else if(boolFieldValue != null) {
+         	   	    fieldSetter.setter.invoke(column, boolFieldValue);
+         	   	  }
+       	    	  break;
+       	    	default:
+       	    	  throw new WdkModelException("The parameter type " + type.getName() + " is not yet handled.");
+       	      }
+       	    }
+       	    else {
+       	      if(fieldSetter.isRngRequired) {
+       	    	throw new WdkModelException("The field "
+       	                   + fieldSetter.underscoredName
+       	   	               + " is required for the Column object");  
+       	   	  }
+       	    }
+          }
+		  this.columnMap.put(column.getName(), column);
+	    }
+ 	  }  
+ 	  catch(Exception e) {
+ 	    throw new WdkModelException("Unable to resolve database loaded column attributes.", e);
+ 	  }
+ 	}
   }
 }

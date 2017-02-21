@@ -3,15 +3,24 @@
  */
 package org.gusdb.wdk.model.record;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.RngAnnotations;
+import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+
 
 /**
  * <p>
@@ -44,6 +53,7 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
  */
 public class AttributeQueryReference extends Reference {
 
+  private String _dynColumnsQueryRef;
   private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
   private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -58,7 +68,15 @@ public class AttributeQueryReference extends Reference {
   public AttributeQueryReference(String twoPartName) throws WdkModelException {
     super(twoPartName);
   }
-
+  
+  /**
+   * Sets an optional reference to a dynamic columns query
+   * @param dynamic columns query ref of the form "set.element"
+   */
+  public void setDynColumnsQueryRef(String dynColumnsQueryRef) throws WdkModelException {
+	_dynColumnsQueryRef = dynColumnsQueryRef;
+  }
+  
   public void addAttributeField(AttributeField attributeField) {
     attributeFieldList.add(attributeField);
   }
@@ -72,6 +90,95 @@ public class AttributeQueryReference extends Reference {
     attributeFieldMap.values().toArray(array);
     return array;
   }
+  
+  /**
+   * This resolver collects database defined column attributes that are obtained from a meta column
+   * query table as specified by the _dynColumnsQueryRef.
+   */
+  @Override
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+	// Continue only if a dynamic columns query reference is provided.  
+	if(_dynColumnsQueryRef != null) { 
+	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_dynColumnsQueryRef);
+	  String sql = query.getSql();
+	  ResultSet resultSet = null;
+	  AttributeField attributeField = null;
+	  List<FieldSetter> fieldSetters = RngAnnotations.getRngFields(QueryColumnAttributeField.class);
+	  try {
+	    resultSet = SqlUtils.executeQuery(wdkModel.getAppDb().getDataSource(), sql, query.getFullName() + "__dyn-cols");
+	    ResultSetMetaData metaData = resultSet.getMetaData();
+	    int columnCount = metaData.getColumnCount();
+	    while(resultSet.next()) {  
+		  
+		  attributeField = new QueryColumnAttributeField();
+		  attributeField.excludeResources(wdkModel.getProjectId());
+		  
+		  List<String> columnNames = new ArrayList<>();
+		  for (int i = 1; i <= columnCount; i++ ) {
+		    String columnName = metaData.getColumnName(i).toLowerCase();
+		    columnNames.add(columnName);
+		  }  
+		  
+		  for(FieldSetter fieldSetter : fieldSetters) {
+        	    if(columnNames.contains(fieldSetter.underscoredName)) {
+        	    	  Class<?> type = fieldSetter.setter.getParameterTypes()[0];
+        	    	  switch(type.getName()) {
+        	    		  case "java.lang.String":
+        	    			String strFieldValue = resultSet.getString(fieldSetter.underscoredName);
+        	    			if(strFieldValue == null && fieldSetter.isRngRequired) {
+        	    			  throw new WdkModelException("The field "
+             	    	             + fieldSetter.underscoredName
+             	    	             + " is required for the QueryColumnAttributeField object");  
+        	    			}
+        	    			else if(strFieldValue != null) {
+        	    			  fieldSetter.setter.invoke(attributeField, strFieldValue);
+        	    			}
+        	    			break;
+        	    		  case "int":
+        	    			Integer intFieldValue = resultSet.getInt(fieldSetter.underscoredName);
+        	    			if(resultSet.wasNull() && fieldSetter.isRngRequired) {
+        	    			  throw new WdkModelException("The field "
+                	    	             + fieldSetter.underscoredName
+                	    	             + " is required for the QueryColumnAttributeField object");  
+        	    			}
+        	    			else if(intFieldValue != null) {
+        	    			  fieldSetter.setter.invoke(attributeField, intFieldValue);
+        	    			}
+        	    			break;
+        	    		  case "boolean":
+        	    			Boolean boolFieldValue = resultSet.getBoolean(fieldSetter.underscoredName);
+          	    	    if(resultSet.wasNull() && fieldSetter.isRngRequired) {
+          	    	      throw new WdkModelException("The field "
+                  	    	         + fieldSetter.underscoredName
+                  	    	         + " is required for the QueryColumnAttributeField object");  
+          	    		}
+          	    		else if(boolFieldValue != null) {
+          	    		  fieldSetter.setter.invoke(attributeField, boolFieldValue);
+          	    		}
+        	    			break;
+        	    		  default:
+        	    		    throw new WdkModelException("The parameter type " + type.getName() + " is not yet handled.");
+        	      }
+        	    }
+        	    else {
+        	    	  if(fieldSetter.isRngRequired) {
+        	    		throw new WdkModelException("The field "
+        	    	               + fieldSetter.underscoredName
+        	    	               + " is required for the QueryColumnAttributeField object");  
+        	    	  }
+        	    }
+          }	
+		  // Add the the attribute field map because the attribute field list may already have been trashed by an
+		  // excludeResources method
+		  this.attributeFieldMap.put(attributeField.getName(), attributeField);
+	    }  
+  	  }
+	  catch(Exception e) {
+	    throw new WdkModelException("Unable to resolve database loaded column attributes.", e);
+	  }
+	}  
+  }
+  
 
   /*
    * (non-Javadoc)
