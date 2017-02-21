@@ -86,8 +86,9 @@ public class GetVocabAction extends Action {
       return question;
   }
   
-  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) {
+  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) throws WdkUserException {
     String paramName = request.getParameter("name");
+    if (paramName == null) throw new WdkUserException("Required parameter 'name' is missing.");
 
     // the dependent values are a JSON representation of {name: [values],
     // name: [values],...}
