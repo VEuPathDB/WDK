@@ -815,6 +815,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       // validate attribute query
       Query query = (Query) wdkModel.resolveReference(reference.getTwoPartName());
       validateBulkQuery(query);
+      
+      // resolving dynamic column attribute fields
+      reference.resolveReferences(wdkModel);
 
       // add fields into record level, and associate columns
       Map<String, AttributeField> fields = reference.getAttributeFieldMap();

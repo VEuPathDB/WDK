@@ -903,6 +903,9 @@
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
       <optional>
+        <attribute name="dynColumnsQueryRef" />
+      </optional>
+      <optional>
         <attribute name="isCacheable">
           <data type="boolean" />
         </attribute>
@@ -1165,6 +1168,9 @@
           <!-- attribute query ref -->
           <element name="attributeQueryRef">
             <attribute name="ref" />
+            <optional>
+              <attribute name="dynColumnsQueryRef" />
+            </optional>  
             <ref name="IncludeExclude" />
             <zeroOrMore>
               <ref name="attributes" />
