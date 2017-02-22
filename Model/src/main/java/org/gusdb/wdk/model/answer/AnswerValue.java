@@ -345,7 +345,7 @@ public class AnswerValue {
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet = null;
     try {
-      LOG.info("SQL for TableField '" + tableField.getName() + "': " + sql);
+      LOG.debug("SQL for TableField '" + tableField.getName() + "': " + sql);
       resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table-paged");
     }
     catch (SQLException e) {
@@ -520,44 +520,41 @@ public class AnswerValue {
   }
 
   protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
-    try {
-      String innerSql = _idsQueryInstance.getSql();
 
-      // add comments to id sql
-      innerSql = " /* the ID query */" + innerSql;
+    String innerSql = _idsQueryInstance.getSql();
 
-      int assignedWeight = _idsQueryInstance.getAssignedWeight();
-      // apply old filter
-      if (_filter != null) {
-        innerSql = _filter.applyFilter(_user, innerSql, assignedWeight);
-        innerSql = " /* old filter applied on id query */ " + innerSql;
-      }
+    // add comments to id sql
+    innerSql = " /* the ID query */" + innerSql;
 
-      // apply "new" filters
-      if (_filterOptions != null) {
-        //logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " + excludeFilter);
-        innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
-        innerSql = " /* new filter applied on id query */ " + innerSql;
-      }
-      // apply view filters if requested
-      boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
-      if (viewFiltersApplied && !excludeViewFilters){
-        LOG.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " + _viewFilterOptions.getFilterOptions().keySet() + " " + this);
-        innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
-        LOG.info("innersql: " + innerSql);
-        innerSql = " /* new view filter applied on id query */ " + innerSql;
-      }
-     
-      innerSql = "(" + innerSql + ")";
-      LOG.debug("AnswerValue: ID SQL constructed with all filters:\n");
-
-      return innerSql;
+    int assignedWeight = _idsQueryInstance.getAssignedWeight();
+    // apply old filter
+    if (_filter != null) {
+      innerSql = _filter.applyFilter(_user, innerSql, assignedWeight);
+      innerSql = " /* old filter applied on id query */ " + innerSql;
     }
-    catch (WdkModelException | WdkUserException ex) {
-      LOG.error(ex.getMessage(), ex);
-      ex.printStackTrace();
-      throw ex;
+
+    // apply "new" filters
+    if (_filterOptions != null) {
+      // logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " +
+      // excludeFilter);
+      innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
+      innerSql = " /* new filter applied on id query */ " + innerSql;
     }
+    // apply view filters if requested
+    boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
+    if (viewFiltersApplied && !excludeViewFilters) {
+      LOG.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " +
+          _viewFilterOptions.getFilterOptions().keySet() + " " + this);
+      innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+      LOG.debug("innersql: " + innerSql);
+      innerSql = " /* new view filter applied on id query */ " + innerSql;
+    }
+
+    innerSql = "(" + innerSql + ")";
+    LOG.debug("AnswerValue: ID SQL constructed with all filters:\n");
+
+    return innerSql;
+
   }
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
