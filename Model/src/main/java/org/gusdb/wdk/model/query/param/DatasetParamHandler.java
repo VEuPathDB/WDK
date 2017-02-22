@@ -183,7 +183,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         data = toString(records);
     }
 
-    logger.info("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
+    logger.debug("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
