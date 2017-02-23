@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class TestOntologyPlugin implements OntologyFactoryPlugin {
 
   @Override
-  public TreeNode<OntologyNode> getTree(Map<String, String> parameters, String ontologyName) {
+  public TreeNode<OntologyNode> getTree(Map<String, String> parameters, String ontologyName, WdkModel wdkModel) {
     
     OntologyNode rootContents = new OntologyNode();
     addSingleValueProp(rootContents, "type", "category");
