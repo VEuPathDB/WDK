@@ -903,7 +903,7 @@
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
       <optional>
-        <attribute name="dynColumnsQueryRef" />
+        <attribute name="attributeMetaQueryRef" />
       </optional>
       <optional>
         <attribute name="isCacheable">
@@ -1169,7 +1169,7 @@
           <element name="attributeQueryRef">
             <attribute name="ref" />
             <optional>
-              <attribute name="dynColumnsQueryRef" />
+              <attribute name="attributeMetaQueryRef" />
             </optional>  
             <ref name="IncludeExclude" />
             <zeroOrMore>

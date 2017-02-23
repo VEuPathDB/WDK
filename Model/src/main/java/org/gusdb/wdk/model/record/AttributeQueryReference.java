@@ -53,7 +53,7 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
  */
 public class AttributeQueryReference extends Reference {
 
-  private String _dynColumnsQueryRef;
+  private String _attributeMetaQueryRef;
   private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
   private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -73,8 +73,8 @@ public class AttributeQueryReference extends Reference {
    * Sets an optional reference to a dynamic columns query
    * @param dynamic columns query ref of the form "set.element"
    */
-  public void setDynColumnsQueryRef(String dynColumnsQueryRef) throws WdkModelException {
-	_dynColumnsQueryRef = dynColumnsQueryRef;
+  public void setAttributeMetaQueryRef(String attributeMetaQueryRef) throws WdkModelException {
+	_attributeMetaQueryRef = attributeMetaQueryRef;
   }
   
   public void addAttributeField(AttributeField attributeField) {
@@ -98,8 +98,8 @@ public class AttributeQueryReference extends Reference {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
 	// Continue only if a dynamic columns query reference is provided.  
-	if(_dynColumnsQueryRef != null) { 
-	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_dynColumnsQueryRef);
+	if(_attributeMetaQueryRef != null) { 
+	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_attributeMetaQueryRef);
 	  String sql = query.getSql();
 	  ResultSet resultSet = null;
 	  AttributeField attributeField = null;

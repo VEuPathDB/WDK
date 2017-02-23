@@ -55,7 +55,7 @@ public class SqlQuery extends Query {
   private boolean clobRow;
   private boolean _useDBLink = false;
 
-  private String _dynColumnsQueryRef;
+  private String _attributeMetaQueryRef;
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
 
@@ -115,8 +115,8 @@ public class SqlQuery extends Query {
    * Sets an optional reference to a meta columns query
    * @param meta columns query ref of the form "set.element"
    */
-  public void setDynColumnsQueryRef(String dynColumnsQueryRef) {
-	_dynColumnsQueryRef = dynColumnsQueryRef;
+  public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
+	_attributeMetaQueryRef = attributeMetaQueryRef;
   }
 
   /**
@@ -312,8 +312,8 @@ public class SqlQuery extends Query {
     }
     
     // Continue only if a meta columns query reference is provided.  
- 	if(_dynColumnsQueryRef != null) { 
- 	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_dynColumnsQueryRef);
+ 	if(_attributeMetaQueryRef != null) { 
+ 	  SqlQuery query = (SqlQuery) wdkModel.resolveReference(_attributeMetaQueryRef);
  	  String sql = query.getSql();
  	  ResultSet resultSet = null;
  	  Column column = null;
