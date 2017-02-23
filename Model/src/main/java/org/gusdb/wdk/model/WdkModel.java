@@ -1274,7 +1274,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public Ontology getOntology(String name) throws WdkModelException {
     OntologyFactory factory = getOntologyFactory(name);
     if (factory == null) return null;
-    return factory.getOntology();
+    return factory.getOntology(this);
   }
 
   public void addMacroDeclaration(MacroDeclaration macro) {

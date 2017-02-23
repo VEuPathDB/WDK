@@ -54,10 +54,12 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
   public Map<String, String> getProperties() {
     return new LinkedHashMap<String, String>(this.properties);
   }
+  
+  
 
   @Override
-  public Ontology getOntology() throws WdkModelException {
-    TreeNode<OntologyNode> rawTree = plugin.getTree(properties, name);
+  public Ontology getOntology(WdkModel wdkModel) throws WdkModelException {
+    TreeNode<OntologyNode> rawTree = plugin.getTree(properties, name, wdkModel);
     return new Ontology(name, rawTree);
   }
 
@@ -67,8 +69,8 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
    * @throws WdkUserException
    */
   @Override
-  public Ontology getValidatedOntology() throws WdkModelException {
-    Ontology rawOntology = getOntology();
+  public Ontology getValidatedOntology(WdkModel wdkModel) throws WdkModelException {
+    Ontology rawOntology = getOntology(wdkModel);
     List<List<TreeNode<OntologyNode>>> circularPaths = rawOntology.findCircularPaths();
     if (!circularPaths.isEmpty()) {
       // TODO: print out circular paths

@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.ontology;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public interface OntologyFactoryPlugin {
@@ -14,7 +15,7 @@ public interface OntologyFactoryPlugin {
    * @param parameters
    * @return
    */
-  public TreeNode<OntologyNode> getTree(Map<String, String> parameters, String ontologyName) throws WdkModelException;
+  public TreeNode<OntologyNode> getTree(Map<String, String> parameters, String ontologyName, WdkModel wdkModel) throws WdkModelException;
 
   /**
    * Validate the parameters that will be provided to the plugin.  This is called by the WDK when it creates its model.
