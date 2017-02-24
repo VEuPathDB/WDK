@@ -13,7 +13,12 @@ import org.gusdb.wdk.model.WdkModel;
 public class ErrorContext {
 
     public static enum RequestType {
-      WDK_SITE, WDK_SERVICE;
+      WDK_SITE("Site"),
+      WDK_SERVICE("Service");
+
+      private final String _label;
+      private RequestType(String label) { _label = label; }
+      public String getLabel() { return _label; }
     }
 
     private final WdkModel _wdkModel;
