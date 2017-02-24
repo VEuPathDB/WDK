@@ -2,6 +2,8 @@
 
 use strict;
 use Getopt::Long;
+use JSON::XS;
+use Data::Dumper;
 
 my ($startDate, $endDate, $report, $emailsFile, $singleFilter, $filtersFile);
 
@@ -25,15 +27,16 @@ my ($startM, $startD, $startY, $endM, $endD, $endY) = parseStartEndDates($startD
 # parse filters
 #
 if ($singleFilter) {
-    &parseFilterLine($singleFilter, \@filtersAsStrings, \%filtersInfo);
+  &parseFilterLine($singleFilter, \@filtersAsStrings, \%filtersInfo);
 }
 
 else {
   open(FF, $filtersFile) || die "Can't open filters file '$filtersFile'\n";
+  my $jsonString = "";
   while(<FF>) {
-    next if /^#/;
-    &parseFilterLine($_, \@filtersAsStrings, \%filtersInfo);
+    $jsonString .= $_;
   }
+  &parseFilterJson($jsonString, \@filtersAsStrings, \%filtersInfo);
 }
 
 #
@@ -72,9 +75,7 @@ Total emails in date range: $totalEmails
                  # matched: $matchedEmails
                # unmatched: $unmatchedEmails
 ";
-
 }
-
 
 ##########################################################################################
 
@@ -107,6 +108,17 @@ sub parseFilterLine {
   my @filterTerms = split(/\s+\&\&\s+/, $filterAsString);
 
   $filtersInfoRef->{$filterAsString} = {orig => $filterLine, terms => \@filterTerms, count => 0};
+}
+
+sub parseFilterJson {
+  my ($filterJsonStr, $filtersAsStringsRef, $filtersInfoRef) = @_;
+  my $filtersArray = decode_json($filterJsonStr);
+  foreach my $category (@$filtersArray) {
+    my $matchStrings = $category->{'matchStrings'};
+    my $joinedMatchString = join(' && ', @$matchStrings);
+    push(@$filtersAsStringsRef, $joinedMatchString);
+    $filtersInfoRef->{$joinedMatchString} = {orig => $joinedMatchString, terms => \@$matchStrings, count => 0};
+  }
 }
 
 sub dateFilter {
@@ -163,7 +175,7 @@ Filter a file of wdk error emails.
 
 There are three modes of use:
   1) filter hunting.  Provide a filters file.  Output is mails that match no filter, so you can create new filters (to add to the filters file).
-  2) reporting.  Provide a filters file.  Ouput is a report showing counts of each filter, so you can decide which filter issue to debug
+  2) reporting.  Provide a filters file.  Output is a report showing counts of each filter, so you can decide which filter issue to debug
   3) single filter.  Provide a single filter.  Output is mails that match that filter, so you can start debugging.
 
 Usage: wdkFilterErrorEmails --ef emails_file <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]

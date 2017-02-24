@@ -1,10 +1,13 @@
 package org.gusdb.wdk.errors;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.gusdb.fgputil.web.RequestData;
+import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.wdk.model.MDCUtil.MdcBundle;
 import org.gusdb.wdk.model.WdkModel;
 
 public class ErrorContext {
@@ -19,7 +22,9 @@ public class ErrorContext {
     private final Map<String, Object> _requestAttributeMap;
     private final Map<String, Object> _sessionAttributeMap;
     private final RequestType _requestType;
+    private final MdcBundle _mdcBundle;
     private final String _logMarker;
+    private final Date _date;
 
     public ErrorContext(WdkModel wdkModel, RequestData requestData,
             Map<String, Object> servletContextAttributes,
@@ -32,7 +37,9 @@ public class ErrorContext {
         _requestAttributeMap = requestAttributeMap;
         _sessionAttributeMap = sessionAttributeMap;
         _requestType = requestType;
+        _mdcBundle = MDCUtil.getMdcBundle();
         _logMarker = UUID.randomUUID().toString();
+        _date = new Date();
     }
 
     public String getProjectName() { return _wdkModel.getProjectId(); }
@@ -59,6 +66,20 @@ public class ErrorContext {
     }
 
     /**
+     * @return whether this error was caused during a site (i.e. struts action) or service (i.e. jersey) request
+     */
+    public RequestType getRequestType() {
+      return _requestType;
+    }
+
+    /**
+     * @return snapshot of set MDC values in the current thread
+     */
+    public MdcBundle getMdcBundle() {
+      return _mdcBundle;
+    }
+
+    /**
      * Returns marker to uniquely identify this error in logs and other error handling contexts
      * @return unique identifier for this error
      */
@@ -67,9 +88,9 @@ public class ErrorContext {
     }
 
     /**
-     * @return whether this error was caused during a site (i.e. struts action) or service (i.e. jersey) request
+     * @return date the error occurred
      */
-    public RequestType getRequestType() {
-      return _requestType;
+    public Date getErrorDate() {
+      return _date;
     }
 }

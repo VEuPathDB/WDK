@@ -69,6 +69,24 @@ public class MDCUtil {
     }
   }
 
+  public static String getSessionId() {
+    return (String)MDC.get(LOG4J_SESSION_ID_KEY);
+  }
+
+  public static String getShortSessionId() {
+    return (String)MDC.get(LOG4J_SHORT_SESSION_ID_KEY);
+  }
+
+  public static MdcBundle getMdcBundle() {
+    return new MdcBundle(
+        getRequestDuration(),
+        getIpAddress(),
+        getRequestId(),
+        getSessionId(),
+        getShortSessionId(),
+        getRequestedDomain());
+  }
+
   public static void clearValues() {
     MDC.remove(LOG4J_REQUEST_TIMER);
     MDC.remove(LOG4J_IP_ADDRESS_KEY);
@@ -83,5 +101,44 @@ public class MDCUtil {
     MDCUtil.setSessionId(threadId);
     MDCUtil.setIpAddress("<no_ip_address>");
     MDCUtil.setRequestStartTime(System.currentTimeMillis());
+  }
+
+  public static class MdcBundle {
+
+    private String _requestDuration;
+    private String _ipAddress;
+    private String _requestId;
+    private String _sessionId;
+    private String _shortSessionId;
+    private String _requestedDomain;
+
+    public MdcBundle(String requestDuration, String ipAddress, String requestId, String sessionId,
+        String shortSessionId, String requestedDomain) {
+      _requestDuration = requestDuration;
+      _ipAddress = ipAddress;
+      _requestId = requestId;
+      _sessionId = sessionId;
+      _shortSessionId = shortSessionId;
+      _requestedDomain = requestedDomain;
+    }
+
+    public String getRequestDuration() {
+      return _requestDuration;
+    }
+    public String getIpAddress() {
+      return _ipAddress;
+    }
+    public String getRequestId() {
+      return _requestId;
+    }
+    public String getSessionId() {
+      return _sessionId;
+    }
+    public String getShortSessionId() {
+      return _shortSessionId;
+    }
+    public String getRequestedDomain() {
+      return _requestedDomain;
+    }
   }
 }
