@@ -29,12 +29,11 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
-import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent;
-import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.gusdb.wdk.model.user.dataset.event.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.xml.sax.SAXException;
 
