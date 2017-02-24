@@ -7,10 +7,9 @@ import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent;
-import org.gusdb.wdk.model.user.dataset.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.gusdb.wdk.model.user.dataset.event.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.apache.log4j.Logger;
 
