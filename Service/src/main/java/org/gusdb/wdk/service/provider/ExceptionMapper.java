@@ -44,7 +44,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   @Override
   public Response toResponse(Exception e) {
 
-    LOG.error(e);
+    LOG.error("Caught service error", e);
 
     try { throw e; }
 
