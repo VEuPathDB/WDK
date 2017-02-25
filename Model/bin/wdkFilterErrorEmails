@@ -16,7 +16,7 @@ my ($startDate, $endDate, $report, $emailsFile, $singleFilter, $filtersFile);
 
 usage() unless ($emailsFile && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
 
-my $emailDelim = "---------------------";
+my $emailDelim = "##ERROR_END##";
 
 my @filtersAsStrings; # to preserve input order
 my %filtersInfo; # key is filterAsString, value is hash ref w/ info about the filter
@@ -53,7 +53,8 @@ while(<F>) {
       $matchedEmails += &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
     }
     @currentEmail = ();
-  } else {
+  }
+  else {
     $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
     push(@currentEmail, $_);
   }
@@ -124,8 +125,9 @@ sub dateFilter {
   my ($date) = @_;
 
   $date =~ /(\d+)\/(\d+)\/(\d+)/;
-  my ($m, $d, $y) = ($1, $2, $3);
+  my ($y, $m, $d) = ($1, $2, $3);
 
+  # note: these comparisons are imperfect and will fail around year boundaries
   return 0 if ($startDate && ($y < $startY || $m < $startM || $d < $startD));
   return 0 if ($endDate && ($y > $endY || $m > $endM || $d > $endD));
 
@@ -159,8 +161,8 @@ sub matchesFilter {
     my $matchedTerm = 0;
     foreach my $emailLine (@$emailArray) {
       if (index($emailLine, $filterTerm) != -1) {
-	$matchedTerm = 1;
-	last;
+        $matchedTerm = 1;
+        last;
       }
     }
     $matched &= $matchedTerm;
