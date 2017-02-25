@@ -47,7 +47,7 @@ public class ErrorContext {
         _date = new Date();
     }
 
-    public String getProjectName() { return _wdkModel.getProjectId(); }
+    public WdkModel getWdkModel() { return _wdkModel; }
     public RequestData getRequestData() { return _requestData; }
     public Map<String, Object> getServletContextAttributes() { return _servletContextAttributes; }
     public Map<String, Object> getRequestAttributeMap() { return _requestAttributeMap; }
