@@ -90,10 +90,10 @@ public class UserDatasetEventListHandler extends BaseCLI {
               appDbDataSource, getUserDatasetSchemaName());
         }
 
-        else if (event instanceof UserDatasetExternalDatasetEvent) {
-          UserDatasetEventHandler.handleExternalDatasetEvent((UserDatasetExternalDatasetEvent) event,
-              appDbDataSource, getUserDatasetSchemaName());
-        }
+//        else if (event instanceof UserDatasetExternalDatasetEvent) {
+//          UserDatasetEventHandler.handleExternalDatasetEvent((UserDatasetExternalDatasetEvent) event,
+//              appDbDataSource, getUserDatasetSchemaName());
+//        }
 
         count++;
       }
@@ -245,21 +245,22 @@ public class UserDatasetEventListHandler extends BaseCLI {
           events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
         }
 
-        // event_id share projects user_dataset_id ud_type_name ud_type_version user_id grant
+        // event_id share projects user_dataset_id ud_type_name ud_type_version owner_id recipient_id grant
         else if (columns[1].equals("share")) {
-          Integer userId = new Integer(columns[6]);
-          ShareAction action = columns[7].equals("grant") ?
+          Integer ownerId = new Integer(columns[6]);
+          Integer recipientId = new Integer(columns[7]);
+          ShareAction action = columns[8].equals("grant") ?
               ShareAction.GRANT : ShareAction.REVOKE;
-          events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
+          events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
         }
 
         // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
-        else if (columns[1].equals("externalDataset")) {
-          Integer userId = new Integer(columns[6]);
-          ExternalDatasetAction action = columns[7].equals("create") ?
-              ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
-          events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
-        }
+//        else if (columns[1].equals("externalDataset")) {
+//          Integer userId = new Integer(columns[6]);
+//          ExternalDatasetAction action = columns[7].equals("create") ?
+//              ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
+//          events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
+//        }
 
         else {
           throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
@@ -301,21 +302,22 @@ public class UserDatasetEventListHandler extends BaseCLI {
       events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
     }
 
-    // event_id share projects user_dataset_id ud_type_name ud_type_version user_id grant
+    // event_id share projects user_dataset_id ud_type_name ud_type_version owner_id recipient_id grant
     else if (columns[1].equals("share")) {
-      Integer userId = new Integer(columns[6]);
-      ShareAction action = columns[7].equals("grant") ?
+      Integer ownerId = new Integer(columns[6]);
+      Integer recipientId = new Integer(columns[7]);
+      ShareAction action = columns[8].equals("grant") ?
           ShareAction.GRANT : ShareAction.REVOKE;
-      events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
+      events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
     }
 
     // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
-    else if (columns[1].equals("externalDataset")) {
-      Integer userId = new Integer(columns[6]);
-      ExternalDatasetAction action = columns[7].equals("create") ?
-          ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
-      events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
-    }
+//    else if (columns[1].equals("externalDataset")) {
+//      Integer userId = new Integer(columns[6]);
+//      ExternalDatasetAction action = columns[7].equals("create") ?
+//          ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
+//      events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
+//    }
     else {
       throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
     }

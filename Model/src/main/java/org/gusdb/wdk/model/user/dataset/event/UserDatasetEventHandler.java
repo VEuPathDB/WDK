@@ -77,33 +77,33 @@ public class UserDatasetEventHandler {
       logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
     } else {
       if (event.getAction() == ShareAction.GRANT)
-        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+        grantShareAccess(event.getOwnerId(), event.getRecipientId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
             sharedTable);
       else
-        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+        revokeShareAccess(event.getOwnerId(), event.getRecipientId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
             sharedTable);
     }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
 
-  public static void handleExternalDatasetEvent (UserDatasetExternalDatasetEvent event, DataSource appDbDataSource, String userDatasetSchemaName) {
-
-    logger.info("Updating access to user dataset " + event.getUserDatasetId() );
-    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-
-    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
-      // this can happen if the install was skipped, because the ud was deleted first
-      logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
-    } else {
-      if (event.getAction() == ExternalDatasetAction.CREATE)
-        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-            externalTable);
-      else
-        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-            externalTable);
-    }
-    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-  }
+//  public static void handleExternalDatasetEvent (UserDatasetExternalDatasetEvent event, DataSource appDbDataSource, String userDatasetSchemaName) {
+//
+//    logger.info("Updating access to user dataset " + event.getUserDatasetId() );
+//    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+//
+//    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
+//      // this can happen if the install was skipped, because the ud was deleted first
+//      logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
+//    } else {
+//      if (event.getAction() == ExternalDatasetAction.CREATE)
+//        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+//            externalTable);
+//      else
+//        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+//            externalTable);
+//    }
+//    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+//  }
   
   /**
    * check if a user dataset is installed (in the installed table).
@@ -124,12 +124,37 @@ public class UserDatasetEventHandler {
 
     return handler.getNumRows() > 0;
   }
+  
+  /**
+   * Adds a share to the UserDatasetSharedWith table.
+   * @param ownerId
+   * @param recipientId
+   * @param userDatasetId
+   * @param appDbDataSource
+   * @param userDatasetSchemaName
+   * @param tableName
+   */
+  private static void grantShareAccess(Integer ownerId, Integer recipientId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
+    logger.info("Granting recipient " + recipientId + " access to user dataset " + userDatasetId + " belonging to owner " + ownerId + " in table " + tableName);
+    String sql = "insert into " + userDatasetSchemaName + tableName + " (owner_user_id, recipient_user_id, user_dataset_id) values (?, ?, ?)";
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
+    Object[] args = {ownerId, recipientId, userDatasetId};
+    sqlRunner.executeUpdate(args);
+  }
 
   private static void grantAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Granting access to user dataset " + userDatasetId + " to user " + userId + " in table " + tableName);
     String sql = "insert into " + userDatasetSchemaName + tableName + " (user_id, user_dataset_id) values (?, ?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
     Object[] args = {userId, userDatasetId};
+    sqlRunner.executeUpdate(args);
+  }
+  
+  private static void revokeShareAccess(Integer ownerId, Integer recipientId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
+    logger.info("Revoking access by recipient " + recipientId + " to user dataset " + userDatasetId + " belonging to owner " + ownerId);
+    String sql = "delete from " + userDatasetSchemaName + tableName + " where owner_user_id = ? and recipient_user_id = ? and user_dataset_id = ?";
+    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
+    Object[] args = {ownerId, recipientId, userDatasetId};
     sqlRunner.executeUpdate(args);
   }
 
