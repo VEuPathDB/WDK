@@ -2,7 +2,7 @@
 
 use strict;
 use Getopt::Long;
-use JSON::XS;
+use JSON;
 
 my ($startDate, $endDate, $report, $emailsFile, $singleFilter, $filtersFile);
 
