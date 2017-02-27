@@ -139,7 +139,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
   @Override
   public void dumpStatistics() {
-    LOG.info("Wrote " + _numParams.get() + " total param rows to the step_params table.");
+    LOG.info("Wrote " + _numParams.get() + " total param rows to the " + StepParamExpander.STEP_PARAMS_TABLE + " table.");
   }
 
 }

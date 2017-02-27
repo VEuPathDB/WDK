@@ -47,7 +47,7 @@ public class StepParamExpander extends BaseCLI {
 
   private static final String ARG_THREADED = "threaded";
   private static final String ARG_DROP = "dropTablesOnly";
-  private static final String STEP_PARAMS_TABLE = "step_params";
+  static final String STEP_PARAMS_TABLE = "step_params";
   private static final String UPDATED_STEPS_TABLE = "wdk_updated_steps";
 
   public static void main(String[] args) {
@@ -312,7 +312,7 @@ public class StepParamExpander extends BaseCLI {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which" +
         " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
     addSingleValueOption(ARG_THREADED, false, String.valueOf(USE_THREADED_BY_DEFAULT), "Set to true to use TableRowUpdater (threaded) version; else false");
-    addNonValueOption("ARG_DROP", false, "Do not expand steps.  Just drop the " + STEP_PARAMS_TABLE + " and " + UPDATED_STEPS_TABLE + " tables, then exit.");
+    addNonValueOption(ARG_DROP, false, "Do not expand steps.  Just drop the " + STEP_PARAMS_TABLE + " and " + UPDATED_STEPS_TABLE + " tables, then exit.");
   }
 
   /*
@@ -325,32 +325,34 @@ public class StepParamExpander extends BaseCLI {
     String projectId = (String)getOptionValue(ARG_PROJECT_ID);
 
     if ((Boolean) getOptionValue(ARG_DROP)) {
-      WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
-      dropTables(wdkModel);
+      try (WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome())) {
+        dropTables(wdkModel);
+      }
       System.exit(0);
     }
 
     boolean useThreaded = Boolean.valueOf((String)getOptionValue(ARG_THREADED));
-    if (useThreaded) {
-      int exitCode = TableRowUpdater.run(new String[]{ StepParamExpanderPlugin.class.getName(), projectId });
-      System.exit(exitCode);
-    }
-    else {
-      runOrig(projectId);
-    }
+    System.exit(useThreaded ?
+        TableRowUpdater.run(new String[]{ StepParamExpanderPlugin.class.getName(), projectId }) :
+        runOrig(projectId));
   }
 
-  private void runOrig(String projectId) throws WdkModelException, SQLException {
+  private int runOrig(String projectId) {
     Timer t = new Timer();
     try (WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome())) {
       expand(wdkModel);
+      return 0;
+    }
+    catch(Exception e) {
+      logger.error("Error expanding params", e);
+      return 1;
     }
     finally {
       logger.info("Program duration: " + t.getElapsedString());
     }
   }
-  
-  public void dropTables(WdkModel wdkModel) throws SQLException {
+
+  private static void dropTables(WdkModel wdkModel) throws SQLException {
     DatabaseInstance database = wdkModel.getUserDb();
     DataSource dataSource = database.getDataSource();
     DBPlatform platform = database.getPlatform();
