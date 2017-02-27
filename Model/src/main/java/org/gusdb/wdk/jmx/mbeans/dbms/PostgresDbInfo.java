@@ -49,4 +49,10 @@ public class PostgresDbInfo extends AbstractDbInfo {
     return null;
   }
 
+  @Override
+  protected String getDbfSizeOnDisk() {
+    // not implemented
+    return null;
+  }
+
 }
