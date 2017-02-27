@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.json.JsonIterators;
@@ -45,6 +46,9 @@ public class StepParamExpander extends BaseCLI {
   private static final boolean USE_THREADED_BY_DEFAULT = true;
 
   private static final String ARG_THREADED = "threaded";
+  private static final String ARG_DROP = "dropTablesOnly";
+  private static final String STEP_PARAMS_TABLE = "step_params";
+  private static final String UPDATED_STEPS_TABLE = "wdk_updated_steps";
 
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
@@ -65,7 +69,7 @@ public class StepParamExpander extends BaseCLI {
    */
   protected StepParamExpander(String command) {
     super((command != null) ? command : "stepParamExpander",
-        "expand the param clob into its own rows in step_params table");
+        "expand the param clob into its own rows in " + STEP_PARAMS_TABLE + " table");
   }
 
   public void expand(WdkModel wdkModel) throws SQLException, WdkModelException {
@@ -175,7 +179,7 @@ public class StepParamExpander extends BaseCLI {
         "SELECT " + columns +
         " FROM " + userSchema + "steps s, " + userSchema + "users u" +
         " WHERE s.user_id = u.user_id AND u.is_guest = 0 AND s.is_deleted = 0" + projectIdCondition +
-        "   AND s.step_id NOT IN (SELECT step_id FROM step_params)";
+        "   AND s.step_id NOT IN (SELECT step_id FROM " + STEP_PARAMS_TABLE + ")";
   }
 
   public static void createParamTable(WdkModel wdkModel) throws SQLException {
@@ -184,28 +188,28 @@ public class StepParamExpander extends BaseCLI {
 
     // check if table exists
     // in that case check if any steps have been updated (in wdk_update_steps) and remove them
-    if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "step_params")) {
+    if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), STEP_PARAMS_TABLE)) {
       
       // if wdk_updated_steps table exists, purge updated steps from step_params
-      if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "wdk_updated_steps")) {
+      if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), UPDATED_STEPS_TABLE)) {
         // 1- delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)
         logger.info("Deleting step params that have been updated...");
         SqlUtils.executeUpdate(dataSource,
-            "delete FROM step_params WHERE step_id IN (SELECT step_id FROM wdk_updated_steps)",
+            "delete FROM " + STEP_PARAMS_TABLE + " WHERE step_id IN (SELECT step_id FROM " + UPDATED_STEPS_TABLE + ")",
             "wdk-update-param-table");
         // 2- clean wdk_update_steps
-        logger.info("Leave wdk_updated_steps table empty for next use...");
-        SqlUtils.executeUpdate(dataSource, "delete from wdk_updated_steps", "wdk-reset-updatedSteps-table");
+        logger.info("Leave " + UPDATED_STEPS_TABLE + " table empty for next use...");
+        SqlUtils.executeUpdate(dataSource, "delete from " + UPDATED_STEPS_TABLE, "wdk-reset-updatedSteps-table");
       }
       else {
-        logger.info("wdk_updated_steps table does not exist; will not remove any updated step params");
+        logger.info(UPDATED_STEPS_TABLE + " table does not exist; will not remove any updated step params");
       }
     }
     else {
-      logger.info("Creating step_params table...");
+      logger.info("Creating " + STEP_PARAMS_TABLE + " table...");
 
       SqlUtils.executeUpdate(dataSource,
-          "CREATE TABLE step_params (" +
+          "CREATE TABLE " + STEP_PARAMS_TABLE + " (" +
               " step_id NUMBER(12) NOT NULL, " +
               " param_name VARCHAR(200 CHAR) NOT NULL, " +
               " param_value VARCHAR(4000 CHAR), " +
@@ -213,17 +217,17 @@ public class StepParamExpander extends BaseCLI {
           "wdk-create-param-table");
   
       SqlUtils.executeUpdate(dataSource,
-          "CREATE UNIQUE INDEX step_params_ux01 " + "ON step_params (step_id, param_name, param_value)",
+          "CREATE UNIQUE INDEX step_params_ux01 " + "ON " + STEP_PARAMS_TABLE + " (step_id, param_name, param_value)",
           "wdk-create-param-indx");
   
       SqlUtils.executeUpdate(dataSource,
-          "CREATE INDEX step_params_ix01 " + "ON step_params (step_id)",
+          "CREATE INDEX step_params_ix01 " + "ON " + STEP_PARAMS_TABLE + " (step_id)",
           "wdk-create-param-indx");
     }
   }
 
   public static String getInsertSql() {
-    return "INSERT INTO step_params (step_id, param_name, param_value) VALUES (?, ?, ?)";
+    return "INSERT INTO " + STEP_PARAMS_TABLE + " (step_id, param_name, param_value) VALUES (?, ?, ?)";
   }
 
   public static Map<String, Set<String>> parseClob(int stepId, String clob)
@@ -308,6 +312,7 @@ public class StepParamExpander extends BaseCLI {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which" +
         " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
     addSingleValueOption(ARG_THREADED, false, String.valueOf(USE_THREADED_BY_DEFAULT), "Set to true to use TableRowUpdater (threaded) version; else false");
+    addNonValueOption("ARG_DROP", false, "Do not expand steps.  Just drop the " + STEP_PARAMS_TABLE + " and " + UPDATED_STEPS_TABLE + " tables, then exit.");
   }
 
   /*
@@ -318,6 +323,13 @@ public class StepParamExpander extends BaseCLI {
   @Override
   protected void execute() throws Exception {
     String projectId = (String)getOptionValue(ARG_PROJECT_ID);
+
+    if ((Boolean) getOptionValue(ARG_DROP)) {
+      WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
+      dropTables(wdkModel);
+      System.exit(0);
+    }
+
     boolean useThreaded = Boolean.valueOf((String)getOptionValue(ARG_THREADED));
     if (useThreaded) {
       int exitCode = TableRowUpdater.run(new String[]{ StepParamExpanderPlugin.class.getName(), projectId });
@@ -337,4 +349,19 @@ public class StepParamExpander extends BaseCLI {
       logger.info("Program duration: " + t.getElapsedString());
     }
   }
+  
+  public void dropTables(WdkModel wdkModel) throws SQLException {
+    DatabaseInstance database = wdkModel.getUserDb();
+    DataSource dataSource = database.getDataSource();
+    DBPlatform platform = database.getPlatform();
+    String schema = database.getDefaultSchema();
+    String[] tables = new String[] { STEP_PARAMS_TABLE, UPDATED_STEPS_TABLE };
+    for (String table : tables) {
+      if (platform.checkTableExists(dataSource, schema, table)) {
+        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + schema + table, "wdk-drop-table");
+      }
+    }
+  }
+
+
 }
