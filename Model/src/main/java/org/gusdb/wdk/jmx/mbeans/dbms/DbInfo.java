@@ -18,6 +18,8 @@ import java.util.Map;
 
     public void populateConnectionPoolDataMap(HashMap<String, String> dbAttrs);
 
+    public void populateDbfSizeOnDisk(HashMap<String, String> dbAttrs);
+
     public void populateDblinkList(ArrayList<Map<String, String>> dblinkList);
 
 }
