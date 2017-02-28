@@ -54,6 +54,7 @@ public class DbEnvironment extends BeanBase implements DynamicMBean {
       dbinfo.populateDatabaseMetaDataMap(_dbAttrs);
       dbinfo.populateServernameDataMap(_dbAttrs);
       dbinfo.populateConnectionPoolDataMap(_dbAttrs);
+      dbinfo.populateDbfSizeOnDisk(_dbAttrs);
       dbinfo.populateDblinkList(_dblinkList);
     }
     catch (IllegalArgumentException e) {

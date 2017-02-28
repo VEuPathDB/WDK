@@ -51,6 +51,12 @@ public abstract class AbstractDbInfo implements DbInfo {
    * dblinks are not supported.
    */
   protected abstract String getDbLinkValidationSql(String dblink);
+  /**
+   * Size of data files on disk (for Oracle this is the size of *.dbf
+   * files, not counting redo logs and control files). Can return null
+   # if not implemented.
+   */
+  protected abstract String getDbfSizeOnDisk();
 
   public HashMap<String, String> getDatabaseAttributes() {
     return _databaseAttributes;
@@ -160,6 +166,35 @@ public abstract class AbstractDbInfo implements DbInfo {
     }
 
     //updateDblinkListWithValidity(dblinkList);
+  }
+
+  @Override
+  public void populateDbfSizeOnDisk(HashMap<String, String> dbfSizeOnDiskMap) {
+    String sql = getDbfSizeOnDisk();
+    if (sql == null) return;
+
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    logger.debug("querying database for size of data files on disk");    
+
+    try {
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      rs = ps.executeQuery();
+      if (rs.next()) {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int numColumns = rsmd.getColumnCount();
+        for (int i=1; i<numColumns+1; i++) {
+          String columnName = rsmd.getColumnName(i).toLowerCase();
+          dbfSizeOnDiskMap.put(columnName, rs.getString(columnName) );
+        }
+      }
+    }
+    catch (SQLException e) {
+      logger.error("Failed attempting\n" + sql + "\n", e);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs, ps);
+    }
   }
 
   /**

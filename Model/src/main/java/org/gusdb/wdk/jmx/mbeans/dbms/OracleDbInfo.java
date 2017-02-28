@@ -45,6 +45,17 @@ public class OracleDbInfo extends AbstractDbInfo {
     .append(" order by db_link   ")
     .toString();
 
+  // *.dbf files on disk; not counting redo logs and control files. If
+  // you want those,
+  // .append("    ( select sum(bytes)/1024/1024/1024 redo_size from sys.v_$log ) +                             ")
+  // .append("    ( select sum(BLOCK_SIZE*FILE_SIZE_BLKS)/1024/1024/1024 controlfile_size from v$controlfile)  ")
+  private static final String DBF_SIZE_ON_DISK = new StringBuilder()
+    .append("  select ROUND(                                                                 ")
+    .append("    ( select sum(bytes)/1024/1024/1024 data_size from dba_data_files ) +        ")
+    .append("    ( select nvl(sum(bytes),0)/1024/1024/1024 temp_size from dba_temp_files )   ")
+    .append("  ) as dbf_gb_on_disk from dual                                                 ")
+    .toString();
+
   public OracleDbInfo(DatabaseInstance db) {
     super(db);
   }
@@ -62,6 +73,11 @@ public class OracleDbInfo extends AbstractDbInfo {
   @Override
   protected String getDblinkSql() {
     return DBLINK_SQL;
+  }
+
+  @Override
+  protected String getDbfSizeOnDisk() {
+    return DBF_SIZE_ON_DISK;
   }
 
   @Override
