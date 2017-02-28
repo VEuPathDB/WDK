@@ -299,7 +299,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       throw new WdkModelException("No such file/directory exists.");
     }
     // deleting even non-empty directories
-    irodsObject.delete();
+    // need the force option because a plain old delete() will not trigger a delete PEP.
+    irodsObject.deleteWithForceOption();
   }
 
   /**

@@ -57,7 +57,7 @@ import org.json.JSONObject;
  */
 
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
-  //   private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
+  //private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
 
   
   protected static final String DATASET_JSON_FILE = "dataset.json";
@@ -406,9 +406,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   @Override
   public void unshareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
     Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
-    
     Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
     if (adaptor.fileExists(sharedWithFile)) adaptor.deleteFileOrDirectory(sharedWithFile);
+    removeExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
   }
   
   @Override
@@ -472,10 +472,43 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     adaptor.writeEmptyFile(externalDatasetFileName);
   }
   
+  /**
+   * When the owner unshares a dataset, we need to remove the external dataset link found in the recpient's
+   * workspace.
+   * @param ownerUserId
+   * @param datasetId
+   * @param recipientUserId
+   * @throws WdkModelException
+   */
+  protected void removeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+    Path recipientUserDir = getUserDir(recipientUserId);
+    
+    // If no external datasets directory exists for this recipient or if the external database link does not
+    // exist for this dataset, do nothing.  The client likely made an error.  Should we sent back something?
+    Path recipientExternalDatasetsDir = recipientUserDir.resolve(EXTERNAL_DATASETS_DIR);
+    if (directoryExists(recipientExternalDatasetsDir)) {
+      Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
+      if(fileExists(externalDatasetFileName)) {
+        adaptor.deleteFileOrDirectory(externalDatasetFileName);
+      }
+    }
+  }
+  
   public boolean directoryExists(Path dir) throws WdkModelException {
     if (adaptor.isDirectory(dir)) return true;
     if (adaptor.fileExists(dir)) throw new WdkModelException("File exists and is not a directory: " + dir);
     return false;
+  }
+  
+  /**
+   * Insures that the path given points to an existing file.
+   * @param path - path to the potentially existing file
+   * @return - true if file exists, false if not
+   * @throws WdkModelException - if the path points to a directory.
+   */
+  public boolean fileExists(Path path) throws WdkModelException {
+	if(adaptor.isDirectory(path)) throw new WdkModelException("The path given is not a file, but a directory: " + path);
+	return adaptor.fileExists(path);
   }
   
   public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
@@ -506,10 +539,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   public void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
     if (!directoryExists(recipientRemovedDatasetsDir))
       adaptor.createDirectory(recipientRemovedDatasetsDir);
-    Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
-        getExternalDatasetFileName(ownerUserId, datasetId));
-    Path moveToFileName = recipientRemovedDatasetsDir.resolve(
-        getExternalDatasetFileName(ownerUserId, datasetId));
+    Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
+    Path moveToFileName = recipientRemovedDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
     adaptor.moveFileAtomic(externalDatasetFileName, moveToFileName);
   }
   
