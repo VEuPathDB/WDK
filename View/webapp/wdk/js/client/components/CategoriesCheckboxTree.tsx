@@ -11,6 +11,7 @@ type ChangeHandler = (ids: string[]) => void;
 
 type Props = {
   title: string;
+  name?: string;
   autoFocusSearchBox?: boolean;
   searchBoxPlaceholder: string;
   tree: CategoryTreeNode;
@@ -32,7 +33,7 @@ let CheckboxTree_ = CheckboxTree as new (props: any) => CheckboxTree<CategoryTre
 
 let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
 
-  let { title, autoFocusSearchBox, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
+  let { title, name, autoFocusSearchBox, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, nodeComponent,
     isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange, isSelectable, leafType, disableHelp } = props;
 
   if (tree.children.length == 0) {
@@ -45,7 +46,7 @@ let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
     searchBoxHelp: disableHelp ? '' : `Each ${leafType} name will be searched. The ${leafType} names will contain all your terms. Your terms are partially matched; for example, the term typ will match typically, type, atypical.`,
 
     // set hard-coded values for searchable, selectable, expandable tree
-    isSearchable: true, isSelectable, autoFocusSearchBox,
+    isSearchable: true, isSelectable, autoFocusSearchBox, name,
 
     // set values from category utils since we know tree is a category tree
     getNodeId, getNodeChildren, searchPredicate: nodeSearchPredicate, nodeComponent,
