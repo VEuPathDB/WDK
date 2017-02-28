@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -57,7 +57,7 @@ import org.json.JSONObject;
  */
 
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
-  //private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
+  private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
 
   
   protected static final String DATASET_JSON_FILE = "dataset.json";
@@ -418,11 +418,30 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     }  
   }
   
+  /**
+   * Co-opted to handle unsharing of a dataset prior to deleting that dataset.  Since
+   * the sharedWith directory is inside the dataset directory, it will be removed along
+   * with the dataset.  But in case this method is repurposed to do a mass unshare 
+   * without a delete, leaving the individual sharedWith deletes in place.
+   */
   @Override
   public void unshareUserDataset(Integer ownerUserId, Integer datasetId) throws WdkModelException {
     Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
-    for (Path shareFilePath : adaptor.getPathsInDir(sharedWithDir))
+    for (Path shareFilePath : adaptor.getPathsInDir(sharedWithDir)) {
       adaptor.deleteFileOrDirectory(shareFilePath);
+      Integer recipientId = null;
+      try {
+        recipientId = Integer.valueOf(shareFilePath.getFileName().toString());
+      }
+      // No external dataset will be found for a bad sharedWith file.  So we
+      // will log a warning and skip over it.
+      catch(NumberFormatException nfe) {
+    	    LOG.warn("The recipient id " + shareFilePath.getFileName()
+    	    + " given for dataset share " + datasetId + " is not a valid id.", nfe);
+    	    continue;
+      }
+      removeExternalDatasetLink(ownerUserId, datasetId, recipientId);
+    }  
   }
   
   /**
@@ -474,7 +493,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   /**
    * When the owner unshares a dataset, we need to remove the external dataset link found in the recpient's
-   * workspace.
+   * workspace.  This removal with cause IRODS to fire off a share/revoke event.
    * @param ownerUserId
    * @param datasetId
    * @param recipientUserId
@@ -524,6 +543,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    */
   @Override
   public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
+	// First remove any shares on this dataset.
+	unshareUserDataset(userId, datasetId);
+	// THen remove the dataset itself.
     adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
   }
   
