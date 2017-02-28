@@ -100,6 +100,7 @@ class CheckboxTreeNode<T> extends Component<Props<T>, void> {
     let NodeComponent = nodeComponent;
     let classNames = 'wdk-CheckboxTreeItem wdk-CheckboxTreeItem__' + nodeType +
       (isSelectable ? ' wdk-CheckboxTreeItem__selectable' : '');
+    let inputName = isLeafNode ? name : '';
 
     return (
       <li className={classNames} style={nodeVisibilityCss}>
@@ -122,7 +123,7 @@ class CheckboxTreeNode<T> extends Component<Props<T>, void> {
               {isMultiPick ?
                 <IndeterminateCheckboxT
                   className="wdk-CheckboxTreeCheckbox"
-                  name={name}
+                  name={inputName}
                   checked={isSelected}
                   indeterminate={isIndeterminate}
                   node={node}
@@ -130,7 +131,7 @@ class CheckboxTreeNode<T> extends Component<Props<T>, void> {
                   toggleCheckbox={toggleSelection} /> :
                 <TreeRadioT
                   className="wdk-CheckboxTreeCheckbox"
-                  name={name}
+                  name={inputName}
                   checked={isSelected}
                   value={getNodeId(node)}
                   node={node}
