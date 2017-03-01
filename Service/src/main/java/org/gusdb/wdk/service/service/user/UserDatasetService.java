@@ -202,7 +202,7 @@ public class UserDatasetService extends UserService {
         targetUserIds.add(targetUserId);
       }  
     }
-    getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
+    //getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
 
     return Response.noContent().build();
 

@@ -125,9 +125,18 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return Collections.unmodifiableSet(sharedWithUsers);
   }
   
-  private Path getSharedWithDir(Integer userId, Integer datasetId) throws WdkModelException {
+  /**
+   * Locates the path to the sharedWith directory for the given user and dataset.  If no such
+   * path is found under the dataset directory, the directory is created.
+   * @param userId - The user to whom the dataset belongs
+   * @param datasetId - The subject dataset
+   * @return - The path to the sharedWith directory under the dataset's directory
+   * @throws WdkModelException
+   */
+  protected Path getSharedWithDir(Integer userId, Integer datasetId) throws WdkModelException {
     Path userDatasetDir = getUserDatasetDir(userId, datasetId);
     Path sharedWithDir = userDatasetDir.resolve(SHARED_WITH_DIR);
+    //TODO should we handle this upon setting up the dataset rather than on the fly?
     if (!adaptor.fileExists(sharedWithDir)) {
       adaptor.createDirectory(sharedWithDir);
     }
@@ -371,44 +380,55 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   @Override
-  public void shareUserDataset(Integer ownerUserId, Integer datasetId, Set<Integer> recipientUserIds) throws WdkModelException {
-	Set<Integer[]> externalDatasetLinks = new HashSet<Integer[]>();
-	JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
-    for (Integer recipientUserId : recipientUserIds) {
-      if (recipientUserId.equals(ownerUserId)) continue;  // don't think this is worth throwing an error on
-      writeShareFile(ownerUserId, datasetId, recipientUserId);
-      Integer[] linkInfo = {datasetId, recipientUserId};
-      externalDatasetLinks.add(linkInfo);
+  public void shareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+	if (recipientUserId.equals(ownerUserId)) return;  // don't think this is worth throwing an error on
+    
+	// Check both ends of the share
+	Path sharedWithPath = getSharedWithFile(ownerUserId, datasetId, recipientUserId);
+    Path externalDatasetLink = getExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
+
+    // A dangling share exists for the given dataset between the owner and recipient
+    if((sharedWithPath != null && externalDatasetLink == null) || (sharedWithPath == null && externalDatasetLink != null)) {
+      throw new WdkModelException("A dangling share exists for dataset " + datasetId
+      		+ " between the owner, " + ownerUserId + ", and the expected recipient, "
+       		+ recipientUserId + "."); 
     }
-    writeJsonUserDataset(dataset);  // write this before the links
-    for (Integer[] linkInfo : externalDatasetLinks) {
-      writeExternalDatasetLink(ownerUserId, linkInfo[0], linkInfo[1]);
+    // The share is already in place...nothing more to do.
+    if(sharedWithPath != null && externalDatasetLink != null) {
+      return;
+    }
+    // Write the external dataset link last because only that put fires an IRODS event.
+    writeShareFile(ownerUserId, datasetId, recipientUserId);
+    writeExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
+  }
+  
+  @Override
+  public void shareUserDataset(Integer ownerUserId, Integer datasetId, Set<Integer> recipientUserIds) throws WdkModelException {
+    for (Integer recipientUserId : recipientUserIds) {    	
+      shareUserDataset(ownerUserId, datasetId, recipientUserId);
     }    
   }
 
   @Override
-  public void shareUserDatasets(Integer ownerUserId, Set<Integer> datasetIds, Set<Integer> recipientUserIds) throws WdkModelException {
-    Set<Integer[]> externalDatasetLinks = new HashSet<Integer[]>();
-    for (Integer datasetId : datasetIds) {
-      JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
-      for (Integer recipientUserId : recipientUserIds) {
-        if (recipientUserId.equals(ownerUserId)) continue;  // don't think this is worth throwing an error on
-        writeShareFile(ownerUserId, datasetId, recipientUserId);
-        Integer[] linkInfo = {datasetId, recipientUserId};
-        externalDatasetLinks.add(linkInfo);
-      }
-      writeJsonUserDataset(dataset);  // write this before the links
-      for (Integer[] linkInfo : externalDatasetLinks) 
-        writeExternalDatasetLink(ownerUserId, linkInfo[0], linkInfo[1]);
-    }    
-  }
-  
-  @Override
   public void unshareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
-    Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
-    if (adaptor.fileExists(sharedWithFile)) adaptor.deleteFileOrDirectory(sharedWithFile);
-    removeExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
+	if (recipientUserId.equals(ownerUserId)) return;  // don't think this is worth throwing an error on
+	
+	// Check both ends of the share
+    Path sharedWithPath = getSharedWithFile(ownerUserId, datasetId, recipientUserId);
+    Path externalDatasetLink = getExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
+
+    // A dangling share exists for the given dataset between the owner and recipient
+    if((sharedWithPath != null && externalDatasetLink == null) || (sharedWithPath == null && externalDatasetLink != null)) {
+      throw new WdkModelException("A dangling share exists for dataset " + datasetId
+       		+ " between the owner, " + ownerUserId + ", and the expected recipient, "
+       		+ recipientUserId + "."); 
+    }
+    // If no share is in place, there is nothing more to do.
+    if(sharedWithPath == null && externalDatasetLink == null) {
+      return;
+    }
+    adaptor.deleteFileOrDirectory(sharedWithPath);
+    adaptor.deleteFileOrDirectory(externalDatasetLink);
   }
   
   @Override
@@ -418,30 +438,27 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     }  
   }
   
-  /**
-   * Co-opted to handle unsharing of a dataset prior to deleting that dataset.  Since
-   * the sharedWith directory is inside the dataset directory, it will be removed along
-   * with the dataset.  But in case this method is repurposed to do a mass unshare 
-   * without a delete, leaving the individual sharedWith deletes in place.
-   */
   @Override
-  public void unshareUserDataset(Integer ownerUserId, Integer datasetId) throws WdkModelException {
+  public void unshareWithAll(Integer ownerUserId, Integer datasetId) throws WdkModelException {
+
+	  // Create a list of recipients of this dataset share
+    Set<Integer> recipientUserIds = new HashSet<>();
     Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
     for (Path shareFilePath : adaptor.getPathsInDir(sharedWithDir)) {
-      adaptor.deleteFileOrDirectory(shareFilePath);
-      Integer recipientId = null;
+      Integer recipientUserId = null;
       try {
-        recipientId = Integer.valueOf(shareFilePath.getFileName().toString());
+        recipientUserId = Integer.valueOf(shareFilePath.getFileName().toString());
       }
-      // No external dataset will be found for a bad sharedWith file.  So we
-      // will log a warning and skip over it.
+      // If we find a bad sharedWith file, we just ignore it.
       catch(NumberFormatException nfe) {
-    	    LOG.warn("The recipient id " + shareFilePath.getFileName()
+        LOG.warn("The recipient id " + shareFilePath.getFileName()
     	    + " given for dataset share " + datasetId + " is not a valid id.", nfe);
-    	    continue;
+    	continue;
       }
-      removeExternalDatasetLink(ownerUserId, datasetId, recipientId);
-    }  
+      recipientUserIds.add(recipientUserId);
+    }
+    // Unshare the dataset with that collection of recipients
+    unshareUserDataset(ownerUserId, datasetId, recipientUserIds);
   }
   
   /**
@@ -462,9 +479,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected void writeShareFile(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-
     Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
-
     Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
     if (!adaptor.fileExists(sharedWithFile)) adaptor.writeEmptyFile(sharedWithFile);
   }
@@ -537,18 +552,50 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     adaptor.moveFileAtomic(tempFile, file);
   }
 
-  /**
-   * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
-   * will let the recipient user of them know they are dangling.
-   */
   @Override
   public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
-	// First remove any shares on this dataset.
-	unshareUserDataset(userId, datasetId);
-	// THen remove the dataset itself.
-    adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
+	Path datasetDir = getUserDatasetsDir(userId).resolve(datasetId.toString());
+	
+	// User is not the owner - check if user is a share recipient
+	if(datasetDir == null) {
+	  Path externalDatasetDir = getExternalDatasetDir(userId);
+	  List<Path> externalDatasetLinks = adaptor.getPathsInDir(externalDatasetDir);
+	  
+	  // Look through the user's shares for the dataset id provided
+	  for(Path externalDatasetLink : externalDatasetLinks) {
+		String[] linkInfo = externalDatasetLink.getFileName().toString().split(".");
+		if(linkInfo.length == 2) {
+		  try {  
+			Integer ownerUserId = Integer.parseInt(linkInfo[0]);
+			Integer sharedDatasetId = Integer.parseInt(linkInfo[1]);
+			
+			// User is the recipient of a share - unshare the dataset on behalf of
+			// this user.
+			if(sharedDatasetId.equals(datasetId)) {
+			  unshareUserDataset(ownerUserId, datasetId, userId);
+			}
+		  }
+		  // Skip over any files not in proper external dataset link format
+		  catch (NumberFormatException nfe) {
+			LOG.warn("The external dataset link  " + externalDatasetLink.getFileName()
+	    	    + " is not a valid link.", nfe);
+	    	continue;
+		  }
+		}
+	  }
+	}
+	// User is the owner
+	else {
+	  // First remove any shares on this dataset.  This will fire as many IRODS events as
+      // there are outstanding shares for this dataset.
+	  unshareWithAll(userId, datasetId);
+	  
+	  // Then remove the dataset itself.
+      adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
+	}  
   }
   
+
   /**
    * Delete a link to an external dataset (specified by ownerUserId,datasetId).  Move the link from
    * the external datasets dir to the removed external datasets dir
@@ -641,5 +688,59 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   @Override
   public String getUserDatasetStoreId() {
 	return id;
+  }
+  
+  /**
+   * Locates the path to the external datasets directory for the given user.  If no such
+   * path is found under the user's directory, the directory is created.
+   * @param userId - The user having potentially external datasets
+   * @return - The path to the external datasets directory under the user's directory
+   * @throws WdkModelException
+   */
+  protected Path getExternalDatasetDir(Integer userId) throws WdkModelException {
+	Path userDir = getUserDir(userId);
+	Path externalDatasetDir = userDir.resolve(EXTERNAL_DATASETS_DIR);
+	if (!adaptor.fileExists(externalDatasetDir)) {
+	  adaptor.createDirectory(externalDatasetDir);
+	}
+	return externalDatasetDir;
+  }
+  
+  /**
+   * Returns the path to the external dataset link identified by the owner, the recipient
+   * and the dataset to share/unshare.  Has the side-effect of creating the external
+   * dataset link directory if it doesn't already exist.
+   * @param ownerUserId - dataset owner
+   * @param datasetId - dataset id
+   * @param recipientUserId - recipient of the dataset share
+   * @return - path of external dataset link 
+   * @throws WdkModelException
+   */
+  protected Path getExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+	Path recipientExternalDatasetsDir = getExternalDatasetDir(recipientUserId);
+	Path externalDatasetLink = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
+	if(fileExists(externalDatasetLink)) {
+	  return externalDatasetLink;
+	}
+    return null;
+  }
+  
+  /**
+   * Return the path to the sharedWith file identified by the owner, the recipient
+   * and the dataset to share/unshare.  Has the side-effect of creating the sharedWith
+   * directory if it doesn't already exist.
+   * @param ownerUserId - dataset owner
+   * @param datasetId - dataset
+   * @param recipientUserId - recipient of the dataset share
+   * @return - path to the sharedWith file
+   * @throws WdkModelException
+   */
+  protected Path getSharedWithFile(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+	Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
+	Path sharedWithFile = sharedWithDir.resolve(recipientUserId.toString());
+	if(fileExists(sharedWithFile)) {
+      return sharedWithFile;
+	}
+    return null;
   }
 }

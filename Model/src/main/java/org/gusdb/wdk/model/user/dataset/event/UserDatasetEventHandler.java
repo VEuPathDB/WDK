@@ -174,9 +174,9 @@ public class UserDatasetEventHandler {
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
     
-    sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
-    sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
-    sqlRunner.executeUpdate(args);
+    //sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
+    //sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
+    //sqlRunner.executeUpdate(args);
 
     //sql = "delete from " + userDatasetSchemaName + externalTable + " where user_dataset_id = ?";
     //sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");

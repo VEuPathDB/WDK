@@ -67,20 +67,20 @@ public interface UserDatasetStore {
   void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException;
   
   /**
-   * Share the provided dataset with the set of users provided
+   * Share the provided dataset with the recipient provided
+   * @param ownerUserId - The id of the dataset owner
+   * @param datasetId - The id of the dataset to share
+   * @param recipientUserId - The user who will gain access to the dataset
+   */
+  void shareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserIds) throws WdkModelException;
+  
+  /**
+   * Share the provided dataset with the set of recipients provided
    * @param ownerUserId - The id of the dataset owner
    * @param datasetId - The id of the dataset to share
    * @param recipientUserIds - The users who will gain access to the dataset
    */
   void shareUserDataset(Integer ownerUserId, Integer datasetId, Set<Integer>recipientUserIds) throws WdkModelException;
-  
-  /**
-   * Share one or more datasets from a host user to one or more recipient users.
-   * @param hostUserId
-   * @param datasetsIds
-   * @param recipientUserIds
-   */
-  void shareUserDatasets(Integer ownerUserId, Set<Integer>datasetIds, Set<Integer>recipientUserIds) throws WdkModelException;
   
   /**
    * Unshare the provided dataset with the set of users provided
@@ -101,9 +101,10 @@ public interface UserDatasetStore {
   
   /**
    * Unshare this dataset with all users it was shared with
-   * @param user
+   * @param ownerUserId - the dataset owner
+   * @param datasetId - the dataset to unshare with everyone
    */
-  void unshareUserDataset(Integer ownerUserId, Integer datasetId) throws WdkModelException;
+  void unshareWithAll(Integer ownerUserId, Integer datasetId) throws WdkModelException;
   
   /**
    * Delete the specified userDataset from the store.  Must unshare the dataset from 
