@@ -28,8 +28,6 @@ public class JsonUserDataset implements UserDataset {
   private static final String OWNER = "owner";
   private static final String SHARES  = "shares";
   private static final String CREATED  = "created";
-  private static final String MODIFIED  = "modified";
-  private static final String UPLOADED  = "uploaded";
   private static final String DEPENDENCIES  = "dependencies";
   private static final String SIZE  = "size";
   private static final String PROJECTS  = "projects";
@@ -69,8 +67,6 @@ public class JsonUserDataset implements UserDataset {
       this.ownerId = datasetJsonObj.getInt(OWNER);
       this.size = datasetJsonObj.getInt(SIZE);
       this.created = datasetJsonObj.getLong(CREATED);
-      this.modified = datasetJsonObj.getLong(MODIFIED);
-      this.uploaded = datasetJsonObj.getLong(UPLOADED);
       
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 

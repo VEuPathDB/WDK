@@ -90,11 +90,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
               appDbDataSource, getUserDatasetSchemaName());
         }
 
-//        else if (event instanceof UserDatasetExternalDatasetEvent) {
-//          UserDatasetEventHandler.handleExternalDatasetEvent((UserDatasetExternalDatasetEvent) event,
-//              appDbDataSource, getUserDatasetSchemaName());
-//        }
-
         count++;
       }
       logger.info("Handled " + count + " new events");
@@ -254,14 +249,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
           events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
         }
 
-        // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
-//        else if (columns[1].equals("externalDataset")) {
-//          Integer userId = new Integer(columns[6]);
-//          ExternalDatasetAction action = columns[7].equals("create") ?
-//              ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
-//          events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
-//        }
-
         else {
           throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
         }
@@ -311,13 +298,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
       events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
     }
 
-    // event_id externalDataset projects user_dataset_id ud_type_name ud_type_version user_id grant
-//    else if (columns[1].equals("externalDataset")) {
-//      Integer userId = new Integer(columns[6]);
-//      ExternalDatasetAction action = columns[7].equals("create") ?
-//          ExternalDatasetAction.CREATE : ExternalDatasetAction.DELETE;
-//      events.add(new UserDatasetExternalDatasetEvent(eventId, projectsFilter, userDatasetId, userDatasetType, userId, action));
-//    }
     else {
       throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
     }
