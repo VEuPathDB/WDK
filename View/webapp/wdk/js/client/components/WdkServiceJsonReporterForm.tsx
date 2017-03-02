@@ -67,7 +67,7 @@ function WdkServiceJsonReporterForm<T, U>(props: Props<T, U>) {
 
 namespace WdkServiceJsonReporterForm {
   export function getInitialState(downloadFormStoreState: State) {
-    let { scope, question, recordClass, ontology, preferences } = downloadFormStoreState;
+    let { scope, question, recordClass, globalData: { ontology, preferences } } = downloadFormStoreState;
     // select all attribs and tables for record page, else column user prefs and no tables
     let attribs = (scope === 'results' ?
       addPk(getAttributeSelections(preferences, question), recordClass) :
