@@ -589,8 +589,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 		  catch (NumberFormatException nfe) {
 			LOG.warn("The external dataset link  " + externalDatasetLink.getFileName()
 	    	    + " is not a valid link.", nfe);
-	    	continue;
 		  }
+		}
+		else {
+		  LOG.warn("The external dataset link  " + externalDatasetLink.getFileName()
+    	    + " is not a valid link.");
 		}
 	  }
 	}
