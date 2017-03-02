@@ -40,15 +40,6 @@ exports.config = {
         ]
       },
 
-      // handle css source.
-      {
-        test: /\.css$/,
-        use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader', options: { sourceMap: true } }
-        ]
-      },
-
       // inlines images as base64
       {
         test: /\.(gif|png)$/,

@@ -66,7 +66,16 @@ module.exports = baseConfig.merge({
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: scriptLoaders.concat(exposeLoaders)
+    rules: scriptLoaders.concat(exposeLoaders).concat([
+      // handle css source.
+      {
+        test: /\.css$/,
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader', options: { sourceMap: true } }
+        ]
+      }
+    ])
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({
