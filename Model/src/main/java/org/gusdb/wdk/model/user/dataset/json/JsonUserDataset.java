@@ -37,8 +37,6 @@ public class JsonUserDataset implements UserDataset {
   private UserDatasetType type;
   private Integer ownerId;
   private Long created;
-  private Long modified;
-  private Long uploaded;
   private Integer size;
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
@@ -119,16 +117,6 @@ public class JsonUserDataset implements UserDataset {
   @Override
   public Long getCreatedDate() {
     return created;
-  }
-
-  @Override
-  public Long getModifiedDate() {
-    return modified;
-  }
-
-  @Override
-  public Long getUploadedDate() {
-    return uploaded;
   }
 
   @Override
