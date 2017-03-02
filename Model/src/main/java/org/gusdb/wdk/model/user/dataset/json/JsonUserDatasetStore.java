@@ -556,15 +556,25 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
 	Path datasetDir = getUserDatasetsDir(userId).resolve(datasetId.toString());
 	
-	// User is not the owner - check if user is a share recipient
-	if(datasetDir == null) {
+	// User is owner
+	if(directoryExists(datasetDir)) {
+		
+	  // First remove any shares on this dataset.  This will fire as many IRODS events as
+	  // there are outstanding shares for this dataset.
+      unshareWithAll(userId, datasetId);
+		  
+	  // Then remove the dataset itself.
+	  adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
+	}
+	// User is not the owner - check to see if the user has a share to the dataset
+	else {	
 	  Path externalDatasetDir = getExternalDatasetDir(userId);
 	  List<Path> externalDatasetLinks = adaptor.getPathsInDir(externalDatasetDir);
 	  
 	  // Look through the user's shares for the dataset id provided
-	  for(Path externalDatasetLink : externalDatasetLinks) {
-		String[] linkInfo = externalDatasetLink.getFileName().toString().split(".");
-		if(linkInfo.length == 2) {
+	  for(Path externalDatasetLink : externalDatasetLinks) { 
+		String[] linkInfo = externalDatasetLink.getFileName().toString().split("\\.");
+		if(linkInfo.length == 2) { 	
 		  try {  
 			Integer ownerUserId = Integer.parseInt(linkInfo[0]);
 			Integer sharedDatasetId = Integer.parseInt(linkInfo[1]);
@@ -584,15 +594,6 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 		}
 	  }
 	}
-	// User is the owner
-	else {
-	  // First remove any shares on this dataset.  This will fire as many IRODS events as
-      // there are outstanding shares for this dataset.
-	  unshareWithAll(userId, datasetId);
-	  
-	  // Then remove the dataset itself.
-      adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
-	}  
   }
   
 
