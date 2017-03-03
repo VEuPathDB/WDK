@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Date;
 
 import javax.sql.DataSource;
 
@@ -12,21 +13,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 
-/**
- * Starting build 25 we move here apicomm cleaning activity previously located in GuestRemover and StepValidator
- * - strategies is_deleted = 1
- * - steps is_deleted = 1 CANNOT be done we generate valid steps with is_deleted = 1, (booleans, ID and basket steps)  no idea why
- * - strategies with user_id different from user_id in root_step
- * - strategies with project_id different from project_id in root_step
- * - strategies with root_step inexistent
- * - strategies with user_id inexistent
- * - strategies with a root_step that contains an invalid question_name (this could be done in validate?)
- * - finally remove all steps that do not belong to a strategy
- * @author Jerric
- *
- */
 public class RemoveBrokenStratsSteps extends BaseCLI {
-
   private static final int PAGE_SIZE = 9000;
   private static final Logger LOG = Logger.getLogger(RemoveBrokenStratsSteps.class);
 
@@ -102,29 +89,57 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
 
       // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
       SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
-          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
+          userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
           "(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
       // deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
-      // after strategies have been cleanedup.. delete unused steps: every deletion will open up more to be deleted.
-      boolean remain = true;
-      while (remain) {
-        int sum = removeUnusedStepAnalysis(dataSource, userSchema);
-        try {
-          sum = removeUnusedSteps(dataSource, userSchema);
-          remain = (sum != 0);
-        }
-        catch (SQLException ex) {
-          LOG.warn(ex.getMessage());
-          // checking for a foreign constraint violation to continue checking steps
-          if ( !ex.getMessage().contains("ORA-02292") )	throw ex;
-          remain=true;
-        }
-      }
+      deleteStepsAndAnalyses(dataSource, userSchema);
     }
   }
 
-  // utility also in GuestRemover
+  private void deleteStepsAndAnalyses(DataSource dataSource, String userSchema) throws SQLException {
+    
+    // for one page of the current set of orphaned steps, first delete their analyses, then delete them.
+    // this leads to a new set of orphane steps.  continue until none remain.
+    
+    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
+    String analysisTable = userSchema + "step_analysis";
+    Date today = new Date(new java.util.Date().getTime());
+    String condition = "step_id IN (" + "  select * from (" +
+        "  SELECT step_id              FROM           " + stepTable + 
+        "     WHERE create_time < ( to_date('" + today + "','yyyy-mm-dd') - 1)" +   // step has to be 24+ hours old to be an orphan, for safety
+        "  MINUS SELECT root_step_id   FROM           " + strategyTable +
+        "  MINUS SELECT left_child_id  FROM           " + stepTable +
+        "  MINUS SELECT right_child_id FROM           " + stepTable +
+        ") where rownum <= " + PAGE_SIZE + "  )";
+    String analysisSql = "DELETE FROM " + analysisTable + " WHERE " + condition;
+    String stepSql = "DELETE FROM " + stepTable + " WHERE " + condition;
+    PreparedStatement psDeleteAnalyses = null;
+    PreparedStatement psDeleteSteps = null;
+    LOG.debug("\n" + stepSql + "\n");
+    try {
+      psDeleteAnalyses = SqlUtils.getPreparedStatement(dataSource, analysisSql);
+      psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, stepSql);
+      int countAnalysisDelete = 0;
+      int countStepsDelete = 0;
+      int pageCount;
+      do {
+        // executeUpdate includes the commit
+        countAnalysisDelete += psDeleteAnalyses.executeUpdate();
+        pageCount = psDeleteSteps.executeUpdate();
+        countStepsDelete += pageCount;
+      }
+      while (pageCount != 0);
+      LOG.debug(" Deleted " + countAnalysisDelete + " step analysis rows.");
+      LOG.debug(" Deleted " + countStepsDelete + " step step rows.");
+     
+    } finally {
+      SqlUtils.closeStatement(psDeleteAnalyses);
+      SqlUtils.closeStatement(psDeleteSteps);
+    } 
+  }
+
+    // utility also in GuestRemover
   public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
     LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
     PreparedStatement psDelete = null;
@@ -148,42 +163,4 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       SqlUtils.closeStatement(psDelete);
     }
   }
-
-
-		// deleteByBatch(dataSource, userSchema + "steps", " is_deleted = 1 "); //we generate them when seeing basket results
-
-  private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused step_analysis...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +  
-          "  MINUS SELECT right_child_id FROM           " + stepTable +  
-					"  )");
-      sum += count;
-    }
-    LOG.debug(sum + " unused step_analysis deleted");
-    return sum;
-  }
-
-  private int removeUnusedSteps(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused steps...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +   
-          "  MINUS SELECT right_child_id FROM           " + stepTable +     
-					"  )");
-      sum += count;
-    }
-    LOG.debug(sum + " unused steps deleted");
-    return sum;
-  }
-
 }
