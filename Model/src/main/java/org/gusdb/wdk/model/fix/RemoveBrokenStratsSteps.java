@@ -70,8 +70,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
         reportBroken(wdkModel, sqlFroms, userSchema);
       } else {
 	LOG.info("Remove Broken Steps: removing broken steps.");
-
-	//        removeBroken(wdkModel, sqlFroms, userSchema);
+	removeBroken(wdkModel, sqlFroms, userSchema);
       }
     }
   }
