@@ -75,8 +75,14 @@ export interface Record {
   displayName: string;
   id: PrimaryKey;
   recordClassName: string;
-  attributes: { [key: string]: AttributeValue };
-  tables: { [key: string]: TableValue };
+  attributes: {
+    [key: string]: AttributeValue;
+  };
+  tables: {
+    [key: string]: TableValue;
+  } & {
+    _errors: string[];
+  };
 }
 
 export interface PrimaryKey extends Array<{
