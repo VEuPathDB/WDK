@@ -2,8 +2,8 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "tests": "tape -r ./tests/00-setup.js tests/**/*.{j,t}s{,x}",
-    "examples-server": "cd client-examples && webpack-dev-server --content-base public/"
+    "test": "tape \"tests/**/*.{j,t}s{,x}\"",
+    "examples": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
   "dependencies": {
