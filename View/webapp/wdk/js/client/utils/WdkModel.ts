@@ -5,7 +5,7 @@
 interface ModelEntity {
   name: string;
   displayName: string;
-  properties?: { [key: string]: string };
+  properties?: Record<string, string>;
 }
 
 export interface RecordClass extends ModelEntity {
@@ -15,8 +15,8 @@ export interface RecordClass extends ModelEntity {
   urlSegment: string;
   attributes: AttributeField[];
   tables: TableField[];
-  attributesMap: { [key: string]: AttributeField };
-  tablesMap: { [key: string]: TableField };
+  attributesMap: Record<string, AttributeField>;
+  tablesMap: Record<string, TableField>;
   formats: Reporter[];
   useBasket: boolean;
 }
@@ -71,16 +71,12 @@ export interface TableField extends ModelEntity {
   attributes: AttributeField[];
 }
 
-export interface Record {
+export interface RecordInstance {
   displayName: string;
   id: PrimaryKey;
   recordClassName: string;
-  attributes: {
-    [key: string]: AttributeValue;
-  };
-  tables: {
-    [key: string]: TableValue;
-  } & {
+  attributes: Record<string, AttributeValue>;
+  tables: Record<string, TableValue> & {
     _errors: string[];
   };
 }
@@ -100,7 +96,7 @@ export interface LinkAttributeValue {
 export interface TableValue extends Array<AttributeValue> { }
 
 export interface Answer {
-  records: Record[];
+  records: RecordInstance[];
   meta: {
     attributes: string[];
     tables: string[];
@@ -112,7 +108,7 @@ export interface Answer {
 
 export interface AnswerSpec {
   questionName: string;
-  parameters?: { [key: string]: string };
+  parameters?: Record<string, string>;
   legacyFilterName?: string;
   filters?: { name: string; value: string; }[];
   viewFilters?: { name: string; value: string; }[];
