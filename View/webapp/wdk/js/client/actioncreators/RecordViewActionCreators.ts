@@ -1,7 +1,7 @@
-import {chunk, partial, uniqueId} from 'lodash';
-import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
-import {filterNodes} from '../utils/TreeUtils';
-import {seq} from '../utils/PromiseUtils';
+import { chunk, partial, uniqueId } from 'lodash';
+import { getTree, nodeHasProperty, getPropertyValue } from '../utils/OntologyUtils';
+import { filterNodes } from '../utils/TreeUtils';
+import { seq } from '../utils/PromiseUtils';
 import {
   loadBasketStatus,
   loadFavoritesStatus,
@@ -16,10 +16,10 @@ import { PrimaryKey, Record, RecordClass } from '../utils/WdkModel';
 import { ActionCreator, DispatchAction } from '../ActionCreator';
 import { Action } from '../dispatcher/Dispatcher';
 import WdkService from '../utils/WdkService';
-import {CategoryTreeNode} from "../utils/CategoryUtils";
+import { CategoryTreeNode } from "../utils/CategoryUtils";
 
-type BasketAction = BasketStatusLoadingAction|BasketStatusErrorAction|BasketStatusReceivedAction;
-type FavoriteAction = FavoritesStatusLoadingAction|FavoritesStatusReceivedAction|FavoritesStatusErrorAction;
+type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | BasketStatusReceivedAction;
+type FavoriteAction = FavoritesStatusLoadingAction | FavoritesStatusReceivedAction | FavoritesStatusErrorAction;
 
 export type RecordReceivedAction = {
   type: 'record-view/active-record-received',
@@ -99,14 +99,14 @@ let getTables = partial(filterNodes, isTableNode);
 let getNodeName = partial(getPropertyValue, 'name');
 
 type LoadRecordAction = RecordLoadingAction
-                      | RecordErrorAction
-                      | RecordReceivedAction
-                      | RecordUpdatedAction
+  | RecordErrorAction
+  | RecordReceivedAction
+  | RecordUpdatedAction
 
 type UserAction = BasketAction | FavoriteAction
 
 /** Fetch page data from services */
-export const loadRecordData: ActionCreator<LoadRecordAction|UserAction> = (recordClass: string, primaryKeyValues: string[]) => {
+export const loadRecordData: ActionCreator<LoadRecordAction | UserAction> = (recordClass: string, primaryKeyValues: string[]) => {
   return function run(dispatch) {
     const activeRecordAction$ = dispatch(setActiveRecord(recordClass, primaryKeyValues)) as Promise<Action>;
     activeRecordAction$.then((action: RecordReceivedAction) => {
@@ -134,7 +134,7 @@ const dispatchWithId = <T extends Action & { id: string }>(
  * @param {Array<string>} primaryKeyValues
  */
 const setActiveRecord: ActionCreator<LoadRecordAction> = (recordClassName: string, primaryKeyValues: string[]) => {
-  return (realDispatch, {wdkService}) => {
+  return (realDispatch, { wdkService }) => {
     const dispatch = dispatchWithId(realDispatch);
     dispatch({
       type: 'record-view/active-record-loading',
@@ -162,11 +162,11 @@ const setActiveRecord: ActionCreator<LoadRecordAction> = (recordClassName: strin
         // Calls dispatch on the array of promises in the provided order
         // even if they resolve out of order.
         seq([baseAction$].concat(tableActions), dispatch, dispatchError)
-        .catch(error => {
-          console.error(error);
-          if (process.env.NODE_ENV === 'development')
-            alert('Render error. See browser console for details.')
-        });
+          .catch(error => {
+            console.error(error);
+            if (process.env.NODE_ENV === 'development')
+              alert('Render error. See browser console for details.')
+          });
 
         return baseAction$;
       },
@@ -176,7 +176,7 @@ const setActiveRecord: ActionCreator<LoadRecordAction> = (recordClassName: strin
           payload: { error }
         })
       }
-    );
+      );
   }
 }
 
@@ -269,27 +269,27 @@ function getRecordBase(wdkService: WdkService, recordClass: RecordClass, primary
     tables: getTables(fullCategoryTree).filter(isInternalNode).map(getNodeName)
   };
   return wdkService.getRecord(recordClass.name, primaryKey, options)
-  .then(record => {
-    let categoryTree = getTree({name: '__', tree: fullCategoryTree}, isNotInternalNode);
-    return {
-      type: 'record-view/active-record-received',
-      payload: { record, recordClass, categoryTree }
-    };
-  })
+    .then(record => {
+      let categoryTree = getTree({ name: '__', tree: fullCategoryTree }, isNotInternalNode);
+      return {
+        type: 'record-view/active-record-received',
+        payload: { record, recordClass, categoryTree }
+      };
+    })
 }
 
 /** Load non-internal tables, optionally in batches */
 function getRecordTables(wdkService: WdkService, recordClass: RecordClass, primaryKey: PrimaryKey, fullCategoryTree: CategoryTreeNode, batchSize?: number): Promise<RecordUpdatedAction>[] {
   let tables = getTables(fullCategoryTree).filter(isNotInternalNode).map(getNodeName);
   return chunk(tables, batchSize || tables.length)
-  .map(tables => {
-    let options = { tables };
-    return wdkService.getRecord(recordClass.name, primaryKey, options)
-    .then(record => {
-      return {
-        type: 'record-view/active-record-updated',
-        payload: { record }
-      };
-    })
-  });
+    .map(tables => {
+      let options = { tables };
+      return wdkService.getRecord(recordClass.name, primaryKey, options)
+        .then(record => {
+          return {
+            type: 'record-view/active-record-updated',
+            payload: { record }
+          };
+        })
+    });
 }
