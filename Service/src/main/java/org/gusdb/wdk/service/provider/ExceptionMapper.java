@@ -15,14 +15,8 @@ import javax.ws.rs.ext.Provider;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.errors.ErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
-import org.gusdb.wdk.errors.ErrorContext.RequestType;
-import org.gusdb.wdk.errors.ValueMaps;
-import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
-import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
-import org.gusdb.wdk.errors.ValueMaps.SessionAttributeValueMap;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
@@ -30,6 +24,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.service.WdkService;
 import org.gusdb.wdk.service.statustype.UnprocessableEntityStatusType;
 import org.json.JSONException;
 
@@ -88,30 +83,12 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
       WdkModel wdkModel = ((WdkModelBean) context.getAttribute("wdkModel")).getModel();
-      ErrorContext errorContext = getErrorContext(context, req, wdkModel);
+      ErrorContext errorContext = WdkService.getErrorContext(context, req, wdkModel);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ErrorBundle(other), errorContext));
       return Response.serverError()
           .type(MediaType.TEXT_PLAIN).entity("Internal Error").build();
     }
-  }
-
-  /**
-   * Aggregate environment context data into an object for easy referencing
-   * @param context current servlet context
-   * @param request current HTTP servlet request
-   * @param wdkModel this WDK Model
-   * @return context data for this error
-   */
-  private static ErrorContext getErrorContext(ServletContext context,
-          HttpServletRequest request, WdkModel wdkModel) {
-    return new ErrorContext(
-      wdkModel,
-      new HttpRequestData(request),
-      ValueMaps.toMap(new ServletContextValueMap(context)),
-      ValueMaps.toMap(new RequestAttributeValueMap(request)),
-      ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
-      RequestType.WDK_SERVICE);
   }
 
   /**

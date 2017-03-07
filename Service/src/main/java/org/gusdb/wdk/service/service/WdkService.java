@@ -9,6 +9,16 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.web.HttpRequestData;
+import org.gusdb.wdk.errors.ErrorBundle;
+import org.gusdb.wdk.errors.ErrorContext;
+import org.gusdb.wdk.errors.ErrorContext.RequestType;
+import org.gusdb.wdk.errors.ValueMaps;
+import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
+import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
+import org.gusdb.wdk.errors.ValueMaps.SessionAttributeValueMap;
+import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -36,6 +46,7 @@ public abstract class WdkService {
   @Context
   private UriInfo _uriInfo;
 
+  private ServletContext _servletContext;
   private WdkModelBean _wdkModelBean;
   private UserBean _user;
 
@@ -86,6 +97,7 @@ public abstract class WdkService {
 
   @Context
   protected void setServletContext(ServletContext context) {
+    _servletContext = context;
     _wdkModelBean = ((WdkModelBean)context.getAttribute("wdkModel"));
   }
 
@@ -121,5 +133,37 @@ public abstract class WdkService {
    */
   protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
     return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+  }
+
+  /**
+   * Triggers error events for errors caught during the processing of a service request.  This is for
+   * non-fatal errors that admins nevertheless may want to be alerted to.
+   * 
+   * @param errors list of errors for which to trigger error events
+   */
+  protected void triggerErrorEvents(List<Exception> errors) {
+    for (Exception e : errors) {
+      Events.trigger(new ErrorEvent(new ErrorBundle(e),
+          getErrorContext(_servletContext, _request, _wdkModelBean.getModel())));
+    }
+  }
+
+  /**
+   * Aggregate environment context data into an object for easy referencing
+   * 
+   * @param context current servlet context
+   * @param request current HTTP servlet request
+   * @param wdkModel this WDK Model
+   * @return context data for this error
+   */
+  public static ErrorContext getErrorContext(ServletContext context,
+          HttpServletRequest request, WdkModel wdkModel) {
+    return new ErrorContext(
+      wdkModel,
+      new HttpRequestData(request),
+      ValueMaps.toMap(new ServletContextValueMap(context)),
+      ValueMaps.toMap(new RequestAttributeValueMap(request)),
+      ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
+      RequestType.WDK_SERVICE);
   }
 }

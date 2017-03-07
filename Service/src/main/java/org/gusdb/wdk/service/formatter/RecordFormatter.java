@@ -1,18 +1,20 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,15 +33,16 @@ public class RecordFormatter {
 
   private static final Logger LOG = Logger.getLogger(RecordFormatter.class);
 
-  public static JSONObject getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
+  public static TwoTuple<JSONObject,List<Exception>> getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
       throws WdkModelException, WdkUserException {
     JSONObject recordJson = new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getIdAttributeValue().getDisplay())
       .put(Keys.ID, getRecordPrimaryKeyJson(record))
       .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
-      .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
-      .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
-    return recordJson;
+      .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames));
+    TwoTuple<JSONObject,List<Exception>> tableResult = getRecordTablesJson(record, tableNames);
+    recordJson.put(Keys.TABLES, tableResult.getFirst());
+    return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getSecond());
   }
 
   private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
@@ -59,25 +62,41 @@ public class RecordFormatter {
     return attributes;
   }
 
-  private static JSONObject getRecordTablesJson(RecordInstance record, Collection<String> tableNames)
-      throws WdkModelException, WdkUserException {
+  private static TwoTuple<JSONObject,List<Exception>> getRecordTablesJson(RecordInstance record, Collection<String> tableNames) {
     JSONObject tables = new JSONObject();
+    JSONArray badTables = new JSONArray();
+    List<Exception> errors = new ArrayList<>();
     // loop through tables
     for (String tableName : tableNames) {
-      JSONArray tableRowsJson = new JSONArray();
-      // loop through rows
-      TableValue tableValue = record.getTableValue(tableName);
-      for (Map<String, AttributeValue> row : tableValue) {
-        JSONObject tableAttrsJson = new JSONObject();
-        // loop through columns
-        for (Entry<String, AttributeValue> entry : row.entrySet()) {
-          tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
+      try {
+        JSONArray tableRowsJson = new JSONArray();
+        // loop through rows
+        TableValue tableValue = record.getTableValue(tableName);
+        for (Map<String, AttributeValue> row : tableValue) {
+          JSONObject tableAttrsJson = new JSONObject();
+          // loop through columns
+          for (Entry<String, AttributeValue> entry : row.entrySet()) {
+            tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
+          }
+          tableRowsJson.put(tableAttrsJson);
         }
-        tableRowsJson.put(tableAttrsJson);
+        tables.put(tableName, tableRowsJson);
       }
-      tables.put(tableName, tableRowsJson);
+      /* Sometimes individual tables fail due to bad SQL or other reasons; in this event, we don't want the
+       * whole request to fail since most of the data is probably fine.  Record the tables that fail and send
+       * error email to inform the client and admins and then move on to the next table.
+       */
+      catch (Exception e) {
+        String errorMsg = "Unable to dynamically load table '" + tableName + "' for record: " + record.getPrimaryKey().getValuesAsString();
+        LOG.error(errorMsg, e);
+        badTables.put(tableName);
+        errors.add(new WdkModelException(errorMsg, e));
+      }
     }
-    return tables;
+    if (badTables.length() != 0) {
+      tables.put(Keys.ERRORS, badTables);
+    }
+    return new TwoTuple<JSONObject,List<Exception>>(tables, errors);
   }
 
   private static Object getAttributeValueJson(AttributeValue attr) throws WdkModelException, WdkUserException {
