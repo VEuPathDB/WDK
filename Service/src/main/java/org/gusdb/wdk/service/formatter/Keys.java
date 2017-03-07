@@ -8,6 +8,9 @@ package org.gusdb.wdk.service.formatter;
  */
 public class Keys {
 
+  // response status keys
+  public static final String ERRORS = "_errors";
+
   // container keys
   public static final String META = "meta";
   public static final String RECORDS = "records";
