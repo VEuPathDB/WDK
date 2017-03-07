@@ -1,4 +1,5 @@
 import { PropTypes } from 'react';
+import { includes } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import RecordTable from './RecordTable';
 import CollapsibleSection from './CollapsibleSection';
@@ -8,6 +9,8 @@ function RecordTableSection(props) {
   let { table, record, recordClass, isCollapsed, onCollapsedChange } = props;
   let { name, displayName, description } = table;
   let value = record.tables[name];
+  let isError = includes(record.tables._errors, name);
+  let isLoading = value == null;
   let className = [ 'wdk-RecordTable', 'wdk-RecordTable__' + table.name ].join(' ');
 
   return (
@@ -19,11 +22,10 @@ function RecordTableSection(props) {
       onCollapsedChange={onCollapsedChange}
     >
       {description && <p>{description}</p>}
-      {
-        value == null ? <p>Loading...</p>
-      : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/>
-      }
-      </CollapsibleSection>
+      { isError ? <p style={{ color: 'darkred', fontStyle: 'italic' }}>Unable to load data due to a server error.</p>
+      : isLoading ? <p>Loading...</p>
+      : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/> }
+    </CollapsibleSection>
   );
 }
 
