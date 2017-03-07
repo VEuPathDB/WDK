@@ -12,7 +12,7 @@ import {
   FavoritesStatusReceivedAction,
   FavoritesStatusLoadingAction
 } from './UserActionCreators';
-import { PrimaryKey, Record, RecordClass } from '../utils/WdkModel';
+import { PrimaryKey, RecordInstance, RecordClass } from '../utils/WdkModel';
 import { ActionCreator, DispatchAction } from '../ActionCreator';
 import { Action } from '../dispatcher/Dispatcher';
 import WdkService from '../utils/WdkService';
@@ -25,7 +25,7 @@ export type RecordReceivedAction = {
   type: 'record-view/active-record-received',
   id: string,
   payload: {
-    record: Record,
+    record: RecordInstance,
     recordClass: RecordClass,
     categoryTree: CategoryTreeNode
   },
@@ -35,7 +35,7 @@ export type RecordUpdatedAction = {
   type: 'record-view/active-record-updated',
   id: string,
   payload: {
-    record: Record
+    record: RecordInstance
   },
 }
 

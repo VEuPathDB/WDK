@@ -11,7 +11,7 @@ import {
   PrimaryKey,
   Question,
   RecordClass,
-  Record,
+  RecordInstance,
   UserDataset,
   UserDatasetMeta
 } from './WdkModel';
@@ -94,7 +94,7 @@ export default class WdkService {
     name: 'WdkService/' + this.serviceUrl
   });
   _cache: Map<string, Promise<any>> = new Map;
-  _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
+  _recordCache: Map<string, {request: RecordRequest; response: Promise<RecordInstance>}> = new Map;
   _currentUserPromise: Promise<User>;
   _initialCheck: Promise<void>;
   _version: number;
@@ -229,7 +229,7 @@ export default class WdkService {
     // if we don't have the record, fetch whatever is requested
     if (cacheEntry == null) {
       let request = { attributes, tables, primaryKey };
-      let response = this._fetchJson<Record>(method, url, stringify(request));
+      let response = this._fetchJson<RecordInstance>(method, url, stringify(request));
       cacheEntry = { request, response };
       this._recordCache.set(key, cacheEntry);
     }
@@ -251,7 +251,7 @@ export default class WdkService {
           attributes: reqAttributes,
           tables: reqTables
         };
-        let newResponse = this._fetchJson<Record>(method, url, stringify(newRequest));
+        let newResponse = this._fetchJson<RecordInstance>(method, url, stringify(newRequest));
 
         let finalRequest = {
           primaryKey,
@@ -292,7 +292,7 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getBasketStatus(record: Record) {
+  getBasketStatus(record: RecordInstance) {
     let action = 'check';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
@@ -301,7 +301,7 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateBasketStatus(record: Record, status: boolean) {
+  updateBasketStatus(record: RecordInstance, status: boolean) {
     let action = status ? 'add' : 'remove';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
@@ -310,7 +310,7 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getFavoritesStatus(record: Record) {
+  getFavoritesStatus(record: RecordInstance) {
     let action = 'check';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
@@ -319,7 +319,7 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateFavoritesStatus(record: Record, status: boolean) {
+  updateFavoritesStatus(record: RecordInstance, status: boolean) {
     let action = status ? 'add' : 'remove';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';

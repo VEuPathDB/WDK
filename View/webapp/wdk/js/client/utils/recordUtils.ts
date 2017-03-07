@@ -1,6 +1,6 @@
 import {flattenDeep, partial, pick, values} from 'lodash';
 import { filterItems } from './SearchUtils';
-import { Record, AttributeValue, TableValue } from './WdkModel';
+import { RecordInstance, AttributeValue, TableValue } from './WdkModel';
 
 type Dictionary<T> = {
   [key: string]: T
@@ -19,7 +19,7 @@ type FilterSpec = {
 /**
  * Filter the results of an answer and return the filtered results.
  */
-export function filterRecords(records: Record[], filterSpec: FilterSpec): Record[] {
+export function filterRecords(records: RecordInstance[], filterSpec: FilterSpec): RecordInstance[] {
   let { filterTerm, filterAttributes = [], filterTables = [] } = filterSpec;
   let getSearchableStringPartial = partial(getSearchableString, filterAttributes, filterTables);
   return filterItems(records, getSearchableStringPartial, filterTerm);
@@ -45,7 +45,7 @@ function stripHTML(str: string): string {
  *
  * There is much room for performance tuning here.
  */
-function getSearchableString(filterAttributes: string[], filterTables: string[], record: Record): string {
+function getSearchableString(filterAttributes: string[], filterTables: string[], record: RecordInstance): string {
   let useAllTablesAndAttributes = filterAttributes.length === 0 && filterTables.length === 0;
   let attributes = useAllTablesAndAttributes ? record.attributes : pick<AttributeValueDict, AttributeValueDict>(record.attributes, filterAttributes);
   let tables = useAllTablesAndAttributes ? record.tables : pick<TableValueDict, TableValueDict>(record.tables, filterTables);
