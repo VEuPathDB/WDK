@@ -153,7 +153,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     }
 
     // 1
-    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
 
     // 2
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id " + sqlFroms.get(SQL_WRONG_USER), 
@@ -162,14 +162,14 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, "INSERT INTO wdk_broken_strategies (strategy_id) AS SELECT s.strategy_id " + sqlFroms.get(SQL_WRONG_PROJECT), 
         "insert-into-temp-broken-strats-table");
     
-    deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
 
-    deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
-    deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
 
     // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id " + sqlFroms.get(SQL_UNKNOWN_QUESTION), "create-temp-unknownRC-strats-table");
-     deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
     deleteStepsAndAnalyses(dataSource, userSchema, sqlFroms);
     
@@ -205,30 +205,5 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       SqlUtils.closeStatement(psDeleteAnalyses);
       SqlUtils.closeStatement(psDeleteSteps);
     } 
-  }
-
-    // utility also in GuestRemover
-  public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
-    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
-    PreparedStatement psDelete = null;
-    try {
-      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum <= " + PAGE_SIZE;
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
-
-      int sum = 0;
-      while (true) {
-        // executeUpdate includes the commit
-        int count = psDelete.executeUpdate();
-        if (count == 0)
-          break;
-        sum += count;
-        LOG.debug(sum + " rows deleted so far.");
-      }
-      LOG.debug("***** totally deleted " + sum + " rows. *****");
-      return sum;
-    }
-    finally {
-      SqlUtils.closeStatement(psDelete);
-    }
   }
 }
