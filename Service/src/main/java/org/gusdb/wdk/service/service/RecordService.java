@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -186,9 +187,10 @@ public class RecordService extends WdkService {
 
       // PKs represent only one record; fetch, format, and return
       recordInstance = getRecordInstance(getSessionUser(), request);
-      JSONObject recordJson = RecordFormatter.getRecordJson(
+      TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
           recordInstance, request.getAttributeNames(), request.getTableNames());
-      return Response.ok(recordJson.toString()).build();
+      triggerErrorEvents(recordJsonResult.getSecond());
+      return Response.ok(recordJsonResult.getFirst().toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);

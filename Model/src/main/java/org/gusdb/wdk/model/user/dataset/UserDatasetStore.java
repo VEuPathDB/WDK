@@ -100,15 +100,18 @@ public interface UserDatasetStore {
   void unshareUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
   
   /**
-   * Unshare this dataset with all users it was shared with
+   * Unshare this dataset with all users it was shared with - may be done with a prelude
+   * to deleting it.
    * @param ownerUserId - the dataset owner
    * @param datasetId - the dataset to unshare with everyone
    */
   void unshareWithAll(Integer ownerUserId, Integer datasetId) throws WdkModelException;
   
   /**
-   * Delete the specified userDataset from the store.  Must unshare the dataset from 
-   * other datasets that see it as an external dataset.
+   * In the case where the user provided is the owner of the dataset provided, delete that
+   * userDataset from the store.  Must unshare the dataset from other datasets that see it
+   * as an external dataset.  In the case where the user provided is a share recipient of the
+   * dataset provided, remove the share only.
    * Implementors should ensure atomicity.
    * @param userDataset
    */

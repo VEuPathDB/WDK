@@ -1,13 +1,18 @@
 package org.gusdb.wdk.model.fix;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -22,6 +27,7 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
 public class InvalidStepReporter extends BaseCLI {
 
   public static final String ARG_INCLUDE = "include";
+  public static final String ARG_SUMMARY_ONLY = "summaryOnly";
   public static final String VALUE_ALL = "all";
   public static final String VALUE_INVALID = "invalid";
   public static final String VALUE_VALID = "valid";
@@ -62,6 +68,9 @@ public class InvalidStepReporter extends BaseCLI {
         + "to determine what steps to be included in the report. "
         + "By default, only include valid steps. The available values are, "
         + "all, valid, invalid; and by default, valid.");
+    
+    addNonValueOption(ARG_SUMMARY_ONLY, false, "Do not run the full invalid step report.  Only do a summary of projects and their valid/invalid counts");
+
 
   }
 
@@ -78,6 +87,11 @@ public class InvalidStepReporter extends BaseCLI {
     String include = (String) getOptionValue(ARG_INCLUDE);
     try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
 
+      if ((Boolean) getOptionValue(ARG_SUMMARY_ONLY)) {
+        summaryReport(wdkModel);
+        System.exit(0);
+      }
+
       // make sure the include value is correct
       if (!include.equals(VALUE_ALL) && !include.equals(VALUE_INVALID)
           && !include.equals(VALUE_VALID)) {
@@ -87,6 +101,36 @@ public class InvalidStepReporter extends BaseCLI {
   
       report(wdkModel, include);
     }
+  }
+  
+  private void summaryReport(WdkModel wdkModel) {
+    ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+    String steps = userDB.getUserSchema() + "steps";
+    String users = userDB.getUserSchema() + "users";
+    
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+
+    String sql = "select s.project_id,s.is_valid,count(*) as count " +
+        "from " + steps  + " s, " + users + " u " +        
+        " where s.user_id = u.user_id " +
+        " and u.is_guest = 0 " + 
+        " group by project_id,is_valid " +
+        " order by project_id,is_valid";
+    
+    Object[] args = {};
+    BasicResultSetHandler handler = new BasicResultSetHandler();
+    
+    System.out.println("Invalid step summary report");
+    System.out.println("");
+    
+    new SQLRunner(dataSource, sql, "invalid-step-report-summary").executeQuery(args, handler);
+    List<Map<String,Object>> results = handler.getResults();
+    for (Map<String,Object> row : results) {
+      String proj = (String)row.get("PROJECT_ID");
+      BigDecimal is_val = (BigDecimal)row.get("IS_VALID");
+      BigDecimal cnt = (BigDecimal)row.get("COUNT");
+      System.out.println(proj + "\t" + is_val + "\t" + cnt);
+    } 
   }
 
   private void report(WdkModel wdkModel, String include) throws SQLException {

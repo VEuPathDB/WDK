@@ -3,7 +3,7 @@ import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
 import {ActionCreator} from "../ActionCreator";
 import {User, UserPreferences} from "../utils/WdkUser";
-import {Record} from "../utils/WdkModel";
+import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
 import { State as ProfileStoreState } from '../stores/UserProfileStore';
@@ -70,20 +70,20 @@ export type LogoutRedirectAction = {
 export type BasketStatusLoadingAction = {
   type: 'user/basket-status-loading',
   payload: {
-    record: Record
+    record: RecordInstance
   }
 }
 export type BasketStatusReceivedAction = {
   type: 'user/basket-status-received',
   payload: {
-    record: Record;
+    record: RecordInstance;
     status: boolean;
   }
 }
 export type BasketStatusErrorAction = {
   type: 'user/basket-status-error',
   payload: {
-    record: Record,
+    record: RecordInstance,
     error: Error
   }
 }
@@ -91,15 +91,15 @@ export type BasketStatusErrorAction = {
 // favorites actions
 export type FavoritesStatusLoadingAction = {
   type: 'user/favorites-status-loading',
-  payload: { record: Record }
+  payload: { record: RecordInstance }
 }
 export type FavoritesStatusReceivedAction = {
   type: 'user/favorites-status-received',
-  payload: { record: Record, status: boolean }
+  payload: { record: RecordInstance, status: boolean }
 }
 export type FavoritesStatusErrorAction = {
   type: 'user/favorites-status-error',
-  payload: { record: Record, error: Error }
+  payload: { record: RecordInstance, error: Error }
 }
 
 /**
@@ -268,7 +268,7 @@ type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | Basket
 /**
  * @param {Record} record
  */
-export let loadBasketStatus: ActionCreator<BasketAction> = (record: Record) => {
+export let loadBasketStatus: ActionCreator<BasketAction> = (record: RecordInstance) => {
   //if (user.isGuest) return basketAction(record, false);
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
@@ -283,7 +283,7 @@ export let loadBasketStatus: ActionCreator<BasketAction> = (record: Record) => {
  * @param {Record} record
  * @param {Boolean} status
  */
-export let updateBasketStatus: ActionCreator<BasketAction|{type:'__'}> = (user: User, record: Record, status: boolean) => {
+export let updateBasketStatus: ActionCreator<BasketAction|{type:'__'}> = (user: User, record: RecordInstance, status: boolean) => {
   if (user.isGuest) return showLoginWarning('use baskets');
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
@@ -297,7 +297,7 @@ export let updateBasketStatus: ActionCreator<BasketAction|{type:'__'}> = (user: 
  * @param {Record} record
  * @param {Promise<boolean>} basketStatusPromise
  */
-let setBasketStatus: ActionCreator<BasketAction> = (record: Record, basketStatusPromise: Promise<boolean>) => {
+let setBasketStatus: ActionCreator<BasketAction> = (record: RecordInstance, basketStatusPromise: Promise<boolean>) => {
   return function run(dispatch) {
     dispatch({
       type: 'user/basket-status-loading',
@@ -330,7 +330,7 @@ type FavoriteAction = FavoritesStatusErrorAction | FavoritesStatusLoadingAction 
 /**
  * @param {Record} record
  */
-export let loadFavoritesStatus: ActionCreator<FavoriteAction> = (record: Record) => {
+export let loadFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance) => {
   //if (user.isGuest) return favoritesAction(record, false);
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
@@ -345,7 +345,7 @@ export let loadFavoritesStatus: ActionCreator<FavoriteAction> = (record: Record)
  * @param {Record} record
  * @param {Boolean} status
  */
-export let updateFavoritesStatus: ActionCreator<FavoriteAction|{type:'__'}> = (user: User, record: Record, status: boolean) => {
+export let updateFavoritesStatus: ActionCreator<FavoriteAction|{type:'__'}> = (user: User, record: RecordInstance, status: boolean) => {
   if (user.isGuest) return showLoginWarning('use favorites');
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
@@ -359,7 +359,7 @@ export let updateFavoritesStatus: ActionCreator<FavoriteAction|{type:'__'}> = (u
  * @param {Record} record
  * @param {Promise<Boolean>} statusPromise
  */
-let setFavoritesStatus: ActionCreator<FavoriteAction> = (record: Record, statusPromise: Promise<boolean>) => {
+let setFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance, statusPromise: Promise<boolean>) => {
   return function run(dispatch) {
     dispatch({
       type: 'user/favorites-status-loading',

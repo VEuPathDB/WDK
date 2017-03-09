@@ -21,7 +21,7 @@ import {
   FavoritesStatusReceivedAction,
   FavoritesStatusErrorAction
 } from '../actioncreators/UserActionCreators';
-import {Record, RecordClass} from "../utils/WdkModel";
+import {RecordInstance, RecordClass} from "../utils/WdkModel";
 
 export type Action = NavigationQueryAction
             | NavigationVisibilityAction
@@ -41,7 +41,7 @@ export type Action = NavigationQueryAction
 
 export type State = BaseState & {
   isLoading: boolean;
-  record: Record;
+  record: RecordInstance;
   recordClass: RecordClass;
   categoryTree: CategoryTreeNode;
   requestId: string;

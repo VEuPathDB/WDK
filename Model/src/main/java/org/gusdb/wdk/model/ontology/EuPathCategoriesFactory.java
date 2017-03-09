@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.ontology;
 
 import java.util.Collections;
 import java.util.List;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -279,7 +281,10 @@ public class EuPathCategoriesFactory {
       }
       catch (WdkModelException e) {
         LOG.debug("Error attempting to resolve ontology node with model entity.");
-        LOG.debug(e.getStackTrace());
+        LOG.debug(e.getMessage());
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        LOG.debug(sw.toString());
         return false;
       }
     }
