@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.fix;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -126,8 +127,8 @@ public class InvalidStepReporter extends BaseCLI {
     List<Map<String,Object>> results = handler.getResults();
     for (Map<String,Object> row : results) {
       String proj = (String)row.get("PROJECT_ID");
-      Integer is_val = (Integer)row.get("IS_VALID");
-      Integer cnt = (Integer)row.get("COUNT");
+      BigDecimal is_val = (BigDecimal)row.get("IS_VALID");
+      BigDecimal cnt = (BigDecimal)row.get("COUNT");
       System.out.println(proj + "\t" + is_val + "\t" + cnt);
     } 
   }
