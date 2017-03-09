@@ -58,20 +58,6 @@ public interface UserDataset {
   Long getCreatedDate() throws WdkModelException;
   
   /**
-   * The last time it was modified, either meta info or outgoing or incoming sharing.
-   * Milliseconds since epoch.
-   * @return
-   */
-  Long getModifiedDate() throws WdkModelException;
-  
-  /**
-   * The time this dataset was uploaded to the UserDatasetStore
-   * Milliseconds since epoch.
-   * @return
-   */
-  Long getUploadedDate() throws WdkModelException;
-  
-  /**
    * Get the set of data dependencies (in the application database) that this dataset has.
    * @return
    */

@@ -1,4 +1,4 @@
-/* global customBasketPage */
+/* global wdk, customBasketPage */
 wdk.namespace("window.wdk.basket", function(ns, $) {
   "use strict";
 
@@ -121,7 +121,7 @@ wdk.namespace("window.wdk.basket", function(ns, $) {
     }
     
     //several rows might need update (in this and other views): the matching <img> are kept in elemArray
-    var basketId = "basket" + pk;
+    var basketId = wdk.util.escapeSelectorComponent("basket" + pk);
     var elemArray = jQuery("a[id=" + basketId + "] img");
     
     // show processing icon, will remove it when the process is completed.

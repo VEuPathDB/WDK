@@ -8,8 +8,8 @@
 <c:set value="${wdkRecord.primaryKey.values}" var="vals"/>
 <c:set value="${vals['source_id']}" var="id"/>
 <c:set value="${vals['project_id']}" var="pid"/>
-<c:set value="basket${fn:replace(id,'.','_')}" var="basketId"/>
-<c:set value="favorite${fn:replace(id,'.','_')}" var="favoriteId"/>
+<c:set value="basket${id}" var="basketId"/>
+<c:set value="favorite${id}" var="favoriteId"/>
 <c:set value="20" var="imagesize"/>
 
 <c:if test="${frontAction != null}">

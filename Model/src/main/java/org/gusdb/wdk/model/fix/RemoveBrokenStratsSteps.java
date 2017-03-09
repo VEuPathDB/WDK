@@ -2,6 +2,10 @@ package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.List;
+import java.sql.Date;
 
 import javax.sql.DataSource;
 
@@ -9,26 +13,22 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import java.math.BigDecimal;
 
-/**
- * Starting build 25 we move here apicomm cleaning activity previously located in GuestRemover and StepValidator
- * - strategies is_deleted = 1
- * - steps is_deleted = 1 CANNOT be done we generate valid steps with is_deleted = 1, (booleans, ID and basket steps)  no idea why
- * - strategies with user_id different from user_id in root_step
- * - strategies with project_id different from project_id in root_step
- * - strategies with root_step inexistent
- * - strategies with user_id inexistent
- * - strategies with a root_step that contains an invalid question_name (this could be done in validate?)
- * - finally remove all steps that do not belong to a strategy
- * @author Jerric
- *
- */
 public class RemoveBrokenStratsSteps extends BaseCLI {
-
   private static final int PAGE_SIZE = 9000;
   private static final Logger LOG = Logger.getLogger(RemoveBrokenStratsSteps.class);
+  protected static final String ARG_REPORT_ONLY = "reportOnly";
+  protected static final String SQL_WRONG_USER = "wrong_user";
+  protected static final String SQL_WRONG_PROJECT = "wrong_project";
+  protected static final String SQL_UNKNOWN_QUESTION = "unknown_question";
+  protected static final String SQL_ORPHAN_STEPS = "orphaned_steps";
+  protected static final String SQL_ORPHAN_ANALYSIS = "orphaned_analysis";
+
 
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
@@ -53,137 +53,157 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId, which should match the directory name "
         + "under $GUS_HOME, where model-config.xml is stored.");
+    addNonValueOption(ARG_REPORT_ONLY, false, "Do not remove broken.  Just print report on broken steps and strategies");
   }
 
   @Override
   protected void execute() throws Exception {
-    LOG.info("****IN EXECUTE******");
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+
     try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
       String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
-      DataSource dataSource = wdkModel.getUserDb().getDataSource();
-      DBPlatform platform = wdkModel.getUserDb().getPlatform();
-      String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
-      String tempBrokenTable = "wdk_broken_strategies";
-      String tempUnknownRCTable = "wdk_strats_unknownRC"; //unknown record class because invalid question name in root step
+      Map<String,String> sqlFroms = getSqlFroms(userSchema);
+      if ((Boolean) getOptionValue(ARG_REPORT_ONLY)) {
+	LOG.info("Remove Broken Steps: Reporting only! Not removing broken steps.");
 
-      /* TO CLEAN/REMOVE:
-       * 1- strategies is_deleted = 1
-       * 2- broken:
-       *   - strategies with user_id different from user_id in root_step
-       *   - strategies with project_id different from project_id in root_step
-       *   - strategies with root_step inexistent
-       *   - strategies with user_id inexistent
-       * 3- strategies with a root_step that contains an invalid question _name (this could be done in validate, options in redmine #19239)
-       * 123- finally remove all steps that do not belong to a strategy
-       */
-      if (platform.checkTableExists(dataSource, defaultSchema, tempBrokenTable)) {
-        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempBrokenTable, "drop-broken-strats-table.");
-      }
-      if (platform.checkTableExists(dataSource, defaultSchema, tempUnknownRCTable)) {
-        SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempUnknownRCTable, "drop-unknownRC-strats-table.");
-      }
-
-      // 1
-      deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
-
-      // 2
-      SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id FROM " +
-          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.user_id != st.user_id", 
-          "create-temp-broken-strats-table");
-      SqlUtils.executeUpdate(dataSource, "INSERT INTO wdk_broken_strategies (strategy_id) SELECT s.strategy_id FROM " +
-          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND s.project_id != st.project_id", 
-          "insert-into-temp-broken-strats-table");
-      deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
-
-      deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
-      deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
-
-      // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
-      SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
-          userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
-          "(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
-      // deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
-
-      // after strategies have been cleanedup.. delete unused steps: every deletion will open up more to be deleted.
-      boolean remain = true;
-      while (remain) {
-        int sum = removeUnusedStepAnalysis(dataSource, userSchema);
-        try {
-          sum = removeUnusedSteps(dataSource, userSchema);
-          remain = (sum != 0);
-        }
-        catch (SQLException ex) {
-          LOG.warn(ex.getMessage());
-          // checking for a foreign constraint violation to continue checking steps
-          if ( !ex.getMessage().contains("ORA-02292") )	throw ex;
-          remain=true;
-        }
+        reportBroken(wdkModel, sqlFroms, userSchema);
+      } else {
+	LOG.info("Remove Broken Steps: removing broken steps.");
+	removeBroken(wdkModel, sqlFroms, userSchema);
       }
     }
   }
+  
+  private Map<String, String> getSqlFroms(String userSchema) {
+    Map<String,String> selects = new LinkedHashMap<String,String>();
+ 
+    String s = "FROM " +
+        userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND s.user_id != st.user_id";
+    selects.put(SQL_WRONG_USER, s);
+    
+    s = "FROM " +
+        userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND s.project_id != st.project_id";
+    selects.put(SQL_WRONG_PROJECT, s);
 
-  // utility also in GuestRemover
-  public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
-    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
-    PreparedStatement psDelete = null;
+    s = "FROM " +
+        userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
+        "(select question_name from wdk_questions)";
+    selects.put(SQL_UNKNOWN_QUESTION, s);
+    
+    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
+    String analysisTable = userSchema + "step_analysis";
+    Date today = new Date(new java.util.Date().getTime());
+    String condition = "step_id IN (" + "  select * from (" +
+        "  SELECT step_id              FROM           " + stepTable + 
+        "     WHERE create_time < ( to_date('" + today + "','yyyy-mm-dd') - 1)" +   // step has to be 24+ hours old to be an orphan, for safety
+        "  MINUS SELECT root_step_id   FROM           " + strategyTable +
+        "  MINUS SELECT left_child_id  FROM           " + stepTable +
+        "  MINUS SELECT right_child_id FROM           " + stepTable +
+        ") where rownum <= " + PAGE_SIZE + "  )";
+    
+    s = "FROM " + analysisTable + " WHERE " + condition;
+    
+    selects.put(SQL_ORPHAN_ANALYSIS, s);
+    
+    s = "FROM " + stepTable + " WHERE " + condition;
+
+    selects.put(SQL_ORPHAN_STEPS, s);
+    
+    return selects;
+  }
+  
+  private void reportBroken(WdkModel wdkModel, Map<String,String> sqlFroms, String userSchema) throws Exception {
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    Object[] args = {};
+    BasicResultSetHandler handler = new BasicResultSetHandler();
+    for (String queryName : sqlFroms.keySet()) {
+      String countCol = "BROKENCOUNT";
+      String sql = "select count(*) as " + countCol + " " + sqlFroms.get(queryName);
+      new SQLRunner(dataSource, sql, "report-broken-" + queryName).executeQuery(args, handler);
+      List<Map<String,Object>> results = handler.getResults();
+      BigDecimal count = (BigDecimal)results.get(0).get(countCol);
+
+      System.out.println(queryName + ": " + count);
+    }
+  }
+  
+  private void removeBroken(WdkModel wdkModel, Map<String,String> sqlFroms, String userSchema) throws Exception {
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    DBPlatform platform = wdkModel.getUserDb().getPlatform();
+    String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
+    String tempBrokenTable = "wdk_broken_strategies";
+    String tempUnknownRCTable = "wdk_strats_unknownRC"; //unknown record class because invalid question name in root step
+
+    /* TO CLEAN/REMOVE:
+     * 1- strategies is_deleted = 1
+     * 2- broken:
+     *   - strategies with user_id different from user_id in root_step
+     *   - strategies with project_id different from project_id in root_step
+     *   - strategies with root_step inexistent
+     *   - strategies with user_id inexistent
+     * 3- strategies with a root_step that contains an invalid question _name (this could be done in validate, options in redmine #19239)
+     * 123- finally remove all steps that do not belong to a strategy
+     */
+    if (platform.checkTableExists(dataSource, defaultSchema, tempBrokenTable)) {
+      SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempBrokenTable, "drop-broken-strats-table.");
+    }
+    if (platform.checkTableExists(dataSource, defaultSchema, tempUnknownRCTable)) {
+      SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempUnknownRCTable, "drop-unknownRC-strats-table.");
+    }
+
+    // 1
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
+
+    // 2
+    SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_broken_strategies AS SELECT s.strategy_id " + sqlFroms.get(SQL_WRONG_USER), 
+        "create-temp-broken-strats-table");
+    
+    SqlUtils.executeUpdate(dataSource, "INSERT INTO wdk_broken_strategies (strategy_id) AS SELECT s.strategy_id " + sqlFroms.get(SQL_WRONG_PROJECT), 
+        "insert-into-temp-broken-strats-table");
+    
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_broken_strategies) ");
+
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
+
+    // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
+    SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id " + sqlFroms.get(SQL_UNKNOWN_QUESTION), "create-temp-unknownRC-strats-table");
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+
+    deleteStepsAndAnalyses(dataSource, userSchema, sqlFroms);
+    
+  }
+
+  private void deleteStepsAndAnalyses(DataSource dataSource, String userSchema, Map<String,String> sqlFroms) throws SQLException {
+    
+    // for one page of the current set of orphaned steps, first delete their analyses, then delete them.
+    // this leads to a new set of orphane steps.  continue until none remain.
+    String analysisSql = "DELETE " + sqlFroms.get(SQL_ORPHAN_ANALYSIS);
+    String stepSql = "DELETE " + sqlFroms.get(SQL_ORPHAN_STEPS);
+    
+    PreparedStatement psDeleteAnalyses = null;
+    PreparedStatement psDeleteSteps = null;
+    LOG.debug("\n" + stepSql + "\n");
     try {
-      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum <= " + PAGE_SIZE;
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
-
-      int sum = 0;
-      while (true) {
+      psDeleteAnalyses = SqlUtils.getPreparedStatement(dataSource, analysisSql);
+      psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, stepSql);
+      int countAnalysisDelete = 0;
+      int countStepsDelete = 0;
+      int pageCount;
+      do {
         // executeUpdate includes the commit
-        int count = psDelete.executeUpdate();
-        if (count == 0)
-          break;
-        sum += count;
-        LOG.debug(sum + " rows deleted so far.");
+        countAnalysisDelete += psDeleteAnalyses.executeUpdate();
+        pageCount = psDeleteSteps.executeUpdate();
+        countStepsDelete += pageCount;
       }
-      LOG.debug("***** totally deleted " + sum + " rows. *****");
-      return sum;
-    }
-    finally {
-      SqlUtils.closeStatement(psDelete);
-    }
+      while (pageCount != 0);
+      LOG.debug(" Deleted " + countAnalysisDelete + " step analysis rows.");
+      LOG.debug(" Deleted " + countStepsDelete + " step step rows.");
+     
+    } finally {
+      SqlUtils.closeStatement(psDeleteAnalyses);
+      SqlUtils.closeStatement(psDeleteSteps);
+    } 
   }
-
-
-		// deleteByBatch(dataSource, userSchema + "steps", " is_deleted = 1 "); //we generate them when seeing basket results
-
-  private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused step_analysis...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +  
-          "  MINUS SELECT right_child_id FROM           " + stepTable +  
-					"  )");
-      sum += count;
-    }
-    LOG.debug(sum + " unused step_analysis deleted");
-    return sum;
-  }
-
-  private int removeUnusedSteps(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused steps...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +   
-          "  MINUS SELECT right_child_id FROM           " + stepTable +     
-					"  )");
-      sum += count;
-    }
-    LOG.debug(sum + " unused steps deleted");
-    return sum;
-  }
-
 }

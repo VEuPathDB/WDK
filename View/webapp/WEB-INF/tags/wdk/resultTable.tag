@@ -276,7 +276,7 @@
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
                           <%-- RRD: this looks fishy.  Why use the display value of the ID as the html id?  No guarantee of uniqueness. See also basketClick below. --%>
-                          <c:set var="basketId" value="basket${fn:replace(record.idAttributeValue.value,'.','_')}" />
+                          <c:set var="basketId" value="basket${record.idAttributeValue.value}" />
                           <c:choose>
                             <c:when test="${!wdkUser.guest}">
                               <c:set value="${record.attributes['in_basket']}" var="is_basket"/>

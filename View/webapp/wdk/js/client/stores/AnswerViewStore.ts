@@ -1,6 +1,6 @@
 import WdkStore, { BaseState } from './WdkStore';
 import { filterRecords } from '../utils/recordUtils';
-import {Answer, Question, Record, RecordClass, AttributeField} from '../utils/WdkModel';
+import {Answer, Question, RecordInstance, RecordClass, AttributeField} from '../utils/WdkModel';
 import {
   AnswerOptions,
   LoadingAction,
@@ -31,7 +31,7 @@ export type State = BaseState & Answer & AnswerOptions & FilterState & {
   recordClass: RecordClass;
   allAttributes: AttributeField[];
   visibleAttributes: AttributeField[];
-  unfilteredRecords: Record[];
+  unfilteredRecords: RecordInstance[];
   isLoading: boolean;
 }
 

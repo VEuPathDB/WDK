@@ -66,9 +66,7 @@ public class UserDatasetFormatter {
   },
   owner: 424156,
   size: "200", // kilobytes
-  modified: 1248312231083,
   created: 1231238088881,
-  uploaded: 1231398508344,
   sharedWith: [{user: 829424, emailName: "sfischer", time: 13252342341}, {user: 989921, emailName: "dfalke", time: 12332532332}],
   dataFiles: [{name: "blah", size: "10M"}],
   isInstalled: true
@@ -111,9 +109,7 @@ public class UserDatasetFormatter {
     json.put("owner", getUserDisplayName( dataset.getOwnerId(),  userSchema,  userDbDataSource)); 
     json.put("ownerUserId", dataset.getOwnerId());
     json.put("size", dataset.getSize());
-    json.put("modified", dataset.getModifiedDate());
     json.put("created", dataset.getCreatedDate());
-    json.put("uploaded", dataset.getUploadedDate());
     
     // external users don't get to know who else it is shared with
     if (!isExternalDataset) {

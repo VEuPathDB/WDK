@@ -28,8 +28,6 @@ public class JsonUserDataset implements UserDataset {
   private static final String OWNER = "owner";
   private static final String SHARES  = "shares";
   private static final String CREATED  = "created";
-  private static final String MODIFIED  = "modified";
-  private static final String UPLOADED  = "uploaded";
   private static final String DEPENDENCIES  = "dependencies";
   private static final String SIZE  = "size";
   private static final String PROJECTS  = "projects";
@@ -39,8 +37,6 @@ public class JsonUserDataset implements UserDataset {
   private UserDatasetType type;
   private Integer ownerId;
   private Long created;
-  private Long modified;
-  private Long uploaded;
   private Integer size;
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
@@ -69,8 +65,6 @@ public class JsonUserDataset implements UserDataset {
       this.ownerId = datasetJsonObj.getInt(OWNER);
       this.size = datasetJsonObj.getInt(SIZE);
       this.created = datasetJsonObj.getLong(CREATED);
-      this.modified = datasetJsonObj.getLong(MODIFIED);
-      this.uploaded = datasetJsonObj.getLong(UPLOADED);
       
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
@@ -123,16 +117,6 @@ public class JsonUserDataset implements UserDataset {
   @Override
   public Long getCreatedDate() {
     return created;
-  }
-
-  @Override
-  public Long getModifiedDate() {
-    return modified;
-  }
-
-  @Override
-  public Long getUploadedDate() {
-    return uploaded;
   }
 
   @Override

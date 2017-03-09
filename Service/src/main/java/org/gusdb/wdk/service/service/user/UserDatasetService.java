@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.service.user;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,8 +32,6 @@ import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
-import org.gusdb.wdk.service.request.user.UserProfileRequest;
-import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -255,6 +252,8 @@ public class UserDatasetService extends UserService {
   }
   */
 
+  // this should be changed to PRIVATE
+  // and, if user is a guest, throw a 403 or similar
   private Integer getUserId() throws WdkModelException {
     return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();
   }
