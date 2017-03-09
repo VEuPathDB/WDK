@@ -13,8 +13,6 @@ import {UserPreferences, Step} from "../utils/WdkUser";
 import {RecordClass, Question, Reporter} from "../utils/WdkModel";
 
 export type State = BaseState & {
-  preferences: UserPreferences,
-  ontology: CategoryOntology,
   step: Step,
   question: Question,
   recordClass: RecordClass,

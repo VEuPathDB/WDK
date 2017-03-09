@@ -24,7 +24,7 @@ class DownloadFormController extends WdkViewController {
 
   renderView(state, eventHandlers) {
     // build props object to pass to form component
-    let formProps = Object.assign({}, state, eventHandlers, {
+    let formProps = Object.assign({}, state, state.globalData, eventHandlers, {
       // passing summary view in case reporters handle view links differently
       summaryView: this.props.location.query.summaryView
     });

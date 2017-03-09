@@ -58,7 +58,7 @@
 <li id="favorite-menu">
 <c:choose>
   <c:when test="${wdkUser eq null or wdkUser.guest}">
-      <a id="mybasket" onclick="wdk.user.login('use favorites', 'wdk.webappUrl('showFavorite.do'));"
+      <a id="mybasket" onclick="wdk.user.login('use favorites', wdk.webappUrl('showFavorite.do'));"
          href="javascript:void(0)"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 
         ><span><imp:image style="vertical-align:middle" height="20" 
