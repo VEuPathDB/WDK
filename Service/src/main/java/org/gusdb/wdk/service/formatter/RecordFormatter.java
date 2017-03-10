@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -40,9 +41,10 @@ public class RecordFormatter {
       .put(Keys.ID, getRecordPrimaryKeyJson(record))
       .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames));
-    TwoTuple<JSONObject,List<Exception>> tableResult = getRecordTablesJson(record, tableNames);
+    ThreeTuple<JSONObject,JSONArray,List<Exception>> tableResult = getRecordTablesJson(record, tableNames);
     recordJson.put(Keys.TABLES, tableResult.getFirst());
-    return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getSecond());
+    recordJson.put(Keys.TABLE_ERRORS, tableResult.getSecond());
+    return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getThird());
   }
 
   private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
@@ -62,10 +64,10 @@ public class RecordFormatter {
     return attributes;
   }
 
-  private static TwoTuple<JSONObject,List<Exception>> getRecordTablesJson(RecordInstance record, Collection<String> tableNames) {
+  private static ThreeTuple<JSONObject,JSONArray,List<Exception>> getRecordTablesJson(RecordInstance record, Collection<String> tableNames) {
     JSONObject tables = new JSONObject();
     JSONArray badTables = new JSONArray();
-    List<Exception> errors = new ArrayList<>();
+    List<Exception> exceptionList = new ArrayList<>();
     // loop through tables
     for (String tableName : tableNames) {
       try {
@@ -90,13 +92,10 @@ public class RecordFormatter {
         String errorMsg = "Unable to dynamically load table '" + tableName + "' for record: " + record.getPrimaryKey().getValuesAsString();
         LOG.error(errorMsg, e);
         badTables.put(tableName);
-        errors.add(new WdkModelException(errorMsg, e));
+        exceptionList.add(new WdkModelException(errorMsg, e));
       }
     }
-    if (badTables.length() != 0) {
-      tables.put(Keys.ERRORS, badTables);
-    }
-    return new TwoTuple<JSONObject,List<Exception>>(tables, errors);
+    return new ThreeTuple<JSONObject,JSONArray,List<Exception>>(tables, badTables, exceptionList);
   }
 
   private static Object getAttributeValueJson(AttributeValue attr) throws WdkModelException, WdkUserException {
