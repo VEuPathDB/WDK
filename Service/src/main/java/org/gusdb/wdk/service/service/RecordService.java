@@ -179,7 +179,7 @@ public class RecordService extends WdkService {
         }
       }
       catch(RecordNotFoundException rnfe) {
-    	throw new NotFoundException(rnfe);
+        throw new NotFoundException(rnfe);
       }
       catch(WdkUserException e) {
         throw new BadRequestException(e);
