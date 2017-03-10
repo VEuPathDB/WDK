@@ -1,12 +1,11 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -21,18 +20,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
-import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,9 +48,12 @@ import org.json.JSONObject;
  *
  */
 public class UserDatasetService extends UserService {
-	
+
   private static Logger LOG = Logger.getLogger(UserDatasetService.class);
 
+  // TODO: this should be changed to PRIVATE after initial development testing
+  private static final Access DATA_ACCESS = Access.PUBLIC;
+  
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
@@ -57,31 +61,45 @@ public class UserDatasetService extends UserService {
   @GET
   @Path("user-dataset")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
-    if (expandDatasets == null) expandDatasets = false;
-    UserDatasetStore userDatasetStore = getUserDatasetStore();
-    Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
-    Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
-    String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
-    Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, expandDatasets).toString()).build();
+  public Response getAllUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
+    expandDatasets = getFlag(expandDatasets, false);
+    User user = getUserBundle(DATA_ACCESS).getTargetUser();
+    UserFactory userFactory = getWdkModel().getUserFactory();
+    UserDatasetStore dsStore = getUserDatasetStore();
+    Set<Integer> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(getUserId());
+    List<UserDatasetInfo> userDatasets = getDatasetInfo(dsStore.getUserDatasets(user.getUserId()).values(),
+        installedUserDatasets, dsStore, userFactory);
+    List<UserDatasetInfo> sharedDatasets = getDatasetInfo(dsStore.getExternalUserDatasets(user.getUserId()).values(),
+        installedUserDatasets, dsStore, userFactory);
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(
+        userDatasets, sharedDatasets, expandDatasets).toString()).build();
+  }
+
+  private static List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
+      final Set<Integer> installedUserDatasets, final UserDatasetStore dsStore, final UserFactory userFactory) {
+    return Functions.mapToList(datasets, new Function<UserDataset,UserDatasetInfo>() {
+      @Override public UserDatasetInfo apply(UserDataset dataset) {
+        return new UserDatasetInfo(dataset, installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, userFactory);
+      }});
   }
 
   @GET
   @Path("user-dataset/{datasetId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
+    int datasetId = parseIntegerId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore userDatasetStore = getUserDatasetStore();
-    Integer datasetId = new Integer(datasetIdStr);
-    UserDataset userDataset;
-    if (getUserDatasetStore().getUserDatasetExists(getUserId(), datasetId)) 
-      userDataset = getUserDatasetStore().getUserDataset(getUserId(), datasetId);
-    else
-      userDataset = userDatasetStore.getExternalUserDatasets(getUserId()).get(datasetId);
-    if (userDataset == null) throw new NotFoundException("user-dataset/" + datasetIdStr);
-    String userSchema = getWdkModel().getModelConfig().getUserDB().getUserSchema();
-    Set<Integer> installedUserDatasets = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
-    return Response.ok(UserDatasetFormatter.getUserDatasetJson(userDataset, userDatasetStore, installedUserDatasets, getWdkModel().getUserDb().getDataSource(), userSchema, false).toString()).build();
+    UserDataset userDataset =
+        userDatasetStore.getUserDatasetExists(getUserId(), datasetId) ?
+        userDatasetStore.getUserDataset(getUserId(), datasetId) :
+        userDatasetStore.getExternalUserDatasets(getUserId()).get(datasetId);
+    if (userDataset == null) {
+      throw new NotFoundException("user-dataset/" + datasetIdStr);
+    }
+    Set<Integer> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(getUserId());
+    return Response.ok(UserDatasetFormatter.getUserDatasetJson(
+        new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId), userDatasetStore,
+            getWdkModel().getUserFactory()), userDataset.getOwnerId().equals(getUserId())).toString()).build();
   }
 
   @PUT
@@ -89,7 +107,7 @@ public class UserDatasetService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
-    Integer datasetId = new Integer(datasetIdStr);
+    int datasetId = parseIntegerId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     if (!getUserDatasetStore().getUserDatasetExists(getUserId(), datasetId)) throw new NotFoundException("user-dataset/" + datasetIdStr);
     try {
       JSONObject metaJson = new JSONObject(body);
@@ -118,34 +136,34 @@ public class UserDatasetService extends UserService {
   @Path("user-dataset/share")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException {
-	JSONObject jsonObj = new JSONObject(body);
-	try {
-	  UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
-	  Map<String, Map<Integer, Set<Integer>>> userDatasetShareMap = request.getUserDatasetShareMap();
-	  Set<Integer> installedDatasetIds = getInstalledUserDatasets(getUserId(), getWdkModel().getAppDb().getDataSource(), getUserDatasetSchemaName());
-	  for(String key : userDatasetShareMap.keySet()) {
-		// Find datasets to share  
-	    if("add".equals(key)) {
-	      Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
-	      // Ignore any provided dataset ids not owned by this user.
+    JSONObject jsonObj = new JSONObject(body);
+    try {
+      UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
+      Map<String, Map<Integer, Set<Integer>>> userDatasetShareMap = request.getUserDatasetShareMap();
+      Set<Integer> installedDatasetIds = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(getUserId());
+      for(String key : userDatasetShareMap.keySet()) {
+        // Find datasets to share  
+        if("add".equals(key)) {
+          Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+          // Ignore any provided dataset ids not owned by this user.
           targetDatasetIds.retainAll(installedDatasetIds);
-	      for(Integer targetDatasetId : targetDatasetIds) {
-	    	Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
-	    	// Since each dataset may be shared with different users, we share datasets one by one
-	    	getUserDatasetStore().shareUserDataset(getUserId(), targetDatasetId, targetUserIds);
-	      }
-	    }
-	    // Fine datasets to unshare
-	    if("delete".equals(key)) {
-	      Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
-		  // Ignore any provided dataset ids not owned by this user.
-	      targetDatasetIds.retainAll(installedDatasetIds);
-		  for(Integer targetDatasetId : targetDatasetIds) {
-			Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
-		    // Since each dataset may unshared with different users, we unshare datasets one by one.
-		    getUserDatasetStore().unshareUserDataset(getUserId(), targetDatasetId, targetUserIds);
-		  }
-	    }
+          for(Integer targetDatasetId : targetDatasetIds) {
+            Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+            // Since each dataset may be shared with different users, we share datasets one by one
+            getUserDatasetStore().shareUserDataset(getUserId(), targetDatasetId, targetUserIds);
+          }
+        }
+        // Fine datasets to unshare
+        if("delete".equals(key)) {
+          Set<Integer> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+          // Ignore any provided dataset ids not owned by this user.
+          targetDatasetIds.retainAll(installedDatasetIds);
+          for(Integer targetDatasetId : targetDatasetIds) {
+            Set<Integer> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+            // Since each dataset may unshared with different users, we unshare datasets one by one.
+            getUserDatasetStore().unshareUserDataset(getUserId(), targetDatasetId, targetUserIds);
+          }
+        }
       }
       return Response.noContent().build();
     }
@@ -153,7 +171,7 @@ public class UserDatasetService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   /**
    * Convenience method to whittle out any non-valid target users
    * @param providedUserIds - set of user ids provided to the service
@@ -161,81 +179,27 @@ public class UserDatasetService extends UserService {
    * @throws WdkModelException
    */
   protected Set<Integer> identifyTargetUsers(Set<Integer> providedUserIds) throws WdkModelException {
-  	Set<Integer> targetUserIds = new HashSet<>();
-  	for(Integer providedUserId : providedUserIds) {
-  	  if(validateTargetUserId(providedUserId)) {
-  		targetUserIds.add(providedUserId);
-  	  }
-  	}
-  	return targetUserIds;
-  }
-
-  /**
-   * {
-   *   "targetUsers" : [12401223],
-   *   "datasetsToShare" : [555,777]
-   * }
-   */
-  @PUT
-  @Path("user-dataset/{datasetId}/share")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response shareWith(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
-
-    JSONObject jsonObj = new JSONObject(body);
-    
-    // put datasets to share into a set
-    JSONArray jsonDatasetsToShare = jsonObj.getJSONArray("datasetsToShare");
-        Set<Integer> datasetIdsToShare = new HashSet<Integer>();
-    for (int i=0; i<jsonDatasetsToShare.length(); i++) 
-      datasetIdsToShare.add(jsonDatasetsToShare.getInt(i));
-    
-    // put target users into a set
-    JSONArray jsonTargetUsers = jsonObj.getJSONArray("targetUsers");
     Set<Integer> targetUserIds = new HashSet<>();
-    for (int i=0; i<jsonTargetUsers.length(); i++) {
-      Integer targetUserId = jsonTargetUsers.getInt(i);
-      if(validateTargetUserId(targetUserId)) {
-        targetUserIds.add(targetUserId);
-      }  
+    for(Integer providedUserId : providedUserIds) {
+      if(validateTargetUserId(providedUserId)) {
+        targetUserIds.add(providedUserId);
+      }
     }
-    //getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
-
-    return Response.noContent().build();
-
+    return targetUserIds;
   }
-  
-  @PUT
-  @Path("user-dataset/{datasetId}/unshare")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response unshareWith(@PathParam("datasetId") String datasetIdStr, String body)
-      throws WdkModelException, DataValidationException {
 
-    JSONObject jsonObj = new JSONObject(body);
-
-    Integer shareWithUserId = new Integer(jsonObj.getString("targetUser"));
-    getUserDatasetStore().unshareUserDataset(getUserId(), new Integer(datasetIdStr), shareWithUserId);
-
-    return Response.noContent().build();
-  }
-  
   @DELETE
   @Path("user-dataset/{datasetId}")
-  public Response deleteById(@PathParam("datasetId") int datasetId) throws WdkModelException {
+  public Response deleteById(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
+    int datasetId = parseIntegerId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     getUserDatasetStore().deleteUserDataset(getUserId(), datasetId);
     return Response.noContent().build();
   }
-  
+
   private UserDatasetStore getUserDatasetStore() throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
     if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
     return userDatasetStore;
-  }
-  
-  // TODO: get this from config
-  private String getUserDatasetSchemaName() throws WdkModelException {
-    return "ApiDBUserDatasets.";
   }
 
   /* not used yet.
@@ -243,8 +207,7 @@ public class UserDatasetService extends UserService {
     try {
       Integer datasetId = new Integer(datasetIdStr);
       UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
-      return getUserDatasetStore().getUserDataset(userBundle.getTargetUser().getUserId(),
-          datasetId);
+      return getUserDatasetStore().getUserDataset(userBundle.getTargetUser().getUserId(), datasetId);
     }
     catch (NumberFormatException e) {
       throw new BadRequestException(e);
@@ -252,12 +215,18 @@ public class UserDatasetService extends UserService {
   }
   */
 
-  // this should be changed to PRIVATE
-  // and, if user is a guest, throw a 403 or similar
-  private Integer getUserId() throws WdkModelException {
-    return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();
+  private int parseIntegerId(String idStr, RuntimeException exception) {
+    if (FormatUtil.isInteger(idStr)) {
+      return Integer.parseInt(idStr);
+    }
+    throw exception;
   }
-  
+
+  // TODO: if user is a guest, throw a 403 or similar
+  private Integer getUserId() throws WdkModelException {
+    return getUserBundle(DATA_ACCESS).getTargetUser().getUserId();
+  }
+
   /**
    * Determines whether the target user is valid.  Any invalid user is noted in the logs.  Seems extreme to trash the whole operation
    * over one wayward user id.
@@ -274,32 +243,4 @@ public class UserDatasetService extends UserService {
     }
     return true;
   }
-  
-  // this probably doesn't belong here, but it is not obvious where it does belong
-  /**
-   * Return the dataset IDs the provided user can see in the provided app db, ie, that are installed and has access to
-   * @param userId
-   * @param userDatasetSchema
-   * @param appDbDataSource
-   * @return
-   * @throws WdkModelException
-   */
-  private static Set<Integer> getInstalledUserDatasets(Integer userId, DataSource appDbDataSource, String userDatasetSchema) throws WdkModelException {
-    
-    final Set<Integer> datasetIds = new HashSet<>();
-    ResultSetHandler handler = new ResultSetHandler() {
-      @Override
-      public void handleResult(ResultSet rs) throws SQLException {
-        while (rs.next()) datasetIds.add(rs.getInt(1)); 
-      }
-    };
-
-    String sql = "select user_dataset_id from " + userDatasetSchema + "userDatasetAccessControl where user_id = ?";
-    SQLRunner runner = new SQLRunner(appDbDataSource, sql, "installed-datasets-ud-svc");
-    Object[] args = {userId};
-    runner.executeQuery(args, handler);
-    return datasetIds;
-  }
-
-
 }

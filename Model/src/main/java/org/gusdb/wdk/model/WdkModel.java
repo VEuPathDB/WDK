@@ -70,6 +70,7 @@ import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
+import org.gusdb.wdk.model.user.dataset.UserDatasetFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
@@ -175,6 +176,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
   private StepAnalysisFactory stepAnalysisFactory;
+  private UserDatasetFactory userDatasetFactory;
 
   private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
   private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -615,6 +617,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     stepAnalysisFactory = (stepAnalysisPlugins == null ?
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
+    userDatasetFactory = new UserDatasetFactory(this);
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -690,6 +693,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public StepAnalysisFactory getStepAnalysisFactory() {
     return stepAnalysisFactory;
+  }
+
+  public UserDatasetFactory getUserDatasetFactory() {
+    return userDatasetFactory;
   }
 
   public Object resolveReference(String twoPartName) throws WdkModelException {
