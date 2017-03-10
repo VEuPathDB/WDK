@@ -9,7 +9,7 @@ function RecordTableSection(props) {
   let { table, record, recordClass, isCollapsed, onCollapsedChange } = props;
   let { name, displayName, description } = table;
   let value = record.tables[name];
-  let isError = includes(record.tables._errors, name);
+  let isError = includes(record.tableErrors, name);
   let isLoading = value == null;
   let className = [ 'wdk-RecordTable', 'wdk-RecordTable__' + table.name ].join(' ');
 

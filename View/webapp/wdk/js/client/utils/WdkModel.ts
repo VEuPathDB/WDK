@@ -76,9 +76,8 @@ export interface RecordInstance {
   id: PrimaryKey;
   recordClassName: string;
   attributes: Record<string, AttributeValue>;
-  tables: Record<string, TableValue> & {
-    _errors: string[];
-  };
+  tables: Record<string, TableValue>;
+  tableErrors: string[];
 }
 
 export interface PrimaryKey extends Array<{
