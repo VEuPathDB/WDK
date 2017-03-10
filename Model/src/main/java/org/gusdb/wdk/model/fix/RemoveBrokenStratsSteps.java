@@ -167,10 +167,6 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
     GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
 
-    // 3 comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
-    SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id " + sqlFroms.get(SQL_UNKNOWN_QUESTION), "create-temp-unknownRC-strats-table");
-    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
-
     deleteStepsAndAnalyses(dataSource, userSchema, sqlFroms);
     
   }

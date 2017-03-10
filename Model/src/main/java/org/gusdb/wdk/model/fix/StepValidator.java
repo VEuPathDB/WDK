@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -17,6 +20,8 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -90,6 +95,8 @@ public class StepValidator extends BaseCLI {
         buffer.append("'").append(projectId).append("'");
       }
       projects = "(" + buffer.toString() + ")";
+      
+      deleteStrategiesWithUnknownQuestions(wdkModel, projects);
 
       // we are cleaning apicomm from broken strategies in a new script wdkCleanBroken that we run before we
       // remove guests but this takes care of broken strategies in the middle, not just the root step, with
@@ -109,6 +116,33 @@ public class StepValidator extends BaseCLI {
       detectEnumParams(wdkModel, projects);
       flagDependentSteps(wdkModel, projects);
     }
+  }
+  
+  private void deleteStrategiesWithUnknownQuestions(WdkModel wdkModel, String projects) throws SQLException {
+    ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+    String userSchema = userDB.getUserSchema();
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    
+    String unknownsTable = "wdk_strats_unknownQ";
+    
+    String createSql = "CREATE TABLE " + unknownsTable + " AS SELECT s.strategy_id " +
+    "FROM " + userSchema + "steps st, " + userSchema + "strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
+        "(select question_name from wdk_questions)"; 
+    
+    SqlUtils.executeUpdate(dataSource, createSql, "create-temp-unknownQ-strats-table");
+    
+    Object[] args = {};
+    BasicResultSetHandler handler = new BasicResultSetHandler();
+   
+    System.out.println("");
+    
+    new SQLRunner(dataSource, "select count(*) as count from " + unknownsTable, "invalid-step-report-summary").executeQuery(args, handler);
+    List<Map<String,Object>> results = handler.getResults();
+    Map<String,Object> row = results.get(0);
+    BigDecimal cnt = (BigDecimal)row.get("COUNT");
+    System.out.println("There are " + cnt + " strategies in table " + unknownsTable + ". These strategies have unknown Questions, and are about to be deleted from " + userSchema + "strategies");
+   
+    GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from " + unknownsTable + ") ");
   }
 
   private void resetFlags(WdkModel wdkModel, String projects) throws SQLException {
