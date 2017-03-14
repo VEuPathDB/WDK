@@ -57,7 +57,6 @@ public class GetVocabAction extends Action {
         JSONObject jsValues = param.getJsonValues();
         writer.print(jsValues.toString());
         writer.flush();
-        writer.close();
         return null;
       }
       else {    // output xml or html.
