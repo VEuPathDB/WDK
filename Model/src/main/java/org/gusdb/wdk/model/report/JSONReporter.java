@@ -91,7 +91,6 @@ public class JSONReporter extends StandardReporter {
       writer.endArray() // records
           .endObject().endObject().endObject();
       streamWriter.flush();
-      streamWriter.close();
       LOG.info("Totally " + recordCount + " records dumped");
     }
     catch (WdkUserException | JSONException | SQLException | IOException e) {
