@@ -186,8 +186,7 @@ public class StandardConfig {
       else
         fields = Arrays.asList(flds.split(","));
       for (String fld : fields) {
-        if (fieldMap.containsKey(fld)) { // we might get passed category names, that are not fields. skip
-                                         // these
+        if (fieldMap.containsKey(fld)) { // we might get passed category names, that are not fields. skip these
           if (fieldMap.get(fld).getClass().getName().contains("AttributeField"))
             attributes.add(fld);
           if (fieldMap.get(fld).getClass().getName().contains("TableField"))
@@ -205,13 +204,13 @@ public class StandardConfig {
           String[] tmpAttrs = attrFlds.split(",");
           for (String attr : tmpAttrs) {
             // only add attr if it is a real field (no categories)
-            if (fieldMap.get(attr).getClass().getName().contains("AttributeField")) {
+            if (fieldMap.containsKey(attr) &&
+                fieldMap.get(attr).getClass().getName().contains("AttributeField")) {
               attributes.add(attr);
             }
           }
         }
       }
-
       if (config.containsKey(SELECTED_TABLES)) {
         String tableFlds = config.get(SELECTED_TABLES);
         if (tableFlds.equals("all")) {
@@ -221,7 +220,8 @@ public class StandardConfig {
           String[] tmpTables = tableFlds.split(",");
           for (String table : tmpTables) {
             // only add table if it is a real field (no categories)
-            if (fieldMap.get(table).getClass().getName().contains("TableField")) {
+            if (fieldMap.containsKey(table) &&
+                fieldMap.get(table).getClass().getName().contains("TableField")) {
               tables.add(table);
             }
           }
