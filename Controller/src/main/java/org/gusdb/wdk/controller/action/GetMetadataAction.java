@@ -72,7 +72,6 @@ public class GetMetadataAction extends GetVocabAction {
       PrintWriter writer = response.getWriter();
       writer.print(jsMetadata.toString());
       writer.flush();
-      writer.close();
       return null;
     }
     catch (Exception ex) {

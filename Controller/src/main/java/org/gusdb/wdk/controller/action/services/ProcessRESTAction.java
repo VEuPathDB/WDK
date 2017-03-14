@@ -129,7 +129,6 @@ public class ProcessRESTAction extends Action {
       logger.info("ABOUT TO WRITE RESULTS");
       reporter.report(out);
       out.flush();
-      out.close();
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -247,7 +246,6 @@ public class ProcessRESTAction extends Action {
     finally {
       writer.flush();
       out.flush();
-      out.close();
     }
   }
 

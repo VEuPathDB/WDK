@@ -125,7 +125,6 @@ public class GetFilterLinkAction extends Action {
         // print link to response
         out.print(link);
         out.flush();
-        out.close();
 
         return null;
     }
