@@ -95,6 +95,7 @@ export default class WdkService {
   });
   _cache: Map<string, Promise<any>> = new Map;
   _recordCache: Map<string, {request: RecordRequest; response: Promise<RecordInstance>}> = new Map;
+  _preferences: Promise<UserPreferences>;
   _currentUserPromise: Promise<User>;
   _initialCheck: Promise<void>;
   _version: number;
@@ -347,13 +348,23 @@ export default class WdkService {
   }
 
   getCurrentUserPreferences() {
-    return this._fetchJson<UserPreferences>('get', '/user/current/preference');
+    if (!this._preferences) {
+      this._preferences = this._fetchJson<UserPreferences>('get', '/user/current/preference');
+    }
+    return this._preferences;
   }
 
-  updateCurrentUserPreference(entries: { [key: string]: string}) {
+  updateCurrentUserPreference(entries: UserPreferences) {
     let url = '/user/current/preference';
     let data = JSON.stringify(entries);
-    return this._fetchJson<void>('patch', url, data);
+    return this._fetchJson<void>('patch', url, data).then(() => {
+
+      // merge with cached preferences only if patch succeeds
+      this._preferences = this._preferences.then(preferences => {
+        return { ...preferences, ...entries };
+      });
+
+    });
   }
 
   getCurrentUserDatasets() {
