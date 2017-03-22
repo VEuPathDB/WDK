@@ -109,7 +109,7 @@ public class AnswerFormatter extends AbstractReporter {
       // write records
       int numRecordsReturned = 0;
       for (RecordInstance record : recordStream) {
-        writer.value(RecordFormatter.getRecordJson(record, _attributes.keySet(), _tables.keySet()));
+        writer.value(RecordFormatter.getRecordJson(record, _attributes.keySet(), _tables.keySet()).getFirst());
         numRecordsReturned++;
       }
 
