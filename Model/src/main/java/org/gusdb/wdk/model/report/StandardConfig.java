@@ -3,9 +3,12 @@ package org.gusdb.wdk.model.report;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -170,7 +173,7 @@ public class StandardConfig {
    * 
    * @param config
    */
-  public StandardConfig configure(Map<String, String> config) {
+  public StandardConfig configure(Map<String, String> config) throws WdkUserException {
 
     if (config.containsKey(INCLUDE_EMPTY_TABLES)) {
       String value = config.get(INCLUDE_EMPTY_TABLES);
@@ -195,6 +198,10 @@ public class StandardConfig {
       }
     }
     else {
+      // legacy o-fields and o-tables are used by (old) web services; track bad inputs and throw exception
+      //   if any exist.  It will be caught by ProcessRESTAction and an appropriate response will be returned
+      // process o-fields param
+      List<String> badAttrs = new ArrayList<>();
       if (config.containsKey(SELECTED_ATTRS)) {
         String attrFlds = config.get(SELECTED_ATTRS);
         if (attrFlds.equals("all")) {
@@ -208,9 +215,14 @@ public class StandardConfig {
                 fieldMap.get(attr).getClass().getName().contains("AttributeField")) {
               attributes.add(attr);
             }
+            else {
+              badAttrs.add(attr);
+            }
           }
         }
       }
+      // process o-tables param
+      List<String> badTables = new ArrayList<>();
       if (config.containsKey(SELECTED_TABLES)) {
         String tableFlds = config.get(SELECTED_TABLES);
         if (tableFlds.equals("all")) {
@@ -224,8 +236,22 @@ public class StandardConfig {
                 fieldMap.get(table).getClass().getName().contains("TableField")) {
               tables.add(table);
             }
+            else {
+              badTables.add(table);
+            }
           }
         }
+      }
+      // process errors
+      Map<String,String> paramErrors = new HashMap<>();
+      if (!badAttrs.isEmpty()) {
+        paramErrors.put(SELECTED_ATTRS, "The following passed fields are invalid: " + FormatUtil.join(badAttrs.toArray(), ", "));
+      }
+      if (!badTables.isEmpty()) {
+        paramErrors.put(SELECTED_TABLES, "The following passed tables are invalid: " + FormatUtil.join(badTables.toArray(), ", "));
+      }
+      if (!paramErrors.isEmpty()) {
+        throw new WdkUserException("Invalid inputs", paramErrors);
       }
     }
 
