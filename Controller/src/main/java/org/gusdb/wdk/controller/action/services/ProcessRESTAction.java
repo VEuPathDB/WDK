@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -17,6 +18,10 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -37,6 +42,7 @@ import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.RequestParams;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.StandardConfig;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It 1) reads param values from
@@ -46,39 +52,60 @@ import org.gusdb.wdk.model.report.ReporterFactory;
 
 public class ProcessRESTAction extends Action {
 
-  private static final Logger logger = Logger.getLogger(ProcessRESTAction.class.getName());
+  private static final Logger LOG = Logger.getLogger(ProcessRESTAction.class);
 
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
-    logger.debug("Entering ProcessRESTAction..");
+
+    LOG.debug("Entering " + ProcessRESTAction.class.getName());
+
     String outputType = null;
     try {
       WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
       UserBean wdkUser = ActionUtility.getUser(servlet, request);
-      // get question
+
+      // get question from URL
       String strutsParam = mapping.getParameter();
       String qFullName = strutsParam.split("::")[0];
       outputType = strutsParam.split("::")[1];
-      logger.debug(outputType);
+      String questionSetName = qFullName.split(".")[0];
+      String questionName = qFullName.split(".")[1];
+
+      LOG.info("WebServices request for " + questionSetName + "/" + questionName + " (" + outputType + ")");
+
+      QuestionSetBean questionSet = wdkModel.getQuestionSetsMap().get(questionSetName);
+      if (questionSet == null)
+        throw new WdkUserException("The question set '" + questionSetName + "' doesn't exist.");
+
+      boolean allQuestions = false;
+      QuestionBean question = null;
+      if (questionName.equals("all")) {
+        allQuestions = true;
+      }
+      else {
+        question = questionSet.getQuestionsMap().get(questionName);
+        if (question == null)
+          throw new WdkUserException("The question '" + questionName + "' is not a member of question set '" + questionSetName + "'.");
+      }
 
       if (outputType.equals("wadl")) {
-        createWADL(request, response, qFullName);
+        createWADL(request, response, questionSet, question, allQuestions);
         return null;
       }
-      // if (outputType == null) outputType = "xml";
+      else if (questionName.equals("all")) {
+        throw new WdkUserException("Only WADLs can be supplied for all questions in a question set.  Select a single question.");
+      }
+      else if (!outputType.equals("json") && !outputType.equals("xml")) {
+        throw new WdkUserException("Invalid format '" + outputType + "'.  Only 'json' and 'xml' formats are supported.");
+      }
 
-      logger.debug(qFullName);
+      LOG.info("Verified question in request: " + question.getFullName());
 
-      QuestionBean wdkQuestion = null;
-      if (qFullName != null)
-        wdkQuestion = wdkModel.getQuestion(qFullName);
-      if (wdkQuestion == null)
-        throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
       Map<String, String> outputConfig = new LinkedHashMap<String, String>();
 
-      // prepare and get the param values.
-      Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
+      // prepare and get the param values
+      Map<String, ParamBean<?>> params = question.getParamsMap();
       RequestParams requestParams = new ServiceRequestParams(request);
       Map<String, String> stableValues = new LinkedHashMap<>();
       for (String paramName : params.keySet()) {
@@ -87,53 +114,47 @@ public class ProcessRESTAction extends Action {
         stableValues.put(paramName, stableValue);
       }
 
-      // get other fields
-      Map<?, ?> reqParams = request.getParameterMap();
-      for (Object kobj : reqParams.keySet()) {
-        String k = (String) kobj;
-        String v = null;
-        if (k.startsWith("o-")) {
-          String[] vs = request.getParameterValues(k);
-          if (vs == null || vs.length <= 1) {
-            v = request.getParameter(k);
-          }
-          else {
-            StringBuffer b = new StringBuffer();
-            b.append(vs[0]);
-            for (int j = 0; j < vs.length; j++) {
-              b.append("," + vs[j]);
-            }
-            v = b.toString();
+      // get other fields and validate
+      Map<String,String[]> reqParams = new HttpRequestData(request).getTypedParamMap();
+      for (Entry<String,String[]> entry : reqParams.entrySet()) {
+        String key = entry.getKey();
+        if (key.startsWith("o-")) {
+          String[] values = entry.getValue();
+          if (values != null && values.length > 0) {
+            // build comma-delimited list from array
+            outputConfig.put(key, FormatUtil.join(values, ","));
           }
         }
-        outputConfig.put(k, v);
       }
-      outputConfig.put("downloadType", "plain");
-      outputConfig.put("hasEmptyTable", "true");
-      // FROM SHOWSUMMARY
+      // hard coded values for web services
+      outputConfig.put(StandardConfig.ATTACHMENT_TYPE, "plain");
+      outputConfig.put(StandardConfig.INCLUDE_EMPTY_TABLES, "true");
 
-      StepBean step = wdkUser.createStep(null, wdkQuestion, stableValues, null, false, true,
-          Utilities.DEFAULT_WEIGHT);
+      StepBean step = wdkUser.createStep(null, question, stableValues, null, false, true, Utilities.DEFAULT_WEIGHT);
       AnswerValueBean answerValue = step.getAnswerValue();
-      // construct the forward to show_summary action
-      request.setAttribute("wdkAnswer", answerValue);
-      Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), outputType, outputConfig);
-      ServletOutputStream out = response.getOutputStream();
-      response.setHeader("Pragma", "Public");
-      response.setContentType(reporter.getHttpContentType());
 
-      String fileName = reporter.getDownloadFileName();
-      if (fileName != null) {
-        response.setHeader("Content-disposition", "attachment; filename=" + reporter.getDownloadFileName());
+      Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), outputType, outputConfig);
+
+      response.setContentType(reporter.getHttpContentType());
+      switch(reporter.getContentDisposition()) {
+        case INLINE:
+          response.setHeader("Pragma", "Public");
+          break;
+        case ATTACHMENT:
+          response.setHeader("Content-disposition", "attachment; filename=" + reporter.getDownloadFileName());
+          break;
+        default:
+          throw new WdkModelException("Unsupported content disposition: " + reporter.getContentDisposition());
       }
-      logger.info("ABOUT TO WRITE RESULTS");
+
+      LOG.info("Writing webservice results");
+      ServletOutputStream out = response.getOutputStream();
       reporter.report(out);
       out.flush();
     }
     catch (Exception ex) {
-      ex.printStackTrace();
+      LOG.error("Error while processing (old) webservice result (outputType=" + outputType + ")", ex);
       if (ex instanceof WdkModelException && outputType != null) {
-        logger.info("WdkModelException");
         WdkModelException wdkEx = (WdkModelException) ex;
         if (wdkEx.getParamErrors() != null) {
           reportError(response, wdkEx.getParamErrors(), "Input Parameter Error", "010", outputType);
@@ -145,15 +166,12 @@ public class ProcessRESTAction extends Action {
         }
       }
       else if (ex instanceof WdkUserException && outputType != null) {
-        logger.info("WdkUserException");
         WdkUserException wdkEx = (WdkUserException) ex;
         Map<String, String> errMap = new LinkedHashMap<String, String>();
         errMap.put("1", wdkEx.getMessage());
         reportError(response, errMap, "User Error", "020", outputType);
       }
       else {
-        logger.info("OtherException\n" + ex.toString());
-        ex.printStackTrace();
         Map<String, String> exMap = new LinkedHashMap<String, String>();
         exMap.put("0", ex.getMessage());
         reportError(response, exMap, "Unknown Error", "000", outputType);
@@ -162,96 +180,68 @@ public class ProcessRESTAction extends Action {
     return null;
   }
 
-  private void reportError(HttpServletResponse resp, Map<String, String> msg, String errType, String errCode,
+  private void reportError(HttpServletResponse resp, final Map<String, String> msg, String errType, String errCode,
       String type) throws IOException {
-    logger.info("ERROR VALUE = " + errType);
-    ServletOutputStream errout = resp.getOutputStream();
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(errout));
+    LOG.info("ERROR VALUE = " + errType);
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(resp.getOutputStream()));
+    // this may not work if header is already out the door
     resp.setHeader("Pragma", "Public");
-    resp.setContentType("text/plain");
-    if (type.equals("xml"))
-      resp.setContentType("text/xml");
+    // choose error format to match requested data format
     if (type.equals("xml")) {
+      resp.setContentType("text/xml");
       writer.println("<?xml version='1.0' encoding='UTF-8'?>");
       writer.println("<response>");
       writer.println("<error type='" + errType + "' code='" + errCode + "'>");
-      for (String m : msg.keySet())
-        writer.println("<msg><![CDATA[" + msg.get(m) + "]]></msg>");
+      for (String m : msg.keySet()) {
+        writer.println("<msg><![CDATA[" + m + ": " + msg.get(m) + "]]></msg>");
+      }
       writer.println("</error>");
       writer.println("</response>");
     }
     else {
+      resp.setContentType("text/plain");
+      String messages = FormatUtil.join(Functions.mapToList(msg.keySet(), new Function<String,String>() {
+        @Override public String apply(String key) { return "\"" + key + ": " + msg.get(key) + "\""; }
+      }).toArray(), ",");
       writer.print("{\"response\":{\"error\":{\"type\":\"" + errType + "\",\"code\":\"" + errCode +
-          "\",\"msg\":[");
-      int c = 0;
-      for (String m : msg.keySet()) {
-        if (c > 0)
-          writer.print(",");
-        String message = msg.get(m);
-        if (message != null ) message = message.substring(1, message.length() - 1);
-        writer.print("\"" + message + "\"");
-        c++;
-      }
-      writer.print("]}}}");
+          "\",\"msg\":[" + messages + "]}}}");
     }
     writer.flush();
-    errout.flush();
-    errout.close();
     return;
   }
 
-  private void createWADL(HttpServletRequest request, HttpServletResponse response, String qFullName)
-      throws Exception {
-    ServletOutputStream out = response.getOutputStream();
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+  private void createWADL(HttpServletRequest request, HttpServletResponse response,
+      QuestionSetBean questionSet, QuestionBean question, boolean isAllQuestions) throws IOException, WdkModelException {
+    response.setHeader("Pragma", "Public");
+    response.setContentType("text/xml");
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(response.getOutputStream()));
     try {
-      String sQName = qFullName.replace('.', ':');
-      // get question
-      WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-      QuestionBean wdkQuestion = null;
-      QuestionSetBean wdkQuestionSet = null;
-      response.setHeader("Pragma", "Public");
-      response.setContentType("text/xml");
-
       writer.println("<?xml version='1.0'?>");
       writer.println("<application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "
           + "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' "
           + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " + "xmlns='http://wadl.dev.java.net/2009/02'>");
       String base = request.getHeader("Host") + "/webservices/";
       writer.println("<resources base='http://" + base + "'>");
-      if (sQName.split(":")[1].equals("all")) {
-        wdkQuestionSet = wdkModel.getQuestionSetsMap().get(sQName.split(":")[0]);
-        if (wdkQuestionSet == null)
-          throw new WdkUserException("The question set '" + sQName.split(":")[0] + "' doesn't exist.");
-        writer.println("<resource path='" + wdkQuestionSet.getName() + "'>");
-        for (String ques : wdkQuestionSet.getQuestionsMap().keySet()) {
-          writeWADL(wdkQuestionSet.getQuestionsMap().get(ques), writer);
+      writer.println("<resource path='" + questionSet.getName() + "'>");
+      if (isAllQuestions) {
+        for (QuestionBean ques : questionSet.getQuestions()) {
+          writeWADL(ques, writer);
         }
-        writer.println("</resource>");
       }
       else {
-        wdkQuestion = wdkModel.getQuestion(qFullName);
-        if (wdkQuestion == null)
-          throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
-        writer.println("<resource path='" + sQName.split(":")[0] + "'>");
-        writeWADL(wdkQuestion, writer);
-        writer.println("</resource>");
+        writeWADL(question, writer);
       }
+      writer.println("</resource>");
       writer.println("</resources>");
       writer.println("</application>");
     }
-    catch (Exception e) {
-      throw e;
-    }
     finally {
       writer.flush();
-      out.flush();
     }
   }
 
-  private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws Exception {
-    logger.debug(wdkQuestion.getDisplayName());
-    // String def_attr = null;
+  private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws WdkModelException {
+    LOG.debug(wdkQuestion.getDisplayName());
     String def_value = "";
     String repeating = "";
     writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
@@ -271,7 +261,7 @@ public class ProcessRESTAction extends Action {
       def_value = param.getDefault();
       repeating = "";
       if (param instanceof EnumParamBean) {
-        EnumParamBean ep = (EnumParamBean) param;
+        EnumParamBean ep = (EnumParamBean)param;
         def_value = filterDefaultValue(ep, def_value);
         if (ep.getMultiPick())
           repeating = "repeating='true'";
@@ -392,7 +382,7 @@ public class ProcessRESTAction extends Action {
   private Map<String, String> getDisplayMap(EnumParamBean param) {
     String displayType = param.getDisplayType();
     boolean isTreeBox = (displayType != null && displayType.equals(AbstractEnumParam.DISPLAY_TREEBOX));
-    logger.debug(param.getFullName() + " as tree: " + isTreeBox);
+    LOG.debug(param.getFullName() + " as tree: " + isTreeBox);
     if (!isTreeBox)
       return param.getDisplayMap();
 
