@@ -124,9 +124,9 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences) throws WdkUserException,
       WdkModelException {
-	  boolean resetPwdAndSendEmail = true;
-	  String dontEmailProp = getWdkModel().getProperties().get("DONT_EMAIL_NEW_USER");
-	  if (dontEmailProp != null && dontEmailProp.equals("true")) resetPwdAndSendEmail = false;
+    boolean resetPwdAndSendEmail = true;
+    String dontEmailProp = getWdkModel().getProperties().get("DONT_EMAIL_NEW_USER");
+    if (dontEmailProp != null && dontEmailProp.equals("true")) resetPwdAndSendEmail = false;
     return createUser(email, lastName, firstName, middleName, title,
         organization, department, address, city, state, zipCode, phoneNumber,
         country, globalPreferences, projectPreferences, resetPwdAndSendEmail);
@@ -161,7 +161,7 @@ public class UserFactory {
       // get a new userId
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       String signature = encrypt(userId + "_" + email);
-      String stableName = email.substring(0, atSignIndex) + "." + userId;
+      String stableName = email.substring(0, atSignIndex).toLowerCase() + "." + userId;
       Date registerTime = new Date();
 
       String sql = "INSERT INTO " + userSchema + TABLE_USER + " ("
