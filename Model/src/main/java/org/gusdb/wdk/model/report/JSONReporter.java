@@ -12,6 +12,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -58,7 +59,7 @@ public class JSONReporter extends StandardReporter {
 
   @Override
   public void write(OutputStream out) throws WdkModelException {
-    try {
+    try (RecordStream records = getRecords()) {
       OutputStreamWriter streamWriter = new OutputStreamWriter(out);
       JSONWriter writer = new JSONWriter(streamWriter);
 
@@ -73,7 +74,7 @@ public class JSONReporter extends StandardReporter {
 
       // get page based answers with a maximum size (defined in PageAnswerIterator)
       int recordCount = 0;
-      for (RecordInstance record : getRecords()) {
+      for (RecordInstance record : records) {
         writer.object().key("id").value(record.getPrimaryKey());
 
         // print out attributes of the record first
