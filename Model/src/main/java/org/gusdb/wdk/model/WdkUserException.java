@@ -10,7 +10,7 @@ import java.util.Map;
  * @author Jerric
  * @modified Jan 6, 2006
  */
-public class WdkUserException extends WdkException {
+public class WdkUserException extends WdkException implements ParameterErrors {
 
   private static final long serialVersionUID = 442861349675564533L;
 
@@ -57,6 +57,7 @@ public class WdkUserException extends WdkException {
    * @return Map where keys are Params and values are an tuple of (value,
    *         errMsg), one for each error param value
    */
+  @Override
   public Map<String, String> getParamErrors() {
     return paramErrors;
   }
