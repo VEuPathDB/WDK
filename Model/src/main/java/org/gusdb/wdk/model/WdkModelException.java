@@ -10,7 +10,7 @@ import java.util.Map;
  * @author jerric
  * 
  */
-public class WdkModelException extends WdkException {
+public class WdkModelException extends WdkException implements ParameterErrors {
 
   private static final long serialVersionUID = 877548355767390313L;
 
@@ -35,8 +35,8 @@ public class WdkModelException extends WdkException {
 
   public WdkModelException(Throwable cause) {
     super(cause);
-    if (cause instanceof WdkModelException) {
-      this.paramErrors = ((WdkModelException) cause).paramErrors;
+    if (cause instanceof ParameterErrors) {
+      this.paramErrors = ((ParameterErrors)cause).getParamErrors();
     }
   }
 
@@ -60,6 +60,7 @@ public class WdkModelException extends WdkException {
    * @return Map where keys are Params and values are an tuple of (value,
    *         errMsg), one for each error param value
    */
+  @Override
   public Map<String, String> getParamErrors() {
     return paramErrors;
   }

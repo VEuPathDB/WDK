@@ -1,15 +1,15 @@
 package org.gusdb.wdk.controller.action.services;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentSkipListSet;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,10 +19,14 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.wdk.model.ParameterErrors;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -39,7 +43,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
-import org.gusdb.wdk.model.query.param.RequestParams;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterFactory;
 import org.gusdb.wdk.model.report.StandardConfig;
@@ -54,11 +57,23 @@ public class ProcessRESTAction extends Action {
 
   private static final Logger LOG = Logger.getLogger(ProcessRESTAction.class);
 
+  private static final ConcurrentSkipListSet<String> RIDS = new ConcurrentSkipListSet<>();
+
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
 
     LOG.debug("Entering " + ProcessRESTAction.class.getName());
+
+    // Prevent this method from being called more than once during the same request
+    String rid = MDCUtil.getRequestId();
+    if (rid != null) {
+      if (RIDS.contains(rid)) {
+        LOG.warn("Multiple visits to ProcessRESTAction:execute() by the same request (rid=" + rid + ").");
+        return null;
+      }
+      RIDS.add(rid);
+    }
 
     String outputType = null;
     try {
@@ -67,10 +82,17 @@ public class ProcessRESTAction extends Action {
 
       // get question from URL
       String strutsParam = mapping.getParameter();
-      String qFullName = strutsParam.split("::")[0];
-      outputType = strutsParam.split("::")[1];
-      String questionSetName = qFullName.split(".")[0];
-      String questionName = qFullName.split(".")[1];
+      LOG.info("Parameter received from struts: " + strutsParam);
+      String[] paramSplit = strutsParam.split("::");
+      if (paramSplit.length != 2)
+        throw new WdkModelException("Parameter split on '::' resulted in " + paramSplit.length + " tokens");
+      String qFullName = paramSplit[0];
+      outputType = paramSplit[1];
+      String[] questionSplit = qFullName.split("\\.");
+      if (questionSplit.length != 2)
+        throw new WdkModelException("Question split on '.' resulted in " + questionSplit.length + " tokens");
+      String questionSetName = questionSplit[0];
+      String questionName = questionSplit[1];
 
       LOG.info("WebServices request for " + questionSetName + "/" + questionName + " (" + outputType + ")");
 
@@ -101,12 +123,17 @@ public class ProcessRESTAction extends Action {
       }
 
       LOG.info("Verified question in request: " + question.getFullName());
+      LOG.info("Incoming params: " + FormatUtil.prettyPrint(new HttpRequestData(request).getTypedParamMap(),
+          Style.MULTI_LINE, new Function<String[],String>() {
+            @Override public String apply(String[] obj) {
+              return FormatUtil.arrayToString(obj);
+            }}));
 
       Map<String, String> outputConfig = new LinkedHashMap<String, String>();
 
       // prepare and get the param values
       Map<String, ParamBean<?>> params = question.getParamsMap();
-      RequestParams requestParams = new ServiceRequestParams(request);
+      ServiceRequestParams requestParams = new ServiceRequestParams(request);
       Map<String, String> stableValues = new LinkedHashMap<>();
       for (String paramName : params.keySet()) {
         ParamBean<?> param = params.get(paramName);
@@ -115,11 +142,9 @@ public class ProcessRESTAction extends Action {
       }
 
       // get other fields and validate
-      Map<String,String[]> reqParams = new HttpRequestData(request).getTypedParamMap();
-      for (Entry<String,String[]> entry : reqParams.entrySet()) {
-        String key = entry.getKey();
+      for (String key : requestParams.paramNames()) {
         if (key.startsWith("o-")) {
-          String[] values = entry.getValue();
+          String[] values = requestParams.getArray(key);
           if (values != null && values.length > 0) {
             // build comma-delimited list from array
             outputConfig.put(key, FormatUtil.join(values, ","));
@@ -148,66 +173,77 @@ public class ProcessRESTAction extends Action {
       }
 
       LOG.info("Writing webservice results");
-      ServletOutputStream out = response.getOutputStream();
+      OutputStream out = response.getOutputStream();
       reporter.report(out);
       out.flush();
     }
     catch (Exception ex) {
       LOG.error("Error while processing (old) webservice result (outputType=" + outputType + ")", ex);
-      if (ex instanceof WdkModelException && outputType != null) {
-        WdkModelException wdkEx = (WdkModelException) ex;
-        if (wdkEx.getParamErrors() != null) {
-          reportError(response, wdkEx.getParamErrors(), "Input Parameter Error", "010", outputType);
-        }
-        else {
-          Map<String, String> exMap = new LinkedHashMap<String, String>();
-          exMap.put("1", wdkEx.getMessage());
-          reportError(response, exMap, "Output Parameter Error", "011", outputType);
-        }
+      if (ex instanceof ParameterErrors && outputType != null &&
+          ((ParameterErrors)ex).getParamErrors() != null &&
+          !((ParameterErrors)ex).getParamErrors().isEmpty()) {
+        reportError(response, ((ParameterErrors)ex).getParamErrors(), "Input Parameter Error", "010", outputType);
+      }
+      else if (ex instanceof WdkModelException && outputType != null) {
+        Map<String, String> exMap = new MapBuilder<String, String>("1", ex.getMessage()).toMap();
+        reportError(response, exMap, "Output Parameter Error", "011", outputType);
       }
       else if (ex instanceof WdkUserException && outputType != null) {
-        WdkUserException wdkEx = (WdkUserException) ex;
-        Map<String, String> errMap = new LinkedHashMap<String, String>();
-        errMap.put("1", wdkEx.getMessage());
-        reportError(response, errMap, "User Error", "020", outputType);
+        Map<String, String> exMap = new MapBuilder<String, String>("1", ex.getMessage()).toMap();
+        reportError(response, exMap, "User Error", "020", outputType);
       }
       else {
-        Map<String, String> exMap = new LinkedHashMap<String, String>();
-        exMap.put("0", ex.getMessage());
+        Map<String, String> exMap = new MapBuilder<String, String>("0", ex.getMessage()).toMap();
         reportError(response, exMap, "Unknown Error", "000", outputType);
       }
     }
     return null;
   }
 
-  private void reportError(HttpServletResponse resp, final Map<String, String> msg, String errType, String errCode,
-      String type) throws IOException {
-    LOG.info("ERROR VALUE = " + errType);
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(resp.getOutputStream()));
-    // this may not work if header is already out the door
-    resp.setHeader("Pragma", "Public");
-    // choose error format to match requested data format
-    if (type.equals("xml")) {
-      resp.setContentType("text/xml");
-      writer.println("<?xml version='1.0' encoding='UTF-8'?>");
-      writer.println("<response>");
-      writer.println("<error type='" + errType + "' code='" + errCode + "'>");
-      for (String m : msg.keySet()) {
-        writer.println("<msg><![CDATA[" + m + ": " + msg.get(m) + "]]></msg>");
+  private void reportError(HttpServletResponse response, final Map<String, String> msg, String errType,
+      String errCode, String type) {
+    OutputStream out = null;
+    try {
+      // try to get stream and write to it; if it has already been closed or opened in a way we can no
+      //   longer write, just write generic error message.  Exception is logged already.
+      out = response.getOutputStream();
+      out.write(' ');
+    }
+    catch(Exception e) {
+      // could not get writer or could not write to it
+      LOG.error("Unable to handle webservices error; Could not " + (out == null ?
+          "get handle on servlet output stream." : "write to servlet output stream."));
+      return;
+    }
+    try {
+      PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+      // this may not work if header is already out the door
+      response.setHeader("Pragma", "Public");
+      // choose error format to match requested data format
+      if (type.equals("xml")) {
+        response.setContentType("text/xml");
+        writer.println("<?xml version='1.0' encoding='UTF-8'?>");
+        writer.println("<response>");
+        writer.println("<error type='" + errType + "' code='" + errCode + "'>");
+        for (String m : msg.keySet()) {
+          writer.println("<msg><![CDATA[" + m + ": " + msg.get(m) + "]]></msg>");
+        }
+        writer.println("</error>");
+        writer.println("</response>");
       }
-      writer.println("</error>");
-      writer.println("</response>");
+      else {
+        response.setContentType("text/plain");
+        String messages = FormatUtil.join(Functions.mapToList(msg.keySet(), new Function<String,String>() {
+          @Override public String apply(String key) { return "\"" + key + ": " + msg.get(key) + "\""; }
+        }).toArray(), ",");
+        writer.print("{\"response\":{\"error\":{\"type\":\"" + errType + "\",\"code\":\"" + errCode +
+            "\",\"msg\":[" + messages + "]}}}");
+      }
+      writer.flush();
     }
-    else {
-      resp.setContentType("text/plain");
-      String messages = FormatUtil.join(Functions.mapToList(msg.keySet(), new Function<String,String>() {
-        @Override public String apply(String key) { return "\"" + key + ": " + msg.get(key) + "\""; }
-      }).toArray(), ",");
-      writer.print("{\"response\":{\"error\":{\"type\":\"" + errType + "\",\"code\":\"" + errCode +
-          "\",\"msg\":[" + messages + "]}}}");
+    catch(Exception e) {
+      LOG.error("Error writing webservices error response.  No further output will be sent.", e);
     }
-    writer.flush();
-    return;
   }
 
   private void createWADL(HttpServletRequest request, HttpServletResponse response,

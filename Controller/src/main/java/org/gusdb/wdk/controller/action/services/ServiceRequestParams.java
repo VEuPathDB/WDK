@@ -1,37 +1,55 @@
 package org.gusdb.wdk.controller.action.services;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
 public class ServiceRequestParams implements RequestParams {
 
-  private final HttpServletRequest request;
+  private final HttpServletRequest _request;
+  private final Map<String,String[]> _requestParams;
 
   public ServiceRequestParams(HttpServletRequest request) {
-    this.request = request;
+    _request = request;
+    Map<String,String[]> origParams = new HttpRequestData(request).getTypedParamMap();
+    // trim parameter names in case URL translation added whitespace
+    _requestParams = new HashMap<>();
+    for (Entry<String,String[]> param : origParams.entrySet()) {
+      _requestParams.put(param.getKey().trim(), param.getValue());
+    }
   }
 
   @Override
   public String getParam(String name) {
-    return request.getParameter(name);
+    String[] value = _requestParams.get(name);
+    return (value == null || value.length != 1 ? null : value[0]);
   }
 
   @Override
   public String[] getArray(String name) {
-    String[] values = request.getParameterValues(name);
-    // only return the array if it has more than 1 value; otherwise, use the value from getParam().
-    if (values != null && values.length > 1)
-      return values;
+    String[] value = _requestParams.get(name);
+    if (value == null) return null;
+    switch(value.length) {
+      case 0: return null;
+      case 1: return value[0].split(",");
+      default: return value;
+    }
+  }
 
-    String value = getParam(name);
-    return (value == null) ? null : value.split(",");
+  public Set<String> paramNames() {
+    return _requestParams.keySet();
   }
 
   @Override
   public Object getAttribute(String name) {
-    return request.getAttribute(name);
+    return _request.getAttribute(name);
   }
 
   @Override
@@ -51,7 +69,7 @@ public class ServiceRequestParams implements RequestParams {
 
   @Override
   public void setAttribute(String name, Object value) {
-    request.setAttribute(name, value);
+    _request.setAttribute(name, value);
   }
 
 }
