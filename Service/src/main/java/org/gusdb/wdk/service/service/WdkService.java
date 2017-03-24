@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.service;
 import java.util.List;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.ForbiddenException;
@@ -66,6 +67,10 @@ public abstract class WdkService {
 
   protected UriInfo getUriInfo() {
     return _uriInfo;
+  }
+
+  protected Cookie[] getCookies() {
+    return _request.getCookies();
   }
 
   protected HttpSession getSession() {
