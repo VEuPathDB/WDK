@@ -131,7 +131,8 @@ public class ProcessRESTAction extends Action {
       out.flush();
     }
     catch (Exception ex) {
-      ex.printStackTrace();
+      try {
+      logger.error("Exception while processing (old) webservices request", ex);
       if (ex instanceof WdkModelException && outputType != null) {
         logger.info("WdkModelException");
         WdkModelException wdkEx = (WdkModelException) ex;
@@ -157,6 +158,11 @@ public class ProcessRESTAction extends Action {
         Map<String, String> exMap = new LinkedHashMap<String, String>();
         exMap.put("0", ex.getMessage());
         reportError(response, exMap, "Unknown Error", "000", outputType);
+      }
+      }
+      catch(Exception e) {
+        logger.error("Error while handling exception from (old) webservices request", e);
+        // cannot necessarily do anything else here; writer/outputstream may be closed; prevent error page loop
       }
     }
     return null;
