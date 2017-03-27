@@ -1,4 +1,4 @@
-import {flowRight as compose, kebabCase, memoize} from 'lodash';
+import {flowRight as compose, get, kebabCase, memoize} from 'lodash';
 import * as React from 'react';
 import {preorderSeq, getBranches} from './TreeUtils';
 import {
@@ -12,6 +12,7 @@ import {
   Ontology
 } from './OntologyUtils';
 import {areTermsInString} from './SearchUtils';
+import { seq } from './IterableUtils';
 import {Question, RecordClass} from './WdkModel';
 
 type Dict<T> = {
@@ -292,6 +293,72 @@ export function resolveWdkReferences(
   return ontology;
 }
 
+/**
+ * Sort ontology node siblings. This function mutates the tree, so should
+ * only be used before caching the ontology.
+ */
+export function sortOntology(
+  recordClasses: Dict<RecordClass>,
+  questions: Dict<Question>,
+  ontology: CategoryOntology
+) {
+  const comparator = makeComparator(recordClasses, questions);
+  for (let node of preorderSeq(ontology.tree)) {
+    node.children.sort(comparator);
+  }
+  return ontology;
+}
+
+interface NodeComparator {
+  (nodeA: CategoryTreeNode, nodeB: CategoryTreeNode): number;
+}
+
+/**
+ * Compare nodes based on the "sort order" property. If it is undefined,
+ * compare based on displayName.
+ */
+function makeComparator(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
+  return composeComparators(
+    compareByChildren,
+    compareBySortNumber,
+    makeCompareBySortName(recordClasses, questions)
+  );
+}
+
+function composeComparators(...comparators: NodeComparator[]): NodeComparator {
+  return function compareNodes(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
+    return seq(comparators)
+    .map(comparator => comparator(nodeA, nodeB))
+    .find(n => n !== 0) || 0;
+  }
+}
+
+function compareByChildren(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
+    return nodeA.children.length === 0 && nodeB.children.length !== 0 ? -1
+         : nodeB.children.length === 0 && nodeA.children.length !== 0 ? 1
+         : 0;
+}
+
+function compareBySortNumber(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
+  let sortOrderA = getPropertyValue('display order', nodeA);
+  let sortOrderB = getPropertyValue('display order', nodeB);
+  return sortOrderA && sortOrderB ? Number(sortOrderA) - Number(sortOrderB)
+       : sortOrderA ? -1
+       : sortOrderB ? 1
+       : 0;
+}
+
+function makeCompareBySortName(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
+  return function compareBySortName(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
+    // attempt to sort by displayName
+    let entityA = getModelEntity(recordClasses, questions, nodeA);
+    let entityB = getModelEntity(recordClasses, questions, nodeB);
+    let nameA = getDisplayName(nodeA) || get(entityA, 'displayName', '');
+    let nameB = getDisplayName(nodeB) || get(entityB, 'displayName', '');
+    return nameA < nameB ? -1 : 1;
+  }
+}
+
 function getModelEntity(
   recordClasses: Dict<RecordClass>,
   questions: Dict<Question>,
@@ -307,46 +374,4 @@ function getModelEntity(
     }
   }
   return undefined;
-}
-
-/**
- * Compare nodes based on the "sort order" property. If it is undefined,
- * compare based on displayName.
- */
-function compareOntologyNodes(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
-  if (nodeA.children.length === 0 && nodeB.children.length !== 0)
-    return -1;
-
-  if (nodeB.children.length === 0 && nodeA.children.length !== 0)
-    return 1;
-
-  let orderBySortNum = compareOnotologyNodesBySortNumber(nodeA, nodeB);
-  return orderBySortNum === 0 ? compareOntologyNodesByDisplayName(nodeA, nodeB) : orderBySortNum;
-}
-
-/**
- * Sort ontology node siblings. This function mutates the tree, so should
- * only be used before caching the ontology.
- */
-export function sortOntology(ontology: CategoryOntology) {
-  for (let node of preorderSeq(ontology.tree)) {
-    node.children.sort(compareOntologyNodes);
-  }
-  return ontology;
-}
-
-function compareOnotologyNodesBySortNumber(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
-  let sortOrderA = getPropertyValue('display order', nodeA);
-  let sortOrderB = getPropertyValue('display order', nodeB);
-  return sortOrderA && sortOrderB ? Number(sortOrderA) - Number(sortOrderB)
-       : sortOrderA ? -1
-       : sortOrderB ? 1
-       : 0;
-}
-
-function compareOntologyNodesByDisplayName(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
-  // attempt to sort by displayName
-  let nameA = getDisplayName(nodeA) || '';
-  let nameB = getDisplayName(nodeB) || '';
-  return nameA < nameB ? -1 : 1;
 }
