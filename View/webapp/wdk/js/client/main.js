@@ -38,7 +38,7 @@ import * as Controllers from './controllers';
 export function initialize(options) {
   let { rootUrl, rootElement, endpoint, wrapRoutes, storeWrappers, onLocationChange } = options;
   // define the elements of the Flux architecture
-  let wdkService = new WdkService(endpoint);
+  let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
   let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
   let stores = configureStores(dispatcher, storeWrappers);

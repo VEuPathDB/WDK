@@ -243,12 +243,26 @@ export function getAllBranchIds(categoryTree: CategoryTreeNode): string[] {
   return getBranches(categoryTree, (node: CategoryTreeNode) => node.children).map(getNodeId);
 }
 
-const normalizedOntologies: Dict<CategoryOntology> = { };
 
-export function normalizeOntology(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: CategoryOntology) {
-  if (ontology.name in normalizedOntologies) return normalizedOntologies[ontology.name];
-  return sortOntology(pruneUnresolvedReferences(resolveWdkReferences(
-    recordClasses, questions, ontology )))
+// Utility functions for pruning categories
+
+/**
+ * Removed paths from tree that refer to unknown Wdk Model entities.
+ */
+export function pruneUnknownPaths(
+  recordClasses: Dict<RecordClass>,
+  questions: Dict<Question>,
+  ontology: CategoryOntology
+) {
+  return Object.assign({}, ontology, {
+    tree: getTree(ontology, isIndividualKnown(recordClasses, questions))
+  });
+}
+
+export function isIndividualKnown(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
+  return function(node: OntologyNode) {
+    return getModelEntity(recordClasses, questions, node) !== undefined;
+  }
 }
 
 /**
@@ -257,53 +271,42 @@ export function normalizeOntology(recordClasses: Dict<RecordClass>, questions: D
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(recordClasses: Dict<RecordClass>, questions: Dict<Question>, ontology: CategoryOntology) {
+export function resolveWdkReferences(
+  recordClasses: Dict<RecordClass>,
+  questions: Dict<Question>,
+  ontology: CategoryOntology
+) {
   for (let node of preorderSeq(ontology.tree)) {
-    switch (getTargetType(node)) {
-      case 'attribute': {
-        let attributeName = getRefName(node);
-        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-        if (recordClass == null) continue;
-        let wdkReference = recordClass.attributesMap[attributeName];
-        Object.assign(node, { wdkReference });
-        Object.assign(node, { type: 'individual'});
-        break;
-      }
-
-      case 'table': {
-        let tableName = getRefName(node);
-        let recordClass = recordClasses[getPropertyValue('recordClassName', node)];
-        if (recordClass == null) continue;
-        let wdkReference = recordClass.tablesMap[tableName];
-        Object.assign(node, { wdkReference });
-        Object.assign(node, { type: 'individual'});
-        break;
-      }
-
-      case 'search': {
-        let questionName = getRefName(node);
-        let wdkReference = questions[questionName];
-        Object.assign(node, { wdkReference });
-        Object.assign(node, { type: 'individual'});
-        break;
-      }
-
-      case 'default':
-        Object.assign(node, { type: 'category'});
-        break;
+    if (getTargetType(node) !== undefined) {
+      Object.assign(node, {
+        type: 'individual',
+        wdkReference: getModelEntity(recordClasses, questions, node)
+      });
+    }
+    else {
+      Object.assign(node, {
+        type: 'category'
+      });
     }
   }
   return ontology;
 }
 
-function isResolved(node: CategoryTreeNode) {
-  return isIndividual(node) ? node.wdkReference != null : true;
-}
-
-function pruneUnresolvedReferences(ontology: CategoryOntology) {
-  //ontology.unprunedTree = ontology.tree;
-  ontology.tree = getTree(ontology, isResolved);
-  return ontology;
+function getModelEntity(
+  recordClasses: Dict<RecordClass>,
+  questions: Dict<Question>,
+  node: OntologyNode
+) {
+  const recordClass = recordClasses[getPropertyValue('recordClassName', node)];
+  if (recordClass !== undefined) {
+    const name = getRefName(node as CategoryTreeNode);
+    switch (getTargetType(node as CategoryTreeNode)) {
+      case 'attribute': return recordClass.attributesMap[name];
+      case 'table': return recordClass.tablesMap[name];
+      case 'search': return questions[name];
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -325,7 +328,7 @@ function compareOntologyNodes(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) 
  * Sort ontology node siblings. This function mutates the tree, so should
  * only be used before caching the ontology.
  */
-function sortOntology(ontology: CategoryOntology) {
+export function sortOntology(ontology: CategoryOntology) {
   for (let node of preorderSeq(ontology.tree)) {
     node.children.sort(compareOntologyNodes);
   }

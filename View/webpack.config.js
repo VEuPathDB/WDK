@@ -51,7 +51,7 @@ var exposeLoaders = exposeModules.map(function(entry) {
 
 module.exports = baseConfig.merge({
   entry: {
-    'wdk-client': './webapp/wdk/js/client/index.js',
+    'wdk-client': [ 'whatwg-fetch', './webapp/wdk/js/client/index.js' ],
     'wdk': './webapp/wdk/js/index.js'
   },
   output: {

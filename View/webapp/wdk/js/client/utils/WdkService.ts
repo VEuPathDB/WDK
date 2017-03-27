@@ -2,7 +2,12 @@ import stringify from 'json-stable-stringify';
 import {difference, keyBy, memoize} from 'lodash';
 import localforage from 'localforage';
 import {Ontology} from './OntologyUtils';
-import {CategoryTreeNode, normalizeOntology} from './CategoryUtils';
+import {
+  CategoryTreeNode,
+  pruneUnknownPaths,
+  sortOntology,
+  resolveWdkReferences
+} from './CategoryUtils';
 import {alert} from './Platform';
 import {
   Answer,
@@ -16,6 +21,7 @@ import {
   UserDatasetMeta
 } from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
+import { pendingPromise } from './PromiseUtils';
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -90,21 +96,30 @@ type RequestOptions = {
  */
 export default class WdkService {
 
-  _store: LocalForage = localforage.createInstance({
+  private static _instances: Map<string, WdkService> = new Map;
+
+  static getInstance(serviceUrl: string): WdkService {
+    if (!WdkService._instances.has(serviceUrl)) {
+      WdkService._instances.set(serviceUrl, new WdkService(serviceUrl));
+    }
+    return WdkService._instances.get(serviceUrl) as WdkService;
+  }
+
+  private _store: LocalForage = localforage.createInstance({
     name: 'WdkService/' + this.serviceUrl
   });
-  _cache: Map<string, Promise<any>> = new Map;
-  _recordCache: Map<string, {request: RecordRequest; response: Promise<RecordInstance>}> = new Map;
-  _preferences: Promise<UserPreferences>;
-  _currentUserPromise: Promise<User>;
-  _initialCheck: Promise<void>;
-  _version: number;
-  _isInvalidating = false;
+  private _cache: Map<string, Promise<any>> = new Map;
+  private _recordCache: Map<string, {request: RecordRequest; response: Promise<RecordInstance>}> = new Map;
+  private _preferences: Promise<UserPreferences>;
+  private _currentUserPromise: Promise<User>;
+  private _initialCheck: Promise<void>;
+  private _version: number;
+  private _isInvalidating = false;
 
   /**
    * @param {string} serviceUrl Base url for Wdk REST Service.
    */
-  constructor(public serviceUrl: string) {
+  private constructor(public serviceUrl: string) {
     this.getOntology = memoize(this.getOntology.bind(this));
   }
 
@@ -174,6 +189,10 @@ export default class WdkService {
       }
       return question;
     });
+  }
+
+  getQuestionAndParameters(identifier: string) {
+    return this._fetchJson<Question>('get', `/question/${identifier}?expandParams=true`);
   }
 
   /**
@@ -391,43 +410,55 @@ export default class WdkService {
     let recordClasses$ = this.getRecordClasses().then(rs => keyBy(rs, 'name'));
     let questions$ = this.getQuestions().then(qs => keyBy(qs, 'name'));
     let ontology$ = this._getFromCache('ontology/' + name, () => {
-      return this._fetchJson<Ontology<CategoryTreeNode>>('get', '/ontology/' + name);
+      let rawOntology$ = this._fetchJson<Ontology<CategoryTreeNode>>('get', `/ontology/${name}`);
+      return Promise.all([ recordClasses$, questions$, rawOntology$ ])
+      .then(([ recordClasses, questions, rawOntology ]) => {
+        return sortOntology(pruneUnknownPaths(recordClasses, questions, rawOntology));
+      })
     });
     return Promise.all([ recordClasses$, questions$, ontology$ ])
-      .then((resources) => normalizeOntology(resources[0], resources[1], resources[2]));
+      .then(([ recordClasses, questions, ontology ]) => {
+        return resolveWdkReferences(recordClasses, questions, ontology);
+      });
   }
 
   _fetchJson<T>(method: string, url: string, body?: string) {
-    return new Promise<T>((resolve, reject) => {
-      let xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState !== 4 || this._isInvalidating) return;
+    return fetch(this.serviceUrl + url, {
+      method: method.toUpperCase(),
+      body: body,
+      credentials: 'include',
+      headers: Object.assign({
+        'Content-Type': 'application/json'
+      }, this._version && {
+        [CLIENT_WDK_VERSION_HEADER]: this._version
+      })
+    }).then(response => {
+      if (this._isInvalidating) {
+        return pendingPromise as Promise<T>;
+      }
 
-        if (xhr.status >= 200 && xhr.status < 300) {
-          let json = xhr.status === 204 ? null : JSON.parse(xhr.responseText);
-          resolve(json);
-        }
-        else if (xhr.status === 409 && xhr.response === CLIENT_OUT_OF_SYNC_TEXT) {
+      if (response.ok) {
+        return response.status === 204 ? undefined : response.json();
+      }
+
+      return response.text().then(text => {
+        if (response.status === 409 && text === CLIENT_OUT_OF_SYNC_TEXT) {
           this._isInvalidating = true;
           Promise.all([
             this._store.clear(),
             alert('Reload Page', 'This page is no longer valid and will be reloaded when you click "OK"')
           ])
           .then(() => location.reload());
+          return pendingPromise as Promise<T>;
         }
-        else {
-          let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
-          let error = new ServiceError(msg, xhr.responseText, xhr.status);
-          reject(error);
-        }
-      };
-      xhr.open(method.toUpperCase(), this.serviceUrl + url);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      if (this._version) {
-        xhr.setRequestHeader(CLIENT_WDK_VERSION_HEADER, String(this._version));
-      }
-      xhr.send(body);
-    });
+
+        throw new ServiceError(
+          `Cannot ${method.toUpperCase()} ${url} (${response.status})`,
+          text,
+          response.status
+        );
+      });
+    }) as Promise<T>
   }
 
   /**

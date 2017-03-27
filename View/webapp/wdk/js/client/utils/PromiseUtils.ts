@@ -3,7 +3,7 @@
  */
 
 // A Promise that never leaves the pending state.
-let pendingPromise = { then() { } };
+export const pendingPromise = { then() { } };
 
 /**
  * Given a function that returns a Promise, this will return a new
