@@ -413,7 +413,8 @@ export default class WdkService {
       let rawOntology$ = this._fetchJson<Ontology<CategoryTreeNode>>('get', `/ontology/${name}`);
       return Promise.all([ recordClasses$, questions$, rawOntology$ ])
       .then(([ recordClasses, questions, rawOntology ]) => {
-        return sortOntology(pruneUnknownPaths(recordClasses, questions, rawOntology));
+        return sortOntology(recordClasses, questions,
+          pruneUnknownPaths(recordClasses, questions, rawOntology));
       })
     });
     return Promise.all([ recordClasses$, questions$, ontology$ ])
