@@ -1,6 +1,6 @@
 import React from 'react';
 import {includes, memoize, throttle} from 'lodash';
-import { seq } from '../utils/IterableUtils';
+import { Seq } from '../utils/IterableUtils';
 import { preorderSeq, pruneDescendantNodes } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
 import { getId, isIndividual } from '../utils/CategoryUtils';
@@ -34,7 +34,7 @@ class RecordNavigationSection extends PureComponent {
 
   setActiveCategory() {
     let { categoryTree, navigationCategoriesExpanded } = this.props;
-    let activeCategory = seq(removeFields(categoryTree).children)
+    let activeCategory = Seq.from(removeFields(categoryTree).children)
       // transform each top-level node into a list of all nodes of that branch
       // of the tree that are visible in this section
       .flatMap(topLevelNode => [

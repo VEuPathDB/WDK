@@ -1,38 +1,58 @@
 import test from 'tape';
 import * as i from '../../webapp/wdk/js/client/utils/IterableUtils';
 
-function integers() {
-  return {
-    *[Symbol.iterator]() {
-      for (let n = 1;; n++) yield n;
-    }
-  };
+/**
+ * generate list of natural numbers
+ */
+function* nat(max = 10000) {
+  let n = 1;
+  while(n <= max) {
+    yield n++;
+  }
 }
 
-test('seq', t => {
-  let s = i.seq([1,2,3]);
-
-  // These can be removed when we use type annotations
-  t.ok(s[Symbol.iterator], 'seq returns an iterable');
-  t.ok(s.map()[Symbol.iterator], 'seq#map() returns an iterable');
-  t.ok(s.filter()[Symbol.iterator], 'seq#filter() returns an iterable');
-  t.ok(s.take()[Symbol.iterator], 'seq#take() returns an iterable');
-  t.ok(s.takeWhile()[Symbol.iterator], 'seq#takeWhile() returns an iterable');
-  t.ok(s.dropWhile()[Symbol.iterator], 'seq#dropWhile() returns an iterable');
+test('Seq', t => {
+  let s = i.Seq.from([1,2,3]);
 
   t.deepEqual(s.map(n => n * n).toArray(), [ 1, 4, 9 ]);
 
   let mapCallCount = 0;
-  let things = i.seq(integers())
-  .map(n => (mapCallCount++, n * n))
-  .takeWhile(n => n < 30)
-  .reduce((sum, n) => sum + n)
+  let result = i.Seq.from(nat())
+    .map(n => (mapCallCount++, n * n))
+    .takeWhile(n => n < 30)
+    .reduce((sum, n) => sum + n)
 
-  t.equal(mapCallCount, 7);
+  t.equal(mapCallCount, 6);
+  t.equal(result, 55);
 
 
-  let s2 = i.seq(s).map(n => n * 2);
-  t.deepEqual(s2.toArray(), [ 2, 4, 6 ], 'seqs can be composed');
+  let s2 = i.Seq.from(s).map(n => n * 2);
+  t.deepEqual(s2.toArray(), [ 2, 4, 6 ], 'Seqs can be composed');
+
+  /*
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+  }
+
+  let seqOfGen = i.seq(gen());
+  t.equal(
+    seqOfGen.first(),
+    seqOfGen.first(),
+    'seq should be reusable'
+  );
+  */
+
+  t.end();
+});
+
+test('concat', function(t) {
+  t.deepEqual(
+    [...i.concat([1, 2, 3], [4, 5, 6])],
+    [1, 2, 3, 4, 5, 6],
+    'concat should append elements'
+  );
 
   t.end();
 });
@@ -49,7 +69,7 @@ test('map', function(t) {
 
 test('flatMap', function(t) {
   t.deepEqual(
-    Array.from(i.flatMap(c => c.name.split(''), [ { name: 'ABC' }, { name: 'DEF' }, { name: 'GHI' } ])),
+    Array.from(i.flatMap(c => c.name, [ { name: 'ABC' }, { name: 'DEF' }, { name: 'GHI' } ])),
     [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I' ],
     'flatMap should apply the transform to each item in an iterable and flatten the resulting iterables'
   );
@@ -94,6 +114,15 @@ test('takeWhile', function(t) {
   t.end();
 });
 
+test('drop', function(t) {
+  t.deepEqual(
+    [ ...i.drop(1, [1,2,3,4,5,6,7,8,9,10,11]) ],
+    [2,3,4,5,6,7,8,9,10, 11]
+  );
+
+  t.end();
+});
+
 test('dropWhile', function(t) {
   t.deepEqual(
     Array.from(i.dropWhile(n => n < 10, [1,2,3,4,5,6,7,8,9,10,11])),
@@ -121,14 +150,20 @@ test('findLast', function(t) {
   t.end();
 });
 
-test('reduce', function(t) {
+test('first', function(t) {
   t.equal(
-    i.reduce((acc, n) => acc + n, 0, [1,2,3,4,5,6,7,8,9,10]),
-    55
+    i.first([ 1,2,3,4,5,6,7,8,9,10,11]),
+    1
   );
-
   t.end();
+});
 
+test('last', function(t) {
+  t.equal(
+    i.last([1,2,3,4,5,6,7,8,9,10]),
+    10
+  );
+  t.end();
 });
 
 test('some', function(t) {
@@ -157,4 +192,21 @@ test('every', function(t) {
     'some should return false if no member passes the supplied test'
   );
   t.end();
+});
+
+test('reduce', function(t) {
+  t.equal(
+    i.reduce((acc, n) => acc + n, 5, [1,2,3,4,5,6,7,8,9,10]),
+    60,
+    'reduce should use seed value when provided'
+  );
+
+  t.equal(
+    i.reduce((acc, n) => acc + n, [1,2,3,4,5,6,7,8,9,10]),
+    55,
+    'reduce should use first item if iterable when seed value is not provided'
+  );
+
+  t.end();
+
 });
