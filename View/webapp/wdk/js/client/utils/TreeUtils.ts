@@ -1,4 +1,4 @@
-import { seq, map } from './IterableUtils';
+import { Seq } from './IterableUtils';
 import { curry } from 'lodash';
 
 export interface Node {
@@ -65,11 +65,7 @@ function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
  * @return {Seq}
  */
 export function preorderSeq<T extends Node>(root: T) {
-  return seq({
-    *[Symbol.iterator]() {
-      yield* preorder(root, n => n.children as T[]);
-    }
-  })
+  return Seq.from(preorder(root, n => n.children as T[]));
 }
 
 /**
@@ -91,11 +87,7 @@ export function preorderSeq<T extends Node>(root: T) {
  * @return {Seq}
  */
 export function postorderSeq<T extends Node>(root: T) {
-  return seq({
-    *[Symbol.iterator]() {
-      yield* postorder(root, n => n.children as T[]);
-    }
-  })
+  return Seq.from(postorder(root, n => n.children as T[]));
 }
 
 /**
@@ -109,10 +101,10 @@ export function postorderSeq<T extends Node>(root: T) {
  * @param {any} root The root node of the tree whose structure is being mapped.
  */
 export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChildren: ChildrenGetter<T>, root: T): U {
-  let mappedChildren = map(child => {
-    return mapStructure(mapFn, getChildren, child)
-  }, getChildren(root));
-  return mapFn(root, Array.from(mappedChildren));
+  let mappedChildren = Seq.from(getChildren(root))
+  .map(child => mapStructure(mapFn, getChildren, child))
+  .toArray();
+  return mapFn(root, mappedChildren);
 }
 
 export const foldStructure = curry(<T extends Node, U>(fn: (value: U, node: T) => U, seed: U, root: T): U =>

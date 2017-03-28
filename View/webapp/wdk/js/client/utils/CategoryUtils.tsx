@@ -12,7 +12,7 @@ import {
   Ontology
 } from './OntologyUtils';
 import {areTermsInString} from './SearchUtils';
-import { seq } from './IterableUtils';
+import { Seq } from './IterableUtils';
 import {Question, RecordClass} from './WdkModel';
 
 type Dict<T> = {
@@ -327,7 +327,7 @@ function makeComparator(recordClasses: Dict<RecordClass>, questions: Dict<Questi
 
 function composeComparators(...comparators: NodeComparator[]): NodeComparator {
   return function compareNodes(nodeA: CategoryTreeNode, nodeB: CategoryTreeNode) {
-    return seq(comparators)
+    return Seq.from(comparators)
     .map(comparator => comparator(nodeA, nodeB))
     .find(n => n !== 0) || 0;
   }

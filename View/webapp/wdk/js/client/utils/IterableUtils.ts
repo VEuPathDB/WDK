@@ -18,7 +18,7 @@ interface Collector<T, U> {
 /**
  * Useful operators for Iterables.
  *
- * The module exports the function `seq` which creates a wrapper that exposes
+ * The module exports the class `Seq` which creates a wrapper that exposes
  * a fluent interface for traversing and manipulating the underlying iterable
  * object using operators.
  *
@@ -28,7 +28,7 @@ interface Collector<T, U> {
  * and will only execute when a value is requested (toArray, reduce, etc).
  * The iteration will terminate as early as possible.
  *
- * For example, the following `seq` code will only iterate 3 times:
+ * For example, the following `Seq` code will only iterate 3 times:
  *
  *    let array = [];
  *    for (let i = 1; i <= 1000; i++) {
@@ -36,7 +36,7 @@ interface Collector<T, U> {
  *    }
  *
  *    // 3 iterations
- *    seq(array)
+ *    Seq.from(array)
  *      .map(n => n * n)
  *      .filter(n => n % 2 === 1)
  *      .takeUntil(n => n > 30)
@@ -44,46 +44,27 @@ interface Collector<T, U> {
  *
  */
 
-// XXX The for..of loop construct is not being used because babel adds a
-// try-catch to the loop body, which deoptimizes the code path. See
-// https://github.com/google/traceur-compiler/issues/1773.
-
 /**
  * Wraps `iterable` in an object with collection operations.
- *
- * @param {Iterable<T>} iterable
- * @return {Seq<T>}
  */
-export function seq<T>(iterable: Iterable<T>) {
-  return new Seq(iterable);
-}
+export class Seq<T> {
 
-/**
- * Underlying class used by `seq`.
- */
-class Seq<T> {
-
-  /**
-   * @param {Iterable<T>} iterable
-   */
-  constructor(private iterable: Iterable<T>) { }
+  static of<T>(value: T) {
+    return new Seq([value]);
+  }
 
   static from<T>(iterable: Iterable<T>) {
     return new Seq(iterable);
   }
 
+  private constructor(private iterable: Iterable<T>) { }
+
   [Symbol.iterator]() {
     return this.iterable[Symbol.iterator]();
   }
 
-  concat(thatIterable: Iterable<T>) {
-    let thisIterable = this.iterable;
-    return new Seq({
-      *[Symbol.iterator]() {
-        yield* thisIterable;
-        yield* thatIterable;
-      }
-    });
+  concat(...iterables: Iterable<T>[]) {
+    return new Seq(concat(this.iterable, ...iterables));
   }
 
   map<U>(fn: Mapper<T, U>) {
@@ -170,112 +151,91 @@ class Seq<T> {
 
 }
 
-export function map<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        yield fn(value);
-      }
+
+// XXX The for..of loop construct is not being used because babel adds a
+// try-catch to the loop body, which deoptimizes the code path. See
+// https://github.com/google/traceur-compiler/issues/1773.
+
+export function* concat<T>(...iterables: Iterable<T>[]) {
+  for (let i = 0; i < iterables.length; i++) {
+    yield* iterables[i];
+  }
+}
+
+export function* map<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    yield fn(value);
+  }
+}
+
+export function* flatMap<T, U>(fn: FlatMapper<T, U>, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    yield* fn(value);
+  }
+}
+
+export function* uniq<T>(iterable: Iterable<T>) {
+  let values = new Set();
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (values.has(value) === false) {
+      values.add(value);
+      yield value;
     }
   }
 }
 
-export function flatMap<T, U>(fn: FlatMapper<T, U>, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        yield* fn(value);
-      }
-    }
+export function* filter<T>(fn: Predicate<T>, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (fn(value)) yield value;
   }
 }
 
-export function uniq<T>(iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      let values = new Set();
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        if (values.has(value) === false) {
-          values.add(value);
-          yield value;
-        }
-      }
-    }
-  }
-}
-
-export function filter<T>(fn: Predicate<T>, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        if (fn(value)) yield value;
-      }
-    }
-  }
-}
-
-export function take<T>(n: number, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      let count = 0;
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (!done && count++ < n) yield value;
-        else break;
-      }
-    }
+export function* take<T>(n: number, iterable: Iterable<T>) {
+  let count = 0;
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (!done && count++ < n) yield value;
+    else break;
   }
 }
 
 /**
  * Keep items until test returns false.
  */
-export function takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done || fn(value) === false) break;
-        yield value;
-      }
-    }
+export function* takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done || fn(value) === false) break;
+    yield value;
   }
 }
 
-export function drop<T>(n: number, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        if (n-- > 0) continue;
-        yield value;
-      }
-    }
+export function* drop<T>(n: number, iterable: Iterable<T>) {
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (n-- > 0) continue;
+    yield value;
   }
 }
 /**
  * Ignore items until test returns false.
  */
-export function dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
-  return {
-    *[Symbol.iterator]() {
-      let take = false;
-      for (let iter = iterable[Symbol.iterator]();;) {
-        let { done, value } = iter.next();
-        if (done) break;
-        if (take === false) take = !fn(value);
-        if (take === true) yield value;
-      }
-    }
+export function* dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
+  let take = false;
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    if (take === false) take = !fn(value);
+    if (take === true) yield value;
   }
 }
 
@@ -354,8 +314,8 @@ export function reduce<T, U>(fn: any, value: any, iterable?: any) {
     // No seed value, so we get the first value from iterable as the initial
     // value and get the rest of the iterable for the rest of the reduce
     // operation.
-    iterable = rest(<Iterable<T>>value);
-    result = first(<Iterable<T>>value);
+    iterable = (<Iterable<T>>value)[Symbol.iterator]();
+    result = iterable.next().value;
   }
   else {
     result = <U>value;
