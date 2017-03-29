@@ -1723,7 +1723,14 @@ span.basket-warning {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      =in menubar: favorite tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#menu #favorite-menu { float: right; }
+#menu #favorite-menu { 
+    background-image: url("../images/favorite_color.gif");
+    background-position: -1px 4px;
+    background-repeat: no-repeat;
+    background-size: 20% auto;
+    float: right;
+    padding-left: 11px;
+}
 
 table.mytableStyle {
 	empty-cells:show;

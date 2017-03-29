@@ -24,9 +24,7 @@
 <li>
   <a id="mysearch" onclick="wdk.stratTabCookie.setCurrentTabCookie('application','strategy_results');" 
      href="<c:url value="/showApplication.do"/>" title="Access your Search Strategies Workspace"
-    ><span>My Strategies<%--
-     <span title="You have ${count} strategies" class="subscriptCount">(${count})</span>
-  --%></span>
+    ><span>My Strategies</span>
   </a>
 </li>
 
@@ -60,17 +58,11 @@
   <c:when test="${wdkUser eq null or wdkUser.guest}">
       <a id="mybasket" onclick="wdk.user.login('use favorites', wdk.webappUrl('showFavorite.do'));"
          href="javascript:void(0)"
-         title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 
-        ><span><imp:image style="vertical-align:middle" height="20" 
-              src="wdk/images/favorite_color.gif"/>&nbsp;My Favorites</span>
-      </a>
+         title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." >My Favorites</a>
   </c:when>
   <c:otherwise>
       <a href="<c:url value="/showFavorite.do"/>"
-         title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time."
-        ><span><imp:image style="vertical-align:middle" height="20" 
-              src="wdk/images/favorite_color.gif"/>&nbsp;My Favorites</span>
-      </a>
+         title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time.">My Favorites</a>
   </c:otherwise>
-</c:choose>
+</c:choose> 
 </li>
