@@ -34,13 +34,11 @@ interface CategoryNodeProperties {
 }
 
 export interface CategoryNode extends OntologyNode {
-  type: 'category';
   children: CategoryTreeNode[];
   properties: CategoryNodeProperties & { [key: string]: string[]; };
 }
 
 export interface IndividualNode extends OntologyNode {
-  type: 'individual';
   children: CategoryTreeNode[]; // note, this is always empty for an individual
   properties: CategoryNodeProperties & { [key: string]: string[]; };
   wdkReference: {
@@ -113,7 +111,6 @@ export function getChildren(node: CategoryTreeNode) {
  */
 export function createNode(id: string, displayName: string, description: string, children: CategoryTreeNode[] = []): CategoryTreeNode {
   return children.length > 0 ? {
-    type: 'category',
     properties: {
       label: [id],
       hasDefinition: [description],
@@ -121,7 +118,6 @@ export function createNode(id: string, displayName: string, description: string,
     },
     children
   } : {
-    type: 'individual',
     properties : {
       targetType : ['attribute'],
       name : [id]
@@ -187,7 +183,10 @@ export function isQualifying(spec: { targetType?: string; recordClassName?: stri
 }
 
 export function isIndividual(node: CategoryTreeNode): node is IndividualNode {
-  return node.type === 'individual';
+  const targetType = getTargetType(node);
+  return targetType === 'question'
+      || targetType === 'table'
+      || targetType === 'attribute';
 }
 
 /**
@@ -256,12 +255,12 @@ export function pruneUnknownPaths(
   ontology: CategoryOntology
 ) {
   return Object.assign({}, ontology, {
-    tree: getTree(ontology, isIndividualKnown(recordClasses, questions))
+    tree: getTree(ontology, isIndividualKnownWith(recordClasses, questions))
   });
 }
 
-export function isIndividualKnown(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
-  return function(node: OntologyNode) {
+export function isIndividualKnownWith(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
+  return function isIndividualKnown(node: OntologyNode) {
     return getModelEntity(recordClasses, questions, node) !== undefined;
   }
 }
@@ -278,15 +277,9 @@ export function resolveWdkReferences(
   ontology: CategoryOntology
 ) {
   for (let node of preorderSeq(ontology.tree)) {
-    if (getTargetType(node) !== undefined) {
+    if (isIndividual(node)) {
       Object.assign(node, {
-        type: 'individual',
         wdkReference: getModelEntity(recordClasses, questions, node)
-      });
-    }
-    else {
-      Object.assign(node, {
-        type: 'category'
       });
     }
   }
