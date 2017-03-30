@@ -238,7 +238,7 @@ var FieldFilter = React.createClass({
                     </div>
                     <div>
                       <div className="bar"><div className="fill filtered"></div></div>
-                      <div className="label">{this.props.displayName} remaing when <em>other</em> criteria have been applied.</div>
+                      <div className="label">{this.props.displayName} remaining when <em>other</em> criteria have been applied.</div>
                     </div>
                   </div>
                 </div>
