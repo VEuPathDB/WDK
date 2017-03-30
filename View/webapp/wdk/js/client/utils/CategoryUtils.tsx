@@ -184,7 +184,7 @@ export function isQualifying(spec: { targetType?: string; recordClassName?: stri
 
 export function isIndividual(node: CategoryTreeNode): node is IndividualNode {
   const targetType = getTargetType(node);
-  return targetType === 'question'
+  return targetType === 'search'
       || targetType === 'table'
       || targetType === 'attribute';
 }
@@ -346,8 +346,8 @@ function makeCompareBySortName(recordClasses: Dict<RecordClass>, questions: Dict
     // attempt to sort by displayName
     let entityA = getModelEntity(recordClasses, questions, nodeA);
     let entityB = getModelEntity(recordClasses, questions, nodeB);
-    let nameA = getDisplayName(nodeA) || get(entityA, 'displayName', '');
-    let nameB = getDisplayName(nodeB) || get(entityB, 'displayName', '');
+    let nameA = get(entityA, 'displayName') || getPropertyValue('EuPathDB alternative term', nodeA) || '';
+    let nameB = get(entityB, 'displayName') || getPropertyValue('EuPathDB alternative term', nodeA) || '';
     return nameA < nameB ? -1 : 1;
   }
 }
