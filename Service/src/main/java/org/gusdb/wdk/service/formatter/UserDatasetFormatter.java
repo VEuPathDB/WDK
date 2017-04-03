@@ -18,8 +18,8 @@ public class UserDatasetFormatter {
   public static JSONArray getUserDatasetsJson(List<UserDatasetInfo> userDatasets,
       List<UserDatasetInfo> sharedDatasets, boolean expandDatasets) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
-    putDatasetsIntoJsonArray(datasetsJson, userDatasets, expandDatasets, false);
-    putDatasetsIntoJsonArray(datasetsJson, sharedDatasets, expandDatasets, true);
+    putDatasetsIntoJsonArray(datasetsJson, userDatasets, expandDatasets, true);
+    putDatasetsIntoJsonArray(datasetsJson, sharedDatasets, expandDatasets, false);
     return datasetsJson;
   }
 
