@@ -1,5 +1,6 @@
 import React, { Component, StatelessComponent, MouseEventHandler } from 'react';
 
+import Icon from './Icon';
 import CheckboxTreeNode from './CheckboxTreeNode';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
@@ -11,8 +12,13 @@ const NODE_STATE_PROPERTY = '__expandableTreeState';
 const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
 
 type StatefulNode<T> = T & {
-  __expandableTreeState: any;
-  __expandableTreeChildren: T[];
+  __expandableTreeState: {
+    isSelected: boolean,
+    isVisible: boolean,
+    isIndeterminate?: boolean,
+    isExpanded?: boolean
+  };
+  __expandableTreeChildren: StatefulNode<T>[];
 };
 
 let Bar = () => <span> | </span>;
@@ -93,6 +99,9 @@ type Props<T> = {
 
   /** Takes (node, searchTerms) and returns boolean. searchTerms is a list of query terms, parsed from the original input string. This function returns a boolean indicating if a node matches search criteria and should be shown */
   searchPredicate: (node: T, terms: string[]) => boolean;
+
+  noResultsComponent?: React.ComponentClass<{ tree: T, searchTerm: string }>
+                     | React.StatelessComponent<{ tree: T, searchTerm: string }>;
 };
 
 type TreeLinkHandler = MouseEventHandler<HTMLAnchorElement>;
@@ -565,6 +574,10 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
     let topLevelNodes = (showRoot ? [ this.state.generated.statefulTree ] :
       getStatefulChildren(this.state.generated.statefulTree));
 
+    let isTreeVisible = getNodeState(this.state.generated.statefulTree).isVisible;
+    let NoResults = this.props.noResultsComponent || DefaultNoResultsComponent;
+    let noResultsMessage = isTreeVisible ? null : <NoResults tree={this.props.tree} searchTerm={searchTerm} />;
+
     let treeLinks = (
       <TreeLinks
         selectAll={this.selectAll}
@@ -579,6 +592,7 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
         showExpansionLinks={!isActiveSearch(this.props)}
       />
     );
+
     let myNodeComponent = (nodeComponent != null ? nodeComponent :
       ((props: { node: T }) => <span>{getNodeId(props.node)}</span>));
     let listClassName = 'wdk-CheckboxTreeList' + (isSelectable ? ' wdk-CheckboxTreeList__selectable' : '');
@@ -594,6 +608,7 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
             placeholderText={searchBoxPlaceholder}
             helpText={searchBoxHelp} />
         )}
+        {noResultsMessage}
         <ul className={listClassName}>
           {topLevelNodes.map((node, index) =>
             <CheckboxTreeNodeT
@@ -617,4 +632,12 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
       </div>
     );
   }
+}
+
+function DefaultNoResultsComponent(props: any) {
+  return (
+    <p>
+      <Icon type="warning"/> The search term you entered did not yield any results.
+    </p>
+  );
 }

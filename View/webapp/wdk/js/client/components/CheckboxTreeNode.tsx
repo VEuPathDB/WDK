@@ -36,9 +36,9 @@ class TreeRadio<T> extends Component<TreeRadioProps<T>, void> {
 
 type NodeState = {
   isSelected: boolean;
-  isIndeterminate: boolean;
   isVisible: boolean;
-  isExpanded: boolean;
+  isIndeterminate?: boolean;
+  isExpanded?: boolean;
 }
 
 type Props<T> = {
@@ -125,7 +125,7 @@ class CheckboxTreeNode<T> extends Component<Props<T>, void> {
                   className="wdk-CheckboxTreeCheckbox"
                   name={inputName}
                   checked={isSelected}
-                  indeterminate={isIndeterminate}
+                  indeterminate={!!isIndeterminate}
                   node={node}
                   value={getNodeId(node)}
                   toggleCheckbox={toggleSelection} /> :
