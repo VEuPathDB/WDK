@@ -1,3 +1,4 @@
+import { get, omit } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import ChangePasswordForm from '../components/ChangePasswordForm';
@@ -7,6 +8,12 @@ class UserPasswordChangeController extends WdkViewController {
 
   getStoreName() {
     return "UserPasswordChangeStore";
+  }
+
+  getStateFromStore(store) {
+    return Object.assign(omit(store.getState(), 'globalData'), {
+      user: get(store.getState(), 'globalData.user')
+    });
   }
 
   getActionCreators() {
