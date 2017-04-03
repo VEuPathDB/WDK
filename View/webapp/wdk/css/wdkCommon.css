@@ -1729,7 +1729,7 @@ span.basket-warning {
     background-repeat: no-repeat;
     background-size: 20% auto;
     float: right;
-    padding-left: 11px;
+    padding: 3px 0 0 16px;
 }
 
 table.mytableStyle {
