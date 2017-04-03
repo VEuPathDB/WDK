@@ -5,7 +5,6 @@ import {User} from "../utils/WdkUser";
 type Action = PasswordFormUpdateAction | PasswordFormSubmissionStatusAction;
 
 export type State = BaseState & {
-  user: User;
   formStatus: 'new' | 'modified' | 'pending' | 'success' | 'error';
   errorMessage?: string;
   passwordForm: {
@@ -20,7 +19,6 @@ export default class UserPasswordChangeStore extends WdkStore<State> {
   getInitialState(): State {
     return {
       ...super.getInitialState(),
-      user: undefined, // loaded by parent class
       passwordForm: getEmptyForm(),
       formStatus: 'new', // Values: [ 'new', 'modified', 'pending', 'success', 'error' ]
       errorMessage: undefined
