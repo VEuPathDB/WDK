@@ -18,7 +18,7 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
  *
  */
 public class IrodsUserDatasetFile extends UserDatasetFile {
-  
+
   public IrodsUserDatasetFile(Path filePath, Integer userDatasetId) {
 	super(filePath, userDatasetId);
   }
@@ -27,12 +27,13 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileContents()
    */
   @Override
-  public InputStream getFileContents() throws WdkModelException {
-	IRODSAccessObjectFactory accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
-	IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
+  public InputStream getFileContents() throws WdkModelException {  
+	IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsFile = null;
 	try {
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(accessObjectFactory, getFilePath().toString()); 
+	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
+	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory, getFilePath().toString());
 	  return fileFactory.instanceIRODSFileInputStream(irodsFile);
 	}
 	catch (JargonException je) {
@@ -49,10 +50,12 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   public Long getFileSize() throws WdkModelException {
-    IRODSAccessObjectFactory accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+    IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsFile = null;
 	try {
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(accessObjectFactory,getFilePath().toString()); 
+	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
+	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory, getFilePath().toString());
 	  return irodsFile.length();
 	}
 	finally {
@@ -66,10 +69,12 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   public String getFileName() throws WdkModelException {
-	IRODSAccessObjectFactory accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+	IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsFile = null;
 	try {
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(accessObjectFactory,getFilePath().toString());
+	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
+	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory,getFilePath().toString());
       return irodsFile.getName();
 	}
 	finally {
@@ -84,10 +89,12 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    */
   @Override
   protected void createLocalCopy(Path tmpFile) throws WdkModelException {
-    IRODSAccessObjectFactory accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+    IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsFile = null;
 	try {
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(accessObjectFactory,getFilePath().toString());
+	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
+	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
+	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory,getFilePath().toString());
 	  IrodsUserDatasetStoreAdaptor.getDataTransferOperations(accessObjectFactory).getOperation(irodsFile, tmpFile.toFile(), null, null);
 	}
 	catch(JargonException je) {
