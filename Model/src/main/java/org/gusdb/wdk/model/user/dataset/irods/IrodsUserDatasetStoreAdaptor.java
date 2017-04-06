@@ -107,7 +107,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @throws WdkModelException
    */
   public static IRODSFileFactory getIrodsFileFactory(IRODSAccessObjectFactory accessObjectFactory) throws WdkModelException {
-	try {
+	  try {
 	  if(accessObjectFactory != null) {
 		return accessObjectFactory.getIRODSFileFactory(account);
 	  }
@@ -142,14 +142,18 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   
   /**
    * Convenience method to retrieve the IRODS object given the path name
-   * @param accessObjectFactory
+   * @param fileFactory - IRODS file factory
    * @return - the IRODS file
    * @throws WdkModelException
    */
-  public static IRODSFile getIrodsFile(IRODSAccessObjectFactory accessObjectFactory, String pathName) throws WdkModelException {
+  public static IRODSFile getIrodsFile(IRODSFileFactory fileFactory, String pathName) throws WdkModelException {
 	try {  
-	  IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
-	  return fileFactory.instanceIRODSFile(pathName);
+	  if(fileFactory != null) {
+	    return fileFactory.instanceIRODSFile(pathName);
+	  }
+	  else {
+	    throw new WdkModelException("The IRODS file factory cannot be null"); 
+	  }
 	}
 	catch(JargonException je) {
 	  throw new WdkModelException(je);
@@ -197,7 +201,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     IRODSFile sourceFile = null;
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      sourceFile = getIrodsFile(accessObjectFactory, fromPathName);
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      sourceFile = getIrodsFile(fileFactory, fromPathName);
       DataTransferOperations dataXferOps = getDataTransferOperations(accessObjectFactory);
       // Resorted to this workaround because Jargon cannot move one file into an already occupied
       // location and no 'force' flag is implemented (apparently) in Jargon yet.
@@ -227,7 +232,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     List<Path> paths = new ArrayList<>(); 
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsObject = getIrodsFile(accessObjectFactory,pathName);
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsObject = getIrodsFile(fileFactory,pathName);
       if(!irodsObject.isDirectory()) {
         throw new WdkModelException("The path " + pathName + " does not refer to a directory.");
       }
@@ -256,7 +262,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
       IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
-      irodsFile = getIrodsFile(accessObjectFactory,pathName);
+      irodsFile = getIrodsFile(fileFactory, pathName);
       try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, fileFactory))) { 
         String s = "";
         output = new StringBuilder();
@@ -285,8 +291,9 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     IRODSAccessObjectFactory accessObjectFactory = null;
     IRODSFile irodsObject = null;
     try {
-      accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsObject = getIrodsFile(accessObjectFactory,pathName);
+      accessObjectFactory = getIrodsAccessObjectFactory();     
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsObject = getIrodsFile(fileFactory, pathName);
       return irodsObject.isDirectory();
     }
     finally {
@@ -310,8 +317,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
       IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
-      irodsTempFile = fileFactory.instanceIRODSFile(tempPathName);
-      irodsFile = fileFactory.instanceIRODSFile(pathName);
+      irodsTempFile = getIrodsFile(fileFactory, tempPathName);
+      irodsFile = getIrodsFile(fileFactory, pathName);
       // Looks like writer does not truncate any existing file content.  So we can just
       // delete and let the writer re-create it.
       if(irodsTempFile.exists()) {
@@ -335,7 +342,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       finally {
         closeFile(irodsTempFile);
       }
-      DataTransferOperations dataXferOps = accessObjectFactory.getDataTransferOperations(account);
+      DataTransferOperations dataXferOps = getDataTransferOperations(accessObjectFactory);
       dataXferOps.move(tempPathName, pathName);
     }
     catch(JargonException je) {
@@ -352,13 +359,14 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#createDirectory(Path)
    */
   @Override
-  public void createDirectory(Path dir) throws WdkModelException {
+  public void createDirectory(Path dir) throws WdkModelException { 
 	String pathName = dir.toString();
 	IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsObject = null;
 	try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsObject = getIrodsFile(accessObjectFactory,pathName);
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsObject = getIrodsFile(fileFactory, pathName); 
       if(irodsObject.exists()) {
         throw new WdkModelException("The directory " + pathName + " already exists.");
       }
@@ -376,13 +384,14 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#deleteFileOrDirectory(Path)
    */
   @Override
-  public void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException {
+  public void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException { 
 	String pathName = fileOrDir.toString();
 	IRODSAccessObjectFactory accessObjectFactory = null;
 	IRODSFile irodsObject = null;
 	try {
 	  accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsObject = getIrodsFile(accessObjectFactory,pathName);
+	  IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsObject = getIrodsFile(fileFactory, pathName);
       if(!irodsObject.exists()) {
         throw new WdkModelException("The object " + pathName + " does not exist.");
       }
@@ -407,7 +416,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     IRODSAccessObjectFactory accessObjectFactory = null;
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsFile = getIrodsFile(accessObjectFactory,pathName);
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsFile = getIrodsFile(fileFactory, pathName);
       return irodsFile.lastModified();
     }
     finally {
@@ -428,15 +438,15 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
       IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
-      irodsFile = fileFactory.instanceIRODSFile(pathName);
+      irodsFile = getIrodsFile(fileFactory, pathName); 
       try(
        IRODSFileReader reader = new IRODSFileReader(irodsFile, fileFactory);
        BufferedReader buffer = new BufferedReader(reader);) { 
         return buffer.readLine();
       }
     }
-    catch(IOException | JargonException ex) {
-      throw new WdkModelException(ex);
+    catch(IOException ioe) {
+      throw new WdkModelException(ioe);
     }
     finally {
       closeFile(irodsFile);
@@ -457,7 +467,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     IRODSFile irodsFile = null;
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsFile = getIrodsFile(accessObjectFactory,pathName);  
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsFile = getIrodsFile(fileFactory, pathName);
       return irodsFile.exists();
     }
     finally {
@@ -477,7 +488,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     IRODSFile irodsFile = null;
     try {
       accessObjectFactory = getIrodsAccessObjectFactory();
-      irodsFile = getIrodsFile(accessObjectFactory,pathName);
+      IRODSFileFactory fileFactory = getIrodsFileFactory(accessObjectFactory);
+      irodsFile = getIrodsFile(fileFactory, pathName);
       if(!irodsFile.exists()) {
         irodsFile.createNewFile();
       }  
