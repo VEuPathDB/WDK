@@ -144,7 +144,7 @@ public class UserFactory {
     if (email == null)
       throw new WdkUserException("The user's email cannot be empty.");
     // format the info
-    email = email.trim();
+    email = email.trim().toLowerCase();
     if (email.length() == 0)
       throw new WdkUserException("The user's email cannot be empty.");
     int atSignIndex = email.indexOf("@");
@@ -161,7 +161,7 @@ public class UserFactory {
       // get a new userId
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       String signature = encrypt(userId + "_" + email);
-      String stableName = email.substring(0, atSignIndex).toLowerCase() + "." + userId;
+      String stableName = email.substring(0, atSignIndex) + "." + userId;
       Date registerTime = new Date();
 
       String sql = "INSERT INTO " + userSchema + TABLE_USER + " ("
@@ -377,14 +377,14 @@ public class UserFactory {
      * String[] fields = new String[]{ "email", email.trim().toLowerCase(),
      * "passwd", encrypt(password) };
      */
-    String[] fields = new String[] { "email", email.trim(), "passwd",
+    String[] fields = new String[] { "email", email.trim().toLowerCase(), "passwd",
         encrypt(password) };
     return getUserByFields(fields, "wdk-user-login");
 
   }
 
   public User getUserByEmail(String email) throws WdkModelException {
-    return getUserByFields(new String[] { "email", email.trim() },
+    return getUserByFields(new String[] { "email", email.trim().toLowerCase() },
         "wdk-user-get-id-by-email");
   }
 
@@ -542,36 +542,6 @@ public class UserFactory {
     }
   }
 
-  public User[] queryUsers(String emailPattern) throws WdkUserException,
-      WdkModelException {
-    String sql = "SELECT user_id, email FROM " + userSchema + "users";
-
-    if (emailPattern != null && emailPattern.length() > 0) {
-      emailPattern = emailPattern.replace('*', '%');
-      emailPattern = emailPattern.replaceAll("'", "");
-      sql += " WHERE email LIKE '" + emailPattern + "'";
-    }
-    sql += " ORDER BY email";
-    List<User> users = new ArrayList<User>();
-    ResultSet rs = null;
-    try {
-      rs = SqlUtils.executeQuery(dataSource, sql,
-          "wdk-user-query-users-by-email");
-      while (rs.next()) {
-        int userId = rs.getInt("user_id");
-        User user = getUser(userId);
-        users.add(user);
-      }
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs, null);
-    }
-    User[] array = new User[users.size()];
-    users.toArray(array);
-    return array;
-  }
-
   private Set<String> getUserRoles(User user) throws WdkUserException, WdkModelException {
     Set<String> roles = new LinkedHashSet<String>();
     PreparedStatement psRole = null;
@@ -673,7 +643,7 @@ public class UserFactory {
         + "last_active = ?, last_name = ?, first_name = ?, "
         + "middle_name = ?, organization = ?, department = ?, "
         + "title = ?,  address = ?, city = ?, state = ?, "
-        + "zip_code = ?, phone_number = ?, country = ?, " + "email = ? "
+        + "zip_code = ?, phone_number = ?, country = ?, email = ? "
         + "WHERE user_id = ?";
     try {
       Date lastActiveTime = new Date();
@@ -695,7 +665,7 @@ public class UserFactory {
       psUser.setString(12, user.getZipCode());
       psUser.setString(13, user.getPhoneNumber());
       psUser.setString(14, user.getCountry());
-      psUser.setString(15, user.getEmail());
+      psUser.setString(15, user.getEmail().trim().toLowerCase());
       psUser.setInt(16, user.getUserId());
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sqlUser, "wdk-user-update-user", start);
@@ -932,7 +902,7 @@ public class UserFactory {
   }
 
   private void resetPassword(User user) throws WdkModelException {
-    String email = user.getEmail();
+    String email = user.getEmail().trim().toLowerCase();
 
     // generate a random password of 8 characters long, the range will be
     // [0-9A-Za-z]
@@ -973,7 +943,7 @@ public class UserFactory {
 
   void changePassword(String email, String oldPassword, String newPassword,
       String confirmPassword) throws WdkUserException, WdkModelException {
-    email = email.trim();
+    email = email.trim().toLowerCase();
 
     if (newPassword == null || newPassword.trim().length() == 0)
       throw new WdkUserException("The new password cannot be empty.");
@@ -1018,7 +988,7 @@ public class UserFactory {
 
   public void savePassword(String email, String password)
       throws WdkModelException {
-    email = email.trim();
+    email = email.trim().toLowerCase();
     PreparedStatement ps = null;
     String sql = "UPDATE " + userSchema
         + "users SET passwd = ? WHERE email = ?";
@@ -1043,7 +1013,7 @@ public class UserFactory {
   }
 
   private boolean isExist(String email) throws WdkUserException {
-    email = email.trim();
+    email = email.trim().toLowerCase();
     // check if user exists in the database. if not, fail and ask to create the user first
     PreparedStatement ps = null;
     ResultSet rs = null;
