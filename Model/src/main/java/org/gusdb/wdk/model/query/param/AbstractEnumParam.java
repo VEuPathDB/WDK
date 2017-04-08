@@ -21,7 +21,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,7 +61,7 @@ import org.json.JSONObject;
  *         value is called with null, yet this param requires a value, the default value of the depended param
  *         is used.
  */
-public abstract class AbstractEnumParam extends Param {
+public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
@@ -111,6 +110,8 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
+  static final String PARAM_SERVED_QUERY = "ServedQuery";
+
   public static final String DISPLAY_SELECT = "select";
   public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
   public static final String DISPLAY_CHECKBOX = "checkBox";
@@ -121,9 +122,7 @@ public abstract class AbstractEnumParam extends Param {
   protected Boolean multiPick = false;
   protected boolean quote = true;
 
-  private String dependedParamRef;
-  private Set<String> dependedParamRefs;
-  private Set<Param> dependedParams;
+
   private String displayType = null;
   private int minSelectedCount = -1;
   private int maxSelectedCount = -1;
@@ -149,7 +148,6 @@ public abstract class AbstractEnumParam extends Param {
 
   public AbstractEnumParam() {
     super();
-    dependedParamRefs = new LinkedHashSet<>();
 
     // register handlers
     setHandler(new EnumParamHandler());
@@ -159,8 +157,6 @@ public abstract class AbstractEnumParam extends Param {
     super(param);
     this.multiPick = param.multiPick;
     this.quote = param.quote;
-    this.dependedParamRef = param.dependedParamRef;
-    this.dependedParamRefs = new LinkedHashSet<>(param.dependedParamRefs);
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
@@ -346,68 +342,7 @@ public abstract class AbstractEnumParam extends Param {
     return this.depthExpanded;
   }
 
-  public boolean isDependentParam() {
-    return (dependedParamRefs.size() > 0);
-  }
-
-  /**
-   * TODO - describe why we get depended param dynamically every time.
-   * 
-   * @return
-   * @throws WdkModelException
-   */
-  public Set<Param> getDependedParams() throws WdkModelException {
-    if (!isDependentParam())
-      return null;
-
-    if (!isResolved())
-      throw new WdkModelException(
-          "This method can't be called before the references for the object are resolved.");
-
-    if (dependedParams == null) {
-      dependedParams = new LinkedHashSet<>();
-      Map<String, Param> params = null;
-      if (contextQuestion != null) {
-        params = contextQuestion.getParamMap();
-      }
-      else if (contextQuery != null)
-        params = contextQuery.getParamMap();
-      for (String paramRef : dependedParamRefs) {
-        String paramName = paramRef.split("\\.", 2)[1].trim();
-        Param param = (params != null) ? params.get(paramName) : (Param) _wdkModel.resolveReference(paramRef);
-        if (param != null) {
-          dependedParams.add(param);
-          param.addDependentParam(this);
-        }
-        else {
-          String message = "Missing depended param: " + paramRef + " for enum param " + getFullName();
-          if (contextQuestion != null)
-            message += ", in context question " + contextQuestion.getFullName();
-          if (contextQuery != null)
-            message += ", in context query " + contextQuery.getFullName() +
-                ". Please check the context query, and make sure " + paramRef +
-                " is a valid param, and is declared in the context query.";
-          throw new WdkModelException(message);
-        }
-      }
-    }
-    if (logger.isTraceEnabled()) {
-      for (Param param : dependedParams) {
-        String vocab = "";
-        if ((param instanceof FlatVocabParam)) {
-          Query query = ((FlatVocabParam) param).getQuery();
-          vocab = (query != null) ? query.getFullName() : "N/A";
-        }
-        logger.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
-      }
-    }
-    return dependedParams;
-  }
-
-  public void setDependedParamRef(String dependedParamRef) {
-    this.dependedParamRef = dependedParamRef;
-  }
-
+ 
   /**
    * Returns the default value. In the case that this is a dependent param, uses the default value of the
    * depended param as the depended value (recursively).
@@ -776,33 +711,6 @@ public abstract class AbstractEnumParam extends Param {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-    // resolve depended param refs
-    dependedParamRefs.clear();
-    if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
-      for (String paramRef : dependedParamRef.split(",")) {
-        // make sure the param exists
-        wdkModel.resolveReference(paramRef);
-
-        // make sure the paramRef is unique
-        if (dependedParamRefs.contains(paramRef))
-          throw new WdkModelException("Duplicate depended param [" + paramRef +
-              "] defined in dependent param " + getFullName());
-        dependedParamRefs.add(paramRef);
-      }
-    }
-
-    _resolved = true;
-
-    // make sure the depended params exist in the context query.
-    if (isDependentParam() && contextQuery != null) {
-      Map<String, Param> params = contextQuery.getParamMap();
-      Set<Param> dependedParams = getDependedParams();
-      for (Param param : dependedParams) {
-        if (!params.containsKey(param.getName()))
-          throw new WdkModelException("Param " + getFullName() + " depends on param " + param.getFullName() +
-              ", but the depended param doesn't exist in the same query " + contextQuery.getFullName());
-      }
-    }
 
     // throw error if user selects treeBox displayType but multiSelect=false
     //   note: no technical reason not to allow this, but we think UX for this is bad

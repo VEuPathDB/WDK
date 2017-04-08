@@ -31,44 +31,78 @@ import org.json.JSONObject;
 /**
  * @author jerric
  * 
- *         The filter param is similar to FlatVocabParam in many aspects, but the most important difference
- *         between these two are that the stable value of filter param is a JSON string with values for the
- *         metadata and terms for the param itself, but the stable value of a flatVocabParam is just a string
- *         representation of comma separated list of terms.
+ *         The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an
+ *         IN clause.  The SQL returns a list of internal values, similar to flatVocabParam. 
+ *         
+ *         It is configured by two queries: ontologyQuery and metadataQuery.  The former returns a tree of categories
+ *         and information describing them.  The latter maps internal values to entries in the ontology (such as age)
+ *         and provides a value for the ontology entry (such as 18).
+ *               
+ *         The input from the user is in the form of a set of filters.  each filter specifies an ontology entry
+ *         and one or more values for it.  The param returns all internal values from the metadata query that match all
+ *         supplied filters.  (Ie, the filtering is done on the backend).
+ *         
+ *         (the filter param handler provides summary information to the client about the distribution of
+ *         values for a requested ontology entry)
+ *         
+ *         the param is also configured by a flag in the model xml indicating if the client is allowed to do
+ *         filtering as the user interacts, instead of asking the backend for summaries each time.  
+ *         doing so requires the client to download the results of the metadata query for a particular
+ *         ontology entry.  this should only be allowed if the metadata query cardinality is small.  
+ *         when the question is submitted, the client still sends as a raw value the set of applied filters
+ *         
+ *         the metadataQuery can be a dependent query.
  * 
- *         raw value: a JSON string of both term list, ignore list and metadata list.
+ *         The values returned are:
+ *         
+ *           raw value: a JSON string of applied filters.
  * 
- *         stable value: same as raw value, a JSON string of both term list, ignore list and metadata list.
+ *           stable value: same as raw value.
  * 
- *         signature: a checksum of the JSON string, but values are sorted
+ *           signature: a checksum of the JSON string, but values are sorted
  * 
- *         internal: the internal value of the param, same as the flatVocabParam aspect of the param.
+ *           internal: SQL to return a set of internal values from the metadata query
  * 
  */
-public class FilterParam extends FlatVocabParam {
+public class FilterParamNew extends AbstractDependentParam {
 
   public static class MetadataCache extends ItemCache<String, Map<String, Map<String, String>>> { }
 
-  static final String COLUMN_PROPERTY = "property";
-  static final String COLUMN_VALUE = "value";
-
-  static final String COLUMN_SPEC_PROPERTY = "spec_property";
-  static final String COLUMN_SPEC_VALUE = "spec_value";
+  // ontology query columns
+  static final String COLUMN_ONTOLOGY_ID = "ontology_term_name";
+  static final String COLUMN_PARENT_ONTOLOGY_ID = "parent_ontology_term_name";
+  static final String COLUMN_DISPLAY_NAME = "display_name";
+  static final String COLUMN_DESCRIPTION = "description";
+  static final String COLUMN_TYPE = "type";
+  static final String COLUMN_UNITS = "units";
+  static final String COLUMN_PRECISION = "precision";
+  
+  // metadata query columns
+  private static final String COLUMN_INTERNAL = "internal";
+  static final String COLUMN_NUMBER_VALUE = "number_value";
+  static final String COLUMN_DATE_VALUE = "date_value";
+  static final String COLUMN_STRING_VALUE = "string_value";
 
   private static final int FETCH_SIZE = 1000;
 
   private String metadataQueryRef;
   private Query metadataQuery;
 
-  private String metadataSpecQueryRef;
-  private Query metadataSpecQuery;
+  private String ontologyQueryRef;
+  private Query ontologyQuery;
 
   private String defaultColumns;
+  
+ /*
+  * set true in model xml if metadata size is small enuf to send to client.  if so, the client can
+  * adjust histograms, etc, as user interacts, without having to go to the server for each interaction.
+  */
+  private Boolean allowClientFiltering;   
 
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
-  public FilterParam() {
+  public FilterParamNew() {
     // register handlers
     setHandler(new FilterParamHandler());
   }
@@ -76,14 +110,14 @@ public class FilterParam extends FlatVocabParam {
   /**
    * @param param
    */
-  public FilterParam(FilterParam param) {
+  public FilterParamNew(FilterParamNew param) {
     super(param);
     this.metadataQueryRef = param.metadataQueryRef;
     if (param.metadataQuery != null)
       this.metadataQuery = param.metadataQuery.clone();
-    this.metadataSpecQueryRef = param.metadataSpecQueryRef;
-    if (param.metadataSpecQuery != null)
-      this.metadataSpecQuery = param.metadataSpecQuery.clone();
+    this.ontologyQueryRef = param.ontologyQueryRef;
+    if (param.ontologyQuery != null)
+      this.ontologyQuery = param.ontologyQuery.clone();
     if (param.defaultColumns != null)
       this.defaultColumns = param.defaultColumns;
     this.trimMetadataTerms = param.trimMetadataTerms;
@@ -96,11 +130,11 @@ public class FilterParam extends FlatVocabParam {
    */
   @Override
   public Param clone() {
-    return new FilterParam(this);
+    return new FilterParamNew(this);
   }
 
   /**
-   * @return the propertyQueryName
+   * @return the metadata query ref
    */
   public String getMetadataQueryRef() {
     return metadataQueryRef;
@@ -108,55 +142,50 @@ public class FilterParam extends FlatVocabParam {
 
   /**
    * @param metadataQueryRef
-   *          the propertyQueryName to set
+   *          the metadata query ref to set
    */
   public void setMetadataQueryRef(String metadataQueryRef) {
     this.metadataQueryRef = metadataQueryRef;
   }
 
   /**
-   * @return the propertyQuery
+   * @return the metadataQuery
    */
   public Query getMetadataQuery() {
     return metadataQuery;
   }
 
-  /**
-   * @param propertyQuery
-   *          the propertyQuery to set
-   */
   public void setMetadataQuery(Query metadataQuery) {
     this.metadataQuery = metadataQuery;
   }
 
   /**
-   * @return the metadataSpec Query Name
+   * @return the onotology Query Name
    */
-  public String getMetadataSpecQueryRef() {
-    return metadataSpecQueryRef;
+  public String getOntologyQueryRef() {
+    return ontologyQueryRef;
   }
 
   /**
-   * @param metadataSpecQueryRef
-   *          the metadataQueryName to set
+   * @param ontologyQueryRef
+   *          the ontologyName to set
    */
-  public void setMetadataSpecQueryRef(String metadataSpecQueryRef) {
-    this.metadataSpecQueryRef = metadataSpecQueryRef;
+  public void setOntologyQueryRef(String ontologyQueryRef) {
+    this.ontologyQueryRef = ontologyQueryRef;
   }
 
   /**
-   * @return the metadataQuery
+   * @return the ontologyQuery
    */
-  public Query getMetadataSpecQuery() {
-    return metadataSpecQuery;
+  public Query getOntologyQuery() {
+    return ontologyQuery;
   }
 
   /**
-   * @param metadataSpecQuery
-   *          the metadataQuery to set
+   * @param ontologyQuery the ontologyQuery to set
    */
-  public void setMetadataSpecQuery(Query metadataSpecQuery) {
-    this.metadataSpecQuery = metadataSpecQuery;
+  public void setOntologyQuery(Query ontologyQuery) {
+    this.ontologyQuery = ontologyQuery;
   }
 
   /**
@@ -193,31 +222,33 @@ public class FilterParam extends FlatVocabParam {
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
 
-    // resolve property query, the property query should have the same params as vocab query
-    if (metadataQueryRef != null) {
-      this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
+    // resolve ontology query, which should not have any params
+    if (ontologyQueryRef != null) {
+      // no need to clone metadataSpec query, since it's not overridden in any way here.
+      this.ontologyQuery = (Query) model.resolveReference(ontologyQueryRef);
 
-      // the propertyQuery must have exactly 3 columns: term, property, and value.
-      Map<String, Column> columns = metadataQuery.getColumnMap();
-      if (columns.size() != 3 || !columns.containsKey(COLUMN_TERM) || !columns.containsKey(COLUMN_PROPERTY) ||
-          !columns.containsKey(COLUMN_VALUE))
-        throw new WdkModelException("The propertyQuery " + metadataQueryRef + " in flatVocabParam " +
-            getFullName() + " must have exactly three columns: " + COLUMN_TERM + ", " + COLUMN_PROPERTY +
-            ", and " + COLUMN_VALUE + ".");
+      // validate columns
+      Map<String, Column> columns = ontologyQuery.getColumnMap();
+      String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME, COLUMN_DESCRIPTION, COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION};
+      for (String col : cols)
+        if (!columns.containsKey(col))
+        throw new WdkModelException("The ontologyQuery " + ontologyQueryRef + " in filterParam " +
+            getFullName() + " must include column: " + col);
     }
 
-    // resolve metadataSpec query, which should not have any param
-    if (metadataSpecQueryRef != null) {
-      // no need to clone metadataSpec query, since it's not overriden in any way here.
-      this.metadataSpecQuery = (Query) model.resolveReference(metadataSpecQueryRef);
+    // resolve metadata query
+    if (metadataQueryRef != null) {
+      
+      // validate dependent params
+      this.metadataQuery = resolveQuery(model, metadataQueryRef, "metadata query");
 
-      // the metadataSpec query must have exactly 3 columns: property, info, data.
-      Map<String, Column> columns = metadataSpecQuery.getColumnMap();
-      if (columns.size() != 3 || !columns.containsKey(COLUMN_PROPERTY) ||
-          !columns.containsKey(COLUMN_SPEC_PROPERTY) || !columns.containsKey(COLUMN_SPEC_VALUE))
-        throw new WdkModelException("The metadataQuery " + metadataSpecQueryRef + " in flatVocabParam " +
-            getFullName() + " must have exactly three columns: " + COLUMN_PROPERTY + ", " +
-            COLUMN_SPEC_PROPERTY + ", and " + COLUMN_SPEC_VALUE + ".");
+      // validate columns.
+      Map<String, Column> columns = metadataQuery.getColumnMap();
+      String[] cols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
+      for (String col : cols)
+        if (!columns.containsKey(col))
+          throw new WdkModelException("The metadata query " + metadataQueryRef + " in filterParam " +
+              getFullName() + " must include column: " + col);
     }
   }
 
@@ -226,12 +257,12 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextParamValues)
+  public Map<String, Map<String, String>> getOntology(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    if (metadataSpecQuery == null)
+    if (ontologyQuery == null)
       return null;
 
-    OntologyItemFetcher fetcher = new OntologyItemFetcher(metadataSpecQuery, contextParamValues, user);
+    OntologyItemFetcher fetcher = new OntologyItemFetcher(ontologyQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
       map = CacheMgr.get().getOntologyCache().getItem(fetcher.getCacheKey(), fetcher);
@@ -249,6 +280,10 @@ public class FilterParam extends FlatVocabParam {
    */
   public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
+    
+    if (!allowClientFiltering) 
+      throw new WdkModelException("FilterParam " + getFullName() + " does not allow client side filtering.  Illegally attempting to get metadata");
+    
     if (metadataQuery == null)
       return null;
 
@@ -271,13 +306,8 @@ public class FilterParam extends FlatVocabParam {
     throw new WdkModelException(nestedException);
   }
 
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property)
-      throws WdkModelException, WdkUserException {
-    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
-    return getMetaData(user, contextParamValues, property, cache);
-  }
-
   /**
+   * get an in-memory copy of meta data for a specified ontology_id
    * @param user
    * @param contextParamValues
    * @param property
@@ -288,17 +318,18 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property,
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String ontologyId,
       EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
-    if (metadataQuery == null)
-      return null;
     
-    
+    if (!allowClientFiltering) 
+      throw new WdkModelException("FilterParam " + getFullName() + " does not allow client side filtering.  Illegally attempting to get metadata");
 
+    if (metadataQuery == null) return null;
+    
     // compose a wrapped sql
     QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
     String sql = instance.getSql();
-    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
+    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
     // run the composed sql, and get the metadata back
     Map<String, List<String>> metadata = new LinkedHashMap<>();
@@ -308,18 +339,26 @@ public class FilterParam extends FlatVocabParam {
     try {
       ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setFetchSize(FETCH_SIZE);
-      ps.setString(1, property);
+      ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       while (resultSet.next()) {
-        String term = resultSet.getString(COLUMN_TERM);
-        String value = resultSet.getString(COLUMN_VALUE);
-        List<String> values = metadata.get(term);
+        String internal = resultSet.getString(COLUMN_INTERNAL);
+        String dateVal = resultSet.getString(COLUMN_DATE_VALUE);
+        String stringVal = resultSet.getString(COLUMN_STRING_VALUE);
+        String numberVal = resultSet.getString(COLUMN_NUMBER_VALUE);
+        
+        List<String> values = metadata.get(internal);
 
         if (values == null) {
           values = new ArrayList<String>();
-          metadata.put(term, values);
+          metadata.put(internal, values);
         }
 
+        // one of these should be non-null.
+        String value = dateVal;
+        if (stringVal != null) value = stringVal;
+        if (numberVal != null) value = numberVal;
+        
         values.add(value);
       }
     }
@@ -333,12 +372,24 @@ public class FilterParam extends FlatVocabParam {
     return metadata;
   }
 
-  @Override
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
-    JSONObject jsParam = super.getJsonValues(user, contextParamValues, cache);
-    try { // add additional info into the json
-      appendJsonFilterValue(jsParam, user, contextParamValues);
+    
+    JSONObject jsParam = new JSONObject();
+    
+    try { 
+      // create json for the ontology
+      JSONObject jsOntology = new JSONObject();
+      Map<String, Map<String, String>> metadataSpec = getOntology(user, contextParamValues);
+      for (String property : metadataSpec.keySet()) {
+        JSONObject jsSpec = new JSONObject();
+        Map<String, String> spec = metadataSpec.get(property);
+        for (String specProp : spec.keySet()) {
+          jsSpec.put(specProp, spec.get(specProp));
+        }
+        jsOntology.put(property, jsSpec);
+      }
+      jsParam.put("metadataSpec", jsOntology);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -346,44 +397,6 @@ public class FilterParam extends FlatVocabParam {
     return jsParam;
   }
 
-  private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
-    if (metadataSpecQuery == null)
-      return;
-
-    // create json for the metadata
-    JSONObject jsMetadataSpec = new JSONObject();
-    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextParamValues);
-    for (String property : metadataSpec.keySet()) {
-      JSONObject jsSpec = new JSONObject();
-      Map<String, String> spec = metadataSpec.get(property);
-      for (String specProp : spec.keySet()) {
-        jsSpec.put(specProp, spec.get(specProp));
-      }
-      jsMetadataSpec.put(property, jsSpec);
-    }
-    jsParam.put("metadataSpec", jsMetadataSpec);
-
-    /* disable metadata from the initial json, they will be lazy loaded later.
-
-    // create json for the properties
-    JSONObject jsMetadata = new JSONObject();
-    Map<String, Map<String, String>> metadata = getMetadata(user, contextParamValues);
-    for (String term : metadata.keySet()) {
-      JSONObject jsProperty = new JSONObject();
-      Map<String, String> property = metadata.get(term);
-      for (String propName : property.keySet()) {
-        jsProperty.put(propName, property.get(propName));
-      }
-      jsMetadata.put(term, jsProperty);
-    }
-    jsParam.put("metadata", jsMetadata);
-
-    */
-
-  }
-
-  @Override
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
       EnumParamVocabInstance cache) throws WdkModelException {
     try {
@@ -431,7 +444,6 @@ public class FilterParam extends FlatVocabParam {
     return jsTerms;
   }
 
-  @Override
   public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
@@ -458,7 +470,6 @@ public class FilterParam extends FlatVocabParam {
     return fixDefaultValue(defaultValue);
   }
 
-  @Override
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
     String defaultValue = super.getDefault(user, contextParamValues);
     return fixDefaultValue(defaultValue);
@@ -483,7 +494,6 @@ public class FilterParam extends FlatVocabParam {
     return jsStableValue.toString();
   }
 
-  @Override
   public String[] convertToTerms(String stableValue) {
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
@@ -500,7 +510,30 @@ public class FilterParam extends FlatVocabParam {
     // also set context query to the metadata & spec queries
     if (metadataQuery != null)
       metadataQuery.setContextQuestion(question);
-    if (metadataSpecQuery != null)
-      metadataSpecQuery.setContextQuestion(question);
+    if (ontologyQuery != null)
+      ontologyQuery.setContextQuestion(question);
+  }
+
+  @Override
+  public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
+    // TODO probably format this nicely
+    return rawValue.toString();
+  }
+
+  @Override
+  protected void applySuggestion(ParamSuggestion suggest) { }
+
+  @Override
+  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+      throws WdkModelException, WdkUserException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+    // TODO Auto-generated method stub
+    
   }
 }
+ 
