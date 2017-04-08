@@ -31,6 +31,6 @@ public class CacheMgr {
   public StepCache getStepCache() { return _stepCache; }
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
   public MetadataCache getMetadataCache() { return _metadataCache; }
-  public MetadataCache getMetadataSpecCache() { return _metadataSpecCache; }
+  public MetadataCache getOntologyCache() { return _metadataSpecCache; }
 
 }

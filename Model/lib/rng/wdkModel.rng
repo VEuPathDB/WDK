@@ -244,6 +244,7 @@
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
           <ref name="filterParam" />
+          <ref name="filterParamNew" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
           <ref name="timestampParam" />
