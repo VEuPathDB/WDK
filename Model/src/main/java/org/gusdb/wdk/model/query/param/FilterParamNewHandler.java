@@ -55,14 +55,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
-    stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
 
   /**
-   * return a string representation of a list of the internals. If noTranslation is true, returns a string
-   * representation of a list of terms instead. If quoted is true, each individual value will be quoted
-   * properly.
+   * return SQL that runs the metadataQuery, including its depended params, and applies
+   * the filters to it. 
+   * 
    * 
    * @throws WdkUserException
    * 
@@ -72,10 +71,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    if (stableValue == null || stableValue.length() == 0)
-      return stableValue;
-
-    stableValue = normalizeStableValue(stableValue);
 
     try {
       JSONObject jsValue = new JSONObject(stableValue);
@@ -86,7 +81,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       }
 
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
-      EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
+      FilterParamNewInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
       Set<String> internals = new LinkedHashSet<>();
 
@@ -120,7 +115,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    stableValue = normalizeStableValue(stableValue);
+    stableValue = normalizeStableValue(stableValue);  // sort it for stability
     try {
       JSONObject jsValue = new JSONObject(stableValue);
       JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
@@ -263,26 +258,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
 
   }
-
+  
   private String normalizeStableValue(String stableValue) {
-    JSONObject jsValue;
-    if (!stableValue.startsWith("{")) {
-      jsValue = new JSONObject();
-      jsValue.put(FILTERS_KEY, new JSONArray());
-
-      JSONArray jsTerms = new JSONArray();
-      for (String term : stableValue.split(",")) {
-        jsTerms.put(term.trim());
-      }
-      jsValue.put(TERMS_KEY, jsTerms);
-    }
-    else {
-      jsValue = new JSONObject(stableValue);
-      if (!jsValue.has(FILTERS_KEY))
-        jsValue.put(FILTERS_KEY, new JSONArray());
-      if (!jsValue.has(TERMS_KEY))
-        jsValue.put(TERMS_KEY, new JSONArray());
-    }
-    return jsValue.toString();
+    // TODO sort stable value JSON
+    return stableValue;
+    
   }
+
 }
