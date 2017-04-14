@@ -5,11 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.cache.ItemCache;
@@ -29,7 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @author jerric
+ * @author steve
  * 
  *         The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an
  *         IN clause.  The SQL returns a list of internal values, similar to flatVocabParam. 
@@ -319,7 +316,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkUserException
    */
   public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String ontologyId,
-      EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
+      FilterParamNewInstance cache) throws WdkModelException, WdkUserException {
     
     if (!allowClientFiltering) 
       throw new WdkModelException("FilterParam " + getFullName() + " does not allow client side filtering.  Illegally attempting to get metadata");
@@ -372,7 +369,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return metadata;
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, FilterParamNewInstance cache)
       throws WdkModelException, WdkUserException {
     
     JSONObject jsParam = new JSONObject();
@@ -389,7 +386,7 @@ public class FilterParamNew extends AbstractDependentParam {
         }
         jsOntology.put(property, jsSpec);
       }
-      jsParam.put("metadataSpec", jsOntology);
+      jsParam.put("ontology", jsOntology);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -398,37 +395,17 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
-      EnumParamVocabInstance cache) throws WdkModelException {
+      FilterParamNewInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
-        JSONArray jsTerms = convert(getDefault());
         JSONObject jsNewStableValue = new JSONObject();
-        jsNewStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
         jsNewStableValue.put(FilterParamHandler.FILTERS_KEY, new JSONArray());
         return jsNewStableValue.toString();
       }
 
       JSONObject jsStableValue = new JSONObject(stableValue);
-      JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
-      Map<String, String> termMap = cache.getVocabMap();
-      Set<String> validValues = new LinkedHashSet<>();
-      for (int i = 0; i < jsTerms.length(); i++) {
-        String term = jsTerms.getString(i);
-        if (termMap.containsKey(term))
-          validValues.add(term);
-      }
-
-      JSONArray jsNewTerms;
-      if (validValues.size() > 0) {
-        jsNewTerms = new JSONArray();
-        for (String term : validValues) {
-          jsNewTerms.put(term);
-        }
-      }
-      else
-        jsNewTerms = convert(getDefault());
-
-      jsStableValue.put(FilterParamHandler.TERMS_KEY, jsNewTerms);
+ 
+      // TODO: validate stable value
       return jsStableValue.toString();
     }
     catch (JSONException ex) {
@@ -436,72 +413,16 @@ public class FilterParamNew extends AbstractDependentParam {
     }
   }
 
-  private JSONArray convert(String value) {
-    JSONArray jsTerms = new JSONArray();
-    for (String term : value.split(",")) {
-      jsTerms.put(term.trim());
-    }
-    return jsTerms;
-  }
-
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    if (stableValue == null || stableValue.length() == 0)
-      return new String[0];
-
-    try {
-      JSONObject jsStableValue = new JSONObject(stableValue);
-      JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
-      String[] terms = new String[jsTerms.length()];
-      for (int i = 0; i < terms.length; i++) {
-        terms[i] = jsTerms.getString(i);
-      }
-      return terms;
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-
-  }
-
   @Override
   public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
-    return fixDefaultValue(defaultValue);
+    String defaultValue = new JSONObject().toString();
+    return defaultValue;
   }
 
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    String defaultValue = super.getDefault(user, contextParamValues);
-    return fixDefaultValue(defaultValue);
-  }
-
-  private String fixDefaultValue(String defaultValue) throws WdkModelException {
-    if (defaultValue == null || defaultValue.startsWith("{"))
-      return defaultValue;
-    JSONObject jsStableValue = new JSONObject();
-    JSONArray jsTerms = new JSONArray();
-    if (defaultValue.length() > 0) {
-      for (String term : defaultValue.split(",")) {
-        jsTerms.put(term);
-      }
-    }
-    try {
-      jsStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-    return jsStableValue.toString();
-  }
-
-  public String[] convertToTerms(String stableValue) {
-    JSONObject jsValue = new JSONObject(stableValue);
-    JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
-    String[] terms = new String[jsTerms.length()];
-    for (int i = 0; i < terms.length; i++) {
-      terms[i] = jsTerms.getString(i);
-    }
-    return terms;
+    // TODO fix this.
+    String defaultValue = new JSONObject().toString();
+    return defaultValue;
   }
 
   @Override
@@ -526,7 +447,7 @@ public class FilterParamNew extends AbstractDependentParam {
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    // TODO Auto-generated method stub
+    // TODO validate against ontology and metadata
     
   }
 

@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * functionality shared by params that might have depend on other parameters.
@@ -224,6 +225,6 @@ public abstract class AbstractDependentParam extends Param {
     return query;
   }
 
-
+  public abstract String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException;
   
 }

@@ -764,7 +764,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return values;
   }
 
-  public void fetchCorrectValue(User user, Map<String, String> contextParamValues,
+  public void fillContextParamValues(User user, Map<String, String> contextParamValues,
       Map<String, EnumParamVocabInstance> caches) throws WdkModelException, WdkUserException {
     //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
 
@@ -773,7 +773,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       for (Param dependedParam : getDependedParams()) {
         logger.debug(name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractEnumParam) {
-          ((AbstractEnumParam) dependedParam).fetchCorrectValue(user, contextParamValues, caches);
+          ((AbstractEnumParam) dependedParam).fillContextParamValues(user, contextParamValues, caches);
         }
       }
     }

@@ -670,7 +670,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       if (param instanceof AbstractEnumParam) {
         // for enum/flatVocab params, call a special method to process it
         Map<String, EnumParamVocabInstance> caches = new HashMap<>();
-        ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues, caches);
+        ((AbstractEnumParam) param).fillContextParamValues(user, contextParamValues, caches);
       }
       else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;
