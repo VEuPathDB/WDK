@@ -145,6 +145,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   protected abstract EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException;
+  
+  @Override
+  protected DependentParamInstance createDependentParamInstance (User user, Map<String, String> dependedParamValues)
+      throws WdkModelException, WdkUserException {
+    return createVocabInstance(user,  dependedParamValues);
+  }
 
   public AbstractEnumParam() {
     super();
@@ -764,42 +770,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return values;
   }
 
-  public void fillContextParamValues(User user, Map<String, String> contextParamValues,
-      Map<String, EnumParamVocabInstance> caches) throws WdkModelException, WdkUserException {
-    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
-
-    // make sure the values for depended params are fetched first.
-    if (isDependentParam()) {
-      for (Param dependedParam : getDependedParams()) {
-        logger.debug(name + " depends on " + dependedParam.getName());
-        if (dependedParam instanceof AbstractEnumParam) {
-          ((AbstractEnumParam) dependedParam).fillContextParamValues(user, contextParamValues, caches);
-        }
-      }
-    }
-
-    // check if the value for this param is correct
-    EnumParamVocabInstance cache = caches.get(name);
-    if (cache == null) {
-      cache = createVocabInstance(user, contextParamValues);
-      caches.put(name, cache);
-    }
-  
-    String stableValue = contextParamValues.get(name);
-    String value = getValidStableValue(user, stableValue, contextParamValues, cache);
-
-    if (value != null)
-    contextParamValues.put(name, value);
-    //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
-  }
-
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
-      EnumParamVocabInstance cache) throws WdkModelException {
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues, EnumParamVocabInstance cache) throws WdkModelException {
     if (stableValue == null)
       return cache.getDefaultValue();
-    
+
     String[] terms = getTerms(user, stableValue, contextParamValues);
-    //logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
+    // logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
     Map<String, String> termMap = cache.getVocabMap();
     Set<String> validValues = new LinkedHashSet<>();
     for (String term : terms) {
@@ -820,6 +796,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     else
       return cache.getDefaultValue();
   }
+  
+
 
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {

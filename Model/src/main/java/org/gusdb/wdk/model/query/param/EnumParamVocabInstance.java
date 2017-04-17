@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class encapsulates a vocabulary and default value for an
@@ -24,7 +26,7 @@ import org.apache.log4j.Logger;
  * 
  * @author rdoherty
  */
-public class EnumParamVocabInstance {
+public class EnumParamVocabInstance implements DependentParamInstance {
 	
 	private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 	
@@ -40,8 +42,11 @@ public class EnumParamVocabInstance {
 	private Map<String, String> _termParentMap = new LinkedHashMap<String, String>();
 	private List<EnumParamTermNode> _termTreeList = new ArrayList<EnumParamTermNode>();
 	
-	public EnumParamVocabInstance(Map<String, String> dependedParamValues) {
+	private AbstractEnumParam _aeParam;
+	
+	public EnumParamVocabInstance(Map<String, String> dependedParamValues, AbstractEnumParam aeParam) {
 		_dependedParamValues = dependedParamValues;
+		_aeParam = aeParam;
 	}
 	
 	public String getDefaultValue() {
@@ -197,4 +202,14 @@ public class EnumParamVocabInstance {
 	  }
 	  return rows;
 	}
+	
+  public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return _aeParam.getValidStableValue(user, stableValue, contextParamValues, this);
+  }
+  
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);
+  }
+
+
 }

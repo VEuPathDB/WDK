@@ -13,6 +13,7 @@ import java.util.Set;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 
@@ -224,7 +225,41 @@ public abstract class AbstractDependentParam extends Param {
     }
     return query;
   }
+  
+  public void fillContextParamValues(User user, Map<String, String> contextParamValues,
+      Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
+    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
+
+    // make sure the values for depended params are fetched first.
+    if (isDependentParam()) {
+      for (Param dependedParam : getDependedParams()) {
+        logger.debug(name + " depends on " + dependedParam.getName());
+        if (dependedParam instanceof AbstractDependentParam) {
+          ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
+        }
+      }
+    }
+
+    // check if the value for this param is correct
+    DependentParamInstance instance = instances.get(name);
+    if (instance == null) {
+      instance = createDependentParamInstance(user, contextParamValues);
+      instances.put(name, instance);
+    }
+  
+    String stableValue = contextParamValues.get(name);
+    String value = instance.getValidStableValue(user, stableValue, contextParamValues);
+
+    if (value != null)
+    contextParamValues.put(name, value);
+    //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+  }
+
 
   public abstract String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException;
+  
+  protected abstract DependentParamInstance createDependentParamInstance(User user, Map<String, String> dependedParamValues)
+      throws WdkModelException, WdkUserException;
+
   
 }
