@@ -91,7 +91,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
 
   public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
-    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues);
+    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
   }

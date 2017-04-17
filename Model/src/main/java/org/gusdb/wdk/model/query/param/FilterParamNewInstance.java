@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class encapsulates a vocabulary and default value for an
@@ -24,7 +26,7 @@ import org.apache.log4j.Logger;
  * 
  * @author rdoherty
  */
-public class FilterParamNewInstance {
+public class FilterParamNewInstance implements DependentParamInstance {
 	
 	private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 	
@@ -80,5 +82,12 @@ public class FilterParamNewInstance {
 	public Map<String, String> getDependedValues() {
 		return _dependedParamValues;
 	}
+
+  @Override
+  public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
+      throws WdkModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
 	
 }
