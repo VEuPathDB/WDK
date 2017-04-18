@@ -276,13 +276,13 @@ export function resolveWdkReferences(
   questions: Dict<Question>,
   ontology: CategoryOntology
 ) {
-  for (let node of preorderSeq(ontology.tree)) {
+  preorderSeq(ontology.tree).forEach(node => {
     if (isIndividual(node)) {
       Object.assign(node, {
         wdkReference: getModelEntity(recordClasses, questions, node)
       });
     }
-  }
+  });
   return ontology;
 }
 
@@ -296,9 +296,7 @@ export function sortOntology(
   ontology: CategoryOntology
 ) {
   const comparator = makeComparator(recordClasses, questions);
-  for (let node of preorderSeq(ontology.tree)) {
-    node.children.sort(comparator);
-  }
+  preorderSeq(ontology.tree).forEach(node => node.children.sort(comparator))
   return ontology;
 }
 

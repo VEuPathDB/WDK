@@ -403,7 +403,7 @@ class DataTable extends PureComponent<Props, void> {
 }
 
 const withLibs = lazy(function(render) {
-  (require as any)([ 'lib/jquery-datatables', 'lib/jquery-datatables-natural-type-plugin' ], render);
+  require([ 'lib/jquery-datatables', 'lib/jquery-datatables-natural-type-plugin' ], render);
 });
 export default wrappable(withLibs(DataTable));
 
