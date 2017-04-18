@@ -1,12 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
@@ -47,37 +41,6 @@ public class FilterParamNewInstance implements DependentParamInstance {
 	public void setDefaultValue(String defaultValue) {
 		_defaultValue = defaultValue;
 	}
-
-	/**
-	 * Determines and returns the sanity default for this param in the
-	 * following way: if sanitySelectMode is not null, use it to choose
-	 * params; if it is, use default (i.e. however param normally gets default)
-	 * 
-	 * @param sanitySelectMode select mode form model (ParamValuesSet)
-	 * @return default value for this param, based on cached vocab values
-	 */
-	public String getSanityDefaultValue(SelectMode sanitySelectMode, boolean isMultiPick, String sanityDefaultNoSelectMode) {
-	  logger.info("Getting sanity default value with passed mode: " + sanitySelectMode);
-	  if (sanitySelectMode != null) {
-	    return AbstractEnumParam.getDefaultWithSelectMode(
-	        getTerms(), sanitySelectMode, isMultiPick,
-	        getTermTreeListRef().isEmpty() ? null : getTermTreeListRef().get(0));
-	  }
-	  String defaultVal;
-	  logger.info("Sanity select mode is null; using sanity default (" + sanityDefaultNoSelectMode +
-	      ") or default (" + getDefaultValue() + ")");
-	  return (((defaultVal = sanityDefaultNoSelectMode) != null) ?
-	    defaultVal : getDefaultValue());
-	  }
-
-	
-	
-	public String[] getDisplays() {
-        String[] displays = new String[_termDisplayMap.size()];
-        _termDisplayMap.values().toArray(displays);
-        return displays;
-	}
-
 
 	public Map<String, String> getDependedValues() {
 		return _dependedParamValues;

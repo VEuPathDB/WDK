@@ -136,11 +136,13 @@ public class EnumParamVocabInstance implements DependentParamInstance {
         return array;
 	}
 
+	/* not used
 	public String[] getDisplays() {
         String[] displays = new String[_termDisplayMap.size()];
         _termDisplayMap.values().toArray(displays);
         return displays;
 	}
+	*/
 
 	public EnumParamTermNode[] getVocabTreeRoots() {
         if (_termTreeList != null) {

@@ -221,8 +221,9 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // resolve ontology query, which should not have any params
     if (ontologyQueryRef != null) {
-      // no need to clone metadataSpec query, since it's not overridden in any way here.
-      this.ontologyQuery = (Query) model.resolveReference(ontologyQueryRef);
+      
+      // validate dependent params
+      this.ontologyQuery = resolveQuery(model, ontologyQueryRef, "ontology query");
 
       // validate columns
       Map<String, Column> columns = ontologyQuery.getColumnMap();
@@ -456,5 +457,27 @@ public class FilterParamNew extends AbstractDependentParam {
     // TODO Auto-generated method stub
     
   }
+
+  
+  protected FilterParamNewInstance createFilterParamNewInstance(User user, Map<String, String> dependedParamValues)
+      throws WdkModelException, WdkUserException {
+    // TODO implement
+    return null;
+  }
+  
+  @Override
+  protected DependentParamInstance createDependentParamInstance (User user, Map<String, String> dependedParamValues)
+      throws WdkModelException, WdkUserException {
+    return createFilterParamNewInstance(user,  dependedParamValues);
+  }
+
+  @Override
+  public String getSanityDefault(User user, Map<String, String> contextParamValues,
+      SelectMode sanitySelectMode) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
 }
  

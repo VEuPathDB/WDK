@@ -261,5 +261,6 @@ public abstract class AbstractDependentParam extends Param {
   protected abstract DependentParamInstance createDependentParamInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException;
 
-  
+  public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
+      SelectMode sanitySelectMode); 
 }
