@@ -40,10 +40,16 @@ class RecordController extends WdkViewController {
     return !state.isLoading;
   }
 
+  isRenderDataLoadError(state) {
+    return state.error && state.error.status !== 404 && state.record == null;
+  }
+
+  isRenderDataNotFound(state) {
+    return state.error && state.error.status === 404;
+  }
+
   getTitle(state) {
-    return  state.error ? 'Error: ' + this.getErrorMessage(state)
-          : state.recordClass == null || state.record == null ? "Loading..."
-          : state.recordClass.displayName + ' ' + state.record.displayName;
+    return state.recordClass.displayName + ' ' + state.record.displayName;
   }
 
   getErrorMessage(state) {
