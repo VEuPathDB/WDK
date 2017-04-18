@@ -377,6 +377,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
 
+  @Override
   public String getSanityDefault(User user, Map<String, String> contextParamValues,
       SelectMode sanitySelectMode) {
     return getVocabInstance(user, contextParamValues).getSanityDefaultValue(sanitySelectMode, getMultiPick(), getSanityDefault());
@@ -410,6 +411,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(user, dependedParamValues).getVocabInternal(isNoTranslation());
   }
 
+  /* not used
   public String[] getDisplays(User user) {
     return getDisplays(user, null);
   }
@@ -417,6 +419,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   public String[] getDisplays(User user, Map<String, String> dependedParamValues) {
     return getVocabInstance(user, dependedParamValues).getDisplays();
   }
+  */
 
   public Map<String, String> getVocabMap(User user) {
     return getVocabMap(user, null);
