@@ -138,7 +138,7 @@ public class DatasetParam extends Param {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
       jsParam.put("recordClass", recordClass.getFullName());
     }

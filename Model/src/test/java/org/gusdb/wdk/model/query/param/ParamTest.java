@@ -48,8 +48,8 @@ public class ParamTest {
             Assert.assertEquals(param.getGroup(), clone.getGroup());
             Assert.assertEquals(param.getHelp(), clone.getHelp());
             Assert.assertEquals(param.getId(), clone.getId());
-            Assert.assertEquals(param.getJSONContent(true).toString(),
-                    clone.getJSONContent(true).toString());
+            Assert.assertEquals(param.getChecksumJSON(true).toString(),
+                    clone.getChecksumJSON(true).toString());
             Assert.assertEquals(param.getName(), clone.getName());
             Assert.assertEquals(param.getPrompt(), clone.getPrompt());
             Assert.assertEquals(param.isAllowEmpty(), clone.isAllowEmpty());

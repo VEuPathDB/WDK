@@ -30,44 +30,32 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
   private static final Logger logger = Logger.getLogger(FlatVocabularyFetcher.class);
 
   private static final String PROJECT_ID = "project_id";
-  private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
+  private static final String ONTOLOGY_QUERY_REF_KEY = "ontologyQueryRef";
+  private static final String METADATA_QUERY_REF_KEY = "metadataQueryRef";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
   
   private final User _user;
   private final FilterParamNew _param;
-  private final Query _vocabQuery;
+  private final Query _metadataQuery;
+  private final Query _ontologyQuery;
 
   public FilterParamNewFetcher(User user, FilterParamNew param) {
     _user = user;
     _param = param;
-    _vocabQuery = param.getQuery();
+    _metadataQuery = param.getMetadataQuery();
+    _ontologyQuery = param.getOntologyQuery();
   }
 
   public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
-    cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
+    cacheKeyJson.put(PROJECT_ID, _ontologyQuery.getWdkModel().getProjectId());
+    cacheKeyJson.put(ONTOLOGY_QUERY_REF_KEY, _ontologyQuery.getFullName());
+    cacheKeyJson.put(METADATA_QUERY_REF_KEY, _metadataQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
-        getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
+        AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
     return cacheKeyJson.toString();
   }
 
-  private static JSONObject getDependedParamValuesJson(
-      Map<String, String> dependedParamValues, Set<Param> dependedParams) {
-    JSONObject dependedParamValuesJson = new JSONObject();
-    if (dependedParams == null || dependedParams.isEmpty())
-      return dependedParamValuesJson;
-    // get depended param names in advance since getDependedParams() is expensive
-    List<String> dependedParamNames = Functions.mapToList(
-        dependedParams, new Function<Param, String>() {
-          @Override public String apply(Param obj) { return obj.getName(); }});
-    for (String paramName : dependedParamValues.keySet()) {
-      if (dependedParamNames.contains(paramName)) {
-        dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
-      }
-    }
-    return dependedParamValuesJson;
-  }
   /**
    * We don't need to read the vocabQueryRef from the cache key, because we know
    * it is the same as the one in the param's state.
@@ -75,7 +63,7 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
    * @throws UnfetchableItemException if unable to fetch item
    */
   @Override
-  public EnumParamVocabInstance fetchItem(String cacheKey) throws UnfetchableItemException {
+  public FilterParamNewInstance fetchItem(String cacheKey) throws UnfetchableItemException {
 
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
@@ -89,115 +77,25 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
     return fetchItem(dependedParamValues);
   }
 
-  public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
+  public FilterParamNewInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
-    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
+    FilterParamNewInstance vocabInstance = new FilterParamNewInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
   }
 
-  private void populateVocabInstance(EnumParamVocabInstance vocabInstance) throws UnfetchableItemException {
-    try {
-      // check if the query has "display" column
-      boolean hasDisplay = _vocabQuery.getColumnMap().containsKey(FlatVocabParam.COLUMN_DISPLAY);
-      boolean hasParent = _vocabQuery.getColumnMap().containsKey(FlatVocabParam.COLUMN_PARENT_TERM);
-
-      // prepare param values
-      Map<String, String> values = new LinkedHashMap<String, String>();
-      values.put(FlatVocabParam.PARAM_SERVED_QUERY, _param.getServedQueryName());
-
-      // add depended value if is dependent param
-      Set<Param> dependedParams = _param.getDependedParams();
-      if (_param.isDependentParam()) {
-        // use the depended param as the input param for the vocab query,
-        // since the depended param might be overridden by question or
-        // query, while the original input param in the vocab query
-        // does not know about it.
-        for (Param param : dependedParams) {
-          // preserve the context query
-          Query contextQuery = param.getContextQuery();
-          param = param.clone();
-          _vocabQuery.addParam(param);
-          param.setContextQuery(contextQuery);
-          String value = vocabInstance.getDependedValues().get(param.getName());
-          values.put(param.getName(), value);
-        }
-      }
-
-      Question contextQuestion = _param.getContextQuestion();
-      Query contextQuery = _param.getContextQuery();
-      Map<String, String> context = new LinkedHashMap<String, String>();
-      context.put(Utilities.QUERY_CTX_PARAM, _param.getFullName());
-      if (_param.getContextQuestion() != null)
-        context.put(Utilities.QUERY_CTX_QUESTION, contextQuestion.getFullName());
-      logger.debug("PARAM [" + _param.getFullName() + "] query=" + _vocabQuery.getFullName() +
-          ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
-          ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-
-      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
-      ResultList result = instance.getResults();
-      while (result.next()) {
-        Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
-        Object objInternal = result.get(FlatVocabParam.COLUMN_INTERNAL);
-        if (objTerm == null)
-          throw new WdkModelException("The term of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
-        if (objInternal == null)
-          throw new WdkModelException("The internal of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
-
-        String term = objTerm.toString().trim();
-        String value = objInternal.toString().trim();
-        String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
-        String parentTerm = null;
-        if (hasParent) {
-          Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
-          if (parent != null)
-            parentTerm = parent.toString().trim();
-        }
-
-        if (term.indexOf(',') >= 0 && dependedParams != null)
-          throw new WdkModelException(_param.getFullName() + ":" +
-              "The term cannot contain comma: '" + term + "'");
-
-        if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-          throw new WdkModelException(_param.getFullName() +
-              ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
-
-        vocabInstance.addTermValues(term, value, display, parentTerm);
-      }
-
-      if (vocabInstance.isEmpty()) {
-        if (_vocabQuery instanceof SqlQuery)
-          logger.warn("vocab query returned 0 rows:" + ((SqlQuery) _vocabQuery).getSql());
-        throw new WdkModelException("No item returned by the query [" + _vocabQuery.getFullName() +
-            "] of FlatVocabParam [" + _param.getFullName() + "].");
-      }
-      else {
-        logger.debug("Query [" + _vocabQuery.getFullName() + "] returned " + vocabInstance.getNumTerms() +
-            " of FlatVocabParam [" + _param.getFullName() + "].");
-      }
-
-      _param.initTreeMap(vocabInstance);
-      _param.applySelectMode(vocabInstance);
-
-      logger.debug("Leaving populateVocabInstance(" + FormatUtil.prettyPrint(values) + ")");
-      logger.debug("Returning instance with default value '" + vocabInstance.getDefaultValue() +
-          "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
-    }
-    catch (WdkModelException | WdkUserException e) {
-      throw new UnfetchableItemException(e);
-    }
-  }
+  private void populateVocabInstance(FilterParamNewInstance vocabInstance) throws UnfetchableItemException {
+    // TODO phase 2 - implement.  must produce stringValuesMap
+   }
 
   @Override
-  public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
+  public FilterParamNewInstance updateItem(String key, FilterParamNewInstance item) {
     throw new UnsupportedOperationException(
         "This should never be called since itemNeedsUpdating() always returns false.");
   }
 
   @Override
-  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
+  public boolean itemNeedsUpdating(FilterParamNewInstance item) {
     return false;
   }
 

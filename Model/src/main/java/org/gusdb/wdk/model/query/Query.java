@@ -138,7 +138,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   // Abstract methods
   // =========================================================================
 
-  protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
+  protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
   public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
@@ -335,7 +335,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   public String getChecksum(boolean extra) throws WdkModelException {
     try {
-      JSONObject jsQuery = getJSONContent(extra);
+      JSONObject jsQuery = getChecksumJSON(extra);
       return Utilities.encrypt(jsQuery.toString());
     }
     catch (JSONException e) {
@@ -361,7 +361,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @throws JSONException
    *           if unable to create JSON object
    */
-  private JSONObject getJSONContent(boolean extra) throws JSONException {
+  private JSONObject getChecksumJSON(boolean extra) throws JSONException {
     // use JSON to construct the string content
     JSONObject jsQuery = new JSONObject();
     jsQuery.put("name", getFullName());
@@ -379,7 +379,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     JSONArray jsParams = new JSONArray();
     for (String paramName : paramNames) {
       Param param = paramMap.get(paramName);
-      jsParams.put(param.getJSONContent(extra));
+      jsParams.put(param.getChecksumJSON(extra));
     }
     jsQuery.put("params", jsParams);
 
@@ -398,7 +398,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
 
     // append child-specific data
-    appendJSONContent(jsQuery, extra);
+    appendChecksumJSON(jsQuery, extra);
 
     return jsQuery;
   }

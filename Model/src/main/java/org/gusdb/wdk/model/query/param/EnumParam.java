@@ -166,7 +166,7 @@ public class EnumParam extends AbstractEnumParam {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) {
     // do nothing. do not add the enum list into the content, since they may
     // be
     // changed between versions, but we don't want to invalidate a query

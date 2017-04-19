@@ -9,6 +9,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 //import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -16,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONObject;
 
 /**
  * functionality shared by params that might have depend on other parameters.
@@ -226,6 +230,14 @@ public abstract class AbstractDependentParam extends Param {
     return query;
   }
   
+  /**
+   * 
+   * @param user
+   * @param contextParamValues map from name to stable values
+   * @param instances
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
   public void fillContextParamValues(User user, Map<String, String> contextParamValues,
       Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
     //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
@@ -263,4 +275,22 @@ public abstract class AbstractDependentParam extends Param {
 
   public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
       SelectMode sanitySelectMode); 
+  
+  static JSONObject getDependedParamValuesJson(
+      Map<String, String> dependedParamValues, Set<Param> dependedParams) {
+    JSONObject dependedParamValuesJson = new JSONObject();
+    if (dependedParams == null || dependedParams.isEmpty())
+      return dependedParamValuesJson;
+    // get depended param names in advance since getDependedParams() is expensive
+    List<String> dependedParamNames = Functions.mapToList(
+        dependedParams, new Function<Param, String>() {
+          @Override public String apply(Param obj) { return obj.getName(); }});
+    for (String paramName : dependedParamValues.keySet()) {
+      if (dependedParamNames.contains(paramName)) {
+        dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
+      }
+    }
+    return dependedParamValuesJson;
+  }
+
 }

@@ -1,8 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -22,35 +25,46 @@ import org.gusdb.wdk.model.user.User;
  */
 public class FilterParamNewInstance implements DependentParamInstance {
 	
-	private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
-	
-	// param this cache was created by
-	// context values used to create this cache
-	private Map<String, String> _dependedParamValues;
-	// default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
-	private String _defaultValue;
-		
-	public FilterParamNewInstance(Map<String, String> dependedParamValues) {
-		_dependedParamValues = dependedParamValues;
-	}
-	
-	public String getDefaultValue() {
-	  return _defaultValue;
-	}
-	
-	public void setDefaultValue(String defaultValue) {
-		_defaultValue = defaultValue;
-	}
+  private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 
-	public Map<String, String> getDependedValues() {
-		return _dependedParamValues;
-	}
+  // param this cache was created by
+  private FilterParamNew _param;
 
+  // context values used to create this cache
+  private Map<String, String> _dependedParamValues;
+
+  // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
+  private String _defaultValue;
+
+  private Map<String, Set<String>> allowedStringValues;
+
+  public FilterParamNewInstance(Map<String, String> dependedParamValues, FilterParamNew param) {
+    _dependedParamValues = dependedParamValues;
+    _param = param;
+  }
+
+  public String getDefaultValue() {
+    return _defaultValue;
+  }
+
+  public void setDefaultValue(String defaultValue) {
+    _defaultValue = defaultValue;
+  }
+
+  public Map<String, String> getDependedValues() {
+    return _dependedParamValues;
+  }
+	
+  /**
+   * 
+   */
   @Override
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
+      throws WdkModelException, WdkUserException {
+    // TODO phase 2 - use allowedStringValues and ontologyMap to correct stableValue
+    Map<String, OntologyItem> ontologyMap = _param.getOntology(user, contextParamValues);
+
+    return stableValue;
   }
 	
 }
