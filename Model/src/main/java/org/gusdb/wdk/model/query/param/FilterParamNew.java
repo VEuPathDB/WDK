@@ -63,7 +63,8 @@ import org.json.JSONObject;
  */
 public class FilterParamNew extends AbstractDependentParam {
 
-  public static class MetadataCache extends ItemCache<String, Map<String, Map<String, String>>> { }
+  public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> { }
+  public static class MetadataNewCache extends ItemCache<String, Map<String, MetaDataItem>> { }
 
   // ontology query columns
   static final String COLUMN_ONTOLOGY_ID = "ontology_term_name";
@@ -75,7 +76,7 @@ public class FilterParamNew extends AbstractDependentParam {
   static final String COLUMN_PRECISION = "precision";
   
   // metadata query columns
-  private static final String COLUMN_INTERNAL = "internal";
+  static final String COLUMN_INTERNAL = "internal";
   static final String COLUMN_NUMBER_VALUE = "number_value";
   static final String COLUMN_DATE_VALUE = "date_value";
   static final String COLUMN_STRING_VALUE = "string_value";
@@ -219,7 +220,7 @@ public class FilterParamNew extends AbstractDependentParam {
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
 
-    // resolve ontology query, which should not have any params
+    // resolve ontology query
     if (ontologyQueryRef != null) {
       
       // validate dependent params
@@ -255,15 +256,15 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getOntology(User user, Map<String, String> contextParamValues)
+  public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (ontologyQuery == null)
       return null;
 
-    OntologyItemFetcher fetcher = new OntologyItemFetcher(ontologyQuery, contextParamValues, user);
-    Map<String, Map<String, String>> map = null;
+    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyQuery, contextParamValues, user);
+    Map<String, OntologyItem> map = null;
     try {
-      map = CacheMgr.get().getOntologyCache().getItem(fetcher.getCacheKey(), fetcher);
+      map = CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
     }
     catch (UnfetchableItemException ex) {
       decodeException(ex);
@@ -378,14 +379,18 @@ public class FilterParamNew extends AbstractDependentParam {
     try { 
       // create json for the ontology
       JSONObject jsOntology = new JSONObject();
-      Map<String, Map<String, String>> metadataSpec = getOntology(user, contextParamValues);
-      for (String property : metadataSpec.keySet()) {
-        JSONObject jsSpec = new JSONObject();
-        Map<String, String> spec = metadataSpec.get(property);
-        for (String specProp : spec.keySet()) {
-          jsSpec.put(specProp, spec.get(specProp));
-        }
-        jsOntology.put(property, jsSpec);
+      Map<String, OntologyItem> ontologyMap = getOntology(user, contextParamValues);
+      for (String itemName : ontologyMap.keySet()) {
+        OntologyItem item = ontologyMap.get(itemName);
+        JSONObject jsOntoItem = new JSONObject();
+        jsOntoItem.put(COLUMN_PARENT_ONTOLOGY_ID, item.getParentOntologyId());
+        jsOntoItem.put(COLUMN_DISPLAY_NAME, item.getDisplayName());
+        jsOntoItem.put(COLUMN_DESCRIPTION, item.getDescription());
+        jsOntoItem.put(COLUMN_TYPE, item.getType());
+        jsOntoItem.put(COLUMN_UNITS, item.getUnits());
+        jsOntoItem.put(COLUMN_PRECISION, item.getPrecision());
+        
+        jsOntology.put(itemName, jsOntoItem);
       }
       jsParam.put("ontology", jsOntology);
     }
@@ -394,6 +399,10 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     return jsParam;
   }
+  
+  /**
+   * remove invalid filters from stableValue.  if stableValue empty, use default.
+   */
 
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
       FilterParamNewInstance cache) throws WdkModelException {
@@ -406,7 +415,13 @@ public class FilterParamNew extends AbstractDependentParam {
 
       JSONObject jsStableValue = new JSONObject(stableValue);
  
-      // TODO: validate stable value
+      // TODO: phase 2 clean up stable value
+      // need a cached version of uniqueMetadataStringValues query
+      // for each filter in the input stableValue, check that:
+      //  key is in the ontology
+      //  that value type matches ontology declared value type
+      //  if string value, that value is in known string values
+      
       return jsStableValue.toString();
     }
     catch (JSONException ex) {
@@ -421,15 +436,17 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    // TODO fix this.
+    // TODO phase 2 fix this.
     String defaultValue = new JSONObject().toString();
     return defaultValue;
   }
 
   @Override
   public void setContextQuestion(Question question)  throws WdkModelException {
+    
     super.setContextQuestion(question);
-    // also set context query to the metadata & spec queries
+    
+    // also set context question in the metadata & ontology queries
     if (metadataQuery != null)
       metadataQuery.setContextQuestion(question);
     if (ontologyQuery != null)
@@ -438,28 +455,30 @@ public class FilterParamNew extends AbstractDependentParam {
 
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
-    // TODO probably format this nicely
+    // TODO phase 2 probably format this nicely
     return rawValue.toString();
   }
 
   @Override
   protected void applySuggestion(ParamSuggestion suggest) { }
 
+  /**
+   * check each filter in stable value.  add each invalid one to error message, and throw user exception.
+   */
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    // TODO validate against ontology and metadata
+    // TODO phase 2 validate against ontology and metadata
     
   }
 
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
-    // TODO Auto-generated method stub
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
+    // TODO phase 2 - implement if we want filters to cause invalidated steps?
     
   }
 
-  
-  protected FilterParamNewInstance createFilterParamNewInstance(User user, Map<String, String> dependedParamValues)
+  private FilterParamNewInstance createFilterParamNewInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException {
     // TODO implement
     return null;
@@ -474,7 +493,7 @@ public class FilterParamNew extends AbstractDependentParam {
   @Override
   public String getSanityDefault(User user, Map<String, String> contextParamValues,
       SelectMode sanitySelectMode) {
-    // TODO Auto-generated method stub
+    // TODO phase 2 
     return null;
   }
 

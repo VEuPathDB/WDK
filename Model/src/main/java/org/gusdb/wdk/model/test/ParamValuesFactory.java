@@ -14,7 +14,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.SelectMode;
@@ -110,8 +110,8 @@ public class ParamValuesFactory {
   }
 
   private static String getDependedValues(Param param) throws WdkModelException {
-    return (param instanceof AbstractEnumParam && ((AbstractEnumParam)param).isDependentParam()) ?
-        "depends on " + joinParamNames(((AbstractEnumParam)param).getDependedParams()) : "independent";
+    return (param instanceof AbstractDependentParam && ((AbstractDependentParam)param).isDependentParam()) ?
+        "depends on " + joinParamNames(((AbstractDependentParam)param).getDependedParams()) : "independent";
   }
 
   private static String joinParamNames(Set<Param> params) {
@@ -138,22 +138,22 @@ public class ParamValuesFactory {
       String defaultValue = null;
       boolean isDependent = false;
       
-      // Try to populate value; order of population for abstract enum params:
+      // Try to populate value; order of population for dependent params:
       //   1. ParamValuesSet value defined in Query
       //   2. ParamValuesSet default value defined in QuerySet
       // The above handled by populateParamValuesSet() above; which SelectMode returned by ParamValuesSet also determined above
       //   3. Value captured via ParamValuesSet SelectMode defined in Query
       //   4. Value captured via ParamValuesSet default SelectMode defined in QuerySet
       //   5. Sanity default value defined in Param
-      // The following handled by AbstractEnumParam.getDefault(...)
+      // The following handled by AbstractDependentParam.getDefault(...)
       //   6. "Normal" default value defined in Param
       //   7. Value captured via SelectMode defined in Param
-      if (param instanceof AbstractEnumParam) {
-        AbstractEnumParam enumParam = (AbstractEnumParam)param;
-        isDependent = enumParam.isDependentParam();
+      if (param instanceof AbstractDependentParam) {
+        AbstractDependentParam dependentParam = (AbstractDependentParam)param;
+        isDependent = dependentParam.isDependentParam();
 
         // find depended params and see if all values are populated yet (should be no circular dependencies)
-        if (!isDependent || allDependenciesMet(enumParam, contextParamValues)) {
+        if (!isDependent || allDependenciesMet(dependentParam, contextParamValues)) {
 
           // all dependencies met, try to populate value
           LOG.info("Param select modes: " + FormatUtil.prettyPrint(paramValuesSet.getParamSelectModes()));
@@ -162,13 +162,13 @@ public class ParamValuesFactory {
           if (sanitySelectMode != null ) {
             // ParamValuesSet defined a select mode; use it to fetch value
             // dependencies met; fetch value with sanity select mode
-            defaultValue = enumParam.getSanityDefault(user, contextParamValues, sanitySelectMode);
+            defaultValue = dependentParam.getSanityDefault(user, contextParamValues, sanitySelectMode);
           }
           else {
             defaultValue = param.getSanityDefault();
             if (defaultValue == null) {
               // need to pass context param values to get the default
-              defaultValue = enumParam.getDefault(user, contextParamValues);
+              defaultValue = dependentParam.getDefault(user, contextParamValues);
             }
           }
 
@@ -179,7 +179,7 @@ public class ParamValuesFactory {
         }
       }
 
-      // Populate values for non-enumParams and non-dependent enum params
+      // Populate values for non-dependentParams and non-dependent dependent params
       else {
 
         // first try to populate with sanity default
@@ -212,9 +212,9 @@ public class ParamValuesFactory {
     populateRemainingValues(paramValuesSet, contextParamValues, params, remainingParams, user);
   }
 
-  private static boolean allDependenciesMet(AbstractEnumParam enumParam,
+  private static boolean allDependenciesMet(AbstractDependentParam dependentParam,
       Map<String, String> contextParamValues) throws WdkModelException {
-    for (Param dependedParam : enumParam.getDependedParams()) {
+    for (Param dependedParam : dependentParam.getDependedParams()) {
       if (!contextParamValues.containsKey(dependedParam.getName())) {
         return false;
       }

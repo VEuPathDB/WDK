@@ -161,7 +161,7 @@ public class FlatVocabParam extends AbstractEnumParam {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
       // add underlying query name to it
       jsParam.append("query", vocabQuery.getFullName());
