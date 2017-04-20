@@ -32,14 +32,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
   @Override
   public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
-      // trim away param values not needed by query, to avoid warnings
-      Map<String, String> requiredParamValues = new HashMap<String, String>();
-      for (String paramName : paramValues.keySet())
-        if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-          requiredParamValues.put(paramName, paramValues.get(paramName));
-
-      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> instance = getQueryInstance(user, paramValues, query);
       Map<String, Map<String, String>> properties = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
@@ -63,6 +56,16 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
     catch (WdkModelException | WdkUserException ex) {
       throw new UnfetchableItemException(ex);
     }
+  }
+  
+  static QueryInstance<?> getQueryInstance(User user, Map<String, String> paramValues, Query query) throws WdkModelException, WdkUserException {
+    // trim away param values not needed by query, to avoid warnings
+    Map<String, String> requiredParamValues = new HashMap<String, String>();
+    for (String paramName : paramValues.keySet())
+      if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
+        requiredParamValues.put(paramName, paramValues.get(paramName));
+
+    return query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
   }
 
   public String getCacheKey() throws JSONException {
