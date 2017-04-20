@@ -151,19 +151,17 @@ public class RetroactiveGuestRemover extends BaseCLI {
       String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
       String cutoffDate = deriveCutoffDate(userDb.getDataSource(), userSchema);
       LOG.info("********** Cutoff Date: " + cutoffDate + " **********");
-      if(false) {
-  
-        LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
-        String guestSql = lookupGuests(userDb, userSchema, cutoffDate);
-        LOG.info("********** " + guestSql + " **********");
+     
+      LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
+      String guestSql = lookupGuests(userDb, userSchema, cutoffDate);
+      LOG.info("********** " + guestSql + " **********");
    
-        LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
-        removeGuests(userDb, userSchema, guestSql);
+      LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
+      removeGuests(userDb, userSchema, guestSql);
   
-        LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
-        // though we cannot use the cutoff date here...
-        removeGBrowseGuests(userDb.getDataSource());
-      }
+      LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
+      // though we cannot use the cutoff date here...
+      removeGBrowseGuests(userDb.getDataSource());
     }
   }
 
