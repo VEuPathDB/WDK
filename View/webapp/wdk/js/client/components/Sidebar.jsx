@@ -4,16 +4,12 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let Sidebar = React.createClass({
-
-  render() {
-    return (
-      <aside className="wdk-PageColumn wdk-PageColumn-sidebar">
-        {this.props.children}
-      </aside>
-    );
-  }
-
-});
+function Sidebar(props) {
+  return (
+    <aside className="wdk-PageColumn wdk-PageColumn-sidebar">
+      {props.children}
+    </aside>
+  );
+}
 
 export default wrappable(Sidebar);
