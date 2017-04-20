@@ -1,17 +1,22 @@
 import React, { PropTypes } from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let SingleSelect = React.createClass({
+class SingleSelect extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.onChange = this.onChange.bind(this);
+  }
 
   onChange(event) {
     // only call change function passed in if value is indeed changing
     if (event.target.value !== this.props.value) {
       this.props.onChange(event.target.value);
     }
-  },
+  }
 
   render() {
-    let { name, value, items, onChange } = this.props;
+    let { name, value, items } = this.props;
     return (
       <select name={name} value={value} onChange={this.onChange}>
         {items.map(item =>
@@ -20,7 +25,7 @@ let SingleSelect = React.createClass({
       </select>
     );
   }
-});
+}
 
 SingleSelect.propTypes = {
 
@@ -39,7 +44,7 @@ SingleSelect.propTypes = {
    * The new (string) value of the selected option will be passed to this
    * function.
    */
-  onChange: PropTypes.func,
+  onChange: PropTypes.func
 };
 
 export default wrappable(SingleSelect)

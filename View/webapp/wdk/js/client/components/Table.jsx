@@ -33,47 +33,35 @@ function isTouchDevice() {
       || 'onmsgesturechange' in window; // works on ie10
 }
 
-export let Table = React.createClass({
+export class Table extends React.Component {
 
-  propTypes: {
+  constructor(props) {
+    super(props);
+    this.handleScrollStart = this.handleScrollStart.bind(this);
+    this.handleScrollEnd = this.handleScrollEnd.bind(this);
+    this.handleColumnResize = this.handleColumnResize.bind(this);
+    this.handleSort = this.handleSort.bind(this);
+    this.handleHideColumn = this.handleHideColumn.bind(this);
+    this.handleContentHeightChange = this.handleContentHeightChange.bind(this);
+    this.renderHeader = this.renderHeader.bind(this);
 
-    // Indicates sorted column. This is the same as the dataKey attribute
-    // specified in Column.
-    sortDataKey: React.PropTypes.string,
-
-    // Direction column is sorted.
-    sortDirection: React.PropTypes.oneOf(['ASC', 'DESC']),
-
-    onSort: React.PropTypes.func,
-
-    onHideColumn: React.PropTypes.func
-  },
-
-  getDefaultProps() {
-    return {
-      onSort: noop,
-      onHideColumn: noop
-    };
-  },
-
-  getInitialState() {
-    return {
+    this.state = {
       disablePointerEvents: false,
       columnWidths: this._getColumnWidths(this.props),
       left: 0,
       top: 0
     };
-  },
+  }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
       columnWidths: this._getColumnWidths(nextProps)
     });
-  },
+  }
 
   componentWillMount() {
     this.scroller = new Scroller(this._handleScroll);
-  },
+  }
 
   _getColumnWidths(props) {
     var columnWidths = this.state ? this.state.columnWidths : {};
@@ -85,37 +73,37 @@ export let Table = React.createClass({
     });
 
     return columnWidths;
-  },
+  }
 
   handleScrollStart() {
     this.setState({ disablePointerEvents: true });
-  },
+  }
 
   handleScrollEnd() {
     this.setState({ disablePointerEvents: false });
-  },
+  }
 
   _handleScroll(left, top) {
     this.setState({ left, top });
-  },
+  }
 
   handleColumnResize(newWidth, dataKey) {
     isColumnResizing = false;
-    this.state.columnWidths[dataKey] = newWidth;
-    this.setState({
-      columnWidths: this.state.columnWidths
+    const columnWidths = Object.assign({}, this.state.columnWidths, {
+      [dataKey]: newWidth
     });
-  },
+    this.setState({ columnWidths });
+  }
 
   handleSort(dataKey, event) {
     event.preventDefault();
     this.props.onSort(dataKey);
-  },
+  }
 
   handleHideColumn(dataKey, event) {
     event.stopPropagation();
     this.props.onHideColumn(dataKey);
-  },
+  }
 
   handleContentHeightChange(height) {
     console.log('-- contentHeightChange', height);
@@ -129,7 +117,7 @@ export let Table = React.createClass({
       // contentHeight, e.g., computed height of content within table
       height
     );
-  },
+  }
 
   renderHeader(columnComponent, ...rest) {
     let { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
@@ -153,7 +141,7 @@ export let Table = React.createClass({
         ) : null}
       </div>
     );
-  },
+  }
 
   render() {
     let tableProps = Object.assign({
@@ -194,4 +182,23 @@ export let Table = React.createClass({
     );
   }
 
-});
+}
+
+Table.propTypes = {
+
+  // Indicates sorted column. This is the same as the dataKey attribute
+  // specified in Column.
+  sortDataKey: React.PropTypes.string,
+
+  // Direction column is sorted.
+  sortDirection: React.PropTypes.oneOf(['ASC', 'DESC']),
+
+  onSort: React.PropTypes.func,
+
+  onHideColumn: React.PropTypes.func
+};
+
+Table.defaultProps = {
+  onSort: noop,
+  onHideColumn: noop
+};

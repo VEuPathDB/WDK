@@ -5,14 +5,19 @@ import Tooltip from './Tooltip';
 const baseClassName = "wdk-RadioList";
 const helpClassName = baseClassName + 'InfoIcon';
 
-let RadioList = React.createClass({
+class RadioList extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.onChange = this.onChange.bind(this);
+  }
 
   onChange(event) {
     // only call change function passed in if value is indeed changing
     if (event.target.value !== this.props.value) {
       this.props.onChange(event.target.value);
     }
-  },
+  }
 
   render() {
     let className = baseClassName + " " + getValueOrDefault(this.props, "className", "");
@@ -38,7 +43,8 @@ let RadioList = React.createClass({
       </ul>
     );
   }
-});
+
+}
 
 RadioList.propTypes = {
 
