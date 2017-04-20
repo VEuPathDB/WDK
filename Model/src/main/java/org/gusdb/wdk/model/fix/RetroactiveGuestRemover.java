@@ -53,22 +53,22 @@ public class RetroactiveGuestRemover extends BaseCLI {
   
   /**
    * Obtains the registry date for the oldest wdk guest user and adds two weeks to it to
-   * obtain the cutoff date.  If the cutoff date is inside the last two weeks, return a
-   * null as an indication that nothing should be done.
+   * obtain the cutoff date.  If the cutoff date is inside the last two weeks, return a 
+   * cutoff date of two weeks prior to the current date instead.
    * @param dataSource
    * @param userSchema
    * @return
    * @throws WdkModelException
    */
   public static String deriveCutoffDate(DataSource dataSource, String userSchema) throws WdkModelException {
+	SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
 	Calendar twoWeeksPriorToNowCal = Calendar.getInstance();
-	twoWeeksPriorToNowCal.add(Calendar.DAY_OF_YEAR, -14);
+	twoWeeksPriorToNowCal.add(Calendar.DATE, -14);
 	Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
-	cutoffCal.add(Calendar.DAY_OF_YEAR, 14);
+	cutoffCal.add(Calendar.DATE, 14);
     if(cutoffCal.getTimeInMillis() >= twoWeeksPriorToNowCal.getTimeInMillis()) {
-      return null;
+      return formatter.format(twoWeeksPriorToNowCal);
     }
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/mm/dd");
     return formatter.format(cutoffCal.getTime());
   }
   
