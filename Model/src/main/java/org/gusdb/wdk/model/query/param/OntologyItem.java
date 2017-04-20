@@ -8,6 +8,10 @@ public class OntologyItem {
   private String type;
   private String units;
   private String precision;
+  
+  public static final String TYPE_STRING = "string";
+  public static final String TYPE_NUMBER = "number";
+  public static final String TYPE_DATE = "date";
 
   public void setOntologyId(String ontologyId) {
     this.ontologyId = ontologyId;
