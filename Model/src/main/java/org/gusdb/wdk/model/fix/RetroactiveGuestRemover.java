@@ -63,7 +63,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
   public static String deriveCutoffDate(DataSource dataSource, String userSchema) throws WdkModelException {
 	SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
 	Calendar oneMonthPriorToNowCal = Calendar.getInstance();
-	oneMonthPriorToNowCal.add(Calendar.MONTH, -1);
+	oneMonthPriorToNowCal.add(Calendar.DATE, -30);
 	Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
 	cutoffCal.add(Calendar.DATE, 14);
     if(cutoffCal.getTimeInMillis() >= oneMonthPriorToNowCal.getTimeInMillis()) {
