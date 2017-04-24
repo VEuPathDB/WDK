@@ -115,11 +115,11 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
   }
   
   @Override
-  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException,
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
   WdkModelException {
     String stepId = inputStableValue;
     if (stepId == null || stepId.length() == 0)

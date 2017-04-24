@@ -4,12 +4,9 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.gusdb.wdk.model.Utilities;
@@ -34,6 +31,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_KEY = "filters";
   public static final String FILTERS_FIELD = "field";
   public static final String FILTERS_VALUE = "value";
+  public static final String FILTERS_MIN = "min";
+  public static final String FILTERS_MAX = "max";
   
 
   public FilterParamNewHandler() {}
@@ -184,7 +183,14 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(User user, String stableValue) throws WdkModelException, WdkUserException {
+    return Utilities.encrypt(toSignatureString(stableValue));
 
+  }
+  
+  // convert stable value to a compact string, suitable for use in a signature
+  // do not change this method, or risk invalidating existing signatures.
+  // also useful to do syntax validation of stableValue JSON
+  private String toSignatureString(String stableValue) throws WdkModelException {
     try {
       JSONObject jsValue = new JSONObject(stableValue);
       JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
@@ -196,14 +202,39 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       }
       Collections.sort(filterSigsList);
 
-      return Utilities.encrypt(filterSigsList.stream().collect(Collectors.joining(",")));
+      return filterSigsList.stream().collect(Collectors.joining(","));
     }
-    catch (JSONException | WdkUserException ex) {
+    catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-
   }
 
+  // write out an individual filter as a compact string, suitable for use in a signature
+  // do not change this method, or risk invalidating existing signatures.
+  private String getFilterSignature(JSONObject jsFilter) throws WdkModelException {
+    List<String> parts = new ArrayList<String>();
+    try {
+      parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
+      
+      // don't know if we have an array or object, so try both.
+      if (jsFilter.has(FILTERS_VALUE)) {
+        try { 
+          JSONObject value = jsFilter.getJSONObject(FILTERS_VALUE);
+          parts.add(FILTERS_MIN + ":" + value.getString(FILTERS_MIN));
+          parts.add(FILTERS_MAX + ":" + value.getString(FILTERS_MIN));
+        } catch (JSONException ex) {
+          JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
+          for (int i=0; i < value.length(); i++ ) {
+            parts.add(value.getString(i));
+          }
+        }
+      } else jsFilter.getJSONObject(FILTERS_VALUE); // force an exception because this key is absent
+      return parts.toString();
+    } 
+    catch (JSONException ex) {
+      throw new WdkModelException("Parameter " + param.getPrompt() + " has invalid filter param JSON", ex);
+    }
+  }
 
   /**
    * raw value is a String[] of terms
@@ -214,11 +245,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
   }
   
   @Override
-  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
@@ -227,54 +258,15 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
       stableValue = param.getDefault();
     }
-    JSONObject jsParam = new JSONObject(stableValue);
+    toSignatureString(stableValue);  // this method validates the syntax
     return stableValue;
   }
   
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) param;
-
-    // set labels
-    Map<String, String> displayMap = aeParam.getDisplayMap(user, contextParamValues);
-    String[] terms = displayMap.keySet().toArray(new String[0]);
-    String[] labels = displayMap.values().toArray(new String[0]);
-    requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
-    requestParams.setArray(param.getName() + TERMS_SUFFIX, terms);
-
-    // get the stable value
-    String stableValue = requestParams.getParam(param.getName());
-    Set<String> values = new HashSet<>();
-    if (stableValue == null) { // stable value not set, use default
-      stableValue = aeParam.getDefault(user, contextParamValues);
-    }
-    stableValue = normalizeStableValue(stableValue);
-    Set<String> invalidValues = new HashSet<>();
-    JSONObject jsValue = new JSONObject(stableValue);
-    JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
-    for (int i = 0; i < jsTerms.length(); i++) {
-      String term = jsTerms.getString(i);
-      if (displayMap.containsKey(term))
-        values.add(term);
-      else
-        invalidValues.add(term);
-    }
-    // store the invalid values
-    String[] invalids = invalidValues.toArray(new String[0]);
-    Arrays.sort(invalids);
-    requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
-
-    // set the stable & raw value
-    if (stableValue != null)
-      requestParams.setParam(param.getName(), stableValue);
-
-    if (values.size() > 0) {
-      String[] rawValue = values.toArray(new String[0]);
-      requestParams.setArray(param.getName(), rawValue);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
-    }
-  }
+    throw new UnsupportedOperationException();  // needed for JSPs, so no longer supported.
+   }
 
   @Override
   public ParamHandler clone(Param param) {
@@ -284,89 +276,49 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    stableValue = normalizeStableValue(stableValue);
+
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
-    try {
-      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this.param).getMetadataSpec(user, contextParamValues);
-      if (jsFilters.length() == 0)
-        return "All " + param.prompt;
-      else {
-        String display = "";
-        for (int i = 0; i < jsFilters.length(); i++) {
-          JSONObject jsFilter = jsFilters.getJSONObject(i);
-          Map<String, String> fieldSpec = metadataSpec.get(jsFilter.getString("field"));
-          display += fieldSpec.get("display") + " is ";
-          switch(fieldSpec.get("filter")) {
-          case "membership":
-            JSONArray values = jsFilter.getJSONArray("value");
-            for (int j = 0; j < values.length(); j++) {
-              if (values.get(j) == JSONObject.NULL) values.put(j, "uknown");
-            }
-            display += jsFilter.getJSONArray("value").join(", ");
-            break;
-          case "range":
-            JSONObject range = jsFilter.getJSONObject("value");
-            String min = range.getString("min");
-            String max = range.getString("max");
-            display += min == null ? "less than " + max
-                     : max == null ? "greater than " + min
-                     : "between " + min + " and " + max;
-            break;
-          }
-          if (i != jsFilters.length()) display += "\n";
-        }
-        return display;
-      }
-    } catch (WdkUserException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      return jsValue.getJSONArray(TERMS_KEY).toString();
-    }
 
-  }
-  
-  private String normalizeStableValue(String stableValue) {
+    if (jsFilters.length() == 0)
+      return "All " + param.prompt;
+
     try {
-      JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
-      List<SortableFilter> filtersList = new ArrayList<SortableFilter>();
+      Map<String, OntologyItem> ontologyMap = ((FilterParamNew) this.param).getOntology(user,
+          contextParamValues);
+
+      String display = "";
       for (int i = 0; i < jsFilters.length(); i++) {
         JSONObject jsFilter = jsFilters.getJSONObject(i);
+        OntologyItem ontologyItem = ontologyMap.get(jsFilter.getString(FILTERS_FIELD));
+        display += ontologyItem.getDisplayName() + " is ";
         
-        filtersList.add(new SortableFilter(jsFilter));
+        if (ontologyItem.getIsRange()) {
+          JSONObject range = jsFilter.getJSONObject("value");
+          String min = range.getString("min");
+          String max = range.getString("max");
+          display += min == null ? "less than " + max
+              : max == null ? "greater than " + min : "between " + min + " and " + max;
+        }
+        else {
+          JSONArray values = jsFilter.getJSONArray("value");
+          for (int j = 0; j < values.length(); j++) {
+            if (values.get(j) == JSONObject.NULL)
+              values.put(j, "uknown");
+          }
+          display += jsFilter.getJSONArray("value").join(", ");
+
+        }
+        if (i != jsFilters.length())
+          display += "\n";
       }
-      Collections.sort(filtersList);
-      
-        filtersList.add(jsFilter);
-        filtersSql.append(filterSelect + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
-        filtersSql.append(getFilterAsAndClause(jsFilter, metadataSql, ontology, metadataTableName));
-      }
-      return filtersSql.toString();
+      return display;
+
     }
-    catch (JSONException | WdkUserException ex) {
-      throw new WdkModelException(ex);
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
     }
 
-    return stableValue;
-    
-  }
-  
-  class SortableFilter implements Comparable<SortableFilter> {
-    
-    SortableFilter(JSONObject jsFilt) {
-      field = jsFilt.getString(FilterParamNewHandler.FILTERS_FIELD);
-      jsonobj = jsFilt;
-    }
-
-    private String field;
-    private JSONObject jsonobj;
-    @Override
-    public int compareTo(SortableFilter sf) {
-      return field.compareTo(sf.field);
-    }
-    JSONObject getJson() { return jsonobj; }
-    
   }
 
 }
