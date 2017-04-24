@@ -51,10 +51,10 @@ public class StringParamHandler extends AbstractParamHandler {
    * @throws WdkModelException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0) return "";
     return Utilities.encrypt(stableValue);

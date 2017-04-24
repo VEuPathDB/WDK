@@ -105,10 +105,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
    * @throws WdkModelException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk. model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
     Dataset dataset = user.getDataset(datasetId);

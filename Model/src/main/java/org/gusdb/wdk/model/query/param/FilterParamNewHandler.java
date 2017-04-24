@@ -3,13 +3,15 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -31,6 +33,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String TERMS_KEY = "values";
   public static final String FILTERS_KEY = "filters";
   public static final String FILTERS_FIELD = "field";
+  public static final String FILTERS_VALUE = "value";
   
 
   public FilterParamNewHandler() {}
@@ -41,6 +44,24 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a JSON string, and same as the stable value.
+   * 
+{
+   "filters": [
+    {
+      "value": {
+        "min": 1.82,
+        "max": 2.19
+      },
+      "field": "age"
+    },
+    {
+      "value": [
+        "female"
+      ],
+      "field": "biological sex"
+    }
+  ]
+}
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
@@ -115,34 +136,35 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
  
   private String getFilterAsAndClause(JSONObject jsFilter, String metadataSql, Map<String, OntologyItem> ontology, String metadataTableName) throws WdkModelException, WdkUserException {
-    OntologyItem ontologyItem = ontology.get(jsFilter.getString("field"));
+
+    OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
+    String type = ontologyItem.getType();
+    String columnName = FilterParamNew.typeToColumn(type);
     
-    switch(ontologyItem.getType()) {
-      
-    case OntologyItem.TYPE_STRING:
-      JSONArray values = jsFilter.getJSONArray("value");
-      StringBuilder sb = new StringBuilder();
-      for (int j = 0; j < values.length(); j++) {
-        String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
-        if (j != 0) sb.append(",");
-        sb.append(val);
-      }
-      return "AND " + metadataTableName + ".string_value IN (" + sb + ") ";
-      
-    case OntologyItem.TYPE_NUMBER:
-      return getRangeAndClause(jsFilter, "number", metadataTableName);
-      
-    case OntologyItem.TYPE_DATE:
-    default:
-      return getRangeAndClause(jsFilter, "number", metadataTableName);
-    }
+    if (ontologyItem.getIsRange())
+      return getRangeAndClause(jsFilter, columnName, metadataTableName);
+    else 
+      return getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
   }
   
-  private String getRangeAndClause(JSONObject jsFilter, String dateOrNumber, String metadataTableName) {
+  private String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
     JSONObject range = jsFilter.getJSONObject("value");
     String min = range.getString("min");
     String max = range.getString("max");
-    return "AND " + metadataTableName + "." + dateOrNumber + "_value > " + min + "AND " + metadataTableName + ".date_value < " + max; 
+    return "AND " + metadataTableName + "." + columnName + " > " + min + "AND " + metadataTableName + ".date_value < " + max; 
+  }
+  
+  private String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
+    JSONArray values = jsFilter.getJSONArray(FILTERS_VALUE);
+    StringBuilder sb = new StringBuilder();
+    for (int j = 0; j < values.length(); j++) {
+      String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
+      if (!isNumber) val = "'" + val + "'";
+      if (j != 0) sb.append(",");
+      sb.append(val);
+    }
+    return "AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
+
   }
 
   private String getMetadataQuerySql(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
@@ -158,33 +180,30 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    stableValue = normalizeStableValue(stableValue);  // sort it for stability
+  public String toSignature(User user, String stableValue) throws WdkModelException, WdkUserException {
+
     try {
       JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
-      String[] terms = new String[jsTerms.length()];
-      for (int i = 0; i < terms.length; i++) {
-        terms[i] = jsTerms.getString(i);
+      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+      List<String> filterSigsList = new ArrayList<String>();
+      for (int i = 0; i < jsFilters.length(); i++) {
+        JSONObject jsFilter = jsFilters.getJSONObject(i);
+        String filterSig = getFilterSignature(jsFilter);
+        filterSigsList.add(filterSig);
       }
+      Collections.sort(filterSigsList);
 
-      // return stable values, instead of list of terms
-      if (param.isNoTranslation()) {
-        return stableValue;
-      }
-
-      Arrays.sort(terms);
-      return Utilities.encrypt(Arrays.toString(terms));
+      return Utilities.encrypt(filterSigsList.stream().collect(Collectors.joining(",")));
     }
-    catch (JSONException ex) {
+    catch (JSONException | WdkUserException ex) {
       throw new WdkModelException(ex);
     }
 
   }
+
 
   /**
    * raw value is a String[] of terms
@@ -208,7 +227,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
       stableValue = param.getDefault();
     }
-    stableValue = normalizeStableValue(stableValue);
+    JSONObject jsParam = new JSONObject(stableValue);
     return stableValue;
   }
   
@@ -308,8 +327,45 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
   
   private String normalizeStableValue(String stableValue) {
-    // TODO sort stable value JSON
+    try {
+      JSONObject jsValue = new JSONObject(stableValue);
+      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+      List<SortableFilter> filtersList = new ArrayList<SortableFilter>();
+      for (int i = 0; i < jsFilters.length(); i++) {
+        JSONObject jsFilter = jsFilters.getJSONObject(i);
+        
+        filtersList.add(new SortableFilter(jsFilter));
+      }
+      Collections.sort(filtersList);
+      
+        filtersList.add(jsFilter);
+        filtersSql.append(filterSelect + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
+        filtersSql.append(getFilterAsAndClause(jsFilter, metadataSql, ontology, metadataTableName));
+      }
+      return filtersSql.toString();
+    }
+    catch (JSONException | WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
+
     return stableValue;
+    
+  }
+  
+  class SortableFilter implements Comparable<SortableFilter> {
+    
+    SortableFilter(JSONObject jsFilt) {
+      field = jsFilt.getString(FilterParamNewHandler.FILTERS_FIELD);
+      jsonobj = jsFilt;
+    }
+
+    private String field;
+    private JSONObject jsonobj;
+    @Override
+    public int compareTo(SortableFilter sf) {
+      return field.compareTo(sf.field);
+    }
+    JSONObject getJson() { return jsonobj; }
     
   }
 

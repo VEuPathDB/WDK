@@ -113,10 +113,10 @@ public class EnumParamHandler extends AbstractParamHandler {
    * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);

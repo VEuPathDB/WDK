@@ -74,12 +74,15 @@ public class FilterParamNew extends AbstractDependentParam {
   static final String COLUMN_TYPE = "type";
   static final String COLUMN_UNITS = "units";
   static final String COLUMN_PRECISION = "precision";
+  static final String COLUMN_IS_RANGE = "is_range";  
   
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal";
   static final String COLUMN_NUMBER_VALUE = "number_value";
   static final String COLUMN_DATE_VALUE = "date_value";
   static final String COLUMN_STRING_VALUE = "string_value";
+  
+  public static String typeToColumn(String type) {return type + "_value";}
 
   private static final int FETCH_SIZE = 1000;
 

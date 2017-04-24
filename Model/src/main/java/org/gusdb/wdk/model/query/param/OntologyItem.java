@@ -8,6 +8,7 @@ public class OntologyItem {
   private String type;
   private String units;
   private String precision;
+  private boolean isRange;
   
   public static final String TYPE_STRING = "string";
   public static final String TYPE_NUMBER = "number";
@@ -31,6 +32,10 @@ public class OntologyItem {
 
   public void setType(String type) {
     this.type = type;
+  }
+  
+  public void setIsRange(Boolean isRange) {
+    this.isRange = isRange;
   }
 
   public void setUnits(String units) {
@@ -67,6 +72,10 @@ public class OntologyItem {
 
   public String getPrecision() {
     return precision;
+  }
+  
+  public Boolean getIsRange() {
+    return isRange;
   }
 
 }
