@@ -128,7 +128,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     // check if stable value is assigned
     String datasetId = requestParams.getParam(param.getName());
     if (datasetId != null) {
-      return cleanAndValidateStableValue(user, datasetId);
+      return validateStableValueSyntax(user, datasetId);
     }
 
     // dataset id not assigned, create one.
@@ -206,7 +206,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(inputStableValue));
     return Integer.toString(dataset.getDatasetId());    
