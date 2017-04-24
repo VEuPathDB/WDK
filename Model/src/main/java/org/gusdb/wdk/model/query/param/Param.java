@@ -606,7 +606,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
-    return handler.toSignature(user, stableValue, contextParamValues);
+    return handler.toSignature(user, stableValue);
   }
 
   @Override

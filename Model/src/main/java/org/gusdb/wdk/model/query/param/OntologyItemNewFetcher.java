@@ -52,6 +52,8 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
           oItem.setType((String) resultList.get(FilterParamNew.COLUMN_TYPE));
           oItem.setUnits((String) resultList.get(FilterParamNew.COLUMN_UNITS));
           oItem.setPrecision((String) resultList.get(FilterParamNew.COLUMN_PRECISION));
+          oItem.setIsRange(((Integer) resultList.get(FilterParamNew.COLUMN_IS_RANGE)) == 1);
+
 
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
         }
