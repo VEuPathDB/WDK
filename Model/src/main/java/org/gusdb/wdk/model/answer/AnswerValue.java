@@ -717,22 +717,18 @@ public class AnswerValue {
     String[] columns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
-    ResultList resultList;
-    if (_filter == null)
-      resultList = _idsQueryInstance.getResults();
-    else
-      resultList = _filter.getResults(this);
-
-    while (resultList.next()) {
-      Object[] pkValues = new String[columns.length];
-      for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-        pkValues[columnIndex] = resultList.get(columns[columnIndex]);
+    try (ResultList resultList = (_filter == null ? _idsQueryInstance.getResults() : _filter.getResults(this))) {
+      while (resultList.next()) {
+        Object[] pkValues = new String[columns.length];
+        for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+          pkValues[columnIndex] = resultList.get(columns[columnIndex]);
+        }
+        buffer.add(pkValues);
       }
-      buffer.add(pkValues);
+      Object[][] ids = new String[buffer.size()][columns.length];
+      buffer.toArray(ids);
+      return ids;
     }
-    Object[][] ids = new String[buffer.size()][columns.length];
-    buffer.toArray(ids);
-    return ids;
   }
 
   public AnswerFilterInstance getFilter() {

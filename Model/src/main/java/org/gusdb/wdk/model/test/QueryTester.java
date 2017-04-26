@@ -196,8 +196,9 @@ public class QueryTester {
         } else {
           QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
               true, 0, new LinkedHashMap<String, String>());
-          ResultList rs = instance.getResults();
-          print(query, rs);
+          try (ResultList rs = instance.getResults()) {
+            print(query, rs);
+          }
         }
       }
     }

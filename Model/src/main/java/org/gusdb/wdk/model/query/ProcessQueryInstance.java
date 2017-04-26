@@ -296,9 +296,10 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   public int getResultSize() throws WdkModelException, WdkUserException {
     if (!getIsCacheable()) {
       int count = 0;
-      ResultList resultList = getResults();
-      while (resultList.next()) {
-        count++;
+      try (ResultList resultList = getResults()) {
+        while (resultList.next()) {
+          count++;
+        }
       }
       return count;
     }

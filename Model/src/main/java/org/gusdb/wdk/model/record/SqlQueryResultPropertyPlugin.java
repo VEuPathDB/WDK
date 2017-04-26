@@ -45,11 +45,12 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 		if (!propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
 
 		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
-		ResultList results = queryInstance.getResults();
-		results.next();
-		Integer count = ((BigDecimal)results.get(PROPERTY_COLUMN)).intValue();
-		if (results.next()) throw new WdkModelException("Record class '"  + recordClass.getName() + "' has an SqlResultPropertyPlugin whose SQL returns more than one row.");
-		return count;
+		try (ResultList results = queryInstance.getResults()) {
+		  results.next();
+		  Integer count = ((BigDecimal)results.get(PROPERTY_COLUMN)).intValue();
+		  if (results.next()) throw new WdkModelException("Record class '"  + recordClass.getName() + "' has an SqlResultPropertyPlugin whose SQL returns more than one row.");
+		  return count;
+		}
 	}
 	
 	private QueryInstance<?> getQueryInstance(AnswerValue answerValue) throws WdkModelException, WdkUserException {

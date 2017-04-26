@@ -236,9 +236,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
 
     QueryInstance<?> instance = _aliasQuery.makeInstance(user, oldValues, true, 0,
         new LinkedHashMap<String, String>());
-    ResultList resultList = null;
-    try {
-      resultList = instance.getResults();
+    try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
         Map<String, Object> newValue = new LinkedHashMap<String, Object>();
         for (String param : pkValues.keySet()) {
@@ -249,10 +247,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       // no alias found, use the original ones
       //if (records.size() == 0)
       //  records.add(pkValues);
-    }
-    finally {
-      if (resultList != null)
-        resultList.close();
     }
 
     return records;

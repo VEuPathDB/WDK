@@ -92,15 +92,9 @@ public class ResultSizeFactory {
       }
       else {
         // need to run the query first
-        ResultList resultList;
         // for portal
         String message = queryInstance.getResultMessage();
-        if (filter == null)
-          resultList = queryInstance.getResults();
-        else
-          resultList = filter.getResults(_answerValue);
-
-        try {
+        try (ResultList resultList = (filter == null ? queryInstance.getResults() : filter.getResults(_answerValue))) {
           boolean hasMessage = (message != null && message.length() > 0);
           if (hasMessage) {
             String[] sizes = message.split(",");
@@ -135,9 +129,6 @@ public class ResultSizeFactory {
               }
             }
           }
-        }
-        finally {
-          resultList.close();
         }
       }
     }

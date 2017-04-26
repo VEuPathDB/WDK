@@ -135,36 +135,37 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
       QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
-      ResultList result = instance.getResults();
-      while (result.next()) {
-        Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
-        Object objInternal = result.get(FlatVocabParam.COLUMN_INTERNAL);
-        if (objTerm == null)
-          throw new WdkModelException("The term of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
-        if (objInternal == null)
-          throw new WdkModelException("The internal of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
+      try (ResultList result = instance.getResults()) {
+        while (result.next()) {
+          Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
+          Object objInternal = result.get(FlatVocabParam.COLUMN_INTERNAL);
+          if (objTerm == null)
+            throw new WdkModelException("The term of flatVocabParam [" + _param.getFullName() +
+                "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
+          if (objInternal == null)
+            throw new WdkModelException("The internal of flatVocabParam [" + _param.getFullName() +
+                "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
 
-        String term = objTerm.toString().trim();
-        String value = objInternal.toString().trim();
-        String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
-        String parentTerm = null;
-        if (hasParent) {
-          Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
-          if (parent != null)
-            parentTerm = parent.toString().trim();
+          String term = objTerm.toString().trim();
+          String value = objInternal.toString().trim();
+          String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
+          String parentTerm = null;
+          if (hasParent) {
+            Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
+            if (parent != null)
+              parentTerm = parent.toString().trim();
+          }
+
+          if (term.indexOf(',') >= 0 && dependedParams != null)
+            throw new WdkModelException(_param.getFullName() + ":" +
+                "The term cannot contain comma: '" + term + "'");
+
+          if (parentTerm != null && parentTerm.indexOf(',') >= 0)
+            throw new WdkModelException(_param.getFullName() +
+                ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
+
+          vocabInstance.addTermValues(term, value, display, parentTerm);
         }
-
-        if (term.indexOf(',') >= 0 && dependedParams != null)
-          throw new WdkModelException(_param.getFullName() + ":" +
-              "The term cannot contain comma: '" + term + "'");
-
-        if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-          throw new WdkModelException(_param.getFullName() +
-              ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
-
-        vocabInstance.addTermValues(term, value, display, parentTerm);
       }
 
       if (vocabInstance.isEmpty()) {
