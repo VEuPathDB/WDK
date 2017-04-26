@@ -65,15 +65,9 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
   }
 
   public FilterParamNewInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
-    // create and populate vocab instance
-    FilterParamNewInstance vocabInstance = new FilterParamNewInstance(dependedParamValues, _param);
-    populateVocabInstance(vocabInstance);
-    return vocabInstance;
+    FilterParamNewInstance instance = new FilterParamNewInstance(dependedParamValues, _param);
+    return instance;
   }
-
-  private void populateVocabInstance(FilterParamNewInstance vocabInstance) throws UnfetchableItemException {
-    // TODO phase 2 - implement.  must produce stringValuesMap
-   }
 
   @Override
   public FilterParamNewInstance updateItem(String key, FilterParamNewInstance item) {
