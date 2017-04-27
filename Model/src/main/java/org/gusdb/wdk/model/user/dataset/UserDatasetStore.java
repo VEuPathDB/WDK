@@ -32,5 +32,7 @@ public interface UserDatasetStore {
    * @return null if not found.
    */
   UserDatasetTypeHandler getTypeHandler(UserDatasetType type);
+  
+  String getId();
 
 }
