@@ -9,24 +9,25 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo.UserDatasetShareUser;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class UserDatasetFormatter {
 
-  public static JSONArray getUserDatasetsJson(List<UserDatasetInfo> userDatasets,
+  public static JSONArray getUserDatasetsJson(UserDatasetSession dsSession, List<UserDatasetInfo> userDatasets,
       List<UserDatasetInfo> sharedDatasets, boolean expandDatasets) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
-    putDatasetsIntoJsonArray(datasetsJson, userDatasets, expandDatasets, true);
-    putDatasetsIntoJsonArray(datasetsJson, sharedDatasets, expandDatasets, false);
+    putDatasetsIntoJsonArray(dsSession, datasetsJson, userDatasets, expandDatasets, true);
+    putDatasetsIntoJsonArray(dsSession, datasetsJson, sharedDatasets, expandDatasets, false);
     return datasetsJson;
   }
 
-  private static void putDatasetsIntoJsonArray(JSONArray datasetsJson, List<UserDatasetInfo> datasets,
+  private static void putDatasetsIntoJsonArray(UserDatasetSession dsSession, JSONArray datasetsJson, List<UserDatasetInfo> datasets,
       boolean expand, boolean includeSharingData) throws WdkModelException {
     for (UserDatasetInfo dataset : datasets) {
-      datasetsJson.put(expand ? getUserDatasetJson(dataset, includeSharingData) : dataset.getDataset().getUserDatasetId());
+      datasetsJson.put(expand ? getUserDatasetJson(dsSession, dataset, includeSharingData) : dataset.getDataset().getUserDatasetId());
     }
   }
 
@@ -59,7 +60,7 @@ public class UserDatasetFormatter {
    * @return json object representing the dataset and associated information
    * @throws WdkModelException
    */
-  public static JSONObject getUserDatasetJson(UserDatasetInfo datasetInfo, boolean includeSharingData) throws WdkModelException {
+  public static JSONObject getUserDatasetJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData) throws WdkModelException {
     UserDataset dataset = datasetInfo.getDataset();
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
@@ -123,8 +124,8 @@ public class UserDatasetFormatter {
     JSONArray filesJson = new JSONArray();
     for (UserDatasetFile file : dataset.getFiles().values()) {
       JSONObject fileJson = new JSONObject();
-      fileJson.put("name", file.getFileName());
-      fileJson.put("size", file.getFileSize());
+      fileJson.put("name", file.getFileName(dsSession));
+      fileJson.put("size", file.getFileSize(dsSession));
       filesJson.put(fileJson);
     }
     json.put("datafiles", filesJson);
