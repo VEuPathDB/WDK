@@ -77,4 +77,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return typeHandlersMap.get(type);
   }
 
+  @Override
+  public String getId() {
+	return id;
+  }
+
 }
