@@ -47,16 +47,16 @@ public abstract class UserDatasetTypeHandler {
   
   public abstract String[] getRelevantQuestionNames();
 
-  public void installInAppDb(UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
+  public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
     Map<String, Path> nameToTempFileMap = new HashMap<String, Path>();
     
     Path workingDir = createWorkingDir(tmpDir, userDataset.getUserDatasetId());
     
     for (String userDatasetFileName : getInstallInAppDbFileNames(userDataset)) {
-      UserDatasetFile udf = userDataset.getFile(userDatasetFileName);
+      UserDatasetFile udf = userDataset.getFile(dsSession, userDatasetFileName);
       if (udf == null) throw new WdkModelException("File name requested by type handler, '" + userDatasetFileName + "' is not found in user dataset " + userDataset.getUserDatasetId() + " of type " + userDataset.getType());
-      Path tmpFile = udf.getLocalCopy(workingDir);
+      Path tmpFile = udf.getLocalCopy(dsSession, workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
     runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId), workingDir);

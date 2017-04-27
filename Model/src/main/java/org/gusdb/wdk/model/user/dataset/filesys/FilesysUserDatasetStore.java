@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
@@ -24,16 +23,12 @@ import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 
 public class FilesysUserDatasetStore extends JsonUserDatasetStore {
 
-  public FilesysUserDatasetStore() {
-    super(new FilesysUserDatasetStoreAdaptor());
-  }
-
   @Override
   public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     super.initialize(configuration, typeHandlers);
     id = usersRootDir.toString();
-    try {
-      checkRootDirExists();
+    try (FilesysUserDatasetSession session = getSession(usersRootDir)) {
+      session.checkRootDirExists();
     }
     catch (WdkModelException e) {
       // if root dir does not exist, try to create with 777 access
@@ -47,8 +42,8 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
     }
   }
 
-  @Override
-  public UserDatasetFile getUserDatasetFile(Path path, Integer userDatasetId) {
-    return new FilesysUserDatasetFile(path, userDatasetId);
+  public FilesysUserDatasetSession getSession(Path usersRootDir) {
+    return new FilesysUserDatasetSession(usersRootDir);
   }
+
 }
