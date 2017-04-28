@@ -143,7 +143,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       JSONObject jsValue = new JSONObject(stableValue);
       JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
       String metadataTableName = "md";
-      String filterSelect = "SELECT md.internal FROM (" + metadataSql + ") md WHERE md.ontology_term_id = ";
+      String filterSelect = getSqlForDistinctInternals(metadataSql);
+
       StringBuilder filtersSql = new StringBuilder();
       for (int i = 0; i < jsFilters.length(); i++) {
         if (i > 0) filtersSql.append(" INTERSECT ");
@@ -156,6 +157,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (JSONException | WdkUserException ex) {
       throw new WdkModelException(ex);
     }
+  }
+  
+  // we know that each ontology_term_id has a full set of internals, so we just need to query 
+  // one ontology_term_id.
+  static String getSqlForDistinctInternals(String metadataSql) {
+    return "SELECT distinct md.internal FROM (" + metadataSql + ") md" 
+        + " WHERE md.ontology_term_id IN (select ontology_term_id from (" + metadataSql + ") where row_num = 1)";
   }
 
  
