@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -96,12 +98,6 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private String defaultColumns;
   
- /*
-  * set true in model xml if metadata size is small enuf to send to client.  if so, the client can
-  * adjust histograms, etc, as user interacts, without having to go to the server for each interaction.
-  */
-  private Boolean allowClientFiltering = false;   
-
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
@@ -278,6 +274,55 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   /**
+   * 
+   * @param user
+   * @param contextParamValues
+   * @param appliedFilters
+   * @return { totalCount: number; filteredCount: number; }
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public JSONObject getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
+
+    /* GET UNFILTERED (TOTAL) COUNTS */
+    // get base metadata query
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
+    String metadataSql = queryInstance.getSql();
+    
+    // reduce it to a set of distinct internals
+    String distinctInternalsSql = FilterParamNewHandler.getSqlForDistinctInternals(metadataSql);
+    
+    // get count
+    String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
+    BigDecimal totalCount = runCountSql(sql);
+
+
+    /* GET FILTERED COUNTS */
+    // sql to find the filtered count
+    String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters.toString(), contextParamValues, this);
+
+    // get count
+    sql = "select count(*) from (" + filteredInternalsSql + ")";
+
+    BigDecimal filteredCount = runCountSql(sql);
+    
+    JSONObject json = new JSONObject();
+    json.put("totalCount", totalCount);
+    json.put("filteredCount", filteredCount);
+    return json;
+  }
+  
+  private BigDecimal runCountSql(String sql) {
+    Object[] args = {};
+    BasicResultSetHandler handler = new BasicResultSetHandler();
+    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "invalid-step-report-summary").executeQuery(args, handler);
+    List<Map<String,Object>> results = handler.getResults();
+    Map<String,Object> row = results.get(0);
+    return (BigDecimal)row.get("CNT");
+
+  }
+  
+  /**
    * { termValue: [ unfilteredCount, filteredCount ], ... }
    * @param user
    * @param contextParamValues
@@ -288,14 +333,39 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException 
    */
   public JSONObject getOntologyTermSummary(User user, Map<String, String> contextParamValues, String ontologyId, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
-    FilterParamNewInstance instance = createFilterParamNewInstance(user, contextParamValues);
-    Map<String, List<String>> unfiltered = getMetaData(user, contextParamValues, ontologyId, instance);
-    JSONObject counts = new JSONObject();
-    getSummaryCounts(unfiltered, counts, 0);
-    String filteredMetaDataSql = FilterParamNewHandler.toInternalValue(user, appliedFilters.toString(), contextParamValues, this);
-    Map<String, List<String>> filtered = getMetaData(user, contextParamValues, ontologyId, instance, filteredMetaDataSql);
-    getSummaryCounts(filtered, counts, 1);
-    return counts;
+
+    FilterParamNewInstance paramInstance = createFilterParamNewInstance(user, contextParamValues);
+
+    /* GET UNFILTERED COUNTS */
+    // get base metadata query
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
+    String metadataSql = queryInstance.getSql();
+    
+    // limit it to our ontology_id
+    String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + metadataSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
+
+    // read into a map of internal -> value(s) 
+    Map<String, List<String>> unfiltered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyId);
+    
+    // get histogram of those, stored in JSON 
+    JSONObject summaryJson = new JSONObject();
+    getSummaryCounts(unfiltered, summaryJson, 0);  // stuff in to 0th position in array
+    
+    
+    /* GET FILTERED COUNTS */
+    // get sql for the set internal ids that are pruned by the filters
+    String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters.toString(), contextParamValues, this);
+    
+    // use that set of ids to limit our ontology id's metadata 
+    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + "where internal in (" + internalSql + ")";
+    
+    // read this filtered set into map of internal -> value(s)
+    Map<String, List<String>> filtered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyIdFiltered);
+    
+    // add the filtered set into the histogram
+    getSummaryCounts(filtered, summaryJson, 1); // stuff in to 1st position in array
+    
+    return summaryJson;
   }
   
   /**
@@ -321,31 +391,6 @@ public class FilterParamNew extends AbstractDependentParam {
     
   }
 
-  /**
-   * @return <term, <propertyName, propertyValue>>, or null if propertyQuery is not specified.
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<String, MetaDataItem> getMetadata(User user, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    
-    if (!allowClientFiltering) 
-      throw new WdkModelException("FilterParam " + getFullName() + " does not allow client side filtering.  Illegally attempting to get metadata");
-    
-    if (metadataQuery == null)
-      return null;
-
-    MetaDataItemNewFetcher fetcher = new MetaDataItemNewFetcher(metadataQuery, contextParamValues, user);
-    Map<String, MetaDataItem> map = null;
-    try {
-      map = CacheMgr.get().getMetadataNewCache().getItem(fetcher.getCacheKey(), fetcher);
-    }
-    catch (UnfetchableItemException ex) {
-      decodeException(ex);
-    }
-    return map;
-  }
-
   private void decodeException(UnfetchableItemException ex) throws WdkModelException, WdkUserException {
     Throwable nestedException = ex.getCause();
     if (nestedException == null) throw new WdkModelException(ex.getMessage());
@@ -354,29 +399,6 @@ public class FilterParamNew extends AbstractDependentParam {
     throw new WdkModelException(nestedException);
   }
 
-
-  /**
-   * get an in-memory copy of meta data for a specified ontology_id
-   * @param user
-   * @param contextParamValues
-   * @param property
-   * @param cache
-   *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
-   *          initialized when a cache is created.)
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  private Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String ontologyId,
-      FilterParamNewInstance cache) throws WdkModelException, WdkUserException {
-        
-    // compose a wrapped sql
-    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
-    String sql = instance.getSql();
-    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
-    return getMetaData(user, contextParamValues, ontologyId, cache, sql);
-  }
-  
   /**
    * get an in-memory copy of meta data for a specified ontology_id
    * @param user
@@ -392,6 +414,8 @@ public class FilterParamNew extends AbstractDependentParam {
   private Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String ontologyId,
       FilterParamNewInstance cache, String sql) throws WdkModelException, WdkUserException {
  
+    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
+
     // run the composed sql, and get the metadata back
     Map<String, List<String>> metadata = new LinkedHashMap<>();
     PreparedStatement ps = null;
