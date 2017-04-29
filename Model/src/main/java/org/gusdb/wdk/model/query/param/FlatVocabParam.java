@@ -97,11 +97,11 @@ public class FlatVocabParam extends AbstractEnumParam {
     super.resolveReferences(model);
 
     // resolve vocab query
-    this.vocabQuery = resolveQuery(model, vocabQueryRef, "vocab query");
+    this.vocabQuery = resolveDependentQuery(model, vocabQueryRef, "vocab query");
   }
 
-  protected Query resolveQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
-    Query query = resolveQuery(model, queryName, queryType);
+  protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
+    Query query = resolveDependentQuery(model, queryName, queryType);
 
     // add a served query param into flatVocabQuery, if it doesn't exist
     ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);

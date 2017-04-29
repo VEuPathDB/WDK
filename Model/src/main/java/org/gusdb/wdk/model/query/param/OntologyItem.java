@@ -1,5 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
+/**
+ * captures the information from an ontology query used by filter param.  Only vaguely related to the official Ontology objects.
+ * @author steve
+ *
+ */
+
 public class OntologyItem {
   private String ontologyId;
   private String parentOntologyId;
