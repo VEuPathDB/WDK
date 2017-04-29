@@ -34,7 +34,7 @@ public abstract class AbstractDependentParam extends Param {
   static final String PARAM_SERVED_QUERY = "ServedQuery";
 
   private String dependedParamRef;
-  private Set<String> dependedParamRefs;
+  private Set<String> dependedParamRefs; 
   private Set<Param> dependedParams;
  
   public AbstractDependentParam() {
@@ -193,7 +193,7 @@ public abstract class AbstractDependentParam extends Param {
    * @return
    * @throws WdkModelException
    */
-  protected Query resolveQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
+  protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
     queryType += " ";
 
     // the  query is cloned to keep a reference to the param

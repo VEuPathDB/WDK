@@ -37,21 +37,16 @@ import org.json.JSONObject;
  *         It is configured by two queries: ontologyQuery and metadataQuery.  The former returns a tree of categories
  *         and information describing them.  The latter maps internal values to entries in the ontology (such as age)
  *         and provides a value for the ontology entry (such as 18).
+ *         
+ *         Both these queries can be dependent.
  *               
  *         The input from the user is in the form of a set of filters.  each filter specifies an ontology entry
  *         and one or more values for it.  The param returns all internal values from the metadata query that match all
  *         supplied filters.  (Ie, the filtering is done on the backend).
  *         
- *         (the filter param handler provides summary information to the client about the distribution of
- *         values for a requested ontology entry)
+ *         the filter param also provides summary information to the client about the distribution of
+ *         values for a requested ontology entry.
  *         
- *         the param is also configured by a flag in the model xml indicating if the client is allowed to do
- *         filtering as the user interacts, instead of asking the backend for summaries each time.  
- *         doing so requires the client to download the results of the metadata query for a particular
- *         ontology entry.  this should only be allowed if the metadata query cardinality is small.  
- *         when the question is submitted, the client still sends as a raw value the set of applied filters
- *         
- *         the metadataQuery can be a dependent query.
  * 
  *         The values returned are:
  *         
@@ -81,12 +76,27 @@ public class FilterParamNew extends AbstractDependentParam {
   static final String COLUMN_IS_RANGE = "is_range";  
   
   // metadata query columns
-  static final String COLUMN_INTERNAL = "internal";
+  static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
   static final String COLUMN_NUMBER_VALUE = "number_value";
   static final String COLUMN_DATE_VALUE = "date_value";
   static final String COLUMN_STRING_VALUE = "string_value";
   
-  public static String typeToColumn(String type) {return type + "_value";}
+  /**
+   * convert a specification of type to the corresponding column name
+   * @param type
+   * @return
+   */
+  public static String typeToColumn(String type) { 
+    switch(type) {
+      case OntologyItem.TYPE_DATE:
+      return COLUMN_DATE_VALUE;
+      case OntologyItem.TYPE_NUMBER:
+      return COLUMN_NUMBER_VALUE;
+      case OntologyItem.TYPE_STRING:
+      default:
+      return COLUMN_STRING_VALUE;
+    }
+  }
 
   private static final int FETCH_SIZE = 1000;
 
@@ -95,8 +105,6 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private String ontologyQueryRef;
   private Query ontologyQuery;
-
-  private String defaultColumns;
   
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
@@ -117,8 +125,6 @@ public class FilterParamNew extends AbstractDependentParam {
     this.ontologyQueryRef = param.ontologyQueryRef;
     if (param.ontologyQuery != null)
       this.ontologyQuery = param.ontologyQuery.clone();
-    if (param.defaultColumns != null)
-      this.defaultColumns = param.defaultColumns;
     this.trimMetadataTerms = param.trimMetadataTerms;
   }
 
@@ -187,23 +193,10 @@ public class FilterParamNew extends AbstractDependentParam {
     this.ontologyQuery = ontologyQuery;
   }
 
-  /**
-   * @return the defaultColumns
-   */
-  public String getDefaultColumns() {
-    return defaultColumns;
-  }
-
-  /**
-   * @param defaultColumns
-   *          the metadataQuery to set
-   */
-  public void setDefaultColumns(String defaultColumns) {
-    this.defaultColumns = defaultColumns;
-  }
 
   /**
    * @return the trimMetadataTerms
+   * TODO: either add this to service layer or remove
    */
   public boolean getTrimMetadataTerms() {
     return trimMetadataTerms;
@@ -225,7 +218,7 @@ public class FilterParamNew extends AbstractDependentParam {
     if (ontologyQueryRef != null) {
       
       // validate dependent params
-      this.ontologyQuery = resolveQuery(model, ontologyQueryRef, "ontology query");
+      this.ontologyQuery = resolveDependentQuery(model, ontologyQueryRef, "ontology query");
 
       // validate columns
       Map<String, Column> columns = ontologyQuery.getColumnMap();
@@ -240,7 +233,7 @@ public class FilterParamNew extends AbstractDependentParam {
     if (metadataQueryRef != null) {
       
       // validate dependent params
-      this.metadataQuery = resolveQuery(model, metadataQueryRef, "metadata query");
+      this.metadataQuery = resolveDependentQuery(model, metadataQueryRef, "metadata query");
 
       // validate columns.
       Map<String, Column> columns = metadataQuery.getColumnMap();
@@ -253,15 +246,15 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
+   * We cache this because typically ontologies are sensitive only to the grossest dependent param (eg, dataset), so will
+   * be reused across users.
    * @return <propertyName, <infoKey, infoValue>>, or null if metadataQuery is not specified
    * @throws WdkModelException
    * @throws WdkUserException
    */
   public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    if (ontologyQuery == null)
-      return null;
-
+    
     OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyQuery, contextParamValues, user);
     Map<String, OntologyItem> map = null;
     try {
@@ -276,8 +269,8 @@ public class FilterParamNew extends AbstractDependentParam {
   /**
    * 
    * @param user
-   * @param contextParamValues
-   * @param appliedFilters
+   * @param contextParamValues holds the depended param values (and possibly others)
+   * @param appliedFilters (in stable value format)
    * @return { totalCount: number; filteredCount: number; }
    * @throws WdkModelException
    * @throws WdkUserException
@@ -286,11 +279,14 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET UNFILTERED (TOTAL) COUNTS */
     // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, null);
     String metadataSql = queryInstance.getSql();
     
     // reduce it to a set of distinct internals
-    String distinctInternalsSql = FilterParamNewHandler.getSqlForDistinctInternals(metadataSql);
+    // we know that each ontology_term_id has a full set of internals, so we just need to query 
+    // one ontology_term_id.
+    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + metadataSql + ") md" 
+          + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + metadataSql + ") where row_num = 1)";
     
     // get count
     String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
@@ -299,13 +295,14 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
-    String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters.toString(), contextParamValues, this);
+    String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
 
     // get count
     sql = "select count(*) from (" + filteredInternalsSql + ")";
 
     BigDecimal filteredCount = runCountSql(sql);
     
+    /* STUFF THEM INTO JSON */  // TODO: really shouldn't format json here.  should be in svc layer
     JSONObject json = new JSONObject();
     json.put("totalCount", totalCount);
     json.put("filteredCount", filteredCount);
@@ -319,7 +316,6 @@ public class FilterParamNew extends AbstractDependentParam {
     List<Map<String,Object>> results = handler.getResults();
     Map<String,Object> row = results.get(0);
     return (BigDecimal)row.get("CNT");
-
   }
   
   /**
@@ -338,7 +334,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET UNFILTERED COUNTS */
     // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, null);
     String metadataSql = queryInstance.getSql();
     
     // limit it to our ontology_id
@@ -354,7 +350,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
-    String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters.toString(), contextParamValues, this);
+    String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
     
     // use that set of ids to limit our ontology id's metadata 
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + "where internal in (" + internalSql + ")";

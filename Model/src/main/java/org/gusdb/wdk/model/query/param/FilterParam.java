@@ -195,7 +195,7 @@ public class FilterParam extends FlatVocabParam {
 
     // resolve property query, the property query should have the same params as vocab query
     if (metadataQueryRef != null) {
-      this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
+      this.metadataQuery = resolveDependentQuery(model, metadataQueryRef, "property query");
 
       // the propertyQuery must have exactly 3 columns: term, property, and value.
       Map<String, Column> columns = metadataQuery.getColumnMap();

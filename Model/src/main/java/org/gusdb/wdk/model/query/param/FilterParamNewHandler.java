@@ -112,45 +112,35 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-
     try {
-      Map<String, OntologyItem> ontology = ((FilterParamNew) this.param).getOntology(user, contextParamValues);
-      String metadataSql = getMetadataQuerySql(user, stableValue, contextParamValues, (FilterParamNew) this.param);
       JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
-      String metadataTableName = "md";
-      String filterSelect = "SELECT md.internal FROM (" + metadataSql + ") md WHERE md.ontology_term_id = ";
-      StringBuilder filtersSql = new StringBuilder();
-      for (int i = 0; i < jsFilters.length(); i++) {
-        if (i > 0) filtersSql.append(" INTERSECT ");
-        JSONObject jsFilter = jsFilters.getJSONObject(i);
-        filtersSql.append(filterSelect + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
-        filtersSql.append(getFilterAsAndClause(jsFilter, metadataSql, ontology, metadataTableName));
-      }
-      return filtersSql.toString();
+      return toInternalValue(user, jsValue, contextParamValues, (FilterParamNew)this.param);
     }
-    catch (JSONException | WdkUserException ex) {
+    catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
+
   }
   
-  public static String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues, FilterParamNew param)
+  // TODO: review this  
+  static String toInternalValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param)
       throws WdkModelException {
 
     try {
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
-      String metadataSql = getMetadataQuerySql(user, stableValue, contextParamValues, param);
-      JSONObject jsValue = new JSONObject(stableValue);
+      String metadataSql = getMetadataQuerySql(user, contextParamValues, param);
       JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
       String metadataTableName = "md";
-      String filterSelect = getSqlForDistinctInternals(metadataSql);
+      String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
+      
+      if (jsFilters.length() == 0) return filterSelectSql;
 
       StringBuilder filtersSql = new StringBuilder();
       for (int i = 0; i < jsFilters.length(); i++) {
         if (i > 0) filtersSql.append(" INTERSECT ");
         JSONObject jsFilter = jsFilters.getJSONObject(i);
-        filtersSql.append(filterSelect + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
-        filtersSql.append(getFilterAsAndClause(jsFilter, metadataSql, ontology, metadataTableName));
+        filtersSql.append(filterSelectSql + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
+        filtersSql.append(getFilterAsAndClause(jsFilter, ontology, metadataTableName));
       }
       return filtersSql.toString();
     }
@@ -158,32 +148,27 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throw new WdkModelException(ex);
     }
   }
-  
-  // we know that each ontology_term_id has a full set of internals, so we just need to query 
-  // one ontology_term_id.
-  static String getSqlForDistinctInternals(String metadataSql) {
-    return "SELECT distinct md.internal FROM (" + metadataSql + ") md" 
-        + " WHERE md.ontology_term_id IN (select ontology_term_id from (" + metadataSql + ") where row_num = 1)";
-  }
-
  
-  private static String getFilterAsAndClause(JSONObject jsFilter, String metadataSql, Map<String, OntologyItem> ontology, String metadataTableName) throws WdkModelException, WdkUserException {
+  // include in where clause a filter by ontology_id
+  private static String getFilterAsAndClause(JSONObject jsFilter, Map<String, OntologyItem> ontology, String metadataTableName) throws WdkModelException, WdkUserException {
 
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
     String columnName = FilterParamNew.typeToColumn(type);
     
+    String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
+    
     if (ontologyItem.getIsRange())
-      return getRangeAndClause(jsFilter, columnName, metadataTableName);
+      return whereClause + getRangeAndClause(jsFilter, columnName, metadataTableName);
     else 
-      return getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
+      return whereClause + getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
   }
   
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
-    JSONObject range = jsFilter.getJSONObject("value");
-    String min = range.getString("min");
-    String max = range.getString("max");
-    return "AND " + metadataTableName + "." + columnName + " > " + min + "AND " + metadataTableName + ".date_value < " + max; 
+    JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
+    String min = range.getString(FILTERS_MIN);
+    String max = range.getString(FILTERS_MAX);
+    return " AND " + metadataTableName + "." + columnName + " > " + min + "AND " + metadataTableName + "." + columnName + " < " + max; 
   }
   
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
@@ -195,11 +180,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       if (j != 0) sb.append(",");
       sb.append(val);
     }
-    return "AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
+    return " AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
 
   }
   
-  private static String getMetadataQuerySql(User user, String stableValue, Map<String, String> contextParamValues, FilterParamNew filterParam) throws WdkModelException, WdkUserException {
+  private static String getMetadataQuerySql(User user, Map<String, String> contextParamValues, FilterParamNew filterParam) throws WdkModelException, WdkUserException {
 
     QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, filterParam.getMetadataQuery());
     return instance.getSql();
@@ -328,19 +313,19 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         display += ontologyItem.getDisplayName() + " is ";
         
         if (ontologyItem.getIsRange()) {
-          JSONObject range = jsFilter.getJSONObject("value");
-          String min = range.getString("min");
-          String max = range.getString("max");
+          JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
+          String min = range.getString(FILTERS_MIN);
+          String max = range.getString(FILTERS_MAX);
           display += min == null ? "less than " + max
               : max == null ? "greater than " + min : "between " + min + " and " + max;
         }
         else {
-          JSONArray values = jsFilter.getJSONArray("value");
+          JSONArray values = jsFilter.getJSONArray(FILTERS_VALUE);
           for (int j = 0; j < values.length(); j++) {
             if (values.get(j) == JSONObject.NULL)
-              values.put(j, "uknown");
+              values.put(j, "unknown");
           }
-          display += jsFilter.getJSONArray("value").join(", ");
+          display += values.join(", ");
 
         }
         if (i != jsFilters.length())
