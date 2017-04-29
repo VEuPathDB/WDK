@@ -1,15 +1,14 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let AnswerTableHeader = React.createClass({
-  propTypes: {
-    descriptor: React.PropTypes.object.isRequired
-  },
+function AnswerTableHeader(props) {
+  let { descriptor: { help, displayName } } = props;
+  return <span title={help || ''}>{displayName}</span>;
+}
 
-  render() {
-    let { descriptor: { help, displayName } } = this.props;
-    return <span title={help || ''}>{displayName}</span>;
-  }
-});
+AnswerTableHeader.propTypes = {
+  descriptor: React.PropTypes.object.isRequired
+};
+
 
 export default wrappable(AnswerTableHeader);

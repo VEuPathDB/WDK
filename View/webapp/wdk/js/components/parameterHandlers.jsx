@@ -11,13 +11,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
   var PARAM_DESTROY_EVENT = ns.PARAM_DESTROY_EVENT = 'destroy.wdk-param';
 
-  var displayTermMap;
-  var termDisplayMap;
-
   //==============================================================================
   function init(element) {
-    displayTermMap = [];
-    termDisplayMap = [];
 
     attachLoadingListener(element);
     initDependentParamHandlers(element);
@@ -182,7 +177,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
           getParamJson($param, sendReqUrl)
             .then(function(data) {
-              // createAutoComplete(data, paramName, element);
               createFilteredSelect(data, paramName, $param, keepPreviousValue);
             });
         }
@@ -379,11 +373,12 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   function createFilteredSelect(vocab, paramName, $param, keepPreviousValue) {
     var $input = $param.find('input[name="value(' + paramName + ')"]'),
-        keepOpen = false,
         format = function(item) { return item.display; },
         displayCurrent = function(selectedObject, currentSearchTerm) {
           return currentSearchTerm;
-        };
+        },
+        delimRegex = /[,;\n\s]+/,
+        terms = new Set(vocab.values.map(value => value.term));
 
     if (!keepPreviousValue) $input.val('');
 
@@ -391,30 +386,42 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       placeholder: 'Begin typing to see suggestions...',
       minimumInputLength: 3,
       allowClear: true,
+      closeOnSelect: false,
       multiple: $param.data('multiple'),
       id: 'term',
-      createSearchChoice: function(term) {
-        return _.find(vocab.values, value => value.term === term.trim());
+      matcher(term, text) {
+        return term.split(';').some(termPart => text.toUpperCase().indexOf(termPart.trim().toUpperCase()) > -1)
       },
-      tokenSeparators: [ ',', ';', '\n' ],
       data: { results: vocab.values, text: 'display' },
       formatSelection: format,
       formatResult: format,
       nextSearchTerm: displayCurrent
     });
 
-    if ($param.data('multiple')) {
-      $param
-        .on('keydown', function(e) {
-          if (e.ctrlKey || e.metaKey) keepOpen = true;
-        })
-        .on('keyup', function(e) {
-          if (!(e.ctrlKey || e.metaKey)) keepOpen = false;
-        })
-        .on('change', function() {
-          if (keepOpen) $input.select2('open');
-        });
-    }
+    // closeOnSelect doesn't work, so this is a fix
+    $input.on('select2-selecting', function() {
+      $input.one('select2-close', function() {
+        $input.select2('open');
+      })
+    });
+
+    // Search for matching vocab values, then use $input.select2('val', ...)
+    $input.select2('container').find('input.select2-input').on('paste', function(event) {
+      event.preventDefault();
+      const currentValues = $input.select2('val');
+      const parsedInput = event.originalEvent.clipboardData.getData('text').trim().split(delimRegex);
+      const [ known, unknown ] = _.partition(parsedInput, value => terms.has(value));
+
+      if (known.length > 0) {
+        $input.select2('val', currentValues.concat(known));
+      }
+
+      if (unknown.length > 0) {
+        event.target.value = unknown.join('; ');
+      } else {
+        $input.select2('close');
+      }
+    });
 
     // remove invalid values from select2 inputs
     $param.closest('form').on('submit', function() {
@@ -426,269 +433,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
   }
-
-  // TODO Delete chosen-based function when we know select2-based is adequate.
-  //==============================================================================
-  // function createFilteredSelect_old(xmlDOM, paramName, element) {
-  //   // xmlDOM is an XML DOM object - it needs to be convered into a select list
-  //   var values = [],
-  //       displayDiv = element.find('#' + paramName + '_display').html(''), // may want to cache
-  //       removeAllDiv = $('<div class="remove-all"><a href="#">Remove all</a></div>'),
-  //       multiDelimRegExp = /\s*[,;\n\s]\s*/,
-  //       isMultiple = displayDiv.data('multiple'),
-  //       maxSelected = displayDiv.data('max-selected'),
-  //       select = $('<select/>').prop('multiple', isMultiple),
-  //       chosenEvents = [], // jshint ignore:line
-  //       chosenOpts = {
-  //         disable_search_threshold: 10,
-
-  //         placeholder_text_multiple: 'Select some items',
-
-  //         // allow eg 'kinase binding' as term
-  //         enable_split_word_search: false,
-
-  //         // TODO - allow paramRef override
-  //         max_selected_options: maxSelected,
-
-  //         // search any part of term
-  //         search_contains: true,
-
-  //         width: '35em'
-  //       };
-
-  //   maxSelected = $.isNumeric(maxSelected) ? maxSelected : 1000;
-
-  //   $(xmlDOM).find('term').each(function(idx, term) {
-  //     $('<option/>')
-  //       .val($(term).attr('id'))
-  //       .text($(term).text())
-  //       .prop('selected', values.indexOf($(term).attr('id')) > -1)
-  //       .appendTo(select);
-  //   });
-
-  //   select
-  //     .appendTo(displayDiv)
-
-  //     .on('chosen:ready', function(event, chosenObj) {
-  //       var input = chosenObj.chosen.container.find('input');
-
-  //       if (isMultiple) {
-  //         // allow for pasted list of IDs
-  //         input[0].onpaste = function() {
-  //           // event fires before input value is updated, so we need to
-  //           // push the function call down the stack
-  //           setTimeout(parsePastedInput.bind(this), 0);
-  //         };
-  //       }
-
-  //       // if first term contains asterisk, 'turn off' plugin and use raw value
-  //       // due to complications with SQL, wildcard support has been dropped
-  //       //
-  //       // input
-  //       //   .one('keyup', function() {
-  //       //     cacheChosenEvents(chosenObj);
-  //       //   })
-
-  //       //   .on('keyup', function(e) {
-  //       //     if (isMultiple && select.find(':selected').length > 0) return;
-
-  //       //     if (this.value.indexOf('*') > -1) {
-  //       //       turnOffChosen(chosenObj);
-  //       //       if (isMultiple) {
-  //       //         chosenObj.chosen.search_field.width('35em');
-  //       //       }
-  //       //     } else {
-  //       //       turnOnChosen(chosenObj);
-  //       //     }
-  //       //   });
-  //     })
-
-  //     // configure chosen
-  //     .chosen(chosenOpts);
-
-  //   if (isMultiple) {
-  //     // only show Clear all if there are selected items
-  //     select.on('change', function() {
-  //       removeAllDiv.toggle(select.find(':selected').length > 0);
-  //     });
-
-  //     // attach behavior to Clear all link
-  //     removeAllDiv.hide().appendTo(displayDiv)
-  //       .on('click', 'a', function(e) {
-  //         e.preventDefault();
-  //         select.find(':selected').prop('selected', false);
-  //         select.trigger('chosen:updated');
-  //         $(e.delegateTarget).hide();
-  //       });
-  //   }
-
-  //   // 1. split values
-  //   // 2. select options
-  //   // 3. refresh chosen
-  //   function parsePastedInput() {
-  //     // jshint validthis:true
-  //     var value = this.value,
-  //         unfound = [],
-  //         values;
-  //     if (!multiDelimRegExp.test(value) /* || !chosen.multi */) {
-  //       return;
-  //     }
-  //     values = value.split(multiDelimRegExp);
-
-  //     // find values in select list, set selected to true, and pop from values
-  //     values.forEach(function(value) {
-  //       if (value === '') return;
-
-  //       if (select.find('option[value="' + value + '"]')
-  //         .prop('selected', true).length !== 1) {
-  //         unfound.push(value);
-  //       }
-  //     });
-  //     select.trigger('chosen:updated');
-
-  //     $(this).val(unfound.join(', ') || null).focus();
-  //   }
-
-  //   // jshint ignore:start
-  //   function cacheChosenEvents(chosenObj) {
-  //     chosenEvents.push({ jqElement: chosenObj.chosen.container, events: {} });
-  //     chosenEvents.push({ jqElement: chosenObj.chosen.search_field, events: {} });
-  //     chosenEvents.push({ jqElement: $(document), events: {} });
-
-  //     chosenEvents.forEach(function(eventsObj) {
-  //       var events = $._data(eventsObj.jqElement[0], 'events');
-  //       for (var type in events) {
-  //         events[type].forEach(function(o) {
-  //           if (o.namespace === 'chosen') {
-  //             eventsObj.events[type] = eventsObj.events[type] || [];
-  //             eventsObj.events[type].push(o);
-  //           }
-  //         });
-  //       }
-  //     });
-  //   }
-
-  //   function turnOffChosen(chosenObj) {
-  //     if (select.data('chosen-off')) return;
-
-  //     chosenEvents.forEach(function(eventsObj) {
-  //       for (var type in eventsObj.events) {
-  //         eventsObj.jqElement.unbind(type + '.chosen');
-  //       }
-  //     });
-
-  //     //chosenObj.chosen.dropdown.hide();
-  //     chosenObj.chosen.search_results.hide();
-
-  //     select.data('chosen-off', true);
-  //   }
-
-  //   function turnOnChosen(chosenObj) {
-  //     // jshint loopfunc:true
-  //     if (!select.data('chosen-off')) return;
-
-  //     chosenEvents.forEach(function(eventsObj) {
-  //       for (var type in eventsObj.events) {
-  //         eventsObj.events[type].forEach(function(eventObj) {
-  //           eventsObj.jqElement.bind(type + '.chosen', eventObj.handler);
-  //         });
-  //       }
-  //     });
-
-  //     //chosenObj.chosen.dropdown.show();
-  //     chosenObj.chosen.search_results.show();
-
-  //     select.data('chosen-off', false);
-  //   }
-
-  //   function parsePastedInputjQuery(input, data) {
-  //     var value = input.val(),
-  //         unfound = [],
-  //         multiDelimRegExp = /\s*\n\s*/,
-  //         values;
-
-  //     if (!multiDelimRegExp.test(value) /* || !chosen.multi */) {
-  //       return;
-  //     }
-
-  //     values = value.split(multiDelimRegExp);
-
-  //     // find values in select list, set selected to true, and pop from values
-  //     for (var i = 0; i < values.length; i++) {
-  //       if (values[i] === '') continue;
-
-  //       if (data.indexOf(value[i]) === -1) {
-  //         unfound.push(values[i]);
-  //       }
-  //     }
-
-  //     return unfound;
-  //   }
-  //   // jshint ignore:end
-
-  // }
-
-  //==============================================================================
-  // jshint ignore:start
-  function createAutoComplete(obj, name, element) {
-    element.find("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
-    var def = [];
-    displayTermMap[name] = [];
-    termDisplayMap[name] = [];
-    var term;
-    var display;
-    var value = '';
-    if( $("term",obj).length !== 0 ) {
-      $("term",obj).each(function() {
-        term = this.getAttribute('id');
-        display = this.firstChild.data;
-        def.push(display);
-        displayTermMap[name][display] = term;
-        termDisplayMap[name][term] = display;
-      });
-    }
-
-    var odd = true;
-    var noMatch = "<i>No item found</i>";
-    var wildCard = "<i>Find matches using a wildcard search</i>";
-    var wildCardTest = /\*/;
-    element.find("#" + name + "_display").autocomplete({
-      source: function( request, response ) {
-        var result = $.ui.autocomplete.filter(def, request.term);
-        if (result.length === 0) {
-          result.push(wildCardTest.test(request.term) ? wildCard : noMatch);
-        } else {
-          var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
-          result = $.map(result, function(item){
-            var display = item.replace(matcher, "<strong>$1</strong>");
-            return { label: display,    value: item};
-          });
-        }
-        odd = true;
-        response(result);
-      },
-      minLength: 3,
-      focus: function(event, ui) {
-        if(ui.item.value === noMatch || ui.item.value === wildCard) return false;
-      },
-      select: function(event, ui){
-        if(ui.item.value === noMatch || ui.item.value === wildCard) return false;
-      }
-    }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
-      // only change here was to replace .text() with .html()
-      // and indenting
-      var content = $( "<li></li>" )
-          .data( "ui-autocomplete-item", item )
-          .append("<a>" + item.label + "</a>")
-          .appendTo( ul );
-      if (!odd) content.addClass("even");
-      odd = !odd;
-      return content;
-    };
-
-    element.find("#" + name + "_display").val(value).removeAttr('disabled');
-  }
-  // jshint ignore:end
 
   //==============================================================================
   function updateDependentParam(dependentParam, element, keepPreviousValue) {
@@ -762,7 +506,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       sendReqUrl = sendReqUrl + '&json=true';
 
       xhr = $.getJSON(sendReqUrl, function(data) {
-        // createAutoComplete(data, paramName);
         createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
         element.find(".param[name='" + paramName + "']").attr("ready", "");
         dependentParam

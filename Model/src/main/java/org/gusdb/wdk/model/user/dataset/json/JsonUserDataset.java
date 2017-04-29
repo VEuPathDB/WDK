@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetMeta;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -110,7 +111,7 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public UserDatasetFile getFile(String name) {
+  public UserDatasetFile getFile(UserDatasetSession dsSession, String name) {
     return dataFiles.get(name);
   }
 

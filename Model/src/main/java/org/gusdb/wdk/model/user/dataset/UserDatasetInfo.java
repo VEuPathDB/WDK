@@ -28,16 +28,16 @@ public class UserDatasetInfo {
   private final List<UserDatasetShareUser> _shares;
   
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-      final UserFactory userFactory) {
+		  UserDatasetSession session, final UserFactory userFactory) {
     try {
       int ownerId = dataset.getOwnerId();
       final Map<Integer,User> userCache = new HashMap<>();
       _userDataset = dataset;
       _isInstalled = isInstalled;
       _owner = getUser(userCache, ownerId, userFactory);
-      _ownerQuota = store.getQuota(ownerId);
+      _ownerQuota = session.getQuota(ownerId);
       _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames());
-      _shares = Functions.mapToList(store.getSharedWith(ownerId, dataset.getUserDatasetId()),
+      _shares = Functions.mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()),
           new Function<UserDatasetShare,UserDatasetShareUser>() {
             @Override public UserDatasetShareUser apply(UserDatasetShare share) {
               return new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared());

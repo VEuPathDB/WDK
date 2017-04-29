@@ -57,14 +57,34 @@ export class Seq<T> {
     return new Seq(iterable);
   }
 
-  private constructor(private iterable: Iterable<T>) { }
+  private _iterator?: Iterator<T>;
+  private _cache: T[] = [];
 
-  [Symbol.iterator]() {
-    return this.iterable[Symbol.iterator]();
+  private constructor(private _iterable: Iterable<T>) { }
+
+  *[Symbol.iterator]() {
+
+    // Since this._iterator can be a generator object, we cache the iteration
+    // so it can be replayed. Generator objects are stateful, so this is
+    // necessary.
+    yield* this._cache;
+    if (this._iterator == null) {
+      this._iterator = this._iterable[Symbol.iterator]();
+    }
+    while (true) {
+      const { done, value } = this._iterator.next();
+      if (done) {
+        break;
+      }
+      else {
+        this._cache.push(value);
+        yield value;
+      }
+    }
   }
 
   concat(...iterables: Iterable<T>[]) {
-    return new Seq(concat(this.iterable, ...iterables));
+    return new Seq(concat(this._iterable, ...iterables));
   }
 
   map<U>(fn: Mapper<T, U>) {

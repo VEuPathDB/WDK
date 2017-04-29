@@ -1,24 +1,14 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -36,12 +26,19 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.gusdb.wdk.model.user.dataset.event.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/**
+ * This object accepts and events file in the form of a json array
+ * @author crisl-adm
+ *
+ */
 public class UserDatasetEventArrayHandler {
 
   protected static final String ARG_PROJECT = "project";
@@ -53,6 +50,16 @@ public class UserDatasetEventArrayHandler {
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventArrayHandler.class);
 
+  /**
+   * A list of user dataset events is processed.  Only events that have not been handled
+   * to date are processed.  The nature of the processing is defined by the user dataset
+   * event object (install, uninstall, share).
+   * @param eventList - list of user dataset event to be processed.
+   * @param typeHandlers - handlers to define how the event is to be translated into
+   * database records in tables.
+   * @param tmpDir
+   * @throws WdkModelException
+   */
   public void handleEventList(List<UserDatasetEvent> eventList,
       Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
           throws WdkModelException {
@@ -66,28 +73,30 @@ public class UserDatasetEventArrayHandler {
       for (UserDatasetEvent event : eventList) {
 
         if (lastHandledEventId != null && event.getEventId() <= lastHandledEventId) continue;
-
+        
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-          if (typeHandler == null)
+          if (typeHandler == null) {
             throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " +
-                event.getUserDatasetType() + " which is not present in the wdk configuration");
-          UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler,
-              getUserDatasetStore(), appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
+              event.getUserDatasetType() + " which is not present in the wdk configuration");
+          }    
+          UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
+            appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }
 
         else if (event instanceof UserDatasetUninstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-          if (typeHandler == null)
+          if (typeHandler == null) {
             throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " +
-                event.getUserDatasetType() + " which is not present in the wdk configuration");
+              event.getUserDatasetType() + " which is not present in the wdk configuration");
+          }  
           UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
-              appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
+            appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }
 
         else if (event instanceof UserDatasetShareEvent) {
           UserDatasetEventHandler.handleShareEvent((UserDatasetShareEvent) event,
-              appDbDataSource, getUserDatasetSchemaName());
+            appDbDataSource, getUserDatasetSchemaName());
         }
 
         count++;
@@ -101,7 +110,6 @@ public class UserDatasetEventArrayHandler {
 
   /**
    * Find the highest event id in the app db's handled events log.  Null if none.
-   * 
    * @param appDbDataSource
    * @param userDatasetSchemaName
    * @return
@@ -179,8 +187,8 @@ public class UserDatasetEventArrayHandler {
    * Accepts an array of event json objects from a Jenkins job that composes the content a series of
    * event files containing json objects into a single json array and returns a corresponding list
    * of UserDatasetEvent objects.
-   * @param eventListing
-   * @return
+   * @param eventJsonArray - JSONArray containing an array of event JSONObjects
+   * @return - a list of UserDatasetEvents corresponding to 
    * @throws WdkModelException
    */
   public static List<UserDatasetEvent> parseEventsArray(JSONArray eventJsonArray) throws WdkModelException {
@@ -192,66 +200,18 @@ public class UserDatasetEventArrayHandler {
     return events;
   }
 
-  public static List<UserDatasetEvent> parseEventsFile(File eventsFile) throws WdkModelException {
-
-    List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
-
-    try (InputStream in = Files.newInputStream(eventsFile.toPath());
-         BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-
-      String line = null;
-      while ((line = reader.readLine()) != null) {
-        // TODO potentially content of this while loop can be replaced with parseEventLine method
-        line = line.trim();
-        if (line.length() == 0) break;
-        if (line.startsWith("#")) continue;
-        String[] columns = line.split("\t");
-
-        Long eventId = new Long(columns[0]);
-        String project = columns[2].length() > 0 ? columns[2] : null;
-        Set<String> projectsFilter = new HashSet<String>();
-        projectsFilter.add(project);
-        Integer userDatasetId = new Integer(columns[3]);
-        UserDatasetType userDatasetType = UserDatasetTypeFactory.getUserDatasetType(columns[4], columns[5]);
-
-        // event_id install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
-        if (columns[1].equals("install")) {
-          Integer ownerUserId = new Integer(columns[6]);
-          String[] dependencyArr = columns[7].split(" "); // for now, support just one dependency
-          Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
-          dependencies.add(new UserDatasetDependency(dependencyArr[0], dependencyArr[1], ""));
-          events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
-        }
-
-        // event_id uninstall projects user_dataset_id ud_type_name ud_type_version
-        else if (columns[1].equals("uninstall")) {
-          events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
-        }
-
-        // event_id share projects user_dataset_id ud_type_name ud_type_version owner_id recipient_id grant
-        else if (columns[1].equals("share")) {
-          Integer ownerId = new Integer(columns[6]);
-          Integer recipientId = new Integer(columns[7]);
-          ShareAction action = columns[8].equals("grant") ?
-              ShareAction.GRANT : ShareAction.REVOKE;
-          events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
-        }
-
-        else {
-          throw new WdkModelException("Unrecognized user dataset event type: " + columns[1]);
-        }
-      }
-    }
-    catch (IOException e) {
-      throw new WdkModelException(e);
-    }
-
-    return events;
-  }
-
-  private static boolean parseEventObject(JSONObject eventJson, List<UserDatasetEvent> events) throws WdkModelException {
+  /**
+   * Parse the individual JSONObject representing an event and call the appropriate event
+   * handler based on the information contained within that object.
+   * @param eventJson - JSONObject representing the event
+   * @param events - a list of UserDatasetEvents to which new events are added.
+   * @throws WdkModelException
+   */
+  protected static void parseEventObject(JSONObject eventJson, List<UserDatasetEvent> events) throws WdkModelException {
     Long eventId = eventJson.getLong("eventId");
     String event = eventJson.getString("event");
+    
+    // Extract an array of projects relevant to the event and add them to a project filter.
     String projectsJson = eventJson.getJSONArray("projects").toString();
     ObjectMapper mapper = new ObjectMapper();
     TypeReference<Set<String>> setType = new TypeReference<Set<String>>() {};
@@ -264,7 +224,10 @@ public class UserDatasetEventArrayHandler {
 	}
     Set<String> projectsFilter = new HashSet<>();
     projectsFilter.addAll(projects);
+    
     Integer userDatasetId = eventJson.getInt("datasetId");
+    
+    
     TypeReference<Map<String,String>> mapType  = new TypeReference<Map<String,String>>() {};
     String typeJson = eventJson.getJSONObject("type").toString();
     Map<String, String> type = null;
@@ -276,9 +239,11 @@ public class UserDatasetEventArrayHandler {
     }
     UserDatasetType userDatasetType = UserDatasetTypeFactory.getUserDatasetType(type.get("name"), type.get("version"));
 
-    // event_id install projects user_dataset_id ud_type_name ud_type_version owner_user_id genome genome_version
+    // Dataset is in the user's workspace and now needs to be installed into the database.
     if ("install".equals(event)) {
       Integer ownerUserId = eventJson.getInt("owner");
+      
+      // A dataset may have multiple dependencies
       Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
       JSONArray dependencyJsonArray = eventJson.getJSONArray("dependencies");
       for(int i = 0; i < dependencyJsonArray.length(); i++) {
@@ -289,12 +254,12 @@ public class UserDatasetEventArrayHandler {
       events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
     }
 
-    // event_id uninstall projects user_dataset_id ud_type_name ud_type_version
+    // Dataset has been deleted from the workspace and now needs to be removed from the database. 
     else if ("uninstall".equals(event)) {
       events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
     }
 
-    // event_id share projects user_dataset_id ud_type_name ud_type_version owner_id recipient_id grant
+    // Dataset sharing has either been granted or revoked in the workspace and now must be reflected in the database
     else if ("share".equals(event)) {
       Integer ownerId = eventJson.getInt("owner");
       Integer recipientId = eventJson.getInt("recipient");
@@ -306,7 +271,7 @@ public class UserDatasetEventArrayHandler {
     else {
       throw new WdkModelException("Unrecognized user dataset event type: " + event);
     }
-    return false;
+
   }
 
   public void setProjectId(String projectId) {this.projectId = projectId;}

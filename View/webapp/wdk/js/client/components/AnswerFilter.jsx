@@ -16,37 +16,46 @@ function removeFromArray(arr, item) {
   });
 }
 
-let AnswerFilter = React.createClass({
+class AnswerFilter extends React.Component {
 
-  getInitialState() {
+  constructor(props) {
+    super(props);
+
+    this.toggleFilterFieldSelector = this.toggleFilterFieldSelector.bind(this);
+    this.handleFilter = this.handleFilter.bind(this);
+    this.toggleAttribute = this.toggleAttribute.bind(this);
+    this.toggleTable = this.toggleTable.bind(this);
+    this.selectAll = this.selectAll.bind(this);
+    this.clearAll = this.clearAll.bind(this);
+
     let { filterAttributes, filterTables } = this.props;
-    return {
+    this.state = {
       showFilterFieldSelector: false,
       filterAttributes,
       filterTables
     };
-  },
+  }
 
   componentWillMount() {
     this.handleFilter = debounce(this.handleFilter, 300);
-  },
+  }
 
   componentDidUpdate(prevProps, prevState) {
     let { filterAttributes, filterTables } = this.state;
     if (filterAttributes !== prevState.filterAttributes || filterTables !== prevState.filterTables) {
       this.handleFilter();
     }
-  },
+  }
 
   toggleFilterFieldSelector() {
     this.setState({ showFilterFieldSelector: !this.state.showFilterFieldSelector });
-  },
+  }
 
   handleFilter() {
     let value = ReactDOM.findDOMNode(this.refs.filterInput).value;
     let { filterAttributes, filterTables } = this.state;
     this.props.onFilter(value, filterAttributes, filterTables);
-  },
+  }
 
   toggleAttribute(e) {
     let attr = e.target.value;
@@ -54,7 +63,7 @@ let AnswerFilter = React.createClass({
     this.setState({
       filterAttributes: op(this.state.filterAttributes, attr)
     });
-  },
+  }
 
   toggleTable(e) {
     let table = e.target.value;
@@ -62,7 +71,7 @@ let AnswerFilter = React.createClass({
     this.setState({
       filterTables: op(this.state.filterTables, table)
     });
-  },
+  }
 
   selectAll(e) {
     let { attributes, tables } = this.props.recordClass;
@@ -71,12 +80,12 @@ let AnswerFilter = React.createClass({
       filterTables: tables.map(t => t.name)
     });
     e.preventDefault();
-  },
+  }
 
   clearAll(e) {
     this.setState({ filterAttributes: [], filterTables: [] });
     e.preventDefault();
-  },
+  }
 
   render() {
     let { filterAttributes, filterTables, showFilterFieldSelector } = this.state;
@@ -144,6 +153,6 @@ let AnswerFilter = React.createClass({
     );
   }
 
-});
+}
 
 export default wrappable(AnswerFilter);

@@ -47,7 +47,7 @@ public interface UserDataset {
    * Get a file by name.  We don't need more than the basename, because, within
    * a dataset, it is just a flat set of files.
    */
-  UserDatasetFile getFile(String name) throws WdkModelException;
+  UserDatasetFile getFile(UserDatasetSession dsSession, String name) throws WdkModelException;
     
   /**
    * Get the date this dataset was created, by whatever application created it.

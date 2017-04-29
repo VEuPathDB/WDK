@@ -1,17 +1,18 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.gusdb.wdk.model.user.dataset.event.UserDatasetExternalDatasetEvent.ExternalDatasetAction;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
-import org.apache.log4j.Logger;
 
 
 public class UserDatasetEventHandler {
@@ -21,34 +22,36 @@ public class UserDatasetEventHandler {
   private static final String installedTable = "InstalledUserDataset";
   private static final String ownerTable = "UserDatasetOwner";
   private static final String sharedTable = "UserDatasetSharedWith";
-  private static final String externalTable = "UserDatasetExternalDataset";
   private static final String eventTable = "UserDatasetEvent";
 
-  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore userDatasetStore, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir, String projectId) throws WdkModelException {
+  public static void handleInstallEvent (UserDatasetInstallEvent event, UserDatasetTypeHandler typeHandler, UserDatasetStore dsStore, DataSource appDbDataSource, String userDatasetSchemaName, Path tmpDir, String projectId) throws WdkModelException {
 
     logger.info("Installing user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
     
-    // there is a theoretical race condition here, because this check is not in the same
-    // transaction as the rest of this method.   but that risk is very small.
-    if (!userDatasetStore.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
-      logger.info("User dataset " + event.getUserDatasetId() + " not found in store.  Was probably deleted.  Skipping install.");
-    } 
     
-    else {
-      UserDataset userDataset = userDatasetStore.getUserDataset(event.getOwnerUserId(),
-          event.getUserDatasetId());
+    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {	
+    
+      // there is a theoretical race condition here, because this check is not in the same
+      // transaction as the rest of this method.   but that risk is very small.
+      if (!dsSession.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
+        logger.info("User dataset " + event.getUserDatasetId() + " not found in store.  Was probably deleted.  Skipping install.");
+      } 
+    
+      else {
+        UserDataset userDataset = dsSession.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
 
-      String sql = "insert into " + userDatasetSchemaName + installedTable +
+        String sql = "insert into " + userDatasetSchemaName + installedTable +
           " (user_dataset_id, name) values (?, ?)";
-      SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
-      Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
-      sqlRunner.executeUpdate(args);
+        SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
+        Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
+        sqlRunner.executeUpdate(args);
 
-      typeHandler.installInAppDb(userDataset, tmpDir, projectId);
-      grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+        typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
+        grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
           "UserDatasetOwner");
-    }
+      }
+    }  
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
 
@@ -155,14 +158,6 @@ public class UserDatasetEventHandler {
     String sql = "delete from " + userDatasetSchemaName + tableName + " where owner_user_id = ? and recipient_user_id = ? and user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
     Object[] args = {ownerId, recipientId, userDatasetId};
-    sqlRunner.executeUpdate(args);
-  }
-
-  private static void revokeAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
-    logger.info("Revoking access to user dataset " + userDatasetId + " from user " + userId);
-    String sql = "delete from " + userDatasetSchemaName + tableName + " where user_id = ? and user_dataset_id = ?";
-    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
-    Object[] args = {userId, userDatasetId};
     sqlRunner.executeUpdate(args);
   }
 

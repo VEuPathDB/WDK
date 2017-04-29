@@ -11,9 +11,15 @@ import SiteMapController from './controllers/SiteMapController';
 import UserDatasetListController from './controllers/UserDatasetListController';
 import UserDatasetItemController from './controllers/UserDatasetItemController';
 
+// TODO Uncomment when question page is moved
+// import QuestionController from './controllers/QuestionController';
+
 export default (
   <Route path="/">
     <IndexRoute component={IndexController}/>
+    {/* TODO Uncomment when question page is moved
+    <Route path="search/:recordClass/:question" component={QuestionController}/>
+    */}
     <Route path="search/:recordClass/:question/result" component={AnswerController}/>
     <Route path="record/:recordClass/download/*" component={DownloadFormController}/>
     <Route path="record/:recordClass/*" component={RecordController}/>

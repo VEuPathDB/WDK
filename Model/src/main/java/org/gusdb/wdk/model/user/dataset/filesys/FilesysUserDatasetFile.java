@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 
 public class FilesysUserDatasetFile extends UserDatasetFile {
   
@@ -15,7 +16,7 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  public InputStream getFileContents() throws WdkModelException {
+  public InputStream getFileContents(UserDatasetSession dsSession) throws WdkModelException {
     try {
       return Files.newInputStream(getFilePath());
     } catch (IOException e) {
@@ -24,7 +25,7 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  public Long getFileSize() throws WdkModelException {
+  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
     try {
       return Files.size(getFilePath());
     } catch (IOException e) {
@@ -33,12 +34,12 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  public String getFileName() {
+  public String getFileName(UserDatasetSession dsSession) {
     return getFilePath().getFileName().toString();
   }
 
   @Override
-  protected void createLocalCopy(Path tmpFile) throws WdkModelException {
+  protected void createLocalCopy(UserDatasetSession dsSession, Path tmpFile) throws WdkModelException {
     try {
       Files.copy(getFilePath(), tmpFile);
     } catch (IOException e) {

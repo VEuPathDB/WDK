@@ -7,11 +7,9 @@ import { wrappable } from '../utils/componentUtils';
  * This React component is a placeholder for any application specific properties that may have added by the overriding application.
  * @type {*|Function}
  */
-const ApplicationSpecificProperties = React.createClass({
-
-  render() { return(null) }
-
-});
+function ApplicationSpecificProperties() {
+  return null;
+}
 
 
 ApplicationSpecificProperties.propTypes = {

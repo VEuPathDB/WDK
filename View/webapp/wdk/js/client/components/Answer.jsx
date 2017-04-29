@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import $ from 'jquery';
 import AnswerFilter from './AnswerFilter';
 import AnswerTable from './AnswerTable';
 import { wrappable } from '../utils/componentUtils';
-
-let $ = window.jQuery;
 
 // Calculate the offset of `node` relative to the top of the document.
 let getOffsetTop = (node, sum = 0) => {
@@ -13,23 +12,26 @@ let getOffsetTop = (node, sum = 0) => {
   return offsetTop === 0 ? sum : getOffsetTop(offsetParent, sum + offsetTop);
 }
 
-let Answer = React.createClass({
+class Answer extends React.Component {
 
-  getInitialState() {
-    return { height: 0, width: 0 };
-  },
+  constructor(props) {
+    super(props);
+    this.updateHeight = this.updateHeight.bind(this);
+    this.updateWidth = this.updateHeight.bind(this);
+    this.state = { height: 0, width: 0 };
+  }
 
   componentDidMount() {
     this.updateHeight();
     this.updateWidth();
     $(window).on('resize', this.updateHeight);
     $(window).on('resize', this.updateWidth);
-  },
+  }
 
   componentWillUnmount() {
     $(window).off('resize', this.updateHeight);
     $(window).off('resize', this.updateWidth);
-  },
+  }
 
   updateHeight() {
     if (this.refs.records) {
@@ -41,7 +43,7 @@ let Answer = React.createClass({
         height: Math.max(calculatedHeight, minHeight)
       });
     }
-  },
+  }
 
   updateWidth() {
     if (this.refs.records) {
@@ -50,7 +52,7 @@ let Answer = React.createClass({
         width: node.clientWidth
       });
     }
-  },
+  }
 
   render() {
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
@@ -65,8 +67,7 @@ let Answer = React.createClass({
       onSort,
       onMoveColumn,
       onChangeColumns,
-      onFilter,
-      format
+      onFilter
     } = this.props;
 
     let displayNamePlural = recordClass.displayNamePlural;
@@ -106,6 +107,6 @@ let Answer = React.createClass({
     );
   }
 
-});
+}
 
 export default wrappable(Answer);
