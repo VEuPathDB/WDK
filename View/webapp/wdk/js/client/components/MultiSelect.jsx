@@ -1,7 +1,12 @@
 import React, { PropTypes } from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let MultiSelect = React.createClass({
+class MultiSelect extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.onChange = this.onChange.bind(this);
+  }
 
   onChange(event) {
     let options = event.target.options;
@@ -12,10 +17,10 @@ let MultiSelect = React.createClass({
       }
     }
     this.props.onChange(value);
-  },
+  }
 
   render() {
-    let { name, size, value, items, onChange } = this.props;
+    let { name, size, value, items } = this.props;
     return (
       <select {...this.props} name={name} size={size} multiple="true" value={value} onChange={this.onChange}>
         {items.map(item =>
@@ -24,9 +29,12 @@ let MultiSelect = React.createClass({
       </select>
     );
   }
-});
+}
 
 MultiSelect.propTypes = {
+
+  /** Size attribute for select element */
+  size: PropTypes.number,
 
   /** Value to use for "name" attribute of the select form input **/
   name: PropTypes.string,
@@ -42,7 +50,7 @@ MultiSelect.propTypes = {
    * The new (string) value of the selected option will be passed to this
    * function.
    */
-  onChange: PropTypes.func,
+  onChange: PropTypes.func
 };
 
 export default wrappable(MultiSelect)

@@ -1,6 +1,5 @@
 import { pick, property } from 'lodash';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { withRouter } from 'react-router';
 import DataTable from './DataTable';
 import Dialog from './Dialog';
@@ -33,113 +32,55 @@ let { PropTypes } = React;
  */
 function noop() {}
 
-let AttributeSelectorItem = React.createClass({
+function AttributeSelector(props) {
+  return (
+    <form onSubmit={props.onSubmit}>
+      <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
+        <button>Update Columns</button>
+      </div>
+      <ul className="wdk-AnswerTable-AttributeSelector">
+        {props.allAttributes.filter(attrib => attrib.isDisplayable).map(attribute => {
+          return (
+            <li key={attribute.name}>
+              <input
+                type="checkbox"
+                id={'column-select-' + attribute.name}
+                name="pendingAttribute"
+                value={attribute.name}
+                disabled={!attribute.isRemovable}
+                checked={props.selectedAttributes.includes(attribute)}
+                onChange={e => props.onChange(e.target.value, e.target.checked)}
+              />
+              <label htmlFor={'column-select-' + attribute.name}> {attribute.displayName} </label>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
+        <button>Update Columns</button>
+      </div>
+    </form>
+  );
+}
 
-  propTypes: {
-    attribute: PropTypes.object.isRequired,
-    isChecked: PropTypes.bool,
-    onChange: PropTypes.func.isRequired
-  },
 
-  render() {
-    let { attribute } = this.props;
-    let name = attribute.name;
-    let displayName = attribute.displayName;
-    return (
-      <li key={name}>
-        <input type="checkbox"
-          id={'column-select-' + name}
-          name="pendingAttribute"
-          value={name}
-          onChange={this.props.onChange}
-          disabled={!attribute.isRemovable}
-          checked={this.props.isChecked}/>
-        <label htmlFor={'column-select-' + name}> {displayName} </label>
-      </li>
-    );
-  }
+class AnswerTable extends React.Component {
 
-});
+  constructor(props) {
+    super(props);
+    this.handleSort = this.handleSort.bind(this);
+    this.handleOpenAttributeSelectorClick = this.handleOpenAttributeSelectorClick.bind(this);
+    this.handleAttributeSelectorClose = this.handleAttributeSelectorClose.bind(this);
+    this.handleAttributeSelectorSubmit = this.handleAttributeSelectorSubmit.bind(this);
+    this.togglePendingAttribute = this.togglePendingAttribute.bind(this);
 
-let AttributeSelector = React.createClass({
-
-  propTypes: {
-    allAttributes: PropTypes.array.isRequired,
-    selectedAttributes: PropTypes.array,
-    onSubmit: PropTypes.func.isRequired,
-    onChange: PropTypes.func.isRequired
-  },
-
-  render() {
-    // only want to display displayable attributes
-    let displayableAttributes = this.props.allAttributes.filter(attrib => attrib.isDisplayable);
-    return (
-      <form onSubmit={this.props.onSubmit}>
-        <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
-          <button>Update Columns</button>
-        </div>
-        <ul className="wdk-AnswerTable-AttributeSelector">
-          {displayableAttributes.map(this._renderItem)}
-        </ul>
-        <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
-          <button>Update Columns</button>
-        </div>
-      </form>
-    );
-  },
-
-  _renderItem(attribute) {
-    let isAttribute = attr => attr.name === attribute.name;
-    return (
-      <AttributeSelectorItem
-        key={attribute.name}
-        isChecked={this.props.selectedAttributes.some(isAttribute)}
-        attribute={attribute}
-        onChange={this.props.onChange}
-      />
-    );
-  }
-
-});
-
-let AnswerTable = React.createClass({
-
-  propTypes: {
-    meta: PropTypes.object.isRequired,
-    displayInfo: PropTypes.object.isRequired,
-    records: PropTypes.array.isRequired,
-    recordClass: PropTypes.object.isRequired,
-    allAttributes: PropTypes.array.isRequired,
-    visibleAttributes: PropTypes.array.isRequired,
-    height: PropTypes.number.isRequired,
-    router: PropTypes.object.isRequired,
-    onSort: PropTypes.func,
-    onMoveColumn: PropTypes.func,
-    onChangeColumns: PropTypes.func,
-    onNewPage: PropTypes.func,
-    onRecordClick: PropTypes.func
-  },
-
-  getDefaultProps() {
-    return {
-      onSort: noop,
-      onMoveColumn: noop,
-      onChangeColumns: noop,
-      onNewPage: noop,
-      onRecordClick: noop
-    };
-  },
-
-  /**
-   * If this is changed, be sure to update handleAttributeSelectorClose()
-   */
-  getInitialState() {
-    return Object.assign({}, this._getInitialAttributeSelectorState(), {
+    // If this is changed, be sure to update handleAttributeSelectorClose()
+    this.state = Object.assign({}, this._getInitialAttributeSelectorState(), {
       columns: setVisibilityFlag(this.props.recordClass.attributes, this.props.visibleAttributes),
       data: getDataFromRecords(this.props.records, this.props.recordClass, this.props.router),
       sorting: getDataTableSorting(this.props.displayInfo.sorting)
     });
-  },
+  }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
@@ -154,35 +95,24 @@ let AnswerTable = React.createClass({
     if (this.props.displayInfo.sorting !== nextProps.displayInfo.sorting) {
       this.setState({ sorting: getDataTableSorting(nextProps.displayInfo.sorting) });
     }
-  },
+  }
 
   handleSort(datatableSorting) {
     this.props.onSort(datatableSorting.map(entry => ({
       attributeName: entry.name,
       direction: entry.direction
     })));
-  },
-
-  // TODO remove
-  handleChangeColumns(attributes) {
-    this.props.onChangeColumns(attributes);
-  },
-
-  handleHideColumn(name) {
-    let attributes = this.props.visibleAttributes
-      .filter(attr => attr.name !== name);
-    this.props.onChangeColumns(attributes);
-  },
+  }
 
   handleOpenAttributeSelectorClick() {
     this.setState({
       attributeSelectorOpen: !this.state.attributeSelectorOpen
     });
-  },
+  }
 
   handleAttributeSelectorClose() {
     this.setState(this._getInitialAttributeSelectorState());
-  },
+  }
 
   handleAttributeSelectorSubmit(e) {
     e.preventDefault();
@@ -191,40 +121,26 @@ let AnswerTable = React.createClass({
     this.setState({
       attributeSelectorOpen: false
     });
-  },
-
-  handlePrimaryKeyClick(record, event) {
-    this.props.onRecordClick(record);
-    event.preventDefault();
-  },
+  }
 
   /**
    * Filter unchecked checkboxes and map to attributes
    */
-  togglePendingAttribute() {
-    let form = ReactDOM.findDOMNode(this.refs.attributeSelector);
-    let attributes = this.props.allAttributes;
-    let visibleAttributes = this.props.visibleAttributes;
+  togglePendingAttribute(attributeName, isVisible) {
+    let pending = new Set(this.state.pendingVisibleAttributes.map(attr => attr.name));
 
-    let checkedAttrs = [].slice.call(form.pendingAttribute)
-      .filter(a => a.checked)
-      .map(a => attributes.find(attr => attr.name === a.value));
-
-    // Remove visible attributes that are not checked.
-    // Then, concat checked attributes that are not currently visible.
-    let pendingVisibleAttributes = visibleAttributes
-      .filter(attr => checkedAttrs.find(p => p.name === attr.name))
-      .concat(checkedAttrs.filter(attr => !visibleAttributes.find(a => a.name === attr.name)));
+    let pendingVisibleAttributes = this.props.allAttributes
+      .filter(attr => attr.name === attributeName ? isVisible : pending.has(attr.name));
 
     this.setState({ pendingVisibleAttributes });
-  },
+  }
 
   _getInitialAttributeSelectorState() {
     return {
       pendingVisibleAttributes: this.props.visibleAttributes,
       attributeSelectorOpen: false
     };
-  },
+  }
 
   render() {
     // creates variables: meta, records, and visibleAttributes
@@ -244,7 +160,6 @@ let AnswerTable = React.createClass({
           onClose={this.handleAttributeSelectorClose}
           title="Select Columns">
           <AttributeSelector
-            ref="attributeSelector"
             allAttributes={allAttributes}
             selectedAttributes={pendingVisibleAttributes}
             onSubmit={this.handleAttributeSelectorSubmit}
@@ -265,7 +180,31 @@ let AnswerTable = React.createClass({
     );
   }
 
-});
+}
+
+AnswerTable.propTypes = {
+  meta: PropTypes.object.isRequired,
+  displayInfo: PropTypes.object.isRequired,
+  records: PropTypes.array.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  allAttributes: PropTypes.array.isRequired,
+  visibleAttributes: PropTypes.array.isRequired,
+  height: PropTypes.number.isRequired,
+  router: PropTypes.object.isRequired,
+  onSort: PropTypes.func,
+  onMoveColumn: PropTypes.func,
+  onChangeColumns: PropTypes.func,
+  onNewPage: PropTypes.func,
+  onRecordClick: PropTypes.func
+};
+
+AnswerTable.defaultProps = {
+  onSort: noop,
+  onMoveColumn: noop,
+  onChangeColumns: noop,
+  onNewPage: noop,
+  onRecordClick: noop
+};
 
 export default wrappable(withRouter(AnswerTable));
 

@@ -36,16 +36,27 @@ export function FormMessage({ message, messageClass }) {
     <div className={messageClass}><span>{message}</span></div> );
 }
 
+const containerStyle = {
+  width: '0 2em'
+};
+
 /**
  * React component for the user profile/account form
  * @type {*|Function}
  */
-let UserProfile = React.createClass({
+class UserProfile extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.onTextChange = this.onTextChange.bind(this);
+    this.onEmailChange = this.onEmailChange.bind(this);
+    this.saveProfile = this.saveProfile.bind(this);
+  }
 
   render() {
     let formConfig = interpretFormStatus(this.props.formStatus, this.props.errorMessage);
     return (
-      <div style={{ margin: "0 2em"}}>
+      <div style={containerStyle}>
         {this.props.userFormData.isGuest ?
           <div>You must first log on to read and alter your account information</div> :
           <div>
@@ -62,7 +73,7 @@ let UserProfile = React.createClass({
         }
       </div>
     );
-  },
+  }
 
   /**
    * Verifies that the email and the re-typed email match.  HTML5 validation doesn't handle this OOTB.
@@ -75,7 +86,7 @@ let UserProfile = React.createClass({
       let confirmUserEmailElement = document.getElementById("confirmUserEmail");
       userEmail !== confirmUserEmail ? confirmUserEmailElement.setCustomValidity("Both email entries must match.") : confirmUserEmailElement.setCustomValidity("");
     }
-  },
+  }
 
   /**
    * Callback issued by the TextBox React component when either email input is modified.  Unlike the input to a text input, this modification needs an extra
@@ -85,7 +96,7 @@ let UserProfile = React.createClass({
   onEmailUpdate(newState) {
     this.validateEmailConfirmation(newState);
     this.props.userEvents.updateProfileForm(newState);
-  },
+  }
 
   /**
    * Triggered by onChange handler of TextBox of type email.  Only different from handler of TextBox of type text because
@@ -95,7 +106,7 @@ let UserProfile = React.createClass({
    */
   onEmailChange(field) {
     return getChangeHandler(field, this.onEmailUpdate, this.props.userFormData)
-  },
+  }
 
   /**
    * Triggered by onChange handler of TextBOx of type text.  Returns user with state change incorporated.
@@ -104,7 +115,7 @@ let UserProfile = React.createClass({
    */
   onTextChange(field) {
     return getChangeHandler(field, this.props.userEvents.updateProfileForm, this.props.userFormData);
-  },
+  }
 
   /**
    * Triggered by onSubmit handler of the user profile/account form.  Verifies again that the email and re-typed version match. Then
@@ -128,7 +139,7 @@ let UserProfile = React.createClass({
     }
   }
 
-});
+}
 
 UserProfile.propTypes = {
 

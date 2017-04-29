@@ -2,27 +2,36 @@ import React from 'react';
 import Spinner from 'spin.js';
 import { wrappable } from '../utils/componentUtils';
 
+type Props = {
+  /** Additional class name to use for container element */
+  className?: string;
+
+  /** Radius in pixels of the inner circle */
+  radius?: number;
+}
+
+
 /**
  * See http://fgnass.github.io/spin.js/
  */
-let Loading = React.createClass({
+class Loading extends React.Component<Props, void> {
 
-  PropTypes: {
-    className: React.PropTypes.string,
-    radius: React.PropTypes.number
-  },
+  node: HTMLElement;
 
-  getDefaultProps() {
-    return {
-      className: '',
-      radius: 8
-    };
-  },
+  spinner: Spinner;
+
+  constructor(props: Props) {
+    super(props);
+    this.setNode = this.setNode.bind(this);
+  }
+
+  setNode(node: HTMLElement) {
+    this.node = node;
+  }
 
   componentDidMount() {
-    let { radius } = this.props;
-
-    let opts = {
+    const { radius = 8 } = this.props;
+    const opts = {
       lines: 11, // The number of lines to draw
       length: 3, // The length of each line
       width: 2, // The line thickness
@@ -40,16 +49,20 @@ let Loading = React.createClass({
       top: '50%', // Top position relative to parent
       left: '50%' // Left position relative to parent
     };
+    this.spinner = new Spinner(opts).spin(this.node);
+  }
 
-    new Spinner(opts).spin(this.refs.node);
-  },
+  componentWillUnmount() {
+    this.spinner.stop();
+  }
 
   render() {
-    let { className } = this.props;
+    const { className = '' } = this.props;
     return (
-      <div ref="node" className={`wdk-Loading ${className}`}/>
+      <div ref={this.setNode} className={`wdk-Loading ${className}`}/>
     );
   }
-});
+
+}
 
 export default wrappable(Loading);

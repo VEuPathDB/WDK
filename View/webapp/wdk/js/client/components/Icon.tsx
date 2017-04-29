@@ -12,8 +12,11 @@ type Props = {
   className?: string;
 };
 
-const Icon: React.StatelessComponent<Props> = ({ type, className }) =>
-  <i className={makeClassName(type, className)}/>
+function Icon(props: Props) {
+  return (
+    <i className={makeClassName(props.type, props.className)}/>
+  );
+}
 
 export default wrappable(Icon);
 

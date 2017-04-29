@@ -8,8 +8,8 @@ import java.nio.file.Path;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 
@@ -27,21 +27,19 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileContents()
    */
   @Override
-  public InputStream getFileContents() throws WdkModelException {  
-	IRODSAccessObjectFactory accessObjectFactory = null;
+  public InputStream getFileContents(UserDatasetSession dsSession) throws WdkModelException {
+    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
 	IRODSFile irodsFile = null;
 	try {
-	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
-	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory, getFilePath().toString());
+	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+	  irodsFile = adaptor.getIrodsFile(fileFactory, getFilePath().toString());
 	  return fileFactory.instanceIRODSFileInputStream(irodsFile);
 	}
 	catch (JargonException je) {
 	  throw new WdkModelException("Unable to create a file input stream for the file " + irodsFile.getName(), je);
 	}
 	finally {
-	  IrodsUserDatasetStoreAdaptor.closeFile(irodsFile);
-	  IrodsUserDatasetStoreAdaptor.closeSession(accessObjectFactory);
+	  adaptor.closeFile(irodsFile);
 	}
   }
 
@@ -49,18 +47,16 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileSize()
    */
   @Override
-  public Long getFileSize() throws WdkModelException {
-    IRODSAccessObjectFactory accessObjectFactory = null;
+  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
+    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
 	IRODSFile irodsFile = null;
 	try {
-	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
-	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory, getFilePath().toString());
+	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+	  irodsFile = adaptor.getIrodsFile(fileFactory, getFilePath().toString());
 	  return irodsFile.length();
 	}
 	finally {
-	  IrodsUserDatasetStoreAdaptor.closeFile(irodsFile);
-	  IrodsUserDatasetStoreAdaptor.closeSession(accessObjectFactory);
+	  adaptor.closeFile(irodsFile);
 	}
   }
 
@@ -68,18 +64,16 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileName()
    */
   @Override
-  public String getFileName() throws WdkModelException {
-	IRODSAccessObjectFactory accessObjectFactory = null;
+  public String getFileName(UserDatasetSession dsSession) throws WdkModelException {
+	IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
 	IRODSFile irodsFile = null;
 	try {
-	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
-	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory,getFilePath().toString());
+	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+	  irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
       return irodsFile.getName();
 	}
 	finally {
-	  IrodsUserDatasetStoreAdaptor.closeFile(irodsFile);
-	  IrodsUserDatasetStoreAdaptor.closeSession(accessObjectFactory);
+	  adaptor.closeFile(irodsFile);
 	}
   }
 
@@ -88,21 +82,19 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
    * org.gusdb.wdk.model.user.dataset.UserDatasetFile#createLocalCopy(Path)
    */
   @Override
-  protected void createLocalCopy(Path tmpFile) throws WdkModelException {
-    IRODSAccessObjectFactory accessObjectFactory = null;
+  protected void createLocalCopy(UserDatasetSession dsSession, Path tmpFile) throws WdkModelException {
+    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
 	IRODSFile irodsFile = null;
 	try {
-	  accessObjectFactory = IrodsUserDatasetStoreAdaptor.getIrodsAccessObjectFactory();
-	  IRODSFileFactory fileFactory = IrodsUserDatasetStoreAdaptor.getIrodsFileFactory(accessObjectFactory);
-	  irodsFile = IrodsUserDatasetStoreAdaptor.getIrodsFile(fileFactory,getFilePath().toString());
-	  IrodsUserDatasetStoreAdaptor.getDataTransferOperations(accessObjectFactory).getOperation(irodsFile, tmpFile.toFile(), null, null);
+	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+	  irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
+	  adaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, null);
 	}
 	catch(JargonException je) {
 	  throw new WdkModelException("Unable to copy " + getFilePath().toString() + " to " + tmpFile.toString() + ". - ", je);
 	}
 	finally {
-	  IrodsUserDatasetStoreAdaptor.closeFile(irodsFile);
-	  IrodsUserDatasetStoreAdaptor.closeSession(accessObjectFactory);
+	  adaptor.closeFile(irodsFile);
 	}
   }
 

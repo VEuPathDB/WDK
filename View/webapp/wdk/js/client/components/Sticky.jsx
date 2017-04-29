@@ -1,38 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-let Sticky = React.createClass({
+class Sticky extends React.Component {
 
-  propTypes: {
-    className: React.PropTypes.string,
-    fixedClassName: React.PropTypes.string
-  },
-
-  getDefaultProps() {
-    return {
-      className: 'wdk-Sticky',
-      fixedClassName: 'wdk-Sticky-fixed'
-    };
-  },
-
-  getInitialState() {
-    return { isFixed: false, height: null, width: null };
-  },
+  constructor(props) {
+    super(props);
+    this.updateIsFixed = this.updateIsFixed.bind(this);
+    this.state = { isFixed: false, height: null, width: null };
+  }
 
   componentDidMount() {
     this.node = ReactDOM.findDOMNode(this);
-    this.$node = $(this.node);
     this.contentNode = ReactDOM.findDOMNode(this.refs.content);
     window.addEventListener('scroll', this.updateIsFixed, { passive: true });
     window.addEventListener('wheel', this.updateIsFixed, { passive: true });
     window.addEventListener('resize', this.updateIsFixed, { passive: true });
-  },
+  }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.updateIsFixed, { passive: true });
     window.removeEventListener('wheel', this.updateIsFixed, { passive: true });
     window.removeEventListener('resize', this.updateIsFixed, { passive: true });
-  },
+  }
 
   // Set position to fixed if top is above threshold, otherwise
   // set position to absolute.
@@ -54,10 +43,10 @@ let Sticky = React.createClass({
         width: null
       });
     }
-  },
+  }
 
   render() {
-    let { isFixed, height, width, top } = this.state;
+    let { isFixed, height } = this.state;
     let { className, fixedClassName } = this.props;
     if (isFixed) {
       className = className + ' ' + fixedClassName;
@@ -72,6 +61,16 @@ let Sticky = React.createClass({
     );
   }
 
-});
+}
+
+Sticky.propTypes = {
+  className: React.PropTypes.string,
+  fixedClassName: React.PropTypes.string
+};
+
+Sticky.defaultProps = {
+  className: 'wdk-Sticky',
+  fixedClassName: 'wdk-Sticky-fixed'
+};
 
 export default Sticky;

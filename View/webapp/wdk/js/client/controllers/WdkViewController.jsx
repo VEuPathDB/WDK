@@ -1,5 +1,6 @@
 import { cloneElement, PropTypes } from 'react';
 import Page from '../components/Page';
+import NotFound from '../components/NotFound';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
 import { wrapActions, PureComponent } from '../utils/componentUtils';
@@ -50,6 +51,7 @@ class WdkViewController extends PureComponent {
    * @returns {void}
    */
   loadData(state, nextProps, previousProps) {
+    return undefined;
   }
 
   /**
@@ -67,6 +69,13 @@ class WdkViewController extends PureComponent {
    */
   isRenderDataLoaded(state) {
     return true;
+  }
+
+  /**
+   * Returns whether required data resources are not found.
+   */
+  isRenderDataNotFound(state) {
+    return false;
   }
 
   /**
@@ -136,7 +145,18 @@ class WdkViewController extends PureComponent {
   }
 
   componentDidUpdate() {
-    document.title = this.getTitle(this.state);
+    if (this.isRenderDataLoadError(this.state)) {
+      document.title = "Error";
+    }
+    else if (this.isRenderDataNotFound(this.state)) {
+      document.title = "Page not found";
+    }
+    else if (!this.isRenderDataLoaded(this.state)) {
+      document.title = "Loading...";
+    }
+    else {
+      document.title = this.getTitle(this.state);
+    }
   }
 
   /**
@@ -158,6 +178,9 @@ class WdkViewController extends PureComponent {
     let page;
     if (this.isRenderDataLoadError(this.state)) {
       page = ( <Page><LoadError/></Page> );
+    }
+    else if (this.isRenderDataNotFound(this.state)) {
+      page = ( <Page><NotFound/></Page> );
     }
     else if (!this.isRenderDataLoaded(this.state)) {
       page = ( <Page><Loading/></Page> );
