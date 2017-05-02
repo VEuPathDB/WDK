@@ -30,6 +30,10 @@ let defaultOptions = {
 
 type Props = {
   content: string | React.ReactElement<any>;
+  position?: {
+    my?: string;
+    at?: string;
+  }
 }
 
 class Tooltip extends React.Component<Props, void> {
@@ -48,7 +52,7 @@ class Tooltip extends React.Component<Props, void> {
   }
 
   _setupTooltip() {
-    let { content } = this.props;
+    let { content, position = defaultOptions.position } = this.props;
 
     if (content == null) { return; }
 
@@ -56,9 +60,11 @@ class Tooltip extends React.Component<Props, void> {
       ? content
       : ReactDOMServer.renderToStaticMarkup(content);
 
-    $(ReactDOM.findDOMNode(this)).qtip(Object.assign({
-      content: { text }
-    }, defaultOptions));
+    $(ReactDOM.findDOMNode(this)).qtip({
+      ...defaultOptions,
+      content: { text },
+      position
+    });
   }
 
   _destroyTooltip() {
