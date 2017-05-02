@@ -55,7 +55,7 @@ module.exports = baseConfig.merge({
     'wdk': './webapp/wdk/js/index.js'
   },
   output: {
-    path: './dist',
+    path: __dirname + '/dist',
     filename: '[name].bundle.js',
     library: 'Wdk'
   },
