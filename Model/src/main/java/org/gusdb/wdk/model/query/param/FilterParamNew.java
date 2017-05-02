@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,7 +276,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public JSONObject getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
+  public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
 
     /* GET UNFILTERED (TOTAL) COUNTS */
     // get base metadata query
@@ -290,7 +291,8 @@ public class FilterParamNew extends AbstractDependentParam {
     
     // get count
     String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
-    BigDecimal totalCount = runCountSql(sql);
+    FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
+    fpsc.unfilteredCount = runCountSql(sql);
 
 
     /* GET FILTERED COUNTS */
@@ -300,26 +302,21 @@ public class FilterParamNew extends AbstractDependentParam {
     // get count
     sql = "select count(*) from (" + filteredInternalsSql + ")";
 
-    BigDecimal filteredCount = runCountSql(sql);
+    fpsc.unfilteredCount = runCountSql(sql);
     
-    /* STUFF THEM INTO JSON */  // TODO: really shouldn't format json here.  should be in svc layer
-    JSONObject json = new JSONObject();
-    json.put("totalCount", totalCount);
-    json.put("filteredCount", filteredCount);
-    return json;
+    return fpsc;
   }
   
-  private BigDecimal runCountSql(String sql) {
+  private long runCountSql(String sql) {
     Object[] args = {};
     BasicResultSetHandler handler = new BasicResultSetHandler();
     new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "invalid-step-report-summary").executeQuery(args, handler);
     List<Map<String,Object>> results = handler.getResults();
     Map<String,Object> row = results.get(0);
-    return (BigDecimal)row.get("CNT");
+    return ((BigDecimal)row.get("CNT")).toBigInteger().longValue();
   }
   
   /**
-   * { termValue: [ unfilteredCount, filteredCount ], ... }
    * @param user
    * @param contextParamValues
    * @param ontologyId
@@ -328,7 +325,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkUserException 
    * @throws WdkModelException 
    */
-  public JSONObject getOntologyTermSummary(User user, Map<String, String> contextParamValues, String ontologyId, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
+  public Map<String, FilterParamSummaryCounts> getOntologyTermSummary(User user, Map<String, String> contextParamValues, String ontologyId, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
 
     FilterParamNewInstance paramInstance = createFilterParamNewInstance(user, contextParamValues);
 
@@ -344,8 +341,8 @@ public class FilterParamNew extends AbstractDependentParam {
     Map<String, List<String>> unfiltered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyId);
     
     // get histogram of those, stored in JSON 
-    JSONObject summaryJson = new JSONObject();
-    getSummaryCounts(unfiltered, summaryJson, 0);  // stuff in to 0th position in array
+    Map<String, FilterParamSummaryCounts> summaryMap = new HashMap<String, FilterParamSummaryCounts>();
+    getSummaryCounts(unfiltered, summaryMap, false);  // stuff in to 0th position in array
     
     
     /* GET FILTERED COUNTS */
@@ -359,9 +356,14 @@ public class FilterParamNew extends AbstractDependentParam {
     Map<String, List<String>> filtered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyIdFiltered);
     
     // add the filtered set into the histogram
-    getSummaryCounts(filtered, summaryJson, 1); // stuff in to 1st position in array
+    getSummaryCounts(filtered, summaryMap, true); // stuff in to 1st position in array
     
-    return summaryJson;
+    return summaryMap;
+  }
+  
+  public class FilterParamSummaryCounts {
+    public long unfilteredCount;
+    public long filteredCount;
   }
   
   /**
@@ -370,18 +372,15 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param counts
    * @param pairPosition
    */
-  private void getSummaryCounts(Map<String, List<String>> metadataForOntologyId, JSONObject counts, int pairPosition) {
+  private void getSummaryCounts(Map<String, List<String>> metadataForOntologyId, Map<String, FilterParamSummaryCounts> summary, boolean filtered) {
+    
     for (List<String> values : metadataForOntologyId.values()) {
       for (String value : values) {
-        if (counts.has(value)) {
-          JSONArray pair = counts.getJSONArray(value);
-          pair.put(0, pair.getInt(0) + 1);
-        }
-        else {
-          JSONArray pair = new JSONArray();
-          pair.put(1);
-          counts.put(value, pair );
-        }
+        FilterParamSummaryCounts counts;
+        if (summary.containsKey(value)) counts = summary.get(value);
+        else counts = new FilterParamSummaryCounts();
+        if (filtered) counts.filteredCount++;
+        else counts.unfilteredCount++;
       }
     }
     

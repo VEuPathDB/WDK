@@ -7,6 +7,7 @@ import java.util.Map;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -101,4 +102,31 @@ public class QuestionFormatter {
     return paramsJson;
   }
 
+  /*
+   * { termValue: { "filtered" : 123, "unfiltered" : 234}, ... }
+   */
+  public static JSONObject getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
+    JSONObject json = new JSONObject();
+    for (String term : counts.keySet()) {
+      FilterParamSummaryCounts fpsc = counts.get(term);
+      JSONObject c = new JSONObject();
+      c.put("filtered", fpsc.filteredCount);
+      c.put("unfiltered", fpsc.unfilteredCount);
+      json.put(term, c);
+    }
+    return json;
+  
+  }
+  
+  /*
+   * { "filtered" : 123, "unfiltered" : 234}
+   */
+  public static JSONObject getFilterParamSummaryJson(FilterParamSummaryCounts counts) {
+    JSONObject json = new JSONObject();
+    json.put("filtered", counts.filteredCount);
+    json.put("unfiltered", counts.unfilteredCount);
+    
+    return json;
+  
+  }
 }

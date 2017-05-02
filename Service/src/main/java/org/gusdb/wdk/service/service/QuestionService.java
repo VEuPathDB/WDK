@@ -22,6 +22,8 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.FilterParamNew;
+import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
@@ -248,4 +250,99 @@ public class QuestionService extends WdkService {
     }
     return contextParamValues;
   }
+  
+  /**
+   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts for a specified ontology term.
+   *
+   * Sample request body:
+   *
+   * {
+   *   "ontologyId" : string
+   *   "filters" : [ see raw value for FilterParamHandler ]
+   *   "contextParamValues" : [see /{questionName} endpoint]
+   * }
+   *
+   * @param questionName
+   * @param paramName
+   * @param body
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  @POST
+  @Path("/{questionName}/{paramName}/ontologyTermSummary")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
+          throws WdkUserException, WdkModelException {
+    
+    Question question = getQuestionFromSegment(questionName);
+    FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
+    
+    Map<String, String> contextParamValues = new HashMap<String, String>();
+    
+    try {
+      JSONObject jsonBody = new JSONObject(body);
+      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
+      JSONObject filters = jsonBody.getJSONObject("filters");
+      String ontologyId = jsonBody.getString("ontologyId");
+      Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, filters);
+      return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts)).build();
+    }
+    catch (JSONException e) {
+      throw new BadRequestException(e);
+    }
+  }
+  
+  /**
+   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts.
+   *
+   * Sample request body:
+   *
+   * {
+   *   "filters" : [ see raw value for FilterParamHandler ]
+   *   "contextParamValues" : [see /{questionName} endpoint]
+   * }
+   *
+   * @param questionName
+   * @param paramName
+   * @param body
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  @POST
+  @Path("/{questionName}/{paramName}/summaryCounts")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFilterParamSummaryCounts(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
+          throws WdkUserException, WdkModelException {
+    
+    Question question = getQuestionFromSegment(questionName);
+    FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
+    
+    Map<String, String> contextParamValues = new HashMap<String, String>();
+    
+    try {
+      JSONObject jsonBody = new JSONObject(body);
+      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
+      JSONObject filters = jsonBody.getJSONObject("filters");
+      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, filters);
+      return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts)).build();
+    }
+    catch (JSONException e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  private FilterParamNew getFilterParam(String questionName, Question question, String paramName) throws WdkUserException {
+    if (question == null)
+      throw new NotFoundException(WdkService.NOT_FOUND + questionName);
+    Param param = question.getQuery().getParamMap().get(paramName);
+    if (param == null)
+      throw new NotFoundException(WdkService.NOT_FOUND + paramName);
+    if (!(param instanceof FilterParamNew)) throw new WdkUserException(paramName + " is not a FilterParam");
+    return (FilterParamNew)param;
+  }
+
 }
