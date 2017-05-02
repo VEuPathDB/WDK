@@ -122,7 +122,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   }
   
-  // TODO: review this  
+  // TODO: add OR clause if unknowns=true  
   static String toInternalValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param)
       throws WdkModelException {
 

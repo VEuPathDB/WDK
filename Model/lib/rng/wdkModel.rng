@@ -531,6 +531,25 @@
     </element>
   </define>
 
+  <define name="filterParamNew">
+    <element name="filterParamNew">
+      <ref name="DependentParamBaseProperties" />
+      <attribute name="queryRef" />
+      <attribute name="ontologyQueryRef" />
+      <attribute name="metadataQueryRef" />
+      <optional>
+        <attribute name="trimMetadataTerms">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="ParamBaseTags" />
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
   <define name="FlatVocabParamBaseProperties">
     <ref name="EnumParamBaseProperties" />
     <attribute name="queryRef" />
@@ -551,12 +570,16 @@
     </choice>
   </define>
 
-  <define name="EnumParamBaseProperties">
+  <define name="DependentParamBaseProperties">
     <ref name="ParamBaseProperties" />
     <optional>
       <attribute name="dependedParamRef">
       </attribute>
     </optional>
+  </define>
+  
+  <define name="EnumParamBaseProperties">
+    <ref name="DependentParamBaseProperties" />
     <optional>
       <attribute name="multiPick">
         <data type="boolean" />
