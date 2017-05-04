@@ -386,6 +386,7 @@ sub webapp_domain_map {
   my ($self) = @_;
   return {
       'amoeba'    => 'amoebadb.org',
+      'ce'        => 'clinepidb.org',
       'cryptodb'  => 'cryptodb.org',
       'eupathdb'  => 'eupathdb.org',
       'fungidb'   => 'fungidb.org',
