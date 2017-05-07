@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -29,7 +29,7 @@ import org.json.JSONObject;
  */
 public abstract class AbstractDependentParam extends Param {
 
-  // private static final Logger LOG = Logger.getLogger(AbstractDependentParam.class);
+   private static final Logger LOG = Logger.getLogger(AbstractDependentParam.class);
  
   static final String PARAM_SERVED_QUERY = "ServedQuery";
 
@@ -201,13 +201,23 @@ public abstract class AbstractDependentParam extends Param {
     query.resolveReferences(model);
     query = query.clone();
 
+    if (query.getFullName().equals("SharedVQ.BlastOrganismFiles")){
+      LOG.info("&&&&&&&&&&&&" + queryType + query.getFullName() + "  " + System.identityHashCode(query) + " " 
+	       + getFullName() + " " + System.identityHashCode(this));
+      LOG.info("&&&&&&&&& context: " + contextQuery);
+    }
     // get set of names of declared depended params
+    getDependedParams();
     Set<String> dependedParamNames = new HashSet<>();
     if (dependedParams != null) {
-      for (Param param : getDependedParams()) {
+      LOG.info("+++++++++++++++  loading params");
+      for (Param param : dependedParams) {
         dependedParamNames.add(param.getName());
       }
     }
+    
+    for (String n : dependedParamNames) 
+      LOG.info("============================================== " + n);
 
     // the query's params should match the depended params;
     for (Param param : query.getParams()) {

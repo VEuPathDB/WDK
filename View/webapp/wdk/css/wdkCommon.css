@@ -789,6 +789,7 @@ img.plus-minus {
 	float: left;
 	width: 100%;
 	padding: 12px 0;
+  position: relative;
 }
 
 #contentcolumn2 {
