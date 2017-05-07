@@ -101,7 +101,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   }
 
   protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
-    Query query = resolveDependentQuery(model, queryName, queryType);
+    Query query = super.resolveDependentQuery(model, queryName, queryType);
 
     // add a served query param into flatVocabQuery, if it doesn't exist
     ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);

@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "target": "es6",
+    "allowJs": true,
     "noImplicitAny": true,
     "removeComments": false,
     "preserveConstEnums": true,
@@ -12,5 +13,8 @@
     "strictNullChecks": true,
     "lib": [ "dom", "es2015", "es2016" ],
     "moduleResolution": "node"
-  }
+  },
+  "include": [
+    "./webapp"
+  ]
 }

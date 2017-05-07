@@ -61,7 +61,7 @@ if ($status != 0) then
 endif
 
 # cvs -d :ext:cvs.sanger.ac.uk:/cvsroot/GUS co WDK
-svn co https://www.cbil.upenn.edu/svn/gus/WDK/trunk WDK
+svn co https://cbilsvn.pmacs.upenn.edu/svn/gus/WDK/trunk WDK
 
 if ($status != 0) then
   echo could not svn checkout $status
