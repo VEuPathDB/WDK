@@ -201,23 +201,15 @@ public abstract class AbstractDependentParam extends Param {
     query.resolveReferences(model);
     query = query.clone();
 
-    if (query.getFullName().equals("SharedVQ.BlastOrganismFiles")){
-      LOG.info("&&&&&&&&&&&&" + queryType + query.getFullName() + "  " + System.identityHashCode(query) + " " 
-	       + getFullName() + " " + System.identityHashCode(this));
-      LOG.info("&&&&&&&&& context: " + contextQuery);
-    }
     // get set of names of declared depended params
     getDependedParams();
     Set<String> dependedParamNames = new HashSet<>();
     if (dependedParams != null) {
-      LOG.info("+++++++++++++++  loading params");
       for (Param param : dependedParams) {
         dependedParamNames.add(param.getName());
       }
     }
     
-    for (String n : dependedParamNames) 
-      LOG.info("============================================== " + n);
 
     // the query's params should match the depended params;
     for (Param param : query.getParams()) {
