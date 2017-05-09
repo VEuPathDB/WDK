@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.query.param;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
+import java.math.BigDecimal;
+
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -51,8 +53,12 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
           oItem.setDescription((String) resultList.get(FilterParamNew.COLUMN_DESCRIPTION));
           oItem.setType((String) resultList.get(FilterParamNew.COLUMN_TYPE));
           oItem.setUnits((String) resultList.get(FilterParamNew.COLUMN_UNITS));
-          oItem.setPrecision((String) resultList.get(FilterParamNew.COLUMN_PRECISION));
-          oItem.setIsRange(((Integer) resultList.get(FilterParamNew.COLUMN_IS_RANGE)) == 1);
+
+	  BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
+
+          if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
+	  BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
+          if (isRange != null) oItem.setIsRange(isRange.toBigInteger().equals(1));
 
 
           ontologyItemMap.put(oItem.getOntologyId(), oItem);

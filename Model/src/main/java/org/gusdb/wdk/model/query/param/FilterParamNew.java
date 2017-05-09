@@ -112,7 +112,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
   public FilterParamNew() {
     // register handlers
-    setHandler(new FilterParamHandler());
+    setHandler(new FilterParamNewHandler());
   }
 
   /**

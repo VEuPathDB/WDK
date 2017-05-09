@@ -13,7 +13,7 @@ public class OntologyItem {
   private String description;
   private String type;
   private String units;
-  private String precision;
+  private long precision;  // TODO: this is long only because jdbc gives us a big decimal.
   private boolean isRange;
   
   public static final String TYPE_STRING = "string";
@@ -48,7 +48,7 @@ public class OntologyItem {
     this.units = units;
   }
 
-  public void setPrecision(String precision) {
+  public void setPrecision(Long precision) {
     this.precision = precision;
   }
 
@@ -76,7 +76,7 @@ public class OntologyItem {
     return units;
   }
 
-  public String getPrecision() {
+  public Long getPrecision() {
     return precision;
   }
   

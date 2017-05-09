@@ -534,7 +534,6 @@
   <define name="filterParamNew">
     <element name="filterParamNew">
       <ref name="DependentParamBaseProperties" />
-      <attribute name="queryRef" />
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />
       <optional>
