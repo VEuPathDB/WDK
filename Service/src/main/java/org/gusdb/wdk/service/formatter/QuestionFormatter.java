@@ -129,4 +129,10 @@ public class QuestionFormatter {
     return json;
   
   }
+
+  public static Object getInternalValueJson(String internalValue) {
+    JSONObject json = new JSONObject();
+    json.put("internalValue", internalValue);
+    return json;
+  }
 }

@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamHandler;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -335,14 +336,50 @@ public class QuestionService extends WdkService {
     }
   }
 
-  private FilterParamNew getFilterParam(String questionName, Question question, String paramName) throws WdkUserException {
+  private Param getParam(String questionName, Question question, String paramName) throws WdkUserException {
     if (question == null)
       throw new NotFoundException(WdkService.NOT_FOUND + questionName);
     Param param = question.getQuery().getParamMap().get(paramName);
     if (param == null)
       throw new NotFoundException(WdkService.NOT_FOUND + paramName);
+    return param;
+  }
+  
+  private FilterParamNew getFilterParam(String questionName, Question question, String paramName) throws WdkUserException {
+    Param param = getParam(questionName, question, paramName);
     if (!(param instanceof FilterParamNew)) throw new WdkUserException(paramName + " is not a FilterParam");
     return (FilterParamNew)param;
   }
+  /*
+   * { internalValue: "la de dah" }
+   */
+
+  @POST
+  @Path("/{questionName}/{paramName}/internalValue")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getParamInternalValue(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
+          throws WdkUserException, WdkModelException {
+    
+    Question question = getQuestionFromSegment(questionName);
+    Param param = getParam(questionName, question, paramName);
+    ParamHandler paramHandler = param.getParamHandler();
+    
+    Map<String, String> contextParamValues = new HashMap<String, String>();
+    
+    try {
+      JSONObject jsonBody = new JSONObject(body);
+      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
+      JSONObject stableValueJson = jsonBody.getJSONObject("stableValue");
+      String stableValue = stableValueJson.toString();
+      String internalValue = paramHandler.toInternalValue(getSessionUser(), stableValue, contextParamValues);
+      return Response.ok(QuestionFormatter.getInternalValueJson(internalValue)).build();
+    }
+    catch (JSONException e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+
 
 }
