@@ -32,6 +32,8 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * Provides access to Question data configured in the WDK Model.  All question
@@ -45,6 +47,8 @@ import org.json.JSONObject;
 @Path("/question")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
+  private static final Logger LOG = Logger.getLogger(QuestionService.class);
+
 
   private static final String QUESTION_RESOURCE = "Question Name: ";
   
@@ -373,7 +377,7 @@ public class QuestionService extends WdkService {
       JSONObject stableValueJson = jsonBody.getJSONObject("stableValue");
       String stableValue = stableValueJson.toString();
       String internalValue = paramHandler.toInternalValue(getSessionUser(), stableValue, contextParamValues);
-      return Response.ok(QuestionFormatter.getInternalValueJson(internalValue)).build();
+      return Response.ok(QuestionFormatter.getInternalValueJson(internalValue).toString()).build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);

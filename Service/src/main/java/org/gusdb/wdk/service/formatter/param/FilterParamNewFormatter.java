@@ -27,7 +27,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   public JSONObject getJson(User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
-    pJson.put("metaDataSpec", getOntologyJson(user, dependedParamValues));
+    pJson.put("ontology", getOntologyJson(user, dependedParamValues));
     return pJson;
   }
 
