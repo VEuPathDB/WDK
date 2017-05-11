@@ -292,7 +292,7 @@ public class QuestionService extends WdkService {
       JSONObject filters = jsonBody.getJSONObject("filters");
       String ontologyId = jsonBody.getString("ontologyId");
       Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, filters);
-      return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts)).build();
+      return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts).toString()).build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
@@ -331,9 +331,9 @@ public class QuestionService extends WdkService {
     try {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
-      JSONObject filters = jsonBody.getJSONObject("filters");
-      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, filters);
-      return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts)).build();
+      //JSONObject filters = jsonBody.getJSONObject("filters");
+      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, jsonBody);
+      return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts).toString()).build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);

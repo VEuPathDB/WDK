@@ -139,7 +139,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       for (int i = 0; i < jsFilters.length(); i++) {
         if (i > 0) filtersSql.append(" INTERSECT ");
         JSONObject jsFilter = jsFilters.getJSONObject(i);
-        filtersSql.append(filterSelectSql + "'" + jsFilter.getString(FILTERS_FIELD) + "' ");
+        filtersSql.append(filterSelectSql);
         filtersSql.append(getFilterAsAndClause(jsFilter, ontology, metadataTableName));
       }
       return filtersSql.toString();
@@ -168,7 +168,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
     String min = range.getString(FILTERS_MIN);
     String max = range.getString(FILTERS_MAX);
-    return " AND " + metadataTableName + "." + columnName + " > " + min + "AND " + metadataTableName + "." + columnName + " < " + max; 
+    return " AND " + metadataTableName + "." + columnName + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max; 
   }
   
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
