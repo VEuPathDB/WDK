@@ -280,14 +280,14 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET UNFILTERED (TOTAL) COUNTS */
     // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, null);
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
     String metadataSql = queryInstance.getSql();
     
     // reduce it to a set of distinct internals
     // we know that each ontology_term_id has a full set of internals, so we just need to query 
     // one ontology_term_id.
     String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + metadataSql + ") md" 
-          + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + metadataSql + ") where row_num = 1)";
+          + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + metadataSql + ") where rownum = 1)";
     
     // get count
     String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
@@ -300,7 +300,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
 
     // get count
-    sql = "select count(*) from (" + filteredInternalsSql + ")";
+    sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
 
     fpsc.unfilteredCount = runCountSql(sql);
     
@@ -331,7 +331,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET UNFILTERED COUNTS */
     // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, null);
+    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
     String metadataSql = queryInstance.getSql();
     
     // limit it to our ontology_id
