@@ -16,8 +16,11 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
 
 public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, OntologyItem>> {
+
+  private static final Logger LOG = Logger.getLogger(OntologyItemNewFetcher.class);
 
   private Query query;
   private Map<String, String> paramValues;
@@ -58,8 +61,7 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
 
           if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
 	  BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
-          if (isRange != null) oItem.setIsRange(isRange.toBigInteger().equals(1));
-
+          if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
 
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
         }
