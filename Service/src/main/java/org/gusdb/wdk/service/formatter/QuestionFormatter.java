@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
-import org.gusdb.wdk.service.formatter.param.VocabProvider;
+import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,8 +91,8 @@ public class QuestionFormatter {
     for (Param param : params) {
       if (expandParams) {
         ParamFormatter<?> formatter = ParamFormatterFactory.getFormatter(param);
-        paramsJson.put(formatter instanceof VocabProvider ?
-          ((VocabProvider)formatter).getJson(user, dependedParamValues) :
+        paramsJson.put(formatter instanceof DependentParamProvider ?
+          ((DependentParamProvider)formatter).getJson(user, dependedParamValues) :
           formatter.getJson());
       }
       else {

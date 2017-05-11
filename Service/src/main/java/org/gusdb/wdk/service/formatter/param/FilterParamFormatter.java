@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import org.apache.log4j.Logger;
 
 
-public class FilterParamFormatter extends AbstractEnumParamFormatter implements VocabProvider  {
+public class FilterParamFormatter extends AbstractEnumParamFormatter implements DependentParamProvider  {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
