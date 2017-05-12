@@ -29,7 +29,8 @@ import org.json.JSONObject;
  */
 public abstract class AbstractDependentParam extends Param {
 
-   private static final Logger LOG = Logger.getLogger(AbstractDependentParam.class);
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(AbstractDependentParam.class);
  
   static final String PARAM_SERVED_QUERY = "ServedQuery";
 

@@ -47,6 +47,8 @@ import org.apache.log4j.Logger;
 @Path("/question")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
+  
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuestionService.class);
 
 
