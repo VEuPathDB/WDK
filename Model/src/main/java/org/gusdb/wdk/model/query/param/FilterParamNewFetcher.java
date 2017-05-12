@@ -8,7 +8,6 @@ import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,13 +20,11 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
   private static final String METADATA_QUERY_REF_KEY = "metadataQueryRef";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
   
-  private final User _user;
   private final FilterParamNew _param;
   private final Query _metadataQuery;
   private final Query _ontologyQuery;
 
-  public FilterParamNewFetcher(User user, FilterParamNew param) {
-    _user = user;
+  public FilterParamNewFetcher(FilterParamNew param) {
     _param = param;
     _metadataQuery = param.getMetadataQuery();
     _ontologyQuery = param.getOntologyQuery();
@@ -55,6 +52,7 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
+    @SuppressWarnings("unchecked")
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while (paramNames.hasNext()) {

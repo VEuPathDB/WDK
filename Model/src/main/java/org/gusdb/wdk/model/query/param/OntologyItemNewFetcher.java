@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, OntologyItem>> {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(OntologyItemNewFetcher.class);
 
   private Query query;

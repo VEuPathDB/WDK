@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class FilterParamNewInstance implements DependentParamInstance {
 	
+  @SuppressWarnings("unused")
   private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 
   // param this cache was created by

@@ -61,6 +61,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
+    @SuppressWarnings("unchecked")
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while (paramNames.hasNext()) {

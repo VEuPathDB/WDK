@@ -63,6 +63,8 @@ import org.apache.log4j.Logger;
  * 
  */
 public class FilterParamNew extends AbstractDependentParam {
+  
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
 
@@ -313,7 +315,7 @@ public class FilterParamNew extends AbstractDependentParam {
   private long runCountSql(String sql) {
     Object[] args = {};
     BasicResultSetHandler handler = new BasicResultSetHandler();
-    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "invalid-step-report-summary").executeQuery(args, handler);
+    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts").executeQuery(args, handler);
     List<Map<String,Object>> results = handler.getResults();
     Map<String,Object> row = results.get(0);
     return ((BigDecimal)row.get("CNT")).toBigInteger().longValue();
@@ -570,7 +572,7 @@ public class FilterParamNew extends AbstractDependentParam {
   private FilterParamNewInstance createFilterParamNewInstance(User user,
       Map<String, String> dependedParamValues) throws WdkModelException, WdkUserException {
     try {
-      FilterParamNewFetcher fetcher = new FilterParamNewFetcher(user, this);
+      FilterParamNewFetcher fetcher = new FilterParamNewFetcher(this);
 
       CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
     }
