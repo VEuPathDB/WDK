@@ -7,6 +7,7 @@ import java.util.Map;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -14,7 +15,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
-import org.gusdb.wdk.service.formatter.param.VocabProvider;
+import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,8 +91,8 @@ public class QuestionFormatter {
     for (Param param : params) {
       if (expandParams) {
         ParamFormatter<?> formatter = ParamFormatterFactory.getFormatter(param);
-        paramsJson.put(formatter instanceof VocabProvider ?
-          ((VocabProvider)formatter).getJson(user, dependedParamValues) :
+        paramsJson.put(formatter instanceof DependentParamProvider ?
+          ((DependentParamProvider)formatter).getJson(user, dependedParamValues) :
           formatter.getJson());
       }
       else {
@@ -101,4 +102,37 @@ public class QuestionFormatter {
     return paramsJson;
   }
 
+  /*
+   * { termValue: { "filtered" : 123, "unfiltered" : 234}, ... }
+   */
+  public static JSONObject getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
+    JSONObject json = new JSONObject();
+    for (String term : counts.keySet()) {
+      FilterParamSummaryCounts fpsc = counts.get(term);
+      JSONObject c = new JSONObject();
+      c.put("filtered", fpsc.filteredCount);
+      c.put("unfiltered", fpsc.unfilteredCount);
+      json.put(term, c);
+    }
+    return json;
+  
+  }
+  
+  /*
+   * { "filtered" : 123, "unfiltered" : 234}
+   */
+  public static JSONObject getFilterParamSummaryJson(FilterParamSummaryCounts counts) {
+    JSONObject json = new JSONObject();
+    json.put("filtered", counts.filteredCount);
+    json.put("unfiltered", counts.unfilteredCount);
+    
+    return json;
+  
+  }
+
+  public static Object getInternalValueJson(String internalValue) {
+    JSONObject json = new JSONObject();
+    json.put("internalValue", internalValue);
+    return json;
+  }
 }

@@ -58,21 +58,21 @@ public class TimestampParamHandler extends AbstractParamHandler {
    * The stable value is the same as signature.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toSignature(User user, String stableValue) {
     return stableValue;
   }
 
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
   }
   
   @Override 
-  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException,
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
   WdkModelException {
     String stableValue = inputStableValue;
     if (inputStableValue == null) {

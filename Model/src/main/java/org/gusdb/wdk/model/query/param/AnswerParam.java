@@ -140,7 +140,7 @@ public class AnswerParam extends Param {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // add recordClass names
     String[] rcNames = recordClasses.keySet().toArray(new String[0]);
     Arrays.sort(rcNames);

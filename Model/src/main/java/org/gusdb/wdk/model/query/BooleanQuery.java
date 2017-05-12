@@ -185,9 +185,9 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  protected void appendJSONContent(JSONObject jsQuery, boolean extra)
+  protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
-    super.appendJSONContent(jsQuery, extra);
+    super.appendChecksumJSON(jsQuery, extra);
     jsQuery.append("recordClass", recordClass.getFullName());
   }
 

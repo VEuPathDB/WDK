@@ -71,7 +71,7 @@ public class TimestampParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#appendJSONContent(org.json.JSONObject )
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
       jsParam.put("interval", interval);
     }

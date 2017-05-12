@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 
@@ -13,6 +14,9 @@ public class ParamFormatterFactory {
 
     if (param instanceof FilterParam) {
       return new FilterParamFormatter((FilterParam)param);
+    }
+    if (param instanceof FilterParamNew) {
+      return new FilterParamNewFormatter((FilterParamNew)param);
     }
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam)param;

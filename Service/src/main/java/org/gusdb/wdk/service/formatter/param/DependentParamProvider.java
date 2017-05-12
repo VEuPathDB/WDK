@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public interface VocabProvider {
+public interface DependentParamProvider {
 
   public JSONObject getJson(User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException;

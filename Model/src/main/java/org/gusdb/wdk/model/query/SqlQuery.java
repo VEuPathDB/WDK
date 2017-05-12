@@ -157,7 +157,7 @@ public class SqlQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsQuery, boolean extra)
+  protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
     if (extra) {
       // add macro into the content

@@ -51,10 +51,10 @@ public class StringParamHandler extends AbstractParamHandler {
    * @throws WdkModelException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *      java.lang.String)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0) return "";
     return Utilities.encrypt(stableValue);
@@ -92,11 +92,11 @@ public class StringParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
   }
 
   @Override
-  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     String stableValue = inputStableValue;
     if (stableValue == null) {
       if (!param.isAllowEmpty())

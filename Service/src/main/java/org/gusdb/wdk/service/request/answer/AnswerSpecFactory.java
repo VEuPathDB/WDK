@@ -163,7 +163,7 @@ public class AnswerSpecFactory {
       else {
         stableValue = (String)contextValues.get(paramName);
       }
-      paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().cleanAndValidateStableValue(user, stableValue));    
+      paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue));    
       paramValues.put(paramName, paramValue);
 
     }

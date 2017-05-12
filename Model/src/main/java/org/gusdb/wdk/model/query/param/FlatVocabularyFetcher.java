@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,8 +10,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
-import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -48,26 +45,10 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
-        getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
+        AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
     return cacheKeyJson.toString();
   }
 
-  private static JSONObject getDependedParamValuesJson(
-      Map<String, String> dependedParamValues, Set<Param> dependedParams) {
-    JSONObject dependedParamValuesJson = new JSONObject();
-    if (dependedParams == null || dependedParams.isEmpty())
-      return dependedParamValuesJson;
-    // get depended param names in advance since getDependedParams() is expensive
-    List<String> dependedParamNames = Functions.mapToList(
-        dependedParams, new Function<Param, String>() {
-          @Override public String apply(Param obj) { return obj.getName(); }});
-    for (String paramName : dependedParamValues.keySet()) {
-      if (dependedParamNames.contains(paramName)) {
-        dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
-      }
-    }
-    return dependedParamValuesJson;
-  }
   /**
    * We don't need to read the vocabQueryRef from the cache key, because we know
    * it is the same as the one in the param's state.
@@ -80,6 +61,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
+    @SuppressWarnings("unchecked")
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while (paramNames.hasNext()) {
@@ -91,7 +73,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
 
   public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
-    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues);
+    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
   }

@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -287,16 +287,16 @@ public abstract class QueryInstance<T extends Query> {
     String value;
     if (!stableValues.containsKey(param.getName())) {
       // param not provided, determine value
-      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
+      if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
         // special case; must get value of depended param first
-        AbstractEnumParam aeParam = (AbstractEnumParam) param;
+        AbstractDependentParam adParam = (AbstractDependentParam) param;
         Map<String, String> dependedValues = new LinkedHashMap<>();
-        for (Param dependedParam : aeParam.getDependedParams()) {
+        for (Param dependedParam : adParam.getDependedParams()) {
           resolveParamValue(dependedParam, stableValues);
           String dependedName = dependedParam.getName();
           dependedValues.put(dependedName, stableValues.get(dependedName));
         }
-        value = aeParam.getDefault(user, dependedValues);
+        value = adParam.getDefault(user, dependedValues);
       }
       else {
         value = param.getDefault();
@@ -313,33 +313,33 @@ public abstract class QueryInstance<T extends Query> {
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
 
-      if (paramInternalValues == null ) {
-	  // the empty & default values are filled
-	  Map<String, String> stableValues = fillEmptyValues(this.stableValues);
-	  paramInternalValues = new LinkedHashMap<String, String>();
-	  Map<String, Param> params = query.getParamMap();
-	  for (String paramName : params.keySet()) {
-	      Param param = params.get(paramName);
-	      String internalValue, stableValue = stableValues.get(paramName);
+    if (paramInternalValues == null) {
+      // the empty & default values are filled
+      Map<String, String> stableValues = fillEmptyValues(this.stableValues);
+      paramInternalValues = new LinkedHashMap<String, String>();
+      Map<String, Param> params = query.getParamMap();
+      for (String paramName : params.keySet()) {
+        Param param = params.get(paramName);
+        String internalValue, stableValue = stableValues.get(paramName);
 
-	      // TODO: refactor so this fork isn't necessary
-	      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
-		  AbstractEnumParam aeParam = (AbstractEnumParam) param;
-		  Map<String, String> dependedParamValues = new LinkedHashMap<>();
-		  for (Param dependedParam : aeParam.getDependedParams()) {
-		      String value = stableValues.get(dependedParam.getName());
-		      dependedParamValues.put(dependedParam.getName(), value);
-		  }
-		  internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
-	      }
-	      else {
-		  internalValue = param.getInternalValue(user, stableValue, stableValues);
-	      }
+        // TODO: refactor so this fork isn't necessary
+        if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
+          AbstractDependentParam adParam = (AbstractDependentParam) param;
+          Map<String, String> dependedParamValues = new LinkedHashMap<>();
+          for (Param dependedParam : adParam.getDependedParams()) {
+            String value = stableValues.get(dependedParam.getName());
+            dependedParamValues.put(dependedParam.getName(), value);
+          }
+          internalValue = adParam.getInternalValue(user, stableValue, dependedParamValues);
+        }
+        else {
+          internalValue = param.getInternalValue(user, stableValue, stableValues);
+        }
 
-	      paramInternalValues.put(paramName, internalValue);
-	  }
+        paramInternalValues.put(paramName, internalValue);
       }
-      return Collections.unmodifiableMap(paramInternalValues);
+    }
+    return Collections.unmodifiableMap(paramInternalValues);
   }
   
   protected void executePostCacheUpdateSql(String tableName, int instanceId) throws WdkModelException {
