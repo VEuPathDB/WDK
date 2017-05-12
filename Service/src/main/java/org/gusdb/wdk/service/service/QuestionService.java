@@ -289,9 +289,8 @@ public class QuestionService extends WdkService {
     try {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
-      JSONObject filters = jsonBody.getJSONObject("filters");
       String ontologyId = jsonBody.getString("ontologyId");
-      Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, filters);
+      Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, jsonBody);
       return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts).toString()).build();
     }
     catch (JSONException e) {
