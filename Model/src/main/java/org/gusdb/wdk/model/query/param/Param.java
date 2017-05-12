@@ -89,7 +89,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected abstract void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
-  protected abstract void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException;
+  protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
 
   protected String id;
   protected String name;
@@ -465,11 +465,11 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     handlerReferences = null;
   }
 
-  public JSONObject getJSONContent(boolean extra) throws JSONException {
+  public JSONObject getChecksumJSON(boolean extra) throws JSONException {
     JSONObject jsParam = new JSONObject();
     jsParam.put("name", getFullName());
 
-    appendJSONContent(jsParam, extra);
+    appendChecksumJSON(jsParam, extra);
     return jsParam;
   }
 
@@ -606,7 +606,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
-    return handler.toSignature(user, stableValue, contextParamValues);
+    return handler.toSignature(user, stableValue);
   }
 
   @Override

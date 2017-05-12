@@ -195,7 +195,7 @@ public class FilterParam extends FlatVocabParam {
 
     // resolve property query, the property query should have the same params as vocab query
     if (metadataQueryRef != null) {
-      this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
+      this.metadataQuery = resolveDependentQuery(model, metadataQueryRef, "property query");
 
       // the propertyQuery must have exactly 3 columns: term, property, and value.
       Map<String, Column> columns = metadataQuery.getColumnMap();
@@ -231,10 +231,10 @@ public class FilterParam extends FlatVocabParam {
     if (metadataSpecQuery == null)
       return null;
 
-    MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextParamValues, user);
+    OntologyItemFetcher fetcher = new OntologyItemFetcher(metadataSpecQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
-      map = CacheMgr.get().getMetadataSpecCache().getItem(fetcher.getCacheKey(), fetcher);
+      map = CacheMgr.get().getOntologyCache().getItem(fetcher.getCacheKey(), fetcher);
     }
     catch (UnfetchableItemException ex) {
       decodeException(ex);
@@ -383,6 +383,9 @@ public class FilterParam extends FlatVocabParam {
 
   }
 
+  /**
+   * remove from stableValue unrecognized terms.  if stableValue empty, use default.
+   */
   @Override
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
       EnumParamVocabInstance cache) throws WdkModelException {

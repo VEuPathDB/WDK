@@ -11,7 +11,7 @@ import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TypeAheadParamFormatter extends AbstractEnumParamFormatter implements VocabProvider {
+public class TypeAheadParamFormatter extends AbstractEnumParamFormatter implements DependentParamProvider {
 
   TypeAheadParamFormatter(AbstractEnumParam param) {
     super(param);

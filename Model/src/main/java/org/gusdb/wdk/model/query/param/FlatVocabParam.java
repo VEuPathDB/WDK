@@ -1,10 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
@@ -29,8 +26,6 @@ import org.json.JSONObject;
  * 
  */
 public class FlatVocabParam extends AbstractEnumParam {
-
-  static final String PARAM_SERVED_QUERY = "ServedQuery";
 
   public static final String COLUMN_TERM = "term";
   public static final String COLUMN_INTERNAL = "internal";
@@ -102,44 +97,11 @@ public class FlatVocabParam extends AbstractEnumParam {
     super.resolveReferences(model);
 
     // resolve vocab query
-    this.vocabQuery = resolveQuery(model, vocabQueryRef, "vocab query");
+    this.vocabQuery = resolveDependentQuery(model, vocabQueryRef, "vocab query");
   }
 
-  protected Query resolveQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
-    queryType += " ";
-
-    // the vocab query is always cloned to keep a reference to the param
-    Query query = (Query) model.resolveReference(queryName);
-    query.resolveReferences(model);
-    query = query.clone();
-
-    // if the query has params, they should match the depended params
-    Set<Param> params = getDependedParams();
-    Set<String> paramNames = new HashSet<>();
-    if (params != null) {
-      for (Param param : params) {
-        paramNames.add(param.getName());
-      }
-    }
-
-    // all param in the vocab param should match the depended params;
-    for (Param param : query.getParams()) {
-      String paramName = param.getName();
-      if (paramName.equals(PARAM_SERVED_QUERY) || paramName.equals(Utilities.PARAM_USER_ID))
-        continue;
-
-      if (!paramNames.contains(paramName))
-        throw new WdkModelException("The " + queryType + query.getFullName() + " requires a depended param " +
-            paramName + ", but the vocab param " + getFullName() + " doesn't depend on it.");
-    }
-    // all depended params should match the params in the vocab query;
-    Map<String, Param> vocabParams = query.getParamMap();
-    for (String paramName : paramNames) {
-      if (!vocabParams.containsKey(paramName))
-        throw new WdkModelException("The dependent param " + getFullName() + " depends on param " +
-            paramName + ", but the " + queryType + query.getFullName() + " doesn't use this depended param.");
-
-    }
+  protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
+    Query query = super.resolveDependentQuery(model, queryName, queryType);
 
     // add a served query param into flatVocabQuery, if it doesn't exist
     ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);
@@ -153,7 +115,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     query.addParam(param);
     return query;
   }
-
+  
   /*
    * (non-Javadoc)
    * 
@@ -199,7 +161,7 @@ public class FlatVocabParam extends AbstractEnumParam {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
       // add underlying query name to it
       jsParam.append("query", vocabQuery.getFullName());

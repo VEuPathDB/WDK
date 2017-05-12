@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<String, String>>> {
+public class OntologyItemFetcher implements ItemFetcher<String, Map<String, Map<String, String>>> {
 
   private Query query;
   private Map<String, String> paramValues;
@@ -23,7 +23,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
-  public MetaDataItemFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
+  public OntologyItemFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
     this.query = metaDataQuery;
     this.paramValues = paramValues;
     this.user = user;
@@ -32,40 +32,37 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
   @Override
   public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
-      QueryInstance<?> instance = getQueryInstance(user, paramValues, query);
-      Map<String, Map<String, String>> properties = new LinkedHashMap<>();
+      // trim away param values not needed by query, to avoid warnings
+      Map<String, String> requiredParamValues = new HashMap<String, String>();
+      for (String paramName : paramValues.keySet())
+        if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
+          requiredParamValues.put(paramName, paramValues.get(paramName));
+
+      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0,
+          new HashMap<String, String>());
+      Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
         while (resultList.next()) {
-          String term = (String) resultList.get(FilterParam.COLUMN_TERM);
           String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
-          String value = (String) resultList.get(FilterParam.COLUMN_VALUE);
-          Map<String, String> termProp = properties.get(term);
-          if (termProp == null) {
-            termProp = new LinkedHashMap<>();
-            properties.put(term, termProp);
+          String info = (String) resultList.get(FilterParam.COLUMN_SPEC_PROPERTY);
+          String data = (String) resultList.get(FilterParam.COLUMN_SPEC_VALUE);
+          Map<String, String> propertyMeta = metadata.get(property);
+          if (propertyMeta == null) {
+            propertyMeta = new LinkedHashMap<>();
+            metadata.put(property, propertyMeta);
           }
-          termProp.put(property, value);
+          propertyMeta.put(info, data);
         }
       }
       finally {
         resultList.close();
       }
-      return properties;
+      return metadata;
     }
     catch (WdkModelException | WdkUserException ex) {
       throw new UnfetchableItemException(ex);
     }
-  }
-  
-  static QueryInstance<?> getQueryInstance(User user, Map<String, String> paramValues, Query query) throws WdkModelException, WdkUserException {
-    // trim away param values not needed by query, to avoid warnings
-    Map<String, String> requiredParamValues = new HashMap<String, String>();
-    for (String paramName : paramValues.keySet())
-      if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-        requiredParamValues.put(paramName, paramValues.get(paramName));
-
-    return query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
   }
 
   public String getCacheKey() throws JSONException {

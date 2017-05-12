@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class encapsulates a vocabulary and default value for an
@@ -24,9 +26,9 @@ import org.apache.log4j.Logger;
  * 
  * @author rdoherty
  */
-public class EnumParamVocabInstance {
+public class EnumParamVocabInstance implements DependentParamInstance {
 	
-	private static Logger logger = Logger.getLogger(EnumParamVocabInstance.class);
+	private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 	
 	// param this cache was created by
 	// context values used to create this cache
@@ -40,8 +42,11 @@ public class EnumParamVocabInstance {
 	private Map<String, String> _termParentMap = new LinkedHashMap<String, String>();
 	private List<EnumParamTermNode> _termTreeList = new ArrayList<EnumParamTermNode>();
 	
-	public EnumParamVocabInstance(Map<String, String> dependedParamValues) {
+	private AbstractEnumParam _aeParam;
+	
+	public EnumParamVocabInstance(Map<String, String> dependedParamValues, AbstractEnumParam aeParam) {
 		_dependedParamValues = dependedParamValues;
+		_aeParam = aeParam;
 	}
 	
 	public String getDefaultValue() {
@@ -74,7 +79,7 @@ public class EnumParamVocabInstance {
 	    defaultVal : getDefaultValue());
 	  }
 
-	public void addTermValues(String term, String internalVal, String displayVal, String parentTerm) {
+	void addTermValues(String term, String internalVal, String displayVal, String parentTerm) {
 		if (internalVal == null || displayVal == null /*|| parentTerm == null*/ ) {
 			StringBuilder badVals = new StringBuilder();
 			badVals.append(internalVal == null ? ",internal " : "");
@@ -92,26 +97,26 @@ public class EnumParamVocabInstance {
 		_termParentMap.put(term, parentTerm);
 	}
 	
-	public boolean isEmpty() {
+	boolean isEmpty() {
 		// all maps should contain the same keys (except top level nodes will have null parents)
 		return _termInternalMap.isEmpty();
 	}
 	
-	public int getNumTerms() {
+	int getNumTerms() {
 		return _termInternalMap.size();
 	}
 
-	public Set<String> getTerms() {
+	Set<String> getTerms() {
 		return new LinkedHashSet<String>(_termInternalMap.keySet());
 	}
 
-	public boolean containsTerm(String term) {
+	boolean containsTerm(String term) {
 		return _termInternalMap.containsKey(term);
 	}
 	
-	public String getInternal(String term) { return _termInternalMap.get(term); }
-	public String getDisplay(String term) { return _termDisplayMap.get(term); }
-	public String getParent(String term) { return _termParentMap.get(term); }
+	String getInternal(String term) { return _termInternalMap.get(term); }
+	String getDisplay(String term) { return _termDisplayMap.get(term); }
+	String getParent(String term) { return _termParentMap.get(term); }
 	
 	public Map<String, String> getVocabMap() {
         return new LinkedHashMap<String, String>(_termInternalMap);
@@ -130,6 +135,7 @@ public class EnumParamVocabInstance {
         _termInternalMap.keySet().toArray(array);
         return array;
 	}
+
 
 	public String[] getDisplays() {
         String[] displays = new String[_termDisplayMap.size()];
@@ -153,23 +159,23 @@ public class EnumParamVocabInstance {
         return array;
 	}
 
-	public void addParentNodeToTree(EnumParamTermNode node) {
+	void addParentNodeToTree(EnumParamTermNode node) {
 		_termTreeList.add(node);
 	}
 
-	public void unsetParentTerm(String term) {
+	void unsetParentTerm(String term) {
 		_termParentMap.remove(term);
 	}
 
-	public List<EnumParamTermNode> getTermTreeListRef() {
+	List<EnumParamTermNode> getTermTreeListRef() {
 		return _termTreeList;
 	}
 
-	public Map<String, String> getDependedValues() {
+	Map<String, String> getDependedValues() {
 		return _dependedParamValues;
 	}
 	
-	public void removeTerm(String term) {
+	void removeTerm(String term) {
 	  // before removing the term, need to shortcut the children to its parent
 	  String parent = _termParentMap.get(term);
 	  for (String child : _termParentMap.keySet()) {
@@ -197,4 +203,14 @@ public class EnumParamVocabInstance {
 	  }
 	  return rows;
 	}
+	
+  public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return _aeParam.getValidStableValue(user, stableValue, contextParamValues, this);
+  }
+  
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);
+  }
+
+
 }

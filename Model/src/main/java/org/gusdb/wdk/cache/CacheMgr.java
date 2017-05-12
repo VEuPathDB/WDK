@@ -3,6 +3,9 @@ package org.gusdb.wdk.cache;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParam.MetadataCache;
+import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamNewCache;
+import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;
+import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyCache;
 
 /**
  * This class manages WDK's subclasses of ItemCache.  For now it will simply
@@ -24,6 +27,10 @@ public class CacheMgr {
   private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
   private final MetadataCache _metadataCache = new MetadataCache();
   private final MetadataCache _metadataSpecCache = new MetadataCache();
+  private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
+  private final OntologyCache _ontologyCache = new OntologyCache();
+  private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
+
 
   private CacheMgr() { }
 
@@ -31,6 +38,10 @@ public class CacheMgr {
   public StepCache getStepCache() { return _stepCache; }
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
   public MetadataCache getMetadataCache() { return _metadataCache; }
-  public MetadataCache getMetadataSpecCache() { return _metadataSpecCache; }
+  public MetadataCache getOntologyCache() { return _metadataSpecCache; }
+  public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
+  public OntologyCache getOntologyNewCache() { return _ontologyCache; }
+  public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
+
 
 }

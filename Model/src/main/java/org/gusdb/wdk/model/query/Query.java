@@ -15,10 +15,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
+import org.gusdb.wdk.model.query.param.DependentParamInstance;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -137,7 +138,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   // Abstract methods
   // =========================================================================
 
-  protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
+  protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
   public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
@@ -334,7 +335,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   public String getChecksum(boolean extra) throws WdkModelException {
     try {
-      JSONObject jsQuery = getJSONContent(extra);
+      JSONObject jsQuery = getChecksumJSON(extra);
       return Utilities.encrypt(jsQuery.toString());
     }
     catch (JSONException e) {
@@ -360,7 +361,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @throws JSONException
    *           if unable to create JSON object
    */
-  private JSONObject getJSONContent(boolean extra) throws JSONException {
+  private JSONObject getChecksumJSON(boolean extra) throws JSONException {
     // use JSON to construct the string content
     JSONObject jsQuery = new JSONObject();
     jsQuery.put("name", getFullName());
@@ -378,7 +379,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     JSONArray jsParams = new JSONArray();
     for (String paramName : paramNames) {
       Param param = paramMap.get(paramName);
-      jsParams.put(param.getJSONContent(extra));
+      jsParams.put(param.getChecksumJSON(extra));
     }
     jsQuery.put("params", jsParams);
 
@@ -397,7 +398,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
 
     // append child-specific data
-    appendJSONContent(jsQuery, extra);
+    appendChecksumJSON(jsQuery, extra);
 
     return jsQuery;
   }
@@ -669,8 +670,8 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractEnumParam) {
         // for enum/flatVocab params, call a special method to process it
-        Map<String, EnumParamVocabInstance> caches = new HashMap<>();
-        ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues, caches);
+        Map<String, DependentParamInstance> caches = new HashMap<>();
+        ((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
       }
       else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;
