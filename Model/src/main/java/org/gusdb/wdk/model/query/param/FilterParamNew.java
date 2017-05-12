@@ -28,6 +28,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * @author steve
@@ -61,6 +63,8 @@ import org.json.JSONObject;
  * 
  */
 public class FilterParamNew extends AbstractDependentParam {
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
+
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> { }
   public static class MetadataNewCache extends ItemCache<String, Map<String, MetaDataItem>> { }
@@ -294,7 +298,6 @@ public class FilterParamNew extends AbstractDependentParam {
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
     fpsc.unfilteredCount = runCountSql(sql);
 
-
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
     String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
@@ -302,7 +305,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // get count
     sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
 
-    fpsc.unfilteredCount = runCountSql(sql);
+    fpsc.filteredCount = runCountSql(sql);
     
     return fpsc;
   }
@@ -350,7 +353,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
     
     // use that set of ids to limit our ontology id's metadata 
-    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + "where internal in (" + internalSql + ")";
+    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql + ")";
     
     // read this filtered set into map of internal -> value(s)
     Map<String, List<String>> filtered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyIdFiltered);
@@ -378,7 +381,10 @@ public class FilterParamNew extends AbstractDependentParam {
       for (String value : values) {
         FilterParamSummaryCounts counts;
         if (summary.containsKey(value)) counts = summary.get(value);
-        else counts = new FilterParamSummaryCounts();
+        else {
+	  counts = new FilterParamSummaryCounts();
+	  summary.put(value, counts);
+	}
         if (filtered) counts.filteredCount++;
         else counts.unfilteredCount++;
       }
@@ -402,6 +408,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param cache
    *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
    *          initialized when a cache is created.)
+   * @param sql - sql that provides the meta data.  has a single bind variable for ontology id
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
@@ -420,6 +427,7 @@ public class FilterParamNew extends AbstractDependentParam {
       ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setFetchSize(FETCH_SIZE);
       ps.setString(1, ontologyId);
+      ps.setString(2, ontologyId);
       resultSet = ps.executeQuery();
       while (resultSet.next()) {
         String internal = resultSet.getString(COLUMN_INTERNAL);
