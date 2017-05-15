@@ -99,10 +99,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       invalidateResults(((StepRevisedEvent)event).getRevisedStep().getStepId());
     }
     else if (event instanceof StepResultsModifiedEvent) {
-      List<Integer> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
+      List<Long> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
       LOG.debug("StepsModifiedEvent with " + stepIds.size() + " steps: " +
           FormatUtil.arrayToString(stepIds.toArray()));
-      for (int stepId : stepIds) {
+      for (long stepId : stepIds) {
         invalidateResults(stepId);
       }
     }
@@ -112,9 +112,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
   }
 
-  private void invalidateResults(int stepId) throws WdkModelException, WdkUserException {
+  private void invalidateResults(long stepId) throws WdkModelException, WdkUserException {
     LOG.debug("Request made to reassess analyses of step " + stepId);
-    Map<Integer, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(stepId, _fileStore);
+    Map<Long, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(stepId, _fileStore);
     for (StepAnalysisContext context : contexts.values()) {
       LOG.info("Reassessing step analysis with ID " + context.getAnalysisId());
       LOG.trace("TRACE: " + context.getInstanceJson());
@@ -146,7 +146,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
+  public Map<Long, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
     return _dataStore.getAnalysesByStepId(step.getStepId(), _fileStore);
   }
 
@@ -217,7 +217,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
   private void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
-    Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
+    Map<Long, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {
       LOG.info("Copying step analysis with ID " + fromContext.getAnalysisId());
       LOG.trace("TRACE: " + fromContext.getInstanceJson());
@@ -250,7 +250,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
 
     // create new execution instance
-    int saId = _dataStore.getNextId();
+    long saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
         context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
 
@@ -415,7 +415,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException {
+  public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException {
     StepAnalysisContext context = _dataStore.getAnalysisById(analysisId, _fileStore);
     if (context == null) {
       throw new WdkUserException("No analysis exists with id: " + analysisId);

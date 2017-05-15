@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +13,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
+import org.gusdb.wdk.model.user.UserSession;
 
 /**
  * @author ctreatma
@@ -74,7 +75,7 @@ public class ProcessRenameStrategyAction extends Action {
             NameCheckInfo nameCheck = wdkUser.checkNameExists(strategy, customName, save);
             if (!checkName || !nameCheck.nameExists()) {
                 logger.debug("failed check.  either not checking name, or strategy doesn't already exist.");
-                int oldStrategyId = strategy.getStrategyId();
+                long oldStrategyId = strategy.getStrategyId();
 
                 if (save) {
                     if (wdkUser.isGuest()) {
@@ -88,9 +89,8 @@ public class ProcessRenameStrategyAction extends Action {
                     if (strategy.getIsSaved()
                             && !customName.equals(strategy.getSavedName())) {
                         // clone the last step
-                      int strategyId = wdkUser.getNewStrategyId();
-                        StepBean step = strategy.getLatestStep().deepClone(strategyId, new HashMap<Integer, Integer>());
-                        
+                        long strategyId = wdkUser.getNewStrategyId();
+                        StepBean step = strategy.getLatestStep().deepClone(strategyId, new HashMap<Long, Long>());
                         strategy = wdkUser.createStrategy(step, strategy.getIsSaved(), strategy.getIsDeleted());
                     }
 
@@ -127,9 +127,9 @@ public class ProcessRenameStrategyAction extends Action {
 
                 // If a front end action is specified in the url, set it in the current user
                 String frontAction = request.getParameter("action");
-                Integer frontStrategy = null;
+                Long frontStrategy = null;
                 try {
-                    frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
+                    frontStrategy = Long.valueOf(request.getParameter("actionStrat"));
                 }
                 catch (Exception ex) {
                 }
@@ -144,12 +144,13 @@ public class ProcessRenameStrategyAction extends Action {
                     frontStrategy = strategy.getStrategyId();
                 }
         
-                wdkUser.setFrontAction(frontAction);
+                UserSession session = wdkUser.getUser().getSession();
+                session.setFrontAction(frontAction);
                 if (frontStrategy != null) {
-                    wdkUser.setFrontStrategy(frontStrategy);
+                    session.setFrontStrategy(frontStrategy);
                 }
                 if (frontStep != null) {
-                    wdkUser.setFrontStep(frontStep);
+                    session.setFrontStep(frontStep);
                 }
 
                 request.setAttribute(CConstants.WDK_STEP_KEY,
@@ -163,7 +164,7 @@ public class ProcessRenameStrategyAction extends Action {
             // forward to strategyPage.jsp
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+            url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
             if (!opened)
                 url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
             url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY).append("=")

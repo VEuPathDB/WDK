@@ -48,8 +48,10 @@ class UserProfile extends React.Component {
 
   constructor(props) {
     super(props);
-    this.onTextChange = this.onTextChange.bind(this);
     this.onEmailChange = this.onEmailChange.bind(this);
+    this.onConfirmEmailChange = this.onConfirmEmailChange.bind(this);
+    this.onEmailFieldChange = this.onEmailFieldChange.bind(this);
+    this.onPropertyChange = this.onPropertyChange.bind(this);
     this.saveProfile = this.saveProfile.bind(this);
   }
 
@@ -64,8 +66,10 @@ class UserProfile extends React.Component {
             <FormMessage {...formConfig}/>
             <UserAccountForm user={this.props.userFormData}
                              disableSubmit={formConfig.disableSubmit}
-                             onTextChange={this.onTextChange}
                              onEmailChange={this.onEmailChange}
+                             onConfirmEmailChange={this.onConfirmEmailChange}
+                             onPropertyChange={this.onPropertyChange}
+                             onPreferenceChange={this.onPreferenceChange}
                              onFormStateChange={this.props.userEvents.updateProfileForm}
                              saveProfile={this.saveProfile}
                              wdkConfig={this.props.globalData.config}/>
@@ -89,32 +93,54 @@ class UserProfile extends React.Component {
   }
 
   /**
-   * Callback issued by the TextBox React component when either email input is modified.  Unlike the input to a text input, this modification needs an extra
-   * validation step to insure that the email and it's re-typed version are identical.
-   * @param newState
+   * Dynamically creates a change handler with the 
+   * @param {string} field
+   * @param {string} newValue
    */
-  onEmailUpdate(newState) {
-    this.validateEmailConfirmation(newState);
-    this.props.userEvents.updateProfileForm(newState);
+  onEmailFieldChange(field, newValue) {
+    // create function to do validation and call form action creator
+    let updater = newState => {
+        this.validateEmailConfirmation(newState);
+        this.props.userEvents.updateProfileForm(newState);
+    };
+    // create change handler for email field requested
+    let handler = getChangeHandler(field, updater, this.props.userFormData);
+    // call it with new value
+    handler(newValue);
   }
 
   /**
-   * Triggered by onChange handler of TextBox of type email.  Only different from handler of TextBox of type text because
-   * of an extra validation step.  Returns user with state change incorporated.
-   * @param field - name of user attribute being changed
+   * Triggered by onChange handler of email TextBox.  Provides extra validation
+   * step comparing email and confirmEmail.  Calls event to update form.
+   * @param newValue - new value of email field
    * @returns {*}
    */
-  onEmailChange(field) {
-    return getChangeHandler(field, this.onEmailUpdate, this.props.userFormData)
+  onEmailChange(newValue) {
+    this.onEmailFieldChange('email', newValue);
   }
 
   /**
-   * Triggered by onChange handler of TextBOx of type text.  Returns user with state change incorporated.
+   * Triggered by onChange handler of confirmEmail TextBox.  Provides extra validation
+   * step comparing email and confirmEmail.  Calls event to update form.
+   * @param newValue - new value of email field
+   * @returns {*}
+   */
+  onConfirmEmailChange(newValue) {
+    this.onEmailFieldChange('confirmEmail', newValue);
+  }
+
+  /**
+   * Triggered by onChange handler of TextBox of type text.  Returns user with state change incorporated.
    * @param field - name of user attribute being changed
    * @returns {*}
    */
-  onTextChange(field) {
-    return getChangeHandler(field, this.props.userEvents.updateProfileForm, this.props.userFormData);
+  onPropertyChange(field) {
+    let update = this.props.userEvents.updateProfileForm;
+    let previousState = this.props.userFormData;
+    return newValue => {
+      let newProps = Object.assign({}, previousState.properties, { [field]: newValue });
+      update(Object.assign({}, previousState, { properties: newProps }));
+    };
   }
 
   /**

@@ -1,8 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
+import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.service.formatter.Keys;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -22,7 +24,10 @@ import org.json.JSONObject;
  *     method: String (see AuthenticationMethod enum),
  *     oauthUrl: String (absolute URL),
  *     oauthClientId: String
- *   }
+ *   },
+ *   profileProperties: [
+ *     { <propName>: String }
+ *   ]
  * }
  */
 public class ProjectFormatter {
@@ -30,6 +35,7 @@ public class ProjectFormatter {
   public static final String WELCOME_MESSAGE = "Welcome to the WDK 3.0 Web Service";
 
   public static JSONObject getWdkProjectInfo(WdkModel wdkModel) {
+
     ModelConfig config = wdkModel.getModelConfig();
 
     // create authentication config sub-object
@@ -38,9 +44,19 @@ public class ProjectFormatter {
       .put(Keys.OAUTH_URL, config.getOauthUrl())
       .put(Keys.OAUTH_CLIENT_ID, config.getOauthClientId());
 
+    // create profile property config sub-array
+    JSONArray userProfileProps = new JSONArray();
+    for (UserPropertyName prop : wdkModel.getModelConfig().getAccountDB().getUserPropertyNames()) {
+      userProfileProps.put(new JSONObject()
+          .put(Keys.NAME, prop.getName())
+          .put(Keys.DISPLAY_NAME, prop.getDisplayName())
+          .put(Keys.IS_REQUIRED, prop.isRequired())
+          .put(Keys.IS_PUBLIC, prop.isPublic()));
+    }
+
     return new JSONObject()
       .put(Keys.DESCRIPTION, wdkModel.getIntroduction() == null ?
-        WELCOME_MESSAGE : wdkModel.getIntroduction())
+          WELCOME_MESSAGE : wdkModel.getIntroduction())
       .put(Keys.DISPLAY_NAME, wdkModel.getDisplayName())
       .put(Keys.PROJECT_ID, wdkModel.getProjectId())
       .put(Keys.BUILD_NUMBER, wdkModel.getBuildNumber())
@@ -51,6 +67,7 @@ public class ProjectFormatter {
       .put(Keys.ASSETS_URL, config.getAssetsUrl())
       .put(Keys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
       .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
-      .put(Keys.AUTHENTICATION, authConfig);
+      .put(Keys.AUTHENTICATION, authConfig)
+      .put(Keys.USER_PROFILE_PROPERTIES, userProfileProps);
   }
 }

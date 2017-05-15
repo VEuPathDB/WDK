@@ -27,7 +27,7 @@ public class BasketService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(PERMISSION_DENIED);
     }
-    Map<RecordClass, Integer> counts = userBundle.getTargetUser().getBasketCounts();
+    Map<RecordClass, Integer> counts = getWdkModel().getBasketFactory().getBasketCounts(user);
     JSONObject countsJson = new JSONObject();
     for (Map.Entry<RecordClass, Integer> entry: counts.entrySet()) {
       countsJson.put(entry.getKey().getFullName(), entry.getValue());

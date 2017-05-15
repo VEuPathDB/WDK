@@ -16,7 +16,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     Strategy strategy = createStrategy(step1);
 
     // delete a single step, the strategy will be deleted as well
-    Map<Integer, Integer> rootMap = strategy.deleteStep(step1);
+    Map<Long, Long> rootMap = strategy.deleteStep(step1);
     Assert.assertEquals(0, rootMap.size());
     Assert.assertTrue(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
     Assert.assertTrue(stepFactory.isStepDeleted(step1.getStepId()));
@@ -33,7 +33,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepAfter(transform, step1.getStepId());
 
     // delete the first step, the transform, and the strategy will be deleted as well
-    Map<Integer, Integer> rootMap = strategy.deleteStep(step1);
+    Map<Long, Long> rootMap = strategy.deleteStep(step1);
     Assert.assertEquals(0, rootMap.size());
     Assert.assertTrue(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
     Assert.assertTrue(stepFactory.isStepDeleted(step1.getStepId()));
@@ -51,7 +51,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepAfter(transform, step1.getStepId());
 
     // delete the transform, the strategy will stay, and the first step becomes root again
-    Map<Integer, Integer> rootMap = strategy.deleteStep(transform);
+    Map<Long, Long> rootMap = strategy.deleteStep(transform);
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step1.getStepId(), rootMap.get(transform.getStepId()).intValue());
     Assert.assertFalse(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
@@ -70,7 +70,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepBefore(boolean2, step1.getStepId());
 
     // delete the first step
-    Map<Integer, Integer> rootMap = strategy.deleteStep(step2);
+    Map<Long, Long> rootMap = strategy.deleteStep(step2);
 
     // step2 & boolean should be delete, and step1 becomes root again
     Assert.assertEquals(step1.getStepId(), strategy.getLatestStepId());
@@ -93,7 +93,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepBefore(boolean2, step1.getStepId());
 
     // delete the first step
-    Map<Integer, Integer> rootMap = strategy.deleteStep(step1);
+    Map<Long, Long> rootMap = strategy.deleteStep(step1);
 
     // step2 & boolean should be delete, and step1 becomes root again
     Assert.assertEquals(step2.getStepId(), strategy.getLatestStepId());
@@ -116,7 +116,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepBefore(boolean2, step1.getStepId());
 
     // delete the boolean
-    Map<Integer, Integer> rootMap = strategy.deleteStep(boolean2);
+    Map<Long, Long> rootMap = strategy.deleteStep(boolean2);
 
     // step2 & boolean should be delete, and step1 becomes root again
     Assert.assertEquals(step2.getStepId(), strategy.getLatestStepId());
@@ -147,7 +147,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     strategy.insertStepBefore(boolean3, step1.getStepId());
 
     // delete step1.
-    Map<Integer, Integer> rootMap = strategy.deleteStep(step1);
+    Map<Long, Long> rootMap = strategy.deleteStep(step1);
     Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step3.getStepId(), rootMap.get(boolean3.getStepId()).intValue());

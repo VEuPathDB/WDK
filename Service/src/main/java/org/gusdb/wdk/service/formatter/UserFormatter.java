@@ -1,8 +1,11 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,10 +15,7 @@ import org.json.JSONObject;
  * 
  * {
  *   id: Integer,
- *   firstName: String,
- *   middleName: String,
- *   lastName: String,
- *   organization: String,
+ *   isGuest: Boolean
  *   email: String (private),
  *   properties: Object (private)
  * }
@@ -27,31 +27,34 @@ import org.json.JSONObject;
  */
 public class UserFormatter {
 
-  public static JSONObject getUserJson(User user, boolean isOwner, boolean includePreferences) throws JSONException, WdkModelException {
+  public static JSONObject getUserJson(User user, boolean isOwner, boolean includePreferences) throws JSONException {
     JSONObject json = new JSONObject()
       .put(Keys.ID, user.getUserId())
-      .put(Keys.FIRST_NAME, user.getFirstName())
-      .put(Keys.MIDDLE_NAME, user.getMiddleName())
-      .put(Keys.LAST_NAME, user.getLastName())
-      .put(Keys.TITLE, user.getTitle())
-      .put(Keys.DEPARTMENT, user.getDepartment())
-      .put(Keys.ORGANIZATION, user.getOrganization())
       .put(Keys.IS_GUEST, user.isGuest());
     // private fields viewable only by owner
     if (isOwner) {
-      json.put(Keys.EMAIL, user.getEmail())
-          .put(Keys.ADDRESS, user.getAddress())
-          .put(Keys.CITY, user.getCity())
-          .put(Keys.STATE, user.getState())
-          .put(Keys.COUNTRY, user.getCountry())
-          .put(Keys.ZIP_CODE, user.getZipCode())
-          .put(Keys.PHONE_NUMBER, user.getPhoneNumber())
-          .put(Keys.APPLICATION_SPECIFIC_PROPERTIES, JsonUtil.toJsonObject(user.getGlobalPreferences()));
+      json.put(Keys.EMAIL, user.getEmail());
+      json.put(Keys.PROPERTIES, getPropertiesJson(user.getProfileProperties()));
       if (includePreferences) {
-        json.put(Keys.PREFERENCES, JsonUtil.toJsonObject(user.getProjectPreferences()));
+        json.put(Keys.PREFERENCES, getPreferencesJson(user.getPreferences()));
       }
     }
     return json;
+  }
+
+  private static JSONObject getPropertiesJson(Map<String,String> props) {
+    JSONObject propsJson = new JSONObject();
+    for (Entry<String,String> prop : props.entrySet()) {
+      propsJson.put(prop.getKey(), prop.getValue());
+    }
+    return propsJson;
+  }
+
+  public static JSONObject getPreferencesJson(UserPreferences prefs) {
+    JSONObject prefsJson = new JSONObject();
+    prefsJson.put(Keys.GLOBAL, JsonUtil.toJsonObject(prefs.getGlobalPreferences()));
+    prefsJson.put(Keys.PROJECT, JsonUtil.toJsonObject(prefs.getProjectPreferences()));
+    return prefsJson;
   }
 
 }

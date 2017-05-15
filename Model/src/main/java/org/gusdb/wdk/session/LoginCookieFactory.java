@@ -1,13 +1,10 @@
-package org.gusdb.wdk.controller;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+package org.gusdb.wdk.session;
 
 import javax.servlet.http.Cookie;
 
+import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 
 /**
  * Generates, parses, and validates WDK login cookies.  When a user logs into
@@ -23,10 +20,10 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
  */
 public class LoginCookieFactory {
 
+  // package protected for unit test access
   static final String WDK_LOGIN_COOKIE_NAME = "wdk_check_auth";
-  private static final String COOKIE_ENCODING = "utf-8";
   private static final String REMEMBER_SUFFIX = "-remember";
-  
+
   /**
    * A simple container for the various parts of a WDK login cookie value
    * 
@@ -72,7 +69,7 @@ public class LoginCookieFactory {
     Cookie loginCookie = new Cookie(WDK_LOGIN_COOKIE_NAME, "");
     loginCookie.setPath("/"); // set cookie for whole site, not just webapp
     loginCookie.setMaxAge(remember ? java.lang.Integer.MAX_VALUE / 256 : -1);
-    loginCookie.setValue(encode(getCookieValue(username, remember)));
+    loginCookie.setValue(FormatUtil.urlEncodeUtf8(getCookieValue(username, remember)));
     return loginCookie;
   }
 
@@ -116,7 +113,7 @@ public class LoginCookieFactory {
   public static LoginCookieParts parseCookieValue(String cookieValue) throws WdkModelException {
     String errorMsg = "Unparsable cookie value: " + cookieValue;
     if (cookieValue == null) throw new IllegalArgumentException(errorMsg);
-    cookieValue = decode(cookieValue);
+    cookieValue = FormatUtil.urlDecodeUtf8(cookieValue);
     int hashDashIndex = cookieValue.lastIndexOf('-');
     if (hashDashIndex == -1) throw new IllegalArgumentException(errorMsg);
     String checksum = cookieValue.substring(hashDashIndex + 1);
@@ -172,30 +169,11 @@ public class LoginCookieFactory {
   }
 
   private String getCookieHash(String hashInput) {
-    return UserFactoryBean.md5(hashInput + _secretKey);
+    return EncryptionUtil.md5(hashInput + _secretKey);
   }
   
   private static String addRemember(String orig, boolean remember) {
     return orig + (remember ? REMEMBER_SUFFIX : "");
   }
 
-  /*%%%%%%%%%%%%%%%%%%%%% Value encoder/decoder methods %%%%%%%%%%%%%%%%%%%%%*/
-  
-  private static String encode(String source) throws WdkModelException {
-    try {
-      return URLEncoder.encode(source, COOKIE_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new WdkModelException("Unable to encode login cookie value: " + source, e);
-    }
-  }
-  
-  private static String decode(String source) throws WdkModelException {
-    try {
-      return URLDecoder.decode(source, COOKIE_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new WdkModelException("Unable to decode login cookie value: " + source, e);
-    }
-  }
 }

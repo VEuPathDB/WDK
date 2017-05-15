@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -99,7 +100,7 @@ import org.json.JSONObject;
  */
 public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
-  protected static final Logger logger = Logger.getLogger(Query.class);
+  private static final Logger LOG = Logger.getLogger(Query.class);
 
   private String name;
   protected boolean isCacheable = false;
@@ -336,7 +337,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public String getChecksum(boolean extra) throws WdkModelException {
     try {
       JSONObject jsQuery = getChecksumJSON(extra);
-      return Utilities.encrypt(jsQuery.toString());
+      return EncryptionUtil.encrypt(jsQuery.toString());
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
@@ -632,7 +633,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
         // throw new WdkModelException("Invalid param name '" +
         // paramName
         // + "' in query " + getFullName());
-        logger.warn("Param " + paramName + " does not exist in query " + getFullName());
+        LOG.warn("Param " + paramName + " does not exist in query " + getFullName());
         continue;
       }
       String stableValue = stableValues.get(paramName);
@@ -721,7 +722,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-    return Utilities.encrypt(jsQuery.toString());
+    return EncryptionUtil.encrypt(jsQuery.toString());
   }
 
 

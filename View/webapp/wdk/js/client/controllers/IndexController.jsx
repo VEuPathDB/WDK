@@ -22,9 +22,6 @@ import Link from '../components/Link';
  * for more details.
  */
 class IndexController extends WdkViewController {
-  getStoreName() {
-    return "IndexStore";
-  }
   renderView() {
     return (
       <div>

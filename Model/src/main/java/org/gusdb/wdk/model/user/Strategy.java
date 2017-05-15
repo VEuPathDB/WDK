@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -23,7 +23,7 @@ public class Strategy {
   private StepFactory stepFactory;
   private User user;
   private Step latestStep;
-  private int strategyId;
+  private long strategyId;
   private boolean isSaved;
   private boolean isDeleted = false;
   private Date createdTime;
@@ -35,7 +35,7 @@ public class Strategy {
   private String savedName = null;
   private boolean isPublic = false;
 
-  private int latestStepId = 0;
+  private long latestStepId = 0;
   private int estimateSize;
   private String version;
   private boolean valid = true;
@@ -43,7 +43,7 @@ public class Strategy {
   private Date lastRunTime;
   private RecordClass recordClass;
 
-  public Strategy(StepFactory factory, User user, int strategyId) {
+  public Strategy(StepFactory factory, User user, long strategyId) {
     this.stepFactory = factory;
     this.user = user;
     this.strategyId = strategyId;
@@ -131,11 +131,11 @@ public class Strategy {
     latestStepId = step.getStepId();
   }
 
-  void setStrategyId(int strategyId) {
+  void setStrategyId(long strategyId) {
     this.strategyId = strategyId;
   }
 
-  public int getStrategyId() {
+  public long getStrategyId() {
     return strategyId;
   }
 
@@ -166,16 +166,16 @@ public class Strategy {
     return getLatestStep().getLength();
   }
 
-  public void setLatestStepId(int stepId) {
+  public void setLatestStepId(long stepId) {
     this.latestStepId = stepId;
     this.latestStep = null; // root step is now out of date
   }
 
-  public int getLatestStepId() {
+  public long getLatestStepId() {
     return latestStepId;
   }
 
-  public Step getStepById(int id) throws WdkModelException {
+  public Step getStepById(long id) throws WdkModelException {
     Step step = getLatestStep().getStepByDisplayId(id);
     if (step == null)
       throw new WdkModelException("Strategy #" + strategyId + " doesn't have step #" + id);
@@ -210,12 +210,12 @@ public class Strategy {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<Integer, Integer> insertStepBefore(Step newStep, int targetId) throws WdkModelException,
+  public Map<Long, Long> insertStepBefore(Step newStep, long targetId) throws WdkModelException,
       WdkUserException {
     Step targetStep = getStepById(targetId);
     stepFactory.verifySameOwnerAndProject(this, targetStep);
 
-    Map<Integer, Integer> rootMap = new HashMap<>();
+    Map<Long, Long> rootMap = new HashMap<>();
 
     // if the strategy is saved, need to make a unsaved copy first
     if (getIsSaved())
@@ -286,9 +286,9 @@ public class Strategy {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<Integer, Integer> insertStepAfter(Step newStep, int targetId) throws WdkModelException,
+  public Map<Long, Long> insertStepAfter(Step newStep, long targetId) throws WdkModelException,
       WdkUserException {
-    Map<Integer, Integer> rootMap = new HashMap<>();
+    Map<Long, Long> rootMap = new HashMap<>();
 
     // make sure the newStep uses target step as its previousStep
     Step previousStep = newStep.getPreviousStep();
@@ -371,9 +371,9 @@ public class Strategy {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<Integer, Integer> deleteStep(Step step) throws WdkModelException, WdkUserException {
+  public Map<Long, Long> deleteStep(Step step) throws WdkModelException, WdkUserException {
     List<Step> deletes = new ArrayList<>();
-    Map<Integer, Integer> rootMap = new HashMap<>();
+    Map<Long, Long> rootMap = new HashMap<>();
 
     // if the strategy is saved, need to make a unsaved copy first
     if (getIsSaved())
@@ -623,7 +623,7 @@ public class Strategy {
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
 
-    String checksum = Utilities.encrypt(jsStrategy.toString());
+    String checksum = EncryptionUtil.encrypt(jsStrategy.toString());
     LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
     return checksum;
   }

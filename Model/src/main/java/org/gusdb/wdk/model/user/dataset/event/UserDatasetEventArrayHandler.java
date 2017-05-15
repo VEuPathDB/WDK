@@ -216,18 +216,16 @@ public class UserDatasetEventArrayHandler {
     ObjectMapper mapper = new ObjectMapper();
     TypeReference<Set<String>> setType = new TypeReference<Set<String>>() {};
     Set<String> projects;
-	try {
-	  projects = mapper.readValue(projectsJson, setType);
-	} 
-	catch(IOException ioe) {
-	  throw new WdkModelException(ioe);
-	}
+    try {
+      projects = mapper.readValue(projectsJson, setType);
+    } 
+    catch(IOException ioe) {
+      throw new WdkModelException(ioe);
+    }
     Set<String> projectsFilter = new HashSet<>();
     projectsFilter.addAll(projects);
-    
-    Integer userDatasetId = eventJson.getInt("datasetId");
-    
-    
+
+    Long userDatasetId = eventJson.getLong("datasetId");
     TypeReference<Map<String,String>> mapType  = new TypeReference<Map<String,String>>() {};
     String typeJson = eventJson.getJSONObject("type").toString();
     Map<String, String> type = null;
@@ -241,7 +239,7 @@ public class UserDatasetEventArrayHandler {
 
     // Dataset is in the user's workspace and now needs to be installed into the database.
     if ("install".equals(event)) {
-      Integer ownerUserId = eventJson.getInt("owner");
+      Long ownerUserId = eventJson.getLong("owner");
       
       // A dataset may have multiple dependencies
       Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
@@ -249,7 +247,7 @@ public class UserDatasetEventArrayHandler {
       for(int i = 0; i < dependencyJsonArray.length(); i++) {
         JSONObject dependencyJson = dependencyJsonArray.getJSONObject(i);
         dependencies.add(new UserDatasetDependency(dependencyJson.getString("resourceIdentifier"),
-        		dependencyJson.getString("resourceVersion"), dependencyJson.getString("resourceDisplayName")));
+            dependencyJson.getString("resourceVersion"), dependencyJson.getString("resourceDisplayName")));
       }
       events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
     }
@@ -261,8 +259,8 @@ public class UserDatasetEventArrayHandler {
 
     // Dataset sharing has either been granted or revoked in the workspace and now must be reflected in the database
     else if ("share".equals(event)) {
-      Integer ownerId = eventJson.getInt("owner");
-      Integer recipientId = eventJson.getInt("recipient");
+      Long ownerId = eventJson.getLong("owner");
+      Long recipientId = eventJson.getLong("recipient");
       ShareAction action = "grant".equals(eventJson.getString("action")) ?
           ShareAction.GRANT : ShareAction.REVOKE;
       events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));

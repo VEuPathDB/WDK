@@ -28,13 +28,14 @@ public class FavoriteTest {
     @Test
     public void testAddToFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        user.clearFavorite();
+        favs.clearFavorite(user);
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
 
         String rcName = recordClass.getFullName();
-        Assert.assertEquals(added.size(), user.getFavoriteCount());
-        List<Favorite> favorites = user.getFavorites().get(recordClass);
+        Assert.assertEquals(added.size(), favs.getFavoriteCounts(user));
+        List<Favorite> favorites = favs.getFavorites(user).get(recordClass);
         Assert.assertEquals(added.size(), favorites.size());
         for (Favorite favorite : favorites) {
             RecordClass actual = favorite.getRecordClass();
@@ -45,13 +46,14 @@ public class FavoriteTest {
     @Test
     public void testRemoveFromFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
         // add more records, but those are not deleted
         List<Map<String, Object>> more = addSomeRecords(user, recordClass);
-        user.removeFromFavorite(recordClass, added);
+        favs.removeFromFavorite(user, recordClass, added);
 
-        Map<RecordClass, List<Favorite>> favorites = user.getFavorites();
+        Map<RecordClass, List<Favorite>> favorites = favs.getFavorites(user);
         Assert.assertTrue(favorites.containsKey(recordClass));
         List<Favorite> list = favorites.get(recordClass);
         for (Favorite favorite : list) {
@@ -71,41 +73,44 @@ public class FavoriteTest {
     @Test
     public void testClearFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
         addSomeRecords(user, recordClass);
 
-        user.clearFavorite();
+        favs.clearFavorite(user);
 
-        Assert.assertEquals(0, user.getFavoriteCount());
+        Assert.assertEquals(0, favs.getFavoriteCounts(user));
     }
 
     @Test
     public void testGetCounts() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        user.clearFavorite();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
+        favs.clearFavorite(user);
 
         List<Map<String, Object>> added1 = addSomeRecords(user, recordClass);
 
         List<Map<String, Object>> added2 = addSomeRecords(user, recordClass);
 
         int expected = added1.size() + added2.size();
-        Assert.assertEquals(expected, user.getFavoriteCount());
+        Assert.assertEquals(expected, favs.getFavoriteCounts(user));
     }
 
     @Test
     public void testSetNote() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        user.clearFavorite();
+        favs.clearFavorite(user);
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
-        Assert.assertEquals(added.size(), user.getFavoriteCount());
+        Assert.assertEquals(added.size(), favs.getFavoriteCounts(user));
 
         Random random = UnitTestHelper.getRandom();
         String note = "note " + random.nextInt();
-        user.setFavoriteNotes(recordClass, added, note);
+        favs.setNotes(user, recordClass, added, note);
 
-        List<Favorite> favorites = user.getFavorites().get(recordClass);
+        List<Favorite> favorites = favs.getFavorites(user).get(recordClass);
         for (Favorite favorite : favorites) {
             Assert.assertEquals(note, favorite.getNote());
         }
@@ -114,23 +119,24 @@ public class FavoriteTest {
     @Test
     public void testSetGroup() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        user.clearFavorite();
+        favs.clearFavorite(user);
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
-        Assert.assertEquals(added.size(), user.getFavoriteCount());
+        Assert.assertEquals(added.size(), favs.getFavoriteCounts(user));
 
         Random random = UnitTestHelper.getRandom();
         String group = "group " + random.nextInt();
-        user.setFavoriteGroups(recordClass, added, group);
+        favs.setGroups(user, recordClass, added, group);
 
-        List<Favorite> favorites = user.getFavorites().get(recordClass);
+        List<Favorite> favorites = favs.getFavorites(user).get(recordClass);
         for (Favorite favorite : favorites) {
             Assert.assertEquals(group, favorite.getGroup());
         }
     }
 
-    private List<Map<String, Object>> addSomeRecords(User user,
+    private static List<Map<String, Object>> addSomeRecords(User user,
             RecordClass recordClass) throws Exception {
         // get a list of record ids
         List<Map<String, Object>> ids = getIds(POOL_SIZE);
@@ -146,7 +152,8 @@ public class FavoriteTest {
         }
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>(
                 selected.values());
-        user.addToFavorite(recordClass, list);
+        FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
+        favs.addToFavorite(user, recordClass, list);
         return list;
     }
 

@@ -19,7 +19,9 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -37,7 +39,7 @@ public class UnitTestHelper {
     // use a fixed random number generator in order to use cache.
     private static Random random = new Random(1);
 
-    private static WdkModel wdkModel;
+    private static WdkModel _wdkModel;
     private static User guest;
     private static User registeredUser;
 
@@ -49,31 +51,30 @@ public class UnitTestHelper {
     }
 
     public synchronized static WdkModel getModel() throws WdkModelException {
-        if (wdkModel == null) {
+        if (_wdkModel == null) {
             logger.info("Loading model...");
             String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
             String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-            wdkModel = WdkModel.construct(projectId, gusHome);
+            _wdkModel = WdkModel.construct(projectId, gusHome);
 
             // reset the cache
             logger.info("resetting cache...");
-            CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+            CacheFactory cacheFactory = _wdkModel.getResultFactory().getCacheFactory();
             cacheFactory.resetCache(true, true);
         }
-        return wdkModel;
+        return _wdkModel;
     }
 
     public synchronized static User getGuest() throws WdkModelException {
         if (guest == null) {
-            WdkModel wdkModel = getModel();
-            guest = wdkModel.getUserFactory().createGuestUser();
+            guest = new GuestUser(getModel());
         }
-        guest.deleteStrategies();
-        guest.deleteSteps();
+        StepUtilities.deleteStrategies(guest);
+        StepUtilities.deleteSteps(guest);
         return guest;
     }
 
-    public synchronized static User getRegisteredUser() throws WdkModelException, WdkUserException {
+    public synchronized static User getRegisteredUser() throws WdkModelException {
         if (registeredUser == null) {
             WdkModel wdkModel = getModel();
             UserFactory userFactory = wdkModel.getUserFactory();
@@ -81,11 +82,8 @@ public class UnitTestHelper {
             registeredUser = userFactory.getUserByEmail(REGISTERED_USER_EMAIL);
             if (registeredUser == null) {
                 // user doesn't exist, create one
-                registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL,
-                        "Test", "User", null, null, "WDK", null, null, null,
-                        null, null, null, null, null, null);
-                userFactory.savePassword(REGISTERED_USER_EMAIL,
-                        REGISTERED_USER_PASSWORD);
+                registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL, null, null, null);
+                userFactory.changePassword(registeredUser.getUserId(), REGISTERED_USER_PASSWORD);
             }
         }
         // registeredUser.deleteStrategies();
@@ -114,7 +112,7 @@ public class UnitTestHelper {
         List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return user.createStep(null, question, params, (String) null, false, false, 0);
+        return StepUtilities.createStep(user, null, question, params, (String) null, false, false, 0);
     }
 
     private static void loadQuestions() throws WdkModelException {

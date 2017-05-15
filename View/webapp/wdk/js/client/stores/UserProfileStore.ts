@@ -3,14 +3,16 @@ import {
   ProfileFormUpdateAction,
   ProfileFormSubmissionStatusAction
 } from '../actioncreators/UserActionCreators';
-import {User} from "../utils/WdkUser";
+import { User, UserPreferences } from "../utils/WdkUser";
 
 type Action = ProfileFormUpdateAction | ProfileFormSubmissionStatusAction;
 
 export type State = BaseState & {
   userFormData?: User & {
     confirmEmail?: string;
+    preferences?: UserPreferences;
   };
+  
   formStatus: 'new' | 'modified' | 'pending' | 'success' | 'error';
   errorMessage?: string;
 }
@@ -29,22 +31,30 @@ export default class UserProfileStore extends WdkStore<State> {
 
   handleAction(state: State, action: Action): State {
 
-    // Special case since this store is maintaining an unsaved, edited version of
-    // the user, not the 'gold copy' saved version.  Need to override handling of
-    // user load action.
+    // Special case since this store is maintaining an unsaved, edited version
+    // of the user and her preferences, not the 'gold copy' saved version.  Need
+    // to override handling of user and preference load actions to update the
+    // unsaved copies to be clones of the 'gold copy' versions.
     if (this.globalDataStore.hasChanged()) {
       let previousUser = this.getState().globalData.user;
       let nextUser = state.globalData.user;
-      if (previousUser != nextUser) {
+      let previousPrefs = this.getState().globalData.preferences;
+      let nextPrefs = state.globalData.preferences;
+      if (previousUser != nextUser || previousPrefs != nextPrefs) {
+        // either user or prefs changed in parent store with this action; update local copy
         return {
-          ...state,
-          userFormData: { ...nextUser, confirmEmail: nextUser.email },
-          formStatus: "new",
-          errorMessage: undefined
+            ...state,
+            userFormData: { ...nextUser, confirmEmail: nextUser.email, preferences: nextPrefs },
+            formStatus: "new",
+            errorMessage: undefined
         };
       }
     }
 
+    return this.handleFormUpdate(state, action);
+  }
+
+  handleFormUpdate(state: State, action: Action): State {
     switch (action.type) {
       // form value has been updated; now different than 'saved' user
       case 'user/profile-form-update':

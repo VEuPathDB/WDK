@@ -4,12 +4,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 
 /**
@@ -63,37 +63,19 @@ public class ProcessRegisterAction extends WdkAction {
       }
     }
 
-    if (email != null && email.length() != 0) {
+    if (email != null && !email.isEmpty()) {
       // create the user with user input
       UserFactoryBean factory = getWdkModel().getUserFactory();
-      try {
-        /* UserBean user = */
-        logger.info("Creating new non-temp user: " + firstName + " " + lastName + " (" + email + ")");
-        factory.createUser(email, lastName, firstName, middleName, null,
-            organization, null, null, null, null, null, null, null,
-            globalPreferences, projectPreferences);
-        // registration succeed
-        result.setRequestAttribute("registerSucceed", true);
-      }
-      catch (WdkUserException ex) {
-        // email exists, notify the user to input again
-        result.setRequestAttribute(CConstants.WDK_REGISTER_ERROR_KEY, ex.getMessage());
-
-        // push back the user input, so that the user doesn't need to type again
-        result.setRequestAttribute(CConstants.WDK_EMAIL_KEY, email);
-        result.setRequestAttribute("firstName", firstName);
-        result.setRequestAttribute("lastName", lastName);
-        result.setRequestAttribute("middleName", middleName);
-        result.setRequestAttribute("organization", organization);
-        for (String param : projectPreferences.keySet()) {
-          result.setRequestAttribute(param, projectPreferences.get(param));
-        }
-        for (String param : globalPreferences.keySet()) {
-          result.setRequestAttribute(param, globalPreferences.get(param));
-        }
-      }
-			logger.debug("GOT HERE *************************");
-
+      /* UserBean user = */
+      logger.info("Creating new non-temp user: " + firstName + " " + lastName + " (" + email + ")");
+      Map<String,String> profile = new MapBuilder<String,String>()
+          .put("firstName", firstName)
+          .put("middleName", middleName)
+          .put("lastName", lastName)
+          .put("organization", organization).toMap();
+      factory.createUser(email, profile, globalPreferences, projectPreferences);
+      // registration succeed
+      result.setRequestAttribute("registerSucceed", true);
       return result;
     }
     else {

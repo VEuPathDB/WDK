@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -45,7 +46,7 @@ public class StrategyFilter extends StepFilter {
   public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
     User user = answer.getUser();
     String rcName = answer.getQuestion().getRecordClass().getFullName();
-    Collection<Strategy> strategies = user.getStrategiesMap(rcName).values();
+    Collection<Strategy> strategies = StepUtilities.getStrategiesMap(user, rcName).values();
     return new StrategyFilterSummary(strategies);
   }
 
@@ -86,8 +87,7 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    User user = answer.getUser();
-    return user.getStrategy(strategyId);
+    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(strategyId);
   }
   
   @Override

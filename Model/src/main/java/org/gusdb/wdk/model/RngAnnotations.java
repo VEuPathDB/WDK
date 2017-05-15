@@ -41,23 +41,27 @@ public class RngAnnotations {
 
   public static class FieldSetter {
 
-    public final String underscoredName;
-    public final Method setter;
-    public final boolean isRngRequired;
+    private final String _underscoredName;
+    private final Method _method;
+    private final boolean _isRngRequired;
 
-    public FieldSetter(String underscoredName, Method setter, boolean isRngRequired) {
-      this.underscoredName = underscoredName;
-      this.setter = setter;
-      this.isRngRequired = isRngRequired;
+    public FieldSetter(String underscoredName, Method method, boolean isRngRequired) {
+      _underscoredName = underscoredName;
+      _method = method;
+      _isRngRequired = isRngRequired;
     }
+
+    public String getUnderscoredName() { return _underscoredName; }
+    public Method getMethod() { return _method; }
+    public boolean isRngRequired() { return _isRngRequired; }
 
     @Override
     public String toString() {
-      return "{ " + underscoredName + ", " + setter.getName() + ", " + isRngRequired + " }";
+      return "{ " + _underscoredName + ", " + _method.getName() + ", " + _isRngRequired + " }";
     }
   }
 
-  public static List<FieldSetter> getRngFields(Class<?> clazz) throws WdkModelException {
+  public static List<FieldSetter> getRngFields(Class<?> clazz) {
     List<FieldSetter> result = new ArrayList<>();
     Method[] allMethods = clazz.getMethods();
     for (Method method : allMethods) {
@@ -72,7 +76,7 @@ public class RngAnnotations {
     return result;
   }
 
-  private static RngProperty determineIfRequired(Class<?> clazz, Method method) throws WdkModelException {
+  private static RngProperty determineIfRequired(Class<?> clazz, Method method) {
     String methodName = clazz.getName() + "." + method.getName();
     String duplicationMessage = methodName + "() has more than one RNG Requirement annotation.  There can be only one.";
     String missingMessage = methodName + " has no RNG Requirement annotations.  This class requires one on each single-argument setXxx method.";
@@ -82,18 +86,18 @@ public class RngAnnotations {
     }
     if (method.isAnnotationPresent(RngOptional.class)) {
       if (prop != null) {
-        throw new WdkModelException(duplicationMessage);
+        throw new WdkRuntimeException(duplicationMessage);
       }
       prop = RngProperty.OPTIONAL;
     }
     if (method.isAnnotationPresent(RngUndefined.class)) {
       if (prop != null) {
-        throw new WdkModelException(duplicationMessage);
+        throw new WdkRuntimeException(duplicationMessage);
       }
       prop = RngProperty.UNDEFINED;
     }
     if (prop == null) {
-      throw new WdkModelException(missingMessage);
+      throw new WdkRuntimeException(missingMessage);
     }
     return prop;
   }

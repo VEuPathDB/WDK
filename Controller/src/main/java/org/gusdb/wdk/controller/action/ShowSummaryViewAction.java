@@ -55,6 +55,7 @@ public class ShowSummaryViewAction extends Action {
         QuestionBean question = step.getQuestion();
         String viewName = request.getParameter(PARAM_VIEW);
         SummaryView view;
+        wdkUser.setCurrentQuestion(question);
         if (viewName == null || viewName.length() == 0) {
             view = wdkUser.getCurrentSummaryView();
             if (view == null) view = question.getDefaultSummaryView();

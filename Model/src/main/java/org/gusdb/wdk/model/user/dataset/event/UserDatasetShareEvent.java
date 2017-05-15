@@ -10,20 +10,20 @@ public class UserDatasetShareEvent extends UserDatasetEvent {
     GRANT, REVOKE
   }
   
-  private Integer ownerId;
-  private Integer recipientId;
+  private Long ownerId;
+  private Long recipientId;
   private ShareAction action;
   
-  UserDatasetShareEvent(Long eventId, Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer ownerId, Integer recipientId, ShareAction action) {
+  UserDatasetShareEvent(Long eventId, Set<String> projectsFilter, Long userDatasetId, UserDatasetType userDatasetType, Long ownerId, Long recipientId, ShareAction action) {
     super(eventId, projectsFilter, userDatasetId, userDatasetType);
     this.ownerId = ownerId;
     this.recipientId = recipientId;
     this.action = action;
   }
 
-  public Integer getOwnerId() { return ownerId; }
+  public Long getOwnerId() { return ownerId; }
   
-  public Integer getRecipientId() { return recipientId; }
+  public Long getRecipientId() { return recipientId; }
   
   public ShareAction getAction() { return action; }
 

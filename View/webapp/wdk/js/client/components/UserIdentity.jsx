@@ -10,46 +10,32 @@ import { wrappable } from '../utils/componentUtils';
  * @constructor
  */
 const UserIdentity = (props) => {
-  let user = props.user;
+  let { user, onPropertyChange } = props;
   return (
     <fieldset>
       <legend>Identification</legend>
       <div>
         <label htmlFor="userEmail"><i className="fa fa-asterisk"></i>Email:</label>
-        <TextBox type='email' id='userEmail'
-                 value={user.email} onChange={props.onEmailChange("email")}
-                 maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+        <TextBox type="email" id="userEmail" value={user.email} required="required"
+            onChange={props.onEmailChange} maxLength="255" size="80"
+            placeholder="Your email is used as your unique user id" />
       </div>
       <div>
         <label htmlFor="confirmUserEmail"><i className="fa fa-asterisk"></i>Retype Email:</label>
-        <TextBox type='email' id='confirmUserEmail'
-                 value={user.confirmEmail} onChange={props.onEmailChange("confirmEmail")}
-                 maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+        <TextBox type="email" id="confirmUserEmail" value={user.confirmEmail} required="required"
+            onChange={props.onConfirmEmailChange} maxLength="255" size="80"
+            placeholder="Your email is used as your unique user id" />
       </div>
-      <div>
-        <label htmlFor="firstName"><i className="fa fa-asterisk"></i>First Name:</label>
-        <TextBox id="firstName" value={user.firstName} onChange={props.onTextChange("firstName")} maxLength='50' size='25' required />
-      </div>
-      <div>
-        <label htmlFor="middleName">Middle Name:</label>
-        <TextBox id="middleName" value={user.middleName} onChange={props.onTextChange("middleName")} maxLength='50' size='25'/>
-      </div>
-      <div>
-        <label htmlFor="lastName"><i className="fa fa-asterisk"></i>Last Name:</label>
-        <TextBox id="lastName" value={user.lastName} onChange={props.onTextChange("lastName")} maxLength='50' size='25' required />
-      </div>
-      <div>
-        <label htmlFor="title">Title:</label>
-        <TextBox id="title" value={user.title} onChange={props.onTextChange("title")} maxLength='50' size='25' />
-      </div>
-      <div>
-        <label htmlFor="department">Department:</label>
-        <TextBox id="department" value={user.department} onChange={props.onTextChange("department")} maxLength='50' size='25' />
-      </div>
-      <div>
-        <label htmlFor="organization"><i className="fa fa-asterisk"></i>Organization:</label>
-        <TextBox id="organization" value={user.organization} onChange={props.onTextChange("organization")} maxLength='255' size='100' required />
-      </div>
+      {props.propDefs.map(propDef => {
+        let { name, displayName, isRequired } = propDef;
+        return (
+          <div>
+            <label htmlFor="{name}">{ isRequired ? <i className="fa fa-asterisk"></i> : ''}{displayName}:</label>
+            <TextBox id="{name}" value={user[name]} required={isRequired}
+                onChange={onPropertyChange(name)} maxLength="255" size="80" />
+          </div>
+        );
+      })}
     </fieldset>
   );
 };
@@ -60,11 +46,17 @@ UserIdentity.propTypes = {
   /** The user object to be modified */
   user:  PropTypes.object.isRequired,
 
-  /** The on change handler for email text box inputs */
+  /** The on change handler for email text box input */
   onEmailChange:  PropTypes.func.isRequired,
 
-  /** The on change handler for text box inputs */
-  onTextChange:  PropTypes.func.isRequired
+  /** The on change handler for confirm email text box input */
+  onConfirmEmailChange: PropTypes.func.isRequired,
+
+  /** The on change handler for user profile properties inputs */
+  onPropertyChange:  PropTypes.func.isRequired,
+
+  /** An array of the user properties configured in WDK model */
+  propDefs: PropTypes.array.isRequired
 
 };
 

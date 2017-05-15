@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
@@ -31,7 +31,8 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.StepUtilities;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONObject;
 
 /**
@@ -74,14 +75,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // load existing strategy, if needed.
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String strategyKey = strStratId;
-            Integer strategyId = null;
+            Long strategyId = null;
             if (strStratId != null && strStratId.length() != 0) {
                 if (strStratId.indexOf("_") > 0) {
                     // strBranchId = strStratId.split("_")[1];
                     strStratId = strStratId.split("_")[0];
                 }
-                strategyId = Integer.valueOf(strStratId);
-                strategy = wdkUser.getStrategy(strategyId);
+                strategyId = Long.valueOf(strStratId);
+                strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), strategyId));
             }
 
             // TRICKY: this is for action forward from
@@ -136,7 +137,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 Map<String, String> pkValues = rec.getPrimaryKey().getValues();
                 for (String pkColumn : pkValues.keySet()) {
                     String value = pkValues.get(pkColumn);
-                    path += "&" + pkColumn + "=" + URLEncoder.encode(value, "UTF-8");
+                    path += "&" + pkColumn + "=" + FormatUtil.urlEncodeUtf8(value);
                 }
                 return new ActionForward(path, true);
             }
@@ -150,17 +151,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 step.getResultSize();
 
                 if (strategy != null) {
-                    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                    wdkUser.addActiveStrategy(Long.toString(strategy.getStrategyId()));
                     request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
                     int viewPagerOffset = 0;
                     if (request.getParameter("pager.offset") != null) {
                         viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
                     }
-                    wdkUser.setViewResults(strategyKey, step.getStepId(),
-                            viewPagerOffset);
+                    wdkUser.getUser().getSession().setViewResults(strategyKey, step.getStepId(), viewPagerOffset);
 
                     // reload the strategy to get the changes
-                    strategy = wdkUser.getStrategy(strategy.getStrategyId());
+                    strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), strategy.getStrategyId()));
                     String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
                     String stratChecksum = strategy.getChecksum();
                     int stratChecksumLen = stratChecksum.length();
@@ -191,17 +191,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     strategy = wdkUser.createStrategy(step, false, false);
                     request.getSession().setAttribute(
                             CConstants.WDK_NEW_STRATEGY_KEY, true);
-                    strategyKey = Integer.toString(strategy.getStrategyId());
+                    strategyKey = Long.toString(strategy.getStrategyId());
                 }
-                wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                wdkUser.addActiveStrategy(Long.toString(strategy.getStrategyId()));
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
                     viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
                 }
-                wdkUser.setViewResults(strategyKey, step.getStepId(),
-                        viewPagerOffset);
+                wdkUser.getUser().getSession().setViewResults(strategyKey, step.getStepId(), viewPagerOffset);
 
                 forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
                 forward = new ActionForward(forward.getPath(), true);
@@ -247,7 +246,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     }
 
-    private StepBean getStep(HttpServletRequest request, UserBean wdkUser, Integer strategyId,
+    private StepBean getStep(HttpServletRequest request, UserBean wdkUser, Long strategyId,
             ActionForm form) throws WdkModelException, WdkUserException {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionForm qForm = (QuestionForm) form;
@@ -308,7 +307,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             prepareAttributes(request, wdkUser, step);
         }
-        if (updated) wdkUser.save();
+        if (updated) {
+          wdkModel.getModel().getUserFactory().saveUser(wdkUser.getUser());
+        }
         return step;
     }
 
@@ -353,7 +354,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return forward;
     }
 
-    private static StepBean summaryPaging(HttpServletRequest request, Integer strategyId,
+    private static StepBean summaryPaging(HttpServletRequest request, Long strategyId,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
             throws WdkModelException, WdkUserException {
@@ -367,8 +368,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        StepBean step = wdkUser.createStep(strategyId, question, params, filterName,
-                deleted, true, assignedWeight);
+        StepBean step = new StepBean(wdkUser, StepUtilities.createStep(wdkUser.getUser(), strategyId,
+            question.getQuestion(), params, filterName, deleted, true, assignedWeight));
         String customName = request.getParameter(PARAM_CUSTOM_NAME);
         if (customName != null && customName.trim().length() > 0) {
             step.setCustomName(customName);
@@ -494,8 +495,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     String sortingAttributes = request.getParameter(CConstants.WDK_SORTING_KEY);
     boolean updated = false;
     if (sortingAttributes != null) {
-      wdkUser.getUser().setSortingAttributes(questionName,
-          sortingAttributes, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+      wdkUser.getUser().getPreferences().setSortingAttributes(questionName,
+          sortingAttributes, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("sorting columns for question " + questionName + ": " + sortingAttributes);
@@ -503,8 +504,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     // get summary key, if have
     String summaryAttributes = request.getParameter(CConstants.WDK_SUMMARY_KEY);
     if (summaryAttributes != null) {
-      wdkUser.getUser().setSummaryAttributes(questionName,
-          summaryAttributes.split(","), User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+      wdkUser.getUser().getPreferences().setSummaryAttributes(questionName,
+          summaryAttributes.split(","), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("summary columns for question " + questionName + ": " + summaryAttributes);

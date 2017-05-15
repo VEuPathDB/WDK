@@ -18,9 +18,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.QueryInfo;
-import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -40,7 +37,7 @@ public class QueryTester {
   WdkModel wdkModel;
   User user;
 
-  public QueryTester(WdkModel wdkModel) throws WdkModelException {
+  public QueryTester(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
     user = wdkModel.getSystemUser();
   }
@@ -58,9 +55,9 @@ public class QueryTester {
       throws WdkModelException, WdkUserException {
     QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
-    ResultFactory resultFactory = wdkModel.getResultFactory();
-    CacheFactory cacheFactory = resultFactory.getCacheFactory();
-    int instanceId = instance.getInstanceId();
+    //ResultFactory resultFactory = wdkModel.getResultFactory();
+    //CacheFactory cacheFactory = resultFactory.getCacheFactory();
+    long instanceId = instance.getInstanceId();
     return "QueryResult" + instanceId;
     /*
     QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
@@ -196,8 +193,9 @@ public class QueryTester {
         } else {
           QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
               true, 0, new LinkedHashMap<String, String>());
-          ResultList rs = instance.getResults();
-          print(query, rs);
+          try (ResultList rs = instance.getResults()) {
+            print(query, rs);
+          }
         }
       }
     }
@@ -225,7 +223,7 @@ public class QueryTester {
     }
     if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
       if (!stableValues.containsKey(Utilities.PARAM_USER_ID))
-        stableValues.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+        stableValues.put(Utilities.PARAM_USER_ID, Long.toString(user.getUserId()));
     }
     return stableValues;
   }

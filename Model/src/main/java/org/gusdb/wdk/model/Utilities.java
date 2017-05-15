@@ -6,11 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -111,11 +108,9 @@ public class Utilities {
 
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
-  
+
   public static final String MODEL_KEY = "wdkModel";
 
-  private static final String ALGORITHM = "MD5";
-  
   /*
    * Inner class to act as a JAF DataSource to send HTML e-mail content
    */
@@ -149,42 +144,6 @@ public class Utilities {
     @Override
     public String getName() {
       return "JAF text/html dataSource to send e-mail only";
-    }
-  }
-
-  public static String encrypt(String data) throws WdkModelException {
-    return encrypt(data, false);
-  }
-
-  public static String encrypt(String data, boolean shortDigest)
-      throws WdkModelException {
-    // cannot encrypt null value
-    if (data == null || data.length() == 0)
-      throw new WdkModelException("Cannot encrypt an empty/null string");
-
-    byte[] byteBuffer = getEncryptedBytes(data.toString());
-    if (shortDigest) {
-      // just take the first 8 bytes from MD5 hash
-      byteBuffer = Arrays.copyOf(byteBuffer, Math.min(byteBuffer.length, 8));
-    }
-    // convert each byte into hex format
-    StringBuffer buffer = new StringBuffer();
-    for (int i = 0; i < byteBuffer.length; i++) {
-      int code = (byteBuffer[i] & 0xFF);
-      if (code < 0x10)
-        buffer.append('0');
-      buffer.append(Integer.toHexString(code));
-    }
-    return buffer.toString();
-  }
-
-  public static byte[] getEncryptedBytes(String str) {
-    try {
-      MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
-      return digest.digest(str.getBytes());
-    } catch (NoSuchAlgorithmException e) {
-      throw new WdkRuntimeException(
-          "Unable to initialize MessageDigest with algorithm " + ALGORITHM, e);
     }
   }
 

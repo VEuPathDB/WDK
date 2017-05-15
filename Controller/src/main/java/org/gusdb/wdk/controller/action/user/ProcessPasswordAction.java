@@ -61,7 +61,8 @@ public class ProcessPasswordAction extends WdkAction {
         if (user.isGuest()) {
           throw new WdkUserException("You cannot change the password as a guest.");
         }
-        user.changePassword(oldPassword, newPassword, confirmPassword);
+        getWdkModel().getModel().getUserFactory().changePassword(
+            user.getEmail(), oldPassword, newPassword, confirmPassword);
         setSessionAttribute(CConstants.WDK_USER_KEY, user);
         // changing password succeed
         result.setRequestAttribute("changePasswordSucceed", true);

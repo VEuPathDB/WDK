@@ -239,7 +239,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public int getNextId() throws WdkModelException {
+  public long getNextId() throws WdkModelException {
     try {
       return _userPlatform.getNextId(_userDs, _userSchema, ANALYSIS_TABLE);
     }
@@ -260,7 +260,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName,
+  public void insertAnalysis(long analysisId, long stepId, String displayName,
       StepAnalysisState state, boolean hasParams, String invalidStepReason,
       String contextHash, String serializedContext) throws WdkModelException {
     try {
@@ -276,7 +276,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void renameAnalysis(int analysisId, String displayName) throws WdkModelException {
+  public void renameAnalysis(long analysisId, String displayName) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_NAME_SQL, "update-step-analysis-name")
           .executeUpdate(new Object[] { displayName, analysisId });
@@ -290,7 +290,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException {
+  public void setHasParams(long analysisId, boolean hasParams) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_HAS_PARAMS_FLAG_SQL, "update-step-analysis-param-flag")
           .executeUpdate( new Object[] { hasParams, analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
@@ -304,7 +304,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException {
+  public void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_INVALID_STEP_REASON, "update-step-analysis-invalid-step-reason").executeUpdate(
           new Object[] { invalidStepReason, analysisId }, new Integer[] { Types.VARCHAR, Types.INTEGER });
@@ -318,7 +318,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setState(int analysisId, StepAnalysisState state) throws WdkModelException {
+  public void setState(long analysisId, StepAnalysisState state) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_NEW_FLAG_SQL, "update-step-analysis-new-flag").executeUpdate(
           new Object[] { state.getDbValue(), analysisId }, new Integer[] { Types.INTEGER, Types.INTEGER });
@@ -332,7 +332,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void updateContext(int analysisId, String contextHash, String serializedContext)
+  public void updateContext(long analysisId, String contextHash, String serializedContext)
       throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_CONTEXT_SQL, "update-step-analysis-context").executeUpdate(
@@ -348,7 +348,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void deleteAnalysis(int analysisId) throws WdkModelException {
+  public void deleteAnalysis(long analysisId) throws WdkModelException {
     try {
       int deleted = new SQLRunner(_userDs, DELETE_ANALYSIS_SQL, "delete-step-analysis")
           .executeUpdate(new Object[] { analysisId });
@@ -363,13 +363,13 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException {
+  protected List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException {
     try {
-      final List<Integer> ids = new ArrayList<>();
+      final List<Long> ids = new ArrayList<>();
       new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step").executeQuery(
           new Object[] { stepId }, new ResultSetHandler() { @Override
             public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getInt(1));
+              while (rs.next()) ids.add(rs.getLong(1));
             }
           });
       return ids;
@@ -380,13 +380,13 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
+  protected List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
     try {
-      final List<Integer> ids = new ArrayList<>();
+      final List<Long> ids = new ArrayList<>();
       new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash").executeQuery(
           new Object[] { contextHash }, new ResultSetHandler() { @Override
             public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getInt(1));
+              while (rs.next()) ids.add(rs.getLong(1));
             }
           });
       return ids;
@@ -397,13 +397,13 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected List<Integer> getAllAnalysisIds() throws WdkModelException {
+  protected List<Long> getAllAnalysisIds() throws WdkModelException {
     try {
-      final List<Integer> ids = new ArrayList<>();
+      final List<Long> ids = new ArrayList<>();
       new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids").executeQuery(
           new ResultSetHandler() { @Override
             public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getInt(1));
+              while (rs.next()) ids.add(rs.getLong(1));
             }
           });
       return ids;
@@ -414,12 +414,12 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds)
+  protected Map<Long, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Long> analysisIds)
       throws WdkModelException {
     try {
       // data structures to build result
-      final Map<String, List<Integer>> hashToIdsMap = new LinkedHashMap<>();
-      final Map<Integer, AnalysisInfoPlusStatus> result = new LinkedHashMap<>();
+      final Map<String, List<Long>> hashToIdsMap = new LinkedHashMap<>();
+      final Map<Long, AnalysisInfoPlusStatus> result = new LinkedHashMap<>();
 
       // don't query DB if no IDs passed
       if (analysisIds.isEmpty()) return result;
@@ -441,7 +441,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
               result.put(info.analysisId, new AnalysisInfoPlusStatus(info));
 
               // add analysisId to list we'll later use to populate statuses
-              List<Integer> idListForContext = hashToIdsMap.get(info.contextHash);
+              List<Long> idListForContext = hashToIdsMap.get(info.contextHash);
               if (idListForContext == null) {
                 idListForContext = new ArrayList<>();
                 hashToIdsMap.put(info.contextHash, idListForContext);
@@ -465,7 +465,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
           while (rs.next()) {
             String hash = rs.getString(1);
             ExecutionStatus status = parseStatus(rs.getString(2), hash);
-            for (int analysisId : hashToIdsMap.get(hash)) {
+            for (long analysisId : hashToIdsMap.get(hash)) {
               result.get(analysisId).status = status;
             }
           }

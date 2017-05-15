@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 
 public class ProcessBooleanStageHandler implements StageHandler {
 
@@ -50,21 +51,21 @@ public class ProcessBooleanStageHandler implements StageHandler {
       throw new WdkUserException("Required " + PARAM_STRATEGY + " param is missing.");
 
     String[] pieces = strStratId.split("_", 2);
-    int strategyId = Integer.valueOf(pieces[0]);
+    long strategyId = Long.valueOf(pieces[0]);
     Integer branchId = (pieces.length == 1) ? null : Integer.valueOf(pieces[1]);
-    StrategyBean strategy = user.getStrategy(strategyId);
+    StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), strategyId));
 
     String strStepId = request.getParameter(PARAM_STEP);
-    int stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Integer.valueOf(strStepId);
+    long stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Long.valueOf(strStepId);
 
     logger.debug("Strategy: id=" + strategy.getStrategyId() + ", saved=" + strategy.getIsSaved());
     if (strategy.getIsSaved()) {
-      Map<Integer, Integer> stepIdMap = new HashMap<>();
+      Map<Long, Long> stepIdMap = new HashMap<>();
       strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
 
       // make sure to also change the strategy key in the wizard form, so the new unsaved strategy can be
       // carried over the next stages.
-      String strategyKey = Integer.toString(strategy.getStrategyId());
+      String strategyKey = Long.toString(strategy.getStrategyId());
       if (branchId != null)
         strategyKey += "_" + stepIdMap.get(branchId);
       wizardForm.setStrategy(strategyKey);
@@ -75,7 +76,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
       if (stepId != 0) {
         stepId = stepIdMap.get(stepId);
-        attributes.put(PARAM_STEP, Integer.toString(stepId));
+        attributes.put(PARAM_STEP, Long.toString(stepId));
       }
     }
 
@@ -119,7 +120,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
   public static StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
       WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user,
-      WdkModelBean wdkModel, int stepId) throws WdkUserException, WdkModelException {
+      WdkModelBean wdkModel, long stepId) throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
 
     // get the assigned weight
@@ -197,7 +198,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     logger.debug("creating step from strategy: " + importStrategyId);
     StrategyBean importStrategy = user.getStrategy(importStrategyId);
     StepBean step = importStrategy.getLatestStep();
-    StepBean childStep = step.deepClone(newStrategy.getStrategyId(), new HashMap<Integer, Integer>());
+    StepBean childStep = step.deepClone(newStrategy.getStrategyId(), new HashMap<Long, Long>());
     childStep.setIsCollapsible(true);
     childStep.setCollapsedName("Copy of " + importStrategy.getName());
     childStep.update(false);

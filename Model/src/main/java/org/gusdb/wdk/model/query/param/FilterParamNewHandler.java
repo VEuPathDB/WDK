@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
@@ -9,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -33,7 +30,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_VALUE = "value";
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
-  
 
   public FilterParamNewHandler() {}
 
@@ -61,7 +57,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
   ]
 }
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
@@ -101,8 +97,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FROM (${metadata_qc}) mf
       WHERE mf.ontology_term_id = 'size'
       AND mf.string_value       IN ('large')
-
-   * 
    * 
    * @throws WdkUserException
    * 
@@ -119,9 +113,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-
   }
-  
+
   // TODO: add OR clause if unknowns=true  
   static String toInternalValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param)
       throws WdkModelException {
@@ -132,7 +125,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
-      
+
       if (jsFilters.length() == 0) return filterSelectSql;
 
       StringBuilder filtersSql = new StringBuilder();
@@ -148,9 +141,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throw new WdkModelException(ex);
     }
   }
- 
+
   // include in where clause a filter by ontology_id
-  private static String getFilterAsAndClause(JSONObject jsFilter, Map<String, OntologyItem> ontology, String metadataTableName) throws WdkModelException, WdkUserException {
+  private static String getFilterAsAndClause(JSONObject jsFilter, Map<String,
+      OntologyItem> ontology, String metadataTableName) {
 
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
@@ -163,14 +157,14 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     else 
       return whereClause + getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
   }
-  
+
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
     String min = range.getString(FILTERS_MIN);
     String max = range.getString(FILTERS_MAX);
     return " AND " + metadataTableName + "." + columnName + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max; 
   }
-  
+
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
     JSONArray values = jsFilter.getJSONArray(FILTERS_VALUE);
     StringBuilder sb = new StringBuilder();
@@ -181,15 +175,14 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       sb.append(val);
     }
     return " AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
-
   }
-  
-  private static String getMetadataQuerySql(User user, Map<String, String> contextParamValues, FilterParamNew filterParam) throws WdkModelException, WdkUserException {
 
-    QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, filterParam.getMetadataQuery());
+  private static String getMetadataQuerySql(User user, Map<String, String> contextParamValues,
+      FilterParamNew filterParam) throws WdkModelException, WdkUserException {
+    QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(
+        user, contextParamValues, filterParam.getMetadataQuery());
     return instance.getSql();
   }
-
 
   /**
    * the signature is a checksum of sorted stable value.
@@ -202,10 +195,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(User user, String stableValue) throws WdkModelException, WdkUserException {
-    return Utilities.encrypt(toSignatureString(stableValue));
-
+    return EncryptionUtil.encrypt(toSignatureString(stableValue));
   }
-  
+
   // convert stable value to a compact string, suitable for use in a signature
   // do not change this method, or risk invalidating existing signatures.
   // also useful to do syntax validation of stableValue JSON
@@ -220,7 +212,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         filterSigsList.add(filterSig);
       }
       Collections.sort(filterSigsList);
-
       return filterSigsList.stream().collect(Collectors.joining(","));
     }
     catch (JSONException ex) {
@@ -266,21 +257,21 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       WdkModelException {
     return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
   }
-  
+
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
-      if (!param.isAllowEmpty())
+      if (!param.isAllowEmpty()) {
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
-
+      }
       stableValue = param.getDefault();
     }
     toSignatureString(stableValue);  // this method validates the syntax
     return stableValue;
   }
-  
+
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
@@ -337,7 +328,5 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
-
   }
-
 }

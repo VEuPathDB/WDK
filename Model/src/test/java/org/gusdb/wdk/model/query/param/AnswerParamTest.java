@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
@@ -27,7 +24,7 @@ public class AnswerParamTest {
   private User user;
   Question question;
 
-  public AnswerParamTest() throws WdkModelException, WdkUserException {
+  public AnswerParamTest() throws WdkModelException {
     user = UnitTestHelper.getRegisteredUser();
     WdkModel wdkModel = UnitTestHelper.getModel();
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
@@ -44,7 +41,7 @@ public class AnswerParamTest {
   public void testGetAnswerValue() throws WdkModelException, WdkUserException {
     User user = UnitTestHelper.getRegisteredUser();
     Step step = UnitTestHelper.createNormalStep(user);
-    String paramValue = Integer.toString(step.getStepId());
+    String paramValue = Long.toString(step.getStepId());
 
     for (Param param : question.getParams()) {
       if (param instanceof AnswerParam) {
@@ -63,7 +60,7 @@ public class AnswerParamTest {
       String paramValue;
       if (param instanceof AnswerParam) {
         Step step = UnitTestHelper.createNormalStep(user);
-        paramValue = Integer.toString(step.getStepId());
+        paramValue = Long.toString(step.getStepId());
       }
       else
         paramValue = param.getDefault();

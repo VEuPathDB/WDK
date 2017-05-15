@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 
-
 public class IrodsUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
@@ -21,12 +20,13 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
     String user = configuration.get("login");
     String password = configuration.get("password");
     IrodsUserDatasetStoreAdaptor.initializeIrods(host,port,user,password,zone,resource);
-    id = usersRootDir + "|" + zone + "|" + resource + "|" + host + "|" + port;
-    try(IrodsUserDatasetSession session = getSession(usersRootDir)) {
+    _id = _usersRootDir + "|" + zone + "|" + resource + "|" + host + "|" + port;
+    try(IrodsUserDatasetSession session = getSession(_usersRootDir)) {
       session.checkRootDirExists();
     }
   }
-  
+
+  @Override
   public IrodsUserDatasetSession getSession(Path usersRootDir) {
     return new IrodsUserDatasetSession(usersRootDir);
   }

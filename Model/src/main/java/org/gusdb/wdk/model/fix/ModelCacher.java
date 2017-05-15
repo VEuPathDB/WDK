@@ -363,8 +363,8 @@ public class ModelCacher extends BaseCLI {
     DatabaseInstance userDb = wdkModel.getUserDb();
     DBPlatform platform = userDb.getPlatform();
 
-    int questionId = platform.getNextId(userDb.getDataSource(), schemaWithoutDot, "wdk_questions");
-    psQuestion.setInt(1, questionId);
+    long questionId = platform.getNextId(userDb.getDataSource(), schemaWithoutDot, "wdk_questions");
+    psQuestion.setLong(1, questionId);
     psQuestion.setString(2, question.getFullName());
     psQuestion.setString(3, wdkModel.getProjectId());
     psQuestion.setString(4, question.getQuery().getChecksum(false));
@@ -380,7 +380,7 @@ public class ModelCacher extends BaseCLI {
     }
   }
 
-  private void saveParam(WdkModel wdkModel, Param param, int questionId,
+  private void saveParam(WdkModel wdkModel, Param param, long questionId,
       PreparedStatement psParam, PreparedStatement psEnum, String schemaWithoutDot) throws SQLException,
       WdkModelException {
     DatabaseInstance database = wdkModel.getUserDb();
@@ -391,9 +391,9 @@ public class ModelCacher extends BaseCLI {
       type += "-TypeAhead";
     }
 
-    int paramId = database.getPlatform().getNextId(database.getDataSource(), schemaWithoutDot, "wdk_params");
-    psParam.setInt(1, paramId);
-    psParam.setInt(2, questionId);
+    long paramId = database.getPlatform().getNextId(database.getDataSource(), schemaWithoutDot, "wdk_params");
+    psParam.setLong(1, paramId);
+    psParam.setLong(2, questionId);
     psParam.setString(3, param.getName());
     psParam.setString(4, type);
     psParam.executeUpdate();
@@ -403,12 +403,12 @@ public class ModelCacher extends BaseCLI {
     }
   }
 
-  private void saveEnums(AbstractEnumParam param, int paramId, PreparedStatement psEnum)
+  private void saveEnums(AbstractEnumParam param, long paramId, PreparedStatement psEnum)
       throws WdkModelException, SQLException {
     // need to handle dependent params
     Set<String> paramValues = param.getAllValues();
     for (String paramValue : paramValues) {
-      psEnum.setInt(1, paramId);
+      psEnum.setLong(1, paramId);
       psEnum.setString(2, paramValue);
       psEnum.addBatch();
     }

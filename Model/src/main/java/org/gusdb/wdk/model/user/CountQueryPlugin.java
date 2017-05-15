@@ -56,7 +56,7 @@ public class CountQueryPlugin implements CountPlugin {
     // prepare params, which has only one answerParam
     Param[] params = _query.getParams();
     Map<String, String> paramValues = new HashMap<>();
-    paramValues.put(params[0].getName(), Integer.toString(step.getStepId()));
+    paramValues.put(params[0].getName(), Long.toString(step.getStepId()));
 
     // create a queryInstance, and get count;
     QueryInstance<?> queryInstance = _query.makeInstance(step.getUser(), paramValues, false, 0, paramValues);

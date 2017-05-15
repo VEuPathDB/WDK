@@ -17,7 +17,7 @@ class WdkViewController extends PureComponent {
    * controller uses data in a store.
    */
   getStoreName() {
-    return null;
+    return "WdkStore";
   }
 
   /**

@@ -16,12 +16,12 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.LoginCookieFactory;
-import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.session.LoginCookieFactory;
+import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 
 public class CheckLoginFilter implements Filter {
 

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 
 /**
  * This Action handles moving a step in a search strategy to a different position. It moves the step, updates
@@ -51,15 +52,15 @@ public class DeleteStepAction extends ProcessFilterAction {
       if (strStepId == null || strStepId.length() == 0) {
         throw new WdkModelException("No step was specified to delete!");
       }
-      int stepId = Integer.valueOf(strStepId);
+      long stepId = Long.valueOf(strStepId);
 
       String strategyKey = strStratId;
       if (strStratId.indexOf("_") > 0) {
         strStratId = strStratId.split("_")[0];
       }
 
-      int oldStrategyId = Integer.parseInt(strStratId);
-      StrategyBean strategy = wdkUser.getStrategy(oldStrategyId);
+      long oldStrategyId = Long.parseLong(strStratId);
+      StrategyBean strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), oldStrategyId));
       // verify the checksum
       String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
       if (checksum != null && !strategy.getChecksum().equals(checksum)) {
@@ -69,14 +70,15 @@ public class DeleteStepAction extends ProcessFilterAction {
 
       // cannot delete step from saved strategy, will need to make a clone first
       if (strategy.getIsSaved()) {
-        Map<Integer, Integer> stepIdMap = new HashMap<>();
-        strategy = wdkUser.copyStrategy(strategy, stepIdMap, strategy.getName());
+        Map<Long, Long> stepIdMap = new HashMap<>();
+        strategy = new StrategyBean(wdkUser, wdkModel.getModel().getStepFactory().copyStrategy(
+            strategy.getStrategy(), stepIdMap, strategy.getName()));
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
       }
 
       StepBean step = strategy.getStepById(stepId);
-      Map<Integer, Integer> rootMap = strategy.deleteStep(step);
+      Map<Long, Long> rootMap = strategy.deleteStep(step);
 
       if (wdkUser.getViewStrategyId() != null && wdkUser.getViewStrategyId().equals(strategyKey) &&
           wdkUser.getViewStepId() == stepId) {
@@ -90,7 +92,7 @@ public class DeleteStepAction extends ProcessFilterAction {
       if (strategy.getIsDeleted()) {
         ActionForward forward = mapping.findForward(CConstants.DELETE_STRATEGY_MAPKEY);
         StringBuffer url = new StringBuffer(forward.getPath());
-        url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
+        url.append("?strategy=" + FormatUtil.urlEncodeUtf8(strStratId));
         forward = new ActionForward(url.toString());
         forward.setRedirect(true);
         return forward;
@@ -107,7 +109,7 @@ public class DeleteStepAction extends ProcessFilterAction {
       // 5. forward to strategy page
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);

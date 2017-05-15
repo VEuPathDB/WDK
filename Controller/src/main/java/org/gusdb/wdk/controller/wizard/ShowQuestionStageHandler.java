@@ -78,11 +78,11 @@ public class ShowQuestionStageHandler implements StageHandler {
             if (previousStep == null) 
                 throw new WdkUserException("Cannot change from a single step into a combined step.");
 
-            int inputStepId = previousStep.getStepId();
+            long inputStepId = previousStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
             request.setAttribute(AnswerParamHandler.PARAM_INPUT_STEP,
-                    Integer.toString(inputStepId));
+                    Long.toString(inputStepId));
         }
 
         // prepare question form

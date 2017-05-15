@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.ItemFetcher;
+import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocabInstance> {
+public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParamVocabInstance> {
 
   private static final Logger logger = Logger.getLogger(FlatVocabularyFetcher.class);
 
@@ -57,11 +57,9 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
    */
   @Override
   public EnumParamVocabInstance fetchItem(String cacheKey) throws UnfetchableItemException {
-
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    @SuppressWarnings("unchecked")
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while (paramNames.hasNext()) {
@@ -117,36 +115,37 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
       QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
-      ResultList result = instance.getResults();
-      while (result.next()) {
-        Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
-        Object objInternal = result.get(FlatVocabParam.COLUMN_INTERNAL);
-        if (objTerm == null)
-          throw new WdkModelException("The term of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
-        if (objInternal == null)
-          throw new WdkModelException("The internal of flatVocabParam [" + _param.getFullName() +
-              "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
-
-        String term = objTerm.toString().trim();
-        String value = objInternal.toString().trim();
-        String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
-        String parentTerm = null;
-        if (hasParent) {
-          Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
-          if (parent != null)
-            parentTerm = parent.toString().trim();
+      try (ResultList result = instance.getResults()) {
+        while (result.next()) {
+          Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
+          Object objInternal = result.get(FlatVocabParam.COLUMN_INTERNAL);
+          if (objTerm == null)
+            throw new WdkModelException("The term of flatVocabParam [" + _param.getFullName() +
+                "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
+          if (objInternal == null)
+            throw new WdkModelException("The internal of flatVocabParam [" + _param.getFullName() +
+                "] is null. query [" + _vocabQuery.getFullName() + "].\n" + instance.getSql());
+  
+          String term = objTerm.toString().trim();
+          String value = objInternal.toString().trim();
+          String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
+          String parentTerm = null;
+          if (hasParent) {
+            Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
+            if (parent != null)
+              parentTerm = parent.toString().trim();
+          }
+  
+          if (term.indexOf(',') >= 0 && dependedParams != null)
+            throw new WdkModelException(_param.getFullName() + ":" +
+                "The term cannot contain comma: '" + term + "'");
+  
+          if (parentTerm != null && parentTerm.indexOf(',') >= 0)
+            throw new WdkModelException(_param.getFullName() +
+                ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
+  
+          vocabInstance.addTermValues(term, value, display, parentTerm);
         }
-
-        if (term.indexOf(',') >= 0 && dependedParams != null)
-          throw new WdkModelException(_param.getFullName() + ":" +
-              "The term cannot contain comma: '" + term + "'");
-
-        if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-          throw new WdkModelException(_param.getFullName() +
-              ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
-
-        vocabInstance.addTermValues(term, value, display, parentTerm);
       }
 
       if (vocabInstance.isEmpty()) {
@@ -171,16 +170,4 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
       throw new UnfetchableItemException(e);
     }
   }
-
-  @Override
-  public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
-    throw new UnsupportedOperationException(
-        "This should never be called since itemNeedsUpdating() always returns false.");
-  }
-
-  @Override
-  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
-    return false;
-  }
-
 }

@@ -24,10 +24,15 @@
         </exclusion>
       </exclusions>
     </dependency>
-      
+
     <dependency>
       <groupId>org.gusdb</groupId>
       <artifactId>fgputil-util</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>fgputil-accountdb</artifactId>
     </dependency>
 
     <dependency>
@@ -39,7 +44,7 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -81,16 +86,16 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.irods.jargon</groupId>
-        <artifactId>jargon-core</artifactId>
-     </dependency> 
-     
-     <dependency>
-       <groupId>net.sf.opencsv</groupId>
-       <artifactId>opencsv</artifactId>
-     </dependency>
+      <groupId>org.irods.jargon</groupId>
+      <artifactId>jargon-core</artifactId>
+    </dependency> 
+
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+    </dependency>
 
   </dependencies>
 
