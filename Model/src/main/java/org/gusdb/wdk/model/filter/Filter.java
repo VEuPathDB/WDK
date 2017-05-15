@@ -87,6 +87,16 @@ public interface Filter {
   FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
 
   /**
+   * Get a JSON formatted version of the summary model for the filter display.
+   * @param answer
+   * @param idSql
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
+  
+  /**
    * Get the wrapped ID SQL from the filter, with the filter value applied to the SQL as where clauses.
    * 
    * @param answer

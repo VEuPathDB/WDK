@@ -827,4 +827,10 @@ public class AnswerValue {
     Filter filter = _question.getFilter(filterName);
     return filter.getSummary(this, idSql);
   }
+  
+  public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException, WdkUserException {
+    String idSql = getIdSql(filterName, false);
+    Filter filter = _question.getFilter(filterName);
+    return filter.getSummaryJson(this, idSql);
+  }
 }
