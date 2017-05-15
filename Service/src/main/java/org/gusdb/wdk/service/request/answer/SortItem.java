@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * Represents a single sort characteristic, a tuple of which field to sort on
@@ -54,7 +54,7 @@ public class SortItem {
       conversion.put(sort.getAttributeField().getName(), sort.getDirection().getBoolValue());
       numSorts++;
       // don't sort by more than maximum number of fields
-      if (numSorts >= User.SORTING_LEVEL) break;
+      if (numSorts >= UserPreferences.SORTING_LEVEL) break;
     }
     return conversion;
   }

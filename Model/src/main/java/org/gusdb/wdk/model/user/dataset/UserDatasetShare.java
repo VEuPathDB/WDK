@@ -12,7 +12,7 @@ public interface UserDatasetShare {
    * The user the dataset is shared with
    * @return
    */
-  Integer getUserId();
+  Long getUserId();
   
   /**
    * The time it was shared

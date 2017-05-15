@@ -26,8 +26,10 @@ public class UserPreferenceValidator {
    */
   public static void validatePreferenceSizes(Map<String, String> propertiesMap) throws DataValidationException {
     List<String> lengthyData = new ArrayList<>();
-    for(String property : propertiesMap.keySet()) {
-      if(property.length() > PREFERENCE_NAME_MAX_LENGTH || propertiesMap.get(property).length() > PREFERENCE_VALUE_MAX_LENGTH) {
+    for (String property : propertiesMap.keySet()) {
+      int keyLength = FormatUtil.getUtf8EncodedBytes(property).length;
+      int valueLength = FormatUtil.getUtf8EncodedBytes(propertiesMap.get(property)).length;
+      if(keyLength > PREFERENCE_NAME_MAX_LENGTH || valueLength > PREFERENCE_VALUE_MAX_LENGTH) {
         lengthyData.add(property + " : " + propertiesMap.get(property));
       }
     }

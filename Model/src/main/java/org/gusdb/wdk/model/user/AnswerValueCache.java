@@ -90,15 +90,15 @@ public class AnswerValueCache {
   }
 
   private static int[] getDefaultPageRange(User user) {
-    return new int[]{ 1, user.getItemsPerPage() };
+    return new int[]{ 1, user.getPreferences().getItemsPerPage() };
   }
   
   private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
       throws WdkModelException, WdkUserException {
     Question question = step.getQuestion();
     User user = step.getUser();
-    Map<String, Boolean> sortingMap = user.getSortingAttributes(
-        question.getFullName(), User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+    Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
+        question.getFullName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
     AnswerValue answerValue = question.makeAnswerValue(user, step.getParamValues(), range[0],
         range[1], sortingMap, step.getFilter(), validate, step.getAssignedWeight());
     answerValue.setFilterOptions(step.getFilterOptions());

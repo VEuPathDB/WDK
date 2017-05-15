@@ -30,8 +30,8 @@ public class UserDatasetInfo {
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
 		  UserDatasetSession session, final UserFactory userFactory) {
     try {
-      int ownerId = dataset.getOwnerId();
-      final Map<Integer,User> userCache = new HashMap<>();
+      long ownerId = dataset.getOwnerId();
+      final Map<Long,User> userCache = new HashMap<>();
       _userDataset = dataset;
       _isInstalled = isInstalled;
       _owner = getUser(userCache, ownerId, userFactory);
@@ -48,7 +48,7 @@ public class UserDatasetInfo {
     }
   }
 
-  private static User getUser(Map<Integer, User> userCache, int userId, UserFactory userFactory) {
+  private static User getUser(Map<Long, User> userCache, long userId, UserFactory userFactory) {
     try {
       User user = userCache.get(userId);
       if (user == null) {
@@ -97,13 +97,8 @@ public class UserDatasetInfo {
     }
 
     @Override
-    public Integer getUserId() {
-      try {
-        return getUser().getUserId();
-      }
-      catch (WdkModelException e) {
-        throw new WdkRuntimeException("Unable to fetch existing user's ID");
-      }
+    public Long getUserId() {
+      return getUser().getUserId();
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 public class FilesysUserDatasetFile extends UserDatasetFile {
   
  
-  public FilesysUserDatasetFile(Path filePath, Integer userDatasetId) {
+  public FilesysUserDatasetFile(Path filePath, Long userDatasetId) {
     super(filePath, userDatasetId);
   }
 

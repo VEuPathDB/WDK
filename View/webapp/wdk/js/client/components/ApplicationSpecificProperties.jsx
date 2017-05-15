@@ -1,7 +1,5 @@
-import React from 'react';
-import { PropTypes } from 'react';
+import React, { PropTypes } from 'react';
 import { wrappable } from '../utils/componentUtils';
-
 
 /**
  * This React component is a placeholder for any application specific properties that may have added by the overriding application.
@@ -11,18 +9,16 @@ function ApplicationSpecificProperties() {
   return null;
 }
 
-
 ApplicationSpecificProperties.propTypes = {
 
   /** The user object to be modified */
   user:  PropTypes.object.isRequired,
 
-  /** Called with a parameter representing the new state when a form element changes */
-  onFormStateChange:  PropTypes.func.isRequired,
+  /** The on change handler for user profile properties inputs */
+  onPropertyChange:  PropTypes.func.isRequired,
 
-  /** The WDK name for the user's application specific properties */
-  name:  PropTypes.string.isRequired
-
+  /** An array of the user properties configured in WDK model */
+  propDefs: PropTypes.array.isRequired
 };
 
 export default wrappable(ApplicationSpecificProperties);

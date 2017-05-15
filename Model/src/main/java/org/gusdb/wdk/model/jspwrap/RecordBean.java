@@ -113,7 +113,7 @@ public class RecordBean {
             for (String column : pkValues.keySet()) {
                 values.put(column, pkValues.get(column));
             }
-            return user.isInFavorite(recordClass, values);
+            return user.getWdkModel().getFavoriteFactory().isInFavorite(user, recordClass, values);
         } catch (WdkModelException ex) {
             logger.error(ex);
             ex.printStackTrace();

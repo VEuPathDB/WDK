@@ -123,7 +123,7 @@ public class DatasetParamTest {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
 
-    String stableValue = Integer.toString(dataset.getDatasetId());
+    String stableValue = Long.toString(dataset.getDatasetId());
 
     Dataset rawValue = (Dataset)datasetParam.getRawValue(user, stableValue,
         null);

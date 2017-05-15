@@ -15,13 +15,13 @@ import org.gusdb.fgputil.events.Event;
  */
 public class StepResultsModifiedEvent extends Event {
 
-  private List<Integer> _stepIds;
+  private List<Long> _stepIds;
 
-  public StepResultsModifiedEvent(List<Integer> stepIds) {
+  public StepResultsModifiedEvent(List<Long> stepIds) {
     _stepIds = stepIds;
   }
 
-  public List<Integer> getStepIds() {
+  public List<Long> getStepIds() {
     return _stepIds;
   }
 }

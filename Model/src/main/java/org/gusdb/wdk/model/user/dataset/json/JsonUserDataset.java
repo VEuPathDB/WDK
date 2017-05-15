@@ -33,16 +33,16 @@ public class JsonUserDataset implements UserDataset {
   private static final String SIZE  = "size";
   private static final String PROJECTS  = "projects";
    
-  private Integer userDatasetId;
+  private Long userDatasetId;
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
-  private Integer ownerId;
+  private Long ownerId;
   private Long created;
   private Integer size;
-  private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
-  private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
-  private Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
-  private Set<String> projects = new HashSet<String>();
+  private Map<Long, JsonUserDatasetShare> sharesMap = new HashMap<>();
+  private Map<String, UserDatasetFile> dataFiles = new HashMap<>();
+  private Set<UserDatasetDependency> dependencies = new HashSet<>();
+  private Set<String> projects = new HashSet<>();
   private JSONObject datasetJsonObject;
   private JSONObject metaJsonObject;
   
@@ -51,7 +51,7 @@ public class JsonUserDataset implements UserDataset {
    * @param datasetJsonObject
    * @throws WdkModelException
    */
-  public JsonUserDataset(Integer userDatasetId, JSONObject datasetJsonObject, JSONObject metaJsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
+  public JsonUserDataset(Long userDatasetId, JSONObject datasetJsonObject, JSONObject metaJsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
     this.userDatasetId = userDatasetId;
     this.datasetJsonObject = datasetJsonObject;
     unpackJson(datasetJsonObject, metaJsonObject);
@@ -63,7 +63,7 @@ public class JsonUserDataset implements UserDataset {
     try {
       this.meta = new JsonUserDatasetMeta(metaJsonObj);
       this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
-      this.ownerId = datasetJsonObj.getInt(OWNER);
+      this.ownerId = datasetJsonObj.getLong(OWNER);
       this.size = datasetJsonObj.getInt(SIZE);
       this.created = datasetJsonObj.getLong(CREATED);
       
@@ -81,12 +81,12 @@ public class JsonUserDataset implements UserDataset {
   }
   
   @Override
-  public Integer getUserDatasetId() {
+  public Long getUserDatasetId() {
     return userDatasetId;
   }
   
   @Override
-  public Integer getOwnerId() {
+  public Long getOwnerId() {
     return ownerId;
   }
   

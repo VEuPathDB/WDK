@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.actionutil;
 
 import java.util.Enumeration;
@@ -8,14 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.WdkInitializer;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -26,32 +24,22 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public class ActionUtility {
 
-    public static UserBean getUser(HttpServlet servlet,
-            HttpServletRequest request) {
+    public static UserBean getUser(HttpServlet servlet, HttpServletRequest request) {
         try {
-            // get model
-            ServletContext context = servlet.getServletContext();
-            WdkModelBean wdkModel = (WdkModelBean) context.getAttribute(CConstants.WDK_MODEL_KEY);
             HttpSession session = request.getSession();
             UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
             if (wdkUser == null) {
-                wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
-                        wdkUser);
-            } else {
-                // user already exists, assign wdkModel in case it's restored
-                // from the previous session
-                wdkUser.setWdkModel(wdkModel);
+              throw new IllegalStateException("No user present on session. This should never happen.");
             }
             return wdkUser;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        }
+        catch (Exception ex) {
+            throw new WdkRuntimeException(ex);
         }
     }
 
     public static WdkModelBean getWdkModel(HttpServlet servlet) {
-        return (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
+        return new WdkModelBean(WdkInitializer.getWdkModel(servlet.getServletContext()));
     }
 
     public static Map<String, String> getParams(ServletRequest request) {

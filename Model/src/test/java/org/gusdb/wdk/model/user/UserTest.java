@@ -3,11 +3,11 @@ package org.gusdb.wdk.model.user;
 import java.util.Map;
 import java.util.Random;
 
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.junit.Assert;
@@ -28,12 +28,12 @@ public class UserTest {
     }
 
     @Test
-    public void testCreateGuest() throws WdkModelException {
-        User guest1 = userFactory.createGuestUser();
+    public void testCreateGuest() {
+        User guest1 = new GuestUser(wdkModel);
         Assert.assertTrue("guest1", guest1.isGuest());
 
         // try another, different guest
-        User guest2 = userFactory.createGuestUser();
+        User guest2 = new GuestUser(wdkModel);
         Assert.assertTrue("guest2", guest2.isGuest());
 
         Assert.assertTrue("Different guest ids",
@@ -41,29 +41,28 @@ public class UserTest {
         Assert.assertTrue("Different guest signatures",
                 !guest1.getSignature().equals(guest2.getSignature()));
         Assert.assertTrue("Different guest stableNames",
-                !guest1.getStableName().equals(guest2.getStableName()));
+                !guest1.getStableId().equals(guest2.getStableId()));
     }
 
     @Test
-    public void testCreateRegisteredUser() throws WdkUserException,
-            WdkModelException {
+    public void testCreateRegisteredUser() throws WdkModelException {
         String email = "wdk-test@email";
         String firstName = "Test";
         String lastName = "User";
         User user = userFactory.getUserByEmail(email);
         if (user != null) {
           // user exists, delete first
-          userFactory.deleteUser(user.getEmail());
+          // rrd 4/1/17 no longer supported and didn't work anyway- didn't delete basket or favs
+          //userFactory.deleteUser(user.getEmail());
         }
 
-        user = userFactory.createUser(email, lastName, firstName, null,
-                null, null, null, null, null, null, null, null, null,
-                null, null);
+        Map<String,String> props = new MapBuilder<>("firstName", firstName).put("lastName", lastName).toMap();
+        user = userFactory.createUser(email, props, null, null);
 
         Assert.assertFalse("not guest", user.isGuest());
         Assert.assertEquals("email", email, user.getEmail());
-        Assert.assertEquals("first name", firstName, user.getFirstName());
-        Assert.assertEquals("last name", lastName, user.getLastName());
+        Assert.assertEquals("first name", firstName, user.getProfileProperties().get("firstName"));
+        Assert.assertEquals("last name", lastName, user.getProfileProperties().get("lastName"));
         Assert.assertTrue("user id", user.getUserId() > 0);
     }
 
@@ -82,16 +81,16 @@ public class UserTest {
     }
 
     @Test
-    public void testDeleteUser() throws WdkUserException, WdkModelException {
+    public void testDeleteUser() throws WdkModelException {
         String email = "wdk-test@email";
         User user = userFactory.getUserByEmail(email);
         if (user == null) {
           // user doesn't exist, create it
-          user = userFactory.createUser(email, "Test", "User", null, null, null,
-              null, null, null, null, null, null, null, null, null);
+          user = userFactory.createUser(email, null, null, null);
         }
 
-        userFactory.deleteUser(user.getEmail());
+        // rrd 4/1/17 no longer supported and didn't work anyway- didn't delete basket or favs
+        //userFactory.deleteUser(user.getEmail());
 
         // make sure the user is gone
         try {
@@ -109,18 +108,18 @@ public class UserTest {
         Question question = UnitTestHelper.getNormalQuestion();
         String questionName = question.getFullName();
         AttributeField[] attributes = question.getRecordClass().getAttributeFields();
-        Map<String, Boolean> columns = user.getSortingAttributes(
-            questionName, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+        Map<String, Boolean> columns = user.getPreferences().getSortingAttributes(
+            questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
         
         int length = Math.min(Utilities.SORTING_LEVEL, attributes.length);
         Random random = new Random();
         for (int i = 0; i < length; i++) {
             String attrName = attributes[i].getName();
             boolean order = random.nextBoolean();
-            user.addSortingAttribute(questionName, attrName,
-                order, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-            columns = user.getSortingAttributes(questionName,
-                User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            user.getPreferences().addSortingAttribute(questionName, attrName,
+                order, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            columns = user.getPreferences().getSortingAttributes(questionName,
+                UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
             Assert.assertTrue(columns.size() > i);
             Assert.assertEquals(attrName, columns.keySet().iterator().next());
             Assert.assertEquals(order, columns.get(attrName));
@@ -129,10 +128,10 @@ public class UserTest {
         for (int i = length -1 ; i >=0; i--) {
             String attrName = attributes[i].getName();
             boolean order = random.nextBoolean();
-            user.addSortingAttribute(questionName, attrName,
-                order, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-            columns = user.getSortingAttributes(questionName,
-                User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            user.getPreferences().addSortingAttribute(questionName, attrName,
+                order, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            columns = user.getPreferences().getSortingAttributes(questionName,
+                UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
             Assert.assertEquals(length, columns.size());
             Assert.assertEquals(attrName, columns.keySet().iterator().next());
             Assert.assertEquals(order, columns.get(attrName));

@@ -58,20 +58,20 @@ public class SummaryTableUpdateProcessor {
       String sorting = getFirstValueOrNull(params.get(CConstants.WDK_SORTING_KEY));
       if (sorting != null && sorting.length() > 0) {
         // apply the current sorting to the question first, then do other commands
-        user.setSortingAttributes(questionName, sorting, preferenceSuffix);
+        user.getPreferences().setSortingAttributes(questionName, sorting, preferenceSuffix);
       }
 
       // get command
       if (command != null) {
         if (command.equalsIgnoreCase("sort")) { // sorting
           boolean ascending = !sortingOrder.equalsIgnoreCase("DESC");
-          user.addSortingAttribute(questionName, attributeName, ascending, preferenceSuffix);
+          user.getPreferences().addSortingAttribute(questionName, attributeName, ascending, preferenceSuffix);
         }
         else if (command.equalsIgnoreCase("reset")) {
-          user.resetSummaryAttributes(questionName, preferenceSuffix);
+          user.getPreferences().resetSummaryAttributes(questionName, preferenceSuffix);
         }
         else {
-          String[] summary = user.getSummaryAttributes(questionName, preferenceSuffix);
+          String[] summary = user.getPreferences().getSummaryAttributes(questionName, preferenceSuffix);
           List<String> summaryList = new ArrayList<String>();
           String[] attributeNames = params.get(PARAM_ATTRIBUTE);
           if (attributeNames == null) attributeNames = new String[0];
@@ -127,10 +127,10 @@ public class SummaryTableUpdateProcessor {
 
           summary = new String[summaryList.size()];
           summaryList.toArray(summary);
-          user.setSummaryAttributes(questionName, summary, preferenceSuffix);
+          user.getPreferences().setSummaryAttributes(questionName, summary, preferenceSuffix);
         }
 
-        user.save();
+        model.getUserFactory().saveUser(user);
       }
 
       if (pagerOffset != null && pagerOffset.length() != 0) {

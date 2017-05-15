@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
+import static org.gusdb.fgputil.FormatUtil.urlEncodeUtf8;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.form.WizardForm;
@@ -24,7 +26,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.user.StepUtilities;
 
 public class WizardAction extends Action {
 
@@ -107,17 +109,17 @@ public class WizardAction extends Action {
                     Object value = attributes.get(key);
                     String strValue = (value == null) ? "" : value.toString();
                     builder.append(first ? "?" : "&");
-                    builder.append(URLEncoder.encode(key, "utf-8") + "=");
-                    builder.append(URLEncoder.encode(strValue, "utf-8"));
+                    builder.append(urlEncodeUtf8(key) + "=");
+                    builder.append(urlEncodeUtf8(strValue));
                     first = false;
                 }
 
-                int strategyId = wizardForm.getStrategyId();
-                if (!Integer.toString(strategyId).equals(user.getViewStrategyId())) {
+                long strategyId = wizardForm.getStrategyId();
+                if (!Long.toString(strategyId).equals(user.getViewStrategyId())) {
                   // set view results to last step of strategy being revised
-                  StrategyBean strategy = user.getStrategy(strategyId);
-                  int stepId = strategy.getLatestStepId();
-                  user.setViewResults(Integer.toString(strategyId), stepId, 0);
+                  StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), strategyId));
+                  long stepId = strategy.getLatestStepId();
+                  user.getUser().getSession().setViewResults(Long.toString(strategyId), stepId, 0);
                 }
 
                 logger.debug("wizard action: " + builder);

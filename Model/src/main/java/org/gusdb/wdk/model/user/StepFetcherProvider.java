@@ -12,11 +12,11 @@ public class StepFetcherProvider {
     _stepFactory = stepFactory;
   }
 
-  public ItemFetcher<Integer, Step> getFetcher(User user) {
+  public ItemFetcher<Long, Step> getFetcher(User user) {
     return new StepFetcher(_stepFactory, user);
   }
 
-  public static class StepFetcher implements ItemFetcher<Integer, Step> {
+  public static class StepFetcher implements ItemFetcher<Long, Step> {
 
     private static final long EXPIRATION_SECS = 20;
 
@@ -27,9 +27,9 @@ public class StepFetcherProvider {
       _stepFactory = stepFactory;
       _user = user;
     }
-  
+
     @Override
-    public Step fetchItem(Integer stepId) throws UnfetchableItemException {
+    public Step fetchItem(Long stepId) throws UnfetchableItemException {
       try {
         return _stepFactory.loadStepNoCache(_user, stepId);
       }
@@ -39,7 +39,7 @@ public class StepFetcherProvider {
     }
   
     @Override
-    public Step updateItem(Integer stepId, Step previousVersion) throws UnfetchableItemException {
+    public Step updateItem(Long stepId, Step previousVersion) throws UnfetchableItemException {
       return fetchItem(stepId);
     }
   

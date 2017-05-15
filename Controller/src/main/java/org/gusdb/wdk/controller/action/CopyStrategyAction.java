@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +13,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -55,12 +55,13 @@ public class CopyStrategyAction extends Action {
       }
       boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
 
-      StrategyBean copy = wdkUser.copyStrategy(strategy, new HashMap<Integer, Integer>());
+      StrategyBean copy = new StrategyBean(wdkUser,
+          wdkModel.getModel().getStepFactory().copyStrategy(strategy.getStrategy(), new HashMap<Long, Long>()));
 
       // forward to strategyPage.jsp
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
 
       url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY);
       url.append("=").append(copy.getStrategyId());

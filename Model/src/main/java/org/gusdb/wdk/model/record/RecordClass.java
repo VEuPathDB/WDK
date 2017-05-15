@@ -59,6 +59,7 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * <p>
@@ -1391,7 +1392,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (String attrName : defaultSortingMap.keySet()) {
       map.put(attrName, defaultSortingMap.get(attrName));
       count++;
-      if (count >= User.SORTING_LEVEL)
+      if (count >= UserPreferences.SORTING_LEVEL)
         break;
     }
 

@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -267,7 +268,7 @@ public class AnswerValue {
         jsContent.put("filters", _filterOptions.getJSON());
 
       // encrypt the content to make step-independent checksum
-      _checksum = Utilities.encrypt(jsContent.toString());
+      _checksum = EncryptionUtil.encrypt(jsContent.toString());
     }
     return _checksum;
   }
@@ -717,22 +718,18 @@ public class AnswerValue {
     String[] columns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
-    ResultList resultList;
-    if (_filter == null)
-      resultList = _idsQueryInstance.getResults();
-    else
-      resultList = _filter.getResults(this);
-
-    while (resultList.next()) {
-      Object[] pkValues = new String[columns.length];
-      for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-        pkValues[columnIndex] = resultList.get(columns[columnIndex]);
+    try (ResultList resultList = (_filter == null ? _idsQueryInstance.getResults() : _filter.getResults(this))) {
+      while (resultList.next()) {
+        Object[] pkValues = new String[columns.length];
+        for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+          pkValues[columnIndex] = resultList.get(columns[columnIndex]);
+        }
+        buffer.add(pkValues);
       }
-      buffer.add(pkValues);
+      Object[][] ids = new String[buffer.size()][columns.length];
+      buffer.toArray(ids);
+      return ids;
     }
-    Object[][] ids = new String[buffer.size()][columns.length];
-    buffer.toArray(ids);
-    return ids;
   }
 
   public AnswerFilterInstance getFilter() {
@@ -827,4 +824,5 @@ public class AnswerValue {
     Filter filter = _question.getFilter(filterName);
     return filter.getSummary(this, idSql);
   }
+
 }

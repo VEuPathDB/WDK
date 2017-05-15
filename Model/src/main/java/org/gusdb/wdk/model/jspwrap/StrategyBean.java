@@ -96,11 +96,11 @@ public class StrategyBean {
     return new StepBean(user, strategy.getLatestStep());
   }
 
-  public int getLatestStepId() {
+  public long getLatestStepId() {
     return strategy.getLatestStepId();
   }
 
-  public int getStrategyId() {
+  public long getStrategyId() {
     return strategy.getStrategyId();
   }
 
@@ -117,7 +117,7 @@ public class StrategyBean {
     strategy.setLatestStep(step.step);
   }
 
-  public StepBean getStepById(int stepId) throws WdkModelException {
+  public StepBean getStepById(long stepId) throws WdkModelException {
     Step target = strategy.getStepById(stepId);
     if (target != null) {
       return new StepBean(user, target);
@@ -133,16 +133,16 @@ public class StrategyBean {
     strategy.update(overwrite);
   }
 
-  public Map<Integer, Integer> insertStepAfter(StepBean newStep, int targetId) throws WdkModelException, WdkUserException {
+  public Map<Long, Long> insertStepAfter(StepBean newStep, long targetId) throws WdkModelException, WdkUserException {
     return strategy.insertStepAfter(newStep.getStep(), targetId);
   }
 
-  public  Map<Integer, Integer> insertStepBefore(StepBean newStep, int targetId) throws WdkModelException,
+  public  Map<Long, Long> insertStepBefore(StepBean newStep, long targetId) throws WdkModelException,
       WdkUserException {
     return strategy.insertStepBefore(newStep.getStep(), targetId);
   }
 
-  public Map<Integer, Integer> deleteStep(StepBean step) throws WdkModelException, WdkUserException {
+  public Map<Long, Long> deleteStep(StepBean step) throws WdkModelException, WdkUserException {
     return strategy.deleteStep(step.getStep());
   }
 
@@ -216,5 +216,9 @@ public class StrategyBean {
 
   public RecordClassBean getRecordClass() throws WdkModelException {
     return new RecordClassBean(strategy.getRecordClass());
+  }
+
+  public Strategy getStrategy() {
+    return strategy;
   }
 }

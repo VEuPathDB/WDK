@@ -91,7 +91,8 @@ public class HistoryRecycler implements Runnable {
 
         // remove expired users
         System.out.println("Deleting expired guest users...");
-        factory.deleteExpiredUsers(USER_EXPIRE_TIME);
+        // RRD 4/1/17 This capability is no longer supported
+        //factory.deleteExpiredUsers(USER_EXPIRE_TIME);
 
         System.out.println("========== Finished recycling histories on "
                 + wdkModel.getProjectId() + " ==========");

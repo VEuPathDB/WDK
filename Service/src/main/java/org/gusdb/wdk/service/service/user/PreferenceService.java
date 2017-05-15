@@ -1,7 +1,5 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.util.Map;
-
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -12,12 +10,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.UserPreferenceValidator;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
@@ -35,8 +34,7 @@ public class PreferenceService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs() throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    return Response.ok(JsonUtil.toJsonObject(
-        userBundle.getTargetUser().getProjectPreferences()).toString()).build();
+    return Response.ok(UserFormatter.getPreferencesJson(userBundle.getTargetUser().getPreferences()).toString()).build();
   }
 
   /**
@@ -56,17 +54,37 @@ public class PreferenceService extends UserService {
       User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
-      Map<String, String> preferencesMap = request.getPreferencesMap();
-      UserPreferenceValidator.validatePreferenceSizes(preferencesMap);
-      user.clearProjectPreferences();
-      for(String key : preferencesMap.keySet()) {
-        user.setProjectPreference(key, preferencesMap.get(key));
+      if (!request.getGlobalPreferenceDeletes().isEmpty() || !request.getProjectPreferenceDeletes().isEmpty()) {
+        throw new DataValidationException("A PUT request cannot contain delete (i.e. null) instructions.  Try PATCH.");
       }
-      user.save();
+      UserPreferences prefs = user.getPreferences();
+      updatePreferences(prefs, request, true);
+      getWdkModel().getUserFactory().saveUser(user);
       return Response.noContent().build();
     }
     catch(RequestMisformatException e) {
       throw new BadRequestException(e);
+    }
+  }
+
+  private void updatePreferences(UserPreferences prefs, UserPreferencesRequest request, boolean clearFirst) throws DataValidationException {
+    UserPreferenceValidator.validatePreferenceSizes(request.getGlobalPreferenceMods());
+    UserPreferenceValidator.validatePreferenceSizes(request.getProjectPreferenceMods());
+    if (clearFirst) {
+      prefs.clearGlobalPreferences();
+      prefs.clearProjectPreferences();
+    }
+    for (String key : request.getGlobalPreferenceMods().keySet()) {
+      prefs.setGlobalPreference(key, request.getGlobalPreferenceMods().get(key));
+    }
+    for (String key : request.getProjectPreferenceMods().keySet()) {
+      prefs.setProjectPreference(key, request.getProjectPreferenceMods().get(key));
+    }
+    for (String key : request.getGlobalPreferenceDeletes()) {
+      prefs.unsetGlobalPreference(key);
+    }
+    for (String key : request.getProjectPreferenceDeletes()) {
+      prefs.unsetProjectPreference(key);
     }
   }
 
@@ -87,12 +105,9 @@ public class PreferenceService extends UserService {
       User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
-      Map<String, String> preferencesMap = request.getPreferencesMap();
-      UserPreferenceValidator.validatePreferenceSizes(preferencesMap);
-      for(String key : preferencesMap.keySet()) {
-        user.setProjectPreference(key, preferencesMap.get(key));
-      }
-      user.save();
+      UserPreferences prefs = user.getPreferences();
+      updatePreferences(prefs, request, false);
+      getWdkModel().getUserFactory().saveUser(user);
       return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException e) {

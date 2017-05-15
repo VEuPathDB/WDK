@@ -39,11 +39,10 @@ public class ImportStrategyAction extends Action {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         StrategyBean strategy = wdkUser.importStrategy(strategyKey);
 
-        wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+        wdkUser.getUser().getSession().addActiveStrategy(Long.toString(strategy.getStrategyId()));
 
         // Add any substrategies to the active strategies
-        addActiveSubstrategies(wdkUser, strategy.getStrategyId(),
-                strategy.getLatestStep());
+        addActiveSubstrategies(wdkUser, strategy.getStrategyId(), strategy.getLatestStep());
 
         /*
          * Charles Treatman 4/23/09 Add code here to set the
@@ -57,7 +56,7 @@ public class ImportStrategyAction extends Action {
         return forward;
     }
 
-    private void addActiveSubstrategies(UserBean wdkUser, int strategyId,
+    private void addActiveSubstrategies(UserBean wdkUser, long strategyId,
             StepBean step) throws Exception {
         if (step == null) return;
 
@@ -65,7 +64,7 @@ public class ImportStrategyAction extends Action {
             logger.debug("open sub-strategy: " + strategyId + "_"
                     + step.getStepId());
             wdkUser.addActiveStrategy(strategyId + "_"
-                    + Integer.toString(step.getStepId()));
+                    + Long.toString(step.getStepId()));
         }
         addActiveSubstrategies(wdkUser, strategyId, step.getPreviousStep());
         addActiveSubstrategies(wdkUser, strategyId, step.getChildStep());

@@ -10,16 +10,16 @@ public class UserDatasetExternalDatasetEvent extends UserDatasetEvent {
     CREATE, DELETE
   }
   
-  private Integer userId;
+  private Long userId;
   private ExternalDatasetAction action;
   
-  public UserDatasetExternalDatasetEvent(Long eventId, Set<String> projectsFilter, Integer userDatasetId, UserDatasetType userDatasetType, Integer userId, ExternalDatasetAction action) {
+  public UserDatasetExternalDatasetEvent(Long eventId, Set<String> projectsFilter, Long userDatasetId, UserDatasetType userDatasetType, Long userId, ExternalDatasetAction action) {
     super(eventId, projectsFilter, userDatasetId, userDatasetType);
     this.userId = userId;
     this.action = action;
   }
 
-  public Integer getUserId() { return userId; }
+  public Long getUserId() { return userId; }
   
   public ExternalDatasetAction getAction() { return action; }
 

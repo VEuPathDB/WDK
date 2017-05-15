@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,15 +76,15 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     : Boolean.parseBoolean(strOpen);
             StrategyBean currentStrategy = (StrategyBean) request.getAttribute(CConstants.WDK_STRATEGY_KEY);
 
-            Map<Integer, StrategyBean> displayStrategies;
+            Map<Long, StrategyBean> displayStrategies;
             if (currentStrategy != null) {
                 logger.info("OPEN single strategy...");
                 // this case is directly from showSummaryAction, where one step
                 // is invalid
-                displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
+                displayStrategies = new LinkedHashMap<>();
                 // reload the current strategy to make sure all the data is up to date.
                 displayStrategies.put(currentStrategy.getStrategyId(),
-                        wdkUser.getStrategy(currentStrategy.getStrategyId()));
+                    new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), currentStrategy.getStrategyId())));
             } else if (open) {
                 logger.info("OPEN all strategies...");
                 // open all the requested strategies
@@ -101,20 +102,20 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     int stratId = Integer.parseInt(stratKey);
                     StrategyBean strategy = displayStrategies.get(stratId);
                     if (strategy != null && strategy.isValid()) {
-                        int stepId = strategy.getLatestStep().getStepId();
-                        wdkUser.setViewResults(stratKey, stepId, 0);
+                        long stepId = strategy.getLatestStep().getStepId();
+                        wdkUser.getUser().getSession().setViewResults(stratKey, stepId, 0);
                     }
                 }
             } else {
                 logger.info("GET all strategies...");
                 // return the details of all the requested strategies; skip the
                 // state validation
-                displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
+                displayStrategies = new LinkedHashMap<>();
                 for (String strategyKey : stratKeys) {
                     int pos = strategyKey.indexOf('_');
                     if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
-                    int strategyId = Integer.parseInt(strategyKey);
-                    StrategyBean strategy = wdkUser.getStrategy(strategyId);
+                    long strategyId = Long.parseLong(strategyKey);
+                    StrategyBean strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), strategyId));
                     displayStrategies.put(strategyId, strategy);
 
                 }
@@ -131,7 +132,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
     }
 
-    private static Map<Integer, StrategyBean> getModifiedStrategies(
+    private static Map<Long, StrategyBean> getModifiedStrategies(
             UserBean user, String state) throws JSONException, WdkUserException, WdkModelException {
         logger.debug("previous state: '" + state + "'");
 
@@ -149,9 +150,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 oldState.put(strategyId, checksum);
             }
         }
-        Map<Integer, StrategyBean> strategies = new LinkedHashMap<Integer, StrategyBean>();
+        Map<Long, StrategyBean> strategies = new LinkedHashMap<>();
         for (StrategyBean strategy : user.getActiveStrategies()) {
-            int strategyId = strategy.getStrategyId();
+            long strategyId = strategy.getStrategyId();
             if (!oldState.containsKey(strategyId)) {
                 strategies.put(strategyId, strategy);
             } else {
@@ -216,8 +217,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         response.setHeader("Content-Type", "application/json");
 
-        Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
-                state);
+        Map<Long, StrategyBean> strategies = getModifiedStrategies(user, state);
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
@@ -238,8 +238,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         response.setHeader("Content-Type", "application/json");
 
-        Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
-                state);
+        Map<Long, StrategyBean> strategies = getModifiedStrategies(user, state);
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
@@ -254,7 +253,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputSuccessJSON(WdkModelBean model, UserBean user,
-            HttpServletResponse response, Map<Integer,
+            HttpServletResponse response, Map<Long,
             StrategyBean> displayStrategies, boolean updateResults) throws
             JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, IOException {
@@ -292,7 +291,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             String checksum = strat.getChecksum();
             logger.debug("#" + strat.getStrategyId() + " - " + checksum);
 
-            int stratId = strat.getStrategyId();
+            long stratId = strat.getStrategyId();
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", checksum);
@@ -311,7 +310,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         String viewStrategyKey = user.getViewStrategyId();
         if (viewStrategyKey != null) {
             jsView.put("strategy", viewStrategyKey);
-            int viewStep = user.getViewStepId();
+            long viewStep = user.getViewStepId();
             if (viewStep != 0) jsView.put("step", viewStep);
             jsView.put("pagerOffset", user.getViewPagerOffset());
         }
@@ -321,12 +320,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
             jsView.put("actionStrat", user.getFrontStrategy());
             jsView.put("actionStep", user.getFrontStep());
         }
-        user.resetFrontAction();
+        user.getUser().getSession().resetFrontAction();
         jsMessage.put("currentView", jsView);
     }
 
     static private void outputStrategies(WdkModelBean model, UserBean user,
-            JSONObject jsMessage, Map<Integer, StrategyBean> strategies, boolean updateResults)
+            JSONObject jsMessage, Map<Long, StrategyBean> strategies, boolean updateResults)
             throws JSONException, NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         JSONObject jsStrategies = new JSONObject();
@@ -352,7 +351,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException {
         JSONObject jsStrategy = new JSONObject();
         jsStrategy.put("name", strategy.getName());
-        jsStrategy.put("id", Integer.toString(strategy.getStrategyId()));
+        jsStrategy.put("id", Long.toString(strategy.getStrategyId()));
         jsStrategy.put("saved", strategy.getIsSaved());
         jsStrategy.put("savedName", strategy.getSavedName());
         jsStrategy.put("description", strategy.getDescription());
@@ -379,7 +378,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static JSONObject outputStep(WdkModelBean model, UserBean user,
-        StepBean step, int strategyId, boolean showSubStrategy, boolean updateResults)
+        StepBean step, long strategyId, boolean showSubStrategy, boolean updateResults)
             throws JSONException, NoSuchAlgorithmException, WdkModelException, WdkUserException, SQLException {
 
       JSONObject jsStep = new JSONObject();
@@ -467,7 +466,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputCombinedStep(WdkModelBean wdkModel,
-            UserBean user, StepBean step, JSONObject jsStep, int strategyId, boolean updateResults)
+            UserBean user, StepBean step, JSONObject jsStep, long strategyId, boolean updateResults)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {
         int childrenCount = step.getAnswerParamCount();
@@ -584,7 +583,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	}
 
 	static private void outputSubStrategy(WdkModelBean model, UserBean user,
-            StepBean step, JSONObject jsStep, int strategyId, boolean updateResults)
+            StepBean step, JSONObject jsStep, long strategyId, boolean updateResults)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();

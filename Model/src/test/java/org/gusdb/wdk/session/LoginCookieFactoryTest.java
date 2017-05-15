@@ -1,4 +1,4 @@
-package org.gusdb.wdk.controller;
+package org.gusdb.wdk.session;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -8,7 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 import javax.servlet.http.Cookie;
 
-import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
+import org.gusdb.wdk.session.LoginCookieFactory;
+import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 import org.junit.Test;
 
 public class LoginCookieFactoryTest {

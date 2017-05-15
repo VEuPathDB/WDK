@@ -30,21 +30,13 @@ public class DynamicTableValue extends TableValue {
   }
 
   private void loadRowsFromQuery() {
-    ResultList resultList = null;
-    try {
-      resultList = _queryInstance.getResults();
+    try (ResultList resultList = _queryInstance.getResults()) {
       while (resultList.next()) {
         initializeRow(resultList);
       }
     }
     catch (WdkModelException | WdkUserException e) {
       throw new WdkRuntimeException("Unable to load table rows from query for table " + _tableField.getName(), e);
-    }
-    finally {
-      if (resultList != null) {
-        try { resultList.close(); }
-        catch (WdkModelException e) { LOG.error("Unable to close result list", e); }
-      }
     }
     LOG.debug("Table value rows loaded.");
   }

@@ -59,7 +59,7 @@ public class FavoriteFactory {
   public void addToFavorite(User user, RecordClass recordClass,
       List<Map<String, Object>> recordIds) throws WdkModelException, WdkUserException {
     logger.debug("adding favorite...");
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -114,8 +114,8 @@ public class FavoriteFactory {
         }
 
         // insert new record
-        int favoriteId = platform.getNextId(dataSource, schema, TABLE_FAVORITES);
-        psInsert.setInt(1, favoriteId);
+        long favoriteId = platform.getNextId(dataSource, schema, TABLE_FAVORITES);
+        psInsert.setLong(1, favoriteId);
         setParams(psInsert, userId, projectId, rcName, pkColumns, pkValues, 2);
         psInsert.setString(5 + pkColumns.length, note);
         psInsert.addBatch();
@@ -144,7 +144,7 @@ public class FavoriteFactory {
 
   public void removeFromFavorite(User user, RecordClass recordClass,
       List<Map<String, Object>> recordIds) throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -186,7 +186,7 @@ public class FavoriteFactory {
   }
 
   public void clearFavorite(User user) throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String sqlDelete = "DELETE FROM " + schema + TABLE_FAVORITES + " WHERE "
         + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ?";
@@ -196,7 +196,7 @@ public class FavoriteFactory {
     try {
       long start = System.currentTimeMillis();
       psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-      psDelete.setInt(1, userId);
+      psDelete.setLong(1, userId);
       psDelete.setString(2, projectId);
       psDelete.executeUpdate();
       QueryLogger.logEndStatementExecution(sqlDelete,
@@ -220,7 +220,7 @@ public class FavoriteFactory {
     try {
       long start = System.currentTimeMillis();
       ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setInt(1, user.getUserId());
+      ps.setLong(1, user.getUserId());
       ps.setString(2, wdkModel.getProjectId());
       rs = ps.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-favorite-count", start);
@@ -250,7 +250,7 @@ public class FavoriteFactory {
       ps = SqlUtils.getPreparedStatement(ds, sql);
       ps.setFetchSize(100);
       ps.setString(1, wdkModel.getProjectId());
-      ps.setInt(2, user.getUserId());
+      ps.setLong(2, user.getUserId());
       rs = ps.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-favorite-select-all",
           start);
@@ -297,7 +297,7 @@ public class FavoriteFactory {
 
   public boolean isInFavorite(User user, RecordClass recordClass,
       Map<String, Object> recordId) throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -336,7 +336,7 @@ public class FavoriteFactory {
   public void setNotes(User user, RecordClass recordClass,
       List<Map<String, Object>> recordIds, String note)
       throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -382,7 +382,7 @@ public class FavoriteFactory {
   public void setGroups(User user, RecordClass recordClass,
       List<Map<String, Object>> recordIds, String group)
       throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -434,7 +434,7 @@ public class FavoriteFactory {
     ResultSet resultSet = null;
     try {
       psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
-      psSelect.setInt(1, user.getUserId());
+      psSelect.setLong(1, user.getUserId());
       psSelect.setString(2, wdkModel.getProjectId());
 
       long start = System.currentTimeMillis();
@@ -460,10 +460,10 @@ public class FavoriteFactory {
     }
   }
 
-  private void setParams(PreparedStatement ps, int userId, String projectId,
+  private void setParams(PreparedStatement ps, long userId, String projectId,
       String rcName, String[] pkColumns, Map<String, Object> recordId, int index)
       throws SQLException {
-    ps.setInt(index++, userId);
+    ps.setLong(index++, userId);
     ps.setString(index++, projectId);
     ps.setString(index++, rcName);
     for (String column : pkColumns) {

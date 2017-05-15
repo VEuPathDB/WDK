@@ -41,6 +41,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * A class representing a binding between a RecordClass and a Query. On the
@@ -797,7 +798,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     for (String attrName : _defaultSortingMap.keySet()) {
       map.put(attrName, _defaultSortingMap.get(attrName));
-      if (map.size() >= User.SORTING_LEVEL)
+      if (map.size() >= UserPreferences.SORTING_LEVEL)
         break;
     }
 

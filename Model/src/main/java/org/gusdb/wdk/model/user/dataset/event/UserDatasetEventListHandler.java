@@ -53,6 +53,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     try {
       return parser.parseConfig(projectId);
     }
+
     catch(WdkModelException | SAXException | IOException e) {
       e.printStackTrace();
       throw new RuntimeException(e);
@@ -61,8 +62,8 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
-	UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler();
-	String projectId = (String) getOptionValue(ARG_PROJECT);
+    UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler();
+    String projectId = (String) getOptionValue(ARG_PROJECT);
     handler.setProjectId(projectId);
     ModelConfig modelConfig = getModelConfig(projectId);
     File eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));

@@ -91,16 +91,11 @@ public class QueryTest implements ElementTest {
     QueryInstance<?> instance = query.makeInstance(_user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
-    ResultList resultList = null;
-    try {
-      resultList = instance.getResults();
+    try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
         count++;
       }
       return count;
-    }
-    finally {
-      if (resultList != null) resultList.close();
     }
   }
 }

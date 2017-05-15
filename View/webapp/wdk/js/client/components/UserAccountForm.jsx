@@ -1,13 +1,8 @@
-import React from 'react';
-import { PropTypes } from 'react';
+import React, { PropTypes } from 'react';
 import UserIdentity from './UserIdentity';
 import UserPassword from './UserPassword';
-import UserContact from './UserContact';
 import ApplicationSpecificProperties from './ApplicationSpecificProperties';
 import { wrappable } from '../utils/componentUtils';
-
-/** The user attribute that points to application specific properties */
-const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
 
 /**
  * This React component provides the form wrapper and enclosed fieldsets for the user profile/account form.
@@ -16,18 +11,16 @@ const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
  * @constructor
  */
 const UserAccountForm = (props) => {
-  let { user, onTextChange, onEmailChange, onFormStateChange, disableSubmit, saveProfile } = props;
-
+  let { config, user, onPropertyChange, onEmailChange, onConfirmEmailChange, disableSubmit, saveProfile } = props;
   return(
     <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
       <p><i className="fa fa-asterisk"></i> = required</p>
-      <UserIdentity user={user} onEmailChange={onEmailChange} onTextChange={onTextChange} />
+      <UserIdentity user={user} onEmailChange={onEmailChange} onConfirmEmailChange={onTextChange}
+          onPropertyChange={onPropertyChange} propDefs={config.userProfileProperties}/>
       <br />
       <UserPassword user={user} wdkConfig={props.wdkConfig} />
       <br />
-      <UserContact user={user} onTextChange={onTextChange} />
-      <br />
-      <ApplicationSpecificProperties user={user} onFormStateChange={onFormStateChange} name={APPLICATION_SPECIFIC_PROPERTIES} />
+      <ApplicationSpecificProperties user={user} onPropertyChange={onPropertyChange} propDefs={config.userProfileProperties} />
       <div>
         <input type="submit" value="Save" disabled={disableSubmit} />
       </div>

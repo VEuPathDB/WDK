@@ -30,14 +30,14 @@ public class UserDatasetFactory {
    * @return set of IDs of installed datasets
    * @throws WdkModelException if error occurs querying
    */
-  public Set<Integer> getInstalledUserDatasets(int userId) throws WdkModelException {
+  public Set<Long> getInstalledUserDatasets(long userId) throws WdkModelException {
     String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
-    final Set<Integer> datasetIds = new HashSet<>();
+    final Set<Long> datasetIds = new HashSet<>();
     new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
-        .executeQuery(new Object[] { userId }, new Integer[] { Types.INTEGER }, new ResultSetHandler() {
+        .executeQuery(new Object[] { userId }, new Integer[] { Types.BIGINT }, new ResultSetHandler() {
           @Override public void handleResult(ResultSet rs) throws SQLException {
             while (rs.next()) {
-              datasetIds.add(rs.getInt(1));
+              datasetIds.add(rs.getLong(1));
             }}});
     return datasetIds;
   }

@@ -66,7 +66,7 @@ public class StepAnalysisContext {
   }
   
   private WdkModel _wdkModel;
-  private int _analysisId;
+  private long _analysisId;
   private String _displayName;
   private Step _step;
   private String _answerValueHash;
@@ -128,13 +128,13 @@ public class StepAnalysisContext {
     return ctx;
   }
 
-  public static StepAnalysisContext createFromId(int analysisId, StepAnalysisFactory analysisMgr)
+  public static StepAnalysisContext createFromId(long analysisId, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     return analysisMgr.getSavedContext(analysisId);
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, int stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
+      long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
       String displayName, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
@@ -151,8 +151,7 @@ public class StepAnalysisContext {
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
-          "to find step (ID=" + stepId + ") defined in step analysis context " +
-          "(ID=" + analysisId + ")"));
+          "to find step (ID=" + stepId + ") defined in step analysis context (ID=" + analysisId + ")"));
       ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
@@ -204,7 +203,7 @@ public class StepAnalysisContext {
     return ctx;
   }
   
-  private static <T extends WdkException> Step loadStep(WdkModel wdkModel, int stepId,
+  private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
       return wdkModel.getStepFactory().getStepById(stepId);
@@ -320,11 +319,11 @@ public class StepAnalysisContext {
     }
   }
   
-  public int getAnalysisId() {
+  public long getAnalysisId() {
     return _analysisId;
   }
   
-  public void setAnalysisId(int analysisId) {
+  public void setAnalysisId(long analysisId) {
     _analysisId = analysisId;
   }
   

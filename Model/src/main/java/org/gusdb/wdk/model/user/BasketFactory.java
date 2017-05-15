@@ -96,7 +96,7 @@ public class BasketFactory {
    */
   public void addToBasket(User user, RecordClass recordClass,
       List<String[]> pkValues) throws WdkModelException  {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -145,9 +145,9 @@ public class BasketFactory {
         if (hasRecord) continue;
 
         // insert new record
-        int basketId = platform.getNextId(dataSource, schema, TABLE_BASKET);
-        psInsert.setInt(1, basketId);
-        psInsert.setInt(2, userId);
+        long basketId = platform.getNextId(dataSource, schema, TABLE_BASKET);
+        psInsert.setLong(1, basketId);
+        psInsert.setLong(2, userId);
         psInsert.setString(3, projectId);
         psInsert.setString(4, rcName);
         for (int i = 0; i < pkValue.length; i++) {
@@ -191,7 +191,7 @@ public class BasketFactory {
 
   public void removeFromBasket(User user, RecordClass recordClass,
       List<String[]> pkValues) throws WdkModelException  {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -241,8 +241,8 @@ public class BasketFactory {
   }
 
   public void clearBasket(User user, RecordClass recordClass)
-      throws SQLException, WdkModelException {
-    int userId = user.getUserId();
+      throws SQLException {
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String sqlDelete = "DELETE FROM " + schema + TABLE_BASKET + " WHERE "
@@ -254,7 +254,7 @@ public class BasketFactory {
     try {
       long start = System.currentTimeMillis();
       psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-      psDelete.setInt(1, userId);
+      psDelete.setLong(1, userId);
       psDelete.setString(2, projectId);
       psDelete.setString(3, rcName);
       psDelete.executeUpdate();
@@ -291,7 +291,7 @@ public class BasketFactory {
     ResultSet rs = null;
     try {
       ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setInt(1, user.getUserId());
+      ps.setLong(1, user.getUserId());
       ps.setString(2, wdkModel.getProjectId());
       rs = ps.executeQuery();
       while (rs.next()) {
@@ -320,7 +320,7 @@ public class BasketFactory {
 
   public int getBasketCounts(User user, List<String[]> records,
       RecordClass recordClass) throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
@@ -384,7 +384,7 @@ public class BasketFactory {
         ps = SqlUtils.getPreparedStatement(ds, sql);
         ps.setFetchSize(100);
         ps.setString(1, wdkModel.getProjectId());
-        ps.setInt(2, user.getUserId());
+        ps.setLong(2, user.getUserId());
         ps.setString(3, recordClass.getFullName());
         rs = ps.executeQuery();
         QueryLogger.logEndStatementExecution(sql,
@@ -547,7 +547,7 @@ public class BasketFactory {
       query.addColumn(column);
     }
     // create params
-    query.addParam(getSignatureParam());
+    query.addParam(Query.getUserParam(wdkModel));
 
     // make sure we create index on primary keys
     query.setIndexColumns(recordClass.getIndexColumns());
@@ -562,32 +562,13 @@ public class BasketFactory {
       sql.append(" AS " + pkColumns[i]);
     }
     sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b, ");
-    sql.append(schema + UserFactory.TABLE_USER + dbLink + " u ");
-    sql.append(" WHERE b." + COLUMN_USER_ID + " = u." + COLUMN_USER_ID);
-    sql.append(" AND u." + UserFactory.COLUMN_SIGNATURE + " = $$"
-        + PARAM_USER_SIGNATURE + "$$ ");
-    sql.append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
-    sql.append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
+    sql.append(" WHERE b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
+    sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
+    sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
     query.setSql(sql.toString());
     querySet.addQuery(query);
     query.excludeResources(projectId);
     return query;
-  }
-
-  private Param getSignatureParam() throws WdkModelException {
-    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(PARAM_USER_SIGNATURE))
-      return paramSet.getParam(PARAM_USER_SIGNATURE);
-
-    StringParam param = new StringParam();
-    param.setName(PARAM_USER_SIGNATURE);
-    param.setAllowEmpty(false);
-    param.setId(PARAM_USER_SIGNATURE);
-    param.setNumber(false);
-    param.setVisible(false);
-    paramSet.addParam(param);
-    param.excludeResources(wdkModel.getProjectId());
-    return param;
   }
 
   /**
@@ -679,9 +660,9 @@ public class BasketFactory {
     reference.excludeResources(wdkModel.getProjectId());
   }
 
-  private void setParams(PreparedStatement ps, int userId, String projectId,
+  private void setParams(PreparedStatement ps, long userId, String projectId,
       String rcName, String[] pkValue) throws SQLException {
-    ps.setInt(1, userId);
+    ps.setLong(1, userId);
     ps.setString(2, projectId);
     ps.setString(3, rcName);
     for (int i = 0; i < pkValue.length; i++) {

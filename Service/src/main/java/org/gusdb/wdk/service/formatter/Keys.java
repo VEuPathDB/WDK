@@ -48,6 +48,8 @@ public class Keys {
   public static final String IS_READ_ONLY = "isReadOnly";
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
+  public static final String IS_REQUIRED = "isRequired";
+  public static final String IS_PUBLIC = "isPublic";
   public static final String USE_BASKET = "useBasket";
   public static final String SCOPES = "scopes";
 
@@ -116,6 +118,7 @@ public class Keys {
   public static final String ASSETS_URL = "assetsUrl";
   public static final String CHANGE_PASSWORD_URL = "changePasswordUrl";
   public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
+  public static final String USER_PROFILE_PROPERTIES = "userProfileProperties";
 
   // authentication keys
   public static final String AUTHENTICATION = "authentication";
@@ -125,21 +128,10 @@ public class Keys {
   public static final String OAUTH_STATE_TOKEN = "oauthStateToken";
 
   // user-specific keys
-  public static final String FIRST_NAME = "firstName";
-  public static final String MIDDLE_NAME = "middleName";
-  public static final String LAST_NAME = "lastName";
   public static final String EMAIL = "email";
-  public static final String TITLE = "title";
-  public static final String DEPARTMENT = "department";
-  public static final String ORGANIZATION = "organization";
-  public static final String ADDRESS = "address";
-  public static final String CITY = "city";
-  public static final String STATE = "state";
-  public static final String COUNTRY = "country";
-  public static final String ZIP_CODE = "zipCode";
-  public static final String PHONE_NUMBER = "phoneNumber";
   public static final String IS_GUEST = "isGuest";
-  public static final String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   public static final String PREFERENCES = "preferences";
+  public static final String GLOBAL = "global";
+  public static final String PROJECT = "project";
 
 }

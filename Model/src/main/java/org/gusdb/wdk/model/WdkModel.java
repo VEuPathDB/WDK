@@ -28,7 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Event;
@@ -41,6 +43,7 @@ import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
@@ -64,6 +67,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
+import org.gusdb.wdk.model.user.GuestUser.SystemUser;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -89,6 +93,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
+  public static final String DB_INSTANCE_ACCOUNT = "ACCT";
 
   public static final String INDENT = "  ";
 
@@ -109,6 +114,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
+  private DatabaseInstance accountDb;
   private UserDatasetStore userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
@@ -261,7 +267,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   private void checkTmpDir() throws WdkModelException {
-    String configuredDir = _modelConfig.getWdkTempDir();
+    checkTmpDir(_modelConfig.getWdkTempDir());
+  }
+
+  public static void checkTmpDir(String configuredDir) throws WdkModelException {
     LOG.info("Checking configured temp dir: " + configuredDir);
     Path wdkTempDir = Paths.get(configuredDir);
     if (Files.exists(wdkTempDir) && Files.isDirectory(wdkTempDir) &&
@@ -600,6 +609,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _modelConfig = modelConfig;
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
+    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
     if (udsConfig != null) userDatasetStore = udsConfig.getUserDatasetStore();
 
@@ -607,6 +617,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
+    accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
@@ -614,9 +625,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    stepAnalysisFactory = (stepAnalysisPlugins == null ?
-        new UnconfiguredStepAnalysisFactory(this) :
-        new StepAnalysisFactoryImpl(this));
     userDatasetFactory = new UserDatasetFactory(this);
 
     // exclude resources that are not used by this project
@@ -634,6 +642,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     // create boolean questions
     createBooleanQuestions();
+
+    // create step analysis factory - wait until the end since it spawns a thread
+    //   that would have to be cleaned up if error occurs during reference resolving)
+    stepAnalysisFactory = (stepAnalysisPlugins == null ?
+        new UnconfiguredStepAnalysisFactory(this) :
+        new StepAnalysisFactoryImpl(this));
+
+    LOG.info("WDK Model configured.");
   }
 
 
@@ -643,6 +659,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
+    releaseDb(accountDb);
     Events.shutDown();
     LOG.info("WDK Model resources released.");
   }
@@ -681,6 +698,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public DatabaseInstance getUserDb() {
     return userDb;
+  }
+
+  public DatabaseInstance getAccountDb() {
+    return accountDb;
   }
 
   public UserFactory getUserFactory() {
@@ -728,20 +749,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * references.
    */
   private void resolveReferences() throws WdkModelException {
-    // Since we use Map here, the order of the sets in allModelSets are
-    // random. However, if QuestionSet is resolved before a RecordSet, and
-    // it goes down to resolve: QuestionSet -> Question -> RecordClass, and
-    // when we try to resolve the RecordClass, a copy of it has been put
-    // into RecordSet yet not being resolved. That means the attribute won't
-    // be compatible since one contains nothing.
-    // Iterator modelSets = allModelSets.values().iterator();
-    // while (modelSets.hasNext()) {
-    // ModelSetI modelSet = (ModelSetI) modelSets.next();
-    // modelSet.resolveReferences(this);
-    // }
 
-    // instead, we first resolve querySets, then recordSets, and then
-    // paramSets, and last on questionSets
+    // NOTE: the order of set resolution matters; this sequence has been well thought out and is important
+
     for (GroupSet groupSet : groupSets.values()) {
       groupSet.resolveReferences(this);
     }
@@ -773,6 +783,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         rootCategoryMap.put(category.getName(), category);
     }
 
+    LOG.info("Loading ontology...");
+    Timer ontologyTime = new Timer();
     // resolve ontology references and determine WDK Categories ontology
     OntologyFactoryImpl ontologyFactory;
     switch (this.ontologyFactoryMap.size()) {
@@ -815,7 +827,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     // comment out to use old categories
     if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
- }
+
+    LOG.info("Total ontology load time: " + ontologyTime.getElapsedString());
+  }
 
   private void excludeResources() throws WdkModelException {
     // decide model name, display name, and version
@@ -1328,7 +1342,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
           contents.append((char) chr);
         }
         fis.close();
-        this.secretKey = UserFactory.md5(contents.toString());
+        this.secretKey = EncryptionUtil.md5(contents.toString());
       }
       return secretKey;
     }
@@ -1341,13 +1355,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return _modelConfig.getUseWeights();
   }
 
-  public User getSystemUser() throws WdkModelException {
+  public User getSystemUser() {
     if (systemUser == null) {
       try {
         // ideally would synchronize on systemUser but cannot sync on null so use lock
         systemUserLock.lock();
         if (systemUser == null) {
-          systemUser = userFactory.createSystemUser();
+          systemUser = new SystemUser(this);
         }
       }
       finally {

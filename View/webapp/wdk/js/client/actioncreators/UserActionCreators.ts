@@ -158,7 +158,7 @@ export let submitProfileForm: ActionCreator<UserUpdateAction|ProfileFormSubmissi
           type: 'user/user-update',
           // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
           // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail'
-          payload: { user: filterOutProps(user, ["confirmEmail"]) as User}
+          payload: { user: filterOutProps(user, ["confirmEmail"]) as User }
         }) as UserUpdateAction);
         return createProfileFormStatusAction('success');
       })
@@ -167,6 +167,31 @@ export let submitProfileForm: ActionCreator<UserUpdateAction|ProfileFormSubmissi
         return createProfileFormStatusAction('error', error.response);
       }));
   };
+};
+
+/** Register user */
+export let submitRegistrationForm = (user: User) => {
+  alert("Submitted!");
+  /*
+  return function run(dispatch, { wdkService }) {
+    dispatch(createProfileFormStatusAction('pending'));
+    let trimmedUser = <User>filterOutProps(user, ["isGuest", "id", "preferences", "confirmEmail"]);
+    return dispatch(wdkService.updateCurrentUser(trimmedUser)
+      .then(() => {
+        // success; update user first, then status in ProfileViewStore
+        dispatch(broadcast({
+          type: 'user/user-update',
+          // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
+          // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail'
+          payload: { user: filterOutProps(user, ["confirmEmail"]) as User}
+        }) as UserUpdateAction);
+        return createProfileFormStatusAction('success');
+      })
+      .catch((error) => {
+        console.error(error.response);
+        return createProfileFormStatusAction('error', error.response);
+      }));
+  };*/
 };
 
 /** Update user profile present in the form (unsaved changes) */

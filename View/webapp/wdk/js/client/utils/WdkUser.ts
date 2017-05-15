@@ -2,12 +2,9 @@ import {AnswerSpec} from './WdkModel';
 
 export interface User {
   id: number;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  organization: string;
   email: string;
   isGuest: boolean;
+  properties: Record<string,string>
 }
 
 export interface UserPreferences {

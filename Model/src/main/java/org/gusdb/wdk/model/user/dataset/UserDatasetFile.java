@@ -11,9 +11,9 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public abstract class UserDatasetFile {
   private Path filePath;
-  private Integer userDatasetId;
+  private Long userDatasetId;
   
-  public UserDatasetFile(Path filePath, Integer userDatasetId) {
+  public UserDatasetFile(Path filePath, Long userDatasetId) {
     this.filePath = filePath;
     this.userDatasetId = userDatasetId;
   }
@@ -60,7 +60,7 @@ public abstract class UserDatasetFile {
    * for use by implementers of getLocalCopy, to 
    * @return
    */
-  protected Integer getUserDatasetId() {
+  protected Long getUserDatasetId() {
     return userDatasetId;
   }
 }

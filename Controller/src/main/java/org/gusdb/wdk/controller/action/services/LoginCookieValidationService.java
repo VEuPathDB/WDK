@@ -4,8 +4,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.wdk.controller.LoginCookieFactory;
-import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
@@ -14,6 +12,8 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.session.LoginCookieFactory;
+import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 import org.json.JSONException;
 import org.json.JSONObject;
 

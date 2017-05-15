@@ -45,7 +45,7 @@ public class FilterSizeCache {
   // Fetches size of a single filter on a single step and populates a
   // FilterSizeGroup with the fetched value.  If value is already present for
   // the filter name, itemNeedsUpdating() returns false and no update will occur.
-  private static class SingleSizeFetcher implements ItemFetcher<Integer, FilterSizeGroup> {
+  private static class SingleSizeFetcher implements ItemFetcher<Long, FilterSizeGroup> {
 
     private final String _filterToFetch;
     private final WdkModel _wdkModel;
@@ -56,13 +56,13 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup fetchItem(Integer id) throws UnfetchableItemException {
+    public FilterSizeGroup fetchItem(Long id) throws UnfetchableItemException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
       return updateItem(id, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup updateItem(Integer id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup updateItem(Long id, FilterSizeGroup previousVersion)
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
@@ -83,7 +83,7 @@ public class FilterSizeCache {
     }
   }
 
-  public static class AllSizesFetcher implements ItemFetcher<Integer, FilterSizeGroup> {
+  public static class AllSizesFetcher implements ItemFetcher<Long, FilterSizeGroup> {
 
     protected final WdkModel _wdkModel;
 
@@ -92,13 +92,13 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup fetchItem(Integer id) throws UnfetchableItemException {
+    public FilterSizeGroup fetchItem(Long id) throws UnfetchableItemException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
       return updateItem(id, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup updateItem(Integer id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup updateItem(Long id, FilterSizeGroup previousVersion)
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
@@ -119,7 +119,7 @@ public class FilterSizeCache {
     }
   }
 
-  private final ItemCache<Integer, FilterSizeGroup> _cache = new ItemCache<>();
+  private final ItemCache<Long, FilterSizeGroup> _cache = new ItemCache<>();
 
   public FilterSizeCache() {
     subscribeToEvents();
@@ -139,20 +139,20 @@ public class FilterSizeCache {
       @Override
       public void eventTriggered(Event event) throws Exception {
         if (event instanceof StepRevisedEvent) {
-          int stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
+          long stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
           LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
           _cache.expireCachedItems(stepId);
         }
         else if (event instanceof StepResultsModifiedEvent) {
-          List<Integer> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
+          List<Long> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
           LOG.info("Notification of steps modification, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
-          _cache.expireCachedItems(stepIds.toArray(new Integer[stepIds.size()]));
+          _cache.expireCachedItems(stepIds.toArray(new Long[stepIds.size()]));
         }
       }
     }, StepRevisedEvent.class, StepResultsModifiedEvent.class);
   }
 
-  public int getFilterSize(int stepId, String filterName, WdkModel wdkModel)
+  public int getFilterSize(long stepId, String filterName, WdkModel wdkModel)
       throws WdkModelException, WdkUserException {
     LOG.debug("getFilterSize:  filterName : " + filterName +" and stepID: " + stepId);
     try {
@@ -164,7 +164,7 @@ public class FilterSizeCache {
   }
 
   @SuppressWarnings("unchecked")
-  public Map<String, Integer> getFilterSizes(int stepId, AllSizesFetcher fetcher)
+  public Map<String, Integer> getFilterSizes(long stepId, AllSizesFetcher fetcher)
       throws WdkModelException, WdkUserException {
     try {
       return _cache.getItem(stepId, fetcher).sizeMap;

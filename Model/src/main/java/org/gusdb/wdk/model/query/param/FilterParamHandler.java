@@ -9,8 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -135,7 +135,7 @@ public class FilterParamHandler extends AbstractParamHandler {
       }
 
       Arrays.sort(terms);
-      return Utilities.encrypt(Arrays.toString(terms));
+      return EncryptionUtil.encrypt(Arrays.toString(terms));
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
