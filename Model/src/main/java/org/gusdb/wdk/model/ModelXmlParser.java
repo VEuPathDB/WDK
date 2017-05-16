@@ -1013,6 +1013,8 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/filterSet/stepFilter/display", "setText", 0);
     configureNode(digester, "wdkModel/filterSet/stepFilter/description", WdkModelText.class, "addDescription");
     digester.addCallMethod("wdkModel/filterSet/stepFilter/description", "setText", 0);
+    configureNode(digester, "wdkModel/filterSet/stepFilter/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("wdkModel/filterSet/stepFilter/property", "setText", 0);
 
     // load column filter
     configureNode(digester, "wdkModel/filterSet/columnFilter", ColumnFilterDefinition.class, "addColumnFilter");
