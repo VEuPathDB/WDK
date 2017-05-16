@@ -10,8 +10,15 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -31,8 +38,10 @@ import org.gusdb.wdk.service.request.answer.AnswerSpec;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 
 /**
  * <p>JSON input format:</p>
@@ -106,6 +115,21 @@ public class AnswerService extends WdkService {
       throw new BadRequestException(e);
     }
   }
+  
+  @POST
+  @Path("filter/{filterName}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
+   	JSONObject requestJson = new JSONObject(body);
+    JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
+    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser());
+    AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
+    JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
+    return Response.ok(filterSummaryJson.toString()).build();
+  }
+  
+
 
   /**
    * Returns configured reporter based on passed answer value and formatting JSON

@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
@@ -82,4 +84,10 @@ public abstract class AbstractFilter implements Filter {
   public void setIsAlwaysApplied(boolean isAlwaysApplied) {
     _isAlwaysApplied = isAlwaysApplied;
   }
+  
+  @Override
+  public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException {
+    return null;	  
+  }
+
 }
