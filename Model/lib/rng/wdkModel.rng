@@ -1677,6 +1677,9 @@
   <define name="stepFilter">
     <element name="stepFilter">
       <ref name="filterBaseContent" />
+      <zeroOrMore>
+        <ref name="property" />
+      </zeroOrMore>
     </element>
   </define>
 
