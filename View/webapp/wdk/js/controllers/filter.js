@@ -56,6 +56,7 @@ wdk.namespace("window.wdk.filter", function(ns, $) {
     this.initialize = function() {
       this.addShowHide();
       this.displayFilters();
+      $el.trigger('filterloaded.wdk');
 
       $el.on('click', 'a.link-url', function changeFilter(event) {
         var $target = $(event.currentTarget);
