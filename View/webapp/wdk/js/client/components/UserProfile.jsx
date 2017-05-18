@@ -52,6 +52,7 @@ class UserProfile extends React.Component {
     this.onConfirmEmailChange = this.onConfirmEmailChange.bind(this);
     this.onEmailFieldChange = this.onEmailFieldChange.bind(this);
     this.onPropertyChange = this.onPropertyChange.bind(this);
+    this.onPreferenceChange = this.onPreferenceChange.bind(this);
     this.saveProfile = this.saveProfile.bind(this);
   }
 
@@ -70,7 +71,6 @@ class UserProfile extends React.Component {
                              onConfirmEmailChange={this.onConfirmEmailChange}
                              onPropertyChange={this.onPropertyChange}
                              onPreferenceChange={this.onPreferenceChange}
-                             onFormStateChange={this.props.userEvents.updateProfileForm}
                              saveProfile={this.saveProfile}
                              wdkConfig={this.props.globalData.config}/>
           </div>
@@ -130,7 +130,8 @@ class UserProfile extends React.Component {
   }
 
   /**
-   * Triggered by onChange handler of TextBox of type text.  Returns user with state change incorporated.
+   * Returns an onChange handler that should be triggered by a form element
+   * that updates a user property.
    * @param field - name of user attribute being changed
    * @returns {*}
    */
@@ -144,9 +145,22 @@ class UserProfile extends React.Component {
   }
 
   /**
-   * Triggered by onSubmit handler of the user profile/account form.  Verifies again that the email and re-typed version match. Then
-   * checks the validity of all other inputs using HTML5 validity methods.  If all verifications pass, the re-typed email attribute is
-   * removed from the user object (as it was only introduced as a check of user typing) and the user object is saved.
+   * Should be triggered by a form element that updates user preferences.
+   * Updates user data with state changes incorporated.
+   * @param newPreferences - updated preferences
+   * @returns {*}
+   */
+  onPreferenceChange(newPreferences) {
+    let updatedUserData = Object.assign({}, this.props.userFormData, { preferences: newPreferences });
+    this.props.userEvents.updateProfileForm(updatedUserData);
+  }
+
+  /**
+   * Triggered by onSubmit handler of the user profile/account form.  Verifies
+   * again that the email and re-typed version match. Then checks the validity
+   * of all other inputs using HTML5 validity methods.  If all verifications
+   * pass, the re-typed email attribute is removed from the user object (as it
+   * was only introduced as a check of user typing) and the user object is saved.
    * @param event
    */
   saveProfile(event) {
@@ -164,7 +178,6 @@ class UserProfile extends React.Component {
       this.props.userEvents.submitProfileForm(this.props.userFormData);
     }
   }
-
 }
 
 UserProfile.propTypes = {

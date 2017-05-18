@@ -7,12 +7,13 @@ import { User, UserPreferences } from "../utils/WdkUser";
 
 type Action = ProfileFormUpdateAction | ProfileFormSubmissionStatusAction;
 
+export type UserProfileFormData = User & {
+  confirmEmail?: string;
+  preferences?: UserPreferences;
+};
+
 export type State = BaseState & {
-  userFormData?: User & {
-    confirmEmail?: string;
-    preferences?: UserPreferences;
-  };
-  
+  userFormData?: UserProfileFormData;
   formStatus: 'new' | 'modified' | 'pending' | 'success' | 'error';
   errorMessage?: string;
 }

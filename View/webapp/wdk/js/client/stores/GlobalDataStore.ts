@@ -5,11 +5,11 @@
 import { Location } from 'history';
 import { ReduceStore } from 'flux/utils';
 import {StaticDataAction, AllDataAction, StaticData} from '../actioncreators/StaticDataActionCreators';
-import { UserUpdateAction, PreferenceUpdateAction } from '../actioncreators/UserActionCreators';
+import { UserUpdateAction, PreferenceUpdateAction, PreferencesUpdateAction } from '../actioncreators/UserActionCreators';
 import { LocationAction } from '../actioncreators/RouterActionCreators';
 
-type UserAction = UserUpdateAction | PreferenceUpdateAction
-type RouterAction = LocationAction
+type UserAction = UserUpdateAction | PreferenceUpdateAction | PreferencesUpdateAction;
+type RouterAction = LocationAction;
 type Action = AllDataAction | StaticDataAction | UserAction | RouterAction;
 
 export type GlobalData = StaticData & {
@@ -51,9 +51,15 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
 
       case 'user/preference-update':
         // incorporate new preference values into existing preference object
-        let preferences = { ...state.preferences, ...action.payload };
+        let combinedPrefs = { ...state.preferences, ...action.payload };
         // treat preference object as if it has just been loaded (with new values present)
-        return this.handleAction({ ...state, preferences }, action);
+        return this.handleAction({ ...state, combinedPrefs }, action);
+
+      case 'user/preferences-update':
+        // replace existing preference object with new preference values
+        let replacementPrefs = { ...action.payload };
+        // treat preference object as if it has just been loaded (with new values present)
+        return this.handleAction({ ...state, replacementPrefs }, action);
 
       default:
         return this.handleAction(state, action);

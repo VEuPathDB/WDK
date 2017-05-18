@@ -11,16 +11,18 @@ import { wrappable } from '../utils/componentUtils';
  * @constructor
  */
 const UserAccountForm = (props) => {
-  let { config, user, onPropertyChange, onEmailChange, onConfirmEmailChange, disableSubmit, saveProfile } = props;
+  let { wdkConfig, user, onPropertyChange, onPreferenceChange, onEmailChange,
+      onConfirmEmailChange, disableSubmit, saveProfile } = props;
   return(
     <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
       <p><i className="fa fa-asterisk"></i> = required</p>
-      <UserIdentity user={user} onEmailChange={onEmailChange} onConfirmEmailChange={onTextChange}
-          onPropertyChange={onPropertyChange} propDefs={config.userProfileProperties}/>
+      <UserIdentity user={user} onEmailChange={onEmailChange} onConfirmEmailChange={onConfirmEmailChange}
+          onPropertyChange={onPropertyChange} propDefs={wdkConfig.userProfileProperties}/>
       <br />
-      <UserPassword user={user} wdkConfig={props.wdkConfig} />
+      <UserPassword user={user} wdkConfig={wdkConfig} />
       <br />
-      <ApplicationSpecificProperties user={user} onPropertyChange={onPropertyChange} propDefs={config.userProfileProperties} />
+      <ApplicationSpecificProperties user={user} onPropertyChange={onPropertyChange}
+          propDefs={wdkConfig.userProfileProperties} onPreferenceChange={onPreferenceChange}/>
       <div>
         <input type="submit" value="Save" disabled={disableSubmit} />
       </div>
@@ -33,14 +35,20 @@ UserAccountForm.propTypes = {
   /** The user object to be modified */
   user: PropTypes.object.isRequired,
 
-  /** The on change handler for email text box inputs */
+  /** Indicates whether submit button should be enabled/disabled */
+  disableSubmit: PropTypes.bool.isRequired,
+
+  /** The on change handler for the email text box */
   onEmailChange:  PropTypes.func.isRequired,
 
-  /** The on change handler for text box inputs */
-  onTextChange: PropTypes.func.isRequired,
+  /** The on change handler for the confirm email text box */
+  onConfirmEmailChange: PropTypes.func.isRequired,
 
-  /** Indicates that submit button should be enabled/disabled */
-  disableSubmit:  PropTypes.bool.isRequired,
+  /** Creates on change handlers for property inputs */
+  onPropertyChange: PropTypes.func.isRequired,
+
+  /** The on change handler for preference changes */
+  onPreferenceChange: PropTypes.func.isRequired,
 
   /** The on submit handler for the form */
   saveProfile:  PropTypes.func.isRequired,

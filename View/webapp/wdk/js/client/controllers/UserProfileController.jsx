@@ -15,7 +15,7 @@ class UserProfileController extends WdkViewController {
 
   isRenderDataLoaded() {
     return (this.state.userFormData != null &&
-            this.state.userPreferenceData != null &&
+            this.state.userFormData.preferences != null &&
             this.state.globalData.config != null);
   }
 
