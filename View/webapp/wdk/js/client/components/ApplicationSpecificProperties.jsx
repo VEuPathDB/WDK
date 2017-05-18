@@ -18,7 +18,10 @@ ApplicationSpecificProperties.propTypes = {
   onPropertyChange:  PropTypes.func.isRequired,
 
   /** An array of the user properties configured in WDK model */
-  propDefs: PropTypes.array.isRequired
+  propDefs: PropTypes.array.isRequired,
+
+  /** The on change handler for preference changes */
+  onPreferenceChange: PropTypes.func.isRequired
 };
 
 export default wrappable(ApplicationSpecificProperties);

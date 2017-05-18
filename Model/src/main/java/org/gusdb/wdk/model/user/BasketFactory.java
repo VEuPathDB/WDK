@@ -24,9 +24,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
@@ -64,9 +62,6 @@ public class BasketFactory {
   private WdkModel wdkModel;
   private String schema;
 
-  /**
-     * 
-     */
   public BasketFactory(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
     this.schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
