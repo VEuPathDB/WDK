@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerDetails;
 import org.gusdb.wdk.service.request.answer.AnswerSpec;
 import org.gusdb.wdk.service.request.answer.SortItem;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 
 public class AnswerValueFactory {
 
@@ -20,7 +21,7 @@ public class AnswerValueFactory {
     _user = user;
   }
 
-  public AnswerValue createFromAnswerSpec(AnswerSpec request) throws WdkModelException {
+  public AnswerValue createFromAnswerSpec(AnswerSpec request) throws WdkModelException, DataValidationException {
     try {
       // FIXME: looks like index starts at 1 and end index is inclusive;
       //   would much rather see 0-based start and have end index be exclusive
@@ -33,7 +34,7 @@ public class AnswerValueFactory {
       return answerValue;
     }
     catch (WdkUserException e) {
-      throw new WdkModelException(e);
+      throw new DataValidationException(e.formatErrors(),e);
     }
   }
 
