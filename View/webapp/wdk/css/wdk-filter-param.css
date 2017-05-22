@@ -96,9 +96,12 @@
   -o-transform-origin: 0;
   transform-origin: 0;
 }
-.filter-param .filters {
+.filter-param .filters, .filter-param .filters-server-side {
   position: relative;
   min-height: 36em;
+}
+.filter-param .filters-server-side {
+  border: 1px solid #999;
 }
 .filter-param .filters .field-list,
 .filter-param .filters .field-detail {
