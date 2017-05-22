@@ -31,7 +31,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
     JSONObject pJson = super.getJson();
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
     pJson.put(Keys.VOCABULARY, getVocabJson(vocabInstance));
-    pJson.put("metaData", getMetaDataJson(user, dependedParamValues));
+    // pJson.put("metaData", getMetaDataJson(user, dependedParamValues));
     pJson.put("metaDataSpec", getMetaDataSpecJson(user, dependedParamValues));
     return pJson;
   }
