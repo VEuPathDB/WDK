@@ -241,6 +241,8 @@
       <oneOrMore>
         <choice>
           <ref name="stringParam" />
+          <ref name="numberParam" />
+          <ref name="dateParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
           <ref name="filterParam" />
@@ -337,6 +339,78 @@
       <optional>
         <attribute name="multiLine">
           <data type="boolean" />
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="ParamBaseTags" />
+          <element name="regex">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="suggest">
+            <ref name="SuggestContent" />
+            <optional>
+              <attribute name="default" />
+            </optional>
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="numberParam">
+    <element name="numberParam">
+      <ref name="ParamBaseProperties" />
+      <optional>
+        <attribute name="integer">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="min">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="max">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="numDecimalPlaces">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="ParamBaseTags" />
+          <element name="regex">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="suggest">
+            <ref name="SuggestContent" />
+            <optional>
+              <attribute name="default" />
+            </optional>
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="dateParam">
+    <element name="dateParam">
+      <ref name="ParamBaseProperties" />
+      <optional>
+        <attribute name="minDate">
+          <data type="string" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="maxDate">
+          <data type="string" />
         </attribute>
       </optional>
       <zeroOrMore>

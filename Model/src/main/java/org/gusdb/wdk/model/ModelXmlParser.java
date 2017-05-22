@@ -62,6 +62,7 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DatasetParamSuggestion;
+import org.gusdb.wdk.model.query.param.DateParam;
 import org.gusdb.wdk.model.query.param.EnumItem;
 import org.gusdb.wdk.model.query.param.EnumItemList;
 import org.gusdb.wdk.model.query.param.EnumParam;
@@ -69,6 +70,7 @@ import org.gusdb.wdk.model.query.param.EnumParamSuggestion;
 import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamConfiguration;
 import org.gusdb.wdk.model.query.param.ParamHandlerReference;
@@ -748,6 +750,20 @@ public class ModelXmlParser extends XmlParser {
     // string param
     String path = "wdkModel/paramSet/stringParam";
     configureNode(digester, path, StringParam.class, "addParam");
+    configureParamContent(digester, path, ParamSuggestion.class);
+    configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
+    digester.addCallMethod(path + "/regex", "setText", 0);
+    
+    // number param
+    path = "wdkModel/paramSet/numberParam";
+    configureNode(digester, path, NumberParam.class, "addParam");
+    configureParamContent(digester, path, ParamSuggestion.class);
+    configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
+    digester.addCallMethod(path + "/regex", "setText", 0);
+    
+    // date param
+    path = "wdkModel/paramSet/dateParam";
+    configureNode(digester, path, DateParam.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
