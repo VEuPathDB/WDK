@@ -46,13 +46,19 @@ export interface Question extends ModelEntity {
   stepAnalysisPlugins: string[];
 }
 
+export type ParameterValue = string | object;
+
+export type ParameterValues = Record<string, ParameterValue>;
+
+export type OntologyTermSummary = Record<string, { filtered: number, unfiltered: number }>;
+
 export interface QuestionParameter extends ModelEntity {
   help: string;
   type: string;
   isVisible: boolean;
   group: string;
   isReadOnly: boolean;
-  defaultValue: string;
+  defaultValue: ParameterValue;
 }
 
 export interface AttributeField extends ModelEntity {

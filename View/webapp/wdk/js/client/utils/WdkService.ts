@@ -15,10 +15,13 @@ import {
   AnswerFormatting,
   PrimaryKey,
   Question,
+  ParameterValue,
+  ParameterValues,
   RecordClass,
   RecordInstance,
   UserDataset,
-  UserDatasetMeta
+  UserDatasetMeta,
+  OntologyTermSummary
 } from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
@@ -193,6 +196,29 @@ export default class WdkService {
 
   getQuestionAndParameters(identifier: string) {
     return this._fetchJson<Question>('get', `/question/${identifier}?expandParams=true`);
+  }
+
+  getQuestionParamValues(identifier: string, paramName: string, paramValue: ParameterValue, paramValues: ParameterValues) {
+    return this._fetchJson<ParameterValues>(
+      'post',
+      `/question/${identifier}/refreshedDependentParams`,
+      JSON.stringify({
+        changedParam: { name: paramName, value: paramValue },
+        contextParamValues: paramValues
+      })
+    );
+  }
+
+  getOntologyTermSummary(identifier: string, paramName: string, paramValue: any, ontologyId: string, paramValues: ParameterValues) {
+    return this._fetchJson<OntologyTermSummary>(
+      'post',
+      `/question/${identifier}/${paramName}/ontologyTermSummary`,
+      JSON.stringify({
+        ontologyId,
+        filters: paramValue.filters,
+        contextParamValues: paramValues
+      })
+    );
   }
 
   /**
