@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { lazy } from '../utils/componentUtils';
+import { lazy } from '../../utils/componentUtils';
 import {
   debounce,
   find,
@@ -18,12 +18,12 @@ import {
   throttle
 } from 'lodash';
 import React from 'react';
-import { preorderSeq } from '../utils/TreeUtils';
+import { preorderSeq } from '../../utils/TreeUtils';
 import { findDOMNode } from 'react-dom';
-import Loading from './Loading';
-import Tooltip from './Tooltip';
-import Dialog from './Dialog';
-import CheckboxTree from './CheckboxTree';
+import Loading from '../Loading';
+import Tooltip from '../Tooltip';
+import Dialog from '../Dialog';
+import CheckboxTree from '../CheckboxTree';
 
 var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 
@@ -494,7 +494,7 @@ var FilteredData = (function() {
 /**
  * Primary component
  */
-class AttributeFilter extends React.Component {
+export class AttributeFilter extends React.Component {
 
   constructor(props) {
     super(props);
@@ -735,7 +735,124 @@ AttributeFilter.defaultProps = {
   collapsible: true
 };
 
+/**
+ * Filtering UI for server-side filtering.
+ */
+export class ServerSideAttributeFilter extends React.Component {
 
+  constructor(props) {
+    super(props);
+    this.handleSelectFieldClick = this.handleSelectFieldClick.bind(this);
+    this.handleFieldsChange = this.handleFieldsChange.bind(this);
+    this.handleFilterRemove = this.handleFilterRemove.bind(this);
+    this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
+    this.shouldAddFilter = this.shouldAddFilter.bind(this);
+  }
+
+  handleSelectFieldClick(field, event) {
+    event.preventDefault();
+    this.props.onActiveFieldChange(field);
+  }
+
+  handleFieldsChange(fields) {
+    this.props.onColumnsChange(fields);
+  }
+
+  handleFilterRemove(filter) {
+    let filters = this.props.filters.filter(f => f !== filter);
+    this.props.onFiltersChange(filters);
+  }
+
+  handleFieldFilterChange(field, values) {
+    let filters = this.props.filters.filter(f => f.field.term !== field.term);
+    this.props.onFiltersChange(this.shouldAddFilter(field, values)
+      ? filters.concat({ field, values })
+      : filters
+    );
+  }
+
+  shouldAddFilter(field, values) {
+    return field.type === 'string' ? values.length !== this.props.activeFieldSummary.length
+         : field.type === 'number' ? values.min != null || values.max != null
+         : field.type === 'date' ? values.min != null || values.max != null
+         : false;
+  }
+
+  render() {
+    var {
+      dataCount,
+      filteredDataCount,
+      fields,
+      filters,
+      invalidFilters,
+      activeField,
+      activeFieldSummary
+    } = this.props;
+
+    var displayName = this.props.displayName;
+    var selectedFilter = find(filters, filter => {
+      return filter.field.term === result(activeField, 'term');
+    });
+
+    return (
+      <div>
+        <FilterList
+          onFilterSelect={this.props.onActiveFieldChange}
+          onFilterRemove={this.handleFilterRemove}
+          filters={filters}
+          filteredDataCount={filteredDataCount}
+          dataCount={dataCount}
+          selectedField={activeField}/>
+
+        <InvalidFilterList filters={invalidFilters}/>
+
+        {/* Main selection UI */}
+        <div className="filters ui-helper-clearfix">
+          <FieldList
+            fieldTree={fields}
+            onFieldSelect={this.props.onActiveFieldChange}
+            selectedField={activeField}
+          />
+
+          <FieldFilter
+            displayName={displayName}
+            field={activeField}
+            filter={selectedFilter}
+            distribution={activeFieldSummary}
+            onChange={this.handleFieldFilterChange}
+          />
+        </div>
+      </div>
+    );
+  }
+
+}
+
+ServerSideAttributeFilter.propTypes = {
+
+  displayName: PropTypes.string,
+
+  // state
+  fields: PropTypes.array.isRequired, // tree nodes
+  filters: PropTypes.array.isRequired,
+  dataCount: PropTypes.number.isRequired,
+  filteredDataCount: PropTypes.number.isRequired,
+  activeField: PropTypes.object,
+  activeFieldSummary: PropTypes.array,
+
+  // not sure if these belong here
+  isLoading: PropTypes.bool,
+  invalidFilters: PropTypes.array,  // derivable?
+
+  // event handlers
+  onActiveFieldChange: PropTypes.func.isRequired,
+  onFiltersChange: PropTypes.func.isRequired
+
+};
+
+ServerSideAttributeFilter.defaultProps = {
+  displayName: 'Items'
+};
 
 function InvalidFilterList(props) {
   var { filters } = props;
@@ -1637,5 +1754,3 @@ function getFilterDisplay({ field, values }) {
     default: return JSON.stringify(values);
   }
 }
-
-export default AttributeFilter;
