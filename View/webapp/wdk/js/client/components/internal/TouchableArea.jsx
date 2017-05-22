@@ -1,5 +1,5 @@
 import React from 'react';
-import { wrappable } from '../utils/componentUtils';
+import { wrappable } from '../../utils/componentUtils';
 
 class TouchableArea extends React.Component {
 
