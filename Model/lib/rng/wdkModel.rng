@@ -242,6 +242,7 @@
         <choice>
           <ref name="stringParam" />
           <ref name="numberParam" />
+          <ref name="numberRangeParam" />
           <ref name="dateParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
@@ -361,6 +362,47 @@
   
   <define name="numberParam">
     <element name="numberParam">
+      <ref name="ParamBaseProperties" />
+      <optional>
+        <attribute name="integer">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="min">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="max">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="numDecimalPlaces">
+          <data type="integer" />
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="ParamBaseTags" />
+          <element name="regex">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="suggest">
+            <ref name="SuggestContent" />
+            <optional>
+              <attribute name="default" />
+            </optional>
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="numberRangeParam">
+    <element name="numberRangeParam">
       <ref name="ParamBaseProperties" />
       <optional>
         <attribute name="integer">

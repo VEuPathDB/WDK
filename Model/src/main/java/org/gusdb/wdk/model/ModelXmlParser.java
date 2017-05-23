@@ -71,6 +71,7 @@ import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.NumberParam;
+import org.gusdb.wdk.model.query.param.NumberRangeParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamConfiguration;
 import org.gusdb.wdk.model.query.param.ParamHandlerReference;
@@ -757,6 +758,13 @@ public class ModelXmlParser extends XmlParser {
     // number param
     path = "wdkModel/paramSet/numberParam";
     configureNode(digester, path, NumberParam.class, "addParam");
+    configureParamContent(digester, path, ParamSuggestion.class);
+    configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
+    digester.addCallMethod(path + "/regex", "setText", 0);
+    
+    // number range param
+    path = "wdkModel/paramSet/numberRangeParam";
+    configureNode(digester, path, NumberRangeParam.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
