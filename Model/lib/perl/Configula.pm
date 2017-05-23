@@ -58,9 +58,7 @@ my %dblinkMap = (
 =head2 new
 
   use WDK::Model::Configula;
-  my $wmc = WDK::Model::Configula->new({
-    'modelName' => 'apiCommonModel',
-  });
+  my $wmc = WDK::Model::Configula->new();
 
 =cut
 sub new {
@@ -68,8 +66,6 @@ sub new {
 
     my $self = {};
     bless $self;
-
-    my $modelName = $opts->{'modelName'};
 
     my (
       $appDb_login,
@@ -95,13 +91,6 @@ sub new {
     my $webapp = basename(readlink $site_symlink);
     my ($webapp_nover) = $webapp =~ m/(^[a-zA-Z_]+)/;
 
-    # read for product version number. Use the source because it may not
-    # yet be present at the dest (e.g. if --usemap is specified but no map data found)
-    my $wdk_model_xml = "$gus_home/lib/wdk/${modelName}.xml";
-    my %build_numbers = $self->build_numbers($wdk_model_xml);
-    my %site_versions = $self->site_versions($wdk_model_xml);
-
-
     my $userDb_login = 'uga_fed';
 
     $self->{'g_skip_db_test'} = $g_skip_db_test;
@@ -123,9 +112,6 @@ sub new {
     $self->{'site_etc'} = $site_etc;
     $self->{'wdk_config_dir'} = $wdk_config_dir;
     $self->{'wdk_product_config_dir'} = $wdk_product_config_dir;
-    $self->{'wdk_model_xml'} = $wdk_model_xml;
-    $self->{'site_version'} = $site_versions{$self->{'product'}};
-    $self->{'build_number'} = $build_numbers{$self->{'product'}};
     $self->{'common_webservices_dir'} = (-e "/var/www/Common/prodSiteFilesMirror") ?
                                         "Common/prodSiteFilesMirror/webServices" :
                                         "Common/devSiteFilesMirror/webServices";
@@ -207,16 +193,6 @@ sub sanity_check {
       $self->testDbConnection($self->{'appDb_login'}, $self->{'appDb_password'}, $self->{'appDb_database'});
       $self->testDbConnection($self->{'userDb_login'}, $self->{'userDb_password'}, $self->{'userDb_database'});
     }
-
-
-#      if (! -d $self->{'webservice_files_mirror'}) {
-#        warn "\nWARN: '$self->{'webservice_files_mirror'}' does not exist\n\n";
-#      } elsif (! -d $self->{'rls_webservice_data_dir'}) {
-#        warn "\nWARN: '$self->{'rls_webservice_data_dir'}' does not exist. \n" .
-#           "  Check that buildNumber '$self->{'build_number'}' in \n".
-#           "  '$self->{'wdk_model_xml'}'\n" .
-#           "  matches build-N directory.\n\n";
-#      }
 }
 
 =head2 do_configure
@@ -386,7 +362,6 @@ sub webapp_domain_map {
   my ($self) = @_;
   return {
       'amoeba'    => 'amoebadb.org',
-      'ce'        => 'clinepidb.org',
       'cryptodb'  => 'cryptodb.org',
       'eupathdb'  => 'eupathdb.org',
       'fungidb'   => 'fungidb.org',
@@ -414,59 +389,6 @@ sub webapp_from_domain {
   my $map = webapp_domain_map();
   my %revmap = reverse %$map;
   return $revmap{lc $domain};
-}
-
-sub site_versions {
-  my($self, $wdk_model_xml) = @_;
-  my %site_versions;
-  my $acm = new XML::Twig(
-      keep_spaces => 1,
-      PrettyPrint => 'nice',
-      keep_atts_order => 1,
-      TwigHandlers => {
-        'constant[@name="releaseVersion"]'  => sub {
-           $site_versions{$_[1]->att("includeProjects")} = $_[1]->text;
-         },
-      }
-  );
-  $acm->parsefile("$wdk_model_xml");
-  return %site_versions;
-}
-
-# The buildNumber settings can be defined in aggregate as includeProjects
-#  <constant name="buildNumber" includeProjects="PiroplasmaDB,TriTrypDB,TrichDB,ToxoDB,PlasmoDB,MicrosporidiaDB,AmoebaDB,CryptoDB,EuPathDB,GiardiaDB">16</constant>
-#  <constant name="buildNumber" includeProjects="FungiDB">4</constant>
-#  <constant name="buildNumber" includeProjects="InitDB">0</constant>
-# So have to iterate.
-sub build_numbers {
-  my($self, $wdk_model_xml) = @_;
-  my %aggregate_build_numbers;
-  my %build_numbers;
-  my $acm = new XML::Twig(
-      keep_spaces => 1,
-      PrettyPrint => 'nice',
-      keep_atts_order => 1,
-      TwigHandlers => {
-        'constant[@name="buildNumber"]'  => sub {
-           $aggregate_build_numbers{$_[1]->att("includeProjects")} = $_[1]->text;
-         },
-      }
-  );
-  $acm->parsefile("$wdk_model_xml");
-
-  # We now have a hash like
-  #    'PiroplasmaDB,TriTrypDB,TrichDB,ToxoDB' => 15,
-  #    'FungiDB' => 4,
-  # Split the keys on commas.
-  for my $projects_included (keys %aggregate_build_numbers) {
-      #  $projects_included == 'PiroplasmaDB,TriTrypDB,TrichDB,ToxoDB'
-      my @include_projects = split(',', $projects_included);
-      for my $project (@include_projects) {
-          $build_numbers{$project} = $aggregate_build_numbers{$projects_included};
-      }
-  }
-
-  return %build_numbers;
 }
 
 sub testDbConnection {

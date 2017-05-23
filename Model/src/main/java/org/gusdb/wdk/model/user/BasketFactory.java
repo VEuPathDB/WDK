@@ -614,7 +614,7 @@ public class BasketFactory {
     // case clause works for both Oracle & PostreSQL
     sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ");
     sql.append(" AS " + BASKET_ATTRIBUTE);
-    sql.append(" FROM (##WDK_ID_SQL##) i ");
+    sql.append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ");
     sql.append(" LEFT JOIN " + schema + TABLE_BASKET + dbLink + " b ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append((i == 0) ? " ON " : " AND ");

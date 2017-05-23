@@ -5,7 +5,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.DateParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
@@ -38,6 +40,12 @@ public class ParamBeanFactory {
     else if (param instanceof StringParam) {
       bean = (ParamBean<T>) new StringParamBean((StringParam)param);
     }
+    else if (param instanceof NumberParam) {
+      bean = (ParamBean<T>) new NumberParamBean((NumberParam)param);
+    }
+    else if (param instanceof DateParam) {
+        bean = (ParamBean<T>) new DateParamBean((DateParam)param);
+      }
     else {
       throw new WdkModelException("Unknown param type: " + param.getClass().getCanonicalName());
     }
