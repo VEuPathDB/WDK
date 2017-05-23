@@ -20,7 +20,7 @@ import org.json.JSONObject;
  * The DateRangeParam is strictly a web service parameter
  * 
  * 
- *         raw value: a stringified json object containing a min and max date,
+ *         raw value: a stringified json object containing a min and a max date,
  *         both in iso1806 format (yyyy-mm-dd);
  * 
  *         stable value: same as raw value;
@@ -73,8 +73,8 @@ public class DateRangeParam extends Param {
   }
 
   /**
-   * Setter for min date that includes a check to insure that the
-   * model's min date is in proper format
+   * Setter for minimum allowed date that includes a check to insure that the
+   * model's minimum allowed date is in proper format
    * @param minDate
    * @throws WdkModelException
    */
@@ -95,8 +95,8 @@ public class DateRangeParam extends Param {
   }
 
   /**
-   * Setter for max date that includes a check to insure that the
-   * model's max date is in proper format
+   * Setter for maximum allowed date that includes a check to insure that the
+   * model's maximum allowed date is in proper format
    * @param maxDate
    * @throws WdkModelException
    */
@@ -130,6 +130,7 @@ public class DateRangeParam extends Param {
     super.resolveReferences(model);
     if (regex == null)
       regex = model.getModelConfig().getParamRegex();
+    // The default regex is just a date string expressed in iso1806 format
     if (regex == null) {
       regex = "\\d{4}-\\d{2}-\\d{2}";
     }
@@ -178,7 +179,8 @@ public class DateRangeParam extends Param {
 	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
 	}
 	  
-	// Validate each value in the range against regex.
+	// Validate each value in the range against regex.  The regex could potentially be
+	// more restrictive than LocalDate.
 	if(regex != null) {
      if(!stableValueJson.getString("min").matches(regex)) {
        throw new WdkUserException("value '" + stableValueJson.getString("min") + "' is invalid. " +
@@ -190,18 +192,19 @@ public class DateRangeParam extends Param {
       }
 	}
 	
+	// Insure that the minimum date comes earlier than the maximum date.
 	if(!values[0].isBefore(values[1])) {
 	  throw new WdkUserException("The minimum date '" + values[0] + "' should " +
 	    "come before the maximum date '" + values[1] + "'");
 	}
 
-    // Check minimum allowed date
+    // Insure that the minimum date comes no earlier than the minimum allowed date
     if(this.minDate != null &&
      values[0].isBefore(LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE))) {
    	  throw new WdkUserException("The date '" + values[0] + "' should not be earlier than '" + this.minDate + "'");
     }
     
-    // Check maximum allowed date
+    // Insure that the maximum data comes no earlier than the maximum allowed date
     if(this.maxDate != null && 
      values[1].isAfter(LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE))) {
       throw new WdkUserException("The date '" + values[1] + "' should not be after '" + this.maxDate + "'");
@@ -211,7 +214,9 @@ public class DateRangeParam extends Param {
   
   /**
    * Need to alter sql replacement to accommodate fact that internal value
-   * is really a JSON string containing min and max ends of range.
+   * is really a JSON string containing min and max ends of range.  The convention is
+   * that the minimum value replace $$name.min$$ and the maximum value replace $$name.max$$
+   * in the query.
    */
   public String replaceSql(String sql, String internalValue) {
 	JSONObject valueJson = new JSONObject(internalValue);

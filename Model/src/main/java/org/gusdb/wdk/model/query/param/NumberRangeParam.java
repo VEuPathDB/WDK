@@ -14,8 +14,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The NumberRangeParam is used to accept a min and a max numerical user input via a web service only.
- * 
+ * The NumberRangeParam is used to accept a min and a max numerical user
+ * input via a web service only.  The raw and stable values are equivalent and
+ * expected to be numerical.  The internal value will have any exponentiation removed
+ * and for non-integers, rounded according to the number of decimal places specified.
  */
 public class NumberRangeParam extends Param {
 	
@@ -104,8 +106,10 @@ public class NumberRangeParam extends Param {
     // nothing to be added
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Verifies that the stringified JSONObject holding the range is properly formatted, matches
+   * the supplied regex, adheres to all imposed property restrictions and that the range is
+   * properly ordered.
    * 
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
@@ -126,7 +130,8 @@ public class NumberRangeParam extends Param {
 	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
 	}
 	
-	// Validate each value in the range against regex.
+	// Validate each value in the range against regex.  The regex could be a more
+	// restrictive test.
 	for(Double value : values) {
 	  String stringValue = String.valueOf(value);
       if (regex != null && !stringValue.matches(regex)) {
@@ -158,8 +163,10 @@ public class NumberRangeParam extends Param {
   }
   
   /**
-   * Need to alter sql replacement to accomodate fact that internal value
-   * is really a JSON string containing min and max ends of range.
+   * Need to alter sql replacement to accommodate fact that internal value
+   * is really a JSON string containing min and max ends of range.  The convention is
+   * that the minimum value replace $$name.min$$ and the maximum value replace $$name.max$$
+   * in the query.
    */
   public String replaceSql(String sql, String internalValue) {
 	JSONObject valueJson = new JSONObject(internalValue);

@@ -13,11 +13,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The NumberParam is used to accept numerical user inputs from a input box (text box only).
+ * The NumberParam is used to accept numerical user inputs from a web service only.
  * 
  * The author can provide regex to limit the content of user's input. The input will be rejected if regex
  * match fails. Furthermore, you can also define a default regex in the model-config.xml, which will be used
- * by all NumberParams who don't have their own regex defined.
+ * by all NumberParams that don't have their own regex defined.
  * 
  * 
  *         raw value: a raw string;
@@ -26,7 +26,8 @@ import org.json.JSONObject;
  * 
  *         signature: a checksum of the stable value;
  * 
- *         internal value: The internal is a string representation of a parsed Double;
+ *         internal value: The internal is a string representation of a parsed Double with
+ *         exponentiation removed and rounding applied if needed;
  *         If noTranslation is true, the raw value is used without any
  *         change.
  */
