@@ -63,6 +63,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DatasetParamSuggestion;
 import org.gusdb.wdk.model.query.param.DateParam;
+import org.gusdb.wdk.model.query.param.DateRangeParam;
 import org.gusdb.wdk.model.query.param.EnumItem;
 import org.gusdb.wdk.model.query.param.EnumItemList;
 import org.gusdb.wdk.model.query.param.EnumParam;
@@ -776,6 +777,13 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
 
+    // date range param
+    path = "wdkModel/paramSet/dateRangeParam";
+    configureNode(digester, path, DateRangeParam.class, "addParam");
+    configureParamContent(digester, path, ParamSuggestion.class);
+    configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
+    digester.addCallMethod(path + "/regex", "setText", 0);
+    
     // flatVocabParam
     path = "wdkModel/paramSet/flatVocabParam";
     configureNode(digester, path, FlatVocabParam.class, "addParam");
