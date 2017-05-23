@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
@@ -64,13 +66,15 @@ public class NumberParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException { 
+      throws WdkModelException {
+	  
+	// Something to do with the portal - left this alone 
 	if(param.isNoTranslation()) {
 	  return stableValue;
 	}
 	
-	// Remove thousands place delimiters, if any.
-    stableValue = stableValue.replaceAll(",", "");
+	// Set internalValue to stableValue and determine whether additional
+	// modifications are needed.
     String internalValue = stableValue;
     
     // If the number is in exponential form, change to decimal form
@@ -81,9 +85,8 @@ public class NumberParamHandler extends AbstractParamHandler {
     // If the number is not an integer, round it according to the number of decimal places
     // requested (or the default value).
     if(!((NumberParam)param).isInteger()) {
-      double decimalSize = 10^((NumberParam) param).getNumDecimalPlaces();
-      Double roundedValue = Math.round(Double.parseDouble(internalValue)*decimalSize)/decimalSize;
-      internalValue = String.valueOf(roundedValue.doubleValue());
+      MathContext mathContext = new MathContext(((NumberRangeParam)param).getNumDecimalPlaces(), RoundingMode.HALF_UP);
+      internalValue = (new BigDecimal(internalValue, mathContext)).toPlainString();
     }  
     return internalValue;
   }

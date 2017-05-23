@@ -126,14 +126,11 @@ public class NumberParam extends Param {
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
 	  
-	// Remove thousands place delimiters, if any.
-    String value = stableValue.replaceAll(",", "");
-	  
 	Double numericalValue = null; 
 	
 	// Insure that the value provided can be converted into a proper number
     try {  
-      numericalValue = Double.valueOf(value);
+      numericalValue = Double.valueOf(stableValue);
     }
     catch (NumberFormatException ex) {
       throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
@@ -142,9 +139,8 @@ public class NumberParam extends Param {
     // Insure that the value provided matches the regular expression provided.  This could be
  	// more restrictive than the number test above.
     if (regex != null && !stableValue.matches(regex)) {
-      throw new WdkUserException("value '" + stableValue + "' is " +
-            "invalid and probably contains illegal characters. " + "It must match the regular expression '" +
-            regex + "'");
+      throw new WdkUserException("value '" + stableValue + "' is invalid. "
+         + "It must match the regular expression '" + regex + "'");
     }
     
     // Verify the value provided is an integer if that property is specified.
@@ -154,13 +150,13 @@ public class NumberParam extends Param {
     
     // Verify the value provided is greater than the minimum allowed value, if that property
     // is specified.
-    if(this.min != null && numericalValue < new Double(this.min)) {
+    if(this.min != null && numericalValue.doubleValue() < this.min) {
       throw new WdkUserException("value '" + stableValue + "' must be greater than or equal to '" + this.min + "'" );
     }
     
     // Verify the value provided is no greater than the maximum allowed value, if that property
     // is specified.
-    if(this.max != null && numericalValue > new Double(this.max)) {
+    if(this.max != null && numericalValue.doubleValue() > this.max) {
       throw new WdkUserException("value '" + stableValue + "' must be less than or equal to '" + this.max + "'" );
     }
   }
