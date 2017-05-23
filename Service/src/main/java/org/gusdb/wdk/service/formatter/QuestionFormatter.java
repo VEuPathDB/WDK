@@ -3,8 +3,10 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
@@ -76,6 +78,7 @@ public class QuestionFormatter {
       .put(Keys.URL_SEGMENT,  q.getUrlSegment())
       .put(Keys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(Keys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
+      .put(Keys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(Keys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(Keys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
@@ -100,6 +103,26 @@ public class QuestionFormatter {
       }
     }
     return paramsJson;
+  }
+  
+  private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup) {
+    JSONArray groups = new JSONArray();
+    for (Group group: paramsByGroup.keySet()) {
+      Map<String, Param> entry = paramsByGroup.get(group);
+      groups.put(getGroupJson(group, entry.keySet()));
+    }
+    return groups;
+  }
+  
+  private static JSONObject getGroupJson(Group group, Set<String> params) {
+    JSONObject groupJson = new JSONObject();
+    groupJson.put(Keys.NAME, group.getName());
+    groupJson.put(Keys.DISPLAY_NAME, group.getDisplayName());
+    groupJson.put(Keys.DESCRIPTION, group.getDescription());
+    groupJson.put(Keys.IS_VISIBLE, group.isVisible());
+    groupJson.put(Keys.DISPLAY_TYPE, group.getDisplayType());
+    groupJson.put(Keys.PARAMETERS, params);
+    return groupJson;
   }
 
   /*

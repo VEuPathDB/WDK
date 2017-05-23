@@ -56,6 +56,7 @@ public class Keys {
   // scoping-related keys
   public static final String CATEGORIES = "categories";
   public static final String CATEGORY = "category";
+  public static final String GROUPS = "groups";
   public static final String GROUP = "group";
   // TODO: see if isVisible and isDisplayable should be merged into one
   public static final String IS_VISIBLE = "isVisible";

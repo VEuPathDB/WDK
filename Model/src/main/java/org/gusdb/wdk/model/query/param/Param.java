@@ -481,7 +481,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     this._wdkModel = model;
   }
 
-  public final String replaceSql(String sql, String internalValue) {
+  public String replaceSql(String sql, String internalValue) {
     String regex = "\\$\\$" + name + "\\$\\$";
     // escape all single quotes in the value
 
