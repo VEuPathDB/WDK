@@ -1,6 +1,8 @@
-import UserProfileStore, { State } from './UserProfileStore';
+import UserProfileStore, { State, Action } from './UserProfileStore';
+import { ClearRegistrationFormAction } from '../actioncreators/UserActionCreators';
 import { User } from '../utils/WdkUser';
-import { BaseState } from './WdkStore';
+
+type RegistrationAction = Action | ClearRegistrationFormAction;
 
 export default class UserRegistrationStore extends UserProfileStore {
 
@@ -12,10 +14,22 @@ export default class UserRegistrationStore extends UserProfileStore {
         id: 0,
         email: '',
         isGuest: true,
-        properties: { }
+        properties: { },
+        confirmEmail: '',
+        preferences: { }
       },
       formStatus: "new",  // Values: [ 'new', 'modified', 'pending', 'success', 'error' ]
       errorMessage: undefined
     };
+  }
+
+
+  handleAction(state: State, action: RegistrationAction): State {
+    switch(action.type) {
+      case 'user/clear-registration-form':
+          return this.getInitialState();
+      default:
+          return super.handleFormUpdate(state, action);
+    }
   }
 }

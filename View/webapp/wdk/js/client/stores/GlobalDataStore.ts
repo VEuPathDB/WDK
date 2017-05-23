@@ -53,13 +53,13 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
         // incorporate new preference values into existing preference object
         let combinedPrefs = { ...state.preferences, ...action.payload };
         // treat preference object as if it has just been loaded (with new values present)
-        return this.handleAction({ ...state, combinedPrefs }, action);
+        return this.handleAction({ ...state, preferences: combinedPrefs }, action);
 
       case 'user/preferences-update':
         // replace existing preference object with new preference values
         let replacementPrefs = { ...action.payload };
         // treat preference object as if it has just been loaded (with new values present)
-        return this.handleAction({ ...state, replacementPrefs }, action);
+        return this.handleAction({ ...state, preferences: replacementPrefs }, action);
 
       default:
         return this.handleAction(state, action);
