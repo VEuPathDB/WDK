@@ -126,8 +126,7 @@ public class NumberRangeParam extends Param {
 	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
 	}
 	
-	// Remove excess space and thousands separators, if any and validate each value in the
-	// range against regex.
+	// Validate each value in the range against regex.
 	for(Double value : values) {
 	  String stringValue = String.valueOf(value);
       if (regex != null && !stringValue.matches(regex)) {
