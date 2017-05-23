@@ -67,16 +67,18 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException { 
+      throws WdkModelException {
+	  
+	// Something to do with the portal - left this alone  
 	if(param.isNoTranslation()) {
 	  return stableValue;
 	}
 
+	// By now stableValue parses properly
 	JSONObject valueJson = new JSONObject(stableValue);
-	Double values[] = {valueJson.getDouble("min"),valueJson.getDouble("max")};
+	Double values[] = { valueJson.getDouble("min"), valueJson.getDouble("max") };
 	
-	// Modify both ends of the range as needed and reassemble as a string
-	// formatted as a JSONObject
+	// Modify both ends of the range as needed and reassemble as a JSONObject
 	for(Double value : values) {
     
       // If the number is in exponential form, change to decimal form
