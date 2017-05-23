@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,11 +19,10 @@ import org.json.JSONObject;
  */
 public class NumberRangeParam extends Param {
 	
-  private Integer precision = new Integer(1);
+  private Integer numDecimalPlaces = new Integer(1);
   private Long min;
   private Long max;
   private boolean integer;
-  private Double[] numericalValues = new Double[2];
 
   private List<WdkModelText> regexes;
   private String regex;
@@ -32,7 +31,7 @@ public class NumberRangeParam extends Param {
     regexes = new ArrayList<WdkModelText>();
 
     // register handler
-    setHandler(new NumberParamHandler());
+    setHandler(new NumberRangeParamHandler());
   }
 
   public NumberRangeParam(NumberRangeParam param) {
@@ -40,8 +39,8 @@ public class NumberRangeParam extends Param {
     if (param.regexes != null)
       this.regexes = new ArrayList<WdkModelText>();
     this.regex = param.regex;
-    this.precision = param.precision;
-    this.precision = param.precision == null ? this.precision : param.precision;
+    this.numDecimalPlaces = param.numDecimalPlaces;
+    this.numDecimalPlaces = param.numDecimalPlaces == null ? this.numDecimalPlaces : param.numDecimalPlaces;
     this.integer = param.integer;
     this.min = param.min;
     this.max = param.max;
@@ -113,60 +112,66 @@ public class NumberRangeParam extends Param {
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
-	Double numericalValue = null;
+	  
+	Double values[] = new Double[2];
 	
-    // strip off the comma, if any
-    String value = stableValue.replaceAll(",", "");
-    String[] stableValues = stableValue.split(":");
-    
-    // A range contains two items
-    if(stableValues.length != 2) {
-      throw new WdkUserException("A range must consist of 2 values separated by a colon unlike '" + stableValue + "'");
-    }
-    
-    // Verify both sides of the range are numerical
-    try {  
-      this.numericalValues[0] = Double.valueOf(stableValues[0].trim());
-      this.numericalValues[1] = Double.valueOf(stableValues[1].trim());
-    }
-    catch (NumberFormatException ex) {
-      throw new WdkUserException("Both range values must be numerical; '" + stableValue + "' is invalid.");
-    }
+	// Insure that the JSON Object format is valid.
+	try {
+	  JSONObject stableValueJson = new JSONObject(stableValue);
+	  values[0] = stableValueJson.getDouble("min");
+	  values[1] = stableValueJson.getDouble("max");
+	}
+	catch(JSONException je) {
+	  throw new WdkUserException("Could not parse '" + stableValue + "'. "
+	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
+	}
+	
+	// Remove excess space and thousands separators, if any and validate each value in the
+	// range against regex.
+	for(Double value : values) {
+	  String stringValue = String.valueOf(value);
+      if (regex != null && !stringValue.matches(regex)) {
+        throw new WdkUserException("value '" + value + "' is invalid. " +
+        	  "It must match the regular expression '" + regex + "'");
+      }
+	}
 
     // By convention, the first value of the range should be less than the second value.
-    if(this.numericalValues[0] >= this.numericalValues[1]) {
-      throw new WdkUserException("The first value in the range must be less than the second value unlike '" + stableValue + "'");
+    if(values[0] >= values[1]) {
+      throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
+      		+ " must be less than the maximum value, '" + values[1] + "'");
     }
     
-    // Validate each value in turn.    
-    for(int i = 0 ; i < 2 ; i++) {
-      if (regex != null && !stableValues[i].matches(regex)) {
-        throw new WdkUserException("value '" + stableValues[i] + "' is " +
-              "invalid and probably contains illegal characters. " + "It must match the regular expression '" +
-              regex + "'");
+    // Verify both ends of the range are integers if such is specified.
+    for(Double value : values) {
+      if(this.integer && value.doubleValue() % 1 != 0) {
+        throw new WdkUserException("value '" + value + "' must be an integer.");
       }
-      if(this.integer && this.numericalValues[i].doubleValue() % 1 != 0) {
-        throw new WdkUserException("value '" + stableValues[i] + "' must be an integer.");
-      }
+    }  
       
-      // Insure that precision does not exceed specified limits
-      BigDecimal bigDecimal = new BigDecimal(stableValues[i]).stripTrailingZeros();
-      int scale = bigDecimal.scale();
-      int precision = bigDecimal.precision();    
-      if (scale < 0) {
-          precision -= scale;
-          scale = 0;        
-      }
-      if(this.precision != null && precision > this.precision) {
-        throw new WdkUserException("value '" + stableValues[i] + "' must not have a precision exceeding '" + this.precision + "'");
-      }
+    // Verify the given range in within any required limits
+    if(this.min != null && values[0] < new Double(this.min)) {
+        throw new WdkUserException("value '" + values[0] + "' must be greater than or equal to '" + this.min + "'" );
     }
-    if(this.min != null && this.numericalValues[0] < new Double(this.min)) {
-        throw new WdkUserException("value '" + stableValues[0] + "' must be greater than or equal to '" + this.min + "'" );
+    if(this.max != null && values[1] > new Double(this.max)) {
+      throw new WdkUserException("value '" + values[1] + "' must be less than or equal to '" + this.max + "'" );
     }
-    if(this.max != null && this.numericalValues[1] > new Double(this.max)) {
-      throw new WdkUserException("value '" + stableValues[1] + "' must be less than or equal to '" + this.max + "'" );
-    }
+  }
+  
+  /**
+   * Need to alter sql replacement to accomodate fact that internal value
+   * is really a JSON string containing min and max ends of range.
+   */
+  public String replaceSql(String sql, String internalValue) {
+	JSONObject valueJson = new JSONObject(internalValue);
+	Double values[] = new Double[2];
+	values[0] = valueJson.getDouble("min");
+	values[1] = valueJson.getDouble("max");
+	String regex = "\\$\\$" + name + ".min\\$\\$";
+	String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement(values[0].toString()));
+	regex = "\\$\\$" + name + ".max\\$\\$";
+	replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement(values[1].toString()));
+	return replacedSql;
   }
 
   /*
@@ -203,12 +208,12 @@ public class NumberRangeParam extends Param {
     return (String)rawValue;
   }
 
-  public Integer getPrecision() {
-	return precision;
+  public Integer getNumDecimalPlaces() {
+	return numDecimalPlaces;
   }
 
-  public void setPrecision(Integer precision) {
-	this.precision = precision;
+  public void setNumDecimalPlaces(Integer numDecimalPlaces) {
+	this.numDecimalPlaces = numDecimalPlaces;
   }
 
   public Long getMin() {
