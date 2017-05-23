@@ -5,7 +5,7 @@ import {
 } from '../actioncreators/UserActionCreators';
 import { User, UserPreferences } from "../utils/WdkUser";
 
-type Action = ProfileFormUpdateAction | ProfileFormSubmissionStatusAction;
+export type Action = ProfileFormUpdateAction | ProfileFormSubmissionStatusAction;
 
 export type UserProfileFormData = User & {
   confirmEmail?: string;
@@ -39,20 +39,26 @@ export default class UserProfileStore extends WdkStore<State> {
     if (this.globalDataStore.hasChanged()) {
       let previousUser = this.getState().globalData.user;
       let nextUser = state.globalData.user;
+      if (previousUser != nextUser) {
+        return this.replaceUserFormData(state, { ...state.userFormData, ...nextUser, confirmEmail: nextUser.email });
+      }
       let previousPrefs = this.getState().globalData.preferences;
       let nextPrefs = state.globalData.preferences;
       if (previousUser != nextUser || previousPrefs != nextPrefs) {
-        // either user or prefs changed in parent store with this action; update local copy
-        return {
-            ...state,
-            userFormData: { ...nextUser, confirmEmail: nextUser.email, preferences: nextPrefs },
-            formStatus: "new",
-            errorMessage: undefined
-        };
+        return this.replaceUserFormData(state, { ...state.userFormData, preferences: nextPrefs });
       }
     }
 
     return this.handleFormUpdate(state, action);
+  }
+
+  replaceUserFormData(state: State, newUserFormData: UserProfileFormData): State {
+    return {
+      ...state,
+      userFormData: newUserFormData,
+      formStatus: "new",
+      errorMessage: undefined
+    };
   }
 
   handleFormUpdate(state: State, action: Action): State {

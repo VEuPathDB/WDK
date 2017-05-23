@@ -25,7 +25,7 @@ export type PreferencesUpdateAction = {
 }
 type PrefAction = PreferenceUpdateAction|PreferencesUpdateAction;
 
-// actions to manage the user profile form
+// actions to manage the user profile/registration forms
 export type ProfileFormUpdateAction = {
   type: 'user/profile-form-update',
   payload: {
@@ -38,6 +38,10 @@ export type ProfileFormSubmissionStatusAction = {
     formStatus: ProfileStoreState['formStatus'];
     errorMessage: string | undefined;
   }
+}
+
+export type ClearRegistrationFormAction = {
+  type: 'user/clear-registration-form'
 }
 
 // actions to manage user password form
@@ -311,7 +315,7 @@ let logout: ActionCreator<{type:'__'}> = () => {
   }
 };
 
-
+//----------------------------------
 // Basket action creators and helpers
 // ----------------------------------
 
