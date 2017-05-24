@@ -12,19 +12,20 @@ import { wrappable } from '../utils/componentUtils';
  */
 const UserAccountForm = (props) => {
   let { wdkConfig, user, onPropertyChange, onPreferenceChange, onEmailChange,
-      onConfirmEmailChange, disableSubmit, saveProfile } = props;
+      onConfirmEmailChange, showChangePasswordBox, disableSubmit, onSubmit, submitButtonText } = props;
   return(
-    <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
+    <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={onSubmit} >
       <p><i className="fa fa-asterisk"></i> = required</p>
       <UserIdentity user={user} onEmailChange={onEmailChange} onConfirmEmailChange={onConfirmEmailChange}
           onPropertyChange={onPropertyChange} propDefs={wdkConfig.userProfileProperties}/>
       <br />
-      <UserPassword user={user} wdkConfig={wdkConfig} />
+      {!showChangePasswordBox ? '' :
+        <UserPassword user={user} wdkConfig={wdkConfig} /> }
       <br />
       <ApplicationSpecificProperties user={user} onPropertyChange={onPropertyChange}
           propDefs={wdkConfig.userProfileProperties} onPreferenceChange={onPreferenceChange}/>
       <div>
-        <input type="submit" value="Save" disabled={disableSubmit} />
+        <input type="submit" value={submitButtonText} disabled={disableSubmit} />
       </div>
     </form>
   );
@@ -34,6 +35,9 @@ UserAccountForm.propTypes = {
 
   /** The user object to be modified */
   user: PropTypes.object.isRequired,
+
+  /** Whether to show change password box */
+  showChangePasswordBox: PropTypes.bool.isRequired,
 
   /** Indicates whether submit button should be enabled/disabled */
   disableSubmit: PropTypes.bool.isRequired,
@@ -51,8 +55,11 @@ UserAccountForm.propTypes = {
   onPreferenceChange: PropTypes.func.isRequired,
 
   /** The on submit handler for the form */
-  saveProfile:  PropTypes.func.isRequired,
-  
+  onSubmit:  PropTypes.func.isRequired,
+
+  /** Text that should appear on the submit button */
+  submitButtonText: PropTypes.string.isRequired,
+
   /** WDK config for setting correct change password link */
   wdkConfig:  PropTypes.object.isRequired
 };

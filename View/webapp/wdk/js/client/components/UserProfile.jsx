@@ -5,9 +5,17 @@ import UserFormContainer, { UserFormContainerPropTypes } from './UserFormContain
  * React component for the user profile/account form
  * @type {*|Function}
  */
-class UserProfile extends UserFormContainer {
-  
-}
+let UserProfile = props => (
+
+  <UserFormContainer {...props}
+      shouldHideForm={props.userFormData.isGuest}
+      hiddenFormMessage="You must first log on to read and alter your account information."
+      titleText="My Account"
+      showChangePasswordBox={true}
+      submitButtonText="Save"
+      onSubmit={props.userEvents.submitProfileForm}/>
+
+);
 
 UserProfile.propTypes = UserFormContainerPropTypes;
 

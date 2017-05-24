@@ -1,6 +1,6 @@
 import UserProfileStore, { State, Action } from './UserProfileStore';
 import { ClearRegistrationFormAction } from '../actioncreators/UserActionCreators';
-import { User } from '../utils/WdkUser';
+import { User, UserPreferences } from '../utils/WdkUser';
 
 type RegistrationAction = Action | ClearRegistrationFormAction;
 
@@ -16,7 +16,10 @@ export default class UserRegistrationStore extends UserProfileStore {
         isGuest: true,
         properties: { },
         confirmEmail: '',
-        preferences: { }
+        preferences: {
+          global: {},
+          project: {}
+        } as UserPreferences
       },
       formStatus: "new",  // Values: [ 'new', 'modified', 'pending', 'success', 'error' ]
       errorMessage: undefined

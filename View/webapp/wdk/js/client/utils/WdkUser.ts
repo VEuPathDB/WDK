@@ -7,9 +7,9 @@ export interface User {
   properties: Record<string,string>
 }
 
-export interface UserPreferences {
-  [key: string]: string;
-}
+export type PreferenceScope = "global" | "project";
+
+export type UserPreferences = Record<PreferenceScope, Record<string, string>>;
 
 export interface Step {
   answerSpec: AnswerSpec;
