@@ -5,7 +5,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -54,7 +54,7 @@ public class NumberParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0) return "";
-    return Utilities.encrypt(stableValue);
+    return EncryptionUtil.encrypt(stableValue);
   }
 
   /**
