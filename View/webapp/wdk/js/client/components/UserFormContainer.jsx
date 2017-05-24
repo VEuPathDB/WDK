@@ -1,7 +1,6 @@
-import React from 'react';
-import { PropTypes } from 'react';
+import React, { PropTypes } from 'react';
 import UserAccountForm from './UserAccountForm';
-import { getChangeHandler } from '../utils/componentUtils';
+import { wrappable, getChangeHandler } from '../utils/componentUtils';
 
 export function interpretFormStatus(formStatus, errorMessage) {
   // configure properties for banner and submit button enabling based on status
@@ -53,25 +52,27 @@ class UserFormContainer extends React.Component {
     this.onEmailFieldChange = this.onEmailFieldChange.bind(this);
     this.onPropertyChange = this.onPropertyChange.bind(this);
     this.onPreferenceChange = this.onPreferenceChange.bind(this);
-    this.saveProfile = this.saveProfile.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   render() {
     let formConfig = interpretFormStatus(this.props.formStatus, this.props.errorMessage);
     return (
       <div style={containerStyle}>
-        {this.props.userFormData.isGuest ?
-          <div>You must first log on to read and alter your account information</div> :
+        {this.props.shouldHideForm ?
+          <div>{this.props.hiddenFormMessage}</div> :
           <div>
-            <h1>My Account</h1>
+            <h1>{this.props.titleText}</h1>
             <FormMessage {...formConfig}/>
             <UserAccountForm user={this.props.userFormData}
+                             showChangePasswordBox={this.props.showChangePasswordBox}
                              disableSubmit={formConfig.disableSubmit}
                              onEmailChange={this.onEmailChange}
                              onConfirmEmailChange={this.onConfirmEmailChange}
                              onPropertyChange={this.onPropertyChange}
                              onPreferenceChange={this.onPreferenceChange}
-                             saveProfile={this.saveProfile}
+                             onSubmit={this.onSubmit}
+                             submitButtonText={this.props.submitButtonText}
                              wdkConfig={this.props.globalData.config}/>
           </div>
         }
@@ -163,7 +164,7 @@ class UserFormContainer extends React.Component {
    * was only introduced as a check of user typing) and the user object is saved.
    * @param event
    */
-  saveProfile(event) {
+  onSubmit(event) {
     event.preventDefault();
     this.validateEmailConfirmation(this.props.userFormData);
     let inputs = document.querySelectorAll("input[type=text],input[type=email]");
@@ -175,7 +176,7 @@ class UserFormContainer extends React.Component {
       }
     }
     if(valid) {
-      this.props.userEvents.submitProfileForm(this.props.userFormData);
+      this.props.onSubmit(this.props.userFormData);
     }
   }
 }
@@ -203,11 +204,31 @@ export let UserFormContainerPropTypes = {
   userEvents:  PropTypes.shape({
 
     /** Called with a parameter representing the new state when a form element changes */
-    updateProfileForm:  PropTypes.func.isRequired,
+    updateProfileForm:  PropTypes.func.isRequired
 
-    /** Called with a parameter representing the user data to be saved */
-    submitProfileForm:  PropTypes.func.isRequired
   })
 };
 
-export default UserFormContainer;
+UserFormContainer.propTypes = Object.assign({}, UserFormContainerPropTypes, {
+
+  /** Whether form should be hidden based on current login status */
+  shouldHideForm: PropTypes.bool.isRequired,
+
+  /** Message to display if user accesses page when it should be hidden */
+  hiddenFormMessage: PropTypes.string.isRequired,
+
+  /** Page header title text */
+  titleText: PropTypes.string.isRequired,
+
+  /** Whether to show change password box */
+  showChangePasswordBox: PropTypes.bool.isRequired,
+
+  /** Text to place in form submit button */
+  submitButtonText: PropTypes.string.isRequired,
+
+  /** Called with a parameter representing the user data to be saved */
+  onSubmit:  PropTypes.func.isRequired
+
+});
+
+export default wrappable(UserFormContainer);

@@ -2,7 +2,7 @@ import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
 import {ActionCreator, DispatchAction} from "../ActionCreator";
-import {User, UserPreferences} from "../utils/WdkUser";
+import {User, UserPreferences, PreferenceScope} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
@@ -115,9 +115,9 @@ export type FavoritesStatusErrorAction = {
  * Merge supplied key-value pair with user preferences and update
  * on the server.
  */
-export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (key: string, value: string) => {
+export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (scope: PreferenceScope, key: string, value: string) => {
   return function run(dispatch, { wdkService }) {
-    let updatePromise = wdkService.updateCurrentUserPreference({ [key]: value });
+    let updatePromise = wdkService.updateCurrentUserPreference(scope, key, value);
     return dispatch(sendPrefUpdateOnCompletion(updatePromise,
         'user/preference-update', { [key]: value }) as Promise<PreferenceUpdateAction>);
   };
@@ -203,6 +203,7 @@ export let submitProfileForm: ActionCreator<UserUpdateAction|PreferencesUpdateAc
 /** Register user */
 export let submitRegistrationForm = (user: User) => {
   alert("Submitted!");
+};
   /*
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
@@ -223,7 +224,7 @@ export let submitRegistrationForm = (user: User) => {
         return createProfileFormStatusAction('error', error.response);
       }));
   };*/
-};
+
 
 /** Update user profile present in the form (unsaved changes) */
 export let updateProfileForm: ActionCreator<ProfileFormUpdateAction> = (user: User) => {

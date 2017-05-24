@@ -23,7 +23,7 @@ import {
   UserDatasetMeta,
   OntologyTermSummary
 } from './WdkModel';
-import {User, UserPreferences, Step} from './WdkUser';
+import {User, PreferenceScope, UserPreferences, Step} from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
 
 /**
@@ -399,7 +399,8 @@ export default class WdkService {
     return this._preferences;
   }
 
-  updateCurrentUserPreference(entries: UserPreferences) {
+  updateCurrentUserPreference(scope: PreferenceScope, key: string, value: string) {
+    let entries = { [scope]: { [key]: value }};
     let url = '/user/current/preference';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('patch', url, data).then(() => {
