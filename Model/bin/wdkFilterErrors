@@ -4,19 +4,19 @@ use strict;
 use Getopt::Long;
 use JSON;
 
-my ($startDate, $endDate, $report, $emailsFile, $singleFilter, $filtersFile);
+my ($startDate, $endDate, $report, $errorsFile, $singleFilter, $filtersFile);
 
 &GetOptions('sd=s' => \$startDate,
             'ed=s' => \$endDate,
             'r!' =>  \$report,
-            'ef=s' => \$emailsFile,
+            'ef=s' => \$errorsFile,
             'sf=s' => \$singleFilter,
             'ff=s' => \$filtersFile,
             );
 
-usage() unless ($emailsFile && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
+usage() unless ($errorsFile && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
 
-my $emailDelim = "##ERROR_END##";
+my $errorDelim = "##ERROR_END##";
 
 my @filtersAsStrings; # to preserve input order
 my %filtersInfo; # key is filterAsString, value is hash ref w/ info about the filter
@@ -39,24 +39,24 @@ else {
 }
 
 #
-# scan emails file, apply filters, and output appropriate emails
+# scan errors file, apply filters, and output appropriate errors
 #
-open(F, $emailsFile) || die "Can't open emails file '$emailsFile'\n";
-my @currentEmail;
+open(F, $errorsFile) || die "Can't open errors file '$errorsFile'\n";
+my @currentError;
 my $currentDate;
-my $totalEmails;
-my $matchedEmails;
+my $totalErrors;
+my $matchedErrors;
 while(<F>) {
-  if (/$emailDelim/) {
+  if (/$errorDelim/) {
     if (&dateFilter($currentDate)) {
-      $totalEmails++;
-      $matchedEmails += &handleEmail(\@currentEmail, \@filtersAsStrings, \%filtersInfo, $emailDelim, $singleFilter, $report);
+      $totalErrors++;
+      $matchedErrors += &handleError(\@currentError, \@filtersAsStrings, \%filtersInfo, $errorDelim, $singleFilter, $report);
     }
-    @currentEmail = ();
+    @currentError = ();
   }
   else {
     $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
-    push(@currentEmail, $_);
+    push(@currentError, $_);
   }
 }
 close(F);
@@ -69,11 +69,11 @@ if ($report) {
     print STDOUT $filtersInfo{$filterAsString}->{count} . "\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
   }
 
-  my $unmatchedEmails = $totalEmails - $matchedEmails;
+  my $unmatchedErrors = $totalErrors - $matchedErrors;
   print "
-Total emails in date range: $totalEmails
-                 # matched: $matchedEmails
-               # unmatched: $unmatchedEmails
+Total errors in date range: $totalErrors
+                 # matched: $matchedErrors
+               # unmatched: $unmatchedErrors
 ";
 }
 
@@ -134,13 +134,13 @@ sub dateFilter {
   return 1;
 }
 
-sub handleEmail {
-  my ($emailArray, $filtersAsStringsRef, $filtersInfoRef, $emailDelim, $printIfMatch, $report) = @_;
+sub handleError {
+  my ($errorArray, $filtersAsStringsRef, $filtersInfoRef, $errorDelim, $printIfMatch, $report) = @_;
 
   my $matched;
   foreach my $filterAsString (@$filtersAsStringsRef) {
     my $filterInfo = $filtersInfoRef->{$filterAsString};
-    $matched = matchesFilter($filterInfo->{terms}, $emailArray);
+    $matched = matchesFilter($filterInfo->{terms}, $errorArray);
     if ($matched) {
       $filterInfo->{count} += 1 ;
       last;
@@ -148,19 +148,19 @@ sub handleEmail {
   }
 
   if (!$report && (($printIfMatch && $matched) || (!$printIfMatch && !$matched)))  {
-    print STDOUT join("", @$emailArray) . $emailDelim . "\n";
+    print STDOUT join("", @$errorArray) . $errorDelim . "\n";
   }
   return $matched;
 }
 
 sub matchesFilter {
-  my ($filterTerms, $emailArray) = @_;
+  my ($filterTerms, $errorArray) = @_;
 
   my $matched = 1;
   foreach my $filterTerm (@$filterTerms) {
     my $matchedTerm = 0;
-    foreach my $emailLine (@$emailArray) {
-      if (index($emailLine, $filterTerm) != -1) {
+    foreach my $errorLine (@$errorArray) {
+      if (index($errorLine, $filterTerm) != -1) {
         $matchedTerm = 1;
         last;
       }
@@ -172,22 +172,22 @@ sub matchesFilter {
 
 sub usage {
   die "
-Filter a file of wdk error emails.
+Filter a file of wdk errors.
 
 There are three modes of use:
-  1) filter hunting.  Provide a filters file.  Output is mails that match no filter, so you can create new filters (to add to the filters file).
+  1) filter hunting.  Provide a filters file.  Output is errors that match no filter, so you can create new filters (to add to the filters file).
   2) reporting.  Provide a filters file.  Output is a report showing counts of each filter, so you can decide which filter issue to debug
-  3) single filter.  Provide a single filter.  Output is mails that match that filter, so you can start debugging.
+  3) single filter.  Provide a single filter.  Output is errors that match that filter, so you can start debugging.
 
-Usage: wdkFilterErrorEmails --ef emails_file <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]
+Usage: wdkFilterErrors --ef errors_file <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]
 
 Where:
-  emails_file:     file containing wdk error emails
+  errors_file:     file containing wdk errors, in standard format, as ouput by the WDK error logging system.
   single_filter:   string to use as a filter
   filter_file:     file containing one or more filters (see below for format)
   --r:             write a report to stdout
-  start_date:      date in mm/dd/yyyy format.  Exclude emails before this date.
-  end_date:        date in mm/dd/yyyy format. Exclude emails after this date
+  start_date:      date in mm/dd/yyyy format.  Exclude errors before this date.
+  end_date:        date in mm/dd/yyyy format. Exclude errors after this date
 
 Filters file format: tab delimited, with first column being on or more filters (delimited by \&\&).  Other columns are ignored.  Lines beginning with # are ignored.
 
