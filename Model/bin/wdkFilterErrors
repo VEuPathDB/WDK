@@ -4,17 +4,16 @@ use strict;
 use Getopt::Long;
 use JSON;
 
-my ($startDate, $endDate, $report, $errorsFile, $singleFilter, $filtersFile);
+my ($startDate, $endDate, $report, $singleFilter, $filtersFile);
 
 &GetOptions('sd=s' => \$startDate,
             'ed=s' => \$endDate,
             'r!' =>  \$report,
-            'ef=s' => \$errorsFile,
             'sf=s' => \$singleFilter,
             'ff=s' => \$filtersFile,
             );
 
-usage() unless ($errorsFile && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
+usage() unless (1 && ($filtersFile || $singleFilter) && !($filtersFile && $singleFilter) && !($singleFilter && $report));
 
 my $errorDelim = "##ERROR_END##";
 
@@ -41,12 +40,11 @@ else {
 #
 # scan errors file, apply filters, and output appropriate errors
 #
-open(F, $errorsFile) || die "Can't open errors file '$errorsFile'\n";
 my @currentError;
 my $currentDate;
 my $totalErrors;
 my $matchedErrors;
-while(<F>) {
+while(<STDIN>) {
   if (/$errorDelim/) {
     if (&dateFilter($currentDate)) {
       $totalErrors++;
@@ -179,13 +177,12 @@ There are three modes of use:
   2) reporting.  Provide a filters file.  Output is a report showing counts of each filter, so you can decide which filter issue to debug
   3) single filter.  Provide a single filter.  Output is errors that match that filter, so you can start debugging.
 
-Usage: wdkFilterErrors --ef errors_file <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]
+Usage: cat errors-file | wdkFilterErrors <--sf single_filter | --ff filter_file> [--r] [--sd start_date] [--ed end_date]
 
 Where:
-  errors_file:     file containing wdk errors, in standard format, as ouput by the WDK error logging system.
   single_filter:   string to use as a filter
   filter_file:     file containing one or more filters (see below for format)
-  --r:             write a report to stdout
+  --r:             write a report to stdout.  (Not allowed if -sf is provided)
   start_date:      date in mm/dd/yyyy format.  Exclude errors before this date.
   end_date:        date in mm/dd/yyyy format. Exclude errors after this date
 
@@ -193,5 +190,15 @@ Filters file format: tab delimited, with first column being on or more filters (
 
 Filters are applied in the order found in the file.  Only the first matching filter is effective.
 
+SAMPLE COMMAND LINES
+
+filter hunting:
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff $PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt --sd 05/01/2017 -ed /05/23/2017
+
+reporting:
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff $PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt -r --sd 05/01/2017 -ed /05/23/2017
+
+single filter:
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -sf \"The term of flatVocabParam [popsetParams.product] is null\" --sd 05/01/2017 -ed /05/23/2017
 ";
 }
