@@ -5,13 +5,18 @@ import { updateProfileForm, submitRegistrationForm } from '../actioncreators/Use
 
 class UserRegistrationController extends WdkViewController {
 
+  getStoreName() {
+    return "UserRegistrationStore";
+  }
+
   getActionCreators() {
     return { updateProfileForm, submitRegistrationForm };
   }
 
   isRenderDataLoaded() {
-    return (this.state.globalData.config != null &&
-            this.state.globalData.preferences != null);
+    return (this.state.userFormData != null &&
+            this.state.userFormData.preferences != null &&
+            this.state.globalData.config != null);
   }
 
   getTitle() {
