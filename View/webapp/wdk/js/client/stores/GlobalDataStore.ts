@@ -7,6 +7,7 @@ import { ReduceStore } from 'flux/utils';
 import {StaticDataAction, AllDataAction, StaticData} from '../actioncreators/StaticDataActionCreators';
 import { UserUpdateAction, PreferenceUpdateAction, PreferencesUpdateAction } from '../actioncreators/UserActionCreators';
 import { LocationAction } from '../actioncreators/RouterActionCreators';
+import { UserPreferences } from '../utils/WdkUser';
 
 type UserAction = UserUpdateAction | PreferenceUpdateAction | PreferencesUpdateAction;
 type RouterAction = LocationAction;
@@ -51,7 +52,11 @@ export default class GlobalDataStore extends ReduceStore<GlobalData, Action> {
 
       case 'user/preference-update':
         // incorporate new preference values into existing preference object
-        let combinedPrefs = { ...state.preferences, ...action.payload };
+        let { global: oldGlobal, project: oldProject } = state.preferences;
+        let { global: newGlobal, project: newProject } = action.payload;
+        let combinedGlobal = newGlobal == null ? oldGlobal : Object.assign({}, oldGlobal, newGlobal);
+        let combinedProject = newProject == null ? oldProject : Object.assign({}, oldProject, newProject);
+        let combinedPrefs = { global: combinedGlobal, project: combinedProject };
         // treat preference object as if it has just been loaded (with new values present)
         return this.handleAction({ ...state, preferences: combinedPrefs }, action);
 

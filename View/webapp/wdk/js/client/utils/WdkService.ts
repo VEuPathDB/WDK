@@ -380,6 +380,10 @@ export default class WdkService {
     return this._currentUserPromise;
   }
 
+  createNewUser(user: User) {
+    return this._fetchJson<User>('post', '/user', JSON.stringify(user));
+  }
+
   updateCurrentUser(user: User) {
     let url = '/user/current';
     let data = JSON.stringify(user);
