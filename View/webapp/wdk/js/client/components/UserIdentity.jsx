@@ -9,7 +9,7 @@ import { wrappable } from '../utils/componentUtils';
  * @returns {XML}
  * @constructor
  */
-const UserIdentity = (props) => {
+const UserIdentity = props => {
   let { user, onPropertyChange } = props;
   return (
     <fieldset>
@@ -18,13 +18,13 @@ const UserIdentity = (props) => {
         <label htmlFor="userEmail"><i className="fa fa-asterisk"></i>Email:</label>
         <TextBox type="email" id="userEmail" value={user.email} required="required"
             onChange={props.onEmailChange} maxLength="255" size="80"
-            placeholder="Your email is used as your unique user id" />
+            placeholder="Your email will be your login username" />
       </div>
       <div>
         <label htmlFor="confirmUserEmail"><i className="fa fa-asterisk"></i>Retype Email:</label>
         <TextBox type="email" id="confirmUserEmail" value={user.confirmEmail} required="required"
             onChange={props.onConfirmEmailChange} maxLength="255" size="80"
-            placeholder="Your email is used as your unique user id" />
+            placeholder="Please re-type the same email as above" />
       </div>
       {props.propDefs.map(propDef => {
         let { name, displayName, isRequired } = propDef;

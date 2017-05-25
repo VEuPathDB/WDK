@@ -119,7 +119,7 @@ export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (scope:
   return function run(dispatch, { wdkService }) {
     let updatePromise = wdkService.updateCurrentUserPreference(scope, key, value);
     return dispatch(sendPrefUpdateOnCompletion(updatePromise,
-        'user/preference-update', { [key]: value }) as Promise<PreferenceUpdateAction>);
+        'user/preference-update', { [scope]: { [key]: value } }) as Promise<PreferenceUpdateAction>);
   };
 };
 
@@ -172,10 +172,11 @@ function createFormStatusAction(actionType: string, status: string, errorMessage
 }
 
 /** Save user profile to DB */
-export let submitProfileForm: ActionCreator<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction> = (user: UserProfileFormData) => {
+type SubmitProfileFormType = ActionCreator<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction>;
+export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
-    let trimmedUser = <User>filterOutProps(user, ["isGuest", "id", "confirmEmail", "preferences"]);
+    let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "confirmEmail", "preferences"]);
     let userPromise = wdkService.updateCurrentUser(trimmedUser);
     let prefPromise = wdkService.updateCurrentUserPreferences(user.preferences as UserPreferences); // should never be null by this point
     return dispatch(Promise.all([userPromise, prefPromise])
@@ -201,30 +202,24 @@ export let submitProfileForm: ActionCreator<UserUpdateAction|PreferencesUpdateAc
 };
 
 /** Register user */
-export let submitRegistrationForm = (user: User) => {
-  alert("Submitted!");
-};
-  /*
+type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
+export let submitRegistrationForm: SubmitRegistrationFormType = (user: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
-    let trimmedUser = <User>filterOutProps(user, ["isGuest", "id", "preferences", "confirmEmail"]);
-    return dispatch(wdkService.updateCurrentUser(trimmedUser)
-      .then(() => {
-        // success; update user first, then status in ProfileViewStore
-        dispatch(broadcast({
-          type: 'user/user-update',
-          // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
-          // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail'
-          payload: { user: filterOutProps(user, ["confirmEmail"]) as User}
-        }) as UserUpdateAction);
+    let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "preferences", "confirmEmail"]);
+    return dispatch(wdkService.createNewUser(trimmedUser)
+      .then(user => {
+        // success; clear the form in case user wants to register another user
+        dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
+        // then transition to registration success message
         return createProfileFormStatusAction('success');
       })
       .catch((error) => {
         console.error(error.response);
         return createProfileFormStatusAction('error', error.response);
       }));
-  };*/
-
+  };
+};
 
 /** Update user profile present in the form (unsaved changes) */
 export let updateProfileForm: ActionCreator<ProfileFormUpdateAction> = (user: User) => {

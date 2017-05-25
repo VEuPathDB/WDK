@@ -1,8 +1,20 @@
-import UserProfileStore, { State, Action } from './UserProfileStore';
+import UserProfileStore, { State, Action, UserProfileFormData } from './UserProfileStore';
 import { ClearRegistrationFormAction } from '../actioncreators/UserActionCreators';
 import { User, UserPreferences } from '../utils/WdkUser';
 
 type RegistrationAction = Action | ClearRegistrationFormAction;
+
+let emptyUserFormData: UserProfileFormData = {
+  id: 0,
+  email: '',
+  isGuest: true,
+  properties: { },
+  confirmEmail: '',
+  preferences: {
+    global: {},
+    project: {}
+  } as UserPreferences
+};
 
 export default class UserRegistrationStore extends UserProfileStore {
 
@@ -10,27 +22,16 @@ export default class UserRegistrationStore extends UserProfileStore {
   getInitialState(): State {
     return {
       ...super.getInitialState(),
-      userFormData: {
-        id: 0,
-        email: '',
-        isGuest: true,
-        properties: { },
-        confirmEmail: '',
-        preferences: {
-          global: {},
-          project: {}
-        } as UserPreferences
-      },
+      userFormData: emptyUserFormData,
       formStatus: "new",  // Values: [ 'new', 'modified', 'pending', 'success', 'error' ]
       errorMessage: undefined
     };
   }
 
-
   handleAction(state: State, action: RegistrationAction): State {
     switch(action.type) {
       case 'user/clear-registration-form':
-          return this.getInitialState();
+          return Object.assign({}, state, { userFormData: emptyUserFormData });
       default:
           return super.handleFormUpdate(state, action);
     }
