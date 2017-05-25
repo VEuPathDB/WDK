@@ -41,14 +41,14 @@ public class RetroactiveGuestRemover extends BaseCLI {
   // the replication.
   private static final int PAGE_SIZE = 9000;
 
-  private static final Logger LOG = Logger.getLogger(GuestRemover.class);
+  private static final Logger LOG = Logger.getLogger(RetroactiveGuestRemover.class);
 
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
-    GuestRemover backup = new GuestRemover(cmdName);
+    RetroactiveGuestRemover backup = new RetroactiveGuestRemover(cmdName);
     try {
       backup.invoke(args);
-      LOG.info("WDK User Remover done.");
+      LOG.info("WDK Retroactive Guest User Remover done.");
       System.exit(0);
     }
     catch (Exception ex) {
@@ -144,7 +144,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
   }
 
   public RetroactiveGuestRemover(String command) {
-    super((command != null) ? command : "wdkGuestRemover",
+    super((command != null) ? command : "wdkRetroactiveGuestRemover",
         "This command removes expired guest user data from user DB.");
   }
 
