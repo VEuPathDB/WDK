@@ -218,7 +218,7 @@ public class StepCountUpdater extends BaseCLI {
           logger.info("process steps for user #" + userId + " - " + count);
 
           for (WdkModel wdkModel : wdkModels) {
-            updateSteps(wdkModel.getUserFactory().getUser(userId));
+            updateSteps(wdkModel.getUserFactory().getUserById(userId));
           }
         }
         catch (Exception ex) {

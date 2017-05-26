@@ -11,6 +11,11 @@ export type PreferenceScope = "global" | "project";
 
 export type UserPreferences = Record<PreferenceScope, Record<string, string>>;
 
+export interface UserWithPrefs {
+  user: User;
+  preferences: UserPreferences;
+}
+
 export interface Step {
   answerSpec: AnswerSpec;
   customName: string;

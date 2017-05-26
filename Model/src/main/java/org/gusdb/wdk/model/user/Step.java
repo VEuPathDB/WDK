@@ -356,7 +356,7 @@ public class Step {
   public User getUser() throws WdkModelException {
     if (user == null) {
       // if constructed with only the user id, lazy-load User object
-      user = stepFactory.getWdkModel().getUserFactory().getUser(userId);
+      user = stepFactory.getWdkModel().getUserFactory().getUserById(userId);
     }
     return user;
   }

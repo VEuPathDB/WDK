@@ -1050,7 +1050,7 @@ public class StepFactory {
         Long userId = resultSet.getLong(Utilities.COLUMN_USER_ID);
         user = userMap.get(userId);
         if (user == null) {
-          user = _wdkModel.getUserFactory().getUser(userId);
+          user = _wdkModel.getUserFactory().getUserById(userId);
           userMap.put(userId, user);
         }
       }

@@ -2,7 +2,7 @@ import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
 import {ActionCreator, DispatchAction} from "../ActionCreator";
-import {User, UserPreferences, PreferenceScope} from "../utils/WdkUser";
+import {User, UserPreferences, PreferenceScope, UserWithPrefs} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
@@ -203,15 +203,20 @@ export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData
 
 /** Register user */
 type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
-export let submitRegistrationForm: SubmitRegistrationFormType = (user: UserProfileFormData) => {
+export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
-    let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "preferences", "confirmEmail"]);
-    return dispatch(wdkService.createNewUser(trimmedUser)
-      .then(user => {
+    let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
+    let registrationData: UserWithPrefs = {
+      user: trimmedUser,
+      preferences: formData.preferences as UserPreferences
+    }
+    return dispatch(wdkService.createNewUser(registrationData)
+      .then(responseData => {
         // success; clear the form in case user wants to register another user
         dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
-        // then transition to registration success message
+        // then transition to registration success message page
+        
         return createProfileFormStatusAction('success');
       })
       .catch((error) => {

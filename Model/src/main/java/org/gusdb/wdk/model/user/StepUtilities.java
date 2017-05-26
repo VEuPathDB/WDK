@@ -341,7 +341,7 @@ public class StepUtilities {
     }
     else {
       // get user from user signature
-      User owner = user.getWdkModel().getUserFactory().getUser(parts[0]);
+      User owner = user.getWdkModel().getUserFactory().getUserBySignature(parts[0]);
       // make sure strategy id is an integer
       String strategyIdStr = parts[1];
       if (!FormatUtil.isInteger(strategyIdStr)) {

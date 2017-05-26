@@ -28,10 +28,11 @@ const UserIdentity = props => {
       </div>
       {props.propDefs.map(propDef => {
         let { name, displayName, isRequired } = propDef;
+        let value = user.properties[name] ? user.properties[name] : '';
         return (
           <div key={name}>
             <label htmlFor="{name}">{ isRequired ? <i className="fa fa-asterisk"></i> : ''}{displayName}:</label>
-            <TextBox id="{name}" value={user.properties[name]} required={isRequired}
+            <TextBox id="{name}" value={value} required={isRequired}
                 onChange={onPropertyChange(name)} maxLength="255" size="80" />
           </div>
         );

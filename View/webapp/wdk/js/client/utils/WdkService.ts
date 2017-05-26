@@ -23,7 +23,7 @@ import {
   UserDatasetMeta,
   OntologyTermSummary
 } from './WdkModel';
-import {User, PreferenceScope, UserPreferences, Step} from './WdkUser';
+import {User, PreferenceScope, UserPreferences, Step, UserWithPrefs} from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
 
 /**
@@ -380,8 +380,8 @@ export default class WdkService {
     return this._currentUserPromise;
   }
 
-  createNewUser(user: User) {
-    return this._fetchJson<User>('post', '/user', JSON.stringify(user));
+  createNewUser(userWithPrefs: UserWithPrefs) {
+    return this._fetchJson<User>('post', '/user', JSON.stringify(userWithPrefs));
   }
 
   updateCurrentUser(user: User) {

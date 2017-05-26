@@ -4,7 +4,7 @@ import { User, UserPreferences } from '../utils/WdkUser';
 
 type RegistrationAction = Action | ClearRegistrationFormAction;
 
-let emptyUserFormData: UserProfileFormData = {
+const emptyUserFormData: UserProfileFormData = {
   id: 0,
   email: '',
   isGuest: true,
@@ -31,7 +31,8 @@ export default class UserRegistrationStore extends UserProfileStore {
   handleAction(state: State, action: RegistrationAction): State {
     switch(action.type) {
       case 'user/clear-registration-form':
-          return Object.assign({}, state, { userFormData: emptyUserFormData });
+          let newState = Object.assign({}, state, { userFormData: emptyUserFormData });
+          return newState;
       default:
           return super.handleFormUpdate(state, action);
     }
