@@ -97,7 +97,7 @@ public class UserFactory {
       Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences)
-          throws WdkModelException {
+          throws WdkModelException, WdkUserException {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
     return createUser(email, profileProperties, globalPreferences, projectPreferences, sendWelcomeEmail);
@@ -108,7 +108,7 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences,
       boolean sendWelcomeEmail)
-          throws WdkModelException {
+          throws WdkModelException, WdkUserException {
     try {
       // check email for uniqueness and format
       email = validateAndFormatEmail(email, _accountManager);
@@ -139,6 +139,9 @@ public class UserFactory {
       }
 
       return user;
+    }
+    catch (WdkUserException e) {
+      throw e;
     }
     catch (Exception e) {
       throw new WdkModelException("Could not completely create new user", e);

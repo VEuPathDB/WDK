@@ -37,7 +37,7 @@ public class UserFactoryBean {
     public UserBean createUser(String email, 
             Map<String, String> profileProperties,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences) throws WdkModelException {
+            Map<String, String> projectPreferences) throws WdkModelException, WdkUserException {
         User user = _userFactory.createUser(email, profileProperties,
             globalPreferences, projectPreferences);
         return new UserBean(user);
@@ -46,7 +46,7 @@ public class UserFactoryBean {
     public UserBean createUser(String email, 
             Map<String, String> profileProperties,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences, boolean resetPw) throws WdkModelException {
+            Map<String, String> projectPreferences, boolean resetPw) throws WdkModelException, WdkUserException {
         User user = _userFactory.createUser(email, profileProperties,
             globalPreferences, projectPreferences, resetPw);
         return new UserBean(user);

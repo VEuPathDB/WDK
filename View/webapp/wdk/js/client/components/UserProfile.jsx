@@ -8,7 +8,7 @@ import UserFormContainer, { UserFormContainerPropTypes } from './UserFormContain
 let UserProfile = props => (
 
   <UserFormContainer {...props}
-      shouldHideForm={props.userFormData.isGuest}
+      shouldHideForm={props.globalData.user.isGuest}
       hiddenFormMessage="You must first log on to read and alter your account information."
       titleText="My Account"
       showChangePasswordBox={true}

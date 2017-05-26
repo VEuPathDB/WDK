@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -28,7 +29,7 @@ public class UserCreationService extends WdkService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException {
+  public Response createNewUser(String body) throws DataValidationException, WdkModelException, WdkUserException {
     try {
       JSONObject requestJson = new JSONObject(body);
       List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
