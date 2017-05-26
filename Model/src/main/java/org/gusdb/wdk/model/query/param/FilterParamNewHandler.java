@@ -129,11 +129,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     try {
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
       String metadataSql = getMetadataQuerySql(user, contextParamValues, param);
-      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+      JSONArray jsFilters = jsValue.has(FILTERS_KEY) ? jsValue.getJSONArray(FILTERS_KEY) : null;
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
       
-      if (jsFilters.length() == 0) return filterSelectSql;
+      if (jsFilters == null || jsFilters.length() == 0) return filterSelectSql;
 
       StringBuilder filtersSql = new StringBuilder();
       for (int i = 0; i < jsFilters.length(); i++) {
@@ -166,8 +166,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-    String min = range.getString(FILTERS_MIN);
-    String max = range.getString(FILTERS_MAX);
+    Double min = range.getDouble(FILTERS_MIN);
+    Double max = range.getDouble(FILTERS_MAX);
     return " AND " + metadataTableName + "." + columnName + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max; 
   }
   
