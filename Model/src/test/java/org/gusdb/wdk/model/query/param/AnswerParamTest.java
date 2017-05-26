@@ -24,7 +24,7 @@ public class AnswerParamTest {
   private User user;
   Question question;
 
-  public AnswerParamTest() throws WdkModelException {
+  public AnswerParamTest() throws WdkModelException, WdkUserException {
     user = UnitTestHelper.getRegisteredUser();
     WdkModel wdkModel = UnitTestHelper.getModel();
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {

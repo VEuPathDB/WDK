@@ -1,8 +1,35 @@
 import { wrappable } from '../utils/componentUtils';
 import UserFormContainer, { UserFormContainerPropTypes } from './UserFormContainer';
 
+let interpretFormStatus = (formStatus, errorMessage) => {
+  // configure properties for banner and submit button enabling based on status
+  let messageClass = "wdk-UserProfile-banner ", message = "", disableSubmit = false;
+  switch (formStatus) {
+    case 'new':
+      disableSubmit = true;
+      break;
+    case 'modified':
+      // don't give status and enable submit button
+      break;
+    case 'pending':
+      message = "Submitting registration...";
+      messageClass += "wdk-UserProfile-pending";
+      disableSubmit = true;
+      break;
+    case 'success':
+      message = "You have registered successfully.  Please check your email for a temporary password.";
+      messageClass += "wdk-UserProfile-success";
+      disableSubmit = true; // same as 'new'
+      break;
+    case 'error':
+      message = errorMessage;
+      messageClass += "wdk-UserProfile-error";
+  }
+  return { messageClass, message, disableSubmit };
+}
+
 let IntroText = () => (
-  <div cssStyle={{width:"60%",align:"center"}}>
+  <div style={{width:"70%",textAlign:"center",margin:"15px"}}>
     IMPORTANT: If you already registered in another site<br/>
     (AmoebaDB, CryptoDB, EuPathDB, FungiDB, GiardiaDB, MicrosporidiaDB,
     PiroplasmaDB, PlasmoDB, SchistoDB, ToxoDB, TrichDB or TriTrypDB)<br/>
@@ -13,14 +40,14 @@ let IntroText = () => (
 let descriptionBoxStyle = {
   align:"left",
   width:"550px",
-  margin:"5px",
+  margin:"25px 20px",
   border:"1px solid black",
   padding:"5px",
   lineHeight:"1.5em"
 };
 
 let WhyRegister = () => (
-  <div cssStyle={descriptionBoxStyle}>
+  <div style={descriptionBoxStyle}>
     <p><b>Why register/subscribe?</b> So you can:</p>
     <div id="cirbulletlist">
       <ul>
@@ -36,8 +63,8 @@ let WhyRegister = () => (
 );
 
 let PrivacyPolicy = () => (
-  <div cssStyle={descriptionBoxStyle}>
-    <div cssStyle={{fontSize:"1.2em"}}>
+  <div style={descriptionBoxStyle}>
+    <div style={{fontSize:"1.2em"}}>
       <b>EuPathDB Websites Privacy Policy</b> 
     </div>
     <table>
@@ -75,14 +102,23 @@ let PrivacyPolicy = () => (
  */
 let UserRegistration = props => (
 
-  <UserFormContainer {...props}
-      shouldHideForm={!props.userFormData.isGuest}
-      hiddenFormMessage="You must log out before registering a new user."
-      titleText="Registration"
-      introComponent={IntroText}
-      showChangePasswordBox={false}
-      submitButtonText="Sign me up!"
-      onSubmit={props.userEvents.submitRegistrationForm}/>
+  <div>
+    <UserFormContainer {...props}
+        shouldHideForm={!props.globalData.user.isGuest}
+        hiddenFormMessage="You must log out before registering a new user."
+        titleText="Registration"
+        introComponent={IntroText}
+        statusDisplayFunction={interpretFormStatus}
+        showChangePasswordBox={false}
+        submitButtonText="Register"
+        onSubmit={props.userEvents.submitRegistrationForm}/>
+    {!props.globalData.user.isGuest ? '' : (
+      <div>
+        <WhyRegister/>
+        <PrivacyPolicy/>
+      </div>
+    )}
+  </div>
 
 );
 

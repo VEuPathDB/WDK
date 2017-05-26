@@ -36,7 +36,7 @@ public class UserFormatter {
     // private fields viewable only by owner
     if (isOwner) {
       json.put(Keys.EMAIL, user.getEmail());
-      json.put(Keys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs));
+      json.put(Keys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs, isOwner));
       if (includePreferences) {
         json.put(Keys.PREFERENCES, getPreferencesJson(user.getPreferences()));
       }
@@ -44,12 +44,14 @@ public class UserFormatter {
     return json;
   }
 
-  private static JSONObject getPropertiesJson(Map<String,String> props, List<UserPropertyName> propDefs) {
+  private static JSONObject getPropertiesJson(Map<String,String> props, List<UserPropertyName> propDefs, boolean isOwner) {
     JSONObject propsJson = new JSONObject();
     for (UserPropertyName definedProperty : propDefs) {
-      String key = definedProperty.getName();
-      String value = (props.containsKey(key) ? props.get(key) : "");
-      propsJson.put(key, value);
+      if (isOwner || definedProperty.isPublic()) {
+        String key = definedProperty.getName();
+        String value = (props.containsKey(key) ? props.get(key) : "");
+        propsJson.put(key, value);
+      }
     }
     return propsJson;
   }

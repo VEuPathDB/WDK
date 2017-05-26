@@ -63,18 +63,18 @@ public class UserProfileRequest {
    * 
    * @param json request body for a profile request
    * @param configuredProps user profile properties configured in the model
-   * @param requireAllProperties whether to error if not all properties present
+   * @param requireRequiredProperties whether to error if not all required properties present
    * @return validated request data
    * @throws RequestMisformatException if JSON is misformatted or has incorrect data types
    * @throws DataValidationException if data contained in request is invalid for another reason
    */
   public static UserProfileRequest createFromJson(JSONObject json,
-      List<UserPropertyName> configuredProps, boolean requireAllProperties)
+      List<UserPropertyName> configuredProps, boolean requireRequiredProperties)
       throws RequestMisformatException, DataValidationException {
     try {
       UserProfileRequest request = new UserProfileRequest();
-      request.setEmail(validateEmail(json, requireAllProperties));
-      request.setProfileMap(parseProperties(json, getPropMap(configuredProps), requireAllProperties));
+      request.setEmail(validateEmail(json, requireRequiredProperties));
+      request.setProfileMap(parseProperties(json, getPropMap(configuredProps), requireRequiredProperties));
       return request;
     }
     catch (JSONException e) {
@@ -108,15 +108,17 @@ public class UserProfileRequest {
   /**
    * Provides a map of the profile related JSON objects.  Only retrieves those
    * key/value pairs that belong in a user profile.
-   * @param json
+   * @param json properties object
+   * @param configuredProps property name configuration from the model
+   * @param requireRequiredProps whether to throw exception if not all required props are present
    * @return - map of user profile property enum | value pairs
    * @throws JSONException among other reasons, thrown in the event of a non-string value detail message
    * @throws DataValidationException if JSON format and types are ok, but further data validation fails
    */
   private static Map<String,String> parseProperties(JSONObject json,
-      Map<String, UserPropertyName> configuredProps, boolean requireAllProperties) throws JSONException, DataValidationException {
+      Map<String, UserPropertyName> configuredProps, boolean requireRequiredProperties) throws JSONException, DataValidationException {
     if (!json.has(Keys.PROPERTIES)) {
-      if (requireAllProperties) {
+      if (requireRequiredProperties) {
         throw new JSONException("'properties' property is required.");
       }
       else {
@@ -144,17 +146,17 @@ public class UserProfileRequest {
     validateUnrecognized(unrecognizedProps);
     validatePropertyLengths(oversizedProps);
     validateNonEmptyRequirement(parsedProps, configuredProps);
-    if (requireAllProperties) {
-      validateAllPropsPresent(parsedProps, configuredProps);
+    if (requireRequiredProperties) {
+      validateRequiredPropsPresent(parsedProps, configuredProps);
     }
     return parsedProps;
   }
 
-  private static void validateAllPropsPresent(Map<String, String> parsedProps,
+  private static void validateRequiredPropsPresent(Map<String, String> parsedProps,
       Map<String, UserPropertyName> configuredProps) throws DataValidationException {
     List<String> missingProps = new ArrayList<>();
     for (String propKey : configuredProps.keySet()) {
-      if (!parsedProps.containsKey(propKey)) {
+      if (!parsedProps.containsKey(propKey) && configuredProps.get(propKey).isRequired()) {
         missingProps.add(propKey);
       }
     }

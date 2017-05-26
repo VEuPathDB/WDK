@@ -74,7 +74,7 @@ public class UnitTestHelper {
         return guest;
     }
 
-    public synchronized static User getRegisteredUser() throws WdkModelException {
+    public synchronized static User getRegisteredUser() throws WdkModelException, WdkUserException {
         if (registeredUser == null) {
             WdkModel wdkModel = getModel();
             UserFactory userFactory = wdkModel.getUserFactory();

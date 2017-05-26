@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.junit.Assert;
@@ -45,7 +46,7 @@ public class UserTest {
     }
 
     @Test
-    public void testCreateRegisteredUser() throws WdkModelException {
+    public void testCreateRegisteredUser() throws WdkModelException, WdkUserException {
         String email = "wdk-test@email";
         String firstName = "Test";
         String lastName = "User";
@@ -81,7 +82,7 @@ public class UserTest {
     }
 
     @Test
-    public void testDeleteUser() throws WdkModelException {
+    public void testDeleteUser() throws WdkModelException, WdkUserException {
         String email = "wdk-test@email";
         User user = userFactory.getUserByEmail(email);
         if (user == null) {

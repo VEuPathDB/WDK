@@ -56,13 +56,16 @@ class UserFormContainer extends React.Component {
   }
 
   render() {
-    let formConfig = interpretFormStatus(this.props.formStatus, this.props.errorMessage);
+    let formInterpreter = this.props.statusDisplayFunction || interpretFormStatus;
+    let formConfig = formInterpreter(this.props.formStatus, this.props.errorMessage);
+    let IntroComponent = this.props.introComponent || (() => <span/>);
     return (
       <div style={containerStyle}>
         {this.props.shouldHideForm ?
           <div>{this.props.hiddenFormMessage}</div> :
           <div>
             <h1>{this.props.titleText}</h1>
+            <IntroComponent/>
             <FormMessage {...formConfig}/>
             <UserAccountForm user={this.props.userFormData}
                              showChangePasswordBox={this.props.showChangePasswordBox}
@@ -219,6 +222,12 @@ UserFormContainer.propTypes = Object.assign({}, UserFormContainerPropTypes, {
 
   /** Page header title text */
   titleText: PropTypes.string.isRequired,
+
+  /** Component to show intro about this page; will use empty span by default */
+  introComponent: PropTypes.func,
+
+  /** Function to determine the status messages at the top of the element */
+  statusDisplayFunction: PropTypes.func,
 
   /** Whether to show change password box */
   showChangePasswordBox: PropTypes.bool.isRequired,

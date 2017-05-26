@@ -125,10 +125,15 @@ public class OAuthClient {
       UserBean user = _userFactory.getUserByEmail(gmailAddress);
       return user.getUserId();
     }
-    catch (WdkUserException e) {
-      // user does not exist; automatically create user for this gmail user
-      UserBean user = _userFactory.createUser(gmailAddress, null, null, null, false);
-      return user.getUserId();
+    catch (WdkUserException ue) {
+      try {
+        // user does not exist; automatically create user for this gmail user
+        UserBean user = _userFactory.createUser(gmailAddress, null, null, null, false);
+        return user.getUserId();
+      }
+      catch (WdkUserException ue2) {
+        throw new WdkModelException("Could not create WDK user from validated Gmail email", ue2);
+      }
     }
   }
 
