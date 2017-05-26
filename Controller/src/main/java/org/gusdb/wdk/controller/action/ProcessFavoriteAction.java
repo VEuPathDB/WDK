@@ -93,6 +93,7 @@ public class ProcessFavoriteAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        if (action == null) action = "OOPS_A_NULL_ACTION";
         int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids

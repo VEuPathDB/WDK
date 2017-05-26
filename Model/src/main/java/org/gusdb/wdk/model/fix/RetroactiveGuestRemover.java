@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.sql.DataSource;
 
@@ -23,11 +22,18 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
- *  This is intended as a one-off program to rid bloated user dbs of guest users until only 2 weeks of
- *  guest users remain.  The program removes 2 weeks of guest users at a time and is to be run regularly
- *  via Jenkins until only the last 2 weeks of guest users remain.
+ * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
+ * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
+ * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
+ * Starting build 27 we select not only guest users but also last_active null users
+ * starting build 29 gus4 we remove last_active null condition given that thee are few and they might want to just use our galaxy
+ * @author Jerric
+ *
  */
 public class RetroactiveGuestRemover extends BaseCLI {
+
+  private static final String ARG_CUTOFF_DATE = "cutoffDate";
+  private static final String ARG_OLDEST_DAY_COUNT = "oldestDayCount";
 
   private static final String GUEST_TABLE = "wdk_guests";
 
@@ -42,7 +48,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
     RetroactiveGuestRemover backup = new RetroactiveGuestRemover(cmdName);
     try {
       backup.invoke(args);
-      LOG.info("WDK User Remover done.");
+      LOG.info("WDK Retroactive Guest User Remover done.");
       System.exit(0);
     }
     catch (Exception ex) {
@@ -57,15 +63,24 @@ public class RetroactiveGuestRemover extends BaseCLI {
    * cutoff date of one month prior to the current date instead.
    * @param dataSource
    * @param userSchema
+   * @param oldestNumberOfDays - awkward name for a parameter that indicates how many
+   * days forward from the oldest guest user registry one goes to select a cutoff date.
    * @return
    * @throws WdkModelException
    */
-  public static String deriveCutoffDate(DataSource dataSource, String userSchema) throws WdkModelException {
-	SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+  public static String deriveCutoffDate(DataSource dataSource, String userSchema, String oldestNumberOfDays) throws WdkModelException {
+	int dayCount = 14;  
+	try {  
+	  dayCount = Integer.parseInt(oldestNumberOfDays);
+	}
+	catch(NumberFormatException nfe) {
+      throw new WdkModelException("The oldest number of days argument, '" + oldestNumberOfDays + "', must be an integer.");
+	}
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
 	Calendar oneMonthPriorToNowCal = Calendar.getInstance();
 	oneMonthPriorToNowCal.add(Calendar.MONTH, -1);
 	Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
-	cutoffCal.add(Calendar.DATE, 14);
+	cutoffCal.add(Calendar.DATE, dayCount);
     if(cutoffCal.getTimeInMillis() >= oneMonthPriorToNowCal.getTimeInMillis()) {
       return formatter.format(oneMonthPriorToNowCal.getTime());
     }
@@ -129,7 +144,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
   }
 
   public RetroactiveGuestRemover(String command) {
-    super((command != null) ? command : "wdkGuestRemover",
+    super((command != null) ? command : "wdkRetroactiveGuestRemover",
         "This command removes expired guest user data from user DB.");
   }
 
@@ -137,6 +152,16 @@ public class RetroactiveGuestRemover extends BaseCLI {
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId, which should match the directory name "
         + "under $GUS_HOME, where model-config.xml is stored.");
+
+    addSingleValueOption(ARG_CUTOFF_DATE, false, null, "Any guest user "
+        + "created BEFORE this date, and the user's data, will be removed "
+        + "from the live schema defined in the model-config.xml. "
+        + "The data should be in this format: yyyy/mm/dd");
+    
+    addSingleValueOption(ARG_OLDEST_DAY_COUNT, false, null, "Finds the "
+    	+ "oldest registry for a guest user and counts up the number of "
+    	+ "days provided to derive a cutoff date.  Alternative mechanism "
+    	+ "meant to help eliminate bloat incrementally.");
   }
 
   @Override
@@ -145,13 +170,20 @@ public class RetroactiveGuestRemover extends BaseCLI {
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-
+    String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
+    String oldestDayCount = (String) getOptionValue(ARG_OLDEST_DAY_COUNT);
+    
     try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
       DatabaseInstance userDb = wdkModel.getUserDb();
       String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
-      String cutoffDate = deriveCutoffDate(userDb.getDataSource(), userSchema);
+  
+      if((cutoffDate == null || cutoffDate.isEmpty()) &&
+    	 (oldestDayCount != null && !oldestDayCount.isEmpty())) {
+        cutoffDate = deriveCutoffDate(userDb.getDataSource(), userSchema, oldestDayCount);
+      }
+      
       LOG.info("********** Cutoff Date: " + cutoffDate + " **********");
-     
+      
       LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
       String guestSql = lookupGuests(userDb, userSchema, cutoffDate);
       LOG.info("********** " + guestSql + " **********");
@@ -162,6 +194,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
       LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
       // though we cannot use the cutoff date here...
       removeGBrowseGuests(userDb.getDataSource());
+      
     }
   }
 
