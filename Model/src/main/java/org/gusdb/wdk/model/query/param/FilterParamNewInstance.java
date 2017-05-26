@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
