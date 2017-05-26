@@ -52,7 +52,7 @@ public class UserDatasetInfo {
     try {
       User user = userCache.get(userId);
       if (user == null) {
-        user = userFactory.getUser(userId);
+        user = userFactory.getUserById(userId);
         userCache.put(userId, user);
       }
       return user;

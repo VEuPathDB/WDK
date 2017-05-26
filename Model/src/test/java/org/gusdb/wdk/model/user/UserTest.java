@@ -70,13 +70,13 @@ public class UserTest {
     public void testGetUser() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
 
-        User user1 = userFactory.getUser(user.getUserId());
+        User user1 = userFactory.getUserById(user.getUserId());
         Assert.assertEquals("get user by id", user, user1);
 
         User user2 = userFactory.getUserByEmail(user.getEmail());
         Assert.assertEquals("get user by email", user, user2);
 
-        User user3 = userFactory.getUser(user.getSignature());
+        User user3 = userFactory.getUserBySignature(user.getSignature());
         Assert.assertEquals("get user by signature", user, user3);
     }
 

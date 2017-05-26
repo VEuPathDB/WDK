@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.user;
 
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -39,6 +41,7 @@ public class UserFactory {
   public static final String TABLE_USERS = "users";
   public static final String COL_USER_ID = "user_id";
   public static final String COL_IS_GUEST = "is_guest";
+  public static final String COL_FIRST_ACCESS = "first_access";
 
   // -------------------------------------------------------------------------
   // sql and sql macro definitions
@@ -50,8 +53,8 @@ public class UserFactory {
   private static final Integer[] COUNT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
   private static final String INSERT_USER_REF_SQL =
       "insert into " + USER_SCHEMA_MACRO + TABLE_USERS +
-      " (" + COL_USER_ID + "," + COL_IS_GUEST + ") VALUES (?, ?)";
-  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER };
+      " (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +") VALUES (?, ?, ?)";
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER, Types.TIMESTAMP };
 
   // -------------------------------------------------------------------------
   // the macros used by the registration email
@@ -65,13 +68,11 @@ public class UserFactory {
   // member variables
   // -------------------------------------------------------------------------
 
+  private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
   private final String _userSchema;
   private final AccountManager _accountManager;
   private final UserPreferenceFactory _preferenceFactory;
-
-  // WdkModel is used by the legacy code, may consider to be removed
-  private WdkModel _wdkModel;
 
   // -------------------------------------------------------------------------
   // constructor
@@ -91,10 +92,6 @@ public class UserFactory {
   // -------------------------------------------------------------------------
   // methods
   // -------------------------------------------------------------------------
-
-  public WdkModel getWdkModel() {
-    return _wdkModel;
-  }
 
   public User createUser(String email,
       Map<String, String> profileProperties,
@@ -169,9 +166,10 @@ public class UserFactory {
   }
 
   private void addUserReference(Long userId, boolean isGuest) {
+    Timestamp insertedOn = new Timestamp(new Date().getTime());
     String sql = INSERT_USER_REF_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
     new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-      .executeStatement(new Object[]{ userId, isGuest }, INSERT_USER_REF_PARAM_TYPES);
+      .executeStatement(new Object[]{ userId, isGuest, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
   }
 
   private static void emailTemporaryPassword(User user, String password,
@@ -233,7 +231,7 @@ public class UserFactory {
    * @return the guest user with remaining fields populated
    * @throws WdkRuntimeException if unable to persist temporary user
    */
-  public GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
+  GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
     try {
       UserProfile profile = _accountManager.createGuestAccount(user.getEmailPrefix());
       addUserReference(profile.getUserId(), true);
@@ -281,7 +279,7 @@ public class UserFactory {
 
   public User login(User guest, long userId)
       throws WdkModelException, WdkUserException {
-    return completeLogin(guest, getUser(userId));
+    return completeLogin(guest, getUserById(userId));
   }
 
   /**
@@ -306,9 +304,10 @@ public class UserFactory {
    * 
    * @param userId user ID
    * @return user user object for the passed ID
-   * @throws WdkModelException if user cannot be found
+   * @throws NoSuchUserException if user cannot be found
+   * @throws WdkModelException if an error occurs in the attempt
    */
-  public User getUser(long userId) throws WdkModelException {
+  public User getUserById(long userId) throws WdkModelException {
     User user = populateRegisteredUser(_accountManager.getUserProfile(userId));
     if (user == null) {
       throw new NoSuchUserException("Invalid user id: " + userId);
@@ -320,7 +319,7 @@ public class UserFactory {
     return populateRegisteredUser(_accountManager.getUserProfile(email));
   }
 
-  public User getUser(String signature) throws WdkModelException, WdkUserException {
+  public User getUserBySignature(String signature) throws WdkModelException, WdkUserException {
     User user = populateRegisteredUser(_accountManager.getUserProfileBySignature(signature));
     if (user == null) {
       // signature is rarely sent in by user; if User cannot be found, it's probably an error
@@ -356,10 +355,10 @@ public class UserFactory {
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
         throw new WdkModelException("This email is already in use by another account.  Please choose another.");
       }
-  
+
       // save off other data to user profile
       _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), user.getProfileProperties());
-  
+
       // save preferences
       _preferenceFactory.savePreferences(user);
     }

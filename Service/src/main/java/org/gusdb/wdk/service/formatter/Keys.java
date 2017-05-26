@@ -129,6 +129,7 @@ public class Keys {
   public static final String OAUTH_STATE_TOKEN = "oauthStateToken";
 
   // user-specific keys
+  public static final String USER = "user";
   public static final String EMAIL = "email";
   public static final String IS_GUEST = "isGuest";
   public static final String PREFERENCES = "preferences";
