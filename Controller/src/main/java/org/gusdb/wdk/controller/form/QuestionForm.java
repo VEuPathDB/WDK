@@ -71,6 +71,7 @@ public class QuestionForm extends MapActionForm {
     catch (WdkUserException | WdkModelException ex) {
       ActionMessage message = new ActionMessage("mapped.properties", ex.getMessage());
       errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+      logger.error("Unable to get question", ex);
       return errors;
     }
     if (wdkQuestion == null)

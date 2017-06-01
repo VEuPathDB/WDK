@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DateParam;
 import org.gusdb.wdk.model.query.param.DateRangeParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.NumberRangeParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -26,6 +27,9 @@ public class ParamBeanFactory {
     }
     if (param instanceof FilterParam) {
       bean = (ParamBean<T>) new FilterParamBean((FilterParam)param);
+    }
+    else if (param instanceof FilterParamNew) {
+      bean = (ParamBean<T>) new FilterParamNewBean((FilterParamNew)param);
     }
     else if (param instanceof AbstractEnumParam) {
       bean = (ParamBean<T>) new EnumParamBean((AbstractEnumParam)param);
