@@ -127,9 +127,7 @@ wdk.namespace("window.wdk.history", function(ns, $) {
   }
 
   function downloadStep(stepId) {
-    //var url = "downloadStep.do?step_id=" + stepId;
-	// Calling an action that redirects to the React download page  
-    var url = "downloadStepRedirect.do?step_id=" + stepId;
+    var url = "downloadStep.do?step_id=" + stepId;
     window.location = url;
   }
 
