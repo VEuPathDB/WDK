@@ -53,23 +53,23 @@ export type Metadata = {
 }
 
 
-export type IFilter<Values, Field> = {
-  field: Field;
-  values: Values;
+export type IFilter<Value> = {
+  field: string;
+  value: Value;
   display: string;
   selection?: Datum[];
 }
 
-export type MemberFilter = IFilter<string[], StringField>;
+export type MemberFilter = IFilter<string[]>;
 
-export type RangeFilter = IFilter<{ min: string; max: string; }, NumberField | DateField>;
+export type RangeFilter = IFilter<{ min: string; max: string; }>;
 
 export type Filter = MemberFilter | RangeFilter;
 
 export interface FilterServiceAttrs {
-  fields: Field[];
+  fields: Record<string, Field>;
   data: Datum[];
-  columns: Field[];
+  columns: string[];
   fieldMetadataMap: {
     [field_term: string]: Metadata;
   };
@@ -82,11 +82,11 @@ export default class FilterService {
   isLoading: boolean;
   filters: Filter[];
   ignoredData: Datum[];
-  fields: FieldTreeNode[];
-  selectedField: Field;
+  fields: Record<string, Field>;
+  selectedField: string;
   data: Datum[];
   filteredData: Datum[];
-  columns: Field[];
+  columns: string[];
   distributionMap: {
     [datum_term: string]: Distribution;
   };
@@ -106,7 +106,7 @@ export default class FilterService {
     this.ignoredData = [];
 
     // metadata properties
-    this.fields = makeTree(attrs.fields || []);
+    this.fields = attrs.fields;
 
     // unfiltered data, used for local filtering
     this.data = attrs.data || [];
@@ -163,14 +163,14 @@ export default class FilterService {
     );
   }
 
-  selectField(field: Field) {
+  selectField(field: string) {
     this.isLoading = true;
     this.selectedField = field;
     this._emitChange();
 
     this.getFieldDistribution(field)
       .then(distribution => {
-        this.distributionMap[field.term] = distribution;
+        this.distributionMap[field] = distribution;
         this.isLoading = false;
         this._emitChange();
       });
@@ -181,7 +181,7 @@ export default class FilterService {
     this.isLoading = true;
     this._emitChange();
 
-    let filter = this.selectedField && this.filters.find(filter => filter.field.term === this.selectedField.term);
+    let filter = this.selectedField && this.filters.find(filter => filter.field === this.selectedField);
     var promises: [
       Promise<Datum[]>,
       Promise<Datum[]|undefined>,
@@ -194,7 +194,7 @@ export default class FilterService {
 
     Promise.all(promises).then(([ filteredData, filterSelection, distribution ]) => {
       if (distribution) {
-        this.distributionMap[this.selectedField.term] = distribution;
+        this.distributionMap[this.selectedField] = distribution;
       }
       if (filter) {
         filter.selection = filterSelection;
@@ -205,7 +205,7 @@ export default class FilterService {
     });
   }
 
-  updateColumns(fields: Field[]) {
+  updateColumns(fields: string[]) {
     this.isLoading = true;
     this._emitChange();
 
@@ -229,7 +229,7 @@ export default class FilterService {
   //
   //     [ { value, count, filteredCount } ]
   //
-  getFieldDistribution(field: Field): Promise<Distribution> {
+  getFieldDistribution(field: string): Promise<Distribution> {
     throw new Error('getFieldDistribution() should be implemented ' + field);
   }
 
@@ -245,7 +245,7 @@ export default class FilterService {
   //
   //     [ { data_term: field_value } ]
   //
-  getFieldMetadata(field: Field): Promise<Metadata> {
+  getFieldMetadata(field: string): Promise<Metadata> {
     throw new Error('getFieldMetadata() should be implemented ' + field);
   }
 

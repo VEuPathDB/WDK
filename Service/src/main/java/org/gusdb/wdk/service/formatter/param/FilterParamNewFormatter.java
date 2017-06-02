@@ -37,9 +37,9 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     for (String term : ontologyMap.keySet()) {
       JSONObject itemJson = new JSONObject();
       OntologyItem item = ontologyMap.get(term);
-      itemJson.put("ontologyId", item.getOntologyId());
-      itemJson.put("parentOntologyId", item.getParentOntologyId());
-      itemJson.put("displayName", item.getDisplayName());
+      itemJson.put("term", item.getOntologyId());
+      itemJson.put("parent", item.getParentOntologyId());
+      itemJson.put("display", item.getDisplayName());
       itemJson.put("description", item.getDescription());
       itemJson.put("type", item.getType());
       itemJson.put("units", item.getUnits());

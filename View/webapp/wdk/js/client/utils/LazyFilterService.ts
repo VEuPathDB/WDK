@@ -16,7 +16,8 @@ import {
   uniqMetadataValues,
   combinePredicates,
   getMemberPredicate,
-  getRangePredicate
+  getDateRangePredicate,
+  getNumberRangePredicate
 } from './FilterServiceUtils';
 
 
@@ -34,7 +35,7 @@ export default class LazyFilterService extends FilterService {
   metadataUrl: string;
   dependedValue: string;
   metadataXhrQueue: Map<string, { abort: Function }>;
-  private _pendingSelectField: Field;
+  private _pendingSelectField: string;
 
   constructor(attrs: LazyFilterServiceAttrs) {
     if (!attrs.name) {
@@ -58,27 +59,27 @@ export default class LazyFilterService extends FilterService {
     this.metadataXhrQueue = new Map();
   }
 
-  selectField(field: Field) {
+  selectField(field: string) {
     this.cancelXhr(this._pendingSelectField);
     this._pendingSelectField = field;
     super.selectField(field);
   }
 
-  updateColumns(fields: Field[]) {
+  updateColumns(fields: string[]) {
     fields.forEach(field => this.cancelXhr(field));
     super.updateColumns(fields);
   }
 
-  cancelXhr(field: Field) {
+  cancelXhr(field: string) {
     if (field) {
-      _.result(this.metadataXhrQueue.get(field.term), 'abort');
+      _.result(this.metadataXhrQueue.get(field), 'abort');
     }
   }
 
-  getFieldDistribution(field: Field) {
-    var term = field.term;
+  getFieldDistribution(field: string) {
+    var term = field;
     var otherFilters =_.reject(this.filters, function(filter) {
-      return filter.field.term === term;
+      return filter.field === term;
     });
 
     // Retrieve metadata and filtered data and return a promise
@@ -110,9 +111,9 @@ export default class LazyFilterService extends FilterService {
     });
   }
 
-  getFieldMetadata(field: Field) {
+  getFieldMetadata(field: string) {
     return new Promise((resolve, reject) => {
-      var term = field.term;
+      var term = field;
 
       // if it's cached, return a promise that resolves immediately
       if (this.fieldMetadataMap[term]) {
@@ -165,12 +166,12 @@ export default class LazyFilterService extends FilterService {
         // Map filters to a list of predicate functions to call on each data item
         var predicates = filters
           .map(function(filter) {
-            var metadata = this.fieldMetadataMap[filter.field.term];
-            var { type } = filter.field;
+            var metadata = this.fieldMetadataMap[filter.field];
+            var { type } = this.fields[filter.field];
             switch(type) {
               case 'string': return getMemberPredicate(metadata, <MemberFilter>filter);
-              case 'date':
-              case 'number': return getRangePredicate(metadata, <RangeFilter>filter);
+              case 'date':   return getDateRangePredicate(metadata, <RangeFilter>filter);
+              case 'number': return getNumberRangePredicate(metadata, <RangeFilter>filter);
               default: throw new Error("Unknown filter field type: `" + type + "`.");
             }
           }, this);

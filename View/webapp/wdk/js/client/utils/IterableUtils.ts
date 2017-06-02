@@ -84,7 +84,7 @@ export class Seq<T> {
   }
 
   concat(...iterables: Iterable<T>[]) {
-    return new Seq(concat(this._iterable, ...iterables));
+    return new Seq(concat(this, ...iterables));
   }
 
   map<U>(fn: Mapper<T, U>) {
@@ -135,8 +135,12 @@ export class Seq<T> {
     return some(fn, this);
   }
 
+  includes(item: T) {
+    return includes(item, this);
+  }
+
   reduce<U>(fn: Reducer<T, U>, value?: U) {
-    return value == null ? reduce(fn, this)
+    return value === undefined ? reduce(fn, this)
     : reduce(fn, value, this);
   }
 
@@ -303,6 +307,10 @@ export function last<T>(iterable: Iterable<T>) {
 
 export function rest<T>(iterable: Iterable<T>) {
   return drop(1, iterable);
+}
+
+export function includes<T>(item: T, iterable: Iterable<T>): boolean {
+  return some(t => t === item, iterable);
 }
 
 export function every<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {

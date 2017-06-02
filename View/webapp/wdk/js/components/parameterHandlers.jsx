@@ -233,7 +233,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var maxSelectedCount = $data.maxSelectedCount;
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
-    var defaultColumns = $data.defaultColumns ? $data.defaultColumns.split(/\s+/) : [];
+    // var defaultColumns = $data.defaultColumns ? $data.defaultColumns.split(/\s+/) : [];
     var trimMetadataTerms = $data.trimMetadataTerms;
     var input = $param.find('input');
     var previousValue;
@@ -253,20 +253,15 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }
 
-    var fields = _.keys(filterData.metadataSpec)
-      .map(function(name) {
+    var fields = _.mapValues(filterData.metadataSpec, function(field, name) {
         return Object.assign({
           term: name,
           display: name
-        }, filterData.metadataSpec[name]);
+        }, field);
       });
 
     var [ validFilters, invalidFilters ] = _(_.get(previousValue, 'filters'))
-      .map(filter => ({
-        field: fields.find(field => field.term == filter.field) || filter.field,
-        values: filter.value
-      }))
-      .partition(filter => typeof filter.field === 'object')
+      .partition(filter => filter.field in fields)
       .value();
 
     var filterParamOptions = { title, trimMetadataTerms };
@@ -282,8 +277,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterService.updateFilters(validFilters);
     filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
-    filterService.selectField(validFilters[0] ? validFilters[0].field :
-      findLeaf(filterService.getState().fields).field);
+    filterService.selectField(validFilters[0] ? validFilters[0].field : findLeaf(fields));
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -323,10 +317,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       input.val(JSON.stringify({
         values: _.map(filteredData, entry => entry.term),
         ignored: _.map(ignored, entry => entry.term),
-        filters: _.map(filterService.filters, filter => ({
-          value: filter.values,
-          field: filter.field.term
-        }))
+        filters: filterService.filters
       }));
 
       // trigger loading event on $param
@@ -339,9 +330,14 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     console.timeEnd('intialize render :: ' + name);
 
-    // traverse the left-most branch of the tree to find the first leaf
-    function findLeaf([ node ]) {
-      return node.field.leaf === 'true' ? node : findLeaf(node.children)
+    /**
+     * Find first leaf of tree
+     * @param {Record<string, Field>} fields
+     * @param {string?} parentTerm
+     */
+    function findLeaf(fields, parentTerm = null) {
+      var root = _.find(fields, field => field.parent == parentTerm);
+      return root == null ? parentTerm : findLeaf(fields, root.term);
     }
   }
 
@@ -358,7 +354,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         ignoredData={state.ignoredData}
         columns={state.columns}
         activeField={state.selectedField}
-        activeFieldSummary={state.selectedField && state.distributionMap[state.selectedField.term]}
+        activeFieldSummary={state.distributionMap[state.selectedField]}
         fieldMetadataMap={state.fieldMetadataMap}
 
         isLoading={state.isLoading}

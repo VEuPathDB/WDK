@@ -7,18 +7,19 @@ import {
   isEmpty,
   isEqual,
   map,
+  memoize,
   noop,
-  omit,
   partial,
   partition,
   property,
   reduce,
   result,
   sortBy,
-  throttle
+  throttle,
+  values
 } from 'lodash';
 import React from 'react';
-import { preorderSeq } from '../../utils/TreeUtils';
+import { Seq } from '../../utils/IterableUtils';
 import { findDOMNode } from 'react-dom';
 import Loading from '../Loading';
 import Tooltip from '../Tooltip';
@@ -29,6 +30,7 @@ var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 
 /**
  * Returns an strftime style format string.
+ * @param {string} dateString
  */
 function getFormatFromDateString(dateString) {
   var matches = dateString.match(dateStringRe);
@@ -51,14 +53,34 @@ function formatDate(format, date) {
     date = new Date(date);
   }
   return format
-  .replace(/%Y/, date.getFullYear())
-  .replace(/%m/, date.getMonth() + 1)
-  .replace(/%d/, date.getDate());
+  .replace(/%Y/, String(date.getFullYear()))
+  .replace(/%m/, String(date.getMonth() + 1))
+  .replace(/%d/, String(date.getDate()));
 }
-
 
 var { PropTypes } = React;
 
+/**
+ * @typedef {string[]} StringFilterValue
+ */
+/**
+ * @typedef {{ min: number, max: number }} NumberFilterValue
+ */
+/**
+ * @typedef {Object} Filter
+ * @property {string} field
+ * @property {StringFilterValue | NumberFilterValue} value
+ */
+
+/**
+ * @typedef {Object} FilterListProps
+ * @property {number} dataCount
+ * @property {number} filteredDataCount
+ * @property {string?} selectedField
+ * @property {function(string): void} onFilterSelect
+ * @property {function(Filter): void} onFilterRemove
+ * @property {Array<Filter>} filters
+ */
 
 /**
  * List of filters configured by the user.
@@ -68,24 +90,36 @@ var { PropTypes } = React;
  */
 class FilterList extends React.Component {
 
+  /**
+   * @param {FilterListProps} props
+   * @return {React.Component<FilterListProps, void>}
+   */
   constructor(props) {
     super(props);
     this.handleFilterSelectClick = this.handleFilterSelectClick.bind(this);
     this.handleFilterRemoveClick = this.handleFilterRemoveClick.bind(this);
   }
 
+  /**
+   * @param {Filter} filter
+   * @param {Event} event
+   */
   handleFilterSelectClick(filter, event) {
     event.preventDefault();
     this.props.onFilterSelect(filter.field);
   }
 
+/**
+ * @param {Filter} filter
+ * @param {Event} event
+ */
   handleFilterRemoveClick(filter, event) {
     event.preventDefault();
     this.props.onFilterRemove(filter);
   }
 
   render() {
-    var { filteredDataCount, dataCount, filters, selectedField } = this.props;
+    var { filteredDataCount, dataCount, fields, filters, selectedField } = this.props;
 
     return (
       <div className="filter-items-wrapper">
@@ -94,17 +128,17 @@ class FilterList extends React.Component {
         </span>
         <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
           {map(filters, filter => {
-            var className = result(selectedField, 'term') === filter.field.term ? 'selected' : '';
+            var className = selectedField === filter.field ? 'selected' : '';
             var handleSelectClick = partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
-            var display = getFilterDisplay(filter);
+            var display = getFilterDisplay(fields[filter.field], filter.value);
 
             return (
-              <li key={filter.field.term} className={className}>
+              <li key={filter.field} className={className}>
                 <div className="ui-corner-all">
                   <a className="select"
                     onClick={handleSelectClick}
-                    href={'#' + filter.field.term}
+                    href={'#' + filter.field}
                     title={display}>{display}</a>
                   {/* Use String.fromCharCode to avoid conflicts with
                       character ecoding. Other methods detailed at
@@ -128,10 +162,11 @@ class FilterList extends React.Component {
 FilterList.propTypes = {
   onFilterSelect: PropTypes.func.isRequired,
   onFilterRemove: PropTypes.func.isRequired,
+  fields: PropTypes.object.isRequired,
   filters: PropTypes.array.isRequired,
   filteredDataCount: PropTypes.number.isRequired,
   dataCount: PropTypes.number.isRequired,
-  selectedField: PropTypes.object
+  selectedField: PropTypes.string
 };
 
 
@@ -164,38 +199,38 @@ class FieldList extends React.Component {
   constructor(props) {
     super(props);
     this.handleFieldSelect = this.handleFieldSelect.bind(this);
+    this.makeOntologyTree = memoize(makeOntologyTree);
 
     this.state = {
       searchTerm: '',
-      expandedNodes: preorderSeq({
-        field: { term: 'root' },
-        children: this.props.fieldTree
-      })
-      .filter(node => node.children.length)
-      .map(node => node.field.term)
+
+      // expand all internal nodes
+      expandedNodes: Seq.from(Object.values(this.props.fields))
+      .map(field => field.parent)
+      .uniq()
       .toArray()
     };
   }
 
   handleFieldSelect(field) {
-    this.props.onFieldSelect(field);
+    this.props.onFieldSelect(field.term);
     this.setState({ searchTerm: '' });
   }
 
   render() {
-    var { fieldTree } = this.props;
+    var { fields } = this.props;
 
     return (
       <div className="field-list">
         <CheckboxTree
-          tree={{ field: { term: 'root', display: 'root' }, children: fieldTree }}
+          tree={this.makeOntologyTree(fields)}
           expandedList={this.state.expandedNodes}
           getNodeId={node => node.field.term}
           getNodeChildren={node => node.children}
           onExpansionChange={expandedNodes => this.setState({ expandedNodes })}
           isSelectable={false}
           nodeComponent={({node}) =>
-            <FieldListNode node={node} onFieldSelect={this.handleFieldSelect} isActive={this.props.selectedField === node.field} />}
+            <FieldListNode node={node} onFieldSelect={this.handleFieldSelect} isActive={this.props.selectedField === node.field.term} />}
           isSearchable={true}
           searchBoxPlaceholder="Find a quality"
           searchTerm={this.state.searchTerm}
@@ -210,9 +245,9 @@ class FieldList extends React.Component {
 }
 
 FieldList.propTypes = {
-  fieldTree: PropTypes.array.isRequired,
+  fields: PropTypes.object.isRequired,
   onFieldSelect: PropTypes.func.isRequired,
-  selectedField: PropTypes.object
+  selectedField: PropTypes.string
 };
 
 
@@ -285,7 +320,9 @@ var FilteredData = (function() {
       super(props)
       this.openDialog = this.openDialog.bind(this);
       this.handleDialogClose = this.handleDialogClose.bind(this);
-      this.handleFieldSelect = this.handleFieldSelect.bind(this);
+      this.handleExpansionClick = setStateFromArgs(this, 'expandedNodes');
+      this.handleSelectionChange = setStateFromArgs(this, 'pendingSelectedFields');
+      this.handleSearchTermChange = setStateFromArgs(this, 'searchTerm');
       this.handleFieldSubmit = this.handleFieldSubmit.bind(this);
       this.handleSort = this.handleSort.bind(this);
       this.handleHideColumn = this.handleHideColumn.bind(this);
@@ -295,10 +332,13 @@ var FilteredData = (function() {
       this.getCellData = this.getCellData.bind(this);
       this.getPkCellData = this.getPkCellData.bind(this);
       this.renderPk = this.renderPk.bind(this);
+      this.makeOntologyTree = memoize(makeOntologyTree);
 
       this.state = {
         dialogIsOpen: false,
-        pendingSelectedFields: this.props.selectedFields
+        pendingSelectedFields: this.props.selectedFields,
+        expandedNodes: undefined,
+        searchTerm: ''
       };
     }
 
@@ -322,13 +362,6 @@ var FilteredData = (function() {
       });
     }
 
-    handleFieldSelect(field, isSelected) {
-      let pendingSelectedFields = isSelected
-        ? this.state.pendingSelectedFields.concat(field)
-        : this.state.pendingSelectedFields.filter(f => f != field);
-      this.setState({ pendingSelectedFields });
-    }
-
     handleFieldSubmit(event) {
       event.preventDefault();
       this.props.onFieldsChange(this.state.pendingSelectedFields);
@@ -341,8 +374,8 @@ var FilteredData = (function() {
       this.props.onSort(term);
     }
 
-    handleHideColumn(term) {
-      var nextFields = this.props.selectedFields.filter(field => field.term != term)
+    handleHideColumn(removedField) {
+      var nextFields = this.props.selectedFields.filter(field => field != removedField)
       this.props.onFieldsChange(nextFields);
     }
 
@@ -391,7 +424,7 @@ var FilteredData = (function() {
     }
 
     render() {
-      var { fieldTree, selectedFields, filteredData, displayName, tabWidth, totalSize } = this.props;
+      var { fields, selectedFields, filteredData, displayName, tabWidth, totalSize } = this.props;
       var { dialogIsOpen } = this.state;
 
       if (!tabWidth) return null;
@@ -417,11 +450,23 @@ var FilteredData = (function() {
                 <div style={{textAlign: 'center', padding: 10}}>
                   <button>Update Columns</button>
                 </div>
-                <FieldTree
-                  onFieldSelect={this.handleFieldSelect}
-                  ItemComponent={SelectorItem}
-                  treeNodes={fieldTree}
-                  selectedFields={this.state.pendingSelectedFields}
+                <CheckboxTree
+                  tree={this.makeOntologyTree(fields)}
+                  getNodeId={node => node.field.term}
+                  getNodeChildren={node => node.children}
+                  onExpansionChange={this.handleExpansionClick}
+                  nodeComponent={({node}) => <span>{node.field.display}</span> }
+                  expandedList={this.state.expandedNodes}
+                  isSelectable={true}
+                  selectedList={this.state.pendingSelectedFields}
+                  onSelectionChange={this.handleSelectionChange}
+                  searchBoxPlaceholder="Find a quality"
+                  searchTerm={this.state.searchTerm}
+                  onSearchTermChange={this.handleSearchTermChange}
+                  searchPredicate={(node, searchTerms) =>
+                    searchTerms.every(searchTerm =>
+                      node.field.display.toLowerCase().includes(searchTerm.toLowerCase()))}
+                  currentList={selectedFields}
                 />
                 <div style={{textAlign: 'center', padding: 10}}>
                   <button>Update Columns</button>
@@ -453,7 +498,8 @@ var FilteredData = (function() {
               isRemovable={false}
               isSortable={true}
             />
-            {selectedFields.map(field => {
+            {selectedFields.map(fieldTerm => {
+              const field = fields[fieldTerm];
               return (
                 <this.props.Column
                   label={field.display}
@@ -475,7 +521,7 @@ var FilteredData = (function() {
     tabWidth: PropTypes.number,
     totalSize: PropTypes.number.isRequired,
     filteredData: PropTypes.array,
-    fieldTree: PropTypes.array,
+    fields: PropTypes.object,
     selectedFields: PropTypes.array,
     ignoredData: PropTypes.array,
     metadata: PropTypes.object,
@@ -526,11 +572,18 @@ export class AttributeFilter extends React.Component {
     });
   }
 
+  /**
+   * @param {string} field
+   * @param {Event} event
+   */
   handleSelectFieldClick(field, event) {
     event.preventDefault();
     this.props.onActiveFieldChange(field);
   }
 
+/**
+ * @param {Event} event
+ */
   handleCollapseClick(event) {
     event.preventDefault();
     this.setState({
@@ -538,6 +591,9 @@ export class AttributeFilter extends React.Component {
     });
   }
 
+/**
+ * @param {Event} event
+ */
   handleExpandClick(event) {
     event.preventDefault();
     this.setState({
@@ -545,10 +601,17 @@ export class AttributeFilter extends React.Component {
     });
   }
 
+/**
+ * Columns in data table change
+ * @param {*} fields
+ */
   handleFieldsChange(fields) {
     this.props.onColumnsChange(fields);
   }
 
+  /**
+   * @deprecated
+   */
   handleIgnored(datum, ignored) {
     let ignoredData = ignored
       ? this.props.ignoredData.concat(datum)
@@ -556,6 +619,10 @@ export class AttributeFilter extends React.Component {
     this.props.onIgnoredDataChange(ignoredData);
   }
 
+/**
+ *
+ * @param {string} fieldTerm
+ */
   handleSort(fieldTerm) {
     let { sortTerm, sortDirection } = this.state;
     let direction = fieldTerm == sortTerm && sortDirection == 'ASC'
@@ -571,18 +638,26 @@ export class AttributeFilter extends React.Component {
     this.props.onFiltersChange(filters);
   }
 
-  handleFieldFilterChange(field, values) {
-    let filters = this.props.filters.filter(f => f.field.term !== field.term);
-    this.props.onFiltersChange(this.shouldAddFilter(field, values)
-      ? filters.concat({ field, values })
+  /**
+   * @param {Field} field Field term id
+   * @param {any} value Filter value
+   */
+  handleFieldFilterChange(field, value) {
+    let filters = this.props.filters.filter(f => f.field !== field.term);
+    this.props.onFiltersChange(this.shouldAddFilter(field, value)
+      ? filters.concat({ field: field.term, value })
       : filters
     );
   }
 
-  shouldAddFilter(field, values) {
-    return field.type === 'string' ? values.length !== this.props.activeFieldSummary.length
-         : field.type === 'number' ? values.min != null || values.max != null
-         : field.type === 'date' ? values.min != null || values.max != null
+  /**
+   * @param {string} field Field term id
+   * @param {any} value Filter value
+   */
+  shouldAddFilter(field, value) {
+    return field.type === 'string' ? value.length !== this.props.activeFieldSummary.length
+         : field.type === 'number' ? value.min != null || value.max != null
+         : field.type === 'date' ? value.min != null || value.max != null
          : false;
   }
 
@@ -608,7 +683,7 @@ export class AttributeFilter extends React.Component {
 
     var displayName = this.props.displayName;
     var selectedFilter = find(filters, filter => {
-      return filter.field.term === result(activeField, 'term');
+      return filter.field === activeField;
     });
 
     var filteredNotIgnored = filteredData.filter(datum => ignoredData.indexOf(datum) === -1);
@@ -628,6 +703,7 @@ export class AttributeFilter extends React.Component {
           filters={filters}
           filteredDataCount={filteredNotIgnored.length}
           dataCount={dataCount}
+          fields={fields}
           selectedField={activeField}/>
 
         <InvalidFilterList filters={invalidFilters}/>
@@ -661,14 +737,14 @@ export class AttributeFilter extends React.Component {
             <div id="filters">
               <div className="filters ui-helper-clearfix">
                 <FieldList
-                  fieldTree={fields}
+                  fields={fields}
                   onFieldSelect={this.props.onActiveFieldChange}
                   selectedField={activeField}
                 />
 
                 <FieldFilter
                   displayName={displayName}
-                  field={activeField}
+                  field={this.props.fields[activeField]}
                   filter={selectedFilter}
                   distribution={activeFieldSummary}
                   onChange={this.handleFieldFilterChange}
@@ -690,7 +766,7 @@ export class AttributeFilter extends React.Component {
                 filteredData={sortedFilteredData}
                 totalSize={dataCount}
                 selectedFields={columns}
-                fieldTree={fields}
+                fields={fields}
                 ignoredData={ignoredData}
                 metadata={fieldMetadataMap}/>
             </div>
@@ -708,13 +784,13 @@ AttributeFilter.propTypes = {
   collapsible: PropTypes.bool,
 
   // state
-  fields: PropTypes.array.isRequired, // tree nodes
+  fields: PropTypes.object.isRequired,
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number.isRequired,
   filteredData: PropTypes.array.isRequired,
   ignoredData: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
-  activeField: PropTypes.object,
+  activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
 
@@ -743,7 +819,6 @@ export class ServerSideAttributeFilter extends React.Component {
   constructor(props) {
     super(props);
     this.handleSelectFieldClick = this.handleSelectFieldClick.bind(this);
-    this.handleFieldsChange = this.handleFieldsChange.bind(this);
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
     this.shouldAddFilter = this.shouldAddFilter.bind(this);
@@ -754,27 +829,31 @@ export class ServerSideAttributeFilter extends React.Component {
     this.props.onActiveFieldChange(field);
   }
 
-  handleFieldsChange(fields) {
-    this.props.onColumnsChange(fields);
-  }
-
   handleFilterRemove(filter) {
     let filters = this.props.filters.filter(f => f !== filter);
     this.props.onFiltersChange(filters);
   }
 
-  handleFieldFilterChange(field, values) {
-    let filters = this.props.filters.filter(f => f.field.term !== field.term);
-    this.props.onFiltersChange(this.shouldAddFilter(field, values)
-      ? filters.concat({ field, values })
+  /**
+   * @param {Field} field Field term id
+   * @param {any} value Filter value
+   */
+  handleFieldFilterChange(field, value) {
+    let filters = this.props.filters.filter(f => f.field !== field.term);
+    this.props.onFiltersChange(this.shouldAddFilter(field, value)
+      ? filters.concat({ field: field.term, value })
       : filters
     );
   }
 
-  shouldAddFilter(field, values) {
-    return field.type === 'string' ? values.length !== this.props.activeFieldSummary.length
-         : field.type === 'number' ? values.min != null || values.max != null
-         : field.type === 'date' ? values.min != null || values.max != null
+  /**
+   * @param {string} field Field term id
+   * @param {any} value Filter value
+   */
+  shouldAddFilter(field, value) {
+    return field.type === 'string' ? value.length !== this.props.activeFieldSummary.length
+         : field.type === 'number' ? value.min != null || value.max != null
+         : field.type === 'date' ? value.min != null || value.max != null
          : false;
   }
 
@@ -791,7 +870,7 @@ export class ServerSideAttributeFilter extends React.Component {
 
     var displayName = this.props.displayName;
     var selectedFilter = find(filters, filter => {
-      return filter.field.term === result(activeField, 'term');
+      return filter.field === activeField;
     });
 
     return (
@@ -800,6 +879,7 @@ export class ServerSideAttributeFilter extends React.Component {
           onFilterSelect={this.props.onActiveFieldChange}
           onFilterRemove={this.handleFilterRemove}
           filters={filters}
+          fields={fields}
           filteredDataCount={filteredDataCount}
           dataCount={dataCount}
           selectedField={activeField}/>
@@ -809,14 +889,14 @@ export class ServerSideAttributeFilter extends React.Component {
         {/* Main selection UI */}
         <div className="filters ui-helper-clearfix">
           <FieldList
-            fieldTree={fields}
+            fields={fields}
             onFieldSelect={this.props.onActiveFieldChange}
             selectedField={activeField}
           />
 
           <FieldFilter
             displayName={displayName}
-            field={activeField}
+            field={fields[activeField]}
             filter={selectedFilter}
             distribution={activeFieldSummary}
             onChange={this.handleFieldFilterChange}
@@ -837,7 +917,7 @@ ServerSideAttributeFilter.propTypes = {
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number.isRequired,
   filteredDataCount: PropTypes.number.isRequired,
-  activeField: PropTypes.object,
+  activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
 
   // not sure if these belong here
@@ -864,150 +944,12 @@ function InvalidFilterList(props) {
       <p>Some of the options you previously selected are no longer available:</p>
       <ul>
         {map(filters, filter => (
-          <li className="invalid">{getFilterDisplay(filter)}</li>
+          <li className="invalid">{getFilterDisplay(filter.field, filter.value)}</li>
         ))}
       </ul>
     </div>
   );
 }
-
-
-function FieldTree(props) {
-  var { treeNodes } = props;
-  var restProps = omit(props, 'treeNodes');
-  return (
-    <ul role="tree">
-      {treeNodes.map(node => (
-        <TreeNode key={node.field.term} node={node} {...restProps}/>
-      ))}
-    </ul>
-  );
-}
-
-FieldTree.propsTypes = {
-  treeNodes: PropTypes.array.isRequired,
-  onFieldSelect: PropTypes.func.isRequired,
-  ItemComponent: PropTypes.func.isRequired,
-  selectedField: PropTypes.object
-};
-
-class TreeNode extends React.Component {
-
-  constructor(props) {
-    super(props)
-    this.handleToggleClick = this.handleToggleClick.bind(this);
-
-    let { node, selectedField } = this.props;
-    let isCollapsed = node.children.every( child => child.field !== selectedField)
-    this.state = { isCollapsed };
-  }
-
-  handleToggleClick() {
-    this.setState({
-      isCollapsed: !this.state.isCollapsed
-    });
-  }
-
-  render() {
-    var { node } = this.props;
-    var restProps = omit(this.props, 'node');
-    var { ItemComponent } = this.props;
-
-    var className = result(this.props.selectedField, 'term') === node.field.term
-      ? 'active' : '';
-
-    return (
-      <li key={node.field.term} className={className}>
-        { node.children.length > 0
-          ? [
-            <h4 onClick={partial(this.handleToggleClick, node)}
-              key={node.field.term}
-              role="treeitem"
-              className={this.state.isCollapsed ? "collapsed" : ""}>{node.field.display}</h4>,
-              <div key={node.field.term + '-children'}>
-                <ul>
-                  {map(node.children, child => (
-                    <TreeNode key={child.field.term} node={child} {...restProps}/>
-                  ))}
-                </ul>
-              </div>
-            ]
-          : <div role="treeitem"><ItemComponent {...restProps} field={node.field}/></div>
-        }
-      </li>
-    );
-  }
-
-}
-
-TreeNode.propTypes = {
-  node: PropTypes.object.isRequired,
-  ItemComponent: PropTypes.func.isRequired,
-  onFieldSelect: PropTypes.func.isRequired,
-  selectedField: PropTypes.object
-};
-
-
-class PanelItem extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  handleClick(event) {
-    event.preventDefault();
-    this.props.onFieldSelect(this.props.field);
-  }
-
-  render() {
-    return (
-      <a onClick={this.handleClick} href={"#" + this.props.field.term}>
-      {this.props.field.display}</a>
-    );
-  }
-
-}
-
-PanelItem.propTypes = {
-  field: PropTypes.object.isRequired,
-  onFieldSelect: PropTypes.func.isRequired
-};
-
-class SelectorItem extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.handleCheck = this.handleCheck.bind(this);
-  }
-
-  handleCheck(event) {
-    this.props.onFieldSelect(this.props.field, event.target.checked);
-  }
-
-  render() {
-    let { field, selectedFields } = this.props;
-    return (
-      <label>
-        <input
-          type="checkbox"
-          name="field"
-          checked={selectedFields.includes(field)}
-          value={field.term}
-          onChange={this.handleCheck}
-        />
-        {' ' + field.display + ' '}
-      </label>
-    );
-  }
-
-}
-
-SelectorItem.propTypes = {
-  field: PropTypes.object.isRequired,
-  onFieldSelect: PropTypes.func.isRequired,
-  selectedFields: PropTypes.array.isRequired
-};
 
 
 // Reusable histogram field component. The parent component
@@ -1370,7 +1312,7 @@ class HistogramField extends React.Component {
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
-    var { min, max } = filter ? filter.values : {};
+    var { min, max } = filter ? filter.value : {};
 
     var selectedMin = min == null ? null : this.props.toHistogramValue(min);
     var selectedMax = max == null ? null : this.props.toHistogramValue(max);
@@ -1481,19 +1423,19 @@ fieldComponents.string = class StringField extends React.Component {
   }
 
   handleChange() {
-    var values = $(findDOMNode(this))
+    var value = $(findDOMNode(this))
       .find('input[type=checkbox]:checked')
       .toArray()
       .map(property('value'))
       .map(value => value === UNKNOWN_VALUE ? null : value);
-    this.emitChange(values);
+    this.emitChange(value);
   }
 
   handleSelectAll(event) {
     event.preventDefault();
     var { distribution } = this.props;
-    var values = map(distribution, property('value'));
-    this.emitChange(values);
+    var value = map(distribution, property('value'));
+    this.emitChange(value);
   }
 
   handleRemoveAll(event) {
@@ -1501,12 +1443,12 @@ fieldComponents.string = class StringField extends React.Component {
     this.emitChange([]);
   }
 
-  emitChange(values) {
+  emitChange(value) {
     let { field } = this.props;
-    let display = values.length > 0
-      ? field.display + ' is ' + values.map(value => value === null ? UNKNOWN_DISPLAY : value).join(', ')
+    let display = value.length > 0
+      ? field.display + ' is ' + value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')
       : 'No ' + field.display + ' selected';
-    this.props.onChange(field, values, display);
+    this.props.onChange(field, value, display);
   }
 
   render() {
@@ -1543,7 +1485,7 @@ fieldComponents.string = class StringField extends React.Component {
                   var percentage = (item.count / total) * 100;
                   var disabled = item.filteredCount === 0;
                   var filteredPercentage = (item.filteredCount / total) * 100;
-                  var isChecked = !this.props.filter || includes(this.props.filter.values, item.value);
+                  var isChecked = !this.props.filter || includes(this.props.filter.value, item.value);
                   var trClassNames = 'member' +
                     (isChecked & !disabled ? ' member__selected' : '') +
                     (disabled ? ' member__disabled' : '');
@@ -1739,18 +1681,64 @@ function getFieldDetail(field) {
   return fieldComponents[result(field, 'type')];
 }
 
-function getFilterDisplay({ field, values }) {
+function getFilterDisplay(field, value) {
   if (typeof field === 'string') {
-    return `${field} is ${JSON.stringify(values)}`;
+    return `${field} is ${JSON.stringify(value)}`;
   }
 
   switch(field.type) {
-    case 'string': return `${field.display} is ${values.map(value => value === null ? UNKNOWN_DISPLAY : value).join(', ')}`;
+    case 'string': return `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
     case 'date':
     case 'number': return `${field.display} is ` +
-      ( values.min == null ? `less than ${values.max}`
-      : values.max == null ? `greater than ${values.min}`
-      : `between ${values.min} and ${values.max}`);
-    default: return JSON.stringify(values);
+      ( value.min == null ? `less than ${value.max}`
+      : value.max == null ? `greater than ${value.min}`
+      : `between ${value.min} and ${value.max}`);
+    default: return JSON.stringify(value);
+  }
+}
+
+function makeOntologyTree(ontologyDict) {
+  const ontologyEntries = values(ontologyDict);
+  const rootChildren = ontologyEntries
+    .filter(entry => entry.parent == null)
+    .map(entry => makeOntologyNode(entry, ontologyEntries));
+
+  if (rootChildren.length == 1) return rootChildren[0];
+
+  return {
+    field: {
+      term: 'root',
+      display: 'Root'
+    },
+    children: sortBy(rootChildren, entry => entry.children.length === 0 ? -1 : 1)
+  }
+}
+
+function makeOntologyNode(entry, ontologyEntries) {
+  const children = ontologyEntries
+    .filter(e => e.parent === entry.term)
+    .map(e => makeOntologyNode(e, ontologyEntries));
+  return {
+    field: entry,
+    children: sortBy(children, entry => entry.children.length === 0 ? -1 : 1)
+  };
+}
+
+function setStateFromArgs(instance, ...argsNames) {
+  const length = argsNames.length;
+  return function (...args) {
+    if (__DEV__ && length !== args.length) {
+      console.error(
+        'Unexpected number of arguments received in `setStateFromArgs`.',
+        'Expected %d, but got %d',
+        length,
+        args.length
+      );
+    }
+    const nextState = {};
+    for (let i = 0; i < length; i++) {
+      nextState[argsNames[i]] = args[i];
+    }
+    instance.setState(nextState);
   }
 }
