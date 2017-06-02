@@ -209,13 +209,24 @@ export default class WdkService {
     );
   }
 
-  getOntologyTermSummary(identifier: string, paramName: string, paramValue: any, ontologyId: string, paramValues: ParameterValues) {
+  getOntologyTermSummary(identifier: string, paramName: string, filters: any, ontologyId: string, paramValues: ParameterValues) {
     return this._fetchJson<OntologyTermSummary>(
       'post',
       `/question/${identifier}/${paramName}/ontologyTermSummary`,
       JSON.stringify({
         ontologyId,
-        filters: paramValue.filters,
+        filters,
+        contextParamValues: paramValues
+      })
+    );
+  }
+
+  getFilterParamSummaryCounts(identifier: string, paramName: string, filters: any, paramValues: ParameterValues) {
+    return this._fetchJson<{filtered: number, unfiltered: number}>(
+      'post',
+      `/question/${identifier}/${paramName}/summaryCounts`,
+      JSON.stringify({
+        filters,
         contextParamValues: paramValues
       })
     );

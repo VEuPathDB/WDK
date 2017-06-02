@@ -49,21 +49,21 @@ export function uniqMetadataValues(metadata: Metadata) {
 }
 
 export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
-  let filterValues = filter.values;
+  let filterValue = filter.value;
   return function memberPredicate(datum: Datum) {
     var metadataValues = metadata[datum.term];
-    var index = filterValues.length;
+    var index = filterValue.length;
     var vIndex: number;
 
     // Use a for loop for efficiency
     outer: while(index--) {
       if (metadataValues.length === 0) {
-        if (filterValues[index] === null) return true;
+        if (filterValue[index] === null) return true;
         continue;
       }
       vIndex = metadataValues.length;
       while(vIndex--) {
-        if (filterValues[index] === metadataValues[vIndex]) break outer;
+        if (filterValue[index] === metadataValues[vIndex]) break outer;
       }
     }
 
@@ -71,10 +71,16 @@ export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) 
   };
 }
 
-export function getRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
-  var { min, max } = filter.field.type === 'number'
-    ? mapValues(filter.values, s => Number(s))
-    : mapValues(filter.values, s => new Date(s));
+export function getDateRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
+  return getRangePredicate(metadata, filter, Date);
+}
+
+export function getNumberRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
+  return getRangePredicate(metadata, filter, Number);
+}
+
+function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapValue: (value: string) => U) {
+  var { min, max } = mapValues(filter.value, mapValue)
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
            : max !== null ? makeLte(max)
@@ -85,8 +91,7 @@ export function getRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
   }
 
   return function rangePredicate(datum: Datum) {
-    return metadata[datum.term].some(value =>
-      test(filter.field.type === 'number' ? Number(value) : new Date(value)));
+    return metadata[datum.term].some(value => test(mapValue(value)));
   }
 
 }

@@ -122,7 +122,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     try {
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
       String metadataSql = getMetadataQuerySql(user, contextParamValues, param);
-      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+      JSONArray jsFilters = getFilters(jsValue);
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
 
@@ -160,8 +160,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-    String min = range.getString(FILTERS_MIN);
-    String max = range.getString(FILTERS_MAX);
+    Double min = range.getDouble(FILTERS_MIN);
+    Double max = range.getDouble(FILTERS_MAX);
     return " AND " + metadataTableName + "." + columnName + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max; 
   }
 
@@ -204,7 +204,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private String toSignatureString(String stableValue) throws WdkModelException {
     try {
       JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+      JSONArray jsFilters = getFilters(jsValue);
       List<String> filterSigsList = new ArrayList<String>();
       for (int i = 0; i < jsFilters.length(); i++) {
         JSONObject jsFilter = jsFilters.getJSONObject(i);
@@ -212,7 +212,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         filterSigsList.add(filterSig);
       }
       Collections.sort(filterSigsList);
-      return filterSigsList.stream().collect(Collectors.joining(","));
+      // wrap with brackets since a signature string cannot be empty (Utilities.encrypt will throw)
+      return "[" + filterSigsList.stream().collect(Collectors.joining(",")) + "]";
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -224,7 +225,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private String getFilterSignature(JSONObject jsFilter) throws WdkModelException {
     List<String> parts = new ArrayList<String>();
     try {
-      parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
+      //parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
       
       // don't know if we have an array or object, so try both.
       if (jsFilter.has(FILTERS_VALUE)) {
@@ -288,7 +289,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     JSONObject jsValue = new JSONObject(stableValue);
-    JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+    JSONArray jsFilters = getFilters(jsValue);
 
     if (jsFilters.length() == 0)
       return "All " + param.prompt;
@@ -328,5 +329,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
+  }
+
+  private static JSONArray getFilters(JSONObject jsValue) {
+    return jsValue.has(FILTERS_KEY) ? jsValue.getJSONArray(FILTERS_KEY) : new JSONArray();
   }
 }
