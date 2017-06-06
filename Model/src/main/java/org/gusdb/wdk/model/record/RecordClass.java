@@ -1649,12 +1649,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _stepFilters.put(filter.getKey(), filter);
   }
 
+  /** 
+   * try to find a filter with the associated key.  
+   * @param key
+   * @return null if not found
+   * @throws WdkModelException
+   */
   public Filter getFilter(String key) throws WdkModelException {
     Filter filter = getStepFilter(key);
     if (filter == null)
       filter = getColumnFilter(key);
-    if (filter == null)
-      throw new WdkModelException("Requested Filter, with key '" + key + "' doesn't exist in record: " + fullName);
     return filter;
   }
 
