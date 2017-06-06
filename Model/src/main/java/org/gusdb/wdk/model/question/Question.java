@@ -1220,8 +1220,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   public Filter getFilter(String filterName) throws WdkModelException {
+    Filter filter = getFilterOrNull(filterName);
+    if (filter == null) throw new WdkModelException("Can't find filter '" + filterName + "' in question " + getFullName());
+    return filter;
+  }
+  
+  public Filter getFilterOrNull(String filterName) throws WdkModelException {
     Filter filter = _filters.get(filterName);
-    return (filter != null) ? filter : _recordClass.getFilter(filterName); 
+    if (filter == null) filter = _recordClass.getFilter(filterName); 
+    return filter;
   }
 
   /**
