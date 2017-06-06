@@ -142,5 +142,10 @@ public class Keys {
   public static final String IS_GUEST = "isGuest";
   public static final String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   public static final String PREFERENCES = "preferences";
+  
+  //favorites-specific keys
+  public static final String DISPLAY = "display";
+  public static final String NOTE = "note";
+  public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
 
 }
