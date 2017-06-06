@@ -14,10 +14,16 @@ public class ErrorEvent extends Event {
     _errorContext = errorContext;
   }
 
+  /**
+   * @return a collection of possible errors (could be from a variety of sources)
+   */
   public ErrorBundle getErrorBundle() {
     return _errorBundle;
   }
 
+  /**
+   * @return context in which the error occurred
+   */
   public ErrorContext getErrorContext() {
     return _errorContext;
   }
