@@ -522,7 +522,9 @@ public class FilterParamNew extends AbstractDependentParam {
 
   @Override
   public String getDefault() throws WdkModelException {
-    String defaultValue = new JSONObject().toString();
+    String defaultValue = new JSONObject()
+        .put(FilterParamNewHandler.FILTERS_KEY, new JSONArray())
+        .toString();
     return defaultValue;
   }
 

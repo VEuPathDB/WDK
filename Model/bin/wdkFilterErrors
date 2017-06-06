@@ -155,15 +155,29 @@ sub matchesFilter {
   my ($filterTerms, $errorArray) = @_;
 
   my $matched = 1;
+
   foreach my $filterTerm (@$filterTerms) {
+
     my $matchedTerm = 0;
-    foreach my $errorLine (@$errorArray) {
-      if (index($errorLine, $filterTerm) != -1) {
-        $matchedTerm = 1;
-        last;
+
+    # handle a "not" filter, eg "!transcript"
+    if ($filterTerm =~ /^\!(.*)/) {
+      my $filter = $1;
+      foreach my $errorLine (@$errorArray) {
+	return 0 if (index($errorLine, $filter) != -1);
       }
     }
-    $matched &= $matchedTerm;
+
+    else {
+      # handle regular filters
+      foreach my $errorLine (@$errorArray) {
+	if (index($errorLine, $filterTerm) != -1) {
+	  $matchedTerm = 1;
+	  last;
+	}
+      }
+      $matched &= $matchedTerm;
+    }
   }
   return $matched;
 }
@@ -188,6 +202,8 @@ Where:
 
 Filters file format: JSON.
 
+A filter with a leading ! is a NOT filter.  Exclude errors containing it.
+
 Single filter format: one or more filters (delimited by \&\&).
 
 Filters are applied in the order found in the file.  Only the first matching filter is effective.
@@ -195,14 +211,16 @@ Filters are applied in the order found in the file.  Only the first matching fil
 SAMPLE COMMAND LINES
 
 filter hunting:
-cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff $PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt --sd 05/01/2017 -ed /05/23/2017
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff \$PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt --sd 05/01/2017 -ed /05/23/2017
 
 reporting:
-cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff $PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt -r --sd 05/01/2017 -ed /05/23/2017
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -ff \$PROJECT_HOME/EbrcWebsiteCommon/Model/data/errors/wdkErrorCategories.txt -r --sd 05/01/2017 -ed /05/23/2017
 
 single filter:
 cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -sf 'The term of flatVocabParam [popsetParams.product] is null' --sd 05/01/2017 -ed /05/23/2017
 
 cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -sf 'ProcessFavoriteAction.java:97 && null pointer'  --sd 05/01/2017 -ed /05/23/2017 | grep ERROR_START|wc
+
+cat /usr/local/tomcat_instances/*DB/logs/*.b32/errors-retained.log | wdkFilterErrors -sf 'ProcessFavoriteAction.java:97 && !null pointer'  --sd 05/01/2017 -ed /05/23/2017 | grep ERROR_START|wc
 ";
 }

@@ -135,5 +135,10 @@ public class Keys {
   public static final String PREFERENCES = "preferences";
   public static final String GLOBAL = "global";
   public static final String PROJECT = "project";
+  
+  //favorites-specific keys
+  public static final String DISPLAY = "display";
+  public static final String NOTE = "note";
+  public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
 
 }
