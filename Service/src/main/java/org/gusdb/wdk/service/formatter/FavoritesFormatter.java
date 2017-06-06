@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +53,12 @@ public class FavoritesFormatter {
   
   public static JSONObject getNumberProcessedJson(int numProcessed) {
     return new JSONObject().put(Keys.FAV_NUMBER_PROCESSED, numProcessed);
+  }
+  
+  public static JSONObject getGroupsJson(String[] groups) {
+	JSONArray groupsArray = new JSONArray();
+	Arrays.asList(groups).forEach((group) -> groupsArray.put(group)); 
+    return new JSONObject().put(Keys.GROUPS, groupsArray);
   }
 	
 }

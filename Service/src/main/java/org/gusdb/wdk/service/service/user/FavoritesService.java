@@ -8,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -51,6 +52,19 @@ public class FavoritesService extends UserService {
   }
   
   @GET
+  @Path("favorites/groups")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getGroups(String body) throws WdkModelException {
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+	User user = userBundle.getTargetUser();
+    if (user.isGuest()) {
+      throw new ForbiddenException(NOT_LOGGED_IN);
+    }
+	String[] groups = user.getFavoriteGroups();
+    return Response.ok(FavoritesFormatter.getGroupsJson(groups).toString()).build();   
+  }
+  
+  @POST
   @Path("favorites/numberProcessed")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -71,7 +85,7 @@ public class FavoritesService extends UserService {
     }
   }
 
-  @PATCH
+  @POST
   @Path("favorites/add")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response addToFavorites(String body) throws WdkModelException {
