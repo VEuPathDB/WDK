@@ -222,15 +222,11 @@
           failonerror="true"
           failifexecutionfails="true"/>
 
-    <condition property="webpack.env" value="--env.production" else="--env.development">
-      <isset property="optimizeWebAssets"/>
-    </condition>
-
     <exec dir="${projectsDir}/WDK/View"
           executable="node_modules/.bin/webpack"
           failonerror="true"
           failifexecutionfails="true">
-          <arg line="--output-path ${webappTargetDir} ${webpack.env}"/>
+          <arg line="--output-path ${webappTargetDir}"/>
     </exec>
 
     <mkdir dir="${webappTargetDir}/wdk/css"/>
