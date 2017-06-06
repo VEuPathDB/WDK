@@ -68,6 +68,7 @@ public class WdkServiceApplication extends Application {
     .add(DatasetService.class)
     .add(UserDatasetService.class)
     .add(BasketService.class)
+    .add(FavoritesService.class)
 
     // test
     .add(SampleService.class)
