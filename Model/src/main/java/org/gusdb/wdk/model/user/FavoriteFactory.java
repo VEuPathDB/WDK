@@ -236,6 +236,30 @@ public class FavoriteFactory {
     return count;
   }
 
+  public int getFavoriteCount(User user, List<Map<String, Object>> records, RecordClass recordClass)
+      throws WdkModelException {
+    int count = 0;
+    for (Map<String, Object> item : records) {
+      boolean inFavs = isInFavorite(user, recordClass, item);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
+      }
+      if (inFavs) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  private static String convert(Map<String, Object> item) {
+    StringBuilder sb = new StringBuilder("Map { ");
+    for (String s : item.keySet()) {
+      sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
+    }
+    sb.append(" }");
+    return sb.toString();
+  }
+
   public Map<RecordClass, List<Favorite>> getFavorites(User user) throws WdkModelException {
     String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"

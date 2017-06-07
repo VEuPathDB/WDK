@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Favorite;
-import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 import org.gusdb.wdk.model.user.StepUtilities;
@@ -500,7 +499,7 @@ public class UserBean {
     return user.getSession().getViewPagerOffset();
   }
 
-  public StrategyBean[] getActiveStrategies() throws WdkUserException, WdkModelException {
+  public StrategyBean[] getActiveStrategies() throws WdkUserException {
     List<StrategyBean> strategies = new ArrayList<StrategyBean>();
     for (Strategy strategy : user.getSession().getActiveStrategies()) {
       strategies.add(new StrategyBean(this, strategy));
@@ -565,7 +564,7 @@ public class UserBean {
     factory.removeFromBasket(user, step.step);
   }
 
-  public void clearBasket(RecordClassBean recordClass) throws SQLException, WdkModelException {
+  public void clearBasket(RecordClassBean recordClass) throws SQLException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.clearBasket(user, recordClass.recordClass);
   }
@@ -693,32 +692,7 @@ public class UserBean {
    */
   public int getFavoriteCount(List<Map<String, Object>> records, RecordClassBean recordClass)
       throws WdkModelException {
-    return getFavoriteCount(_wdkModel.getFavoriteFactory(), user, records, recordClass.recordClass);
-  }
-
-  private int getFavoriteCount(FavoriteFactory favoriteFactory, User user,
-      List<Map<String, Object>> records, RecordClass recordClass)
-      throws WdkModelException {
-    int count = 0;
-    for (Map<String, Object> item : records) {
-      boolean inFavs = favoriteFactory.isInFavorite(user, recordClass, item);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
-      }
-      if (inFavs) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  private String convert(Map<String, Object> item) {
-    StringBuilder sb = new StringBuilder("Map { ");
-    for (String s : item.keySet()) {
-      sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
-    }
-    sb.append(" }");
-    return sb.toString();
+    return _wdkModel.getFavoriteFactory().getFavoriteCount(user, records, recordClass.recordClass);
   }
 
   public SummaryView getCurrentSummaryView() throws Exception {
