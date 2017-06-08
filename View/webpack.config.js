@@ -39,7 +39,9 @@ var exposeModules = [
   { module: 'react', expose: 'React' },
   { module: 'react-dom', expose: 'ReactDOM' },
   { module: 'react-router/es', expose: 'ReactRouter' },
-  { module: 'react-addons-perf', expose: 'ReactPerf' }
+  { module: 'react-addons-perf', expose: 'ReactPerf' },
+  { module: 'flux', expose: 'Flux' },
+  { module: 'flux/utils', expose: 'FluxUtils' }
 ];
 
 var exposeLoaders = exposeModules.map(function(entry) {
