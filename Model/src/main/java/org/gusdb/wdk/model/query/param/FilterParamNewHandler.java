@@ -240,8 +240,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       if (jsFilter.has(FILTERS_VALUE)) {
         try { 
           JSONObject value = jsFilter.getJSONObject(FILTERS_VALUE);
-          parts.add(FILTERS_MIN + ":" + value.getString(FILTERS_MIN));
-          parts.add(FILTERS_MAX + ":" + value.getString(FILTERS_MIN));
+          parts.add(FILTERS_MIN + ":" + value.getDouble(FILTERS_MIN));
+          parts.add(FILTERS_MAX + ":" + value.getDouble(FILTERS_MIN));
         } catch (JSONException ex) {
           JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
           for (int i=0; i < value.length(); i++ ) {
@@ -285,7 +285,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    throw new UnsupportedOperationException();  // needed for JSPs, so no longer supported.
+    // do nothing
    }
 
   @Override
