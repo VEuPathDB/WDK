@@ -294,6 +294,45 @@ public class FavoriteFactory {
       SqlUtils.closeResultSetAndStatement(rs, ps);
     }
   }
+  
+  public Favorite getFavorite(User user, RecordClass recordClass, Map<String, Object> recordId) throws WdkModelException {
+    int userId = user.getUserId();
+    String projectId = wdkModel.getProjectId();
+    String rcName = recordClass.getFullName();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+    String sqlQuery = "SELECT * FROM " + schema + TABLE_FAVORITES
+        + " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
+        + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
+    for (int i = 1; i <= pkColumns.length; i++) {
+      sqlQuery += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
+    }
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    PreparedStatement psQuery = null;
+    ResultSet resultSet = null;
+    try {
+      psQuery = SqlUtils.getPreparedStatement(dataSource, sqlQuery);
+      setParams(psQuery, userId, projectId, rcName, pkColumns, recordId, 1);
+      long start = System.currentTimeMillis();
+      resultSet = psQuery.executeQuery();
+      QueryLogger.logEndStatementExecution(sqlQuery, "wdk-favorite-instance-query", start);
+      Favorite favorite = null;
+      if (resultSet.next()) {
+        PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), recordId);
+        favorite = new Favorite(user, recordClass, pkValue);
+        favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
+        favorite.setGroup(resultSet.getString(COLUMN_RECORD_GROUP));
+      }
+      return favorite;
+    }
+    catch (SQLException e) {
+      throw new WdkModelException(
+          "Could not obtain user's favorite by record class and record id(s) "
+              + user.getUserId(), e);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, psQuery);
+    }
+  }
 
   public boolean isInFavorite(User user, RecordClass recordClass,
       Map<String, Object> recordId) throws WdkModelException {

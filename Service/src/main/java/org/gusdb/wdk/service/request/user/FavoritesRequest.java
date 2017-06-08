@@ -1,6 +1,6 @@
 package org.gusdb.wdk.service.request.user;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,14 +20,14 @@ public class FavoritesRequest {
   private static Logger LOG = Logger.getLogger(FavoritesRequest.class);
   
   private final RecordClass _recordClass;
-  private final List<Map<String,Object>> _ids;
+  private final Map<String,Object> _pkValues;
   private final String _note;
   private final String _group;
     
-  public FavoritesRequest(RecordClass recordClass, List<Map<String,Object>> ids,
+  public FavoritesRequest(RecordClass recordClass, Map<String,Object> pkValues,
 		  String note, String group) {
 	_recordClass = recordClass;
-	_ids = ids;
+	_pkValues = pkValues;
 	_note = note;
 	_group = group;
   }
@@ -39,7 +39,11 @@ public class FavoritesRequest {
    *  recordClassName: String,
    *  note: String (optional),
    *  group: String (optional),
-   *  data: [{project_id: String, source_id: String}]
+   *  id: [
+   *    {name : record_id1_name, value : record_id1_value},
+   *    {name : record_id2_name: value " record_id2_value},
+   *    ...
+   *  ]  
    * }
 
    * 
@@ -54,18 +58,17 @@ public class FavoritesRequest {
       String note = json.has("note") ? json.getString("note") : null;
       String group = json.has("group") ? json.getString("group") : null;
       RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
-      String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-      JSONArray array = json.getJSONArray("data");
-      List<Map<String, Object>> ids = new ArrayList<Map<String, Object>>();
-      for (int i = 0; i < array.length(); i++) {
-        JSONObject object = array.getJSONObject(i);
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkColumns) {
-          pkValues.put(column, object.getString(column));
+      List<String> pkColumns = Arrays.asList(recordClass.getPrimaryKeyDefinition().getColumnRefs());
+      JSONArray array = json.getJSONArray("id");
+      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+      for(int i = 0; i < array.length(); i++) {
+        String name = array.getJSONObject(i).getString("name");
+        if(!pkColumns.contains(name)) {
+          throw new JSONException("Request contains an unknown primary key id " + name);
         }
-        ids.add(pkValues);
+        pkValues.put(name, array.getJSONObject(i).getString("value"));
       }
-      return new FavoritesRequest(recordClass, ids, note, group);
+      return new FavoritesRequest(recordClass, pkValues, note, group);
     }
     catch (WdkModelException | JSONException e) {
       String detailMessage = e.getMessage() != null ? e.getMessage() : "No additional information.";
@@ -77,8 +80,8 @@ public class FavoritesRequest {
 	return _recordClass;
   }
 
-  public List<Map<String, Object>> getIds() {
-	return _ids;
+  public Map<String, Object> getPkValues() {
+	return _pkValues;
   }
   
   public String getNote() {

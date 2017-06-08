@@ -1392,6 +1392,10 @@ public class User /* implements Serializable */{
   public void clearFavorite() throws WdkModelException {
     wdkModel.getFavoriteFactory().clearFavorite(this);
   }
+  
+  public Favorite getFavorite(RecordClass recordClass, Map<String, Object> pkValue) throws WdkModelException {
+    return wdkModel.getFavoriteFactory().getFavorite(this, recordClass, pkValue);
+  }
 
   public int getFavoriteCount() throws WdkModelException {
     return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
