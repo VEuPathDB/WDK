@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,11 @@ import org.json.JSONObject;
 /**
  * Formats favorites data.  Favorites JSON will have the following form:
  * {
- *   id: String (primary key),
+ *  id: [
+ *    {name : record_id1_name, value : record_id1_value},
+ *    {name : record_id2_name: value " record_id2_value},
+ *    ...
+ *  ],
  *   display: String,
  *   note: String,
  *   group: String,
@@ -41,24 +44,21 @@ public class FavoritesFormatter {
     }
   }
 
-  protected static JSONObject getFavoriteJson(Favorite favorite) throws JSONException {
+  public static JSONObject getFavoriteJson(Favorite favorite) throws JSONException {
 	  JSONObject favoriteJSON = new JSONObject();
-	  favorite.getPrimaryKey().getValues().forEach((key, value) -> favoriteJSON.put(key, value)); 
+	  Map<String, String> pkValues = favorite.getPrimaryKey().getValues();
+	  JSONArray pkValuesJson = new JSONArray();
+	  for(String key : pkValues.keySet()) {
+        JSONObject pkValueJson = new JSONObject();
+        pkValueJson.put("name", key).put("value", pkValues.get(key));
+        pkValuesJson.put(pkValueJson);
+	  }	  
       return favoriteJSON
+    		.put(Keys.ID, pkValuesJson)
 	        .put(Keys.DISPLAY, favorite.getDisplay())
 	        .put(Keys.NOTE, favorite.getNote())
 	        .put(Keys.GROUP, favorite.getGroup())
 	        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getName());
   }
-  
-  public static JSONObject getNumberProcessedJson(int numProcessed) {
-    return new JSONObject().put(Keys.FAV_NUMBER_PROCESSED, numProcessed);
-  }
-  
-  public static JSONObject getGroupsJson(String[] groups) {
-	JSONArray groupsArray = new JSONArray();
-	Arrays.asList(groups).forEach((group) -> groupsArray.put(group)); 
-    return new JSONObject().put(Keys.GROUPS, groupsArray);
-  }
-	
+
 }
