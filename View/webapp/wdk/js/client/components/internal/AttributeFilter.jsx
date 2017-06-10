@@ -1687,7 +1687,8 @@ function getFilterDisplay(field, value) {
   }
 
   switch(field.type) {
-    case 'string': return `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
+    case 'string': return value.length === 0 ? `No ${field.display} selected`
+      : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
     case 'date':
     case 'number': return `${field.display} is ` +
       ( value.min == null ? `less than ${value.max}`
