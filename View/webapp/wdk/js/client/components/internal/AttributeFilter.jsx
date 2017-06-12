@@ -123,9 +123,7 @@ class FilterList extends React.Component {
 
     return (
       <div className="filter-items-wrapper">
-        <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
-          {filteredDataCount} of {dataCount} selected
-        </span>
+        {this.props.renderSelectionInfo(this.props)}
         <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
           {map(filters, filter => {
             var className = selectedField === filter.field ? 'selected' : '';
@@ -166,9 +164,20 @@ FilterList.propTypes = {
   filters: PropTypes.array.isRequired,
   filteredDataCount: PropTypes.number.isRequired,
   dataCount: PropTypes.number.isRequired,
-  selectedField: PropTypes.string
+  selectedField: PropTypes.string,
+  renderSelectionInfo: PropTypes.func
 };
 
+FilterList.defaultProps = {
+  renderSelectionInfo(props) {
+    const { filteredDataCount, dataCount } = props;
+    return(
+      <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
+        {filteredDataCount} of {dataCount} selected
+      </span>
+    );
+  }
+};
 
 /**
  * Renders a Field node.
@@ -704,7 +713,9 @@ export class AttributeFilter extends React.Component {
           filteredDataCount={filteredNotIgnored.length}
           dataCount={dataCount}
           fields={fields}
-          selectedField={activeField}/>
+          selectedField={activeField}
+          renderSelectionInfo={this.props.renderSelectionInfo}
+        />
 
         <InvalidFilterList filters={invalidFilters}/>
 
@@ -793,6 +804,7 @@ AttributeFilter.propTypes = {
   activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
+  renderSelectionInfo: PropTypes.func,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
@@ -882,7 +894,9 @@ export class ServerSideAttributeFilter extends React.Component {
           fields={fields}
           filteredDataCount={filteredDataCount}
           dataCount={dataCount}
-          selectedField={activeField}/>
+          selectedField={activeField}
+          renderSelectionInfo={this.props.renderSelectionInfo}
+        />
 
         <InvalidFilterList filters={invalidFilters}/>
 
@@ -919,6 +933,7 @@ ServerSideAttributeFilter.propTypes = {
   filteredDataCount: PropTypes.number.isRequired,
   activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
+  renderSelectionInfo: PropTypes.func,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
