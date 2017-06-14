@@ -2016,6 +2016,11 @@
   <define name="uiConfig">
     <element name="uiConfig">
       <ref name="IncludeExclude" />
+      <optional>
+        <attribute name="showStratPanelByDefault">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <element name="extraLogoutCookies">
           <zeroOrMore>
