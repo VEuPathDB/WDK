@@ -134,7 +134,7 @@ public abstract class AbstractDependentParam extends Param {
     // resolve depended param refs
     dependedParamRefs.clear();
     if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
-      for (String paramRef : dependedParamRef.split(",")) {
+      for (String paramRef : dependedParamRef.split(",\\s*")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
 
