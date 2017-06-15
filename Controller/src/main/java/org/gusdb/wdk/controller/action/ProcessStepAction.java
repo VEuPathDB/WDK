@@ -18,6 +18,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
@@ -149,7 +150,7 @@ public class ProcessStepAction extends Action {
     catch (Exception ex) {
       logger.error(ex);
       ex.printStackTrace();
-      ShowStrategyAction.outputErrorJSON(user, response, ex);
+      //      ShowStrategyAction.outputErrorJSON(user, response, ex);
       return null;
     }
   }
@@ -172,6 +173,14 @@ public class ProcessStepAction extends Action {
     String questionName = request.getParameter(PARAM_QUESTION);
     String filterName = request.getParameter(PARAM_FILTER);
     if (questionName != null && questionName.length() > 0) {
+
+      // if changing question, remove question specific filters that don't apply to new filter
+      if (!questionName.equals(step.getQuestionName())) {
+        for (FilterOption filter : step.getFilterOptions()) 
+          if (wdkModel.getQuestion(questionName).getFilterOrNull(filter.getKey()) == null)
+            step.removeFilterOption(filter.getKey());
+      }
+
       // revise a step with a new question
       Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
       mapPreviousAndChildStepIds(step, params);
@@ -188,8 +197,8 @@ public class ProcessStepAction extends Action {
     }
     // Update customName
     step.setCustomName(customName);
-    step.update(false);
     step.saveParamFilters();
+    step.update(false);
   }
 
   private static Map<Long, Long> insertStep(HttpServletRequest request, QuestionForm form,

@@ -1,12 +1,12 @@
 package org.gusdb.wdk.model;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class UIConfig extends WdkModelBase {
 
-  private static final String NL = System.getProperty("line.separator");
-  
   public static class ExtraLogoutCookies extends ArrayList<WdkCookie> {
     private static final long serialVersionUID = 1L;
     @Override public String toString() {
@@ -18,22 +18,31 @@ public class UIConfig extends WdkModelBase {
       return sb.append("  }").append(NL).toString();
     }
   }
-  
-  private ExtraLogoutCookies extraLogoutCookies = new ExtraLogoutCookies();
-  
+
+  private boolean _showStratPanelByDefault = true;
+  private ExtraLogoutCookies _extraLogoutCookies = new ExtraLogoutCookies();
+
+  public void setShowStratPanelByDefault(boolean showStratPanelByDefault) {
+    _showStratPanelByDefault = showStratPanelByDefault;
+  }
+
+  public boolean getShowStratPanelByDefault() {
+    return _showStratPanelByDefault;
+  }
+
   public void setExtraLogoutCookies(ExtraLogoutCookies extraLogoutCookies) {
-    this.extraLogoutCookies = extraLogoutCookies;
+    _extraLogoutCookies = extraLogoutCookies;
   }
 
   public List<WdkCookie> getExtraLogoutCookies() {
-    return extraLogoutCookies;
+    return _extraLogoutCookies;
   }
 
   @Override
   public String toString() {
     return new StringBuilder()
       .append("UIConfig {").append(NL)
-      .append(extraLogoutCookies.toString())
+      .append(_extraLogoutCookies.toString())
       .append("}").append(NL).toString();
   }
   

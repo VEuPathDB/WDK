@@ -38,8 +38,12 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   function init(element, attrs) {
+
     // Selects the last step of the first strategy
     wdk.step.init();
+
+    // decide whether strategy panel should be shown
+    handleStratPanelVisibility(element);
 
     // Make the strategies window resizable
     element.find(".resizable-wrapper").resizable({
@@ -130,6 +134,29 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     // submission just by calling event.preventDefault(), or
     // event.stopPropagation().
     $(document.body).on('submit', '#query_form form[name=questionForm]', wdk.addStepPopup.validateOperations);
+  }
+
+  function handleStratPanelVisibility(parentElement) {
+    // get DOM objects we will manipulate
+    var $stratPanel = $(parentElement).find('#strategies-panel');
+    var $togglePanel = $(parentElement).find('#strategies-panel-toggle');
+    // set cookie to default value if not already set
+    if ($.cookie("show-strat-panel") == undefined) {
+      $.cookie("show-strat-panel", $togglePanel.data('default'));
+    }
+    // define function to check cookie value and assign visibility accordingly
+    var doPanelVisibility = function(isToggle) {
+      var cookieValue = $.cookie("show-strat-panel") === 'true';
+      var showPanel = (isToggle ? !cookieValue : cookieValue);
+      $togglePanel.find('img').attr('src', wdk.webappUrl("wdk/images/" + (showPanel ? 'minus.gif' : 'plus.gif')));
+      $togglePanel.find('.toggle-command').html(showPanel ? 'Hide' : 'Show');
+      $stratPanel.css("display", (showPanel ? 'block' : 'none'));
+      $.cookie("show-strat-panel", (showPanel ? "true" : "false"));
+    };
+    // set initial visibility
+    doPanelVisibility(false);
+    // add click event to toggle
+    $togglePanel.find('img').click(function() { doPanelVisibility(true); });
   }
 
   /**
@@ -419,14 +446,14 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   /**
-   * Insert stategy HTML into DOM.
+   * Insert strategy HTML into DOM.
    *
    * @param {Object} view Current strategy, step, and results offset retrieved
    *    from server.
    * @param {Boolean} ignoreFilters If `true`, don't reload filters; otherwise
    *    reload filters.
    * @param {Number} count The number of open strategies
-   * @param {Object} jQuery.Deffered object used to allow promise chaining for
+   * @param {Object} jQuery.Deferred object used to allow promise chaining for
    *  updating strategies. This adds complexity and will probably removed in
    *  favor of event triggering.
    */
@@ -449,8 +476,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       displayOpenSubStrategies(ns.strats[t], s2);
     }
     $("#strategy_messages").hide();
-    $("#strategy_results .resizable-wrapper:has(#Strategies)").show();
-    //$("#Strategies").html($(s2).html());
+
     $('#Strategies').html(s2);
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
     var wrapper = $("#strategy_results .resizable-wrapper:has(#Strategies)");
@@ -504,7 +530,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   /**
-   * Insert substrategies into DOM and add colored border arround them and
+   * Insert substrategies into DOM and add colored border around them and
    * associated steps in parent strategies.
    *
    * @param {Object} strategy Parent strategy

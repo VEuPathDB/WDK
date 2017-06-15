@@ -1413,11 +1413,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _gusHome = gusHome;
   }
 
-  public void setUIConfig(UIConfig uiConfig) {
+  public void setUiConfig(UIConfig uiConfig) {
     this.uiConfig = uiConfig;
   }
 
-  public UIConfig getUIConfig() {
+  public UIConfig getUiConfig() {
     return uiConfig;
   }
 
