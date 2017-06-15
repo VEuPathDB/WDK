@@ -10,15 +10,33 @@ import { wrapActions, PureComponent } from '../utils/componentUtils';
  */
 class WdkViewController extends PureComponent {
 
-  /*--------------- Methods that should probably be overridden ---------------*/
+  /*--------------- Methods to override to display content ---------------*/
+
+    /**
+     * Returns the title of this page
+     */
+    getTitle(state) {
+      return "WDK";
+    }
+
+    /**
+     * Renders the highest page component below the Page tag.
+     */
+    renderView(state, eventHandlers) {
+      return ( <span>Page for View Controller: {this.name}</span> );
+    }
+
+  /*-------------- Methods to override to receive store data --------------*/
 
   /**
    * Returns this controller's store name; should be overridden if the
-   * controller uses data in a store.
+   * controller uses non-global data in a store.
    */
   getStoreName() {
     return "WdkStore";
   }
+
+  /*-------- Methods to override to call ACs and load initial data --------*/
 
   /**
    * Returns an object containing named event action creators.  These
@@ -27,13 +45,6 @@ class WdkViewController extends PureComponent {
    */
   getActionCreators() {
     return {};
-  }
-
-  /**
-   * Get state from store required for the view being rendered
-   */
-  getStateFromStore(store) {
-    return store.getState();
   }
 
   /**
@@ -53,6 +64,8 @@ class WdkViewController extends PureComponent {
   loadData(state, nextProps, previousProps) {
     return undefined;
   }
+
+  /*------------ Methods to override to use placeholder pages ------------*/
 
   /**
    * Returns whether an initial data load error has occurred which would prevent
@@ -78,25 +91,31 @@ class WdkViewController extends PureComponent {
     return false;
   }
 
-  /**
-   * Returns the title of this page
-   */
-  getTitle(state) {
-    return "WDK";
-  }
+  /*--------- Methods that may be overridden in very special cases ---------*/
 
   /**
-   * Renders the highest page component below the Page tag.
+   * Get state from store required for the view being rendered.  If not
+   * overridden, this function returns the store's state.
+   * 
+   * Generally, the view controller will want the entire state of the view
+   * store; however, if you are sharing a store with more than one VC, you may
+   * want to trim out unneeded data or transform data to a more convenient
+   * format while storing local state.
+   * 
+   * You can also use this method to improve performance if you don't depend on
+   * global data; because this is a PureComponent, you can trim out the global
+   * data you don't need and forego rerendering when unneeded data changes.
    */
-  renderView(state, eventHandlers) {
-    return ( <span>Page for View Controller: {this.name}</span> );
+  getStateFromStore(store) {
+    return store.getState();
   }
-
-  /*---------- Methods that may be overridden in special cases ----------*/
 
   /**
    * Returns the channel name.  If not overridden, this function returns the
-   * store name.
+   * store name.  Channels control which store's receive actions from ACs called
+   * from this VC.  Typically, ACs send actions either on the channel passed
+   * to them, or they send broadcast actions (which are received by all stores).
+   * You probably need a pretty good reason to do something different.
    */
   getChannelName() {
     return this.getStoreName();
