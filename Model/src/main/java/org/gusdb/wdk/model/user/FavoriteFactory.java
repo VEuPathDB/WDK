@@ -320,7 +320,7 @@ public class FavoriteFactory {
   }
   
   public Favorite getFavorite(User user, RecordClass recordClass, Map<String, Object> recordId) throws WdkModelException {
-    int userId = user.getUserId();
+    long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
