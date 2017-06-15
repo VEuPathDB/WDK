@@ -64,7 +64,8 @@ close(F);
 #
 if ($report) {
   foreach my $filterAsString (@filtersAsStrings) {
-    print STDOUT $filtersInfo{$filterAsString}->{count} . "\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
+    my $fixed = $filtersInfo{$filterAsString}->{fixed};
+    print STDOUT $filtersInfo{$filterAsString}->{count} . "\t$fixed\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
   }
 
   my $unmatchedErrors = $totalErrors - $matchedErrors;
@@ -113,9 +114,10 @@ sub parseFilterJson {
   my $filtersArray = decode_json($filterJsonStr);
   foreach my $category (@$filtersArray) {
     my $matchStrings = $category->{'matchStrings'};
+    my $fixed = $category->{'fixed'}? $category->{'fixed'} : "";
     my $joinedMatchString = join(' && ', @$matchStrings);
     push(@$filtersAsStringsRef, $joinedMatchString);
-    $filtersInfoRef->{$joinedMatchString} = {orig => $joinedMatchString, terms => \@$matchStrings, count => 0};
+    $filtersInfoRef->{$joinedMatchString} = {orig => $joinedMatchString, terms => \@$matchStrings, count => 0, fixed => $fixed};
   }
 }
 
@@ -207,6 +209,8 @@ A filter with a leading ! is a NOT filter.  Exclude errors containing it.
 Single filter format: one or more filters (delimited by \&\&).
 
 Filters are applied in the order found in the file.  Only the first matching filter is effective.
+
+NOTE: avoid using line numbers in filters (eg, AbstractPlugin.java:87).  The line numbers can easily change over time.
 
 SAMPLE COMMAND LINES
 

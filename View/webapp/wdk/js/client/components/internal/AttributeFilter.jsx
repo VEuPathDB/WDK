@@ -119,13 +119,11 @@ class FilterList extends React.Component {
   }
 
   render() {
-    var { filteredDataCount, dataCount, fields, filters, selectedField } = this.props;
+    var { fields, filters, selectedField } = this.props;
 
     return (
       <div className="filter-items-wrapper">
-        <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
-          {filteredDataCount} of {dataCount} selected
-        </span>
+        {this.props.renderSelectionInfo(this.props)}
         <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
           {map(filters, filter => {
             var className = selectedField === filter.field ? 'selected' : '';
@@ -164,11 +162,20 @@ FilterList.propTypes = {
   onFilterRemove: PropTypes.func.isRequired,
   fields: PropTypes.object.isRequired,
   filters: PropTypes.array.isRequired,
-  filteredDataCount: PropTypes.number.isRequired,
-  dataCount: PropTypes.number.isRequired,
-  selectedField: PropTypes.string
+  selectedField: PropTypes.string,
+  renderSelectionInfo: PropTypes.func
 };
 
+FilterList.defaultProps = {
+  renderSelectionInfo(props) {
+    const { filteredDataCount, dataCount } = props;
+    return(
+      <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
+        {filteredDataCount} of {dataCount} selected
+      </span>
+    );
+  }
+};
 
 /**
  * Renders a Field node.
@@ -309,11 +316,11 @@ FieldFilter.defaultProps = {
 }
 
 
-/**
- * Table of filtered data when filtering on the client side.
- */
 var FilteredData = (function() {
 
+  /**
+   * Table of filtered data when filtering on the client side.
+   */
   class FilteredData extends React.Component {
 
     constructor(props) {
@@ -704,7 +711,9 @@ export class AttributeFilter extends React.Component {
           filteredDataCount={filteredNotIgnored.length}
           dataCount={dataCount}
           fields={fields}
-          selectedField={activeField}/>
+          selectedField={activeField}
+          renderSelectionInfo={this.props.renderSelectionInfo}
+        />
 
         <InvalidFilterList filters={invalidFilters}/>
 
@@ -793,6 +802,7 @@ AttributeFilter.propTypes = {
   activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
+  renderSelectionInfo: PropTypes.func,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
@@ -882,7 +892,9 @@ export class ServerSideAttributeFilter extends React.Component {
           fields={fields}
           filteredDataCount={filteredDataCount}
           dataCount={dataCount}
-          selectedField={activeField}/>
+          selectedField={activeField}
+          renderSelectionInfo={this.props.renderSelectionInfo}
+        />
 
         <InvalidFilterList filters={invalidFilters}/>
 
@@ -913,12 +925,13 @@ ServerSideAttributeFilter.propTypes = {
   displayName: PropTypes.string,
 
   // state
-  fields: PropTypes.array.isRequired, // tree nodes
+  fields: PropTypes.object.isRequired, // tree nodes
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number.isRequired,
   filteredDataCount: PropTypes.number.isRequired,
   activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
+  renderSelectionInfo: PropTypes.func,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
@@ -1687,7 +1700,8 @@ function getFilterDisplay(field, value) {
   }
 
   switch(field.type) {
-    case 'string': return `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
+    case 'string': return value.length === 0 ? `No ${field.display} selected`
+      : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
     case 'date':
     case 'number': return `${field.display} is ` +
       ( value.min == null ? `less than ${value.max}`

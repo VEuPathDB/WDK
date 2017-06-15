@@ -5,6 +5,7 @@
 <%@ attribute name="includeDYK"
               required="true"
 %>
+<c:set var="baseUrl" value="${pageContext.request.contextPath}"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allCount" value="${wdkUser.strategyCount}"/>
 <c:set var="openCount" value="${fn:length(wdkUser.activeStrategies)}"/>
@@ -78,7 +79,17 @@
 <div id="strategy_results" class="workspace_panel">
   <div id="strategy_messages">
   </div>
-  <div class="resizable-wrapper">
+  <c:set var="showStratPanel" value="${wdkModel.model.uiConfig.showStratPanelByDefault}"/>
+  <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
+  <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
+  <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
+  <div id="strategies-panel-toggle" data-default="${showStratPanel}" style="display:flex;align-items:center">
+    <img style="cursor:pointer" src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
+    <span style="font-weight:bold">
+      <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
+    </span>
+  </div>
+  <div id="strategies-panel" class="resizable-wrapper" style="display:${currentDisplayCss}">
     <div class="scrollable-wrapper edit-step-pane">
       <div id="Strategies" ${newStrat}>
       </div>

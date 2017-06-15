@@ -88,7 +88,7 @@ public class AnswerDetailsFactory {
         if (specs.getOffset() < 0)
           throw new RequestMisformatException("Paging offset must be non-negative.");
         specs.setNumRecords(paging.getInt("numRecords"));
-        if (specs.getNumRecords() <= 0) {
+        if (specs.getNumRecords() < 0) {
           specs.setNumRecords(AnswerDetails.ALL_RECORDS);
         }
       }

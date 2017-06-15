@@ -1011,7 +1011,7 @@ public class ModelXmlParser extends XmlParser {
   }
 
   private static void configureUiConfig(Digester digester) {
-    configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUIConfig");
+    configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUiConfig");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class,
         "setExtraLogoutCookies");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");

@@ -436,4 +436,15 @@ public class QuestionBean {
   public Question getQuestion() {
     return question;
   }
+  
+  /**
+   * 
+   * @param filterName
+   * @return null if filter not found
+   * @throws WdkModelException
+   */
+  public Filter getFilterOrNull(String filterName) throws WdkModelException {
+    return question.getFilterOrNull(filterName);
+  }
+  
 }

@@ -46,6 +46,7 @@
     "react-addons-update": "^15.5.2",
     "react-dom": "^15.5.4",
     "react-router": "^3.0.2",
+    "react-virtualized": "^9.7.6",
     "script-loader": "~0.7.0",
     "spin.js": "^2.3.2",
     "style-loader": "^0.13.2",

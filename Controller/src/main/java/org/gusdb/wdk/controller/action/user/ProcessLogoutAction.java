@@ -33,7 +33,7 @@ public class ProcessLogoutAction extends WdkAction {
     addCookieToResponse(LoginCookieFactory.createLogoutCookie());
 
     // ask model if we should expire any other cookies and do so
-    UIConfig uiConfig = getWdkModel().getModel().getUIConfig();
+    UIConfig uiConfig = getWdkModel().getModel().getUiConfig();
     for (WdkCookie wdkCookie : uiConfig.getExtraLogoutCookies()) {
       Cookie extraCookie = new Cookie(wdkCookie.getName(), "");
       extraCookie.setPath(wdkCookie.getPath());
