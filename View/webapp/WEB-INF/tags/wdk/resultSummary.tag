@@ -24,13 +24,25 @@
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
 <c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
 
+<%--
+JavaScript call to show the search revise form. This is a hack and will probably
+break if the step info box view changes. Hopefully this won't happen before we
+transition to React.
+--%>
+<c:set var="editStepJsCall" value="$('#crumb_details_${step.stepId} .edit_step_link').click()" />
+
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 <div id="title-links" class="h3left">
   <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
   <span id="text_data_type">${recordName}</span>
 
   <c:if test="${strategy != null}">
-    from Step <span id="text_step_number">${strategy.length}</span> <br/>Strategy:
+    from Step <span id="text_step_number">${strategy.length}</span>
+    <a
+      title="Revise the parameters of this search"
+      style="margin-left: 1em"
+      href="javascript:${editStepJsCall}">Revise</a>
+    <br/>Strategy:
     <span
       class="wdk-editable strategy-name"
       data-id="${strategy.strategyId}"
