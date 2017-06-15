@@ -119,7 +119,7 @@ class FilterList extends React.Component {
   }
 
   render() {
-    var { filteredDataCount, dataCount, fields, filters, selectedField } = this.props;
+    var { fields, filters, selectedField } = this.props;
 
     return (
       <div className="filter-items-wrapper">
@@ -162,8 +162,6 @@ FilterList.propTypes = {
   onFilterRemove: PropTypes.func.isRequired,
   fields: PropTypes.object.isRequired,
   filters: PropTypes.array.isRequired,
-  filteredDataCount: PropTypes.number.isRequired,
-  dataCount: PropTypes.number.isRequired,
   selectedField: PropTypes.string,
   renderSelectionInfo: PropTypes.func
 };
@@ -318,11 +316,11 @@ FieldFilter.defaultProps = {
 }
 
 
-/**
- * Table of filtered data when filtering on the client side.
- */
 var FilteredData = (function() {
 
+  /**
+   * Table of filtered data when filtering on the client side.
+   */
   class FilteredData extends React.Component {
 
     constructor(props) {
@@ -927,7 +925,7 @@ ServerSideAttributeFilter.propTypes = {
   displayName: PropTypes.string,
 
   // state
-  fields: PropTypes.array.isRequired, // tree nodes
+  fields: PropTypes.object.isRequired, // tree nodes
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number.isRequired,
   filteredDataCount: PropTypes.number.isRequired,
