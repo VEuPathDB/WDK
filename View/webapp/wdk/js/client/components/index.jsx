@@ -3,7 +3,7 @@
 
 let re = /\.(js|jsx|ts|tsx)$/
 
-let req = require.context('./');
+let req = require.context('./', false);
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

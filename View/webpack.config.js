@@ -40,6 +40,7 @@ var exposeModules = [
   { module: 'react-dom', expose: 'ReactDOM' },
   { module: 'react-router/es', expose: 'ReactRouter' },
   { module: 'react-addons-perf', expose: 'ReactPerf' },
+  { module: 'prop-types', expose: 'ReactPropTypes' },
   { module: 'flux', expose: 'Flux' },
   { module: 'flux/utils', expose: 'FluxUtils' }
 ];

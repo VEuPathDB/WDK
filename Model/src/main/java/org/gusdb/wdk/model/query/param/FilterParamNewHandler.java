@@ -173,7 +173,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
     JSONArray values = jsFilter.getJSONArray(FILTERS_VALUE);
-    StringBuilder sb = new StringBuilder();
+
+    if (values.length() == 0) {
+      return " AND 1 != 1";
+    }
+
+    StringBuilder sb = new StringBuilder();    
     for (int j = 0; j < values.length(); j++) {
       String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
       if (!isNumber) val = "'" + val + "'";

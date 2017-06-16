@@ -1,5 +1,5 @@
 import React from 'react';
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import TextBox from './TextBox';
 import TextArea from './TextArea';
 import { wrappable } from '../utils/componentUtils';

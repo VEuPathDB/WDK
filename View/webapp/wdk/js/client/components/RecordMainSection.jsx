@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import { flowRight } from 'lodash';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { pure, wrappable } from '../utils/componentUtils';

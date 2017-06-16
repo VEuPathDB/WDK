@@ -1,5 +1,5 @@
 import React from 'react';
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import UserIdentity from './UserIdentity';
 import UserPassword from './UserPassword';
 import UserContact from './UserContact';

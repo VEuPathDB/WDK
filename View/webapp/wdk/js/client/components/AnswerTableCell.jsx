@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import RecordLink from './RecordLink';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
@@ -29,11 +30,11 @@ function AnswerTableCell(props) {
 
 AnswerTableCell.propTypes = {
   // TODO Put reusable propTypes in a module
-  value: React.PropTypes.string,
-  descriptor: React.PropTypes.object.isRequired,
-  record: React.PropTypes.object.isRequired,
-  recordClass: React.PropTypes.object.isRequired,
-  width: React.PropTypes.number.isRequired
+  value: PropTypes.string,
+  descriptor: PropTypes.object.isRequired,
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  width: PropTypes.number.isRequired
 };
 
 export default wrappable(AnswerTableCell);

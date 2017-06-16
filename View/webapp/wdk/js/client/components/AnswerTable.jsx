@@ -1,5 +1,6 @@
 import { pick, property } from 'lodash';
 import React from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import DataTable from './DataTable';
 import Dialog from './Dialog';
@@ -22,8 +23,6 @@ import { wrappable } from '../utils/componentUtils';
  *   - onHideColumns(columnNames: Array<string>)
  *   - onNewPage(offset: number, numRecords: number)
  */
-
-let { PropTypes } = React;
 
 /**
  * Function that doesn't do anything. This is the default for many

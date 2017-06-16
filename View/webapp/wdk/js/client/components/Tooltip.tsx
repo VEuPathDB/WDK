@@ -5,7 +5,7 @@
  * initiative to remove our jQuery dependency.
  */
 import $ from 'jquery';
-import React, { PropTypes } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 import { wrappable } from '../utils/componentUtils';

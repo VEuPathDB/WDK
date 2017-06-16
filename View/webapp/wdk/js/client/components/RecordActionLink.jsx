@@ -1,8 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Link from './Link';
 import {wrappable} from '../utils/componentUtils';
-
-let isExternal = url => /^https?:\/\//.test(url);
 
 let RecordActionLink = props => {
   let className = 'wdk-RecordActionLink ' + props.className;
@@ -21,14 +20,14 @@ let RecordActionLink = props => {
 }
 
 RecordActionLink.propTypes = {
-  record: React.PropTypes.object.isRequired,
-  recordClass: React.PropTypes.object.isRequired,
-  className: React.PropTypes.string,
-  iconClassName: React.PropTypes.string,
-  onClick: React.PropTypes.func,
-  href: React.PropTypes.string,
-  label: React.PropTypes.string,
-  showLabel: React.PropTypes.bool
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  iconClassName: PropTypes.string,
+  onClick: PropTypes.func,
+  href: PropTypes.string,
+  label: PropTypes.string,
+  showLabel: PropTypes.bool
 }
 
 RecordActionLink.defaultProps = {

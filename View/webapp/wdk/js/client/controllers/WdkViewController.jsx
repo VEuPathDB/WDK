@@ -1,4 +1,5 @@
-import { cloneElement, PropTypes } from 'react';
+import { cloneElement } from 'react';
+import PropTypes from 'prop-types';
 import Page from '../components/Page';
 import NotFound from '../components/NotFound';
 import LoadError from '../components/LoadError';

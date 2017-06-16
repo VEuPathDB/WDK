@@ -19,6 +19,7 @@ import {
   values
 } from 'lodash';
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Seq } from '../../utils/IterableUtils';
 import { findDOMNode } from 'react-dom';
 import Loading from '../Loading';
@@ -57,8 +58,6 @@ function formatDate(format, date) {
   .replace(/%m/, String(date.getMonth() + 1))
   .replace(/%d/, String(date.getDate()));
 }
-
-var { PropTypes } = React;
 
 /**
  * @typedef {string[]} StringFilterValue
@@ -979,10 +978,10 @@ var unwrapXaxisRange = function unwrap(flotRanges) {
   return { min, max };
 };
 
-var distributionEntryPropType = React.PropTypes.shape({
-  value: React.PropTypes.number.isRequired,
-  count: React.PropTypes.number.isRequired,
-  filteredCount: React.PropTypes.number.isRequired
+var distributionEntryPropType = PropTypes.shape({
+  value: PropTypes.number.isRequired,
+  count: PropTypes.number.isRequired,
+  filteredCount: PropTypes.number.isRequired
 });
 
 var Histogram = (function() {
@@ -1229,17 +1228,17 @@ var Histogram = (function() {
   }
 
   Histogram.propTypes = {
-    distribution: React.PropTypes.arrayOf(distributionEntryPropType).isRequired,
-    selectedMin: React.PropTypes.number,
-    selectedMax: React.PropTypes.number,
-    chartType: React.PropTypes.oneOf([ 'number', 'date' ]).isRequired,
-    timeformat: React.PropTypes.string,
-    xaxisLabel: React.PropTypes.string,
-    yaxisLabel: React.PropTypes.string,
+    distribution: PropTypes.arrayOf(distributionEntryPropType).isRequired,
+    selectedMin: PropTypes.number,
+    selectedMax: PropTypes.number,
+    chartType: PropTypes.oneOf([ 'number', 'date' ]).isRequired,
+    timeformat: PropTypes.string,
+    xaxisLabel: PropTypes.string,
+    yaxisLabel: PropTypes.string,
 
-    onSelected: React.PropTypes.func,
-    onSelecting: React.PropTypes.func,
-    onUnselected: React.PropTypes.func
+    onSelected: PropTypes.func,
+    onSelecting: PropTypes.func,
+    onUnselected: PropTypes.func
   };
 
   Histogram.defaultProps = {
@@ -1382,13 +1381,13 @@ class HistogramField extends React.Component {
 }
 
 HistogramField.propTypes = {
-  toFilterValue: React.PropTypes.func.isRequired,
-  toHistogramValue: React.PropTypes.func.isRequired,
-  onChange: React.PropTypes.func.isRequired,
-  field: React.PropTypes.object.isRequired,
-  filter: React.PropTypes.object,
-  overview: React.PropTypes.node.isRequired,
-  displayName: React.PropTypes.string.isRequired
+  toFilterValue: PropTypes.func.isRequired,
+  toHistogramValue: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  field: PropTypes.object.isRequired,
+  filter: PropTypes.object,
+  overview: PropTypes.node.isRequired,
+  displayName: PropTypes.string.isRequired
 };
 
 var fieldComponents = {};

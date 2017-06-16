@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import { includes } from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 import RecordTable from './RecordTable';
