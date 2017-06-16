@@ -113,6 +113,9 @@ public class FilterParamNew extends AbstractDependentParam {
   private String ontologyQueryRef;
   private Query ontologyQuery;
   
+  private String backgroundQueryRef;
+  private Query backgroundQuery;
+  
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
@@ -132,6 +135,9 @@ public class FilterParamNew extends AbstractDependentParam {
     this.ontologyQueryRef = param.ontologyQueryRef;
     if (param.ontologyQuery != null)
       this.ontologyQuery = param.ontologyQuery.clone();
+    this.backgroundQueryRef = param.backgroundQueryRef;
+    if (param.backgroundQuery != null)
+      this.backgroundQuery = param.backgroundQuery.clone();
     this.trimMetadataTerms = param.trimMetadataTerms;
   }
 
@@ -200,6 +206,35 @@ public class FilterParamNew extends AbstractDependentParam {
     this.ontologyQuery = ontologyQuery;
   }
 
+  /**
+   * @return the onotology Query Name
+   */
+  public String getBackgroundQueryRef() {
+    return backgroundQueryRef;
+  }
+
+  /**
+   * @param backgroundQueryRef
+   *          the backgroundName to set
+   */
+  public void setBackgroundQueryRef(String backgroundQueryRef) {
+    this.backgroundQueryRef = backgroundQueryRef;
+  }
+
+  /**
+   * @return the backgroundQuery
+   */
+  public Query getBackgroundQuery() {
+    return backgroundQuery;
+  }
+
+  /**
+   * @param backgroundQuery the backgroundQuery to set
+   */
+  public void setBackgroundQuery(Query backgroundQuery) {
+    this.backgroundQuery = backgroundQuery;
+  }
+
 
   /**
    * @return the trimMetadataTerms
@@ -233,6 +268,21 @@ public class FilterParamNew extends AbstractDependentParam {
       for (String col : cols)
         if (!columns.containsKey(col))
         throw new WdkModelException("The ontologyQuery " + ontologyQueryRef + " in filterParam " +
+            getFullName() + " must include column: " + col);
+    }
+
+    // resolve background query
+    if (backgroundQueryRef != null) {
+      
+      // validate dependent params
+      this.backgroundQuery = resolveDependentQuery(model, backgroundQueryRef, "background query");
+
+      // validate columns
+      Map<String, Column> columns = backgroundQuery.getColumnMap();
+      String[] cols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
+      for (String col : cols)
+        if (!columns.containsKey(col))
+        throw new WdkModelException("The backgroundQuery " + backgroundQueryRef + " in filterParam " +
             getFullName() + " must include column: " + col);
     }
 
@@ -284,16 +334,19 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
 
-    /* GET UNFILTERED (TOTAL) COUNTS */
-    // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-    String metadataSql = queryInstance.getSql();
+    /* GET UNFILTERED (BACKGROUND) COUNTS */
+    // use background query if provided, else use metadata query
+    
+    // get base background query
+    Query bgdQuery = backgroundQuery == null? metadataQuery : backgroundQuery;
+    QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+    String bgdSql = queryInstance.getSql();
     
     // reduce it to a set of distinct internals
     // we know that each ontology_term_id has a full set of internals, so we just need to query 
     // one ontology_term_id.
-    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + metadataSql + ") md" 
-          + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + metadataSql + ") where rownum = 1)";
+    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + bgdSql + ") md" 
+          + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + bgdSql + ") where rownum = 1)";
     
     // get count
     String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
@@ -335,12 +388,15 @@ public class FilterParamNew extends AbstractDependentParam {
     FilterParamNewInstance paramInstance = createFilterParamNewInstance(user, contextParamValues);
 
     /* GET UNFILTERED COUNTS */
-    // get base metadata query
-    QueryInstance<?> queryInstance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-    String metadataSql = queryInstance.getSql();
+    // use background query if provided, else use metadata query
+    
+    // get base bgd query
+    Query bgdQuery = backgroundQuery == null? metadataQuery : backgroundQuery;
+    QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+    String bgdSql = queryInstance.getSql();
     
     // limit it to our ontology_id
-    String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + metadataSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
+    String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
     // read into a map of internal -> value(s) 
     Map<String, List<String>> unfiltered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyId);
