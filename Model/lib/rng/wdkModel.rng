@@ -685,6 +685,9 @@
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />
       <optional>
+        <attribute name="backgroundQueryRef"/>
+      </optional>
+      <optional>
         <attribute name="trimMetadataTerms">
           <data type="boolean" />
         </attribute>
