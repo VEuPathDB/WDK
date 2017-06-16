@@ -3,6 +3,7 @@ import 'lib/zynga-scroller/Animate';
 import 'lib/zynga-scroller/Scroller';
 import {partial, values, sum, noop} from 'lodash';
 import React from 'react';
+import PropTypes from 'prop-types';
 import TouchableArea from './TouchableArea';
 
 import { Table as FDTable } from 'fixed-data-table';
@@ -188,14 +189,14 @@ Table.propTypes = {
 
   // Indicates sorted column. This is the same as the dataKey attribute
   // specified in Column.
-  sortDataKey: React.PropTypes.string,
+  sortDataKey: PropTypes.string,
 
   // Direction column is sorted.
-  sortDirection: React.PropTypes.oneOf(['ASC', 'DESC']),
+  sortDirection: PropTypes.oneOf(['ASC', 'DESC']),
 
-  onSort: React.PropTypes.func,
+  onSort: PropTypes.func,
 
-  onHideColumn: React.PropTypes.func
+  onHideColumn: PropTypes.func
 };
 
 Table.defaultProps = {

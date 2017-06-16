@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { eq } from 'lodash';
-import React, {PropTypes, Component, ReactElement} from 'react';
+import React, {Component, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, lazy, wrappable, PureComponent} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';

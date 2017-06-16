@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import RecordAttributeSection from './RecordAttributeSection';
 import RecordTableSection from './RecordTableSection';
 import CollapsibleSection from './CollapsibleSection';

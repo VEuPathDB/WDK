@@ -1,5 +1,5 @@
 import React from 'react';
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import UserAccountForm from './UserAccountForm';
 import { wrappable, getChangeHandler } from '../utils/componentUtils';
 
