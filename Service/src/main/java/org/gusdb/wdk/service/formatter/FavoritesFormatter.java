@@ -28,14 +28,14 @@ import org.json.JSONObject;
  */
 public class FavoritesFormatter {
 	
-  public static JSONObject getFavoritesJson(Map<RecordClass, List<Favorite>> favorites) throws WdkModelException {
-	JSONObject favoritesJson = new JSONObject();  
+  public static JSONArray getFavoritesJson(Map<RecordClass, List<Favorite>> favorites) throws WdkModelException {
+	JSONArray favoritesJson = new JSONArray();
     try {
       for(RecordClass recordClass : favorites.keySet()) {
     	List<Favorite> favoritesList = favorites.get(recordClass);
-    	JSONArray favoritesArray = new JSONArray();
-    	favoritesList.forEach((favorite) -> favoritesArray.put(getFavoriteJson(favorite)));
-        favoritesJson.put(recordClass.getFullName(), favoritesArray);
+    	//JSONArray favoritesArray = new JSONArray();
+    	favoritesList.forEach((favorite) -> favoritesJson.put(getFavoriteJson(favorite)));
+        //favoritesJson.put(recordClass.getFullName(), favoritesArray);
       }
       return favoritesJson;
     }
@@ -58,7 +58,7 @@ public class FavoritesFormatter {
 	        .put(Keys.DISPLAY, favorite.getDisplay())
 	        .put(Keys.NOTE, favorite.getNote())
 	        .put(Keys.GROUP, favorite.getGroup())
-	        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getName());
+	        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getFullName());
   }
 
 }
