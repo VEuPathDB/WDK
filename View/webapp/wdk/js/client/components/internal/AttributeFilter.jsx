@@ -224,11 +224,12 @@ class FieldList extends React.Component {
   }
 
   render() {
-    var { fields } = this.props;
+    var { autoFocus, fields } = this.props;
 
     return (
       <div className="field-list">
         <CheckboxTree
+          autoFocusSearchBox={autoFocus}
           tree={this.makeOntologyTree(fields)}
           expandedList={this.state.expandedNodes}
           getNodeId={node => node.field.term}
@@ -251,6 +252,7 @@ class FieldList extends React.Component {
 }
 
 FieldList.propTypes = {
+  autoFocus: PropTypes.bool,
   fields: PropTypes.object.isRequired,
   onFieldSelect: PropTypes.func.isRequired,
   selectedField: PropTypes.string
@@ -868,6 +870,7 @@ export class ServerSideAttributeFilter extends React.Component {
 
   render() {
     var {
+      autoFocus,
       dataCount,
       filteredDataCount,
       fields,
@@ -900,6 +903,7 @@ export class ServerSideAttributeFilter extends React.Component {
         {/* Main selection UI */}
         <div className="filters ui-helper-clearfix">
           <FieldList
+            autoFocus={autoFocus}
             fields={fields}
             onFieldSelect={this.props.onActiveFieldChange}
             selectedField={activeField}
@@ -922,6 +926,8 @@ export class ServerSideAttributeFilter extends React.Component {
 ServerSideAttributeFilter.propTypes = {
 
   displayName: PropTypes.string,
+
+  autoFocus: PropTypes.bool,
 
   // state
   fields: PropTypes.object.isRequired, // tree nodes

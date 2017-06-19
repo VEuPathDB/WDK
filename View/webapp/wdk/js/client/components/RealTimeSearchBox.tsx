@@ -118,7 +118,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
   }
 
   render() {
-    let { className, helpText, placeholderText } = this.props;
+    let { className, helpText, placeholderText, autoFocus } = this.props;
     let searchTerm = this.state.searchTerm;
     let isActiveSearch = searchTerm.length > 0;
     let showHelpIcon = (helpText != null && helpText != '');
@@ -129,6 +129,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
         + ' ' + classname(className!, activeModifier, helpModifier)}>
         <label className={labelClassName}>
           <input type="search"
+            autoFocus={autoFocus}
             ref={node => this.input = node}
             className={inputClassName}
             onChange={this.handleSearchTermChange}
