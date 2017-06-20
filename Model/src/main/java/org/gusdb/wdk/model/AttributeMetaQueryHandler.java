@@ -38,7 +38,8 @@ public class AttributeMetaQueryHandler {
 		  ResultSet resultSet,
 		  ResultSetMetaData metaData,
 		  List<String> columnNames,
-		  List<FieldSetter> fieldSetters) throws WdkModelException {
+		  List<FieldSetter> fieldSetters,
+		  WdkModel wdkModel) throws WdkModelException {
 	  
 	try {
 		
@@ -160,11 +161,13 @@ public class AttributeMetaQueryHandler {
 	          }  
 	        }
 	      }  
+	      // Converts propertylist to a propertymap
+	      pluginReference.excludeResources(wdkModel.getProjectId());
 	      
 	      // Link the completed attribute plug-in reference to the query column attribute field
 	      pluginReference.setAttributeField((QueryColumnAttributeField) obj);
 	      ((QueryColumnAttributeField) obj).addAttributePluginReference(pluginReference);
-	    }  
+	    }
 	  }
 	}
 	catch(SQLException | InvocationTargetException | IllegalAccessException e) {

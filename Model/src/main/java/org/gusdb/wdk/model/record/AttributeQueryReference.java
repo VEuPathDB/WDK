@@ -136,7 +136,7 @@ public class AttributeQueryReference extends Reference {
   
                   // Populate the attributeField with the attribute meta data
                   AttributeMetaQueryHandler.populate(attributeField, resultSet,
-                      metaData, columnNames, fieldSetters);
+                      metaData, columnNames, fieldSetters, wdkModel);
   
                   attributeFields.add(attributeField);
                 }

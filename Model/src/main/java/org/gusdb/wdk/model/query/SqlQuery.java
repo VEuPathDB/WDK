@@ -351,7 +351,7 @@ public class SqlQuery extends Query {
      		  
      		    // Populate the attributeField with the attribute meta data
      		    AttributeMetaQueryHandler.populate(column, resultSet,
-     		  		  metaData, columnNames, fieldSetters);
+     		  		  metaData, columnNames, fieldSetters, wdkModel);
      		  
      		    SqlQuery.this.columnMap.put(column.getName(), column);
               }
