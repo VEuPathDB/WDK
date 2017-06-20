@@ -129,7 +129,10 @@ public class AttributeMetaQueryHandler {
 	    
 	    // A non-empty pluginAttributeNames list means that the query column attribute field is
 	    // supporting an attribute plug-in.
-	    if(!pluginAttributeNames.isEmpty()) {
+	    if(!pluginAttributeNames.isEmpty() &&
+	        pluginAttributeNames.contains("name") &&
+	        !resultSet.getString("plugin_name").trim().isEmpty()) {
+	    	
 	      AttributePluginReference pluginReference = new AttributePluginReference();
 	      
 	      // get plug-in field setters to populate.  Only strings are expected.
