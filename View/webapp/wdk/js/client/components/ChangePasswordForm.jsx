@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import { wrappable, getChangeHandler } from '../utils/componentUtils';
 import { interpretFormStatus, FormMessage } from './UserFormContainer';
 import TextBox from './TextBox';

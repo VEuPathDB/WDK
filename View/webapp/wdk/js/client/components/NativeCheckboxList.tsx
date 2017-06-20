@@ -1,4 +1,4 @@
-import React, { Component, FormEvent, MouseEvent, PropTypes } from 'react';
+import React, { Component, FormEvent, MouseEvent } from 'react';
 import {uniqueId, noop} from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 

@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 
 let treePropType = PropTypes.arrayOf(PropTypes.shape({
   children: treePropType

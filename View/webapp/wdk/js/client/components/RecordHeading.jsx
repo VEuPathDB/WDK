@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {safeHtml, wrappable} from '../utils/componentUtils';
 import RecordActionLink from './RecordActionLink';
 
@@ -21,9 +22,9 @@ let RecordHeading = props => {
 }
 
 RecordHeading.propTypes = {
-  record: React.PropTypes.object.isRequired,
-  recordClass: React.PropTypes.object.isRequired,
-  headerActions: React.PropTypes.arrayOf(React.PropTypes.object)
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  headerActions: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default wrappable(RecordHeading);
