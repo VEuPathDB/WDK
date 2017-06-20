@@ -131,7 +131,7 @@ public class AttributeMetaQueryHandler {
 	    // supporting an attribute plug-in.
 	    if(!pluginAttributeNames.isEmpty() &&
 	        pluginAttributeNames.contains("name") &&
-	        !resultSet.getString("plugin_name").trim().isEmpty()) {
+	        resultSet.getString("plugin_name") != null) {
 	    	
 	      AttributePluginReference pluginReference = new AttributePluginReference();
 	      
