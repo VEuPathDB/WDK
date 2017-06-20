@@ -11,6 +11,8 @@ import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * This class contains a method to populate the column and attribute field objects associated
@@ -147,18 +149,13 @@ public class AttributeMetaQueryHandler {
 	      if(pluginAttributeNames.contains("properties")) {
 	        String properties = resultSet.getString("plugin_properties");
 	        if(properties != null) {
-	          String[] pairs = properties.split(",");
-	          if(pairs.length == 0) {
-	            throw new WdkModelException("The plugin properties field is empty for the " + obj.getClass().getName() + " object");  
-	          }
-	          for(String pair : pairs) {
-	            String[] keyValue = pair.split("=");
-	            if(keyValue.length != 2) {
-	        	  throw new WdkModelException("The plugin properties field is not correctly formatted for the " + obj.getClass().getName() + " object");
-	            }
+	          JSONArray propertiesJson = new JSONArray(properties);
+	          for(int i = 0; i < propertiesJson.length(); i++) {
+	            String name = propertiesJson.getJSONObject(i).getString("name");
+	            String value = propertiesJson.getJSONObject(i).getString("value");   
 	            WdkModelText text = new WdkModelText();
-	            text.setName(keyValue[0]);
-	            text.setValue(keyValue[1]);
+	            text.setName(name);
+	            text.setValue(value);
 	            pluginReference.addProperty(text);
 	          }  
 	        }

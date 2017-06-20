@@ -9,6 +9,9 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.RngAnnotations.RngRequired;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
@@ -38,6 +41,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param name
      *            the name to set
      */
+    @RngRequired
     public void setName(String name) {
         this.name = name;
     }
@@ -53,6 +57,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param display
      *            the display to set
      */
+    @RngOptional
     public void setDisplay(String display) {
         this.display = display;
     }
@@ -68,6 +73,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param description
      *            the description to set
      */
+    @RngOptional
     public void setDescription(String description) {
         this.description = description;
     }
@@ -76,6 +82,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param implementation
      *            the implementation to set
      */
+    @RngRequired
     public void setImplementation(String implementation) {
         this.implementation = implementation;
     }
@@ -84,14 +91,17 @@ public class AttributePluginReference extends WdkModelBase {
         return view;
     }
 
+    @RngRequired
     public void setView(String view) {
         this.view = view;
     }
 
+    @RngUndefined
     public void setAttributeField(AttributeField attributeField) {
         this.attributeField = attributeField;
     }
 
+    @RngOptional
     public void addProperty(WdkModelText property) {
         this.propertyList.add(property);
     }
