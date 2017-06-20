@@ -4,11 +4,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 
 /**
  * This class contains a method to populate the column and attribute field objects associated
@@ -44,7 +46,7 @@ public class AttributeMetaQueryHandler {
 	    		+ " Column and QueryColumnAttributeField objects.");
 	  }
 		  
-	  // Iterate over all the possible fields for the given object (Column or QueryColumnAttributeFiled)
+	  // Iterate over all the possible fields for the given object (Column or QueryColumnAttributeField)
 	  for(FieldSetter fieldSetter : fieldSetters) {
 		  
 		// If the fieldSetter's database column name matches one available via the attribute meta query,
@@ -103,7 +105,71 @@ public class AttributeMetaQueryHandler {
        	  }
         }
 	  }
-	}  
+	  
+	  // Check to see whether this query column attribute field supports an attribute plugin
+	  // Note that at most, 1 plug-in is allowed per query column attribute field.
+	  if(obj instanceof QueryColumnAttributeField) {
+	  
+	    List<String> pluginAttributeNames = new ArrayList<String>();
+	    
+	    // The columns in the table corresponding to a plugin have the 'plugin_' prefix.
+	    for(String columnName : columnNames) {
+		  if(columnName.startsWith("plugin_")) {
+		    String pluginAttributeName = columnName.substring(columnName.indexOf("_") + 1);
+		    if(pluginAttributeNames.contains(pluginAttributeName)) {
+			  throw new WdkModelException("The plugin attribute name " + pluginAttributeName +
+					  " was duplicated for the " + obj.getClass().getName() + " object");  
+		    }
+		    pluginAttributeNames.add(pluginAttributeName);
+		  }
+	    }
+	    
+	    // A non-empty pluginAttributeNames list means that the query column attribute field is
+	    // supporting an attribute plug-in.
+	    if(!pluginAttributeNames.isEmpty()) {
+	      AttributePluginReference pluginReference = new AttributePluginReference();
+	      
+	      // get plug-in field setters to populate.  Only strings are expected.
+	      List<FieldSetter> pluginFieldSetters = RngAnnotations.getRngFields(AttributePluginReference.class); 
+	      for(FieldSetter pluginFieldSetter : pluginFieldSetters) {
+	        if(pluginAttributeNames.contains(pluginFieldSetter.underscoredName)) {
+	          String strFieldValue = resultSet.getString("plugin_" + pluginFieldSetter.underscoredName);
+     	      if(strFieldValue == null && pluginFieldSetter.isRngRequired) {
+     	        throw new WdkModelException("The field "
+              	             + pluginFieldSetter.underscoredName
+              	             + " is required for the " + obj.getClass().getName() + " object");  
+     	      }
+     	      else if(strFieldValue != null) {
+     	        pluginFieldSetter.setter.invoke(pluginReference, strFieldValue);
+     	   	  }
+	        }
+	      }
+	      if(pluginAttributeNames.contains("properties")) {
+	        String properties = resultSet.getString("plugin_properties");
+	        if(properties != null) {
+	          String[] pairs = properties.split(",");
+	          if(pairs.length == 0) {
+	            throw new WdkModelException("The plugin properties field is empty for the " + obj.getClass().getName() + " object");  
+	          }
+	          for(String pair : pairs) {
+	            String[] keyValue = pair.split("=");
+	            if(keyValue.length != 2) {
+	        	  throw new WdkModelException("The plugin properties field is not correctly formatted for the " + obj.getClass().getName() + " object");
+	            }
+	            WdkModelText text = new WdkModelText();
+	            text.setName(keyValue[0]);
+	            text.setValue(keyValue[1]);
+	            pluginReference.addProperty(text);
+	          }  
+	        }
+	      }  
+	      
+	      // Link the completed attribute plug-in reference to the query column attribute field
+	      pluginReference.setAttributeField((QueryColumnAttributeField) obj);
+	      ((QueryColumnAttributeField) obj).addAttributePluginReference(pluginReference);
+	    }  
+	  }
+	}
 	catch(SQLException | InvocationTargetException | IllegalAccessException e) {
 	  throw new WdkModelException("Unable to resolve database loaded column attributes.", e);
 	}
