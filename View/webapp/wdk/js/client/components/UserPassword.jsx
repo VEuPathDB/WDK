@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import { wrappable } from '../utils/componentUtils';
 import ChangePasswordLink from './ChangePasswordLink';
 

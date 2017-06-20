@@ -1,4 +1,4 @@
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import UserIdentity from './UserIdentity';
 import UserPassword from './UserPassword';
 import ApplicationSpecificProperties from './ApplicationSpecificProperties';

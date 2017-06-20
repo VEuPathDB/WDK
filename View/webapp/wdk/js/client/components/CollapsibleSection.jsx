@@ -6,10 +6,11 @@
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import {zipWith} from 'lodash';
 import {wrappable, PureComponent} from '../utils/componentUtils';
 
-let {Component, PropTypes} = React;
+let {Component} = React;
 
 let defaultClassName = 'wdk-CollapsibleSection';
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 
 class Sticky extends React.Component {
 
@@ -64,8 +65,8 @@ class Sticky extends React.Component {
 }
 
 Sticky.propTypes = {
-  className: React.PropTypes.string,
-  fixedClassName: React.PropTypes.string
+  className: PropTypes.string,
+  fixedClassName: PropTypes.string
 };
 
 Sticky.defaultProps = {

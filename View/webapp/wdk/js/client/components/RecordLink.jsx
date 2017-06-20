@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Link from './Link';
 import { wrappable } from '../utils/componentUtils';
 
-let idPartPropType = React.PropTypes.shape({
-  name: React.PropTypes.string.isRequired,
-  value: React.PropTypes.string.isRequired
+let idPartPropType = PropTypes.shape({
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired
 });
 
 function RecordLink(props) {
@@ -19,8 +20,8 @@ function RecordLink(props) {
 }
 
 RecordLink.propTypes = {
-  recordId: React.PropTypes.arrayOf(idPartPropType).isRequired,
-  recordClass: React.PropTypes.object.isRequired
+  recordId: PropTypes.arrayOf(idPartPropType).isRequired,
+  recordClass: PropTypes.object.isRequired
 };
 
 export default wrappable(RecordLink);

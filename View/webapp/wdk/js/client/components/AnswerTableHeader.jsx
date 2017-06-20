@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { wrappable } from '../utils/componentUtils';
 
 function AnswerTableHeader(props) {
@@ -7,7 +8,7 @@ function AnswerTableHeader(props) {
 }
 
 AnswerTableHeader.propTypes = {
-  descriptor: React.PropTypes.object.isRequired
+  descriptor: PropTypes.object.isRequired
 };
 
 

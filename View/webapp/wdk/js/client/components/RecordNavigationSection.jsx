@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {includes, memoize, throttle} from 'lodash';
 import { Seq } from '../utils/IterableUtils';
 import { preorderSeq, pruneDescendantNodes } from '../utils/TreeUtils';
@@ -100,9 +101,9 @@ class RecordNavigationSection extends PureComponent {
 }
 
 RecordNavigationSection.propTypes = {
-  collapsedSections: React.PropTypes.array,
-  onSectionToggle: React.PropTypes.func,
-  heading: React.PropTypes.node
+  collapsedSections: PropTypes.array,
+  onSectionToggle: PropTypes.func,
+  heading: PropTypes.node
 };
 
 RecordNavigationSection.defaultProps = {

@@ -1,5 +1,6 @@
 import $ from 'jquery';
-import {Component, PropTypes} from 'react';
+import {Component} from 'react';
+import PropTypes from 'prop-types';
 import {Router, useRouterHistory} from 'react-router';
 import {createHistory} from 'history';
 import wdkRoutes from '../routes';

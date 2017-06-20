@@ -143,7 +143,7 @@ public class FavoritesService extends UserService {
       if(favoritesRequest.getNote() != null) {
         factory.setNotes(user, favoritesRequest.getRecordClass(), ids, favoritesRequest.getNote());
       }
-      if(favoritesRequest.getGroup() == null) {
+      if(favoritesRequest.getGroup() != null) {
         factory.setGroups(user, favoritesRequest.getRecordClass(), ids, favoritesRequest.getGroup());
       }  
       return Response.noContent().build();
