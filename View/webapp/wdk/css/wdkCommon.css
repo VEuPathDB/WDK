@@ -1117,7 +1117,9 @@ div.Workspace {
 
 }
 
+/* XXX image doesn't exist in repo
 .step {background-image: url(../images/loading_step.png);}
+*/
 
 
 tr.headerRow {

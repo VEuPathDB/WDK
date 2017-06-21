@@ -10,12 +10,5 @@
   <jsp:directive.attribute name="debug" required="false" description="Use unminified files"/>
 
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
-  <c:choose>
-    <c:when test="${debug eq true}">
-      <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.css"/>
-    </c:when>
-    <c:otherwise>
-      <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.min.css"/>
-    </c:otherwise>
-  </c:choose>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="wdk.bundle.css"/>
 </jsp:root>
