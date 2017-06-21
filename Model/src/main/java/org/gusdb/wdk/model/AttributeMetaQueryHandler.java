@@ -19,18 +19,21 @@ import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.runtime.UnfetchableInstanceException;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.ontology.OntologyAttribute;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
 
 /**
  * This class contains a method to populate the column and attribute field objects associated with a database
  * loaded attribute.
  * 
  * @author crisl-adm
+ * @author rdoherty
  *
  */
 public class AttributeMetaQueryHandler {
@@ -38,7 +41,7 @@ public class AttributeMetaQueryHandler {
   public static final boolean CACHE_META_QUERY_RESULTS = true;
 
   private static final List<Class<?>> CLIENT_CLASSES = Arrays.asList(new Class<?>[] {
-      Column.class, QueryColumnAttributeField.class, OntologyAttribute.class
+      Column.class, QueryColumnAttributeField.class, DynamicAttributePluginReference.class, OntologyAttribute.class
   });
 
   private AttributeMetaQueryHandler() {}
@@ -49,11 +52,13 @@ public class AttributeMetaQueryHandler {
       return CacheMgr.get().getAttributeMetaQueryCache().getItem(queryName,
           new DynamicallyDefinedAttributeFetcher(wdkModel));
     }
-    catch (UnfetchableItemException e) {
-      Throwable cause = e.getCause();
-      throw (cause instanceof WdkModelException ? (WdkModelException)cause :
+    catch (Exception e) {
+      if (e instanceof UnfetchableInstanceException) {
+        e = (Exception)e.getCause();
+      }
+      throw (e instanceof WdkModelException ? (WdkModelException)e :
         new WdkModelException("Could not fetch dynamically defined attributes " +
-            "for query '" + queryName + "'", cause));
+            "for query '" + queryName + "'", e));
     }
   }
 
@@ -183,7 +188,7 @@ public class AttributeMetaQueryHandler {
     }
   }
 
-  public static void populate(Object object, Map<String, Object> row) throws WdkModelException {
+  public static <T> T populate(T object, Map<String, Object> row) throws WdkModelException {
     try {
       Class<?> objClass = object.getClass();
       if (!CLIENT_CLASSES.contains(objClass)) {
@@ -214,6 +219,9 @@ public class AttributeMetaQueryHandler {
         // row contains this field setter's value; use to populate the passed object
         fieldSetter.getMethod().invoke(object, row.get(fieldColumnName));
       }
+
+      // return the populated object
+      return object;
     }
     catch (InvocationTargetException | IllegalAccessException e) {
       throw new WdkModelException("Unable to invoke RNG-annotated method", e);
