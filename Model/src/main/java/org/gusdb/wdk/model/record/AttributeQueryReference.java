@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
 
 /**
  * <p>
@@ -101,11 +102,21 @@ public class AttributeQueryReference extends Reference {
       for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryRef, wdkModel)) {
         AttributeField attributeField = new QueryColumnAttributeField();
 
-        // Need to call this here since this attribute field originates from the database
+        // Need to call this explicitly since this attribute field originates from the database
         attributeField.excludeResources(wdkModel.getProjectId());
 
         // Populate the attributeField with the attribute meta data
         AttributeMetaQueryHandler.populate(attributeField, row);
+
+        // Populate the attribute plugin if present
+        DynamicAttributePluginReference plugin = AttributeMetaQueryHandler.populate(new DynamicAttributePluginReference(), row);
+        if (plugin.getName() != null) {
+          // plugin specified for this attribute
+          if (!plugin.hasAllDynamicFields()) {
+            throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() + " is missing at least one plugin field.");
+          }
+          attributeField.addAttributePluginReference(plugin);
+        }
 
         attributeFieldMap.put(attributeField.getName(), attributeField);
       }
