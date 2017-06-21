@@ -44,7 +44,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 public class B33_To_B34_Migration {
 
   // configuration constants
-  private static final boolean WRITE_TO_DB = false;    // keep off to check generated SQL
+  private static final boolean WRITE_TO_DB = true;     // keep off to check generated SQL
   private static final boolean REPLICATED_DBS = false; // keep off until testing on apicommDev
 
   // connection information to user DBs
@@ -66,7 +66,7 @@ public class B33_To_B34_Migration {
   private static final String ACCOUNT_DB_SCHEMA = "wdkmaint.";
   private static final String NEW_TABLE_ACCOUNTS = ACCOUNT_DB_SCHEMA + "accounts";
   private static final String NEW_TABLE_ACCOUNT_PROPS = ACCOUNT_DB_SCHEMA + "account_properties";
-  private static final String NEW_USER_ID_SEQUENCE = ACCOUNT_DB_SCHEMA + NEW_TABLE_ACCOUNTS + "_PKSEQ";
+  private static final String NEW_USER_ID_SEQUENCE = NEW_TABLE_ACCOUNTS + "_PKSEQ";
 
   // userdb objects needed to be read while creating account DB
   private static final String ACCOUNTDB_DBLINK_TO_USERDB = ""; // add dblink suffix (including '@') to userdb here if needed
@@ -114,9 +114,9 @@ public class B33_To_B34_Migration {
   private static final String RESIZE_PROPERTY_VALUE_COL_SQL =
       "ALTER TABLE " + NEW_TABLE_ACCOUNT_PROPS + " MODIFY value VARCHAR2(4000)";
 
-  private static final String DELETE_ACCOUNTS_TABLE_SQL = "delete table " + NEW_TABLE_ACCOUNTS;
-  private static final String DELETE_ACCOUNT_PROPS_TABLE_SQL = "delete table " + NEW_TABLE_ACCOUNT_PROPS;
-  private static final String DELETE_ACCOUNT_SEQUENCE_TABLE_SQL = "delete sequence " + NEW_USER_ID_SEQUENCE;
+  private static final String DELETE_ACCOUNT_SEQUENCE_TABLE_SQL = "drop sequence " + NEW_USER_ID_SEQUENCE;
+  private static final String DELETE_ACCOUNTS_TABLE_SQL = "drop table " + NEW_TABLE_ACCOUNTS;
+  private static final String DELETE_ACCOUNT_PROPS_TABLE_SQL = "drop table " + NEW_TABLE_ACCOUNT_PROPS;
 
   /*======================================================*/
   /*          SQL to be executed on UserDB             */
@@ -186,9 +186,9 @@ public class B33_To_B34_Migration {
   };
 
   private static final SqlGetter[] DROP_ACCOUNT_DB_SQLS = {
+      doSql(DELETE_ACCOUNT_SEQUENCE_TABLE_SQL),
       doSql(DELETE_ACCOUNT_PROPS_TABLE_SQL),
-      doSql(DELETE_ACCOUNTS_TABLE_SQL),
-      doSql(DELETE_ACCOUNT_SEQUENCE_TABLE_SQL)
+      doSql(DELETE_ACCOUNTS_TABLE_SQL)
   };
 
   /*============================================*/
