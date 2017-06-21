@@ -35,7 +35,6 @@ public class CacheMgr {
   private final OntologyCache _ontologyCache = new OntologyCache();
   private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
 
-
   private CacheMgr() { }
 
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
@@ -47,6 +46,5 @@ public class CacheMgr {
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
-
 
 }
