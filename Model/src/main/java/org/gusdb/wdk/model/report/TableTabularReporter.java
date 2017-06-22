@@ -1,6 +1,10 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.ListBuilder.asList;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,9 +12,11 @@ import java.util.Set;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.SingleTableRecordStream;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -51,9 +57,30 @@ public class TableTabularReporter extends AbstractTabularReporter {
    * results out the door, reading one RecordInstance at a time.
    */
   @Override
+  @SuppressWarnings("resource")
   public RecordStream getRecords() throws WdkModelException {
-    // the records returned by this stream will have only PK and this single table field populated
-    return new SingleTableRecordStream(_baseAnswer, _tableField);
+    RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
+    if (idAttributeContainsNonPkFields(recordClass)) {
+      // need to use FileBasedRecordStream to support both this table and any needed attributes
+      return new FileBasedRecordStream(_baseAnswer,
+          asList(recordClass.getIdAttributeField()),
+          asList(_tableField)).populateFiles();
+    }
+    else {
+      // the records returned by this stream will have only PK and this single table field populated
+      return new SingleTableRecordStream(_baseAnswer, _tableField);
+    }
+  }
+
+  private static boolean idAttributeContainsNonPkFields(RecordClass recordClass) throws WdkModelException {
+    Collection<AttributeField> deps = recordClass.getIdAttributeField().getDependencies();
+    List<String> pkColumns = Arrays.asList(recordClass.getPrimaryKeyDefinition().getColumnRefs());
+    for (AttributeField dep : deps) {
+      if (!pkColumns.contains(dep.getName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
