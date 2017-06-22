@@ -55,7 +55,7 @@ var exposeLoaders = exposeModules.map(function(entry) {
 module.exports = baseConfig.merge({
   entry: {
     'wdk-client': [ 'whatwg-fetch', './webapp/wdk/js/client/index.js' ],
-    'wdk': './webapp/wdk/js/index.js'
+    'wdk': [ './webapp/wdk/css/wdk.css', './webapp/wdk/js/index.js' ]
   },
   output: {
     path: __dirname + '/dist',
@@ -69,16 +69,7 @@ module.exports = baseConfig.merge({
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: scriptLoaders.concat(exposeLoaders).concat([
-      // handle css source.
-      {
-        test: /\.css$/,
-        use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader', options: { sourceMap: true } }
-        ]
-      }
-    ])
+    rules: scriptLoaders.concat(exposeLoaders)
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({

@@ -9,6 +9,7 @@
 
 var webpack = require('webpack');
 var webpackMerge = require('webpack-merge');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 /**
  * Creates a configuration function that is used by webpack. Takes a
@@ -51,6 +52,20 @@ exports.merge = function merge(additionConfig) {
             ]
           },
 
+          {
+            test: /\.css$/,
+            use: ExtractTextPlugin.extract({
+              use: {
+                loader: 'css-loader',
+                options: {
+                  sourceMap: true,
+                  minimize: !isDevelopment
+                }
+              },
+              fallback: 'style-loader'
+            })
+          },
+
           // inlines images as base64
           {
             test: /\.(gif|png)$/,
@@ -79,7 +94,8 @@ exports.merge = function merge(additionConfig) {
             NODE_ENV: JSON.stringify(isDevelopment ? "development" : "production")
           }
         }),
-        isDevelopment ? noop : new webpack.optimize.UglifyJsPlugin({ sourceMap: true })
+        isDevelopment ? noop : new webpack.optimize.UglifyJsPlugin({ sourceMap: true }),
+        new ExtractTextPlugin('[name].bundle.css')
       ]
     }].concat(additionConfig));
   }
