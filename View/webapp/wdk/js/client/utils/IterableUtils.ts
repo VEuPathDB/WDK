@@ -99,6 +99,10 @@ export class Seq<T> {
     return new Seq(uniq(this));
   }
 
+  uniqBy<U>(fn: Mapper<T, U>) {
+    return new Seq(uniqBy(fn, this));
+  }
+
   filter(fn: Predicate<T>) {
     return new Seq(filter(fn, this));
   }
@@ -107,12 +111,20 @@ export class Seq<T> {
     return new Seq(take(n, this));
   }
 
+  takeLast(n: number) {
+    return new Seq(takeLast(n, this));
+  }
+
   takeWhile(fn: Predicate<T>) {
     return new Seq(takeWhile(fn, this));
   }
 
   drop(n: number) {
     return new Seq(drop(n, this));
+  }
+
+  dropLast(n: number) {
+    return new Seq(dropLast(n, this));
   }
 
   dropWhile(fn: Predicate<T>) {
@@ -214,6 +226,19 @@ export function* uniq<T>(iterable: Iterable<T>) {
   }
 }
 
+export function* uniqBy<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
+  let keys = new Set<U>();
+  for (let iter = iterable[Symbol.iterator]();;) {
+    let { done, value } = iter.next();
+    if (done) break;
+    let key = fn(value);
+    if (keys.has(key) === false) {
+      keys.add(key);
+      yield value;
+    }
+  }
+}
+
 export function* filter<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
@@ -229,6 +254,13 @@ export function* take<T>(n: number, iterable: Iterable<T>) {
     if (!done && count++ < n) yield value;
     else break;
   }
+}
+
+/**
+ * Take the last `n` elements of `iterable`
+ */
+export function* takeLast<T>(n: number, iterable: Iterable<T>) {
+  yield* Array.from(iterable).slice(-Math.max(0, n));
 }
 
 /**
@@ -250,6 +282,11 @@ export function* drop<T>(n: number, iterable: Iterable<T>) {
     yield value;
   }
 }
+
+export function* dropLast<T>(n: number, iterable: Iterable<T>) {
+  yield* Array.from(iterable).slice(0, -Math.max(0, n));
+}
+
 /**
  * Ignore items until test returns false.
  */
