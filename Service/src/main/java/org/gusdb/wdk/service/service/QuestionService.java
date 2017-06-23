@@ -238,8 +238,11 @@ public class QuestionService extends WdkService {
     // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getSessionUser(),
-        contextParamValues, changedParam.getAllDependentParams()).toString()).build();
+    return Response.ok(QuestionFormatter.getParamsJson(
+        changedParam.getAllDependentParams(),
+        true,
+        getSessionUser(),
+        contextParamValues).toString()).build();
   }
 
   private Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question) throws JSONException, WdkUserException {
