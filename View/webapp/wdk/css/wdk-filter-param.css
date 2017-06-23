@@ -20,6 +20,9 @@
 .filter-param .membership-filter .toggle-links {
   /* position: absolute; */
 }
+.filter-param .filter-items-wrapper {
+  height: 2em;
+}
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;

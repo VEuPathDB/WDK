@@ -146,7 +146,7 @@ function wrapStores(storeWrappers) {
  * @param {Dispatcher} dispatcher
  * @param {Object?} services
  */
-function getDispatchActionMaker(dispatcher, services) {
+export function getDispatchActionMaker(dispatcher, services) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
   return function makeDispatchAction(channel) {
     if (channel === undefined) {
