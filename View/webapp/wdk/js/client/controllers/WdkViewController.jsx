@@ -5,6 +5,7 @@ import NotFound from '../components/NotFound';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
 import { wrapActions, PureComponent } from '../utils/componentUtils';
+import WdkStore from '../stores/WdkStore';
 
 /**
  * Base class for all ViewContoller classes in WDK.
@@ -191,6 +192,11 @@ class WdkViewController extends PureComponent {
     }
     return cloneElement(this.contextElement, null, page);
   }
+}
+
+WdkViewController.propTypes = {
+  makeDispatchAction: PropTypes.func.isRequired,
+  stores: PropTypes.objectOf(PropTypes.instanceOf(WdkStore))
 }
 
 export default WdkViewController;
