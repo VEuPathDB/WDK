@@ -73,7 +73,7 @@ public class B33_To_B34_Migration {
   private static final String NEW_USER_ID_SEQUENCE = NEW_TABLE_ACCOUNTS + "_PKSEQ";
 
   // userdb objects needed to be read while creating account DB
-  private static final String ACCOUNTDB_DBLINK_TO_USERDB = ""; // add dblink suffix (including '@') to userdb here if needed
+  private static final String ACCOUNTDB_DBLINK_TO_USERDB = "@RM9972.UPENN.EDU"; // add dblink suffix (including '@') to userdb here if needed
   private static final String SOURCE_USERS_TABLE = USERS_TABLE + ACCOUNTDB_DBLINK_TO_USERDB;
   private static final String SOURCE_USERS_BACKUP_TABLE = BACKUP_USERS_TABLE + ACCOUNTDB_DBLINK_TO_USERDB;
   private static final String SOURCE_USER_ID_SEQUENCE = SOURCE_USERS_TABLE + "_PKSEQ" + ACCOUNTDB_DBLINK_TO_USERDB;
