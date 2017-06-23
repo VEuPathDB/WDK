@@ -5,6 +5,8 @@
 // A Promise that never leaves the pending state.
 export const pendingPromise = { then() { } };
 
+type PromiseFactory<T> = (...args: any[]) => Promise<T>;
+
 /**
  * Given a function that returns a Promise, this will return a new
  * function that returns a Promise such that only the latest created
@@ -20,10 +22,10 @@ export const pendingPromise = { then() { } };
  * @param {Function} promiseFactory A function that returns a Promise.
  * @returns {Function} A function that returns a Promise.
  */
-export function latest<T>(promiseFactory: (...args: any[]) => Promise<T>) {
+export function latest<T>(promiseFactory: PromiseFactory<T>) {
   let latestPromise: Promise<T>;
   return function createPromise(...args: any[]) {
-    let thisPromise = latestPromise = promiseFactory(...args);
+    let thisPromise: Promise<T> = latestPromise = promiseFactory.apply(this, args);
     return thisPromise.then(
       data => {
         if (thisPromise === latestPromise) {
@@ -46,6 +48,20 @@ export function latest<T>(promiseFactory: (...args: any[]) => Promise<T>) {
 }
 
 /**
+ * Function decorator that returns a new function such that each call waits for
+ * the previous call's returned Promise to resolve before proceding.
+ *
+ * @param promiseFactory Function that produces Promises
+ */
+export function synchronized<T>(promiseFactory: PromiseFactory<T>) {
+  let queue: Promise<T>;
+  return function enque(...args: any[]) {
+    return queue == null ? (queue = promiseFactory.apply(this, args))
+      : (queue = queue.then(() => promiseFactory.apply(this, args)));
+  }
+}
+
+/**
  * Calls `resolveHandler` and `rejectHandler` in the order of the promises
  * in `promiseArray`, even if they resolve out of order.
  *
@@ -58,4 +74,16 @@ export function seq(promiseArray: Promise<any>[], resolveHandler: (res: any) => 
   return promiseArray.reduce(function(seq$, promise$) {
     return seq$.then(() => promise$.then(resolveHandler, rejectHandler));
   }, Promise.resolve());
+}
+
+export class Mutex {
+
+  private _queue: Promise<any> = Promise.resolve();
+
+  synchronize<T>(callback: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      return this._queue = this._queue.then(() => callback()).then(resolve, reject)
+    })
+  }
+
 }
