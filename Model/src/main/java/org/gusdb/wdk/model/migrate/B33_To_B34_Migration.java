@@ -56,8 +56,8 @@ public class B33_To_B34_Migration {
   //private static final String REPLICATED_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972"; // to be apicommdevs
 
   // connection information to account DBs
-  //private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@acctdbn";
-  private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972";
+  private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@acctdbn";
+  //private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972";
   private static final String REPLICATED_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@acctdbs";
 
   // object names when operating in userDBs
@@ -66,8 +66,8 @@ public class B33_To_B34_Migration {
   private static final String BACKUP_USERS_TABLE = USER_DB_SCHEMA + "users_backup";
 
   // object names when operating in account DBs
-  //private static final String ACCOUNT_DB_SCHEMA = "useraccounts.";
-  private static final String ACCOUNT_DB_SCHEMA = "wdkmaint.";
+  private static final String ACCOUNT_DB_SCHEMA = "useraccounts.";
+  //private static final String ACCOUNT_DB_SCHEMA = "wdkmaint.";
   private static final String NEW_TABLE_ACCOUNTS = ACCOUNT_DB_SCHEMA + "accounts";
   private static final String NEW_TABLE_ACCOUNT_PROPS = ACCOUNT_DB_SCHEMA + "account_properties";
   private static final String NEW_USER_ID_SEQUENCE = NEW_TABLE_ACCOUNTS + "_PKSEQ";
@@ -142,7 +142,7 @@ public class B33_To_B34_Migration {
       ")";
 
   private static final String RENAME_LAST_ACTIVE_COL =
-      "ALTER TABLE " + USERS_TABLE + " t RENAME COLUMN t.REGISTER_TIME TO FIRST_ACCESS";
+      "ALTER TABLE " + USERS_TABLE + " RENAME COLUMN REGISTER_TIME TO FIRST_ACCESS";
 
   /*===========================================================================*/
   /* SqlGetter interface and implementations which provide various SQLs to run */
