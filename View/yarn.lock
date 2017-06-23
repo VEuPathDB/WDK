@@ -70,6 +70,12 @@
     "@types/history" "^3"
     "@types/react" "*"
 
+"@types/react-virtualized@^9.7.1":
+  version "9.7.1"
+  resolved "https://registry.yarnpkg.com/@types/react-virtualized/-/react-virtualized-9.7.1.tgz#c611748c35084e0c03faea8b255ade190361a6c5"
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*":
   version "0.14.49"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-0.14.49.tgz#983b773c91d341488e06d57ba677301b2cd9b846"
