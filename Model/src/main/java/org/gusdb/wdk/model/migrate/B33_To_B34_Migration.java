@@ -48,7 +48,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 public class B33_To_B34_Migration {
 
   // configuration constants
-  private static final boolean WRITE_TO_DB = false;     // keep off to check generated SQL
+  private static final boolean WRITE_TO_DB = true;     // keep off to check generated SQL
   private static final boolean REPLICATED_DBS = false; // keep off until testing on apicommDev
 
   // connection information to user DBs
