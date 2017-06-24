@@ -62,11 +62,12 @@ public class UserFactory {
       "  values (?, ?, ?)";
   private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER, Types.TIMESTAMP };
 
+  private static final String IS_GUEST_MACRO = "$$IS_GUEST$$";
   private static final String SELECT_GUEST_USER_REF_BY_ID_SQL =
       "select " + COL_FIRST_ACCESS +
       "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  where " + COL_IS_GUEST + " = ? and " + COL_USER_ID + " = ?";
-  private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BOOLEAN, Types.BIGINT };
+      "  where " + COL_IS_GUEST + " = " + IS_GUEST_MACRO + " and " + COL_USER_ID + " = ?";
+  private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
   // -------------------------------------------------------------------------
   // the macros used by the registration email
@@ -188,10 +189,12 @@ public class UserFactory {
   }
 
   private Date getGuestUserRefFirstAccess(long userId) {
-    String sql = SELECT_GUEST_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
+        .replace(USER_SCHEMA_MACRO, _userSchema)
+        .replace(IS_GUEST_MACRO, _userDb.getPlatform().convertBoolean(true));
     Wrapper<Date> resultWrapper = new Wrapper<>();
     new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
-      .executeQuery(new Object[]{ true, userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
+      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
         if (rs.next()) {
           resultWrapper.set(new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
         }
