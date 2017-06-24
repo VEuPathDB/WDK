@@ -4,8 +4,8 @@ import org.gusdb.wdk.model.WdkModel;
 
 public class GuestUser extends User {
 
-  private static final String GUEST_USER_PREFIX = "WDK_GUEST_";
-  private static final String SYSTEM_USER_PREFIX = GUEST_USER_PREFIX + "SYSTEM_";
+  public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
+  public static final String SYSTEM_USER_PREFIX = GUEST_USER_PREFIX + "SYSTEM_";
 
   public static class SystemUser extends GuestUser {
     public SystemUser(WdkModel wdkModel) {
