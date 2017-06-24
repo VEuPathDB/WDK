@@ -155,7 +155,7 @@ sub new {
     $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
 
     # MicrobiobiomeDB needs user_db; https://redmine.apidb.org/issues/23526
-    if ( $self->{'product'} eq 'MicrobiomeDB' ) {
+    if ( $self->{'product'} eq 'MicrobiomeDB' || $self->{'product'} eq 'ClinEpiDB' ) {
       $self->{'authenticationMethod'} = 'user_db'; # oauth2 or user_db
     } else {
       $self->{'authenticationMethod'} = 'oauth2'; # oauth2 or user_db

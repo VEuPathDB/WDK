@@ -18,6 +18,7 @@
     "@types/react-addons-shallow-compare": "^0.14.19",
     "@types/react-dom": "^0.14.23",
     "@types/react-router": "^3.0.6",
+    "@types/react-virtualized": "^9.7.1",
     "@types/spin": "^2.3.30",
     "@types/webpack-env": "^1.13.0",
     "babel-core": "^6.24.1",
