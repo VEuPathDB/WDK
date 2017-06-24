@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -48,13 +49,24 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   private static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+
   private static final String COUNT_USER_REF_BY_ID_SQL =
-      "select count(*) from " + USER_SCHEMA_MACRO + TABLE_USERS + " where " + COL_USER_ID + " = ?";
+      "select count(*)" +
+      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+      "  where " + COL_USER_ID + " = ?";
   private static final Integer[] COUNT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
+
   private static final String INSERT_USER_REF_SQL =
       "insert into " + USER_SCHEMA_MACRO + TABLE_USERS +
-      " (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +") VALUES (?, ?, ?)";
+      "  (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
+      "  values (?, ?, ?)";
   private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER, Types.TIMESTAMP };
+
+  private static final String SELECT_GUEST_USER_REF_BY_ID_SQL =
+      "select " + COL_FIRST_ACCESS +
+      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+      "  where " + COL_IS_GUEST + " = ? and " + COL_USER_ID + " = ?";
+  private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BOOLEAN, Types.BIGINT };
 
   // -------------------------------------------------------------------------
   // the macros used by the registration email
@@ -152,6 +164,13 @@ public class UserFactory {
     _preferenceFactory.savePreferences(user);
   }
 
+  private void addUserReference(Long userId, boolean isGuest) {
+    Timestamp insertedOn = new Timestamp(new Date().getTime());
+    String sql = INSERT_USER_REF_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
+      .executeStatement(new Object[]{ userId, isGuest, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+  }
+
   private boolean hasUserReference(long userId) {
     String sql = COUNT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
     SingleLongResultSetHandler handler = new SingleLongResultSetHandler();
@@ -168,11 +187,17 @@ public class UserFactory {
         userId + ". Status = " + handler.getStatus() + ", sql = " + sql);
   }
 
-  private void addUserReference(Long userId, boolean isGuest) {
-    Timestamp insertedOn = new Timestamp(new Date().getTime());
-    String sql = INSERT_USER_REF_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
-    new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-      .executeStatement(new Object[]{ userId, isGuest, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+  private Date getGuestUserRefFirstAccess(long userId) {
+    String sql = SELECT_GUEST_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    Wrapper<Date> resultWrapper = new Wrapper<>();
+    new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
+      .executeQuery(new Object[]{ true, userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
+        if (rs.next()) {
+          resultWrapper.set(new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
+        }
+      });
+    // will return null if result set contained no rows
+    return resultWrapper.get();
   }
 
   private static void emailTemporaryPassword(User user, String password,
@@ -311,11 +336,17 @@ public class UserFactory {
    * @throws WdkModelException if an error occurs in the attempt
    */
   public User getUserById(long userId) throws WdkModelException {
-    User user = populateRegisteredUser(_accountManager.getUserProfile(userId));
-    if (user == null) {
-      throw new NoSuchUserException("Invalid user id: " + userId);
+    UserProfile profile = _accountManager.getUserProfile(userId);
+    if (profile == null) {
+      // cannot find user in account DB; however, this may be a guest local to this userDb
+      Date accessDate = getGuestUserRefFirstAccess(userId);
+      if (accessDate == null) {
+        // user does not exist in account or user DBs; throw exception
+        throw new NoSuchUserException("Invalid user id: " + userId);
+      }
+      profile = AccountManager.createGuestProfile(GuestUser.GUEST_USER_PREFIX, userId, accessDate);
     }
-    return user;
+    return populateRegisteredUser(profile);
   }
 
   public User getUserByEmail(String email) throws WdkModelException {
