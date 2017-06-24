@@ -81,8 +81,8 @@ public class B33_To_B34_Migration {
 
   private static final String BACKUP_TABLE_CHECK_SQL =
       "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB +
-      "  WHERE table_name = '" + BACKUP_USERS_TABLE.replace(USER_DB_SCHEMA, "") + "'" +
-      "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1)  + "'";
+      "  WHERE table_name = '" + BACKUP_USERS_TABLE.replace(USER_DB_SCHEMA, "").toUpperCase() + "'" +
+      "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1).toUpperCase()  + "'";
 
   private static final String SEQUENCE_START_NUM_MACRO = "$$sequence_start_macro$$";
 
@@ -173,8 +173,10 @@ public class B33_To_B34_Migration {
   }
 
   private static boolean usersBackupTableExists(DataSource ds) {
-    return new SQLRunner(ds, BACKUP_TABLE_CHECK_SQL)
+    boolean exists = new SQLRunner(ds, BACKUP_TABLE_CHECK_SQL)
         .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue() > 0;
+    System.out.println("Backup table exists? " + exists + ", SQL: " + BACKUP_TABLE_CHECK_SQL);
+    return exists;
   }
 
   /*===================================================================*/
