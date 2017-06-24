@@ -2,12 +2,9 @@ package org.gusdb.wdk.model.migrate;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-import java.sql.SQLException;
-
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.pool.SimpleDbConfig;
@@ -81,6 +78,11 @@ public class B33_To_B34_Migration {
   /*======================================================*/
   /*          SQL to be executed on AccountDB             */
   /*======================================================*/
+
+  private static final String BACKUP_TABLE_CHECK_SQL =
+      "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB +
+      "  WHERE table_name = '" + BACKUP_USERS_TABLE.replace(USER_DB_SCHEMA, "") + "'" +
+      "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1)  + "'";
 
   private static final String SEQUENCE_START_NUM_MACRO = "$$sequence_start_macro$$";
 
@@ -167,13 +169,12 @@ public class B33_To_B34_Migration {
 
   private static SqlGetter conditionallyUseBackupTable(String originalSql) {
     return ds -> usersBackupTableExists(ds) ?
-            originalSql.replace(SOURCE_USERS_TABLE, SOURCE_USERS_BACKUP_TABLE) : originalSql;
+        originalSql.replace(SOURCE_USERS_TABLE, SOURCE_USERS_BACKUP_TABLE) : originalSql;
   }
 
-  private static boolean usersBackupTableExists(DataSource ds) throws SQLException {
-    String rawUserSchema = USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1);
-    String rawBackupTablename = SOURCE_USERS_BACKUP_TABLE.replace(USER_DB_SCHEMA, "");
-    return new Oracle().checkTableExists(ds, rawUserSchema, rawBackupTablename);
+  private static boolean usersBackupTableExists(DataSource ds) {
+    return new SQLRunner(ds, BACKUP_TABLE_CHECK_SQL)
+        .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue() > 0;
   }
 
   /*===================================================================*/
