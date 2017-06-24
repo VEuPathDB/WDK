@@ -26,6 +26,7 @@ import * as ActionCreators from './client/actioncreators';
 
 import * as ComponentUtils from './client/utils/componentUtils';
 import * as IterableUtils from './client/utils/IterableUtils';
+import * as PromiseUtils from './client/utils/PromiseUtils';
 import * as ReporterUtils from './client/utils/reporterUtils';
 import * as TreeUtils from './client/utils/TreeUtils';
 import * as OntologyUtils from './client/utils/OntologyUtils';
@@ -50,6 +51,7 @@ export {
   ActionCreators,
   ComponentUtils,
   IterableUtils,
+  PromiseUtils,
   ReporterUtils,
   OntologyUtils,
   CategoryUtils,

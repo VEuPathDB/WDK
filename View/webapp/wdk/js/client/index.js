@@ -9,6 +9,7 @@ import * as IterableUtils from './utils/IterableUtils';
 import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
+import * as PromiseUtils from './utils/PromiseUtils';
 import * as CategoryUtils from './utils/CategoryUtils';
 import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
@@ -30,6 +31,7 @@ export {
   FormSubmitter,
   IterableUtils,
   OntologyUtils,
+  PromiseUtils,
   ReporterUtils,
   StaticDataUtils,
   Stores,

@@ -87,6 +87,19 @@ test('uniq', function(t) {
   t.end();
 });
 
+test('uniqBy', function(t) {
+  const source = [ { a: 1}, { a: 1} ];
+  t.deepEqual(
+    Array.from(i.uniqBy(n => n.a, source)),
+    [ { a: 1} ]
+  );
+  t.notDeepEqual(
+    Array.from(i.uniqBy(n => n, source)),
+    [ { a: 1} ]
+  );
+  t.end();
+});
+
 test('filter', function(t) {
   t.deepEqual(
     Array.from(i.filter(n => n % 2 === 0, [1,2,3,4,5,6,7,8,9,10])),
@@ -105,6 +118,20 @@ test('take', function(t) {
   t.end();
 });
 
+test('takeLast', function(t) {
+  t.deepEqual(
+    Array.from(i.takeLast(10, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])),
+    [6,7,8,9,10,11,12,13,14,15]
+  );
+
+  t.deepEqual(
+    Array.from(i.takeLast(-10, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])),
+    [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+  );
+
+  t.end();
+});
+
 test('takeWhile', function(t) {
   t.deepEqual(
     Array.from(i.takeWhile(n => n < 10, [1,2,3,4,5,6,7,8,9,10,11])),
@@ -118,6 +145,20 @@ test('drop', function(t) {
   t.deepEqual(
     [ ...i.drop(1, [1,2,3,4,5,6,7,8,9,10,11]) ],
     [2,3,4,5,6,7,8,9,10, 11]
+  );
+
+  t.end();
+});
+
+test('dropLast', function(t) {
+  t.deepEqual(
+    [ ...i.dropLast(1, [1,2,3,4,5,6,7,8,9,10,11]) ],
+    [1,2,3,4,5,6,7,8,9,10]
+  );
+
+  t.deepEqual(
+    [ ...i.dropLast(-1, [1,2,3,4,5,6,7,8,9,10,11]) ],
+    []
   );
 
   t.end();
