@@ -73,14 +73,14 @@ sub new {
 
     my (
       $appDb_login,
-      $appDb_database,
-      $userDb_database,
+      $appDb_name,
+      $userDb_name,
       $target_site,
       $g_use_map,
       $g_skip_db_test,
     ) = get_cli_args();
 
-    $self->{'user_has_specified_values'} = defined ($appDb_login || $appDb_database || $userDb_database);
+    $self->{'user_has_specified_values'} = defined ($appDb_login || $appDb_name || $userDb_name);
     $self->{'g_use_map'} = $g_use_map || undef;
 
     my $web_base_dir = '/var/www';
@@ -108,8 +108,8 @@ sub new {
     $self->{'target_site'} = $target_site;
     $self->{'appDb_login'} = $appDb_login;
     $self->{'userDb_login'} = $userDb_login;
-    $self->{'appDb_database'} = $appDb_database || undef;
-    $self->{'userDb_database'} = $userDb_database || undef;
+    $self->{'appDb_name'} = $appDb_name || undef;
+    $self->{'userDb_name'} = $userDb_name || undef;
     $self->{'euparc'} = $self->find_euparc();
     $self->{'map_file'} = "$site_etc/master_configuration_set";
     $self->{'meta_config_file'} = "${site_etc}/metaConfig_${scriptname}";
@@ -138,25 +138,38 @@ sub new {
 
     if ($self->{'g_use_map'}) {
         open(my $fh, $self->{'map_file'}) or die $!;
-        my @hits = grep /^$self->{'target_site'}/, <$fh>;
-        die "Did not find an entry for $self->{'target_site'} in $self->{'map_file'}\n" unless $hits[0];
-        ($self->{'site'}, $self->{'appDb_database'},  $self->{'userDb_database'}, $self->{'appDb_login'},  $self->{'userDb_login'}) = split(/\s+/, $hits[0]);
-        print "<$scriptname> using '$self->{'appDb_login'}\@$self->{'appDb_database'}',  '$self->{'userDb_login'}\@$self->{'userDb_database'}'\n";
-        if ( ! ($self->{'appDb_login'} && $self->{'appDb_database'} && $self->{'userDb_database'}) ) {
+        while (<$fh>) {
+          chomp;
+          s/^\s*//;
+          next if m/^#/;
+          next if m/^$/;
+          if ( ! @cfg_fields) {
+            @cfg_fields = split(/\s+/);
+          }
+          if (/^$self->{'target_site'}/) {
+            my @cfg_values = split(/\s+/);
+            for my $i (0 .. $#cfg_fields) {
+              $self->{ $cfg_fields[$i] } = $cfg_values[$i];
+            }
+          }
+        }
+        die "Did not find an entry for $self->{'target_site'} in $self->{'map_file'}\n" unless $self->{'site'};
+        print "<$scriptname> using '$self->{'appDb_login'}\@$self->{'appDb_name'}',  '$self->{'userDb_login'}\@$self->{'userDb_name'}'\n";
+        if ( ! ($self->{'appDb_login'} && $self->{'appDb_name'} && $self->{'userDb_name'}) ) {
             die "$self->{'map_file'} does not have sufficient data for $self->{'target_site'}. Quitting with no changes made.\n";
         }
     }
 
-    $self->{'userDbLink'} = $self->dblink($self->{'userDb_database'}, $self->{'appDb_database'});
+    $self->{'userDbLink'} = $self->dblink($self->{'userDb_name'}, $self->{'appDb_name'});
 
-    $self->{'appDb_password'} = $self->std_password($self->{'euparc'}, $self->{'appDb_login'}, $self->{'appDb_database'});
+    $self->{'appDb_password'} = $self->std_password($self->{'euparc'}, $self->{'appDb_login'}, $self->{'appDb_name'});
 
     if ( ! $self->{'appDb_password'} ) {
       die "Did not find password for $self->{'appDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
     }
 
     $self->{'userDb_login'} = $self->{'userDb_login'} || 'uga_fed';
-    $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_database'});;
+    $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_name'});;
 
     if ( ! $self->{'userDb_password'} ) {
       die "Did not find password for $self->{'userDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
@@ -198,14 +211,14 @@ sub sanity_check {
         die "--usemap chosen but $self->{'map_file'} not found\n" unless ( -r $self->{'map_file'});
     }
 
-    die "\nFATAL: I do not know what dblink to use for '" . lc $self->{'userDb_database'} . "'\n" .
+    die "\nFATAL: I do not know what dblink to use for '" . lc $self->{'userDb_name'} . "'\n" .
       "  I know about: " . join(', ', keys(%dblinkMap)) . "\n\n"
-      if ( (lc($self->{userDb_database}) ne lc($self->{appDb_database})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
+      if ( (lc($self->{userDb_name}) ne lc($self->{appDb_name})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
       # OK to have no dblink if both user and and app schemas are in the same database
 
     if ( ! $self->{'g_skip_db_test'}) {
-      $self->testDbConnection($self->{'appDb_login'}, $self->{'appDb_password'}, $self->{'appDb_database'});
-      $self->testDbConnection($self->{'userDb_login'}, $self->{'userDb_password'}, $self->{'userDb_database'});
+      $self->testDbConnection($self->{'appDb_login'}, $self->{'appDb_password'}, $self->{'appDb_name'});
+      $self->testDbConnection($self->{'userDb_login'}, $self->{'userDb_password'}, $self->{'userDb_name'});
     }
 
 
@@ -253,8 +266,8 @@ sub get_cli_args {
 
   my (
     $appDb_login,
-    $appDb_database,
-    $userDb_database,
+    $appDb_name,
+    $userDb_name,
     $target_site,
     $g_use_map,
     $g_skip_db_test,
@@ -268,8 +281,8 @@ sub get_cli_args {
 
   my $optRslt = GetOptions(
         "alogin=s"   => \$appDb_login,
-        "adb=s"      => \$appDb_database,
-        "udb=s"      => \$userDb_database,
+        "adb=s"      => \$appDb_name,
+        "udb=s"      => \$userDb_name,
         "usemap"     => \$g_use_map,  # get config data from a master file from gus_home/config
         "skipdbtest" => \$g_skip_db_test, # for when you know this will fail, or know it will succeed!
       );
@@ -279,8 +292,8 @@ sub get_cli_args {
 
   return (
     $appDb_login,
-    $appDb_database,
-    $userDb_database,
+    $appDb_name,
+    $userDb_name,
     $target_site,
     $g_use_map,
     $g_skip_db_test,
