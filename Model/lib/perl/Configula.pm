@@ -137,6 +137,7 @@ sub new {
     $self->{'canonical_hostname'} = $self->canonical_hostname($self->{'target_site'});
 
     if ($self->{'g_use_map'}) {
+        my @cfg_fields = ();
         open(my $fh, $self->{'map_file'}) or die $!;
         while (<$fh>) {
           chomp;
