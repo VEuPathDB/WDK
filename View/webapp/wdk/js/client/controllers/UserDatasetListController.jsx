@@ -35,8 +35,8 @@ class UserDatasetListController extends WdkViewController {
     };
   }
 
-  loadData() {
-    this.eventHandlers.loadUserDatasetList();
+  loadData(actionCreators) {
+    actionCreators.loadUserDatasetList();
   }
 
   isRenderDataLoaded(state) {
