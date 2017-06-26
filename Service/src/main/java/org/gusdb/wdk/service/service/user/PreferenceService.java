@@ -59,7 +59,7 @@ public class PreferenceService extends UserService {
       }
       UserPreferences prefs = user.getPreferences();
       updatePreferences(prefs, request, true);
-      getWdkModel().getUserFactory().saveUser(user);
+      getWdkModel().getUserFactory().savePreferences(user);
       return Response.noContent().build();
     }
     catch(RequestMisformatException e) {
@@ -107,7 +107,7 @@ public class PreferenceService extends UserService {
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       UserPreferences prefs = user.getPreferences();
       updatePreferences(prefs, request, false);
-      getWdkModel().getUserFactory().saveUser(user);
+      getWdkModel().getUserFactory().savePreferences(user);
       return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException e) {

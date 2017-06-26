@@ -308,7 +308,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             prepareAttributes(request, wdkUser, step);
         }
         if (updated) {
-          wdkModel.getModel().getUserFactory().saveUser(wdkUser.getUser());
+          wdkModel.getModel().getUserFactory().savePreferences(wdkUser.getUser());
         }
         return step;
     }

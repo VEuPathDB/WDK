@@ -130,7 +130,7 @@ public class SummaryTableUpdateProcessor {
           user.getPreferences().setSummaryAttributes(questionName, summary, preferenceSuffix);
         }
 
-        model.getUserFactory().saveUser(user);
+        model.getUserFactory().savePreferences(user);
       }
 
       if (pagerOffset != null && pagerOffset.length() != 0) {
