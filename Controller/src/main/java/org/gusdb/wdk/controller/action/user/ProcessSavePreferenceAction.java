@@ -42,7 +42,7 @@ public class ProcessSavePreferenceAction extends WdkAction {
         }
       }
 
-      getWdkModel().getModel().getUserFactory().saveUser(wdkUser);
+      getWdkModel().getModel().getUserFactory().savePreferences(wdkUser);
       return ActionResult.EMPTY_RESULT;
     }
 }

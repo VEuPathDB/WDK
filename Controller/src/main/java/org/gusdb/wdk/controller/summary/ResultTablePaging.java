@@ -38,7 +38,7 @@ public class ResultTablePaging {
           if (pageSizeKey != null) {
               pageSize = Integer.parseInt(pageSizeKey[0]);
               user.setItemsPerPage(pageSize);
-              question.getQuestion().getWdkModel().getUserFactory().saveUser(user.getUser());
+              question.getQuestion().getWdkModel().getUserFactory().savePreferences(user.getUser());
           }
           else {
               String[] altPageSizeKey = params.get(CConstants.WDK_ALT_PAGE_SIZE_KEY);
