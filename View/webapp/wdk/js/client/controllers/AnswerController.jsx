@@ -22,11 +22,12 @@ class AnswerController extends WdkViewController {
       updateFilter,
       moveColumn,
       changeAttributes,
-      sort
+      sort,
+      loadAnswer
     };
   }
 
-  loadData(state, props) {
+  loadData(state, actionCreators, props) {
     // incoming values from the router
     let { question, recordClass: recordClassName } = props.params;
     let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
@@ -43,7 +44,7 @@ class AnswerController extends WdkViewController {
       let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
       let displayInfo = { pagination, sorting, customName };
       let opts = { displayInfo, parameters };
-      this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
+      actionCreators.loadAnswer(questionName, recordClassName, opts);
     }
   }
 

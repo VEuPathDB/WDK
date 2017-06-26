@@ -38,6 +38,26 @@ class WdkViewController extends PureComponent {
     return "WdkStore";
   }
 
+  /**
+   * Get state from store required for the view being rendered.  If not
+   * overridden, this function returns the store's state.
+   * 
+   * Note: this method does not affect the state being passed to the header and
+   * footer, which access the store directly.
+   * 
+   * The view controller will often want the entire state of the view
+   * store; however, if you are sharing a store with more than one VC, you may
+   * want to trim out unneeded data or transform data to a more convenient
+   * format while storing local state.
+   * 
+   * You can also use this method to improve performance if you don't depend on
+   * global data; because this is a PureComponent, you can trim out the global
+   * data you don't need and forego rerendering when unneeded data changes.
+   */
+  getStateFromStore(store) {
+    return store.getState();
+  }
+
   /*-------- Methods to override to call ACs and load initial data --------*/
 
   /**
@@ -58,12 +78,13 @@ class WdkViewController extends PureComponent {
    * state of the store, the new props, and the old props. On the first call
    * when the component is first mounted, the old props will be undefined.
    *
-   * @param {Object} state The current state.
+   * @param {Object} state The current state
+   * @param {Object} actionCreators A set of configured action creator functions
    * @param {Object} nextProps The incoming props
    * @param {Object} previousProps The previous props
    * @returns {void}
    */
-  loadData(state, nextProps, previousProps) {
+  loadData(actionCreators, state, nextProps, previousProps) {
     return undefined;
   }
 
@@ -91,36 +112,6 @@ class WdkViewController extends PureComponent {
    */
   isRenderDataNotFound(state) {
     return false;
-  }
-
-  /*--------- Methods that may be overridden in very special cases ---------*/
-
-  /**
-   * Get state from store required for the view being rendered.  If not
-   * overridden, this function returns the store's state.
-   * 
-   * Generally, the view controller will want the entire state of the view
-   * store; however, if you are sharing a store with more than one VC, you may
-   * want to trim out unneeded data or transform data to a more convenient
-   * format while storing local state.
-   * 
-   * You can also use this method to improve performance if you don't depend on
-   * global data; because this is a PureComponent, you can trim out the global
-   * data you don't need and forego rerendering when unneeded data changes.
-   */
-  getStateFromStore(store) {
-    return store.getState();
-  }
-
-  /**
-   * Returns the channel name.  If not overridden, this function returns the
-   * store name.  Channels control which store's receive actions from ACs called
-   * from this VC.  Typically, ACs send actions either on the channel passed
-   * to them, or they send broadcast actions (which are received by all stores).
-   * You probably need a pretty good reason to do something different.
-   */
-  getChannelName() {
-    return this.getStoreName();
   }
 
   /*------------- Methods that should probably not be overridden -------------*/
@@ -158,11 +149,11 @@ class WdkViewController extends PureComponent {
         this.setState(this.getStateFromStore(this.store));
       });
     }
-    this.loadData(this.state, this.props, undefined);
+    this.loadData(this.eventHandlers, this.state, this.props, undefined);
   }
 
   componentWillReceiveProps(nextProps) {
-    this.loadData(this.state, nextProps, this.props);
+    this.loadData(this.eventHandlers, this.state, nextProps, this.props);
   }
 
   componentDidUpdate() {
@@ -187,6 +178,17 @@ class WdkViewController extends PureComponent {
     if (this.storeSubscription != null) {
       this.storeSubscription.remove();
     }
+  }
+
+  /**
+   * Returns the channel name.  If not overridden, this function returns the
+   * store name.  Channels control which store's receive actions from ACs called
+   * from this VC.  Typically, ACs send actions either on the channel passed
+   * to them, or they send broadcast actions (which are received by all stores).
+   * You probably need a pretty good reason to do something different.
+   */
+  getChannelName() {
+    return this.getStoreName();
   }
 
   /**
