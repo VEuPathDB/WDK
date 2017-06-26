@@ -71,12 +71,13 @@ sub new {
       $appDb_login,
       $appDb_name,
       $userDb_name,
+      $acctDb_name,
       $target_site,
       $g_use_map,
       $g_skip_db_test,
     ) = get_cli_args();
 
-    $self->{'user_has_specified_values'} = defined ($appDb_login || $appDb_name || $userDb_name);
+    $self->{'user_has_specified_values'} = defined ($appDb_login || $appDb_name || $userDb_name || $acctDb_name);
     $self->{'g_use_map'} = $g_use_map || undef;
 
     my $web_base_dir = '/var/www';
@@ -92,13 +93,16 @@ sub new {
     my ($webapp_nover) = $webapp =~ m/(^[a-zA-Z_]+)/;
 
     my $userDb_login = 'uga_fed';
+    my $acctDb_login = 'uga_fed';
 
     $self->{'g_skip_db_test'} = $g_skip_db_test;
     $self->{'target_site'} = $target_site;
     $self->{'appDb_login'} = $appDb_login;
     $self->{'userDb_login'} = $userDb_login;
+    $self->{'acctDb_login'} = $acctDb_login;
     $self->{'appDb_name'} = $appDb_name || undef;
     $self->{'userDb_name'} = $userDb_name || undef;
+    $self->{'acctDb_name'} = $acctDb_name || undef;
     $self->{'euparc'} = $self->find_euparc();
     $self->{'map_file'} = "$site_etc/master_configuration_set";
     $self->{'meta_config_file'} = "${site_etc}/metaConfig_${scriptname}";
@@ -156,10 +160,19 @@ sub new {
     }
 
     $self->{'userDb_login'} = $self->{'userDb_login'} || 'uga_fed';
-    $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_name'});;
+    $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_name'});
 
     if ( ! $self->{'userDb_password'} ) {
       die "Did not find password for $self->{'userDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
+    }
+
+    # AccountDB is optional, marked with 'NA' placeholder in master configuration set file
+    if ( $self->{'acctDb_name'} ne 'NA') {
+      $self->{'acctDb_login'} = $self->{'acctDb_login'} || 'uga_fed';
+      $self->{'acctDb_password'} = $self->std_password($self->{'euparc'}, $self->{'acctDb_login'}, $self->{'acctDb_name'});
+      if ( ! $self->{'acctDb_password'} ) {
+        die "Did not find password for $self->{'acctDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
+      }
     }
 
     # webapp_nover is always valid thanks to apache redirects, and
@@ -191,7 +204,7 @@ sub new {
 sub sanity_check {
     my ($self) = @_;
     if ( $self->{'g_use_map'} && $self->{'user_has_specified_values'}) {
-        die "can not set specific values when using --usemap\n";;
+        die "can not set specific values when using --usemap\n";
     }
 
     if ($self->{'g_use_map'}) {
@@ -206,6 +219,7 @@ sub sanity_check {
     if ( ! $self->{'g_skip_db_test'}) {
       $self->testDbConnection($self->{'appDb_login'}, $self->{'appDb_password'}, $self->{'appDb_name'});
       $self->testDbConnection($self->{'userDb_login'}, $self->{'userDb_password'}, $self->{'userDb_name'});
+      $self->testDbConnection($self->{'acctDb_login'}, $self->{'acctDb_password'}, $self->{'acctDb_name'});
     }
 }
 
@@ -245,6 +259,7 @@ sub get_cli_args {
     $appDb_login,
     $appDb_name,
     $userDb_name,
+    $acctDb_name,
     $target_site,
     $g_use_map,
     $g_skip_db_test,
@@ -260,6 +275,7 @@ sub get_cli_args {
         "alogin=s"   => \$appDb_login,
         "adb=s"      => \$appDb_name,
         "udb=s"      => \$userDb_name,
+        "pdb=s"      => \$acctDb_name,
         "usemap"     => \$g_use_map,  # get config data from a master file from gus_home/config
         "skipdbtest" => \$g_skip_db_test, # for when you know this will fail, or know it will succeed!
       );
@@ -271,6 +287,7 @@ sub get_cli_args {
     $appDb_login,
     $appDb_name,
     $userDb_name,
+    $acctDb_name,
     $target_site,
     $g_use_map,
     $g_skip_db_test,
@@ -410,7 +427,7 @@ sub testDbConnection {
   my $dbh = DBI->connect("dbi:Oracle:$db", $login, $password, {
         PrintError =>0,
         RaiseError =>0
-      }) or warn "\n<$scriptname> WARN: Can't connect to $db with $login: $DBI::errstr\n\n";;
+      }) or warn "\n<$scriptname> WARN: Can't connect to $db with $login: $DBI::errstr\n\n";
   $dbh->disconnect if $dbh;
 }
 
