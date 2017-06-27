@@ -70,7 +70,7 @@ class DownloadFormContainer extends Component {
     }
 
     return (
-      <div style={{margin: '1em 3em'}}>
+      <div style={{padding: '1em 3em'}}>
         {title}
         <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={selectReporter}/>
         <DownloadForm {...formProps} onSubmit={this.onSubmit}/>
