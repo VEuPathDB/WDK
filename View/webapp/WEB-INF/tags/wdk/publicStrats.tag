@@ -48,7 +48,7 @@
                 data-name="${strategy.name}"
                 data-description="${strategyDesc}"
                 data-saved="${strategy.isSaved}"
-								data-is-public="${strategy.isPublic}"
+                data-is-public="${strategy.isPublic}"
                 data-step-id="${strategy.latestStepId}">
               <td>${isExample}</td>
               <td>
@@ -77,7 +77,7 @@
                 </div>
               </td>
               <td nowrap="nowrap">${strategy.user.displayName}</td>
-              <td nowrap="nowrap">${strategy.user.organization}</td>
+              <td nowrap="nowrap">${strategy.user.profileProperties['organization']}</td>
               <fmt:formatDate var="modifiedTimeFormatted" value="${strategy.lastModifiedTime}" pattern="yyyy-MM-dd"/>
               <td nowrap="nowrap" style="padding:0 2px 0 2px;">${modifiedTimeFormatted}</td>
             </tr>
