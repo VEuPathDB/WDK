@@ -1,4 +1,5 @@
 import WdkStore, { BaseState } from './WdkStore';
+import { OntologyNode } from '../utils/OntologyUtils';
 import {
   LoadingAction,
   InitializeAction,
@@ -7,6 +8,7 @@ import {
   SearchAction
 } from '../actioncreators/SiteMapActionCreators';
 
+// define action type to be any our supported actions
 type Action = LoadingAction
             | InitializeAction
             | ErrorAction
@@ -14,7 +16,10 @@ type Action = LoadingAction
             | SearchAction;
 
 type State = BaseState & {
-
+  tree?: OntologyNode,
+  isLoading: boolean,
+  expandedList: string[],
+  searchText: string
 }
 
 export default class SiteMapStore extends WdkStore<State> {
@@ -23,7 +28,7 @@ export default class SiteMapStore extends WdkStore<State> {
   getInitialState(): State {
     return {
       ...super.getInitialState(),
-      tree: null,
+      tree: undefined,
       isLoading: false,
       expandedList : [],
       searchText: ""
