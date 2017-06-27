@@ -29,11 +29,11 @@
 .wdk-RecordContainer {
   position: relative;
   height: 100%;
-  padding: 1em 4em;
+  padding: 1em 2em;
 }
 
 .wdk-RecordMain, .wdk-RecordSidebar {
-  padding: 2.5em 1em;
+  padding: 2.5em 3em;
   transition: margin-left 250ms ease;
   transition: left 250ms ease;
 }
@@ -161,7 +161,7 @@
 .wdk-RecordMainSectionFieldToggles {
   text-align: center;
   position: absolute;
-  right: 14px;
+  right: 50px;
   z-index: 1;
   padding: 10px;
 }
