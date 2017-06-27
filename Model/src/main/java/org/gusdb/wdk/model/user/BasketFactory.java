@@ -556,7 +556,7 @@ public class BasketFactory {
       sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
       sql.append(" AS " + pkColumns[i]);
     }
-    sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b, ");
+    sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b ");
     sql.append(" WHERE b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
     sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
     sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
