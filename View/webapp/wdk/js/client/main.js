@@ -95,7 +95,7 @@ function configureStores(dispatcher, storeWrappers) {
   let globalDataStore = new storeClasses.GlobalDataStore(dispatcher);
   let storeInstances = {};
   Object.keys(storeClasses).forEach(function(className) {
-    if (className != 'WdkStore') {
+    if (className != 'GlobalDataStore') {
       storeInstances[className] =
         new storeClasses[className](dispatcher, className, globalDataStore);
     }
