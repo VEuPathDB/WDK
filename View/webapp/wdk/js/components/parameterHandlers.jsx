@@ -2,6 +2,7 @@
 import _ from 'lodash';
 import * as ReactDOM from 'react-dom';
 import LazyFilterService from '../client/utils/LazyFilterService';
+import { getTree } from '../client/utils/FilterServiceUtils';
 import AttributeFilter from '../client/components/AttributeFilter';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
@@ -277,7 +278,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterService.updateFilters(validFilters);
     filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
-    filterService.selectField(validFilters[0] ? validFilters[0].field : findLeaf(fields));
+    filterService.selectField(_.get(validFilters, '0.field', _.get(findLeaf(getTree(fields)), 'term')));
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -335,9 +336,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
      * @param {Record<string, Field>} fields
      * @param {string?} parentTerm
      */
-    function findLeaf(fields, parentTerm = null) {
-      var root = _.find(fields, field => field.parent == parentTerm);
-      return root == null ? parentTerm : findLeaf(fields, root.term);
+    function findLeaf(node) {
+      return node.children.length === 0 ? node.field : findLeaf(node.children[0]);
     }
   }
 
