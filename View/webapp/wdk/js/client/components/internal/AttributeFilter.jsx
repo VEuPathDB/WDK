@@ -219,18 +219,6 @@ class FieldList extends React.Component {
     };
   }
 
-  componentDidMount() {
-    if (this.props.selectedField == null) {
-      const tree = getTree(this.props.fields);
-      const selectedField = this.findFirstLeaf(tree);
-      this.handleFieldSelect(selectedField);
-    }
-  }
-
-  findFirstLeaf(node) {
-    return node.children.length === 0 ? node.field : this.findFirstLeaf(node.children[0]);
-  }
-
   handleFieldSelect(field) {
     this.props.onFieldSelect(field.term);
     this.setState({ searchTerm: '' });
