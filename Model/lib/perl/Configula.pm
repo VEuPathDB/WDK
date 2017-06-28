@@ -167,7 +167,7 @@ sub new {
     }
 
     # AccountDB is optional, marked with 'NA' placeholder in master configuration set file
-    if ( $self->{'acctDb_name'} ne 'NA') {
+    if ( $self->{'acctDb_name'} &&  $self->{'acctDb_name'} ne 'NA') {
       $self->{'acctDb_login'} = $self->{'acctDb_login'} || 'uga_fed';
       $self->{'acctDb_password'} = $self->std_password($self->{'euparc'}, $self->{'acctDb_login'}, $self->{'acctDb_name'});
       if ( ! $self->{'acctDb_password'} ) {
