@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
+import { getTree } from '../../utils/FilterServiceUtils';
 import {
   debounce,
   find,
@@ -205,7 +206,7 @@ class FieldList extends React.Component {
   constructor(props) {
     super(props);
     this.handleFieldSelect = this.handleFieldSelect.bind(this);
-    this.makeOntologyTree = memoize(makeOntologyTree);
+    this.nodeComponent = this.nodeComponent.bind(this);
 
     this.state = {
       searchTerm: '',
@@ -218,9 +219,31 @@ class FieldList extends React.Component {
     };
   }
 
+  componentDidMount() {
+    if (this.props.selectedField == null) {
+      const tree = getTree(this.props.fields);
+      const selectedField = this.findFirstLeaf(tree);
+      this.handleFieldSelect(selectedField);
+    }
+  }
+
+  findFirstLeaf(node) {
+    return node.children.length === 0 ? node.field : this.findFirstLeaf(node.children[0]);
+  }
+
   handleFieldSelect(field) {
     this.props.onFieldSelect(field.term);
     this.setState({ searchTerm: '' });
+  }
+
+  nodeComponent({node}) {
+    return (
+      <FieldListNode
+        node={node}
+        onFieldSelect={this.handleFieldSelect}
+        isActive={this.props.selectedField === node.field.term}
+      />
+    );
   }
 
   render() {
@@ -230,14 +253,13 @@ class FieldList extends React.Component {
       <div className="field-list">
         <CheckboxTree
           autoFocusSearchBox={autoFocus}
-          tree={this.makeOntologyTree(fields)}
+          tree={getTree(fields)}
           expandedList={this.state.expandedNodes}
           getNodeId={node => node.field.term}
           getNodeChildren={node => node.children}
           onExpansionChange={expandedNodes => this.setState({ expandedNodes })}
           isSelectable={false}
-          nodeComponent={({node}) =>
-            <FieldListNode node={node} onFieldSelect={this.handleFieldSelect} isActive={this.props.selectedField === node.field.term} />}
+          nodeComponent={this.nodeComponent}
           isSearchable={true}
           searchBoxPlaceholder="Find a quality"
           searchTerm={this.state.searchTerm}
@@ -340,7 +362,6 @@ var FilteredData = (function() {
       this.getCellData = this.getCellData.bind(this);
       this.getPkCellData = this.getPkCellData.bind(this);
       this.renderPk = this.renderPk.bind(this);
-      this.makeOntologyTree = memoize(makeOntologyTree);
 
       this.state = {
         dialogIsOpen: false,
@@ -459,7 +480,7 @@ var FilteredData = (function() {
                   <button>Update Columns</button>
                 </div>
                 <CheckboxTree
-                  tree={this.makeOntologyTree(fields)}
+                  tree={getTree(fields)}
                   getNodeId={node => node.field.term}
                   getNodeChildren={node => node.children}
                   onExpansionChange={this.handleExpansionClick}
@@ -1714,33 +1735,6 @@ function getFilterDisplay(field, value) {
       : `between ${value.min} and ${value.max}`);
     default: return JSON.stringify(value);
   }
-}
-
-function makeOntologyTree(ontologyDict) {
-  const ontologyEntries = values(ontologyDict);
-  const rootChildren = ontologyEntries
-    .filter(entry => entry.parent == null)
-    .map(entry => makeOntologyNode(entry, ontologyEntries));
-
-  if (rootChildren.length == 1) return rootChildren[0];
-
-  return {
-    field: {
-      term: 'root',
-      display: 'Root'
-    },
-    children: sortBy(rootChildren, entry => entry.children.length === 0 ? -1 : 1)
-  }
-}
-
-function makeOntologyNode(entry, ontologyEntries) {
-  const children = ontologyEntries
-    .filter(e => e.parent === entry.term)
-    .map(e => makeOntologyNode(e, ontologyEntries));
-  return {
-    field: entry,
-    children: sortBy(children, entry => entry.children.length === 0 ? -1 : 1)
-  };
 }
 
 function setStateFromArgs(instance, ...argsNames) {
