@@ -355,6 +355,15 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
+   * @return configured authentication method name as a String.
+   * Used by Java management beans to register configuration values
+   * by introspection of getter methods.
+   */
+  public String getAuthenticationMethod() {
+    return this.getAuthenticationMethodEnum().getName();
+  }
+
+  /**
    * @param authenticationMethod configured authentication method
    */
   public void setAuthenticationMethod(String authenticationMethod) {
