@@ -2,9 +2,11 @@ import {
   default as _,
   flowRight as compose,
   constant,
+  memoize,
   mapValues,
   sortBy,
-  reject
+  reject,
+  values
 } from 'lodash';
 import {MemberFilter, RangeFilter} from "./FilterService";
 
@@ -131,155 +133,40 @@ export function combinePredicates<T>(predicates: Predicate<T>[]) {
   };
 }
 
-// Field tree
-// ----------
-
 type Field = {
-  term: string;
   parent?: string;
-  leaf?: 'true';
-};
+  term: string;
+  display?: string;
+}
 
-type FieldTreeNode = {
+type FieldNode = {
   field: Field;
-  children: FieldTreeNode[];
-};
-
-type Options = {
-  trimMetadataTerms: boolean;
-};
-
-export function makeTree(fields: Field[], options: Options = { trimMetadataTerms: false }) {
-
-  // Create tree, then prune it so it's easier to read
-  var make = options.trimMetadataTerms
-    ? compose(/* sortTree, */ removeParentsWithSingleChild, removeSingleTopNode, constructTree)
-    : compose(/* sortTree, */ constructTree);
-
-  // get all ontology terms starting from `filterable` fields
-  // and traversing upwards by the `parent` attribute
-  var prunedFields: Field[] = sortBy(pruneFields(fields), 'term');
-
-  // get root tree
-  var parentFields: Field[] = reject(prunedFields, 'parent');
-
-  // construct tree
-  var groupedFields = make(parentFields, prunedFields);
-
-  // sort node such that leaves are first
-  groupedFields = sortBy(groupedFields, function(node: FieldTreeNode) {
-    return node.field.leaf === 'true' ? 0 : 1;
-  });
-
-  return groupedFields;
+  children: FieldNode[];
 }
 
-// Given a list of fields:
-// First, find all fields marked as `leaf` (this means
-//   the field is terminating and data can be filtered by it).
-// Then, for each field, find all parents.
-function pruneFields(fields: Field[]) {
-  var missing: string[] = [];
-  var prunedFields = fields
-    .filter(field => field.leaf === 'true')
-    .reduce(function(prunedFields, field) {
-      while (field.parent) {
-        prunedFields.add(field);
-        let nextField = fields.find(f => f.term === field.parent);
-        if (!nextField) {
-          missing.push(field.parent);
-          break;
-        }
-        field = nextField;
-      }
-      return prunedFields.add(field);
-    }, new Set() as Set<Field>)
+export const getTree = memoize((ontologyDict: Record<string, Field>): FieldNode => {
+  const ontologyEntries = values(ontologyDict);
+  const rootChildren = ontologyEntries
+    .filter((entry) => entry.parent == null)
+    .map((entry) => makeOntologyNode(entry, ontologyEntries));
 
-  if (missing.length) {
-    alert('The following properties are missing from the metadata_spec query:\n\n  ' + missing.join('\n  '));
+  if (rootChildren.length == 1) return rootChildren[0];
+
+  return {
+    field: {
+      term: 'root',
+      display: 'Root'
+    },
+    children: sortBy(rootChildren, entry => entry.children.length === 0 ? -1 : 1)
   }
-  return Array.from(prunedFields);
-}
+});
 
-// Convert a list to a tree* based on the `parent` property
-// given a list of root nodes and a list of all fields
-//
-// * More accurately, this will create one or more trees,
-//   one for each initial sibling field. But we can imagine
-//   a common, hidden, root node.
-function constructTree(siblingFields: Field[], allFields: Field[]): FieldTreeNode[] {
-  return siblingFields
-    .map(function(field) {
-      var children = allFields.filter(child => child.parent === field.term);
-
-      return children.length
-        ? { field: field, children: constructTree(children, allFields) }
-        : { field: field, children: [] };
-    });
-}
-
-// Remove top level category if it's the only one.
-//
-// E.g., turn this:
-//
-//     A
-//      \
-//       B
-//        \
-//         C
-//        / \
-//       D   E
-//      /     \
-//        ...
-//
-// into this:
-//
-//      D   E
-//     /     \
-//       ...
-//
-function removeSingleTopNode(tree: FieldTreeNode[]) {
-  while (tree.length === 1 && tree[0].children) {
-    tree = tree[0].children;
-  }
-
-  return tree;
-}
-
-// Remove nodes with only one child, unless it's terminating.
-//
-// E.g., turn this:
-//
-//       *
-//      / \
-//     A   B
-//          \
-//           C
-//            \
-//             D
-//
-// into this:
-//
-//       *
-//      / \
-//     A   D
-//
-function removeParentsWithSingleChild(tree: FieldTreeNode[]) {
-  return tree
-    .map(function(node) {
-
-      // replace node with first child if only one child
-      while (node.children && node.children.length === 1) {
-        node = node.children[0];
-      }
-
-      // recur if node has children
-      // (will be > 1 child due to above while loop)
-      if (node.children) {
-        node.children = removeParentsWithSingleChild(node.children);
-      }
-
-      // else, return node
-      return node;
-    });
+function makeOntologyNode(entry: Field, ontologyEntries: Field[]): FieldNode {
+  const children = ontologyEntries
+    .filter(e => e.parent === entry.term)
+    .map(e => makeOntologyNode(e, ontologyEntries));
+  return {
+    field: entry,
+    children: sortBy(children, entry => entry.children.length === 0 ? -1 : 1)
+  };
 }

@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import {EventEmitter} from 'events';
-import {makeTree} from './FilterServiceUtils';
 
 // TODO Integrate with Flux architecture
 //
