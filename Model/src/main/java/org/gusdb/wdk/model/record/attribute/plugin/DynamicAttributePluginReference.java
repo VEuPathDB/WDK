@@ -42,6 +42,10 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
     setView(pluginView);
   }
 
+  public boolean hasBeenAssignedProperties() {
+    return getProperties() != null;
+  }
+
   /**
    * Expected incoming format is a JSON array of property objects, each of which has "name" and "value"
    * properties.
@@ -71,8 +75,7 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
         getDisplay() != null &&
         getDescription() != null &&
         getImplementation() != null &&
-        getView() != null &&
-        getProperties() != null
+        getView() != null
     );
   }
 
