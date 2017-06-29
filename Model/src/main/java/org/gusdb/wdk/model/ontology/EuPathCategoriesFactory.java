@@ -81,6 +81,12 @@ public class EuPathCategoriesFactory {
     { "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass" }
   };
 
+  private String[][] clinepiRecordClassInfo = {
+      { "Participants", "ParticipantRecordClasses.ParticipantRecordClass" },
+      { "Dwellings", "DwellingRecordClasses.DwellingRecordClass" },
+      { "Clinical Visits", "ClinicalVisitRecordClasses.ClinicalVisitRecordClass" }
+    };
+
   // record classes whose individuals all have both scope website and menu
   private String[][] otherRecordClassInfo = {
       { "RFLP Genotype Isolates", "RflpIsolateRecordClasses.RflpIsolateRecordClass" },
@@ -123,11 +129,18 @@ public class EuPathCategoriesFactory {
     // gene questions for datasets
     processPrimaryCategoryQuestions(ontology, scopes(INTERNAL), "Genes",
         "TranscriptRecordClasses.TransciptRecordClass", datasetCategories, datasetRootCategories);
+
     // non-gene questions
-    for (String[] recordClassInfo : model.getProjectId().equals("MicrobiomeDB") ? mbioRecordClassInfo : otherRecordClassInfo) {
+    String[][] infos = otherRecordClassInfo;
+    if (model.getProjectId().equals("MicrobiomeDB")) infos = mbioRecordClassInfo;
+    if (model.getProjectId().equals("ClinEpiDB")) infos = clinepiRecordClassInfo;
+    
+    for (String[] recordClassInfo : infos) {
+      LOG.info(")))))))))))))))))))))))))))))))))))))))))))))))) " + recordClassInfo[0]);
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes(MENU, WEBSERVICE));
       if (prunedOntologyTree == null)
         continue;
+      LOG.info("*************************************** GOT THERE");
       List<Map<String, SearchCategory>> mapList = new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       mapList.add(websiteCategories);
