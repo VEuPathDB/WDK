@@ -10,6 +10,7 @@ import UserPasswordChangeController from './controllers/UserPasswordChangeContro
 import SiteMapController from './controllers/SiteMapController';
 import UserDatasetListController from './controllers/UserDatasetListController';
 import UserDatasetItemController from './controllers/UserDatasetItemController';
+import FavoritesController from './controllers/FavoritesController';
 
 // TODO Uncomment when question page is moved
 // import QuestionController from './controllers/QuestionController';
@@ -28,6 +29,7 @@ export default (
     <Route path="user/profile/password" component={UserPasswordChangeController}/>
     <Route path="workspace/datasets" component={UserDatasetListController}/>
     <Route path="workspace/datasets/:id" component={UserDatasetItemController}/>
+    <Route path="favorites" component={FavoritesController}/>
     <Route path="data-finder" component={SiteMapController}/>
     <Route path="question-list" component={QuestionListController}/>
     <Route path="*" component={NotFoundController}/>

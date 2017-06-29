@@ -166,3 +166,11 @@ export type UserDataset = {
   updloaded: number;
 }
 
+export type Favorite = {
+  recordClassName: string;
+  id: PrimaryKey;
+  group: string;
+  note: string;
+  display: string;
+}
+
