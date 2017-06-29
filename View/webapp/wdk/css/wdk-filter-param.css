@@ -23,11 +23,10 @@
 .filter-param .filter-items-wrapper {
   height: 2em;
 }
-.filter-param, .filter-param *, .filter-items {
+.filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  line-height: 14px;
 }
 .filter-param .ui-tabs {
   border: none;
@@ -122,6 +121,7 @@
 .filter-param .wdk-CheckboxTree {
   overflow-y: auto;
   height: 100%;
+  margin-top: 2px;
 }
 .filter-param .wdk-CheckboxTreeLinks:first-of-type {
   position: absolute;
@@ -382,6 +382,9 @@
 .filter-param #applied-filters {
   text-align: center;
   min-height: 2em;
+}
+.filter-param .filter-items {
+  line-height: 14px;
 }
 .filter-param .filter-items * {
   vertical-align: middle;
