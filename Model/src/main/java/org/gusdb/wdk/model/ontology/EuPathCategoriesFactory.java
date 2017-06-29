@@ -136,11 +136,9 @@ public class EuPathCategoriesFactory {
     if (model.getProjectId().equals("ClinEpiDB")) infos = clinepiRecordClassInfo;
     
     for (String[] recordClassInfo : infos) {
-      LOG.info(")))))))))))))))))))))))))))))))))))))))))))))))) " + recordClassInfo[0]);
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes(MENU, WEBSERVICE));
       if (prunedOntologyTree == null)
         continue;
-      LOG.info("*************************************** GOT THERE");
       List<Map<String, SearchCategory>> mapList = new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       mapList.add(websiteCategories);
