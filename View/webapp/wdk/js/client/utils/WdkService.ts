@@ -21,7 +21,8 @@ import {
   RecordInstance,
   UserDataset,
   UserDatasetMeta,
-  OntologyTermSummary
+  OntologyTermSummary,
+  Favorite
 } from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
@@ -375,13 +376,14 @@ export default class WdkService {
     return this._fetchJson<{countProcessed: number}>(method, url).then(data => data.countProcessed > 0);
   }
 
-  // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
+  // Service call to add - POST /user/current/favorites {'recordClassName': recordClassName, 'id' : {recordId}}
+  // Service call to remove - DELETE /user/current/favorites/instance {'recordClassName': recordClassName, 'id' : {recordId}}
   updateFavoritesStatus(record: RecordInstance, status: boolean) {
-    let action = status ? 'add' : 'remove';
-    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
-    let method = 'get';
-    let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson(method, url).then(() => status);
+    let json = JSON.stringify({ recordClassName: record.recordClassName, id: record.id });
+    let method = status ? 'post' : 'delete';
+    let url = '/user/current/favorites';
+    url += (status ? '' : '/instance');
+    return this._fetchJson(method, url, json).then(() => status);
   }
 
   getCurrentUser() {
@@ -425,6 +427,22 @@ export default class WdkService {
 
   getCurrentUserDatasets() {
     return this._fetchJson<UserDataset[]>('get', '/user/current/user-dataset?expandDetails=true');
+  }
+
+  getCurrentFavorites() {
+    return this._fetchJson<Favorite[]>('get', '/user/current/favorites');
+  }
+
+  editFavorite(favorite: Favorite) {
+    return this._fetchJson<void>('put', '/user/current/favorites/instance', JSON.stringify(favorite));
+  }
+
+  deleteFavorite(favorite: Favorite) {
+    return this._fetchJson<void>('delete', '/user/current/favorites/instance', JSON.stringify(favorite));
+  }
+
+  addFavorite(favorite: Favorite) {
+    return this._fetchJson<void>('post', '/user/current/favorites', JSON.stringify(favorite));
   }
 
   getUserDataset(id: number) {
