@@ -7,9 +7,17 @@
 // Those options will be merged with `baseConfig`, and the result will be
 // returned.
 
-var webpack = require('webpack');
-var webpackMerge = require('webpack-merge');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+import * as webpack from 'webpack';
+import * as webpackMerge from 'webpack-merge';
+import * as ExtractTextPlugin from 'extract-text-webpack-plugin';
+
+type Env = {
+  production: true;
+  development?: false;
+} | {
+  production?: false;
+  development: true;
+};
 
 /**
  * Creates a configuration function that is used by webpack. Takes a
@@ -20,12 +28,12 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
  *
  * @param {object|object[]} additionalConfig
  */
-exports.merge = function merge(additionConfig) {
-  return function (env) {
+export function merge(...additionConfig: webpack.Configuration[]): webpack.Configuration {
+  return function (env: Env = { development: true }) {
     console.log('webpack env', env);
     var isDevelopment = !env.production;
     if (!isDevelopment) console.log('optimizing web assets');
-    return webpackMerge([{
+    return webpackMerge({
       bail: true,
       resolve: {
         extensions: [ ".js", ".jsx", ".ts", ".tsx" ]
@@ -97,12 +105,12 @@ exports.merge = function merge(additionConfig) {
         isDevelopment ? noop : new webpack.optimize.UglifyJsPlugin({ sourceMap: true }),
         new ExtractTextPlugin('[name].bundle.css')
       ]
-    }].concat(additionConfig));
+    }, ...additionConfig);
   }
 }
 
 // expose webpack in case consumers want to add more plugins
-exports.webpack = webpack;
+export { webpack };
 
 /** no nothing */
 function noop(){}

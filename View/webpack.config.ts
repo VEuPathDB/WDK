@@ -1,7 +1,11 @@
-var baseConfig = require('./base.webpack.config');
+import { merge, webpack } from './base.webpack.config';
 
+type AliasDescriptor = {
+  alias: string;
+  path: string;
+}
 // shims for global style scripts
-var scripts = [
+var scripts: AliasDescriptor[] = [
   { alias: 'lib/jquery',                                path : __dirname + '/webapp/wdk/lib/jquery.js' },
   { alias: 'lib/jquery-migrate',                        path : __dirname + '/webapp/wdk/lib/jquery-migrate-1.2.1.min.js' },
   { alias: 'lib/jquery-ui',                             path : __dirname + '/webapp/wdk/lib/jquery-ui.js' },
@@ -24,7 +28,7 @@ var scripts = [
 var alias = scripts.reduce(function(alias, script) {
   alias[script.alias + '$'] = script.path;
   return alias;
-}, {});
+}, {} as Record<string, string>)
 
 var scriptLoaders = scripts.map(function(script) {
   return {
@@ -52,7 +56,7 @@ var exposeLoaders = exposeModules.map(function(entry) {
   };
 });
 
-module.exports = baseConfig.merge({
+const config: webpack.Configuration = merge({
   entry: {
     'wdk-client': [ 'whatwg-fetch', './webapp/wdk/css/wdk.css', './webapp/wdk/js/client/index.js' ],
     'wdk': [ './webapp/wdk/css/wdk.css', './webapp/wdk/js/index.js' ]
@@ -72,8 +76,10 @@ module.exports = baseConfig.merge({
     rules: scriptLoaders.concat(exposeLoaders)
   },
   plugins: [
-    new baseConfig.webpack.optimize.CommonsChunkPlugin({
+    new webpack.optimize.CommonsChunkPlugin({
       name: 'wdk-client'
     })
   ]
 });
+
+export default config;

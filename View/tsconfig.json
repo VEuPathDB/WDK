@@ -13,8 +13,5 @@
     "strictNullChecks": true,
     "lib": [ "dom", "es2015", "es2016" ],
     "moduleResolution": "node"
-  },
-  "include": [
-    "./webapp"
-  ]
+  }
 }
