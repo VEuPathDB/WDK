@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record;
 import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,10 @@ public class AttributeQueryReference extends Reference {
           if (!plugin.hasAllDynamicFields()) {
             throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() +
                 "' is missing at least one plugin field.  Configured values: " + plugin.getDynamicFieldsAsString());
+          }
+          // properties are allowed to be null, but if they are, we need to assign an empty map
+          if (!plugin.hasBeenAssignedProperties()) {
+            plugin.setProperties(Collections.EMPTY_MAP);
           }
           attributeField.addAttributePluginReference(plugin);
         }
