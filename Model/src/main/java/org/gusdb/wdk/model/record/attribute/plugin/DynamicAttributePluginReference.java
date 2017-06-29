@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model.record.attribute.plugin;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.prettyPrint;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,4 +76,16 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
     );
   }
 
+  public String getDynamicFieldsAsString() {
+    Map<String,String> properties = getProperties();
+    String propsPrint = properties == null ? null : prettyPrint(properties, Style.MULTI_LINE);
+    return new StringBuilder("{").append(NL)
+        .append("name:           ").append(getName()).append(NL)
+        .append("display:        ").append(getDisplay()).append(NL)
+        .append("description:    ").append(getDescription()).append(NL)
+        .append("implementation: ").append(getImplementation()).append(NL)
+        .append("view:           ").append(getView()).append(NL)
+        .append("properties:     ").append(propsPrint).append(NL)
+        .append("}").append(NL).toString();
+  }
 }

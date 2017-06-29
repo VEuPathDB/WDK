@@ -113,7 +113,8 @@ public class AttributeQueryReference extends Reference {
         if (plugin.getName() != null) {
           // plugin specified for this attribute
           if (!plugin.hasAllDynamicFields()) {
-            throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() + " is missing at least one plugin field.");
+            throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() +
+                "' is missing at least one plugin field.  Configured values: " + plugin.getDynamicFieldsAsString());
           }
           attributeField.addAttributePluginReference(plugin);
         }
