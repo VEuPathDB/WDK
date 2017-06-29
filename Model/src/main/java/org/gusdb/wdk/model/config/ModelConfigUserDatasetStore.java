@@ -52,27 +52,23 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
   }
  
   /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   * Returns an uninitialized user dataset store.
+   * Returns an initialized user dataset store.
    */
   public UserDatasetStore getUserDatasetStore() throws WdkModelException {
 
+    // if a store has already been created and configured, return that one
     if (userDatasetStore != null) {
       return userDatasetStore;
     }
-    
+
     // try to find implementation class
-    String msgStart = "Implementation class for sserDatasetStorePlugin [" + getImplementation() + "] ";
-    UserDatasetStore userDatasetStore;
+    String msgStart = "Implementation class for userDatasetStorePlugin [" + getImplementation() + "] ";
     try {
       Class<?> implClass = Class.forName(getImplementation());
       if (!UserDatasetStore.class.isAssignableFrom(implClass)) 
         throw new WdkModelException(msgStart + "must implement " + UserDatasetStore.class.getName());
       Constructor<?> constructor = implClass.getConstructor();
-      userDatasetStore = (UserDatasetStore) constructor.newInstance();      
+      userDatasetStore = (UserDatasetStore) constructor.newInstance();
     }
     catch (ClassNotFoundException e) {
       throw new WdkModelException(msgStart + "cannot be found.", e);
