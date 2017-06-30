@@ -137,5 +137,13 @@ public class FilesysUserDatasetStoreAdaptor
     }
 
   }
+  
+  @Override
+  public String findUserDatasetStoreId(Path usersRootDir) throws WdkModelException {
+	if(usersRootDir == null) {
+	  throw new WdkModelException("No users root directory provided.");
+	}
+	return usersRootDir.toString();
+  }
 
 }

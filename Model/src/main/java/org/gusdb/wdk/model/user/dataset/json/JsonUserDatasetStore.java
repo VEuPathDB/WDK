@@ -68,7 +68,6 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
-    
     typeHandlersMap = typeHandlers;
   }
   

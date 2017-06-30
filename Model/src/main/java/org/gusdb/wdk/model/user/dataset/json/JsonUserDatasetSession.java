@@ -37,7 +37,6 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   protected Path usersRootDir;
   protected UserDatasetStoreAdaptor adaptor;
-  protected String id;
 	  
   public JsonUserDatasetSession(UserDatasetStoreAdaptor adaptor, Path usersRootDir) {
     this.adaptor = adaptor;
@@ -640,12 +639,12 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   public UserDatasetStoreAdaptor getUserDatasetStoreAdaptor() {
     return adaptor;
   }
-	  
+
   @Override
-  public String getUserDatasetStoreId() {
-	return id;
+  public String initializeUserDatasetStoreId() throws WdkModelException {
+    return adaptor.findUserDatasetStoreId(usersRootDir);
   }
-	  
+  
   /**
    * Locates the path to the external datasets directory for the given user.  If no such
    * path is found under the user's directory, the directory is created.
