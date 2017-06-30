@@ -94,5 +94,12 @@ public interface UserDatasetStoreAdaptor {
    * @return
    */
   public boolean fileExists(Path file) throws WdkModelException;
+  
+  /**
+   * Returns the unique id of the user dataset store.
+   * @return
+   * @throws WdkModelException
+   */
+  public String findUserDatasetStoreId(Path dir) throws WdkModelException;
 
 }

@@ -154,8 +154,17 @@ public interface UserDatasetSession extends AutoCloseable {
   */
 	  
   UserDatasetStoreAdaptor getUserDatasetStoreAdaptor();
-	  
-  String getUserDatasetStoreId();
+
+  /**
+   * The user dataset store id is initially set and kept so that
+   * whenever a user dataset store event occurs, the dataset store id
+   * provided by the event trigger can be compared with the kept dataset
+   * store id to insure that the two match and that the triggers event
+   * data may be accepted.
+   * @return
+   * @throws WdkModelException
+   */
+  String initializeUserDatasetStoreId() throws WdkModelException;
 
   /**
    * IRODS Sessions need to be closed to recover connections.  So
