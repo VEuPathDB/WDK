@@ -36,10 +36,6 @@ export function FormMessage({ message, messageClass }) {
     <div className={messageClass}><span>{message}</span></div> );
 }
 
-const containerStyle = {
-  width: '0 2em'
-};
-
 /**
  * React component for the user profile/account form
  * @type {*|Function}
@@ -56,7 +52,7 @@ class UserProfile extends React.Component {
   render() {
     let formConfig = interpretFormStatus(this.props.formStatus, this.props.errorMessage);
     return (
-      <div style={containerStyle}>
+      <div className="wdk-UserProfile">
         {this.props.userFormData.isGuest ?
           <div>You must first log on to read and alter your account information</div> :
           <div>
