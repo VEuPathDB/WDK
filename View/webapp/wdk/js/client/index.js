@@ -10,6 +10,7 @@ import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as PromiseUtils from './utils/PromiseUtils';
+import * as Platform from './utils/Platform';
 import * as CategoryUtils from './utils/CategoryUtils';
 import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
@@ -18,7 +19,7 @@ import WdkService from './utils/WdkService';
 import * as AuthUtil from './utils/AuthUtil';
 import { wrapComponents, initialize } from './main';
 
-__webpack_public_path__ = window.__asset_path_remove_me_please__;
+__webpack_public_path__ = window.__asset_path_remove_me_please__; // eslint-disable-line
 
 export {
   wrapComponents,
@@ -31,6 +32,7 @@ export {
   FormSubmitter,
   IterableUtils,
   OntologyUtils,
+  Platform,
   PromiseUtils,
   ReporterUtils,
   StaticDataUtils,
