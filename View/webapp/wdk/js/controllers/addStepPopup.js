@@ -1,3 +1,4 @@
+/*global wdk */
 /* jshint scripturl:true */
 
 wdk.namespace("wdk.addStepPopup", function(ns, $) {
@@ -5,6 +6,10 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
 
   var global_isAdd;
   var buttonText = null;
+
+  var SUBMIT_EVENT = ns.SUBMIT_EVENT = 'wizardsubmit.wdk-question';
+  var CANCEL_EVENT = ns.CANCEL_EVENT = 'wizardcancel.wdk-question';
+  var FORM_DESTROY_EVENT = ns.FORM_DESTROY_EVENT = "wdk-query-form-removed";
 
   ns.current_Front_Strategy_Id = null;
 
@@ -201,6 +206,7 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );
             wizardLoading(true);
+            $(ele).trigger(SUBMIT_EVENT);
           },
 
           success: function(data) {
@@ -220,9 +226,11 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
 
               } else {
                 wizardLoading(false);
+                $(ele).trigger(CANCEL_EVENT);
               }
             } else {
               wizardLoading(false);
+              $(ele).trigger(CANCEL_EVENT);
               $("#qf_content").children().wrapAll('<div class="stage" />');
               $("#qf_content > div.stage").appendTo("#stage-stack");
               setPopupContent(data);
@@ -351,7 +359,6 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
     // updateStepNumberReferences();
   }
 
-  var FORM_DESTROY_EVENT = ns.FORM_DESTROY_EVENT = "wdk-query-form-removed";
   function closeAll(hide) {
     if (hide) {
       $("#query_form").hide();
@@ -474,6 +481,7 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
       }, false);
       if (!boolChecked) {
         if ($this.find(".wdk-error").length === 0) {
+          $this.trigger(CANCEL_EVENT);
           $("<div>Please choose an operation below</div>")
             .addClass("wdk-error")
             .css("text-align", "center")
