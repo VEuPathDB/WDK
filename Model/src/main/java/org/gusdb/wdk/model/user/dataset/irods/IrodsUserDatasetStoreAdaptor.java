@@ -474,7 +474,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     if(userRootDir == null) {
       throw new WdkModelException("No user root directory provided.");
     }
-    String pathName = userRootDir.toString();
+    String pathName = userRootDir.toString().substring(0, userRootDir.toString().lastIndexOf('/'));
     try {
       IRODSAccessObjectFactory objectFactory = getAccessObjectFactory();
       CollectionAO collection = objectFactory.getCollectionAO(account);
