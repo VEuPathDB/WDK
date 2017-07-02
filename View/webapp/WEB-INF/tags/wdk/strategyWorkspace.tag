@@ -84,7 +84,7 @@
   <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
   <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
   <div id="strategies-panel-toggle" data-default="${showStratPanel}" style="display:flex;align-items:center">
-    <img style="cursor:pointer" src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
+    <img style="cursor:pointer" src="${baseUrl}/wdk/images/${currentImgName}.gif" data-action="toggle-strat-panel" />
     <span style="font-weight:bold">
       <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
     </span>

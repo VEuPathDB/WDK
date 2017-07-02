@@ -45,6 +45,8 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     // decide whether strategy panel should be shown
     handleStratPanelVisibility(element);
 
+    setupStepActionButtons(element);
+
     // Make the strategies window resizable
     element.find(".resizable-wrapper").resizable({
       handles: 's',
@@ -152,11 +154,28 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       $togglePanel.find('.toggle-command').html(showPanel ? 'Hide' : 'Show');
       $stratPanel.css("display", (showPanel ? 'block' : 'none'));
       $.cookie("show-strat-panel", (showPanel ? "true" : "false"));
+
+      // update button text
+      var $button = $('button[data-action="toggle-strat-panel"]')
+      $button.text($button.data(showPanel ? 'hide-text' : 'show-text'));
     };
     // set initial visibility
     doPanelVisibility(false);
     // add click event to toggle
-    $togglePanel.find('img').click(function() { doPanelVisibility(true); });
+    $(parentElement).on('click', '[data-action="toggle-strat-panel"]', function() {
+      doPanelVisibility(true);
+    });
+    $(parentElement).on('stepselect', function() {
+      doPanelVisibility(false);
+    });
+  }
+
+  function setupStepActionButtons($element) {
+    $element.on('click', '[data-action="revise-step"]', function(event) {
+      var $target = $(event.target);
+      var stepId = $target.data('step-id');
+      $(`#crumb_details_${stepId} .edit_step_link`).click();
+    });
   }
 
   /**
