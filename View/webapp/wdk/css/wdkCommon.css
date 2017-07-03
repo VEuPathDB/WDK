@@ -1239,6 +1239,7 @@ button.wdk-StepActionButton {
   margin-left: .5em;
   font-weight: normal;
   font-size: smaller;
+  border-radius: 4px;
 }
 button.wdk-StepActionButton:hover,
 button.wdk-StepActionButton:active,
