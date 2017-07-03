@@ -191,6 +191,10 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
    * @param config A configuration object that has get methods of interest.
    */ 
   protected void setValuesFromGetters(String section, Object config) {
+    if (config == null) {
+      LOG.debug("skipping null config: '" + section + "'");
+      return;
+    }
     try {
       Class<?> c = Class.forName(config.getClass().getName());
       Method[] methods = c.getMethods();
@@ -203,7 +207,16 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
                 && mname.startsWith("get")) {
             // remove 'get', lowercase first letter
             String key = Character.toLowerCase(mname.charAt(3)) + mname.substring(4);
-            Object value = method.invoke(config);
+
+            Object value = null;
+            try {
+                value = method.invoke(config);
+            } catch (Exception e) {
+                LOG.debug("skipping, could not invoke method: '" +
+                  mname + "' of config '" +
+                  method.getDeclaringClass().getName() + "'.");
+                continue;
+            }
             
             if ( value == null || 
                   !(value.getClass().getName().startsWith("java.lang.")) ) 
