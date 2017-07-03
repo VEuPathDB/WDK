@@ -24,12 +24,15 @@ public class ModelConfig extends AbstractAttributesBean {
     org.gusdb.wdk.model.config.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();
     org.gusdb.wdk.model.config.ModelConfigUserDB modelConfigUserDB = modelConfig.getUserDB();
     org.gusdb.wdk.model.config.ModelConfigAppDB  modelConfigAppDB  = modelConfig.getAppDB();
+    org.gusdb.wdk.model.config.ModelConfigUserDatasetStore
+      modelConfigUserDatasetStore  = modelConfig.getUserDatasetStoreConfig();
 
     
     setValuesFromGetters("global", modelConfig);
     setValuesFromGetters("queryMonitor", queryMonitor);
     setValuesFromGetters("userDb", modelConfigUserDB);
     setValuesFromGetters("appDb",  modelConfigAppDB);
+    setValuesFromGetters("userDatasetStore",  modelConfigUserDatasetStore);
   }
 
 }
