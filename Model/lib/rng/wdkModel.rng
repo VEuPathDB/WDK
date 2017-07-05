@@ -688,6 +688,9 @@
         <attribute name="backgroundQueryRef"/>
       </optional>
       <optional>
+        <attribute name="summaryMetadataQueryRef"/>
+      </optional>
+      <optional>
         <attribute name="trimMetadataTerms">
           <data type="boolean" />
         </attribute>
