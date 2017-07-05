@@ -15,6 +15,8 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -395,6 +397,10 @@ public class UserFactory {
 
       // save off other data to user profile
       _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), user.getProfileProperties());
+
+      // get updated profile and trigger profile update event
+      UserProfile newProfile = _accountManager.getUserProfile(user.getUserId());
+      Events.trigger(new UserProfileUpdateEvent(oldProfile, newProfile, _wdkModel));
 
       // save preferences
       _preferenceFactory.savePreferences(user);
