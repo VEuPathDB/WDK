@@ -109,6 +109,9 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private String metadataQueryRef;
   private Query metadataQuery;
+  
+  private String summaryMetadataQueryRef;  // the summary can optionally use a dedicated metadata query ref, eg to report a diff record type
+  private Query summaryMetadataQuery;
 
   private String ontologyQueryRef;
   private Query ontologyQuery;
@@ -129,15 +132,23 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public FilterParamNew(FilterParamNew param) {
     super(param);
+    
     this.metadataQueryRef = param.metadataQueryRef;
     if (param.metadataQuery != null)
       this.metadataQuery = param.metadataQuery.clone();
+    
+    this.summaryMetadataQueryRef = param.summaryMetadataQueryRef;
+    if (param.summaryMetadataQuery != null)
+      this.summaryMetadataQuery = param.summaryMetadataQuery.clone();
+    
     this.ontologyQueryRef = param.ontologyQueryRef;
     if (param.ontologyQuery != null)
       this.ontologyQuery = param.ontologyQuery.clone();
+    
     this.backgroundQueryRef = param.backgroundQueryRef;
     if (param.backgroundQuery != null)
       this.backgroundQuery = param.backgroundQuery.clone();
+    
     this.trimMetadataTerms = param.trimMetadataTerms;
   }
 
@@ -176,6 +187,24 @@ public class FilterParamNew extends AbstractDependentParam {
   public void setMetadataQuery(Query metadataQuery) {
     this.metadataQuery = metadataQuery;
   }
+  
+
+  public String getSummaryMetadataQueryRef() {
+    return summaryMetadataQueryRef;
+  }
+
+  public void setSummaryMetadataQueryRef(String summaryMetadataQueryRef) {
+    this.summaryMetadataQueryRef = summaryMetadataQueryRef;
+  }
+
+  public Query getSummaryMetadataQuery() {
+    return summaryMetadataQuery;
+  }
+
+  public void setSummaryMetadataQuery(Query summaryMetadataQuery) {
+    this.summaryMetadataQuery = summaryMetadataQuery;
+  }
+
 
   /**
    * @return the onotology Query Name
@@ -270,6 +299,8 @@ public class FilterParamNew extends AbstractDependentParam {
         throw new WdkModelException("The ontologyQuery " + ontologyQueryRef + " in filterParam " +
             getFullName() + " must include column: " + col);
     }
+    
+    String[] metadataCols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
 
     // resolve background query
     if (backgroundQueryRef != null) {
@@ -279,8 +310,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
       // validate columns
       Map<String, Column> columns = backgroundQuery.getColumnMap();
-      String[] cols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
-      for (String col : cols)
+      for (String col : metadataCols)
         if (!columns.containsKey(col))
         throw new WdkModelException("The backgroundQuery " + backgroundQueryRef + " in filterParam " +
             getFullName() + " must include column: " + col);
@@ -294,10 +324,23 @@ public class FilterParamNew extends AbstractDependentParam {
 
       // validate columns.
       Map<String, Column> columns = metadataQuery.getColumnMap();
-      String[] cols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
-      for (String col : cols)
+      for (String col : metadataCols)
         if (!columns.containsKey(col))
           throw new WdkModelException("The metadata query " + metadataQueryRef + " in filterParam " +
+              getFullName() + " must include column: " + col);
+    }
+
+    // resolve optional summary metadata query
+    if (summaryMetadataQueryRef != null) {
+
+      // validate dependent params
+      this.summaryMetadataQuery = resolveDependentQuery(model, summaryMetadataQueryRef, "summary metadata query");
+
+      // validate columns.
+      Map<String, Column> columns = summaryMetadataQuery.getColumnMap();
+      for (String col : metadataCols)
+        if (!columns.containsKey(col))
+          throw new WdkModelException("The summary metadata query " + summaryMetadataQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
   }
@@ -334,11 +377,14 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
 
+    // if optional summaryMetadataQuery provided, use it instead of metadata query
+    Query mdQuery = summaryMetadataQuery == null? metadataQuery : summaryMetadataQuery;
+    
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     // use background query if provided, else use metadata query
     
     // get base background query
-    Query bgdQuery = backgroundQuery == null? metadataQuery : backgroundQuery;
+    Query bgdQuery = backgroundQuery == null? mdQuery : backgroundQuery;
     QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
     String bgdSql = queryInstance.getSql();
     
@@ -355,7 +401,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
-    String filteredInternalsSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
+    String filteredInternalsSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues, this, mdQuery);
 
     // get count
     sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
