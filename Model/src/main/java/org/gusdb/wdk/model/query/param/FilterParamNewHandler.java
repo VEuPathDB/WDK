@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -120,8 +121,21 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
+      return getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+ 
+  // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)	
+  static String getFilteredValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param, Query metadataQuery)
+      throws WdkModelException {
+
+    try {
+      QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, metadataQuery);
+      String metadataSql = instance.getSql();
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
-      String metadataSql = getMetadataQuerySql(user, contextParamValues, param);
       JSONArray jsFilters = getFilters(jsValue);
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";

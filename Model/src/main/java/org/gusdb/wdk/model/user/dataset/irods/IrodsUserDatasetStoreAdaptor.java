@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.TransferOptions.ForceOption;
+import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
@@ -20,6 +21,8 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileReader;
 import org.irods.jargon.core.pub.io.IRODSFileWriter;
+import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.transfer.TransferControlBlock;
 
 /**
@@ -32,6 +35,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   private static IRODSFileSystem system;
   private static IRODSAccount account;
   private static IRODSAccessObjectFactory accessObjectFactory;
+  private static final String IRODS_ID_ATTRIBUTE = "irods_id";
   
   /**
    * This method sets the IRODSFileSystem object instance variable if it is not already populated.
@@ -349,7 +353,6 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	}
   }
 
-
   /**
    * @see
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#deleteFileOrDirectory(Path)
@@ -457,6 +460,36 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     finally {
       closeFile(irodsFile);
     }  
+  }
+
+  /**
+   * Finds the value for the IRODS user dataset store id.  This is an attribute
+   * found on the root directory.  
+   * @param dir
+   * @param attrKey
+   * @return
+   */
+  @Override
+  public String findUserDatasetStoreId(Path userRootDir) throws WdkModelException {
+    if(userRootDir == null) {
+      throw new WdkModelException("No user root directory provided.");
+    }
+    String pathName = userRootDir.toString().substring(0, userRootDir.toString().lastIndexOf('/'));
+    try {
+      IRODSAccessObjectFactory objectFactory = getAccessObjectFactory();
+      CollectionAO collection = objectFactory.getCollectionAO(account);
+      List<MetaDataAndDomainData> metadata = collection.findMetadataValuesForCollection(pathName);
+      String id = null;
+      for(MetaDataAndDomainData item : metadata) {
+        if(IRODS_ID_ATTRIBUTE.equals(item.getAvuAttribute())) {
+          id = item.getAvuValue();
+        }
+      }
+      return id;
+	}
+	catch (JargonException | JargonQueryException je) {
+	  throw new WdkModelException(je);
+	}
   }
   
 }

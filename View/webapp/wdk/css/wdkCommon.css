@@ -1230,6 +1230,24 @@ margin: 1em 0 -1px;
 .Summary_Views .ui-tabs-panel {
   min-height: 25em;
 }
+button.wdk-StepActionButton {
+  color: #FFF;
+  background: #4F81BD;
+  border-color: #346792;
+  box-shadow: 0px 0px 1px #245F92;
+  padding: 1px 1em;
+  margin-left: .5em;
+  font-weight: normal;
+  font-size: smaller;
+  border-radius: 4px;
+  line-height: normal;
+}
+button.wdk-StepActionButton:hover,
+button.wdk-StepActionButton:active,
+button.wdk-StepActionButton:focus {
+  background: #357EBD;
+  /*border-color: #245F92;*/
+}
 
 /***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***
  ***  Step Analysis: 'new' tab, and contents of SA tabs

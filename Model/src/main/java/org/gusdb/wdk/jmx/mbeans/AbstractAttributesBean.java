@@ -85,8 +85,8 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
    * implementation of DynamicMBean interface method
    */
   @Override
-  public void setAttribute(Attribute attribute) 
-            throws InvalidAttributeValueException, MBeanException, 
+  public void setAttribute(Attribute attribute)
+            throws InvalidAttributeValueException, MBeanException,
                    AttributeNotFoundException {
     String name = attribute.getName();
     if (_props.get(name) == null)
@@ -143,7 +143,7 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
    * implementation of DynamicMBean interface method
    */
   @Override
-  public Object invoke(String name, Object[] args, String[] sig) 
+  public Object invoke(String name, Object[] args, String[] sig)
   throws MBeanException, ReflectionException {
     if (name.equals("reload") &&
             (args == null || args.length == 0) &&
@@ -161,7 +161,7 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
   /**
    * Use introspection to find and call getter methods in given configuration
    * object. The data is put into a map where the key name is derived from
-   * the getter method, sans 'get', and the value is the return value of the 
+   * the getter method, sans 'get', and the value is the return value of the
    * getter method.
    *
    * If a non-null string is given for the section parameter it will be prepended in square brackets to the
@@ -175,45 +175,58 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
    *
    * can be represented as
    *
-   * <pre>{@code 
+   * <pre>{@code
    * [appDb] connectionUrl = cryp
    * [global] modelName = CryptoDB
    * }</pre>
    *
    * This allows multidimensional configuration file structures to be
-   * stored flat and therefore more readable in JMX consoles. 
-   * Used wisely, the bracketed section names can leveraged to reconstruct 
+   * stored flat and therefore more readable in JMX consoles.
+   * Used wisely, the bracketed section names can leveraged to reconstruct
    * a multidimensional configuration in custom code.
    *
    * Values for keys that look like passwords are masked.
    *
    * @param section A string or null
    * @param config A configuration object that has get methods of interest.
-   */ 
+   */
   protected void setValuesFromGetters(String section, Object config) {
+    if (config == null) {
+      LOG.debug("skipping null config: '" + section + "'");
+      return;
+    }
     try {
       Class<?> c = Class.forName(config.getClass().getName());
       Method[] methods = c.getMethods();
         for (int i = 0; i < methods.length; i++) {
           Method method = methods[i];
           String mname = method.getName();
-          
+
             if ((method.getDeclaringClass().getName().startsWith("org.gusdb.wdk.model.") ||
                 method.getDeclaringClass().getName().startsWith("org.apidb.apicommon.model."))
                 && mname.startsWith("get")) {
             // remove 'get', lowercase first letter
             String key = Character.toLowerCase(mname.charAt(3)) + mname.substring(4);
-            Object value = method.invoke(config);
-            
-            if ( value == null || 
-                  !(value.getClass().getName().startsWith("java.lang.")) ) 
+
+            Object value = null;
+            try {
+                value = method.invoke(config);
+            } catch (Exception e) {
+                LOG.debug("skipping, could not invoke method: '" +
+                  mname + "' of config '" +
+                  method.getDeclaringClass().getName() + "'.");
+                continue;
+            }
+
+            if ( value == null ||
+                  !(value.getClass().getName().startsWith("java.lang.")) )
                       continue;
 
-            if ( (key.toLowerCase().contains("password") || 
+            if ( (key.toLowerCase().contains("password") ||
                   key.toLowerCase().contains("passwd") )
                   && value instanceof String
                ) { value = "*****"; }
-            LOG.debug("config key '" + key + 
+            LOG.debug("config key '" + key +
                          "', config value '" + value + "'");
             String prefix = (section != null) ? "[" + section + "] " : "";
             _props.put(prefix + key, value.toString());
@@ -223,5 +236,5 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
       LOG.fatal(e);
     }
   }
-  
+
 }

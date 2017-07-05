@@ -15,6 +15,7 @@
 %>
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
+<c:set var="uiConfig" value="${wdkModel.model.uiConfig}" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 <c:set var="projectId" value="${wdkModel.projectId}" />
 <c:set var="dispModelName" value="${wdkModel.displayName}" />
@@ -24,30 +25,66 @@
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
 <c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
 
-<%--
-JavaScript call to show the search revise form. This is a hack and will probably
-break if the step info box view changes. Hopefully this won't happen before we
-transition to React.
---%>
-<c:set var="editStepJsCall" value="$('#crumb_details_${step.stepId} .edit_step_link').click()" />
-
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
-<div id="title-links" class="h3left">
-  <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
-  <span id="text_data_type">${recordName}</span>
 
-  <c:if test="${strategy != null}">
-    from Step <span id="text_step_number">${strategy.length}</span>
-    <a
-      title="Revise the parameters of this search"
-      style="margin-left: 1em"
-      href="javascript:${editStepJsCall}">Revise</a>
-    <br/>Strategy:
-    <span
-      class="wdk-editable strategy-name"
-      data-id="${strategy.strategyId}"
-      data-save="wdk.strategy.controller.updateStrategyName"
-      id="text_strategy_number"
-      title="Click to edit">${strategy.name}</span>
-  </c:if>
-</div>
+<c:choose>
+  <%-- show classic --%>
+  <c:when test="${empty uiConfig.showStratPanelByDefault}">
+    <div id="title-links" class="h3left">
+      <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
+      <span id="text_data_type">${recordName}</span>
+
+      <c:if test="${strategy != null}">
+        from Step <span id="text_step_number">${strategy.length}</span>
+        <br/>Strategy:
+        <span
+          class="wdk-editable strategy-name"
+          data-id="${strategy.strategyId}"
+          data-save="wdk.strategy.controller.updateStrategyName"
+          id="text_strategy_number"
+          title="Click to edit">${strategy.name}</span>
+      </c:if>
+    </div>
+  </c:when>
+
+  <%-- show simple and advanced modes --%>
+  <c:otherwise>
+    <div id="title-links" class="h3left">
+      <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
+      <span id="text_data_type">${recordName}</span>
+
+      <c:if test="${strategy != null}">
+        <c:set var="advancedMode" value="${strategy.length gt 1}"/>
+        <c:set var="showText" value="${advancedMode ? 'Show search strategy panel' : 'Combine with another search'}" />
+        <c:set var="hideText" value="Hide search strategy panel" />
+        <c:if test="${advancedMode}">
+          from Step <span id="text_step_number">${strategy.length}</span>
+        </c:if>
+        <button
+          class="wdk-StepActionButton wdk-StepActionButton__revise"
+          type="button"
+          title="Revise the parameters of this search"
+          data-action="revise-step"
+          data-step-id="${step.stepId}"
+        >Revise</button>
+        <button
+          class="wdk-StepActionButton wdk-StepActionButton__toggleStratPanel"
+          type="button"
+          title="Toggle visibility of the search strategy panel"
+          data-action="toggle-strat-panel"
+          data-show-text="${showText}"
+          data-hide-text="${hideText}"
+        >Combine with another search</button>
+        <c:if test="${advancedMode}">
+          <br/>Strategy:
+          <span
+            class="wdk-editable strategy-name"
+            data-id="${strategy.strategyId}"
+            data-save="wdk.strategy.controller.updateStrategyName"
+            id="text_strategy_number"
+            title="Click to edit">${strategy.name}</span>
+        </c:if>
+      </c:if>
+    </div>
+  </c:otherwise>
+</c:choose>

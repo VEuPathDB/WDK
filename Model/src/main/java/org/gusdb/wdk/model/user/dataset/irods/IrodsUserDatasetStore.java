@@ -20,9 +20,9 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
     String user = configuration.get("login");
     String password = configuration.get("password");
     IrodsUserDatasetStoreAdaptor.initializeIrods(host,port,user,password,zone,resource);
-    _id = _usersRootDir + "|" + zone + "|" + resource + "|" + host + "|" + port;
     try(IrodsUserDatasetSession session = getSession(_usersRootDir)) {
       session.checkRootDirExists();
+      _id = session.initializeUserDatasetStoreId();
     }
   }
 
