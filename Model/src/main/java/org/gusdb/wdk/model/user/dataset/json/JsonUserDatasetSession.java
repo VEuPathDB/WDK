@@ -36,7 +36,6 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   protected Path usersRootDir;
   protected UserDatasetStoreAdaptor adaptor;
-  protected String id;
 
   public JsonUserDatasetSession(UserDatasetStoreAdaptor adaptor, Path usersRootDir) {
     this.adaptor = adaptor;
@@ -638,8 +637,8 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   }
 
   @Override
-  public String getUserDatasetStoreId() {
-    return id;
+  public String initializeUserDatasetStoreId() throws WdkModelException {
+    return adaptor.findUserDatasetStoreId(usersRootDir);
   }
 
   /**

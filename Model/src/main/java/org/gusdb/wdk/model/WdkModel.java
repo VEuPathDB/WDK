@@ -271,15 +271,27 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public static void checkTmpDir(String configuredDir) throws WdkModelException {
-    LOG.info("Checking configured temp dir: " + configuredDir);
-    Path wdkTempDir = Paths.get(configuredDir);
-    if (Files.exists(wdkTempDir) && Files.isDirectory(wdkTempDir) &&
-        Files.isReadable(wdkTempDir) && Files.isWritable(wdkTempDir)) {
-      return;
-    }
-    try {
-      LOG.info("Temp dir does not exist or has insufficient permissions.  Trying to remedy...");
-      Files.createDirectories(wdkTempDir);
+    WdkModel.checkTempDir(configuredDir);
+  }
+  
+  /**
+   * Checks for the existence of a temporary directory given by the input string.  If
+   * no such dir exist, it is created with appropriate permisions.  This overloaded
+   * method is used directly by the UserDatasetEventArrayHandler to insure that the temp
+   * dir exists because it does not employ a wdk model as such.
+   * @param configuredDir
+   * @throws WdkModelException
+   */
+  public static void checkTempDir(String configuredDir) throws WdkModelException {
+	LOG.info("Checking configured temp dir: " + configuredDir);
+	Path wdkTempDir = Paths.get(configuredDir);
+	if (Files.exists(wdkTempDir) && Files.isDirectory(wdkTempDir) &&
+      Files.isReadable(wdkTempDir) && Files.isWritable(wdkTempDir)) {
+        return;
+	}
+	try {
+	  LOG.info("Temp dir does not exist or has insufficient permissions.  Trying to remedy...");
+	  Files.createDirectories(wdkTempDir);
       IoUtil.openPosixPermissions(wdkTempDir);
       LOG.info("Temp dir created at: " + wdkTempDir.toAbsolutePath());
     }

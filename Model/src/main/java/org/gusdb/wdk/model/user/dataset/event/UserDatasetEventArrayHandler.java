@@ -165,10 +165,12 @@ public class UserDatasetEventArrayHandler {
   public String getWdkTempDirName() throws WdkModelException {
     if (wdkTempDirName == null) {
       wdkTempDirName = getModelConfig().getWdkTempDir();
+      // Checks that the temp dir is there with proper perms and if not, provides it.
+      WdkModel.checkTempDir(wdkTempDirName);
     }
     return wdkTempDirName;
   }
-
+  
   private ModelConfig getModelConfig() throws  WdkModelException {
     if (modelConfig == null) {
       try {

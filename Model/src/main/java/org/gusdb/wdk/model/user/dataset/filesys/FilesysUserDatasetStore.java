@@ -26,9 +26,9 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   @Override
   public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     super.initialize(configuration, typeHandlers);
-    _id = _usersRootDir.toString();
     try (FilesysUserDatasetSession session = getSession(_usersRootDir)) {
       session.checkRootDirExists();
+      _id = session.initializeUserDatasetStoreId();
     }
     catch (WdkModelException e) {
       // if root dir does not exist, try to create with 777 access
