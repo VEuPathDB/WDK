@@ -66,7 +66,7 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
     
     // try to find implementation class
     String msgStart = "Implementation class for sserDatasetStorePlugin [" + getImplementation() + "] ";
-    UserDatasetStore userDatasetStore;
+    //Oops - shadowing - CWL 05JUL2107?  UserDatasetStore userDatasetStore;
     try {
       Class<?> implClass = Class.forName(getImplementation());
       if (!UserDatasetStore.class.isAssignableFrom(implClass)) 
