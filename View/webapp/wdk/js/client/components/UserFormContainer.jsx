@@ -36,10 +36,6 @@ export function FormMessage({ message, messageClass }) {
     <div className={messageClass}><span>{message}</span></div> );
 }
 
-const containerStyle = {
-  width: '0 2em'
-};
-
 /**
  * React component for the user profile/account form
  * @type {*|Function}
@@ -61,7 +57,7 @@ class UserFormContainer extends React.Component {
     let formConfig = formInterpreter(this.props.formStatus, this.props.errorMessage);
     let IntroComponent = this.props.introComponent || (() => <span/>);
     return (
-      <div style={containerStyle}>
+      <div className="wdk-UserProfile">
         {this.props.shouldHideForm ?
           <div>{this.props.hiddenFormMessage}</div> :
           <div>
