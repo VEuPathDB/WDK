@@ -8,7 +8,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,21 +54,34 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
    * properties.
    * 
    * @param pluginProperties JSON-formatted property array
+   * @throws WdkModelException if passed properties cannot be parsed
    */
   @RngOptional
-  public void setPluginProperties(String pluginProperties) {
-    try {
-      Map<String,String> propMap = new HashMap<>();
-      JSONArray propArray = new JSONArray(pluginProperties);
-      for (int i = 0; i < propArray.length(); i++) {
-        JSONObject prop = propArray.getJSONObject(i);
-        propMap.put(prop.getString("name"), prop.getString("value"));
-      }
-      setProperties(propMap);
-    }
-    catch (JSONException e) {
-      LOG.error("Could not parse plugin properties.  Value starts on next line:" + NL + pluginProperties + NL, e);
-      throw e;
+  public void setPluginProperties(String pluginProperties) throws WdkModelException {
+    String errorMessage = "Could not parse plugin properties. " +
+        "JSON array or object required. Value starts on next line:" + NL + pluginProperties + NL;
+    JsonType jsonType = JsonType.parse(pluginProperties);
+    switch(jsonType.getType()) {
+      case ARRAY:
+        try {
+          Map<String,String> propMap = new HashMap<>();
+          JSONArray propArray = jsonType.getJSONArray();
+          for (int i = 0; i < propArray.length(); i++) {
+            JSONObject prop = propArray.getJSONObject(i);
+            propMap.put(prop.getString("name"), prop.getString("value"));
+          }
+          setProperties(propMap);
+        }
+        catch (JSONException e) {
+          LOG.error(errorMessage, e);
+          throw e;
+        }
+        break;
+      case OBJECT:
+        setProperties(JsonUtil.parseProperties(jsonType.getJSONObject()));
+        break;
+      default:
+        throw new WdkModelException(errorMessage);
     }
   }
 
