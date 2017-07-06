@@ -321,7 +321,8 @@ export default class WdkService {
         .then(([record, newRecord]) => {
           return Object.assign({}, record, {
             attributes: Object.assign({}, record.attributes, newRecord.attributes),
-            tables: Object.assign({}, record.tables, newRecord.tables)
+            tables: Object.assign({}, record.tables, newRecord.tables),
+            tableErrors: difference(record.tableErrors, reqTables).concat(newRecord.tableErrors)
           });
         });
         cacheEntry = { request: finalRequest, response: finalResponse };
