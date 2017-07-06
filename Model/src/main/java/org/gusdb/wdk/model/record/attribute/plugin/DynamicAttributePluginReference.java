@@ -9,7 +9,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
@@ -20,9 +19,21 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
 
   private static final Logger LOG = Logger.getLogger(DynamicAttributePluginReference.class);
 
+  private String _attributeName;
+
+  /**
+   * This is a trick to get the field populator to send this class the attribute name (NOT the plugin name).
+   * Note we call super.setName() in setPluginName() below to set the plugin name in the parent class.
+   */
+  @Override
+  @RngOptional
+  public void setName(String attributeName) {
+    _attributeName = attributeName;
+  }
+
   @RngOptional
   public void setPluginName(String pluginName) {
-    setName(pluginName);
+    super.setName(pluginName);
   }
 
   @RngOptional
@@ -58,8 +69,9 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
    */
   @RngOptional
   public void setPluginProperties(String pluginProperties) throws WdkModelException {
-    String errorMessage = "Could not parse plugin properties. " +
-        "JSON array or object required. Value starts on next line:" + NL + pluginProperties + NL;
+    String attributeName = _attributeName == null ? "unknown" : _attributeName;
+    String errorMessage = "Could not parse plugin properties for attribute '" + attributeName +
+        "'. JSON array or object required. Value starts on next line:" + NL + pluginProperties + NL;
     JsonType jsonType = JsonType.parse(pluginProperties);
     switch(jsonType.getType()) {
       case ARRAY:
@@ -78,8 +90,9 @@ public class DynamicAttributePluginReference extends AttributePluginReference {
         }
         break;
       case OBJECT:
-        setProperties(JsonUtil.parseProperties(jsonType.getJSONObject()));
-        break;
+        // Uncomment to add support for JSON object form of properties
+        //setProperties(JsonUtil.parseProperties(jsonType.getJSONObject()));
+        //break;
       default:
         throw new WdkModelException(errorMessage);
     }
