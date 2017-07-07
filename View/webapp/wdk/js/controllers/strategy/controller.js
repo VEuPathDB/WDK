@@ -174,7 +174,13 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     $element.on('click', '[data-action="revise-step"]', function(event) {
       var $target = $(event.target);
       var stepId = $target.data('step-id');
-      $(`#crumb_details_${stepId} .edit_step_link`).click();
+      var $detailBox = $(`#crumb_details_${stepId}`);
+      if ($detailBox.is('.operation_details')) {
+        $detailBox.show();
+      }
+      else {
+        $detailBox.find('.edit_step_link').click();
+      }
     });
   }
 
