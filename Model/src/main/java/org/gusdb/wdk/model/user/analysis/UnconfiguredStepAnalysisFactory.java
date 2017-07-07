@@ -60,8 +60,8 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
-    return new HashMap<Integer, StepAnalysisContext>();
+  public Map<Long, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
+    return new HashMap<Long, StepAnalysisContext>();
   }
 
   @Override
@@ -106,7 +106,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException {
+  public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 

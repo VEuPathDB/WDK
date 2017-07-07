@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -81,11 +82,11 @@ public class DatasetParam extends Param {
     Map<String, DatasetParserReference> references = new LinkedHashMap<>();
     for (DatasetParserReference reference : parserReferences) {
       if (reference.include(projectId)) {
-        String name = reference.getName();
-        if (references.containsKey(name))
-          throw new WdkModelException("parser '" + name + "' is duplicated in datasetParam " + getFullName());
+        String refName = reference.getName();
+        if (references.containsKey(refName))
+          throw new WdkModelException("parser '" + refName + "' is duplicated in datasetParam " + getFullName());
         reference.excludeResources(projectId);
-        references.put(name, reference);
+        references.put(refName, reference);
       }
     }
     parserReferences = new ArrayList<>(references.values());
@@ -155,7 +156,7 @@ public class DatasetParam extends Param {
       throws WdkModelException {
     // make sure the dataset exists
     int datasetId = Integer.parseInt(stableValue);
-    user.getDataset(datasetId);
+    _wdkModel.getDatasetFactory().getDataset(user, datasetId);
   }
 
   /**
@@ -234,14 +235,14 @@ public class DatasetParam extends Param {
   public Integer getBasketCount(User user) throws WdkModelException {
     if (recordClass == null)
       return null;
-    Map<RecordClass, Integer> counts = user.getBasketCounts();
+    Map<RecordClass, Integer> counts = _wdkModel.getBasketFactory().getBasketCounts(user);
     return counts.get(recordClass);
   }
 
   public Strategy[] getStrategies(User user) throws WdkModelException {
     if (recordClass == null)
       return null;
-    return user.getStrategies(recordClass.getFullName());
+    return StepUtilities.getStrategies(user, recordClass.getFullName());
   }
 
   public void addParserReference(DatasetParserReference reference) {

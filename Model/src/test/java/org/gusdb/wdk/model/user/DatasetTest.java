@@ -79,7 +79,7 @@ public class DatasetTest {
     String content = DatasetParamTest.generateContent(data);
     String uploadFile = "sample-" + random.nextInt();
     Dataset expected = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
-    Dataset actual = user.getDataset(expected.getDatasetId());
+    Dataset actual = datasetFactory.getDataset(user, expected.getDatasetId());
     compareDatasets(expected, actual, true);
   }
 

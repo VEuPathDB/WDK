@@ -24,35 +24,35 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public abstract class UserDatasetTypeHandler {
 
-  private static final Logger logger = Logger.getLogger(UserDatasetTypeHandler.class);
-      
+  private static final Logger LOG = Logger.getLogger(UserDatasetTypeHandler.class);
+
   /**
    * Check if a dataset is compatible with this application, based on its data dependencies.
    * @param userDataset
    * @return
    */
   public abstract UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource);
-  
+
   /**
    * The user dataset type this handler handles.
    * @return
    */
   public abstract UserDatasetType getUserDatasetType();
-  
+
   public abstract String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String project);
-  
+
   public abstract Set<String> getInstallInAppDbFileNames(UserDataset userDataset);
-  
-  public abstract String[] getUninstallInAppDbCommand(Integer userDatasetId, String projectName);
-  
+
+  public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
+
   public abstract String[] getRelevantQuestionNames();
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
     Map<String, Path> nameToTempFileMap = new HashMap<String, Path>();
-    
+
     Path workingDir = createWorkingDir(tmpDir, userDataset.getUserDatasetId());
-    
+
     for (String userDatasetFileName : getInstallInAppDbFileNames(userDataset)) {
       UserDatasetFile udf = userDataset.getFile(dsSession, userDatasetFileName);
       if (udf == null) throw new WdkModelException("File name requested by type handler, '" + userDatasetFileName + "' is not found in user dataset " + userDataset.getUserDatasetId() + " of type " + userDataset.getType());
@@ -62,18 +62,18 @@ public abstract class UserDatasetTypeHandler {
     runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId), workingDir);
     deleteWorkingDir(workingDir);
    }
-  
-  public void uninstallInAppDb(Integer userDatasetId, Path tmpDir, String projectId) throws WdkModelException {
+
+  public void uninstallInAppDb(Long userDatasetId, Path tmpDir, String projectId) throws WdkModelException {
     Path workingDir = createWorkingDir(tmpDir, userDatasetId);
     runCommand(getUninstallInAppDbCommand(userDatasetId, projectId), workingDir);    
     deleteWorkingDir(workingDir);
   }
 
   private void runCommand(String[] command, Path workingDir) throws WdkModelException {
-    
+
     StringBuilder builder = new StringBuilder();
     for (String s : command) { builder.append(s + " "); }
-    logger.info("Running command: " + builder);
+    LOG.info("Running command: " + builder);
 
     Process p = null;
     Boolean success = false;
@@ -97,7 +97,7 @@ public abstract class UserDatasetTypeHandler {
    }
   }
 
-  private Path createWorkingDir(Path tmpDir, Integer userDatasetId) throws WdkModelException {
+  private Path createWorkingDir(Path tmpDir, Long userDatasetId) throws WdkModelException {
     Path workingDir;
     try {
       workingDir = Files.createTempDirectory(tmpDir, "ud_" + userDatasetId + "_");
@@ -128,6 +128,4 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     }
   }
-
-
 }

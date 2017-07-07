@@ -11,13 +11,13 @@ public interface UserDataset {
    * The permanent ID of this dataset  
    * @return
    */
-  Integer getUserDatasetId();
+  Long getUserDatasetId();
   
   /**
    * Get the user ID of the owner of this dataset
    * @return
    */
-  Integer getOwnerId();
+  Long getOwnerId();
   
   /**
    * Get meta data object, which has the user's way of describing this dataset

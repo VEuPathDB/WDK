@@ -12,7 +12,7 @@ import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.user.Step;
 
-public class StepCache extends ItemCache<Integer, Step> {
+public class StepCache extends ItemCache<Long, Step> {
 
   private static final Logger LOG = Logger.getLogger(StepCache.class);
 
@@ -26,14 +26,14 @@ public class StepCache extends ItemCache<Integer, Step> {
       @Override
       public void eventTriggered(Event event) throws Exception {
         if (event instanceof StepRevisedEvent) {
-          int stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
+          long stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
           LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
           expireCachedItems(stepId);
         }
         else if (event instanceof StepResultsModifiedEvent) {
-          List<Integer> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
+          List<Long> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
           LOG.info("Notification of steps modification, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
-          expireCachedItems(stepIds.toArray(new Integer[stepIds.size()]));
+          expireCachedItems(stepIds.toArray(new Long[stepIds.size()]));
         }
       }
     }, StepRevisedEvent.class, StepResultsModifiedEvent.class);

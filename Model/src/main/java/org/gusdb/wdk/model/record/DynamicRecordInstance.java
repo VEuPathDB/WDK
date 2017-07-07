@@ -78,35 +78,33 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
     Map<String, String> paramValues = _primaryKey.getValues();
 
-    ResultList resultList = null;
     try {
       // put user id in the attribute query
       QueryInstance<?> instance = query.makeInstance(_user, paramValues, true, 0,
           new LinkedHashMap<String, String>());
-      resultList = instance.getResults();
 
-      if (!resultList.next()) {
-        // throwing exception prevents proper handling in front end...just return?
-        _isValidRecord = false;
-        throw new WdkModelException("Attribute query " + queryName +
-            " doesn't return any row: \n" + instance.getSql());
-      }
-
-      Map<String, AttributeField> fields = getAttributeFieldMap();
-      for (Column column : query.getColumns()) {
-        if (!fields.containsKey(column.getName())) continue;
-        AttributeField field = fields.get(column.getName());
-        if (!(field instanceof QueryColumnAttributeField)) continue;
-        Object objValue = resultList.get(column.getName());
-        ColumnAttributeValue value = new QueryColumnAttributeValue(
-            (QueryColumnAttributeField) field, objValue);
-        addAttributeValue(value);
+      try (ResultList resultList = instance.getResults()) {
+        if (!resultList.next()) {
+          // throwing exception prevents proper handling in front end...just return?
+          _isValidRecord = false;
+          throw new WdkModelException("Attribute query " + queryName +
+              " doesn't return any row: \n" + instance.getSql());
+        }
+  
+        Map<String, AttributeField> fields = getAttributeFieldMap();
+        for (Column column : query.getColumns()) {
+          if (!fields.containsKey(column.getName())) continue;
+          AttributeField field = fields.get(column.getName());
+          if (!(field instanceof QueryColumnAttributeField)) continue;
+          Object objValue = resultList.get(column.getName());
+          ColumnAttributeValue value = new QueryColumnAttributeValue(
+              (QueryColumnAttributeField) field, objValue);
+          addAttributeValue(value);
+        }
       }
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
-    } finally {
-      if (resultList != null) resultList.close();
     }
     logger.debug("column attributes are cached.");
   }

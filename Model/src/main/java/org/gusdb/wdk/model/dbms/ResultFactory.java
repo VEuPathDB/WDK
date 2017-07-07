@@ -26,7 +26,7 @@ public class ResultFactory {
   private Logger logger = Logger.getLogger(ResultFactory.class);
 
   public static class InstanceInfo {
-    int instanceId;
+    long instanceId;
     String message;
     final long creationDate;
     public InstanceInfo(int instanceId, String message, String cacheTableName) {
@@ -66,7 +66,7 @@ public class ResultFactory {
     InstanceInfo instanceInfo =  getInstanceInfo(queryInstance);
     Query query = queryInstance.getQuery();
 
-    int instanceId = instanceInfo.instanceId;
+    long instanceId = instanceInfo.instanceId;
     try {
       // logger.debug(" ..... EXISTING table, instanceid?: " + instanceId + "(if 0 we need a new one)");
       if (instanceId == UNKNOWN_INSTANCE_ID) { // instance doesn't exist
@@ -180,11 +180,11 @@ public class ResultFactory {
     }
   }
 
-  private int createCache(QueryInstance<?> instance)
+  private long createCache(QueryInstance<?> instance)
       throws WdkModelException, SQLException, WdkUserException {
     
     DataSource dataSource = database.getDataSource();
-    int instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
+    long instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
     String schema = database.getDefaultSchema();
     String cacheTable = getCacheTableName(instanceId);
     instance.createCache(cacheTable, instanceId);
@@ -217,13 +217,13 @@ public class ResultFactory {
     }
   }
 
-  static String getCacheTableName(int instanceId) {
+  static String getCacheTableName(long instanceId) {
     return CacheFactory.CACHE_TABLE_PREFIX + instanceId;
   }
 
 
   private void createCacheInstance(QueryInstance<?> instance,
-      int instanceId) throws WdkModelException, WdkUserException {
+      long instanceId) throws WdkModelException, WdkUserException {
     StringBuffer sql = new StringBuffer("INSERT INTO ");
     sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
     sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
@@ -237,7 +237,7 @@ public class ResultFactory {
     try {
       DataSource dataSource = database.getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-      ps.setInt(1, instanceId);
+      ps.setLong(1, instanceId);
       ps.setString(2, instance.getQuery().getFullName());
       ps.setString(3, getCacheTableName(instanceId));
       ps.setString(4, instance.getChecksum());

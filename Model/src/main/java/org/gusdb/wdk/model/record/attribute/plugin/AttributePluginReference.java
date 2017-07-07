@@ -5,13 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.RngAnnotations.RngOptional;
-import org.gusdb.wdk.model.RngAnnotations.RngRequired;
-import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
@@ -41,7 +39,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param name
      *            the name to set
      */
-    @RngRequired
+    @RngUndefined
     public void setName(String name) {
         this.name = name;
     }
@@ -57,7 +55,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param display
      *            the display to set
      */
-    @RngOptional
+    @RngUndefined
     public void setDisplay(String display) {
         this.display = display;
     }
@@ -73,7 +71,7 @@ public class AttributePluginReference extends WdkModelBase {
      * @param description
      *            the description to set
      */
-    @RngOptional
+    @RngUndefined
     public void setDescription(String description) {
         this.description = description;
     }
@@ -82,16 +80,20 @@ public class AttributePluginReference extends WdkModelBase {
      * @param implementation
      *            the implementation to set
      */
-    @RngRequired
+    @RngUndefined
     public void setImplementation(String implementation) {
         this.implementation = implementation;
+    }
+
+    protected String getImplementation() {
+      return this.implementation;
     }
 
     public String getView() {
         return view;
     }
 
-    @RngRequired
+    @RngUndefined
     public void setView(String view) {
         this.view = view;
     }
@@ -101,9 +103,17 @@ public class AttributePluginReference extends WdkModelBase {
         this.attributeField = attributeField;
     }
 
-    @RngOptional
     public void addProperty(WdkModelText property) {
         this.propertyList.add(property);
+    }
+
+    @RngUndefined
+    public void setProperties(Map<String,String> properties) {
+        propertyMap = properties;
+    }
+
+    protected Map<String,String> getProperties() {
+        return propertyMap;
     }
 
     @Override
@@ -115,11 +125,11 @@ public class AttributePluginReference extends WdkModelBase {
         for (WdkModelText property : propertyList) {
             if (property.include(projectId)) {
                 property.excludeResources(projectId);
-                String name = property.getName();
-                if (propertyMap.containsKey(name))
-                    throw new WdkModelException("The property '" + name
+                String propName = property.getName();
+                if (propertyMap.containsKey(propName))
+                    throw new WdkModelException("The property '" + propName
                             + "' already exists in column plugin " + this.name);
-                propertyMap.put(name, property.getText());
+                propertyMap.put(propName, property.getText());
             }
         }
         propertyList = null;

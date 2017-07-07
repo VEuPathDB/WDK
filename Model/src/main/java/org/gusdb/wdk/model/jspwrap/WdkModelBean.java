@@ -238,7 +238,7 @@ public class WdkModelBean implements ConnectionContainer {
     }
 
     public UserFactoryBean getUserFactory() {
-        return new UserFactoryBean(wdkModel.getUserFactory());
+        return new UserFactoryBean(wdkModel, wdkModel.getUserFactory());
     }
 
     public String getProjectId() {
@@ -270,7 +270,7 @@ public class WdkModelBean implements ConnectionContainer {
         return wdkModel.getUseWeights();
     }
 
-    public UserBean getSystemUser() throws WdkModelException {
+    public UserBean getSystemUser() {
         return new UserBean(wdkModel.getSystemUser());
     }
 

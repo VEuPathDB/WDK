@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -69,7 +70,7 @@ public class StepCountUpdater extends BaseCLI {
   protected void execute() throws Exception {
 
     String idFileName = (String) getOptionValue(ARG_COMPLETE_ID_FILE);
-    Set<Integer> completedSteps = loadCompletedSteps(idFileName);
+    Set<Long> completedSteps = loadCompletedSteps(idFileName);
 
     String projectIdStr = (String) getOptionValue(ARG_PROJECT_ID);
     String[] projectIds = projectIdStr.trim().split(",");
@@ -77,7 +78,7 @@ public class StepCountUpdater extends BaseCLI {
     try (AutoCloseableList<WdkModel> wdkModels = WdkModel.loadMultipleModels(GusHome.getGusHome(), projectIds);
          PrintWriter writer = new PrintWriter(new FileWriter(idFileName, true))) {
 
-      Stack<Integer> userIds = loadUserIds(wdkModels.get(0));
+      Stack<Long> userIds = loadUserIds(wdkModels.get(0));
       SharedData sharedData = new SharedData(completedSteps, userIds, wdkModels, writer);
 
       // create runner threads and start
@@ -108,8 +109,8 @@ public class StepCountUpdater extends BaseCLI {
     }
   }
 
-  private static Set<Integer> loadCompletedSteps(String idFileName) throws NumberFormatException, IOException {
-    Set<Integer> completedSteps = new HashSet<Integer>();
+  private static Set<Long> loadCompletedSteps(String idFileName) throws NumberFormatException, IOException {
+    Set<Long> completedSteps = new HashSet<>();
     File idFile = new File(idFileName);
     if (!idFile.exists()) {
       idFile.createNewFile();
@@ -121,24 +122,24 @@ public class StepCountUpdater extends BaseCLI {
         line = line.trim();
         if (line.length() == 0)
           continue;
-        completedSteps.add(Integer.parseInt(line));
+        completedSteps.add(Long.parseLong(line));
       }
     }
     return completedSteps;
   }
 
-  private static Stack<Integer> loadUserIds(WdkModel wdkModel) throws SQLException {
+  private static Stack<Long> loadUserIds(WdkModel wdkModel) throws SQLException {
     ModelConfigUserDB userDb = wdkModel.getModelConfig().getUserDB();
     String userSchema = userDb.getUserSchema();
     String sql = "SELECT DISTINCT u.user_id FROM " + userSchema + "users u, " + userSchema + "steps s " +
         " WHERE u.is_guest = 0 AND u.user_id = s.user_id " + " AND s.is_deleted = 0";
-    Stack<Integer> userIds = new Stack<Integer>();
+    Stack<Long> userIds = new Stack<>();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-select-users");
       while (resultSet.next()) {
-        int userId = resultSet.getInt("user_id");
+        long userId = resultSet.getLong("user_id");
         userIds.push(userId);
       }
       return userIds;
@@ -151,12 +152,12 @@ public class StepCountUpdater extends BaseCLI {
   private static class SharedData {
 
     private final PrintWriter _writer;
-    private final Set<Integer> _completedSteps;
-    private final Stack<Integer> _userIds;
+    private final Set<Long> _completedSteps;
+    private final Stack<Long> _userIds;
     private final List<WdkModel> _wdkModels;
     private final int _totalUsers;
 
-    public SharedData(Set<Integer> completedSteps, Stack<Integer> userIds, List<WdkModel> wdkModels, PrintWriter writer) {
+    public SharedData(Set<Long> completedSteps, Stack<Long> userIds, List<WdkModel> wdkModels, PrintWriter writer) {
       _completedSteps = completedSteps;
       _userIds = userIds;
       _totalUsers = userIds.size();
@@ -164,15 +165,15 @@ public class StepCountUpdater extends BaseCLI {
       _writer = writer;
     }
 
-    public synchronized boolean isCompleted(int stepId) {
+    public synchronized boolean isCompleted(long stepId) {
       return _completedSteps.contains(stepId);
     }
 
-    public synchronized int getUserId() {
+    public synchronized long getUserId() {
       return _userIds.isEmpty() ? 0 : _userIds.pop();
     }
 
-    public synchronized void recordStep(int stepId) {
+    public synchronized void recordStep(long stepId) {
       _completedSteps.add(stepId);
       _writer.println(stepId);
     }
@@ -208,7 +209,7 @@ public class StepCountUpdater extends BaseCLI {
       List<WdkModel> wdkModels = _sharedData.getWdkModels();
       while (true) {
         try {
-          int userId = _sharedData.getUserId();
+          long userId = _sharedData.getUserId();
           if (userId == 0) {
             _isFinished.set(true);
             break; // no more users in stack
@@ -217,7 +218,7 @@ public class StepCountUpdater extends BaseCLI {
           logger.info("process steps for user #" + userId + " - " + count);
 
           for (WdkModel wdkModel : wdkModels) {
-            updateSteps(wdkModel.getUserFactory().getUser(userId));
+            updateSteps(wdkModel.getUserFactory().getUserById(userId));
           }
         }
         catch (Exception ex) {
@@ -229,9 +230,9 @@ public class StepCountUpdater extends BaseCLI {
     }
 
     private void updateSteps(User user) throws WdkModelException {
-      Map<Integer, Step> steps = user.getStepsMap();
+      Map<Long, Step> steps = StepUtilities.getStepsMap(user);
       for (Step step : steps.values()) {
-        int stepId = step.getStepId();
+        long stepId = step.getStepId();
         if (_sharedData.isCompleted(stepId))
           continue;
 

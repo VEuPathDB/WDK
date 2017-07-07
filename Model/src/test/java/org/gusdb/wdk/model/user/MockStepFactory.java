@@ -9,8 +9,8 @@ import org.gusdb.wdk.model.WdkUserException;
 
 public class MockStepFactory extends StepFactory {
 
-  private Set<Integer> deletedSteps = new HashSet<>();
-  private Set<Integer> deletedStrategies = new HashSet<>();
+  private Set<Long> deletedSteps = new HashSet<>();
+  private Set<Long> deletedStrategies = new HashSet<>();
   
   public MockStepFactory(WdkModel wdkModel) {
     super(wdkModel);
@@ -48,21 +48,21 @@ public class MockStepFactory extends StepFactory {
     // do nothing
   }
   
-  public boolean isStepDeleted(int stepId) {
+  public boolean isStepDeleted(long stepId) {
     return deletedSteps.contains(stepId);
   }
 
   @Override
-  void deleteStep(int stepId) throws WdkModelException {
+  public void deleteStep(long stepId) throws WdkModelException {
     deletedSteps.add(stepId);
   }
   
-  public boolean isStrategyDeleted(int strategyId) {
+  public boolean isStrategyDeleted(long strategyId) {
     return deletedStrategies.contains(strategyId);
   }
   
   @Override
-  public void deleteStrategy(int strategyId) throws WdkModelException {
+  public void deleteStrategy(long strategyId) throws WdkModelException {
     deletedStrategies.add(strategyId);
   }
 }

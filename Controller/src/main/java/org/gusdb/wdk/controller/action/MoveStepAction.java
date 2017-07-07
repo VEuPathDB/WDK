@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -9,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
@@ -92,7 +91,7 @@ public class MoveStepAction extends ProcessFilterAction {
       // Forward to ShowStrategyAction
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);
       return forward;

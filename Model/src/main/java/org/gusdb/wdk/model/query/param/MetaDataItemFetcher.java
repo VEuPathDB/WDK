@@ -34,8 +34,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
     try {
       QueryInstance<?> instance = getQueryInstance(user, paramValues, query);
       Map<String, Map<String, String>> properties = new LinkedHashMap<>();
-      ResultList resultList = instance.getResults();
-      try {
+      try (ResultList resultList = instance.getResults()) {
         while (resultList.next()) {
           String term = (String) resultList.get(FilterParam.COLUMN_TERM);
           String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
@@ -47,9 +46,6 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
           }
           termProp.put(property, value);
         }
-      }
-      finally {
-        resultList.close();
       }
       return properties;
     }

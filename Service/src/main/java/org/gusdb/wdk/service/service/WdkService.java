@@ -81,7 +81,7 @@ public abstract class WdkService {
     return (_user != null ? _user : (UserBean)_request.getSession().getAttribute("wdkUser"));
   }
 
-  protected int getSessionUserId() throws WdkModelException {
+  protected long getSessionUserId() {
     return getSessionUserBean().getUserId();
   }
 
@@ -89,12 +89,12 @@ public abstract class WdkService {
     return getSessionUserBean().getUser();
   }
 
-  protected boolean isSessionUserAdmin() throws WdkModelException {
+  protected boolean isSessionUserAdmin() {
     List<String> adminEmails = getWdkModel().getModelConfig().getAdminEmails();
     return adminEmails.contains(getSessionUser().getEmail());
   }
 
-  protected void assertAdmin() throws WdkModelException {
+  protected void assertAdmin() {
     if (!isSessionUserAdmin()) {
       throw new ForbiddenException("Administrative access is required for this function.");
     }

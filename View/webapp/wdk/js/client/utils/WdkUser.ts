@@ -2,16 +2,18 @@ import {AnswerSpec} from './WdkModel';
 
 export interface User {
   id: number;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  organization: string;
   email: string;
   isGuest: boolean;
+  properties: Record<string,string>
 }
 
-export interface UserPreferences {
-  [key: string]: string;
+export type PreferenceScope = "global" | "project";
+
+export type UserPreferences = Record<PreferenceScope, Record<string, string>>;
+
+export interface UserWithPrefs {
+  user: User;
+  preferences: UserPreferences;
 }
 
 export interface Step {

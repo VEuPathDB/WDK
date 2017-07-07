@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.filter.Filter;
@@ -432,6 +431,10 @@ public class QuestionBean {
 
   public Filter getFilter(String filterName) throws WdkModelException {
     return question.getFilter(filterName);
+  }
+
+  public Question getQuestion() {
+    return question;
   }
   
   /**

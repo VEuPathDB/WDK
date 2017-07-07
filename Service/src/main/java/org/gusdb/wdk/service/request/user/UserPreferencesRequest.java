@@ -1,8 +1,13 @@
 package org.gusdb.wdk.service.request.user;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.iterator.IteratorUtil;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,36 +19,28 @@ import org.json.JSONObject;
  *
  */
 public class UserPreferencesRequest {
-  
-  private Map<String,String> _preferencesMap;
 
-  public Map<String, String> getPreferencesMap() {
-    return _preferencesMap;
-  }
+  private Map<String,String> _globalPrefs = new HashMap<>();
+  private List<String> _globalPrefsToDelete = new ArrayList<>();
+  private Map<String,String> _projectPrefs = new HashMap<>();
+  private List<String> _projectPrefsToDelete = new ArrayList<>();
 
-  public void setPreferencesMap(Map<String, String> preferencesMap) {
-    _preferencesMap = preferencesMap;
-  }
-  
   /**
-   * * Input Format:
-   * 
+   * Input Format:
    * {
-   *  String key: String,
-   *  String key: String,
-   *  ...
+   *   global:  { String key: String },
+   *   project: { String key: String }
    * }
    * 
-   * 
    * @param json
-   * @param model
    * @return
    * @throws RequestMisformatException
    */
   public static UserPreferencesRequest createFromJson(JSONObject json) throws RequestMisformatException {
     try {
       UserPreferencesRequest request = new UserPreferencesRequest();
-      request.setPreferencesMap(JsonUtil.parseProperties(json));
+      loadPreferenceChanges(json, Keys.GLOBAL, request._globalPrefs, request._globalPrefsToDelete);
+      loadPreferenceChanges(json, Keys.PROJECT, request._projectPrefs, request._projectPrefsToDelete);
       return request;
     }
     catch (JSONException e) {
@@ -52,4 +49,34 @@ public class UserPreferencesRequest {
     }
   }
 
+  private static void loadPreferenceChanges(JSONObject parent, String objectKey,
+      Map<String,String> prefChanges, List<String> prefDeletes) {
+    if (parent.has(objectKey)) {
+      JSONObject prefs = parent.getJSONObject(objectKey);
+      for (String key : IteratorUtil.toIterable((Iterator<String>)prefs.keys())) {
+        if (prefs.isNull(key)) {
+          prefDeletes.add(key);
+        }
+        else {
+          prefChanges.put(key, prefs.getString(key));
+        }
+      }
+    }
+  }
+
+  public Map<String,String> getGlobalPreferenceMods() {
+    return _globalPrefs;
+  }
+
+  public List<String> getGlobalPreferenceDeletes() {
+    return _globalPrefsToDelete;
+  }
+
+  public Map<String,String> getProjectPreferenceMods() {
+    return _projectPrefs;
+  }
+
+  public List<String> getProjectPreferenceDeletes() {
+    return _projectPrefsToDelete;
+  }
 }

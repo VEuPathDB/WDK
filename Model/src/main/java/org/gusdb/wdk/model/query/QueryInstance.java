@@ -5,14 +5,15 @@ package org.gusdb.wdk.model.query;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -39,9 +40,9 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance<T extends Query> {
 
-  public abstract void createCache(String tableName, int instanceId) throws WdkModelException, WdkUserException;
+  public abstract void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
-  public abstract void insertToCache(String tableName, int instanceId) throws WdkModelException, WdkUserException;
+  public abstract void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
   public abstract String getSql() throws WdkModelException, WdkUserException;
 
@@ -52,7 +53,7 @@ public abstract class QueryInstance<T extends Query> {
   private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
   protected User user;
-  private int instanceId;
+  private long instanceId;
   protected T query;
   protected WdkModel wdkModel;
   protected Map<String, String> stableValues;
@@ -85,7 +86,7 @@ public abstract class QueryInstance<T extends Query> {
   /**
    * @return the instanceId
    */
-  public int getInstanceId() {
+  public long getInstanceId() {
     return instanceId;
   }
 
@@ -93,7 +94,7 @@ public abstract class QueryInstance<T extends Query> {
    * @param instanceId
    *          the instanceId to set
    */
-  public void setInstanceId(int instanceId) {
+  public void setInstanceId(long instanceId) {
     this.instanceId = instanceId;
   }
 
@@ -108,7 +109,7 @@ public abstract class QueryInstance<T extends Query> {
     Map<String, Param> params = query.getParamMap();
     String userKey = Utilities.PARAM_USER_ID;
     if (params.containsKey(userKey) && !stableValues.containsKey(userKey)) {
-      stableValues.put(userKey, Integer.toString(user.getUserId()));
+      stableValues.put(userKey, Long.toString(user.getUserId()));
     }
 
     if (validate)
@@ -139,7 +140,7 @@ public abstract class QueryInstance<T extends Query> {
   public String getChecksum() throws WdkModelException, WdkUserException {
     if (checksum == null) {
       JSONObject jsQuery = getJSONContent();
-      checksum = Utilities.encrypt(jsQuery.toString());
+      checksum = EncryptionUtil.encrypt(jsQuery.toString());
     }
     return checksum;
   }
@@ -342,14 +343,14 @@ public abstract class QueryInstance<T extends Query> {
     return Collections.unmodifiableMap(paramInternalValues);
   }
   
-  protected void executePostCacheUpdateSql(String tableName, int instanceId) throws WdkModelException {
+  protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
     List<PostCacheUpdateSql> list = query.getPostCacheUpdateSqls() != null ? query.getPostCacheUpdateSqls()
         : query.getQuerySet().getPostCacheUpdateSqls();
     for (PostCacheUpdateSql pcis : list) {
 
       String sql = pcis.getSql();
       sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
-      sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
+      sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
 
       logger.debug("POST sql: " + sql);
       // get results and time process();

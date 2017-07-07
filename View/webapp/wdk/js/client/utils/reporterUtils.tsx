@@ -56,7 +56,7 @@ export function getAttributeSelections(userPrefs: UserPreferences, question: Que
   let userPrefKey = question.name + "_summary";
   let initialAttrs = (userPrefKey in userPrefs ?
       // preference key found; use user preference
-      userPrefs[userPrefKey].split(',') :
+      userPrefs.project[userPrefKey].split(',') :
       // otherwise, use default attribs from question
       question.defaultAttributes);
   // now must trim off any that do not appear in the tree (probably results-page scoped)

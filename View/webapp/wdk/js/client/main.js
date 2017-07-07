@@ -26,7 +26,6 @@ import * as Controllers from './controllers';
  *   not resolve to an element after the DOMContentLoaded event is fired, the
  *   application will not render automatically.
  * @param {string} options.endpoint Base URL for WdkService.
- * @param {HTMLElement} options.rootElement DOM node to render the application.
  * @param {Function} options.wrapRoutes A function that takes a WDK Routes React
  *   Element and returns a React Element.
  * @param {Object} options.storeWrappers Mapping from store name to replacement

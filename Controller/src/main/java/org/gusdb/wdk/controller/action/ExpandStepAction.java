@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 
 /**
  * This Action handles expanding a step in a search strategy (i.e., turning the step into a substrategy) by
@@ -63,13 +64,13 @@ public class ExpandStepAction extends Action {
       if (strStepId == null || strStepId.length() == 0) {
         throw new WdkModelException("No step specified to expand!");
       }
-      int stepId = Integer.valueOf(strStepId);
+      long stepId = Integer.valueOf(strStepId);
 
       if (strStratId.indexOf("_") > 0)
         strStratId = strStratId.split("_")[0];
-      int oldStrategyId = Integer.valueOf(strStratId);
+      long oldStrategyId = Integer.valueOf(strStratId);
 
-      StrategyBean strategy = wdkUser.getStrategy(oldStrategyId);
+      StrategyBean strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), oldStrategyId));
       // verify the checksum
       String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
       if (checksum != null && !strategy.getChecksum().equals(checksum)) {
@@ -89,13 +90,13 @@ public class ExpandStepAction extends Action {
 
       // cannot change step (unnest or make a new nested) on saved strategy, will need to make a clone first
       if ( strategy.getIsSaved() && ( uncollapse == true || !step.getIsCollapsible() ) ) {
-        Map<Integer, Integer> stepIdMap = new HashMap<>();
+        Map<Long, Long> stepIdMap = new HashMap<>();
         strategy = wdkUser.copyStrategy(strategy, stepIdMap, strategy.getName());
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
         step = strategy.getStepById(stepId);
         try {
-          wdkUser.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
+          wdkUser.getUser().getSession().replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
         }
         catch (WdkUserException ex) {
           // Need to add strategy to active strategies list
@@ -129,7 +130,7 @@ public class ExpandStepAction extends Action {
       // forward to strategyPage.jsp
       ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showSummary.getPath());
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(false);
       return forward;

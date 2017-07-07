@@ -25,9 +25,9 @@ class SiteMapController extends WdkViewController {
     return ( <SiteMap {...state} siteMapActions={eventHandlers}/> );
   }
 
-  loadData(state) {
+  loadData(actionCreators, state) {
     if (state.tree == null) {
-      this.dispatchAction(SiteMapActionCreators.loadCurrentSiteMap());
+      actionCreators.loadCurrentSiteMap();
     }
   }
 

@@ -1,343 +1,299 @@
 package org.gusdb.wdk.model.user;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.sql.Types;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.FormatUtil.Style;
-import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.Wrapper;
+import org.gusdb.fgputil.accountdb.AccountManager;
+import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigUserDB;
+import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 
 /**
+ * Manages persistence of user profile and preferences and creation and
+ * deletion of users, including ID assignment.
+ * 
  * @author xingao
+ * @author rdoherty
  */
 public class UserFactory {
 
-  private static final String GUEST_USER_PREFIX = "WDK_GUEST_";
-  private static final String SYSTEM_USER_PREFIX = GUEST_USER_PREFIX + "SYSTEM_";
-
-  private static final String GLOBAL_PREFERENCE_KEY = "[Global]";
-
-  private static Logger logger = Logger.getLogger(UserFactory.class);
+  @SuppressWarnings("unused")
+  private static Logger LOG = Logger.getLogger(UserFactory.class);
 
   // -------------------------------------------------------------------------
-  // data base table and column definitions
+  // database table and column definitions
   // -------------------------------------------------------------------------
-  static final String TABLE_USER = "users";
 
-  static final String COLUMN_SIGNATURE = "signature";
+  public static final String TABLE_USERS = "users";
+  public static final String COL_USER_ID = "user_id";
+  public static final String COL_IS_GUEST = "is_guest";
+  public static final String COL_FIRST_ACCESS = "first_access";
 
-  private final String COLUMN_EMAIL = "email";
+  // -------------------------------------------------------------------------
+  // sql and sql macro definitions
+  // -------------------------------------------------------------------------
+
+  private static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+
+  private static final String COUNT_USER_REF_BY_ID_SQL =
+      "select count(*)" +
+      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+      "  where " + COL_USER_ID + " = ?";
+  private static final Integer[] COUNT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
+
+  private static final String INSERT_USER_REF_SQL =
+      "insert into " + USER_SCHEMA_MACRO + TABLE_USERS +
+      "  (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
+      "  values (?, ?, ?)";
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER, Types.TIMESTAMP };
+
+  private static final String IS_GUEST_MACRO = "$$IS_GUEST$$";
+  private static final String SELECT_GUEST_USER_REF_BY_ID_SQL =
+      "select " + COL_FIRST_ACCESS +
+      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+      "  where " + COL_IS_GUEST + " = " + IS_GUEST_MACRO + " and " + COL_USER_ID + " = ?";
+  private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
   // -------------------------------------------------------------------------
   // the macros used by the registration email
   // -------------------------------------------------------------------------
+
   private static final String EMAIL_MACRO_USER_NAME = "USER_NAME";
   private static final String EMAIL_MACRO_EMAIL = "EMAIL";
   private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
 
-  public static String encrypt(String str) {
-    // convert each byte into hex format
-    StringBuffer buffer = new StringBuffer();
-    for (byte code : Utilities.getEncryptedBytes(str)) {
-      buffer.append(Integer.toHexString(code & 0xFF));
-    }
-    return buffer.toString();
-  }
-
-  /**
-   * md5 checksum algorithm. encrypt(String) drops leading zeros of hex codes so
-   * is not compatible with md5
-   **/
-  public static String md5(String str) {
-    StringBuffer buffer = new StringBuffer();
-    for (byte code : Utilities.getEncryptedBytes(str)) {
-      buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(1));
-    }
-    return buffer.toString();
-  }
-
   // -------------------------------------------------------------------------
   // member variables
   // -------------------------------------------------------------------------
-  private DatabaseInstance userDb;
-  private DataSource dataSource;
 
-  private String userSchema;
-  private String defaultRole;
+  private final WdkModel _wdkModel;
+  private final DatabaseInstance _userDb;
+  private final String _userSchema;
+  private final AccountManager _accountManager;
+  private final UserPreferenceFactory _preferenceFactory;
 
-  private String projectId;
-
-  // WdkModel is used by the legacy code, may consider to be removed
-  private WdkModel wdkModel;
+  // -------------------------------------------------------------------------
+  // constructor
+  // -------------------------------------------------------------------------
 
   public UserFactory(WdkModel wdkModel) {
-    this.wdkModel = wdkModel;
-    this.userDb = wdkModel.getUserDb();
-    this.dataSource = userDb.getDataSource();
-    this.projectId = wdkModel.getProjectId();
-
+    _wdkModel = wdkModel;
+    _preferenceFactory = new UserPreferenceFactory(wdkModel);
+    _userDb = wdkModel.getUserDb();
     ModelConfig modelConfig = wdkModel.getModelConfig();
-    ModelConfigUserDB userDB = modelConfig.getUserDB();
-    this.userSchema = userDB.getUserSchema();
-    this.defaultRole = modelConfig.getDefaultRole();
+    _userSchema = modelConfig.getUserDB().getUserSchema();
+    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
+    _accountManager = new AccountManager(wdkModel.getAccountDb(),
+        accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
   }
 
-  /**
-   * @return Returns the userRole.
-   */
-  public String getDefaultRole() {
-    return defaultRole;
-  }
+  // -------------------------------------------------------------------------
+  // methods
+  // -------------------------------------------------------------------------
 
-  public String getProjectId() {
-    return projectId;
-  }
-
-  public User createUser(String email, String lastName, String firstName,
-      String middleName, String title, String organization, String department,
-      String address, String city, String state, String zipCode,
-      String phoneNumber, String country,
+  public User createUser(String email,
+      Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
-      Map<String, String> projectPreferences) throws WdkUserException,
-      WdkModelException {
-    boolean resetPwdAndSendEmail = true;
-    String dontEmailProp = getWdkModel().getProperties().get("DONT_EMAIL_NEW_USER");
-    if (dontEmailProp != null && dontEmailProp.equals("true")) resetPwdAndSendEmail = false;
-    return createUser(email, lastName, firstName, middleName, title,
-        organization, department, address, city, state, zipCode, phoneNumber,
-        country, globalPreferences, projectPreferences, resetPwdAndSendEmail);
+      Map<String, String> projectPreferences)
+          throws WdkModelException, WdkUserException {
+    String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
+    boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
+    return createUser(email, profileProperties, globalPreferences, projectPreferences, sendWelcomeEmail);
   }
 
-  public User createUser(String email, String lastName, String firstName,
-      String middleName, String title, String organization, String department,
-      String address, String city, String state, String zipCode,
-      String phoneNumber, String country,
+  public User createUser(String email,
+      Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
-      Map<String, String> projectPreferences, boolean resetPwd)
-      throws WdkUserException, WdkModelException {
+      Map<String, String> projectPreferences,
+      boolean sendWelcomeEmail)
+          throws WdkModelException, WdkUserException {
+    try {
+      // check email for uniqueness and format
+      email = validateAndFormatEmail(email, _accountManager);
 
+      // generate temporary password for user
+      String password = generateTemporaryPassword();
+
+      // add user to account DB
+      UserProfile profile = _accountManager.createAccount(email, password, profileProperties);
+
+      // add user to this user DB (will be added to other user DBs as needed during login)
+      addUserReference(profile.getUserId(), false);
+
+      // create new user object
+      RegisteredUser user = new RegisteredUser(_wdkModel, profile.getUserId(),
+          profile.getEmail(), profile.getSignature(), profile.getStableId());
+
+      // set and save preferences
+      UserPreferences prefs = new UserPreferences(user);
+      if (globalPreferences != null) prefs.setGlobalPreferences(globalPreferences);
+      if (projectPreferences != null) prefs.setProjectPreferences(projectPreferences);
+      user.setPreferences(prefs);
+      _preferenceFactory.savePreferences(user);
+
+      // if needed, send user temporary password via email
+      if (sendWelcomeEmail) {
+        emailTemporaryPassword(user, password, _wdkModel.getModelConfig());
+      }
+
+      return user;
+    }
+    catch (WdkUserException e) {
+      throw e;
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Could not completely create new user", e);
+    }
+  }
+
+  public void savePreferences(User user) throws WdkModelException {
+    _preferenceFactory.savePreferences(user);
+  }
+
+  private void addUserReference(Long userId, boolean isGuest) {
+    Timestamp insertedOn = new Timestamp(new Date().getTime());
+    String sql = INSERT_USER_REF_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
+      .executeStatement(new Object[]{ userId, isGuest, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+  }
+
+  private boolean hasUserReference(long userId) {
+    String sql = COUNT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    SingleLongResultSetHandler handler = new SingleLongResultSetHandler();
+    new SQLRunner(_userDb.getDataSource(), sql, "check-user-ref")
+      .executeQuery(new Object[]{ userId }, COUNT_USER_REF_BY_ID_PARAM_TYPES, handler);
+    if (handler.getStatus().equals(Status.NON_NULL_VALUE)) {
+      switch (handler.getRetrievedValue().intValue()) {
+        case 0: return false;
+        case 1: return true;
+        default: throw new IllegalStateException("More than one user reference in userDb for user " + userId);
+      }
+    }
+    throw new WdkRuntimeException("User reference count query did not return count for user id " +
+        userId + ". Status = " + handler.getStatus() + ", sql = " + sql);
+  }
+
+  private Date getGuestUserRefFirstAccess(long userId) {
+    String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
+        .replace(USER_SCHEMA_MACRO, _userSchema)
+        .replace(IS_GUEST_MACRO, _userDb.getPlatform().convertBoolean(true));
+    Wrapper<Date> resultWrapper = new Wrapper<>();
+    new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
+      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
+        if (rs.next()) {
+          resultWrapper.set(new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
+        }
+      });
+    // will return null if result set contained no rows
+    return resultWrapper.get();
+  }
+
+  private static void emailTemporaryPassword(User user, String password,
+      ModelConfig modelConfig) throws WdkModelException {
+
+    String smtpServer = modelConfig.getSmtpServer();
+    String supportEmail = modelConfig.getSupportEmail();
+    String emailSubject = modelConfig.getEmailSubject();
+
+    // populate email content macros with user data
+    String emailContent = modelConfig.getEmailContent()
+        .replaceAll("\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$",
+            Matcher.quoteReplacement(user.getDisplayName()))
+        .replaceAll("\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$",
+            Matcher.quoteReplacement(user.getEmail()))
+        .replaceAll("\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$",
+            Matcher.quoteReplacement(password));
+
+    Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent);
+  }
+
+  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws WdkUserException {
     // trim and validate passed email address and extract stable name
     if (email == null)
       throw new WdkUserException("The user's email cannot be empty.");
     // format the info
     email = email.trim().toLowerCase();
-    if (email.length() == 0)
+    if (email.isEmpty())
       throw new WdkUserException("The user's email cannot be empty.");
     int atSignIndex = email.indexOf("@");
     if (atSignIndex < 1) // must be present and not the first char
       throw new WdkUserException("The user's email address is invalid.");
-    // check whether the user exist in the database already exist.
-    // if loginId exists, the operation failed
-    if (isExist(email))
-      throw new WdkUserException("The email '" + email
-          + "' has already been registered. " + "Please choose another one.");
+    // check whether the user exist in the database already; if email exists, the operation fails
+    if (accountMgr.getUserProfile(email) != null)
+      throw new WdkUserException("The email '" + email + "' has already been registered. " + "Please choose another one.");
+    return email;
+  }
 
-    PreparedStatement psUser = null;
-    try {
-      // get a new userId
-      int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
-      String signature = encrypt(userId + "_" + email);
-      String stableName = email.substring(0, atSignIndex) + "." + userId;
-      Date registerTime = new Date();
-
-      String sql = "INSERT INTO " + userSchema + TABLE_USER + " ("
-          + Utilities.COLUMN_USER_ID + ", " + COLUMN_EMAIL
-          + ", passwd, is_guest, " + "register_time, last_name, first_name, "
-          + "middle_name, title, organization, department, address, "
-          + "city, state, zip_code, phone_number, country,signature)"
-          + " VALUES (?, ?, ' ', ?, ?, ?, ?, ?, ?, ?, ?,"
-          + "?, ?, ?, ?, ?, ?, ?)";
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      psUser.setInt(1, userId);
-      psUser.setString(2, email);
-      psUser.setBoolean(3, false);
-      psUser.setTimestamp(4, new Timestamp(registerTime.getTime()));
-      psUser.setString(5, lastName);
-      psUser.setString(6, firstName);
-      psUser.setString(7, middleName);
-      psUser.setString(8, title);
-      psUser.setString(9, organization);
-      psUser.setString(10, department);
-      psUser.setString(11, stableName);
-      psUser.setString(12, city);
-      psUser.setString(13, state);
-      psUser.setString(14, zipCode);
-      psUser.setString(15, phoneNumber);
-      psUser.setString(16, country);
-      psUser.setString(17, signature);
-      psUser.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-register", start);
-
-      // create user object
-      User user = new User(wdkModel, userId, email, signature, stableName);
-      user.setStableName(stableName);
-      user.setLastName(lastName);
-      user.setFirstName(firstName);
-      user.setMiddleName(middleName);
-      user.setTitle(title);
-      user.setOrganization(organization);
-      user.setDepartment(department);
-      user.setAddress(address);
-      user.setCity(city);
-      user.setState(state);
-      user.setZipCode(zipCode);
-      user.setPhoneNumber(phoneNumber);
-      user.setCountry(country);
-      user.addUserRole(defaultRole);
-      user.setGuest(false);
-
-      // save user's roles
-      saveUserRoles(user);
-
-      // save preferences
-      if (globalPreferences == null)
-        globalPreferences = new LinkedHashMap<String, String>();
-      for (String param : globalPreferences.keySet()) {
-        user.setGlobalPreference(param, globalPreferences.get(param));
+  private static String generateTemporaryPassword() {
+    // generate a random password of 8 characters long, the range will be
+    // [0-9A-Za-z]
+    StringBuilder buffer = new StringBuilder();
+    Random rand = new Random();
+    for (int i = 0; i < 8; i++) {
+      int value = rand.nextInt(36);
+      if (value < 10) { // number
+        buffer.append(value);
+      } else { // lower case letters
+        buffer.append((char) ('a' + value - 10));
       }
-      if (projectPreferences == null)
-        projectPreferences = new LinkedHashMap<String, String>();
-      for (String param : projectPreferences.keySet()) {
-        user.setProjectPreference(param, projectPreferences.get(param));
-      }
-      savePreferences(user);
-
-      // generate a random password, and send to the user via email
-      if (resetPwd)
-        resetPassword(user);
-
-      return user;
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeStatement(psUser);
     }
-  }
-  
-  /**
-   * create a lazy-creation system user that will only be created when needed.
-   * @return
-   * @throws WdkModelException
-   */
-  public User createSystemUser() throws WdkModelException {
-    return createTemporaryUser(SYSTEM_USER_PREFIX);
+    return buffer.toString();
   }
 
   /**
-   * create a lazy-creation guest that will only be created when needed.
-   * @return
-   * @throws WdkModelException
-   */
-  public User createGuestUser() throws WdkModelException {
-    return createTemporaryUser(GUEST_USER_PREFIX);
-  }
-  
-  /**
-   * create a lazy-creation temporary user that will only be created when needed.
-   * @param guestEmailPrefix
-   * @return
-   */
-  User createTemporaryUser(String guestEmailPrefix) {
-    User guest = new User(wdkModel, 0, guestEmailPrefix, null, null);
-    guest.setGuest(true);
-    guest.setFirstName("WDK Guest");
-    guest.setEmailPrefix(guestEmailPrefix);
-    return guest;
-  }
-
-  /**
-   * Save the temporary user into database, and initialize its fields.
+   * Save the temporary (in-memory guest) user into database, and initialize its remaining fields.
    * 
-   * @param user
-   * @return
-   * @throws WdkModelException
+   * @param user guest user to persist
+   * @return the guest user with remaining fields populated
+   * @throws WdkRuntimeException if unable to persist temporary user
    */
-  User saveTemporaryUser(User user) throws WdkModelException {
-    // logger.error("TRACE", new Exception());
- 
-    PreparedStatement psUser = null;
+  GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
     try {
-      // get a new user id
-      int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
-      user.setUserId(userId);
-      String stableId = user.getEmailPrefix() + userId;
-      user.setEmail(stableId);
-      user.setSignature(encrypt(userId + "_" + user.getEmail()));
-      user.setStableName(stableId);
-      
-      Date registerTime = new Date();
-      Date lastActiveTime = new Date();
-      String sql = "INSERT INTO " + userSchema
-          + "users (user_id, email, passwd, is_guest, "
-          + "register_time, last_active, first_name, signature, address) "
-          + "VALUES (?, ?, ' ', ?, ?, ?, ?, ?, ?)";
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      psUser.setInt(1, userId);
-      psUser.setString(2, user.getEmail());
-      psUser.setBoolean(3, true);
-      psUser.setTimestamp(4, new Timestamp(registerTime.getTime()));
-      psUser.setTimestamp(5, new Timestamp(lastActiveTime.getTime()));
-      psUser.setString(6, user.getFirstName());
-      psUser.setString(7, user.getSignature());
-      psUser.setString(8,  user.getStableName());
-      psUser.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-create-guest", start);
-
-      user.addUserRole(defaultRole);
-
-      // save user's roles
-      saveUserRoles(user);
-
-      logger.info("Guest user " + user.getEmail() + " created.");
-
+      UserProfile profile = _accountManager.createGuestAccount(user.getEmailPrefix());
+      addUserReference(profile.getUserId(), true);
+      user.refresh(profile);
+      _preferenceFactory.savePreferences(user);
       return user;
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to create guest user.", e);
-    } catch (WdkUserException e) {
-      throw new WdkModelException("Unable to create guest user.", e);
-    } finally {
-      SqlUtils.closeStatement(psUser);
+    }
+    catch (Exception e) {
+      throw new WdkRuntimeException("Unable to save temporary user", e);
     }
   }
 
-  private User getMergedUser(User guest, User loggedInUser)
+  private User completeLogin(User guestUser, User registeredUser)
       throws WdkModelException, WdkUserException {
-    if (loggedInUser == null)
-      return loggedInUser;
+    if (registeredUser == null)
+      return registeredUser;
+
+    // make sure user has reference in this user DB (needs to happen before merging)
+    if (!hasUserReference(registeredUser.getUserId())) {
+      addUserReference(registeredUser.getUserId(), false);
+    }
 
     // merge the history of the guest into the user
-    loggedInUser.mergeUser(guest);
+    registeredUser.getSession().mergeUser(guestUser);
 
     // update user active timestamp
-    updateUser(loggedInUser);
+    _accountManager.updateLastLogin(registeredUser.getUserId());
 
-    return loggedInUser;
+    return registeredUser;
   }
 
   public User login(User guest, String email, String password)
@@ -351,12 +307,12 @@ public class UserFactory {
     if (user == null) {
       throw new WdkUserException("Invalid email or password.");
     }
-    return getMergedUser(guest, user);
+    return completeLogin(guest, user);
   }
 
-  public User login(User guest, int userId)
+  public User login(User guest, long userId)
       throws WdkModelException, WdkUserException {
-    return getMergedUser(guest, getUser(userId));
+    return completeLogin(guest, getUserById(userId));
   }
 
   /**
@@ -371,251 +327,53 @@ public class UserFactory {
     return authenticate(email, password) != null;
   }
 
-  private User authenticate(String email, String password)
-      throws WdkModelException {
-    /*
-     * String[] fields = new String[]{ "email", email.trim().toLowerCase(),
-     * "passwd", encrypt(password) };
-     */
-    String[] fields = new String[] { "email", email.trim().toLowerCase(), "passwd",
-        encrypt(password) };
-    return getUserByFields(fields, "wdk-user-login");
-
-  }
-
-  public User getUserByEmail(String email) throws WdkModelException {
-    return getUserByFields(new String[] { "email", email.trim().toLowerCase() },
-        "wdk-user-get-id-by-email");
-  }
-
-  // FIXME: should probably be renamed getUserBySignature
-  public User getUser(String signature) throws WdkModelException, WdkUserException {
-    User user = getUserByFields(new String[] { "signature", signature },
-        "wdk-user-get-id-by-signature");
-    if (user == null) {
-      // signature is rarely sent in by user; if User cannot be found, it's
-      // probably an error
-      throw new WdkUserException("Unable to find user with signature: "
-          + signature);
-    }
-    return user;
-  }
-
-  /**
-   * Returns a User based on the passed parameters, or null if none can be found
-   * 
-   * @param fieldMap
-   *          a even-numbered array of key value pairs (column_name,
-   *          required_value) from which to identify a user
-   * @param queryName
-   *          name of this query (for logging)
-   * @return User that meets the criteria, or null if none exists
-   * @throws WdkModelException if problem occurs accessing database
-   */
-  private User getUserByFields(String[] fieldMap, String queryName)
-      throws WdkModelException {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    try {
-      // get user information
-      String sql = getUserIdQuery(fieldMap);
-      long start = System.currentTimeMillis();
-      conn = dataSource.getConnection();
-      ps = conn.prepareStatement(sql);
-      for (int i = 0; i < fieldMap.length; i += 2) {
-        ps.setString((i / 2) + 1, fieldMap[i + 1]);
-      }
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql.toString(), queryName, start);
-      if (!rs.next()) {
-        logger.warn("Unable to get user given the following params: "
-            + toParamString(fieldMap));
-        return null;
-      }
-      // read user info
-      int userId = rs.getInt("user_id");
-      return getUser(userId);
-    } catch (SQLException e) {
-      throw new WdkModelException(
-          "Unable to get user given the following params: "
-              + toParamString(fieldMap), e);
-    } finally {
-      SqlUtils.closeQuietly(rs, ps, conn);
-    }
-  }
-
-  private String getUserIdQuery(String[] fieldMap) throws WdkModelException {
-    StringBuilder sql = new StringBuilder().append("SELECT ").append(
-        Utilities.COLUMN_USER_ID).append(" FROM ").append(userSchema).append(
-        TABLE_USER);
-    if (fieldMap.length % 2 == 1) {
-      throw new WdkModelException(
-          "Only even-sized array 'map' can be passed to this method.");
-    }
-    for (int i = 0; i < fieldMap.length; i += 2) {
-      // convert email to lower cases
-      if (fieldMap[i].equals(COLUMN_EMAIL)) {
-        fieldMap[i] = "lower(" + fieldMap[i] + ")";
-        if (fieldMap[i + 1] != null)
-          fieldMap[i + 1] = fieldMap[i + 1].toLowerCase();
-      }
-
-      sql.append(i == 0 ? " WHERE " : " AND ").append(fieldMap[i]).append(
-          fieldMap[i + 1] == null ? " IS NULL" : " = ?");
-    }
-    String sqlStr = sql.toString();
-    logger.debug("Generated the following SQL: " + sqlStr);
-    return sqlStr;
-  }
-
-  private String toParamString(String[] fieldMap) {
-    StringBuilder str = new StringBuilder("Map [ ");
-    for (int i = 0; i < fieldMap.length; i += 2) {
-      str.append("{ \"").append(fieldMap[i]).append("\", ");
-      str.append(fieldMap[i + 1] == null ? "null } " : "\"" + fieldMap[i + 1]
-          + "\" } ");
-    }
-    return str.append("]").toString();
+  private User authenticate(String email, String password) throws WdkModelException {
+    return populateRegisteredUser(_accountManager.getUserProfile(email, password));
   }
 
   /**
    * Returns user by user ID. Since the ID will generally be produced
    * "internally", this function throws WdkModelException if user is not found.
    * 
-   * @param userId
-   *          user ID
-   * @return user object
-   * @throws WdkModelException if user cannot be found or error occurs
+   * @param userId user ID
+   * @return user user object for the passed ID
+   * @throws NoSuchUserException if user cannot be found
+   * @throws WdkModelException if an error occurs in the attempt
    */
-  public User getUser(int userId) throws WdkModelException {
-    PreparedStatement psUser = null;
-    ResultSet rsUser = null;
-    String sql = "SELECT email, signature, is_guest, last_name, "
-        + "first_name, middle_name, title, organization, "
-        + "department, address, city, state, zip_code, "
-        + "phone_number, country FROM " + userSchema
-        + "users WHERE user_id = ?";
-    try {
-      // get user information
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      psUser.setInt(1, userId);
-      rsUser = psUser.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-get-user-by-id", start);
-      if (!rsUser.next()) {
+  public User getUserById(long userId) throws WdkModelException {
+    UserProfile profile = _accountManager.getUserProfile(userId);
+    if (profile == null) {
+      // cannot find user in account DB; however, this may be a guest local to this userDb
+      Date accessDate = getGuestUserRefFirstAccess(userId);
+      if (accessDate == null) {
+        // user does not exist in account or user DBs; throw exception
         throw new NoSuchUserException("Invalid user id: " + userId);
       }
-
-      // read user info
-      String email = rsUser.getString("email");
-      String signature = rsUser.getString("signature");
-      String stableName = rsUser.getString("address");
-      User user = new User(wdkModel, userId, email, signature, stableName);
-      user.setGuest(rsUser.getBoolean("is_guest"));
-      user.setLastName(rsUser.getString("last_name"));
-      user.setFirstName(rsUser.getString("first_name"));
-      user.setMiddleName(rsUser.getString("middle_name"));
-      user.setTitle(rsUser.getString("title"));
-      user.setOrganization(rsUser.getString("organization"));
-      user.setDepartment(rsUser.getString("department"));
-      //user.setAddress(rsUser.getString("address"));
-      user.setCity(rsUser.getString("city"));
-      user.setState(rsUser.getString("state"));
-      user.setZipCode(rsUser.getString("zip_code"));
-      user.setPhoneNumber(rsUser.getString("phone_number"));
-      user.setCountry(rsUser.getString("country"));
-
-      // load the user's roles
-      user.setUserRole(getUserRoles(user));
-
-      // load user's preferences
-      user.setPreferences(getPreferences(user));
-
-      return user;
+      profile = AccountManager.createGuestProfile(GuestUser.GUEST_USER_PREFIX, userId, accessDate);
     }
-    catch (SQLException | WdkUserException e) {
-      throw new WdkModelException("Unable to get user with ID " + userId, e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rsUser, psUser);
-    }
+    return populateRegisteredUser(profile);
   }
 
-  private Set<String> getUserRoles(User user) throws WdkUserException, WdkModelException {
-    Set<String> roles = new LinkedHashSet<String>();
-    PreparedStatement psRole = null;
-    ResultSet rsRole = null;
-    String sql = "SELECT user_role from " + userSchema + "user_roles "
-        + "WHERE user_id = ?";
-    try {
-      // load the user's roles
-      long start = System.currentTimeMillis();
-      psRole = SqlUtils.getPreparedStatement(dataSource, sql);
-      psRole.setInt(1, user.getUserId());
-      rsRole = psRole.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "wdk-user-get-roles", start, rsRole);
-      while (rsRole.next()) {
-        roles.add(rsRole.getString("user_role"));
-      }
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rsRole, psRole);
-    }
-    return roles;
+  public User getUserByEmail(String email) throws WdkModelException {
+    return populateRegisteredUser(_accountManager.getUserProfile(email));
   }
 
-  private void saveUserRoles(User user) throws WdkUserException, WdkModelException {
-    // get a list of original roles, and find the roles to be deleted and
-    // added
-    Set<String> oldRoles = getUserRoles(user);
-    List<String> toDelete = new ArrayList<String>();
-    List<String> toInsert = new ArrayList<String>();
-    for (String role : user.getUserRoles()) {
-      if (!oldRoles.contains(role))
-        toInsert.add(role);
+  public User getUserBySignature(String signature) throws WdkModelException, WdkUserException {
+    User user = populateRegisteredUser(_accountManager.getUserProfileBySignature(signature));
+    if (user == null) {
+      // signature is rarely sent in by user; if User cannot be found, it's probably an error
+      throw new WdkUserException("Unable to find user with signature: " + signature);
     }
-    for (String role : oldRoles) {
-      if (user.containsUserRole(role))
-        toDelete.add(role);
-    }
+    return user;
+  }
 
-    int userId = user.getUserId();
-    PreparedStatement psDelete = null, psInsert = null;
-    try {
-      String sqlDelete = "DELETE FROM " + userSchema + "user_roles "
-          + " WHERE user_id = ? AND user_role = ?";
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-      String sqlInsert = "INSERT INTO " + userSchema
-          + "user_roles (user_id, user_role)" + " VALUES (?, ?)";
-      psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
-
-      // delete roles
-      long start = System.currentTimeMillis();
-      for (String role : toDelete) {
-        psDelete.setInt(1, userId);
-        psDelete.setString(2, role);
-        psDelete.addBatch();
-      }
-      psDelete.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-roles", start);
-
-      // insert roles
-      start = System.currentTimeMillis();
-      for (String role : toInsert) {
-        psInsert.setInt(1, userId);
-        psInsert.setString(2, role);
-        psInsert.addBatch();
-      }
-      psInsert.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-roles", start);
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeStatement(psDelete);
-      SqlUtils.closeStatement(psInsert);
-    }
+  private User populateRegisteredUser(UserProfile profile) throws WdkModelException {
+    if (profile == null) return null;
+    User user = new RegisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(),
+        profile.getSignature(), profile.getStableId());
+    user.setProfileProperties(profile.getProperties());
+    user.setPreferences(_preferenceFactory.getPreferences(user));
+    return user;
   }
 
   /**
@@ -623,453 +381,73 @@ public class UserFactory {
    * 
    * @param user
    */
-  void saveUser(User user) throws WdkModelException {
-    // Two integrity checks:
-    // 1. Check if user exists in the database. if not, fail and ask to create the user first
+  public void saveUser(User user) throws WdkModelException {
     try {
-      getUser(user.getUserId());
-    }
-    catch (WdkModelException e) {
-      throw new WdkModelException("Cannot update user; no user exists with ID " + user.getUserId(), e);
-    }
-    // 2. Check if another user exists with this email (PK will protect us but want better message)
-    User emailUser = getUserByEmail(user.getEmail());
-    if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-      throw new WdkModelException("This email is already in use by another account.  Please choose another.");
-    }
-    
-    PreparedStatement psUser = null;
-    String sqlUser = "UPDATE " + userSchema + "users SET is_guest = ?, "
-        + "last_active = ?, last_name = ?, first_name = ?, "
-        + "middle_name = ?, organization = ?, department = ?, "
-        + "title = ?,  address = ?, city = ?, state = ?, "
-        + "zip_code = ?, phone_number = ?, country = ?, email = ? "
-        + "WHERE user_id = ?";
-    try {
-      Date lastActiveTime = new Date();
+      // Two integrity checks:
+      // 1. Check if user exists in the database. if not, fail and ask to create the user first
+      UserProfile oldProfile = _accountManager.getUserProfile(user.getUserId());
+      if (oldProfile == null) {
+        throw new WdkModelException("Cannot update user; no user exists with ID " + user.getUserId());
+      }
+      // 2. Check if another user exists with this email (PK will protect us but want better message)
+      UserProfile emailUser = _accountManager.getUserProfile(user.getEmail());
+      if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
+        throw new WdkModelException("This email is already in use by another account.  Please choose another.");
+      }
 
-      // save the user's basic information
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sqlUser);
-      psUser.setBoolean(1, user.isGuest());
-      psUser.setTimestamp(2, new Timestamp(lastActiveTime.getTime()));
-      psUser.setString(3, user.getLastName());
-      psUser.setString(4, user.getFirstName());
-      psUser.setString(5, user.getMiddleName());
-      psUser.setString(6, user.getOrganization());
-      psUser.setString(7, user.getDepartment());
-      psUser.setString(8, user.getTitle());
-      psUser.setString(9, user.getStableName());
-      psUser.setString(10, user.getCity());
-      psUser.setString(11, user.getState());
-      psUser.setString(12, user.getZipCode());
-      psUser.setString(13, user.getPhoneNumber());
-      psUser.setString(14, user.getCountry());
-      psUser.setString(15, user.getEmail().trim().toLowerCase());
-      psUser.setInt(16, user.getUserId());
-      psUser.executeUpdate();
-      QueryLogger.logEndStatementExecution(sqlUser, "wdk-user-update-user", start);
+      // save off other data to user profile
+      _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), user.getProfileProperties());
 
-      // save user's roles
-      // saveUserRoles(user);
+      // get updated profile and trigger profile update event
+      UserProfile newProfile = _accountManager.getUserProfile(user.getUserId());
+      Events.trigger(new UserProfileUpdateEvent(oldProfile, newProfile, _wdkModel));
 
-      // save preference
-      savePreferences(user);
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    } finally {
-      SqlUtils.closeStatement(psUser);
+      // save preferences
+      _preferenceFactory.savePreferences(user);
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Unable to update user profile for ID " + user.getUserId(), e);
     }
   }
 
-  /**
-   * update the time stamp of the activity
-   * 
-   * @param user
-   * @throws WdkModelException 
-   */
-  private void updateUser(User user) throws WdkUserException, WdkModelException {
-    PreparedStatement psUser = null;
-    String sql = "UPDATE " + userSchema
-        + "users SET last_active = ? WHERE user_id = ?";
-    try {
-      Date lastActiveTime = new Date();
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      psUser.setTimestamp(1, new Timestamp(lastActiveTime.getTime()));
-      psUser.setInt(2, user.getUserId());
-      int result = psUser.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-update-user-last-active",
-          start);
-      if (result == 0)
-        throw new WdkUserException("User " + user.getEmail()
-            + " cannot be found.");
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    } finally {
-      SqlUtils.closeStatement(psUser);
-    }
-  }
-
-  public void deleteExpiredUsers(int hoursSinceActive) throws WdkUserException,
-      WdkModelException {
-    PreparedStatement psUser = null;
-    ResultSet rsUser = null;
-    String sql = "SELECT email FROM " + userSchema + "users " + "WHERE email "
-        + "LIKE '" + GUEST_USER_PREFIX + "%' AND last_active < ?";
-    try {
-      // construct time
-      Calendar calendar = Calendar.getInstance();
-      calendar.add(Calendar.HOUR_OF_DAY, -hoursSinceActive);
-      Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
-
-      long start = System.currentTimeMillis();
-      psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      psUser.setTimestamp(1, timestamp);
-      rsUser = psUser.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-expired-user", start, rsUser);
-      int count = 0;
-      while (rsUser.next()) {
-        deleteUser(rsUser.getString("email"));
-        count++;
-      }
-      System.out.println("Deleted " + count + " expired users.");
-    } catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rsUser, psUser);
-    }
-  }
-
-  private void savePreferences(User user) throws WdkModelException {
-    // get old preferences and determine what to delete, update, insert
-    int userId = user.getUserId();
-    List<Map<String, String>> oldPreferences = getPreferences(user);
-    Map<String, String> oldGlobal = oldPreferences.get(0);
-    Map<String, String> newGlobal = user.getGlobalPreferences();
-    updatePreferences(userId, GLOBAL_PREFERENCE_KEY, oldGlobal, newGlobal);
-
-    Map<String, String> oldSpecific = oldPreferences.get(1);
-    Map<String, String> newSpecific = user.getProjectPreferences();
-    logger.debug("old pref: " + oldSpecific);
-    logger.debug("new pref: " + newSpecific);
-    updatePreferences(userId, projectId, oldSpecific, newSpecific);
-  }
-
-  private void updatePreferences(int userId, String prefProjectId,
-      Map<String, String> oldPreferences, Map<String, String> newPreferences)
-      throws WdkModelException {
-    // determine whether to delete, insert or update
-    Set<String> toDelete = new LinkedHashSet<String>();
-    Map<String, String> toUpdate = new LinkedHashMap<String, String>();
-    Map<String, String> toInsert = new LinkedHashMap<String, String>();
-    for (String key : oldPreferences.keySet()) {
-      if (!newPreferences.containsKey(key)) {
-        toDelete.add(key);
-      } else { // key exist, check if need to update
-        String newValue = newPreferences.get(key);
-        String oldValue = oldPreferences.get(key);
-        if (newValue == null || oldValue == null) 
-          throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
-        if (!oldPreferences.get(key).equals(newValue))
-          toUpdate.put(key, newValue);
-      }
-    }
-    for (String key : newPreferences.keySet()) {
-      if (newPreferences.get(key) == null) 
-        throw new WdkModelException("Null values not allowed for new preference values. Key: " + key);
-      if (!oldPreferences.containsKey(key))
-        toInsert.put(key, newPreferences.get(key));
-    }
-    logger.debug("to insert: " + FormatUtil.prettyPrint(toInsert, Style.MULTI_LINE));
-    logger.debug("to update: " + FormatUtil.prettyPrint(toUpdate, Style.MULTI_LINE));
-    logger.debug("to delete: " + FormatUtil.arrayToString(toDelete.toArray()));
-
-    PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
-    try {
-      // delete preferences
-      String sqlDelete = "DELETE FROM " + userSchema + "preferences "
-          + " WHERE user_id = ? AND project_id = ? "
-          + " AND preference_name = ?";
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-      long start = System.currentTimeMillis();
-      for (String key : toDelete) {
-        psDelete.setInt(1, userId);
-        psDelete.setString(2, prefProjectId);
-        psDelete.setString(3, key);
-        psDelete.addBatch();
-      }
-      psDelete.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference",
-          start);
-
-      // insert preferences
-      String sqlInsert = "INSERT INTO " + userSchema + "preferences "
-          + " (user_id, project_id, preference_name, " + " preference_value)"
-          + " VALUES (?, ?, ?, ?)";
-      psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
-      start = System.currentTimeMillis();
-      for (String key : toInsert.keySet()) {
-        start = System.currentTimeMillis();
-        psInsert.setInt(1, userId);
-        psInsert.setString(2, prefProjectId);
-        psInsert.setString(3, key);
-        psInsert.setString(4, toInsert.get(key));
-        psInsert.addBatch();
-      }
-      psInsert.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference",
-          start);
-
-      // update preferences
-      String sqlUpdate = "UPDATE " + userSchema + "preferences "
-          + " SET preference_value = ? WHERE user_id = ? "
-          + " AND project_id = ? AND preference_name = ?";
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
-      start = System.currentTimeMillis();
-      for (String key : toUpdate.keySet()) {
-        start = System.currentTimeMillis();
-        psUpdate.setString(1, toUpdate.get(key));
-        psUpdate.setInt(2, userId);
-        psUpdate.setString(3, prefProjectId);
-        psUpdate.setString(4, key);
-        psUpdate.addBatch();
-      }
-      psUpdate.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference",
-          start);
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to update user (id=" + userId
-          + ") preferences", e);
-    } finally {
-      SqlUtils.closeStatement(psDelete);
-      SqlUtils.closeStatement(psInsert);
-      SqlUtils.closeStatement(psUpdate);
-    }
-  }
-
-  /**
-   * @param user
-   * @return a list of 2 elements, the first is a map of global preferences, the
-   *         second is a map of project-specific preferences.
-   */
-  private List<Map<String, String>> getPreferences(User user)
-      throws WdkModelException {
-    Map<String, String> global = new LinkedHashMap<String, String>();
-    Map<String, String> specific = new LinkedHashMap<String, String>();
-    int userId = user.getUserId();
-    PreparedStatement psSelect = null;
-    ResultSet resultSet = null;
-    String sql = "SELECT * FROM " + userSchema + "preferences "
-        + " WHERE user_id = ?";
-    try {
-      // load preferences
-      long start = System.currentTimeMillis();
-      psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
-      psSelect.setInt(1, userId);
-      resultSet = psSelect.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-preference", start, resultSet);
-      while (resultSet.next()) {
-        String prefProjectId = resultSet.getString("project_id");
-        String prefName = resultSet.getString("preference_name");
-        String prefValue = resultSet.getString("preference_value");
-        if (prefProjectId.equals(GLOBAL_PREFERENCE_KEY))
-          global.put(prefName, prefValue);
-        else if (prefProjectId.equals(projectId))
-          specific.put(prefName, prefValue);
-      }
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not get preferences for user "
-          + user.getUserId(), e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
-    }
-    List<Map<String, String>> preferences = new ArrayList<Map<String, String>>();
-    preferences.add(global);
-    preferences.add(specific);
-    return preferences;
-  }
-
-  public void resetPassword(String email) throws WdkUserException,
-      WdkModelException {
+  public void resetPassword(String email) throws WdkUserException, WdkModelException {
     User user = getUserByEmail(email);
     if (user == null) {
       throw new WdkUserException("Cannot find user with email: " + email);
     }
-    resetPassword(user);
+    // create new temporary password
+    String newPassword = generateTemporaryPassword();
+    // set new password on user
+    _accountManager.updatePassword(user.getUserId(), newPassword);
+    // email user new password
+    emailTemporaryPassword(user, newPassword, _wdkModel.getModelConfig());
   }
 
-  private void resetPassword(User user) throws WdkModelException {
-    String email = user.getEmail().trim().toLowerCase();
-
-    // generate a random password of 8 characters long, the range will be
-    // [0-9A-Za-z]
-    StringBuffer buffer = new StringBuffer();
-    Random rand = new Random();
-    for (int i = 0; i < 8; i++) {
-      int value = rand.nextInt(36);
-      if (value < 10) { // number
-        buffer.append(value);
-      } else { // lower case letters
-        buffer.append((char) ('a' + value - 10));
-      }
-    }
-    String password = buffer.toString();
-
-    savePassword(email, password);
-
-    ModelConfig modelConfig = wdkModel.getModelConfig();
-    String emailContent = modelConfig.getEmailContent();
-    String supportEmail = modelConfig.getSupportEmail();
-    String emailSubject = modelConfig.getEmailSubject();
-    String smtpServer = modelConfig.getSmtpServer();
-
-    // send an email to the user
-    String pattern = "\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$";
-    String name = user.getFirstName() + " " + user.getLastName();
-    String message = emailContent.replaceAll(pattern,
-        Matcher.quoteReplacement(name));
-
-    pattern = "\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$";
-    message = message.replaceAll(pattern, Matcher.quoteReplacement(email));
-
-    pattern = "\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$";
-    message = message.replaceAll(pattern, Matcher.quoteReplacement(password));
-
-    Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, message);
+  public void changePassword(long userId, String newPassword) {
+    _accountManager.updatePassword(userId, newPassword);
   }
 
-  void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException, WdkModelException {
-    email = email.trim().toLowerCase();
+  @Deprecated // check of old password and matching of two new passwords should be done by caller
+  public void changePassword(String email, String oldPassword, String newPassword,
+      String confirmPassword) throws WdkUserException {
+    // standardize email
 
-    if (newPassword == null || newPassword.trim().length() == 0)
+    // make sure new password is not empty
+    if (newPassword == null || newPassword.trim().isEmpty())
       throw new WdkUserException("The new password cannot be empty.");
 
-    // check if the new password matches
+    // check if the new password matches the confirm input
     if (!newPassword.equals(confirmPassword))
       throw new WdkUserException("The new password doesn't match, "
           + "please type them again. It's case sensitive.");
 
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    String sql = "SELECT count(*) " + "FROM " + userSchema
-        + "users WHERE email = ? " + "AND passwd = ?";
-    try {
-      // encrypt password
-      oldPassword = encrypt(oldPassword);
-
-      // check if the old password matches
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, sql);
-      ps.setString(1, email);
-      ps.setString(2, oldPassword);
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql,
-          "wdk-user-count-user-by-email-password", start);
-      rs.next();
-      int count = rs.getInt(1);
-      if (count <= 0)
-        throw new WdkUserException("The current password is incorrect.");
-
-      // passed check, then save the new password
-      savePassword(email, newPassword);
-    }
-    catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rs, ps);
+    // make sure email/password combo matches a current user
+    UserProfile profile = _accountManager.getUserProfile(email.trim().toLowerCase(), oldPassword);
+    if (profile == null) {
+      throw new WdkUserException("The current password is incorrect.");
     }
 
-  }
-
-  public void savePassword(String email, String password)
-      throws WdkModelException {
-    email = email.trim().toLowerCase();
-    PreparedStatement ps = null;
-    String sql = "UPDATE " + userSchema
-        + "users SET passwd = ? WHERE email = ?";
-    try {
-      // encrypt the password, and save it
-      String encrypted = encrypt(password);
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, sql);
-      ps.setString(1, encrypted);
-      ps.setString(2, email);
-      int numRowsUpdated = ps.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-update-password", start);
-      if (numRowsUpdated != 1) {
-        throw new WdkModelException("Password update for user with email '" +
-            email + "' updated " + numRowsUpdated + " rows.");
-      }
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    } finally {
-      SqlUtils.closeStatement(ps);
-    }
-  }
-
-  private boolean isExist(String email) throws WdkUserException {
-    email = email.trim().toLowerCase();
-    // check if user exists in the database. if not, fail and ask to create the user first
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    String sql = "SELECT count(*) " + "FROM " + userSchema
-        + "users WHERE email = ?";
-    try {
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, sql);
-      ps.setString(1, email);
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-user-select-user-by-email", start);
-      rs.next();
-      int count = rs.getInt(1);
-      return (count > 0);
-    }
-    catch (SQLException ex) {
-      throw new WdkUserException(ex);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rs, ps);
-    }
-  }
-
-  public void deleteUser(String email) throws WdkUserException, WdkModelException {
-    try {
-      // get user id
-      User user = getUserByEmail(email);
-      if (user == null) {
-        throw new WdkUserException("Unable to find user with email: " + email);
-      }
-  
-      // delete strategies and steps from all projects
-      user.deleteStrategies(true);
-      user.deleteSteps(true);
-  
-      String where = " WHERE user_id = " + user.getUserId();
-  
-      // delete preference
-      String sql = "DELETE FROM " + userSchema + "preferences" + where;
-      SqlUtils.executeUpdate(dataSource, sql,
-          "wdk-user-delete-preference");
-  
-      // delete user roles
-      sql = "DELETE FROM " + userSchema + "user_roles" + where;
-      SqlUtils.executeUpdate(dataSource, sql, "wdk-user-delete-role");
-  
-      // delete user
-      sql = "DELETE FROM " + userSchema + "users" + where;
-      SqlUtils.executeUpdate(dataSource, sql, "wdk-user-delete-user");
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
-  }
-
-  public WdkModel getWdkModel() {
-    return wdkModel;
+    // update the password
+    changePassword(profile.getUserId(), newPassword);
   }
 }

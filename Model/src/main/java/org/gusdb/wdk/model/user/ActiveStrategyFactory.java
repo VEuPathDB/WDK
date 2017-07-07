@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.Arrays;
@@ -23,19 +20,16 @@ class ActiveStrategyFactory {
      * newly opened strategies is always at the end, which means it has the
      * largest order number, and will be displayed first.
      */
-    private ActiveStrategy root;
-    private User user;
+    private ActiveStrategy _root;
+    private User _user;
 
-    private String viewStrategyKey = null;
-    private Integer viewStepId = null;
-    private Integer viewPagerOffset = null;
+    private String _viewStrategyKey = null;
+    private Long _viewStepId = null;
+    private Integer _viewPagerOffset = null;
 
-    /**
-     * 
-     */
     ActiveStrategyFactory(User user) {
-        this.user = user;
-        root = new ActiveStrategy(null);
+        _user = user;
+        _root = new ActiveStrategy(null);
     }
 
     /**
@@ -44,10 +38,10 @@ class ActiveStrategyFactory {
      * 
      * @return
      */
-    int[] getRootStrategies() {
-        int[] ids = new int[root.children.size()];
+    long[] getRootStrategies() {
+        long[] ids = new long[_root.children.size()];
         int i = 0;
-        for (ActiveStrategy strategy : root.children.values()) {
+        for (ActiveStrategy strategy : _root.children.values()) {
             ids[i++] = strategy.strategyId;
         }
         logger.debug("====== ids =====" + Arrays.toString(ids));
@@ -104,28 +98,28 @@ class ActiveStrategyFactory {
         strategy.parent.children.putAll(map);
     }
 
-    void replaceStrategy(User user, int oldId, int newId,
-            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
-        ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
+    void replaceStrategy(long oldId, long newId,
+            Map<Long, Long> stepMap) throws WdkModelException, WdkUserException {
+        ActiveStrategy oldStrategy = _root.children.get(Long.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
 
-        ActiveStrategy newStrategy = new ActiveStrategy(Integer.toString(newId));
-        newStrategy.parent = root;
-        if (stepMap == null) stepMap = new LinkedHashMap<Integer, Integer>();
-        Strategy strategy = user.getStrategy(newId);
+        ActiveStrategy newStrategy = new ActiveStrategy(Long.toString(newId));
+        newStrategy.parent = _root;
+        if (stepMap == null) stepMap = new LinkedHashMap<>();
+        Strategy strategy = getStrategy(newId);
         replaceStrategy(strategy, oldStrategy, newStrategy, stepMap);
 
         LinkedHashMap<String, ActiveStrategy> children = new LinkedHashMap<String, ActiveStrategy>();
-        for (String strategyKey : root.children.keySet()) {
+        for (String strategyKey : _root.children.keySet()) {
             // use new strategy to replace the old one at the same place
             if (oldStrategy.strategyKey.equals(strategyKey)) {
                 children.put(newStrategy.strategyKey, newStrategy);
             } else {
-                children.put(strategyKey, root.children.get(strategyKey));
+                children.put(strategyKey, _root.children.get(strategyKey));
             }
         }
-        root.children = children;
+        _root.children = children;
     }
 
     int getOrder(String strategyKey) {
@@ -143,7 +137,7 @@ class ActiveStrategyFactory {
     }
 
     void clear() {
-        root.children.clear();
+        _root.children.clear();
     }
 
     private String getParentKey(String strategyKey) throws WdkModelException, WdkUserException {
@@ -151,7 +145,7 @@ class ActiveStrategyFactory {
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
         int stepId = Integer.parseInt(strategyKey.substring(pos + 1));
-        Strategy strategy = user.getStrategy(strategyId);
+        Strategy strategy = getStrategy(strategyId);
         Step parent = strategy.getStepById(stepId).getParentStep();
         while (parent.getNextStep() != null) {
             parent = parent.getNextStep();
@@ -161,24 +155,28 @@ class ActiveStrategyFactory {
         else return strategyId + "_" + parent.getStepId();
     }
 
+    private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
+      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId);
+    }
+
     private ActiveStrategy getStrategy(String strategyKey) {
-        if (strategyKey == null) return root;
-        else return root.getDescendent(strategyKey);
+        if (strategyKey == null) return _root;
+        else return _root.getDescendent(strategyKey);
     }
 
     private void replaceStrategy(Strategy strategy, ActiveStrategy oldStrategy,
-            ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
-        logger.debug("current view: " + viewStrategyKey + ", "
-                + viewStepId);
+            ActiveStrategy newStrategy, Map<Long, Long> stepMap) {
+        logger.debug("current view: " + _viewStrategyKey + ", "
+                + _viewStepId);
         logger.debug("replace old: " + oldStrategy.strategyKey
                 + ", new: " + newStrategy.strategyKey);
-        for (int old : stepMap.keySet()) {
+        for (long old : stepMap.keySet()) {
             logger.debug("step " + old + "->" + stepMap.get(old));
         }
         for (ActiveStrategy oldChild : oldStrategy.children.values()) {
             String oldKey = oldChild.strategyKey;
-            int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
-            Integer newId = stepMap.get(oldId);
+            long oldId = Long.parseLong(oldKey.substring(oldKey.indexOf('_') + 1));
+            Long newId = stepMap.get(oldId);
             logger.debug("convert step " + oldId + "->" + newId);
             if (newId == null) {
                 Step step;
@@ -199,11 +197,11 @@ class ActiveStrategyFactory {
             newStrategy.children.put(newKey, newChild);
         }
         // may also need to update the view
-        if (viewStrategyKey != null
-                && viewStrategyKey.equals(oldStrategy.strategyKey)) {
-            viewStrategyKey = newStrategy.strategyKey;
-            if (viewStepId != null && stepMap.containsKey(viewStepId))
-                viewStepId = stepMap.get(viewStepId);
+        if (_viewStrategyKey != null
+                && _viewStrategyKey.equals(oldStrategy.strategyKey)) {
+            _viewStrategyKey = newStrategy.strategyKey;
+            if (_viewStepId != null && stepMap.containsKey(_viewStepId))
+                _viewStepId = stepMap.get(_viewStepId);
         }
     }
 
@@ -211,9 +209,9 @@ class ActiveStrategyFactory {
      * @return the viewStrategyKey
      */
     public String getViewStrategyKey() {
-        if (viewStrategyKey == null) return null;
-        if (getStrategy(viewStrategyKey) == null) return null;
-        return viewStrategyKey;
+        if (_viewStrategyKey == null) return null;
+        if (getStrategy(_viewStrategyKey) == null) return null;
+        return _viewStrategyKey;
     }
 
     /**
@@ -221,42 +219,42 @@ class ActiveStrategyFactory {
      *            the viewStrategyKey to set
      */
     public void setViewStrategyKey(String viewStrategyKey) {
-        this.viewStrategyKey = viewStrategyKey;
+        _viewStrategyKey = viewStrategyKey;
     }
 
     /**
      * @return the viewStepId
      */
-    public int getViewStepId() {
+    public long getViewStepId() {
         if (getViewStrategyKey() == null) return 0;
 
         // check if the viewStepId belongs to the current strategy
         try {
-            ActiveStrategy activeStrategy = getStrategy(viewStrategyKey);
-            Strategy strategy = user.getStrategy(activeStrategy.strategyId);
-            Step step = strategy.getStepById(viewStepId);
-        if (step == null) viewStepId = strategy.getLatestStepId();
+            ActiveStrategy activeStrategy = getStrategy(_viewStrategyKey);
+            Strategy strategy = getStrategy(activeStrategy.strategyId);
+            Step step = strategy.getStepById(_viewStepId);
+        if (step == null) _viewStepId = strategy.getLatestStepId();
         } catch (Exception ex) {
             return 0;
         }
 
-        return viewStepId;
+        return _viewStepId;
     }
 
     /**
      * @param viewStepId
      *            the viewStepId to set
      */
-    public void setViewStepId(Integer viewStepId) {
-        this.viewStepId = viewStepId;
+    public void setViewStepId(Long viewStepId) {
+        _viewStepId = viewStepId;
     }
 
     public Integer getViewPagerOffset() {
         if (getViewStrategyKey() == null) return null;
-        return viewPagerOffset;
+        return _viewPagerOffset;
     }
 
     public void setViewPagerOffset(Integer viewPagerOffset) {
-        this.viewPagerOffset = viewPagerOffset;
+        _viewPagerOffset = viewPagerOffset;
     }
 }

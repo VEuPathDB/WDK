@@ -20,7 +20,7 @@ public class StrategyInsertBeforeTest extends StrategyOperationTest {
     Step booleanStep = new MockBooleanStep(stepFactory, user, step2, step1, MockStep.TYPE_A);
 
     // insert the boolean after step1
-    Map<Integer, Integer> rootMap = strategy.insertStepBefore(booleanStep, step1.getStepId());
+    Map<Long, Long> rootMap = strategy.insertStepBefore(booleanStep, step1.getStepId());
     Assert.assertEquals(booleanStep.getStepId(), strategy.getLatestStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(booleanStep.getStepId(), rootMap.get(step1.getStepId()).intValue());
@@ -38,7 +38,7 @@ public class StrategyInsertBeforeTest extends StrategyOperationTest {
 
     // create a second transform and insert before the first one
     Step transform2 = new MockTransformStep(stepFactory, user, step1, MockStep.TYPE_A);
-    Map<Integer, Integer> rootMap = strategy.insertStepBefore(transform2, transform1.getStepId());
+    Map<Long, Long> rootMap = strategy.insertStepBefore(transform2, transform1.getStepId());
 
     // insert the transform after step1
     Assert.assertEquals(transform1.getStepId(), strategy.getLatestStepId());
@@ -61,7 +61,7 @@ public class StrategyInsertBeforeTest extends StrategyOperationTest {
     Step boolean3 = new MockBooleanStep(stepFactory, user, step3, step2, MockStep.TYPE_A);
 
     // insert the boolean3 after boolean2
-    Map<Integer, Integer> rootMap = strategy.insertStepBefore(boolean3, step2.getStepId());
+    Map<Long, Long> rootMap = strategy.insertStepBefore(boolean3, step2.getStepId());
     Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
     Assert.assertEquals(0, rootMap.size());
   }
@@ -82,7 +82,7 @@ public class StrategyInsertBeforeTest extends StrategyOperationTest {
     Step boolean3 = new MockBooleanStep(stepFactory, user, step2, step3, MockStep.TYPE_A);
 
     // insert the boolean3 after boolean2
-    Map<Integer, Integer> rootMap = strategy.insertStepBefore(boolean3, boolean2.getStepId());
+    Map<Long, Long> rootMap = strategy.insertStepBefore(boolean3, boolean2.getStepId());
     Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
     Assert.assertEquals(0, rootMap.size());
   }
@@ -106,7 +106,7 @@ public class StrategyInsertBeforeTest extends StrategyOperationTest {
     Step boolean3 = new MockBooleanStep(stepFactory, user, step3, step1, MockStep.TYPE_A);
 
     // insert the boolean3 before the first step in the nested strategy
-    Map<Integer, Integer> rootMap = strategy.insertStepBefore(boolean3, step1.getStepId());
+    Map<Long, Long> rootMap = strategy.insertStepBefore(boolean3, step1.getStepId());
     Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(boolean3.getStepId(), rootMap.get(step1.getStepId()).intValue());

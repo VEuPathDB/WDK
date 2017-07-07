@@ -36,7 +36,7 @@ public class Migrator1_17To1_18 implements Migrator {
     private static final String NEW_USER_SCHEMA = "userlogins3.";
     private static final String NEW_WDK_SCHEMA = "wdkstorage.";
 
-    private Map<String, Integer> answerKeys;
+    private Map<String, Long> answerKeys;
     private Set<String> historyKeys;
 
     /*
@@ -71,8 +71,8 @@ public class Migrator1_17To1_18 implements Migrator {
           int count = 0;
           System.out.println("Migrating old histories...");
           while (histories.next()) {
-              int userId = histories.getInt("user_id");
-              int historyId = histories.getInt("history_id");
+              long userId = histories.getLong("user_id");
+              long historyId = histories.getLong("history_id");
               String projectId = histories.getString("project_id");
               String answerChecksum = histories.getString("query_instance_checksum");
               String questionName = histories.getString("question_name");
@@ -92,7 +92,7 @@ public class Migrator1_17To1_18 implements Migrator {
   
               // answer if exists
               String answerKey = projectId + "_" + answerChecksum;
-              Integer answerId = answerKeys.get(answerKey);
+              Long answerId = answerKeys.get(answerKey);
   
               if (answerId == null) {
                   // answer doesn't exist, save new answer
@@ -178,11 +178,11 @@ public class Migrator1_17To1_18 implements Migrator {
         StringBuffer sql = new StringBuffer(
                 "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
-        answerKeys = new LinkedHashMap<String, Integer>();
+        answerKeys = new LinkedHashMap<String, Long>();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource,
                 sql.toString(), "wdk-migrate-select-answer-ids");
         while (resultSet.next()) {
-            int answerId = resultSet.getInt("answer_id");
+            long answerId = resultSet.getLong("answer_id");
             String projectId = resultSet.getString("project_id");
             String answerChecksum = resultSet.getString("answer_checksum");
             String answerKey = projectId + "_" + answerChecksum;
@@ -207,12 +207,12 @@ public class Migrator1_17To1_18 implements Migrator {
         return jsParams.toString();
     }
 
-    private int insertAnswer(DataSource dataSource, DBPlatform platform, PreparedStatement psInsertAnswer,
+    private long insertAnswer(DataSource dataSource, DBPlatform platform, PreparedStatement psInsertAnswer,
             String answerChecksum, String projectId, String questionName, String queryChecksum,
             String params) throws SQLException {
-        int answerId = platform.getNextId(dataSource, NEW_WDK_SCHEMA, "answer");
+        long answerId = platform.getNextId(dataSource, NEW_WDK_SCHEMA, "answer");
 
-        psInsertAnswer.setInt(1, answerId);
+        psInsertAnswer.setLong(1, answerId);
         psInsertAnswer.setString(2, answerChecksum);
         psInsertAnswer.setString(3, projectId);
         psInsertAnswer.setString(4, questionName);
@@ -223,12 +223,12 @@ public class Migrator1_17To1_18 implements Migrator {
     }
 
     private void insertHistory(DataSource dataSource, DBPlatform platform, PreparedStatement psInsertHistory,
-            int userId, int historyId, int answerId, Date createTime, Date lastRunTime, int estimateSize,
+            long userId, long historyId, long answerId, Date createTime, Date lastRunTime, int estimateSize,
             String customName, boolean isBoolean, boolean isDeleted,
             String displayParams) throws SQLException {
-        psInsertHistory.setInt(1, historyId);
-        psInsertHistory.setInt(2, userId);
-        psInsertHistory.setInt(3, answerId);
+        psInsertHistory.setLong(1, historyId);
+        psInsertHistory.setLong(2, userId);
+        psInsertHistory.setLong(3, answerId);
         psInsertHistory.setDate(4, createTime);
         psInsertHistory.setDate(5, lastRunTime);
         psInsertHistory.setInt(6, estimateSize);

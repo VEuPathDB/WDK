@@ -54,9 +54,9 @@ public class Step {
   // lazy loaded, but every step has a user
   private User user;
   // in DB, owning user id
-  private int userId;
+  private long userId;
   // in DB, Primary key
-  private int stepId;
+  private long stepId;
   // in DB, set during step creation
   private Date createdTime;
   // in DB, last time Answer generated, written to DB each time
@@ -140,8 +140,8 @@ public class Step {
   private int assignedWeight;
 
   // in DB, for those steps unloaded (i.e. previous and child steps are lazy loaded)
-  private int previousStepId;
-  private int childStepId;
+  private long previousStepId;
+  private long childStepId;
 
   // This value may or may not be used by the UI, but it is not changed. isRevisable always returns true
   private boolean revisable = true;
@@ -150,7 +150,7 @@ public class Step {
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception exception;
 
-  private Integer strategyId;
+  private Long strategyId;
 
   // Set this if this step should not be written to /read from db.  A hack in support of
   // summary views, until they are refactored using service.
@@ -168,7 +168,7 @@ public class Step {
    *          id of the step
    * @throws WdkModelException 
    */
-  public Step(StepFactory stepFactory, int userId, int stepId) throws WdkModelException {
+  public Step(StepFactory stepFactory, long userId, long stepId) throws WdkModelException {
     this.stepFactory = stepFactory;
     this.user = null;
     this.userId = userId;
@@ -192,7 +192,7 @@ public class Step {
    * @throws NullPointerException
    *           if user is null
    */
-  public Step(StepFactory stepFactory, User user, int stepId) throws WdkModelException {
+  public Step(StepFactory stepFactory, User user, long stepId) throws WdkModelException {
     this.stepFactory = stepFactory;
     this.user = user;
     this.userId = user.getUserId();
@@ -320,7 +320,7 @@ public class Step {
 
       // also update the param value
       String paramName = getChildStepParamName();
-      paramValues.put(paramName, Integer.toString(childStepId));
+      paramValues.put(paramName, Long.toString(childStepId));
     }
     else
       childStepId = 0;
@@ -343,7 +343,7 @@ public class Step {
       previousStepId = previousStep.getStepId();
 
       String paramName = getPreviousStepParamName();
-      paramValues.put(paramName, Integer.toString(previousStepId));
+      paramValues.put(paramName, Long.toString(previousStepId));
     }
     else
       previousStepId = 0;
@@ -356,7 +356,7 @@ public class Step {
   public User getUser() throws WdkModelException {
     if (user == null) {
       // if constructed with only the user id, lazy-load User object
-      user = stepFactory.getWdkModel().getUserFactory().getUser(userId);
+      user = stepFactory.getWdkModel().getUserFactory().getUserById(userId);
     }
     return user;
   }
@@ -453,7 +453,7 @@ public class Step {
   /**
    * @return Returns the stepId.
    */
-  public int getStepId() {
+  public long getStepId() {
     return stepId;
   }
 
@@ -583,11 +583,11 @@ public class Step {
     estimateSize = RESET_SIZE_FLAG;
 
     // get list of steps dependent on this one; all their results are now invalid
-    List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
-    Functions.filterInPlace(stepIds, new Predicate<Integer>() {
-      @Override public boolean test(Integer candidateStepId) {
+    List<Long> stepIds = stepFactory.getStepAndParents(getStepId());
+    Functions.filterInPlace(stepIds, new Predicate<Long>() {
+      @Override public boolean test(Long candidateStepId) {
         // keep unless id is for this step
-        return (getStepId() != candidateStepId.intValue());
+        return (getStepId() != candidateStepId.longValue());
       }
     });
 
@@ -829,7 +829,7 @@ public class Step {
     this.setNextStep(step);
   }
 
-  public Step getStepByDisplayId(int displayId) throws WdkModelException {
+  public Step getStepByDisplayId(long displayId) throws WdkModelException {
     Step target;
     if (this.stepId == displayId) {
       return this;
@@ -1005,7 +1005,7 @@ public class Step {
     try {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
-      Step step = getUser().createStep(strategyId, question, params, filter, startIndex, endIndex, deleted, false,
+      Step step = StepUtilities.createStep(user, strategyId, question, params, filter, startIndex, endIndex, deleted, false,
           assignedWeight, getFilterOptions());
       step.collapsedName = collapsedName;
       step.customName = customName;
@@ -1025,12 +1025,12 @@ public class Step {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Step deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
+  public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
     Step step;
     try {
       if (!isCombined()) {
         AnswerValue answerValue = answerValueCache.getAnswerValue(false);
-        step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
+        step = StepUtilities.createStep(getUser(), strategyId, answerValue, deleted, assignedWeight);
       }
       else {
         Question question = getQuestion();
@@ -1040,14 +1040,14 @@ public class Step {
           Param param = params.get(paramName);
           String paramValue = this.paramValues.get(paramName);
           if (param instanceof AnswerParam) {
-            Step child = getUser().getStep(Integer.parseInt(paramValue));
+            Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
             child = child.deepClone(strategyId, stepIdMap);
-            paramValue = Integer.toString(child.getStepId());
+            paramValue = Long.toString(child.getStepId());
           }
           paramValues.put(paramName, paramValue);
         }
         AnswerFilterInstance filter = getFilter();
-        step = getUser().createStep(strategyId, question, paramValues, filter, deleted, false,
+        step = StepUtilities.createStep(getUser(), strategyId, question, paramValues, filter, deleted, false,
             assignedWeight, getFilterOptions());
       }
     }
@@ -1117,7 +1117,7 @@ public class Step {
     return getJSONContent(strategyId, false);
   }
 
-  public JSONObject getJSONContent(int strategyId, boolean forChecksum) throws WdkModelException {
+  public JSONObject getJSONContent(long strategyId, boolean forChecksum) throws WdkModelException {
 
     JSONObject jsStep = new JSONObject();
 
@@ -1149,7 +1149,7 @@ public class Step {
 
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
-        int order = getUser().getStrategyOrder(subStratId);
+        int order = getUser().getSession().getStrategyOrder(subStratId);
         jsStep.put("order", order);
       }
     }
@@ -1214,7 +1214,7 @@ public class Step {
   /**
    * @return the previousStepId
    */
-  public int getPreviousStepId() {
+  public long getPreviousStepId() {
     return previousStepId;
   }
 
@@ -1222,11 +1222,11 @@ public class Step {
    * @param previousStepId
    *          the previousStepId to set
    */
-  public void setPreviousStepId(int previousStepId) {
+  public void setPreviousStepId(long previousStepId) {
     this.previousStepId = previousStepId;
   }
 
-  public void setAndVerifyPreviousStepId(int previousStepId) throws WdkModelException {
+  public void setAndVerifyPreviousStepId(long previousStepId) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, previousStepId);
     setPreviousStepId(previousStepId);
   }
@@ -1234,7 +1234,7 @@ public class Step {
   /**
    * @return the childStepId
    */
-  public int getChildStepId() {
+  public long getChildStepId() {
     return childStepId;
   }
 
@@ -1242,11 +1242,11 @@ public class Step {
    * @param childStepId
    *          the childStepId to set
    */
-  public void setChildStepId(int childStepId) {
+  public void setChildStepId(long childStepId) {
     this.childStepId = childStepId;
   }
 
-  public void setAndVerifyChildStepId(int childStepId) throws WdkModelException {
+  public void setAndVerifyChildStepId(long childStepId) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, childStepId);
     setChildStepId(childStepId);
   }
@@ -1531,11 +1531,11 @@ public class Step {
           " is not compatible with the parent step#" + getStepId());
   }
 
-  public Integer getStrategyId() {
+  public Long getStrategyId() {
     return strategyId;
   }
 
-  public void setStrategyId(Integer strategyId) {
+  public void setStrategyId(Long strategyId) {
     this.strategyId = strategyId;
   }
 

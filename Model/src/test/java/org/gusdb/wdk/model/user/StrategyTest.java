@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.Calendar;
@@ -24,19 +21,21 @@ import org.junit.Test;
 public class StrategyTest {
 
   private User user;
+  private StepFactory stepFactory;
 
   public StrategyTest() throws Exception {
     user = UnitTestHelper.getRegisteredUser();
+    stepFactory = user.getWdkModel().getStepFactory();
   }
 
   @Test
   public void testCreateStrategy() throws Exception {
-    int strategyCount = user.getStrategyCount();
+    int strategyCount = stepFactory.getStrategyCount(user);
 
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step, false);
+    Strategy strategy = StepUtilities.createStrategy(step, false);
 
-    Assert.assertEquals("strategy count", strategyCount + 1, user.getStrategyCount());
+    Assert.assertEquals("strategy count", strategyCount + 1, stepFactory.getStrategyCount(user));
 
     Step root = strategy.getLatestStep();
     StepTest.compareStep(step, root);
@@ -47,7 +46,7 @@ public class StrategyTest {
     String strategyName = "My Strategy";
 
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step, strategyName, false);
+    Strategy strategy = StepUtilities.createStrategy(step, strategyName, false);
 
     Assert.assertEquals("strategy name", strategyName, strategy.getName());
   }
@@ -55,17 +54,17 @@ public class StrategyTest {
   @Test
   public void testGetStrategy() throws Exception {
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step, false);
+    Strategy strategy = StepUtilities.createStrategy(step, false);
 
-    Strategy loadedStrategy = user.getStrategy(strategy.getStrategyId());
+    Strategy loadedStrategy = StepUtilities.getStrategy(user, strategy.getStrategyId());
     compareStrategy(strategy, loadedStrategy);
   }
 
   @Test
   public void testGetStrategies() throws Exception {
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step, false);
-    Strategy[] strategies = user.getStrategies();
+    Strategy strategy = StepUtilities.createStrategy(step, false);
+    Strategy[] strategies = StepUtilities.getStrategies(user);
 
     boolean hasStrategy = false;
     for (Strategy loadedStrategy : strategies) {
@@ -82,16 +81,16 @@ public class StrategyTest {
   @Test
   public void testDeleteStrategy() throws Exception {
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step, false);
+    Strategy strategy = StepUtilities.createStrategy(step, false);
 
-    int count = user.getStrategyCount();
-    user.deleteStrategy(strategy.getStrategyId());
+    int count = stepFactory.getStrategyCount(user);
+    StepUtilities.deleteStrategy(user, strategy.getStrategyId());
 
-    Assert.assertEquals("strategy count", count - 1, user.getStrategyCount());
+    Assert.assertEquals("strategy count", count - 1, stepFactory.getStrategyCount(user));
 
     // get a delete strategy, should raise a WdkUserException
     try {
-      user.getStrategy(strategy.getStrategyId());
+      StepUtilities.getStrategy(user, strategy.getStrategyId());
       Assert.assertTrue("strategy not deleted", false);
     }
     catch (WdkModelException ex) {
@@ -103,22 +102,22 @@ public class StrategyTest {
   @Test
   public void testDeleteStrategies() throws Exception {
     Step step = UnitTestHelper.createNormalStep(user);
-    user.createStrategy(step, false);
+    StepUtilities.createStrategy(step, false);
 
-    user.deleteStrategies();
+    StepUtilities.deleteStrategies(user);
 
-    Assert.assertEquals("strategy count", 0, user.getStrategyCount());
+    Assert.assertEquals("strategy count", 0, stepFactory.getStrategyCount(user));
   }
 
   @Test
   public void testAddStep() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     BooleanOperator operator = BooleanOperator.UNION;
 
-    Step booleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, null);
+    Step booleanStep = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator, null);
 
     strategy.insertStepAfter(booleanStep, step1.getStepId());
     Step rootStep = strategy.getLatestStep();
@@ -137,11 +136,11 @@ public class StrategyTest {
     if (filters.length == 0)
       return; // no filter exists skip the test
 
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
     Step step2 = UnitTestHelper.createNormalStep(user);
     BooleanOperator operator = BooleanOperator.UNION;
     AnswerFilterInstance filter = recordClass.getDefaultFilter();
-    Step oldStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator, filter);
+    Step oldStep = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator, filter);
     strategy.insertStepAfter(oldStep, step1.getStepId());
 
     AnswerFilterInstance newFilter = null;
@@ -165,7 +164,7 @@ public class StrategyTest {
     if (filters.length == 0)
       return; // no filter exists skip the test
 
-    Strategy strategy = user.createStrategy(oldStep, false);
+    Strategy strategy = StepUtilities.createStrategy(oldStep, false);
     AnswerFilterInstance oldFilter = oldStep.getFilter();
     AnswerFilterInstance newFilter = null;
     do {
@@ -183,7 +182,7 @@ public class StrategyTest {
   @Test
   public void testChangeLeafStepFilter() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
@@ -194,7 +193,7 @@ public class StrategyTest {
     AnswerFilterInstance filter = step2.getFilter();
     BooleanOperator operator = BooleanOperator.UNION;
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
-    Step oldBooleanStep = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
+    Step oldBooleanStep = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(oldBooleanStep, step1.getStepId());
 
@@ -214,7 +213,7 @@ public class StrategyTest {
   @Test
   public void testChangeMiddleStepFilter() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
@@ -225,13 +224,13 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
+    Step middleStep1 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
+    Step middleStep2 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 
@@ -256,7 +255,7 @@ public class StrategyTest {
 
   @Test
   public void testLoadSavedStrategy() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+    Map<String, List<Strategy>> strategies = StepUtilities.getSavedStrategiesByCategory(user);
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
@@ -268,7 +267,7 @@ public class StrategyTest {
 
   @Test
   public void testLoadUnsavedStrategy() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+    Map<String, List<Strategy>> strategies = StepUtilities.getUnsavedStrategiesByCategory(user);
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
@@ -284,7 +283,7 @@ public class StrategyTest {
     Calendar calender = Calendar.getInstance();
     calender.add(Calendar.DATE, -1);
     Date threshold = calender.getTime();
-    Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+    Map<String, List<Strategy>> strategies = StepUtilities.getRecentStrategiesByCategory(user);
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
@@ -300,7 +299,7 @@ public class StrategyTest {
   @Test
   public void testInsertStep() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
@@ -311,18 +310,18 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
+    Step middleStep1 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
+    Step middleStep2 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 
     Step step4 = UnitTestHelper.createNormalStep(user);
-    Step middleStep3 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step4, operator,
+    Step middleStep3 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), middleStep1, step4, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep3, middleStep1.getStepId());
 
@@ -336,7 +335,7 @@ public class StrategyTest {
   @Test
   public void testImportStrategy() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = user.createStrategy(step1, false);
+    Strategy strategy = StepUtilities.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
@@ -347,18 +346,18 @@ public class StrategyTest {
 
     // create the second node
     BooleanOperator operator = BooleanOperator.UNION;
-    Step middleStep1 = user.createBooleanStep(strategy.getStrategyId(), step1, step2, operator,
+    Step middleStep1 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), step1, step2, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep1, step1.getStepId());
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
-    Step middleStep2 = user.createBooleanStep(strategy.getStrategyId(), middleStep1, step3, operator,
+    Step middleStep2 = StepUtilities.createBooleanStep(user, strategy.getStrategyId(), middleStep1, step3, operator,
         booleanFilter);
     strategy.insertStepAfter(middleStep2, middleStep1.getStepId());
 
     User guest = UnitTestHelper.getGuest();
-    Strategy newStrategy = guest.importStrategy(strategy.getChecksum());
+    Strategy newStrategy = StepUtilities.importStrategy(guest, strategy.getChecksum());
     Assert.assertEquals(strategy.getLength(), newStrategy.getLength());
   }
 

@@ -3,10 +3,6 @@ import WdkViewController from './WdkViewController';
 
 class QuestionListController extends WdkViewController {
 
-  getStoreName() {
-    return 'QuestionListStore';
-  }
-
   isRenderDataLoaded(state) {
     return state.globalData.questions != null;
   }

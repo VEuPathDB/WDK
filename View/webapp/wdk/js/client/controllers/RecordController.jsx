@@ -28,6 +28,7 @@ class RecordController extends WdkViewController {
   // components have access to them?
   getActionCreators() {
     return Object.assign({
+      loadRecordData,
       updateSectionVisibility,
       updateNavigationQuery,
       updateAllFieldVisibility,
@@ -57,12 +58,12 @@ class RecordController extends WdkViewController {
       'does not exist.' : 'could not be loaded.');
   }
 
-  loadData(state, props, previousProps) {
+  loadData(actionCreators, state, props, previousProps) {
     // load data if location.pathname has changed
     if (get(props, 'location.pathname') !== get(previousProps, 'location.pathname')) {
       let { recordClass, splat } = props.params;
       let pkValues = splat.split('/');
-      this.dispatchAction(loadRecordData(recordClass, pkValues));
+      actionCreators.loadRecordData(recordClass, pkValues);
     }
   }
 

@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.test.stress;
 
+import static org.gusdb.fgputil.FormatUtil.urlEncodeUtf8;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -336,10 +336,8 @@ public class StressTester {
                                 StringBuffer sb = new StringBuffer(
                                         recordUrlPattern);
                                 sb.append("?name=" + recordName);
-                                sb.append("&primary_key="
-                                        + URLEncoder.encode(id, "UTF-8"));
-                                UrlItem recordUrl = new UrlItem(sb.toString(),
-                                        TYPE_RECORD_URL);
+                                sb.append("&primary_key=" + urlEncodeUtf8(id));
+                                UrlItem recordUrl = new UrlItem(sb.toString(), TYPE_RECORD_URL);
                                 urlPool.add(recordUrl);
                             }
                         }
@@ -444,7 +442,7 @@ public class StressTester {
         return (stopFile.exists());
     }
 
-    private StressTestTask createTask() throws WdkModelException {
+    private StressTestTask createTask() {
         // choose from urlPool or question cache
         UrlItem urlItem;
         if (rand.nextInt(10) >= 3) { // get from question cache
@@ -464,14 +462,8 @@ public class StressTester {
                 String[] values = new String[valueSet.size()];
                 valueSet.toArray(values);
                 String value = values[rand.nextInt(values.length)];
-                try {
-                    url.append("&"
-                            + URLEncoder.encode("value(" + param + ")",
-                                    "utf-8"));
-                    url.append("=" + URLEncoder.encode(value, "utf-8"));
-                } catch (UnsupportedEncodingException ex) {
-                    throw new WdkModelException(ex);
-                }
+                url.append("&" + urlEncodeUtf8("value(" + param + ")"));
+                url.append("=" + urlEncodeUtf8(value));
             }
 
             // create UrlItem. and pick parameters

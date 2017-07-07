@@ -47,9 +47,9 @@ public class ConcurrentTest {
             try {
                 QueryInstance<?> instance = query.makeInstance(user, values, true,
                         0, new LinkedHashMap<String, String>());
-                ResultList resultList = instance.getResults();
-                resultList.next();
-                resultList.close();
+                try (ResultList resultList = instance.getResults()) {
+                  resultList.next();
+                }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }

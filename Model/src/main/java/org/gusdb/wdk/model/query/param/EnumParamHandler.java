@@ -10,8 +10,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -138,7 +138,7 @@ public class EnumParamHandler extends AbstractParamHandler {
 //    String[] array = internals.toArray(new String[0]);
     String[] array = terms;
     Arrays.sort(array);
-    return Utilities.encrypt(Arrays.toString(array));
+    return EncryptionUtil.encrypt(Arrays.toString(array));
   }
 
   /**

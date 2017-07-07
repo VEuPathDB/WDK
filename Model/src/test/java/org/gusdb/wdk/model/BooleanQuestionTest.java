@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.util.LinkedHashMap;
@@ -50,8 +47,8 @@ public class BooleanQuestionTest {
         Step left = UnitTestHelper.createNormalStep(regUser);
         Step right = UnitTestHelper.createNormalStep(regUser);
 
-        leftStepId = Integer.toString(left.getStepId());
-        rightStepId = Integer.toString(right.getStepId());
+        leftStepId = Long.toString(left.getStepId());
+        rightStepId = Long.toString(right.getStepId());
         leftAnswerValue = left.getAnswerValue();
         rightAnswerValue = right.getAnswerValue();
         recordClass = left.getQuestion().getRecordClass();

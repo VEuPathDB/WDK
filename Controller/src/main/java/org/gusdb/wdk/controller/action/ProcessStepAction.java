@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkOutOfSyncException;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 
 /**
  * Process regular or transform questions in the context of Wizard. any other types of combined steps won't be
@@ -75,28 +76,28 @@ public class ProcessStepAction extends Action {
         branchId = Integer.valueOf(strategyKey.substring(pos + 1));
         strategyKey = strategyKey.substring(0, pos);
       }
-      int oldStrategyId = Integer.valueOf(strategyKey);
+      long oldStrategyId = Integer.valueOf(strategyKey);
 
       // get strategy, and verify the checksum
-      StrategyBean strategy = user.getStrategy(oldStrategyId);
+      StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), oldStrategyId));
       String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
       if (checksum != null && !strategy.getChecksum().equals(checksum))
         throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
             ", but the input checksum: " + checksum);
 
-      int stepId = 0;
+      long stepId = 0;
       String strStepId = request.getParameter(PARAM_STEP);
       if (strStepId != null && strStepId.length() > 0)
         stepId = Integer.valueOf(strStepId);
 
       // cannot change step in saved strategy, will need to make a clone first
-      Map<Integer, Integer> stepIdMap = new HashMap<>();
+      Map<Long, Long> stepIdMap = new HashMap<>();
       if (strategy.getIsSaved()) {
         strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
         // set the new strategy as the active strategy for the view
-        user.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
+        user.getUser().getSession().replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
       }
 
       // get current step
@@ -110,7 +111,7 @@ public class ProcessStepAction extends Action {
 
       QuestionForm questionForm = (QuestionForm) form;
 
-      Map<Integer, Integer> rootMap;
+      Map<Long, Long> rootMap;
       String action = request.getParameter(PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
         // revise the given step with the question & params information.
@@ -133,7 +134,7 @@ public class ProcessStepAction extends Action {
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);
@@ -200,7 +201,7 @@ public class ProcessStepAction extends Action {
     step.update(false);
   }
 
-  private static Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
+  private static Map<Long, Long> insertStep(HttpServletRequest request, QuestionForm form,
       WdkModelBean wdkModel, UserBean user, StrategyBean strategy, StepBean step, String customName)
       throws WdkUserException, WdkModelException {
     logger.debug("Inserting step...");
@@ -226,7 +227,7 @@ public class ProcessStepAction extends Action {
       // assumption is that the first AnswerParam is the previous step.
       for (Map.Entry<String, ParamBean<?>> entry : questionParamsMap.entrySet()) {
         if (entry.getValue() instanceof AnswerParamBean) {
-          newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
+          newStepParams.put(entry.getKey(), Long.toString(previousStep.getStepId()));
           break;
         }
       }
@@ -250,7 +251,7 @@ public class ProcessStepAction extends Action {
       // replace the current one.
       Map<String, String> paramValues = step.getParams();
       String previousParam = step.getPreviousStepParam();
-      String previousStepId = Integer.toString(newStep.getStepId());
+      String previousStepId = Long.toString(newStep.getStepId());
       paramValues.put(previousParam, previousStepId);
 
       question = step.getQuestion();
@@ -269,7 +270,7 @@ public class ProcessStepAction extends Action {
     }
   }
 
-  private static Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
+  private static Map<Long, Long> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, StepBean previousStep, String customName, int branchId)
       throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
@@ -291,7 +292,7 @@ public class ProcessStepAction extends Action {
     // assumption is that the first AnswerParam is the previous step.
     for (Map.Entry<String, ParamBean<?>> entry : questionParamsMap.entrySet()) {
       if (entry.getValue() instanceof AnswerParamBean) {
-        newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
+        newStepParams.put(entry.getKey(), Long.toString(previousStep.getStepId()));
         break;
       }
     }
@@ -335,7 +336,7 @@ public class ProcessStepAction extends Action {
     String previousStepParamName = step.getPreviousStepParam();
     String childStepParamName = step.getChildStepParam();
     if (params.containsKey(previousStepParamName)) {
-      Integer newStepId = step.getPreviousStep().getStepId();
+      Long newStepId = step.getPreviousStep().getStepId();
       logger.debug("updating previous step '" + previousStepParamName
           + "' id: " + newStepId);
       if (newStepId != null) {
@@ -343,7 +344,7 @@ public class ProcessStepAction extends Action {
       }
     }
     if (params.containsKey(childStepParamName)) {
-      Integer newStepId = step.getChildStep().getStepId();
+      Long newStepId = step.getChildStep().getStepId();
       logger.debug("updating child step id: " + newStepId);
       if (newStepId != null) {
         params.put(childStepParamName, newStepId.toString());

@@ -1,7 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
+import static org.gusdb.fgputil.FormatUtil.urlEncodeUtf8;
+
 import java.io.File;
-import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,8 +84,8 @@ public class ShowRecordAction extends Action {
             pkValues.put(column, value);
 
             urlParams.append((urlParams.length() == 0) ? "?" : "&");
-            urlParams.append(URLEncoder.encode(column, "UTF-8")).append("=");
-            urlParams.append(URLEncoder.encode(value, "UTF-8"));
+            urlParams.append(urlEncodeUtf8(column)).append("=");
+            urlParams.append(urlEncodeUtf8(value));
         }
 
         RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
@@ -105,7 +106,7 @@ public class ShowRecordAction extends Action {
         if (frontAction != null) {
             request.setAttribute("action", frontAction);
         }
-        user.resetFrontAction();
+        user.getUser().getSession().resetFrontAction();
 
         String defaultViewFile = customViewDir + File.separator
                 + CConstants.WDK_RECORD_PAGE;

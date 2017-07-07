@@ -19,7 +19,7 @@ public class FilesysUserDatasetSession extends JsonUserDatasetSession {
 
  
   @Override
-  public UserDatasetFile getUserDatasetFile(Path path, Integer userDatasetId) {
+  public UserDatasetFile getUserDatasetFile(Path path, Long userDatasetId) {
     return new FilesysUserDatasetFile(path, userDatasetId);
   }
 }

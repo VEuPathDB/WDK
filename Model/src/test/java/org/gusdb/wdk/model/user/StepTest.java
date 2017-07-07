@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -26,18 +23,20 @@ public class StepTest {
   }
 
   private User user;
+  private StepFactory stepFactory;
 
   public StepTest() throws Exception {
     this.user = UnitTestHelper.getRegisteredUser();
+    this.stepFactory = user.getWdkModel().getStepFactory();
   }
 
   @Test
   public void testCreateNormalStep() throws Exception {
-    int stepCount = user.getStepCount();
+    int stepCount = stepFactory.getStepCount(user);
 
     Step step = UnitTestHelper.createNormalStep(user);
 
-    Assert.assertEquals("step count", stepCount + 1, user.getStepCount());
+    Assert.assertEquals("step count", stepCount + 1, stepFactory.getStepCount(user));
 
     Assert.assertTrue("stepId should be positive", step.getStepId() > 0);
     Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
@@ -54,7 +53,7 @@ public class StepTest {
     int leftSize = leftOperand.getResultSize();
     int rightSize = rightOperand.getResultSize();
 
-    Step step = user.createBooleanStep(leftOperand.getStrategyId(), leftOperand, rightOperand,
+    Step step = StepUtilities.createBooleanStep(user, leftOperand.getStrategyId(), leftOperand, rightOperand,
         BooleanOperator.UNION, null);
     int size = step.getResultSize();
     Assert.assertTrue("result is boolean", step.isCombined());
@@ -68,7 +67,7 @@ public class StepTest {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);
 
-    Step[] steps = user.getSteps();
+    Step[] steps = StepUtilities.getSteps(user);
     Assert.assertTrue("should have steps", steps.length > 0);
 
     boolean hasStep = false;
@@ -88,14 +87,14 @@ public class StepTest {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);
 
-    Step loadedStep = user.getStep(step.getStepId());
+    Step loadedStep = StepUtilities.getStep(user, step.getStepId());
 
     compareStep(step, loadedStep);
   }
 
   @Test
   public void testGetInvalidSteps() throws Exception {
-    Step[] invalidStep = user.getInvalidSteps();
+    Step[] invalidStep = StepUtilities.getInvalidSteps(user);
     for (Step step : invalidStep) {
       Assert.assertNotNull("question name", step.getQuestionName());
       Assert.assertNotNull("params", step.getParamValues());
@@ -107,15 +106,15 @@ public class StepTest {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);
 
-    int stepCount = user.getStepCount();
-    user.deleteStep(step.getStepId());
+    int stepCount = stepFactory.getStepCount(user);
+    stepFactory.deleteStep(step.getStepId());
 
-    Assert.assertEquals("step count ", stepCount - 1, user.getStepCount());
+    Assert.assertEquals("step count ", stepCount - 1, stepFactory.getStepCount(user));
 
     // now check if the step is really deleted; a WdkUserException should be
     // thrown
     try {
-      user.getStep(step.getStepId());
+      StepUtilities.getStep(user, step.getStepId());
       Assert.assertTrue("step is not deleted", false);
     }
     catch (WdkModelException ex) {
@@ -128,10 +127,10 @@ public class StepTest {
     // create a step
     UnitTestHelper.createNormalStep(user);
 
-    user.deleteSteps();
+    StepUtilities.deleteSteps(user);
 
     // the step list should be empty now
-    int stepCount = user.getStepCount();
+    int stepCount = stepFactory.getStepCount(user);
     Assert.assertEquals("step count", 0, stepCount);
   }
 }

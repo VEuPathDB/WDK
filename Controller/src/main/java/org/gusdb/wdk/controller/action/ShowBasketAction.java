@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
  * This action is called by the UI in order to "close" a strategy. It removes the specified strategy id from
@@ -51,9 +50,8 @@ public class ShowBasketAction extends Action {
         // displayed as a result page
         RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
         QuestionBean question = recordClass.getRealtimeBasketQuestion();
+        // the only param is user_id, the value of which is added automatically in QueryInstance
         Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-
         StepBean step = user.createStep(null, question, params, null, true, false, Utilities.DEFAULT_WEIGHT);
 
         ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);

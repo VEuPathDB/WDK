@@ -6,13 +6,13 @@ import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.session.LoginCookieFactory;
 
 /**
  * @author xingao
@@ -29,7 +29,7 @@ public class ProcessProfileAction extends WdkAction {
     @Override
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
       // get the current user
-      UserBean user = getCurrentUser();
+      User user = getCurrentUser().getUser();
       String oldEmail = user.getEmail();
 
       // if a custom profile page exists, use it; otherwise, use default one
@@ -43,47 +43,33 @@ public class ProcessProfileAction extends WdkAction {
       if (!user.isGuest()) {
 
         // clear the preference
-        user.clearPreferences();
+        user.getPreferences().clearPreferences();
 
         for (String paramName : params.getKeys()) {
-          if (paramName.equalsIgnoreCase("email")) {
-            user.setEmail(params.getValue("email"));
-          } else if (paramName.equalsIgnoreCase("firstName")) {
-            user.setFirstName(params.getValue("firstName"));
-          } else if (paramName.equalsIgnoreCase("lastName")) {
-            user.setLastName(params.getValue("lastName"));
-          } else if (paramName.equalsIgnoreCase("middleName")) {
-            user.setMiddleName(params.getValue("middleName"));
-          } else if (paramName.equalsIgnoreCase("title")) {
-            user.setTitle(params.getValue("title"));
-          } else if (paramName.equalsIgnoreCase("organization")) {
-            user.setOrganization(params.getValue("organization"));
-          } else if (paramName.equalsIgnoreCase("department")) {
-            user.setDepartment(params.getValue("department"));
-          } else if (paramName.equalsIgnoreCase("address")) {
-            user.setAddress(params.getValue("address"));
-          } else if (paramName.equalsIgnoreCase("city")) {
-            user.setCity(params.getValue("city"));
-          } else if (paramName.equalsIgnoreCase("state")) {
-            user.setState(params.getValue("state"));
-          } else if (paramName.equalsIgnoreCase("zipCode")) {
-            user.setZipCode(params.getValue("zipCode"));
-          } else if (paramName.equalsIgnoreCase("phoneNumber")) {
-            user.setPhoneNumber(params.getValue("phoneNumber"));
-          } else if (paramName.equalsIgnoreCase("country")) {
-            user.setCountry(params.getValue("country"));
-          } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
+          switch(paramName) {
+            case "email":
+              user.setEmail(params.getValue("email"));
+              break;
+            case "firstName":
+            case "middleName":
+            case "lastName":
+            case "organization":
+              user.setProfileProperty(paramName, params.getValue(paramName));
+              break;
+          }
+          if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
             String paramValue = params.getValue(paramName);
-            user.setGlobalPreference(paramName, paramValue);
-          } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+            user.getPreferences().setGlobalPreference(paramName, paramValue);
+          }
+          else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
             String paramValue = params.getValue(paramName);
-            user.setProjectPreference(paramName, paramValue);
+            user.getPreferences().setProjectPreference(paramName, paramValue);
           }
         }
 
         // update and save the user with user input
         try {
-          user.save();
+          getWdkModel().getModel().getUserFactory().saveUser(user);
           // Update profile succeed
           result.setRequestAttribute("profileSucceed", true);
         }
@@ -95,12 +81,12 @@ public class ProcessProfileAction extends WdkAction {
 
       // if user updated email address, set new login cookie created from new email
       if (!oldEmail.equals(user.getEmail())) {
-    	LoginCookieFactory factory = new LoginCookieFactory(getWdkModel().getSecretKey());
-    	Cookie oldCookie = LoginCookieFactory.findLoginCookie(getRequestCookies());
-    	Cookie newCookie = factory.createLoginCookie(user.getEmail(), oldCookie.getMaxAge());
+        LoginCookieFactory factory = new LoginCookieFactory(getWdkModel().getSecretKey());
+        Cookie oldCookie = LoginCookieFactory.findLoginCookie(getRequestCookies());
+        Cookie newCookie = factory.createLoginCookie(user.getEmail(), oldCookie.getMaxAge());
         addCookieToResponse(newCookie);
       }
-      
+
       return result;
     }
 }

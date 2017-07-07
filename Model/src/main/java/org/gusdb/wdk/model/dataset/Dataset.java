@@ -17,7 +17,7 @@ public class Dataset {
 
   private DatasetFactory factory;
 
-  private final int datasetId;
+  private final long datasetId;
   private final User user;
 
   private String name;
@@ -28,7 +28,7 @@ public class Dataset {
   private String checksum;
   private int categoryId;
 
-  public Dataset(DatasetFactory factory, User user, int datasetId) {
+  public Dataset(DatasetFactory factory, User user, long datasetId) {
     this.factory = factory;
     this.user = user;
     this.datasetId = datasetId;
@@ -41,7 +41,7 @@ public class Dataset {
   /**
    * @return the datasetId
    */
-  public int getDatasetId() {
+  public long getDatasetId() {
     return datasetId;
   }
 

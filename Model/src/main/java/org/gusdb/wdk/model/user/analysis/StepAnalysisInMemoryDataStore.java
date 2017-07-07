@@ -23,9 +23,9 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
    *   analysisId(PK), stepId, displayName, isNew, contextHash, context CLOB
    */
   // will map stepId -> List<analysisId>
-  private static Map<Integer, List<Integer>> STEP_ANALYSIS_MAP = new HashMap<>();
+  private static Map<Long, List<Long>> STEP_ANALYSIS_MAP = new HashMap<>();
   // will map analysisId -> AnalysisInfo
-  private static Map<Integer, AnalysisInfo> ANALYSIS_INFO_MAP = new HashMap<>();
+  private static Map<Long, AnalysisInfo> ANALYSIS_INFO_MAP = new HashMap<>();
 
   /**
    * Eventual table will have:
@@ -41,17 +41,17 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public int getNextId() throws WdkModelException {
+  public long getNextId() throws WdkModelException {
     return ID_SEQUENCE.incrementAndGet();
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName, StepAnalysisState state,
+  public void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state,
       boolean hasParams, String invalidStepReason, String contextHash, String serializedContext)
           throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (!STEP_ANALYSIS_MAP.containsKey(stepId)) {
-        STEP_ANALYSIS_MAP.put(stepId, new ArrayList<Integer>());
+        STEP_ANALYSIS_MAP.put(stepId, new ArrayList<Long>());
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
       AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
@@ -63,18 +63,18 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
   
   @Override
-  public void deleteAnalysis(int analysisId) throws WdkModelException {
+  public void deleteAnalysis(long analysisId) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (!ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         LOG.info("Unable to find value for analysis ID " + analysisId);
         throw new WdkModelException("Analysis ID to be deleted [ " + analysisId + " ] does not exist.");
       }
-      int stepId = ANALYSIS_INFO_MAP.get(analysisId).stepId;
+      long stepId = ANALYSIS_INFO_MAP.get(analysisId).stepId;
       ANALYSIS_INFO_MAP.remove(analysisId);
       
       // remove reference to this analysis in step map
-      List<Integer> idsForStep = STEP_ANALYSIS_MAP.get(stepId);
-      idsForStep.remove((Integer)analysisId);
+      List<Long> idsForStep = STEP_ANALYSIS_MAP.get(stepId);
+      idsForStep.remove(analysisId);
       
       // remove record for step if no analyses remain
       if (idsForStep.isEmpty()) {
@@ -88,7 +88,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void renameAnalysis(int analysisId, String displayName) throws WdkModelException {
+  public void renameAnalysis(long analysisId, String displayName) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).displayName = displayName;
@@ -99,7 +99,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setState(int analysisId, StepAnalysisState state) throws WdkModelException {
+  public void setState(long analysisId, StepAnalysisState state) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).state = state;
@@ -110,7 +110,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException {
+  public void setHasParams(long analysisId, boolean hasParams) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).hasParams = hasParams;
@@ -121,7 +121,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException {
+  public void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).invalidStepReason = invalidStepReason;
@@ -132,7 +132,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException {
+  public void updateContext(long analysisId, String contextHash, String serializedContext) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).contextHash = contextHash;
@@ -144,8 +144,8 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
-    List<Integer> idList = new ArrayList<>();
+  protected List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
+    List<Long> idList = new ArrayList<>();
     if (contextHash == null) return idList;
     synchronized(ANALYSIS_INFO_MAP) {
       // inefficient search but ok since past original testing phase
@@ -159,29 +159,29 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  protected List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException {
+  protected List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (STEP_ANALYSIS_MAP.containsKey(stepId)) {
         return STEP_ANALYSIS_MAP.get(stepId);
       }
-      return new ArrayList<Integer>();
+      return new ArrayList<Long>();
     }
   }
 
   @Override
-  protected List<Integer> getAllAnalysisIds() throws WdkModelException {
+  protected List<Long> getAllAnalysisIds() throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
-      return new ArrayList<Integer>(ANALYSIS_INFO_MAP.keySet());
+      return new ArrayList<Long>(ANALYSIS_INFO_MAP.keySet());
     }
   }
 
   @Override
-  protected Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds)
+  protected Map<Long, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Long> analysisIds)
       throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       synchronized(RESULT_INFO_MAP) {
-        Map<Integer, AnalysisInfoPlusStatus> map = new LinkedHashMap<>();
-        for (Integer analysisId : analysisIds) {
+        Map<Long, AnalysisInfoPlusStatus> map = new LinkedHashMap<>();
+        for (Long analysisId : analysisIds) {
           AnalysisInfoPlusStatus aips = new AnalysisInfoPlusStatus(ANALYSIS_INFO_MAP.get(analysisId));
           if (RESULT_INFO_MAP.containsKey(aips.analysisInfo.contextHash)) {
             aips.status = RESULT_INFO_MAP.get(aips.analysisInfo.contextHash).getStatus();

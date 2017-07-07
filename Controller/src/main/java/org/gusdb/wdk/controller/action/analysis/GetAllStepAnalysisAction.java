@@ -31,7 +31,7 @@ public class GetAllStepAnalysisAction extends GenericPageAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
-    Map<Integer, Analysis> analysisMap = new HashMap<>();
+    Map<Long, Analysis> analysisMap = new HashMap<>();
     for (StepAnalysisContext context : analysisMgr.getAllAnalyses()) {
       AnalysisResult result = (context.getStatus().equals(ExecutionStatus.COMPLETE) ?
           analysisMgr.getAnalysisResult(context) : null);
@@ -40,10 +40,10 @@ public class GetAllStepAnalysisAction extends GenericPageAction {
     return createJsonResult(analysisMap);
   }
 
-  private ActionResult createJsonResult(Map<Integer, Analysis> analysisMap) throws WdkModelException {
+  private ActionResult createJsonResult(Map<Long, Analysis> analysisMap) throws WdkModelException {
     try {
       JSONArray json = new JSONArray();
-      for (int id : analysisMap.keySet()) {
+      for (long id : analysisMap.keySet()) {
         Analysis analysis = analysisMap.get(id);
         JSONObject obj = new JSONObject();
         obj.put("id", id);

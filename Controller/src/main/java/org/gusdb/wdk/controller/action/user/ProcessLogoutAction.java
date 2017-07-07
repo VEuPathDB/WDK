@@ -4,13 +4,13 @@ import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
-import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.UIConfig;
 import org.gusdb.wdk.model.WdkCookie;
+import org.gusdb.wdk.session.LoginCookieFactory;
 
 /**
  * @author xingao

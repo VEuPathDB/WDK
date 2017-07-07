@@ -7,7 +7,6 @@ import javax.servlet.http.Cookie;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.OAuthClient;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
@@ -24,6 +23,7 @@ import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.session.LoginCookieFactory;
 import org.gusdb.wdk.session.OAuthUtil;
 
 /**
@@ -35,16 +35,16 @@ import org.gusdb.wdk.session.OAuthUtil;
 public class ProcessLoginAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ProcessLoginAction.class.getName());
-  
+
   private static final String REMEMBER_PARAM_KEY = "remember";
-  
+
   private static final Map<String, ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
       .addParam(CConstants.WDK_REDIRECT_URL_KEY,
           new ParamDef(Required.OPTIONAL, Count.SINGULAR, DataType.STRING, new String[]{ "/" }))
       .addParam(CConstants.WDK_EMAIL_KEY, new ParamDef(Required.OPTIONAL))
       .addParam(CConstants.WDK_PASSWORD_KEY, new ParamDef(Required.OPTIONAL))
       .addParam(REMEMBER_PARAM_KEY, new ParamDef(Required.OPTIONAL)).toMap();
-  
+
   @Override
   protected boolean shouldValidateParams() {
     // only validate params if using traditional form
@@ -104,16 +104,22 @@ public class ProcessLoginAction extends WdkAction {
    */
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
+    try {
+      // get the current user
+      UserBean currentUser = getCurrentUser();
 
-    // get the current user
-    UserBean currentUser = getCurrentUser();
-
-    if (!currentUser.isGuest()) {
-      // then user is already logged in
-      return new ActionResult().setViewName(SUCCESS);
+      if (!currentUser.isGuest()) {
+        // then user is already logged in
+        return new ActionResult().setViewName(SUCCESS);
+      }
+      else {
+        return handleLogin(params, currentUser, getWdkModel().getUserFactory());
+      }
     }
-    else {
-      return handleLogin(params, currentUser, getWdkModel().getUserFactory());
+    catch (Exception e) {
+      // make sure this exception is logged...
+      LOG.error("Could not properly process login", e);
+      throw e;
     }
   }
 
@@ -158,7 +164,7 @@ public class ProcessLoginAction extends WdkAction {
 
     try {
       OAuthClient client = new OAuthClient(modelConfig, factory);
-      int userId = client.getUserIdFromAuthCode(authCode);
+      long userId = client.getUserIdFromAuthCode(authCode);
 
       UserBean user = factory.login(guest, userId);
       if (user == null) throw new WdkModelException("Unable to find user with ID " +
@@ -183,7 +189,7 @@ public class ProcessLoginAction extends WdkAction {
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     boolean remember = params.getSingleCheckboxValue(REMEMBER_PARAM_KEY);
-    
+
     // authenticate
     try {
       UserBean user = factory.login(guest, email, password);
@@ -226,15 +232,15 @@ public class ProcessLoginAction extends WdkAction {
       return result.setViewName(INPUT);
     }
   }
-  
+
   public static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
-    
+
     // always prefer the param value passed to us from a previous action
     String referrerParamValue = params.getValueOrEmpty(CConstants.WDK_REDIRECT_URL_KEY);
     if (!referrerParamValue.isEmpty()) {
       return referrerParamValue;
     }
-      
+
     // if no referrer exists, then (presumably) user failed authentication, but in case they got
     // to the login page via bookmark or some other way, return to profile on successful login
     String referrer = requestData.getReferrer();
@@ -243,7 +249,7 @@ public class ProcessLoginAction extends WdkAction {
     }
     else if (referrer.indexOf("showLogin.do") != -1 ||
              referrer.indexOf("processLogin.do") != -1) {
-        return "showProfile.do";
+      return "showProfile.do";
     }
 
     // otherwise, return referring page
@@ -259,7 +265,7 @@ public class ProcessLoginAction extends WdkAction {
       throw new WdkUserException("You must enter both username and password.");
     }
   }
-  
+
   static int addLoginCookie(UserBean user, boolean remember, WdkModelBean model, WdkAction wdkAction) {
     try {
       // Create & send cookie

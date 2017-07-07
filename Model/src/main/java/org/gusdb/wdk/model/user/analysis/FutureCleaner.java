@@ -22,9 +22,9 @@ public class FutureCleaner implements Callable<Boolean> {
   private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
 
   public static class RunningAnalysis {
-    public int analysisId;
+    public long analysisId;
     public Future<ExecutionStatus> future;
-    public RunningAnalysis(int analysisId, Future<ExecutionStatus> future) {
+    public RunningAnalysis(long analysisId, Future<ExecutionStatus> future) {
       this.analysisId = analysisId;
       this.future = future;
     }
@@ -94,7 +94,7 @@ public class FutureCleaner implements Callable<Boolean> {
     List<RunningAnalysis> futuresToRemove = new ArrayList<>();
     for (RunningAnalysis run : _threadResults) {
       // see if this thread has been running too long; if so, cancel the job
-      int analysisId = run.analysisId;
+      long analysisId = run.analysisId;
       StepAnalysisContext context = _analysisMgr.getSavedContext(analysisId);
       if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
           context.getStatus().equals(ExecutionStatus.PENDING)) {

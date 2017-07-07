@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * Encapsulates the methods available to retrieve and override the available
@@ -106,7 +107,7 @@ public class AnswerValueAttributes {
   public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
     if (_summaryAttributeMap == null) {
       IdAttributeField pkField = _question.getRecordClass().getIdAttributeField();
-      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField });
+      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField });
     }
     //LOG.debug("Returning summary field map with keys: " +
     FormatUtil.arrayToString(_summaryAttributeMap.keySet().toArray());
@@ -116,7 +117,7 @@ public class AnswerValueAttributes {
   public static Map<String, AttributeField> buildSummaryAttributeFieldMap(
       User user, Question question, String keySuffix, AttributeField[] leftmostFields) throws WdkModelException {
     // get preferred attribs from user and initialize map
-    String[] userPrefAttributes = user.getSummaryAttributes(question.getFullName(), keySuffix);
+    String[] userPrefAttributes = user.getPreferences().getSummaryAttributes(question.getFullName(), keySuffix);
     Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
 
     // always put the primary key (all leftmostFields) as the first attribute

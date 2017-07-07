@@ -2,7 +2,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -104,7 +104,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
 		cookieValue = newValue.toString();
 	    }
             Cookie tabCookie = new Cookie(CConstants.WDK_TAB_STATE_COOKIE,
-                    URLEncoder.encode(cookieValue, "utf-8"));
+                FormatUtil.urlEncodeUtf8(cookieValue));
             // make sure it's only a session cookie, not persistent
             tabCookie.setMaxAge(-1);
             // make sure the cookie is good for whole site, not just webapp
