@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
+import { getLeaves } from '../../utils/TreeUtils';
 import {
   debounce,
   find,
@@ -8,7 +9,6 @@ import {
   isEmpty,
   isEqual,
   map,
-  memoize,
   noop,
   partial,
   partition,
@@ -16,8 +16,7 @@ import {
   reduce,
   result,
   sortBy,
-  throttle,
-  values
+  throttle
 } from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -283,7 +282,7 @@ function FieldFilter(props) {
   };
 
   return (
-    <div className="field-detail">
+    <div className={'field-detail' + (props.useFullWidth ? ' field-detail__fullWidth' : '')}>
       {!props.field ? <EmptyField displayName={props.displayName}/> : (
         <div>
           <h3>
@@ -319,7 +318,8 @@ FieldFilter.propTypes = {
   field: PropTypes.object,
   filter: PropTypes.object,
   distribution: PropTypes.array,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  useFullWidth: PropTypes.bool.isRequired
 };
 
 FieldFilter.defaultProps = {
@@ -880,6 +880,8 @@ export class ServerSideAttributeFilter extends React.Component {
   render() {
     var {
       autoFocus,
+      hideFilterPanel,
+      hideFieldPanel,
       dataCount,
       filteredDataCount,
       fields,
@@ -896,27 +898,31 @@ export class ServerSideAttributeFilter extends React.Component {
 
     return (
       <div>
-        <FilterList
-          onFilterSelect={this.props.onActiveFieldChange}
-          onFilterRemove={this.handleFilterRemove}
-          filters={filters}
-          fields={fields}
-          filteredDataCount={filteredDataCount}
-          dataCount={dataCount}
-          selectedField={activeField}
-          renderSelectionInfo={this.props.renderSelectionInfo}
-        />
+        {hideFilterPanel || (
+          <FilterList
+            onFilterSelect={this.props.onActiveFieldChange}
+            onFilterRemove={this.handleFilterRemove}
+            filters={filters}
+            fields={fields}
+            filteredDataCount={filteredDataCount}
+            dataCount={dataCount}
+            selectedField={activeField}
+            renderSelectionInfo={this.props.renderSelectionInfo}
+          />
+        )}
 
         <InvalidFilterList filters={invalidFilters}/>
 
         {/* Main selection UI */}
         <div className="filters ui-helper-clearfix">
-          <FieldList
-            autoFocus={autoFocus}
-            fields={fields}
-            onFieldSelect={this.props.onActiveFieldChange}
-            selectedField={activeField}
-          />
+          {hideFieldPanel || (
+            <FieldList
+              autoFocus={autoFocus}
+              fields={fields}
+              onFieldSelect={this.props.onActiveFieldChange}
+              selectedField={activeField}
+            />
+          )}
 
           <FieldFilter
             displayName={displayName}
@@ -924,6 +930,7 @@ export class ServerSideAttributeFilter extends React.Component {
             filter={selectedFilter}
             distribution={activeFieldSummary}
             onChange={this.handleFieldFilterChange}
+            useFullWidth={hideFieldPanel}
           />
         </div>
       </div>
@@ -935,8 +942,9 @@ export class ServerSideAttributeFilter extends React.Component {
 ServerSideAttributeFilter.propTypes = {
 
   displayName: PropTypes.string,
-
   autoFocus: PropTypes.bool,
+  hideFilterPanel: PropTypes.bool,
+  hideFieldPanel: PropTypes.bool,
 
   // state
   fields: PropTypes.object.isRequired, // tree nodes
@@ -958,7 +966,9 @@ ServerSideAttributeFilter.propTypes = {
 };
 
 ServerSideAttributeFilter.defaultProps = {
-  displayName: 'Items'
+  displayName: 'Items',
+  hideFilterPanel: false,
+  hideFieldPanel: false
 };
 
 function InvalidFilterList(props) {
