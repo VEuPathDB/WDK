@@ -49,7 +49,7 @@ public class B33_To_B34_Migration {
   private static final boolean REPLICATED_DBS = false; // keep off until testing on apicommDev
 
   // connection information to user DBs
-  private static final String PRIMARY_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972"; // to be apicommdevn
+  private static final String PRIMARY_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@apicommdevn"; // to be apicommdevn
   //private static final String REPLICATED_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972"; // to be apicommdevs
 
   // connection information to account DBs
@@ -70,7 +70,7 @@ public class B33_To_B34_Migration {
   private static final String NEW_USER_ID_SEQUENCE = NEW_TABLE_ACCOUNTS + "_PKSEQ";
 
   // userdb objects needed to be read while creating account DB
-  private static final String ACCOUNTDB_DBLINK_TO_USERDB = "@RM9972.UPENN.EDU"; // add dblink suffix (including '@') to userdb here if needed
+  private static final String ACCOUNTDB_DBLINK_TO_USERDB = "@APICOMMR.UPENN.EDU"; // add dblink suffix (including '@') to userdb here if needed
   private static final String SOURCE_USERS_TABLE = USERS_TABLE + ACCOUNTDB_DBLINK_TO_USERDB;
   private static final String SOURCE_USERS_BACKUP_TABLE = BACKUP_USERS_TABLE + ACCOUNTDB_DBLINK_TO_USERDB;
   private static final String SOURCE_USER_ID_SEQUENCE = USERS_TABLE + "_PKSEQ";
