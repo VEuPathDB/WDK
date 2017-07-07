@@ -33,7 +33,7 @@ public class DatasetBean {
      * @return
      * @see org.gusdb.wdk.model.dataset.Dataset#getDatasetId()
      */
-    public int getDatasetId() {
+    public long getDatasetId() {
         return dataset.getDatasetId();
     }
 

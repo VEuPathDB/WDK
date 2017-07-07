@@ -1,12 +1,12 @@
 import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
-import {ActionCreator} from "../ActionCreator";
-import {User, UserPreferences} from "../utils/WdkUser";
+import {ActionCreator, DispatchAction} from "../ActionCreator";
+import {User, UserPreferences, PreferenceScope, UserWithPrefs} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
-import { State as ProfileStoreState } from '../stores/UserProfileStore';
+import { State as ProfileStoreState, UserProfileFormData } from '../stores/UserProfileStore';
 
 // actions to update true user and preferences
 export type UserUpdateAction = {
@@ -19,8 +19,13 @@ export type PreferenceUpdateAction = {
   type: 'user/preference-update',
   payload: UserPreferences
 }
+export type PreferencesUpdateAction = {
+  type: 'user/preferences-update',
+  payload: UserPreferences
+}
+type PrefAction = PreferenceUpdateAction|PreferencesUpdateAction;
 
-// actions to manage the user profile form
+// actions to manage the user profile/registration forms
 export type ProfileFormUpdateAction = {
   type: 'user/profile-form-update',
   payload: {
@@ -33,6 +38,10 @@ export type ProfileFormSubmissionStatusAction = {
     formStatus: ProfileStoreState['formStatus'];
     errorMessage: string | undefined;
   }
+}
+
+export type ClearRegistrationFormAction = {
+  type: 'user/clear-registration-form'
 }
 
 // actions to manage user password form
@@ -106,25 +115,41 @@ export type FavoritesStatusErrorAction = {
  * Merge supplied key-value pair with user preferences and update
  * on the server.
  */
-export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (key: string, value: string) => {
+export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (scope: PreferenceScope, key: string, value: string) => {
+  return function run(dispatch, { wdkService }) {
+    let updatePromise = wdkService.updateCurrentUserPreference(scope, key, value);
+    return dispatch(sendPrefUpdateOnCompletion(updatePromise,
+        'user/preference-update', { [scope]: { [key]: value } }) as Promise<PreferenceUpdateAction>);
+  };
+};
+
+export let updateUserPreferences: ActionCreator<PreferencesUpdateAction> = (newPreferences: UserPreferences) => {
+  return function run(dispatch, { wdkService }) {
+    let updatePromise = wdkService.updateCurrentUserPreferences(newPreferences);
+    return dispatch(sendPrefUpdateOnCompletion(updatePromise,
+        'user/preferences-update', newPreferences) as Promise<PreferencesUpdateAction>);
+  };
+};
+
+let sendPrefUpdateOnCompletion: ActionCreator<PreferenceUpdateAction|PreferencesUpdateAction> =
+    (promise: Promise<void>, actionName: string, payload: UserPreferences) => {
   return function run(dispatch, { wdkService }) {
     let prefUpdater = function() {
-      dispatch(broadcast({
-        type: 'user/preference-update',
-        payload: { [key]: value } as UserPreferences
-      }) as PreferenceUpdateAction);
+      return dispatch(broadcast({
+        type: actionName,
+        payload: payload as UserPreferences
+      }) as PreferenceUpdateAction|PreferencesUpdateAction);
     };
-    wdkService.updateCurrentUserPreference({ [key]: value })
-      .then(
-        () => {
-          prefUpdater();
-        },
-        (error) => {
-          console.error(error.response);
-          // update stores anyway; not a huge deal if preference doesn't make it to server
-          prefUpdater();
-        }
-      );
+    return promise.then(
+      () => {
+        prefUpdater();
+      },
+      (error) => {
+        console.error(error.response);
+        // update stores anyway; not a huge deal if preference doesn't make it to server
+        prefUpdater();
+      }
+    );
   };
 };
 
@@ -147,19 +172,51 @@ function createFormStatusAction(actionType: string, status: string, errorMessage
 }
 
 /** Save user profile to DB */
-export let submitProfileForm: ActionCreator<UserUpdateAction|ProfileFormSubmissionStatusAction> = (user: User) => {
+type SubmitProfileFormType = ActionCreator<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction>;
+export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
-    let trimmedUser = <User>filterOutProps(user, ["isGuest", "id", "preferences", "confirmEmail"]);
-    return dispatch(wdkService.updateCurrentUser(trimmedUser)
+    let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "confirmEmail", "preferences"]);
+    let userPromise = wdkService.updateCurrentUser(trimmedUser);
+    let prefPromise = wdkService.updateCurrentUserPreferences(user.preferences as UserPreferences); // should never be null by this point
+    return dispatch(Promise.all([userPromise, prefPromise])
       .then(() => {
-        // success; update user first, then status in ProfileViewStore
+        // success; update user first, then prefs, then status in ProfileViewStore
         dispatch(broadcast({
           type: 'user/user-update',
           // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
-          // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail'
-          payload: { user: filterOutProps(user, ["confirmEmail"]) as User}
+          // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail' and 'preferences'
+          payload: { user: filterOutProps(user, ["confirmEmail", "preferences"]) as User }
         }) as UserUpdateAction);
+        dispatch(broadcast({
+          type: 'user/preferences-update',
+          payload: user.preferences as UserPreferences
+        }) as PreferencesUpdateAction);
+        return createProfileFormStatusAction('success');
+      })
+      .catch((error) => {
+        console.error(error.response);
+        return createProfileFormStatusAction('error', error.response);
+      }));
+  };
+};
+
+/** Register user */
+type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
+export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserProfileFormData) => {
+  return function run(dispatch, { wdkService }) {
+    dispatch(createProfileFormStatusAction('pending'));
+    let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
+    let registrationData: UserWithPrefs = {
+      user: trimmedUser,
+      preferences: formData.preferences as UserPreferences
+    }
+    return dispatch(wdkService.createNewUser(registrationData)
+      .then(responseData => {
+        // success; clear the form in case user wants to register another user
+        dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
+        // then transition to registration success message page
+        
         return createProfileFormStatusAction('success');
       })
       .catch((error) => {
@@ -259,7 +316,7 @@ let logout: ActionCreator<{type:'__'}> = () => {
   }
 };
 
-
+//----------------------------------
 // Basket action creators and helpers
 // ----------------------------------
 

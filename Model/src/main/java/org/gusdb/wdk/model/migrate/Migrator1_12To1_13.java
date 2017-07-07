@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.migrate;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,9 +15,9 @@ import javax.sql.DataSource;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -147,7 +148,7 @@ public class Migrator1_12To1_13 implements Migrator {
         // Utilities.DATA_DIVIDER);
         // String content = projectId + Utilities.DATA_DIVIDER + params;
         String content = projectId + "--WDK_PARAM_DIVIDER--" + params;
-        String checksum = Utilities.encrypt(content);
+        String checksum = EncryptionUtil.encrypt(content);
 
         HistoryItem item = new HistoryItem();
         item.setChecksum(checksum);

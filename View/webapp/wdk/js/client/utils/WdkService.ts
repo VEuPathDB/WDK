@@ -24,7 +24,7 @@ import {
   OntologyTermSummary,
   Favorite
 } from './WdkModel';
-import {User, UserPreferences, Step} from './WdkUser';
+import {User, PreferenceScope, UserPreferences, Step, UserWithPrefs} from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
 
 /**
@@ -394,6 +394,10 @@ export default class WdkService {
     return this._currentUserPromise;
   }
 
+  createNewUser(userWithPrefs: UserWithPrefs) {
+    return this._fetchJson<User>('post', '/user', JSON.stringify(userWithPrefs));
+  }
+
   updateCurrentUser(user: User) {
     let url = '/user/current';
     let data = JSON.stringify(user);
@@ -413,16 +417,26 @@ export default class WdkService {
     return this._preferences;
   }
 
-  updateCurrentUserPreference(entries: UserPreferences) {
+  updateCurrentUserPreference(scope: PreferenceScope, key: string, value: string) {
+    let entries = { [scope]: { [key]: value }};
     let url = '/user/current/preference';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('patch', url, data).then(() => {
-
       // merge with cached preferences only if patch succeeds
       this._preferences = this._preferences.then(preferences => {
         return { ...preferences, ...entries };
       });
+    });
+  }
 
+  updateCurrentUserPreferences(entries: UserPreferences) {
+    let url = '/user/current/preference';
+    let data = JSON.stringify(entries);
+    return this._fetchJson<void>('put', url, data).then(() => {
+      // merge with cached preferences only if patch succeeds
+      this._preferences = this._preferences.then(preferences => {
+        return { ...entries };
+      });
     });
   }
 

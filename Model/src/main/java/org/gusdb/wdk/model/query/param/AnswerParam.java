@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -158,7 +159,7 @@ public class AnswerParam extends Param {
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
-    Step step = user.getStep(stepId);
+    Step step = StepUtilities.getStep(user, stepId);
 
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().getFullName();

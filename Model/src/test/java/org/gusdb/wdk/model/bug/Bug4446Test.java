@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
@@ -54,7 +55,7 @@ public class Bug4446Test {
     // set the custom name
     transformStep.setCustomName(CUSTOM_NAME);
     transformStep.update(false);
-    Strategy strategy = user.createStrategy(transformStep, false);
+    Strategy strategy = StepUtilities.createStrategy(transformStep, false);
     logger.debug("name before revising: " + strategy.getLatestStep().getCustomName());
 
     // now revise the previous step of the boolean
@@ -72,7 +73,7 @@ public class Bug4446Test {
     Step leftOperand = UnitTestHelper.createNormalStep(user);
     Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-    return user.createBooleanStep(leftOperand.getStrategyId(), leftOperand, rightOperand,
+    return StepUtilities.createBooleanStep(user, leftOperand.getStrategyId(), leftOperand, rightOperand,
         BooleanOperator.UNION, null);
   }
 
@@ -94,11 +95,11 @@ public class Bug4446Test {
     Param[] params = question.getParams();
     for (Param param : params) {
       if (param instanceof AnswerParam) {
-        String inputValue = Integer.toString(inputStep.getStepId());
+        String inputValue = Long.toString(inputStep.getStepId());
         values.put(param.getName(), inputValue);
       }
     }
 
-    return user.createStep(inputStep.getStrategyId(), question, values, (String) null, false, false, 0);
+    return StepUtilities.createStep(user, inputStep.getStrategyId(), question, values, (String) null, false, false, 0);
   }
 }

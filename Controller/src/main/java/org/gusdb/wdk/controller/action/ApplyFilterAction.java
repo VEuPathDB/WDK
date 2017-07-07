@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,27 +43,26 @@ public class ApplyFilterAction extends Action {
       String strStepId = request.getParameter(PARAM_STEP);
       if (strStepId == null)
         throw new WdkUserException("Required step parameter is missing.");
-      int stepId = Integer.valueOf(strStepId);
+      long stepId = Long.valueOf(strStepId);
 
       UserBean user = ActionUtility.getUser(servlet, request);
  
-
       // before changing step, need to check if strategy is saved, if yes, make a copy.
       String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
       if (strStrategyId != null && !strStrategyId.isEmpty()) {
-        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
-        StrategyBean strategy = user.getStrategy(strategyId);
+        long strategyId = Long.valueOf(strStrategyId.split("_", 2)[0]);
+        StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), strategyId));
         if (strategy.getIsSaved()) {
           // cannot modify saved strategy directly, will need to create a copy, and change the steps of the
           // copy instead.
-          Map<Integer, Integer> stepIdMap = new HashMap<>();
+          Map<Long, Long> stepIdMap = new HashMap<>();
           strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
           // map the old step id to the new one.
           stepId = stepIdMap.get(stepId);
         }
       }
       
-      StepBean step = user.getStep(stepId);
+      StepBean step = new StepBean(user, StepUtilities.getStep(user.getUser(), stepId));
       JSONObject options = prepareOptions(request);
       AnswerValueBean answer = step.getAnswerValue();
       QuestionBean question = answer.getQuestion();
@@ -78,8 +78,8 @@ public class ApplyFilterAction extends Action {
       LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showApplication);
 
       StringBuffer url = new StringBuffer(showApplication.getPath());
-      // String state = request.getParameter(CConstants.WDK_STATE_KEY);
-      // url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      //String state = request.getParameter(CConstants.WDK_STATE_KEY);
+      //url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);

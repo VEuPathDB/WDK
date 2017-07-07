@@ -82,7 +82,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection , java.lang.String)
    */
   @Override
-  public void insertToCache(String tableName, int instanceId) throws WdkModelException, WdkUserException {
+  public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
     String rowIdColumn = CacheFactory.COLUMN_ROW_ID;
 
@@ -187,7 +187,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
    */
   @Override
-  public void createCache(String tableName, int instanceId) throws WdkModelException, WdkUserException {
+  public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     logger.debug("creating cache table for query " + query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();

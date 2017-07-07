@@ -14,8 +14,8 @@ export default wrappable(class QuestionController extends WdkViewController {
     return "QuestionStore";
   }
 
-  loadData(state, nextProps) {
-    this.dispatchAction(loadQuestion(nextProps.params.question));
+  loadData(actionCreators, state, nextProps) {
+    actionCreators.loadQuestion(nextProps.params.question);
   }
 
   isRenderDataLoaded(state) {

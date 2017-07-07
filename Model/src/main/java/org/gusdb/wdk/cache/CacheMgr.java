@@ -1,5 +1,8 @@
 package org.gusdb.wdk.cache;
 
+import java.util.List;
+import java.util.Map;
+
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParam.MetadataCache;
@@ -27,10 +30,10 @@ public class CacheMgr {
   private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
   private final MetadataCache _metadataCache = new MetadataCache();
   private final MetadataCache _metadataSpecCache = new MetadataCache();
+  private final ItemCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new ItemCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
   private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
-
 
   private CacheMgr() { }
 
@@ -39,9 +42,9 @@ public class CacheMgr {
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
   public MetadataCache getMetadataCache() { return _metadataCache; }
   public MetadataCache getOntologyCache() { return _metadataSpecCache; }
+  public ItemCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
-
 
 }

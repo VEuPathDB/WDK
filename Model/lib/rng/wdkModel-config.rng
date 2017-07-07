@@ -15,9 +15,6 @@
                 <attribute name="secretKeyFile" />
             </optional>
             <optional>
-                <attribute name="defaultRole" />
-            </optional>
-            <optional>
                 <attribute name="adminEmail" />
             </optional>
             <attribute name="wdkTempDir" />
@@ -66,8 +63,9 @@
             <optional>
                 <attribute name="keyStorePassPhrase"/>
             </optional>
+
             <interleave>
-            
+
                 <optional>
                     <ref name="queryMonitor" />
                 </optional>
@@ -75,51 +73,79 @@
                 <optional>
                     <element name="paramRegex">
                         <text />
-                    </element>   
+                    </element>
                 </optional>
 
                 <element name="appDb">
+                    <ref name="DBBaseContent" />
                     <attribute name="userDbLink" />
                     <optional>
                         <attribute name="maxPkColumnWidth">
                             <data type="unsignedShort" />
                         </attribute>
                     </optional>
-                    <ref name="DBBaseContent" />
                 </element>
-                
-                <element name="userDb">
-                    <attribute name="userSchema" />
-                    <ref name="DBBaseContent" />
-                </element>
-                
-		<optional>
-		  <element name="userDatasetStore">
-		    <attribute name="implementation"/>
-		    <zeroOrMore>
-		      <element name="property">
-			<attribute name="name" />
-			<text />
-		      </element>
-		    </zeroOrMore>
-		    <oneOrMore>
-		      <element name="typeHandler">
-			<attribute name="type"/>
-			<attribute name="version"/>
-			<attribute name="implementation"/>
-		      </element>
-		    </oneOrMore>
-		  </element>
-		</optional>
 
-               <element name="emailSubject">
+                <element name="userDb">
+                    <ref name="DBBaseContent" />
+                    <attribute name="userSchema" />
+                </element>
+
+                <element name="accountDb">
+                    <ref name="DBBaseContent" />
+                    <attribute name="accountSchema" />
+                    <zeroOrMore>
+                        <element name="userProperty">
+                          <attribute name="name">
+                              <data type="string"/>
+                          </attribute>
+                          <attribute name="displayName">
+                              <data type="string"/>
+                          </attribute>
+                          <attribute name="dbKey">
+                              <data type="string"/>
+                          </attribute>
+                          <optional>
+                            <attribute name="required">
+                              <data type="boolean"/>
+                            </attribute>
+                          </optional>
+                          <optional>
+                            <attribute name="public">
+                              <data type="boolean"/>
+                            </attribute>
+                          </optional>
+                        </element>
+                    </zeroOrMore>
+                </element>
+
+                <optional>
+                    <element name="userDatasetStore">
+                        <attribute name="implementation"/>
+                        <zeroOrMore>
+                            <element name="property">
+                                <attribute name="name" />
+                                <text />
+                            </element>
+                        </zeroOrMore>
+                        <oneOrMore>
+                            <element name="typeHandler">
+                                <attribute name="type"/>
+                                <attribute name="version"/>
+                                <attribute name="implementation"/>
+                            </element>
+                        </oneOrMore>
+                    </element>
+                </optional>
+
+                <element name="emailSubject">
                     <text />
-                </element>   
-                     
+                </element>
+
                 <element name="emailContent">
                     <text />
                 </element>
-            
+
             </interleave>
         </element>
     </start>
@@ -137,7 +163,6 @@
               <data type="float" />
             </attribute>
           </optional>
-          
           <zeroOrMore>
             <choice>
               <element name="ignoreSlowRegex">
@@ -157,10 +182,10 @@
         <attribute name="password" />
         <attribute name="connectionUrl" />
         <attribute name="platform">
-           <choice>
-              <value>Oracle</value>
-              <value>PostgreSQL</value>
-           </choice>
+            <choice>
+                <value>Oracle</value>
+                <value>PostgreSQL</value>
+            </choice>
         </attribute>
         <optional>
             <attribute name="maxActive">
@@ -204,5 +229,5 @@
                 </optional>
             </group>
         </optional>
-    </define>  
+    </define>
 </grammar>

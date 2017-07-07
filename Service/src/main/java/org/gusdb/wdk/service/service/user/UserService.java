@@ -21,7 +21,7 @@ public abstract class UserService extends WdkService {
 
   private final String _userIdStr;
 
-  public UserService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {
+  protected UserService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {
     _userIdStr = userIdStr;
   }
 

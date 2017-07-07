@@ -1,12 +1,11 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -19,111 +18,49 @@ import org.gusdb.wdk.model.user.UserFactory;
  */
 public class UserFactoryBean {
 
-    private UserFactory userFactory;
+    private final UserFactory _userFactory;
+    private final WdkModel _wdkModel;
 
-    private volatile String signature;
+    // set and gotten during a request to refer to a single user within this factory bean
+    //   RRD: don't really like this; should be removed when we ditch most of the beans and JSP
+    private volatile String _signature;
 
-    /**
-     * 
-     */
-    public UserFactoryBean(UserFactory userFactory) {
-        this.userFactory = userFactory;
+    public UserFactoryBean(WdkModel wdkModel, UserFactory userFactory) {
+        _userFactory = userFactory;
+        _wdkModel = wdkModel;
     }
 
-    public static String encrypt(String str) {
-        return UserFactory.encrypt(str);
+    public UserBean getGuestUser() {
+        return new UserBean(new GuestUser(_wdkModel));
     }
 
-    public static String md5(String str) {
-        return UserFactory.md5(str);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#createGuestUser()
-     */
-    public UserBean getGuestUser() throws WdkModelException {
-        return new UserBean(userFactory.createGuestUser());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#createUser(java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
-    public UserBean createUser(String email, String lastName, String firstName,
-            String middleName, String title, String organization,
-            String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country,
+    public UserBean createUser(String email, 
+            Map<String, String> profileProperties,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences) throws WdkUserException,
-            WdkModelException {
-        User user = userFactory.createUser(email, lastName, firstName,
-                middleName, title, organization, department, address, city,
-                state, zipCode, phoneNumber, country, globalPreferences,
-                projectPreferences);
+            Map<String, String> projectPreferences) throws WdkModelException, WdkUserException {
+        User user = _userFactory.createUser(email, profileProperties,
+            globalPreferences, projectPreferences);
         return new UserBean(user);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#createUser(java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
-    public UserBean createUser(String email, String lastName, String firstName,
-            String middleName, String title, String organization,
-            String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country,
+    public UserBean createUser(String email, 
+            Map<String, String> profileProperties,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences, boolean resetPw) throws WdkUserException,
-            WdkModelException {
-        User user = userFactory.createUser(email, lastName, firstName,
-                middleName, title, organization, department, address, city,
-                state, zipCode, phoneNumber, country, globalPreferences,
-                projectPreferences, resetPw);
+            Map<String, String> projectPreferences, boolean resetPw) throws WdkModelException, WdkUserException {
+        User user = _userFactory.createUser(email, profileProperties,
+            globalPreferences, projectPreferences, resetPw);
         return new UserBean(user);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#getDefaultRole()
-     */
-    public String getDefaultRole() {
-        return userFactory.getDefaultRole();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#getProjectId()
-     */
-    public String getProjectId() {
-        return userFactory.getProjectId();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#authenticate(java.lang.String,
-     * java.lang.String)
-     */
     public UserBean login(UserBean guest, String email, String password)
             throws WdkModelException, WdkUserException {
-        User user = userFactory.login(guest.getUser(), email, password);
+        User user = _userFactory.login(guest.getUser(), email, password);
         return new UserBean(user);
     }
 
-    public UserBean login(UserBean guest, int userId)
+    public UserBean login(UserBean guest, long userId)
         throws WdkModelException, WdkUserException {
-      User user = userFactory.login(guest.getUser(), userId);
+      User user = _userFactory.login(guest.getUser(), userId);
       if (user == null) return null;
       return new UserBean(user);
     }
@@ -136,7 +73,7 @@ public class UserFactoryBean {
      * .user.User)
      */
     public void resetPassword(String email) throws WdkUserException, WdkModelException {
-        userFactory.resetPassword(email);
+        _userFactory.resetPassword(email);
     }
 
     /*
@@ -146,7 +83,7 @@ public class UserFactoryBean {
      */
     public UserBean getUserByEmail(String email) throws WdkModelException,
             WdkUserException {
-        User user = userFactory.getUserByEmail(email);
+        User user = _userFactory.getUserByEmail(email);
         if (user == null) {
           throw new WdkUserException("Cannot find user with email: " + email);
         }
@@ -160,7 +97,7 @@ public class UserFactoryBean {
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
     public UserBean getUser(String signature) throws WdkModelException, WdkUserException {
-        User user = userFactory.getUser(signature);
+        User user = _userFactory.getUserBySignature(signature);
         return new UserBean(user);
     }
 
@@ -170,15 +107,15 @@ public class UserFactoryBean {
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
      */
     public UserBean getUser(int userId) throws WdkModelException {
-        User user = userFactory.getUser(userId);
+        User user = _userFactory.getUserById(userId);
         return new UserBean(user);
     }
 
     public void setSignature(String signature) {
-        this.signature = signature;
+        _signature = signature;
     }
 
     public UserBean getUser() throws WdkModelException, WdkUserException {
-        return (signature == null) ? null : getUser(signature);
+        return (_signature == null) ? null : getUser(_signature);
     }
 }

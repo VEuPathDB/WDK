@@ -35,14 +35,15 @@ public class SqlQueryResultSizePlugin implements ResultSize {
       throws WdkModelException, WdkUserException {
 
     QueryInstance<?> queryInstance = getQueryInstance(answerValue, idSql);
-    ResultList results = queryInstance.getResults();
-    results.next();
-    Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-    if (results.next())
-      throw new WdkModelException("Record class '" + recordClass.getName() +
-          "' has an SqlResultSizePlugin whose SQL returns more than one row.");
-    return count;
+    try (ResultList results = queryInstance.getResults()) {
+      results.next();
+      Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();
+      RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+      if (results.next())
+        throw new WdkModelException("Record class '" + recordClass.getName() +
+            "' has an SqlResultSizePlugin whose SQL returns more than one row.");
+      return count;
+    }
   }
 
   private QueryInstance<?> getQueryInstance(AnswerValue answerValue, String idSql) throws WdkModelException {

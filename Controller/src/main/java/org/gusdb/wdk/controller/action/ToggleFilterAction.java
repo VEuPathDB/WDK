@@ -8,6 +8,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
@@ -63,8 +64,8 @@ public class ToggleFilterAction extends Action {
     LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showApplication);
 
     StringBuffer url = new StringBuffer(showApplication.getPath());
-    // String state = request.getParameter(CConstants.WDK_STATE_KEY);
-    // url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+    //String state = request.getParameter(CConstants.WDK_STATE_KEY);
+    //url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
 
     ActionForward forward = new ActionForward(url.toString());
     forward.setRedirect(true);

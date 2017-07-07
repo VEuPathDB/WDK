@@ -8,8 +8,8 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * @author xingao
@@ -25,23 +25,24 @@ public class ProcessSavePreferenceAction extends WdkAction {
 
   @Override
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
-      UserBean wdkUser = getCurrentUser();
+      User wdkUser = getCurrentUser().getUser();
       
       for (String key : params.getKeys()) {
         String value = params.getValue(key);
         if (key.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
-          wdkUser.setGlobalPreference(key, value);
+          wdkUser.getPreferences().setGlobalPreference(key, value);
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);
         }
-        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY) || key.startsWith(User.SUMMARY_VIEW_PREFIX)) {
-          wdkUser.setProjectPreference(key, value);
+        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY) ||
+            key.startsWith(UserPreferences.SUMMARY_VIEW_PREFIX)) {
+          wdkUser.getPreferences().setProjectPreference(key, value);
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);
         }
       }
 
-      wdkUser.save();
+      getWdkModel().getModel().getUserFactory().savePreferences(wdkUser);
       return ActionResult.EMPTY_RESULT;
     }
 }

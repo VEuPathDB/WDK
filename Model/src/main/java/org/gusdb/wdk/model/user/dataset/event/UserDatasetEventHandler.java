@@ -118,7 +118,7 @@ public class UserDatasetEventHandler {
    * @param userDatasetSchemaName
    * @return
    */
-  private static boolean checkUserDatasetInstalled(Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private static boolean checkUserDatasetInstalled(Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Checking if user dataset " + userDatasetId + " is installed");
     BasicResultSetHandler handler = new BasicResultSetHandler();
     String sql = "select user_dataset_id from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
@@ -137,7 +137,7 @@ public class UserDatasetEventHandler {
    * @param userDatasetSchemaName
    * @param tableName
    */
-  private static void grantShareAccess(Integer ownerId, Integer recipientId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
+  private static void grantShareAccess(Long ownerId, Long recipientId, Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Granting recipient " + recipientId + " access to user dataset " + userDatasetId + " belonging to owner " + ownerId + " in table " + tableName);
     String sql = "insert into " + userDatasetSchemaName + tableName + " (owner_user_id, recipient_user_id, user_dataset_id) values (?, ?, ?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
@@ -145,7 +145,7 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
   }
 
-  private static void grantAccess(Integer userId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
+  private static void grantAccess(Long userId, Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Granting access to user dataset " + userDatasetId + " to user " + userId + " in table " + tableName);
     String sql = "insert into " + userDatasetSchemaName + tableName + " (user_id, user_dataset_id) values (?, ?)";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
@@ -153,7 +153,7 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
   }
   
-  private static void revokeShareAccess(Integer ownerId, Integer recipientId, Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
+  private static void revokeShareAccess(Long ownerId, Long recipientId, Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName, String tableName) {
     logger.info("Revoking access by recipient " + recipientId + " to user dataset " + userDatasetId + " belonging to owner " + ownerId);
     String sql = "delete from " + userDatasetSchemaName + tableName + " where owner_user_id = ? and recipient_user_id = ? and user_dataset_id = ?";
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
@@ -161,7 +161,7 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
   }
 
-  private static void revokeAllAccess(Integer userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private static void revokeAllAccess(Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
     logger.info("Revoking all access to user dataset " + userDatasetId);
     Object[] args = {userDatasetId};
     

@@ -69,7 +69,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection , java.lang.String)
    */
   @Override
-  public void insertToCache(String tableName, int instanceId) throws WdkModelException, WdkUserException {
+  public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     logger.debug("inserting process query result to cache...");
     List<Column> columns = Arrays.asList(query.getColumns());
     Set<String> columnNames = query.getColumnMap().keySet();
@@ -162,7 +162,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
   }
 
-  private String buildCacheInsertSql(String tableName, int instanceId, List<Column> columns,
+  private String buildCacheInsertSql(String tableName, long instanceId, List<Column> columns,
       Set<String> columnNames) {
 
     String weightColumn = Utilities.COLUMN_WEIGHT;
@@ -226,7 +226,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
    */
   @Override
-  public void createCache(String tableName, int instanceId) throws WdkModelException, WdkUserException {
+  public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     logger.debug("creating process query cache...");
     DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
     Column[] columns = query.getColumns();
@@ -296,11 +296,12 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   public int getResultSize() throws WdkModelException, WdkUserException {
     if (!getIsCacheable()) {
       int count = 0;
-      ResultList resultList = getResults();
-      while (resultList.next()) {
-        count++;
+      try (ResultList resultList = getResults()) {
+        while (resultList.next()) {
+          count++;
+        }
+        return count;
       }
-      return count;
     }
     else
       return super.getResultSize();

@@ -44,7 +44,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
  * @author steve
  *
  */
-
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   protected static final String DATASET_JSON_FILE = "dataset.json";
@@ -53,24 +52,25 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected static final String SHARED_WITH_DIR = "sharedWith";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
-  
-  protected Path usersRootDir;
-  protected UserDatasetStoreAdaptor adaptor;
-  protected String id;
-  
+
+  protected Path _usersRootDir;
+  protected UserDatasetStoreAdaptor _adaptor;
+  protected String _id;
+
+  @Override
   public Path getUsersRootDir() {
-	return usersRootDir;
+    return _usersRootDir;
   }
-  
+
   @Override
   public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
-    usersRootDir = Paths.get(pathName);
+    _usersRootDir = Paths.get(pathName);
     typeHandlersMap = typeHandlers;
   }
-  
+
   @Override
   public UserDatasetTypeHandler getTypeHandler(UserDatasetType type) {
     return typeHandlersMap.get(type);
@@ -78,7 +78,6 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   @Override
   public String getId() {
-	return id;
+    return _id;
   }
-
 }

@@ -12,7 +12,7 @@ public interface StepAnalysisFactory {
 
   public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException;
 
-  public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException;
+  public Map<Long, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException;
 
   public boolean hasCompleteAnalyses(Step step) throws WdkModelException;
 
@@ -43,7 +43,7 @@ public interface StepAnalysisFactory {
 
   public void renameContext(StepAnalysisContext context) throws WdkModelException;
 
-  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException;
+  public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException;
 
   public StepAnalysisViewResolver getViewResolver();
 

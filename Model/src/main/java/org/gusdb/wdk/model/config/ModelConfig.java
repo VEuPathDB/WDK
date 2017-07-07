@@ -30,8 +30,6 @@ public class ModelConfig implements OAuthConfig {
   private String modelName;
   private String webServiceUrl;
 
-  private String defaultRole = "wdk_user";
-
   // the information for registration email
 
   /**
@@ -71,6 +69,7 @@ public class ModelConfig implements OAuthConfig {
 
   private ModelConfigUserDB userDB;
   private ModelConfigAppDB appDB;
+  private ModelConfigAccountDB accountDB;
 
   private ModelConfigUserDatasetStore userDatasetStoreConfig;
 
@@ -318,18 +317,18 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @return the defaultRole
+   * @return the accountDB
    */
-  public String getDefaultRole() {
-    return defaultRole;
+  public ModelConfigAccountDB getAccountDB() {
+    return accountDB;
   }
 
   /**
-   * @param defaultRole
-   *          the defaultRole to set
+   * @param accountDB
+   *          the accountDB to set
    */
-  public void setDefaultRole(String defaultRole) {
-    this.defaultRole = defaultRole;
+  public void setAccountDB(ModelConfigAccountDB accountDB) {
+    this.accountDB = accountDB;
   }
 
   /**

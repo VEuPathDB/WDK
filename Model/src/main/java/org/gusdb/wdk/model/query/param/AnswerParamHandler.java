@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 
@@ -41,7 +42,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     Step step = (Step) rawValue;
-    return Integer.toString(step.getStepId());
+    return Long.toString(step.getStepId());
   }
 
   /**
@@ -56,7 +57,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public Step toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     int stepId = Integer.valueOf(stableValue);
-    return user.getStep(stepId);
+    return StepUtilities.getStep(user, stepId);
   }
 
   /**
@@ -77,7 +78,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     if (param.isNoTranslation())
       return Integer.toString(stepId);
 
-    Step step = user.getStep(stepId);
+    Step step = StepUtilities.getStep(user, stepId);
     AnswerValue answerValue = step.getAnswerValue();
     return answerValue.getIdSql();
   }
@@ -96,7 +97,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue)
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
-    Step step = user.getStep(stepId);
+    Step step = StepUtilities.getStep(user, stepId);
     AnswerValue answerValue = step.getAnswerValue(false);
     String checksum= answerValue.getChecksum();
     LOG.debug("Signature for step#" + stepId + ": " + checksum);
@@ -125,8 +126,8 @@ public class AnswerParamHandler extends AbstractParamHandler {
     if (stepId == null || stepId.length() == 0)
       throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
     try {
-      Step step = user.getStep(Integer.valueOf(stepId));
-      return Integer.toString(step.getStepId());
+      Step step = StepUtilities.getStep(user, Integer.valueOf(stepId));
+      return Long.toString(step.getStepId());
     }
     catch (NumberFormatException ex) {
       throw new WdkUserException("Invalid input to parameter '" + param.getPrompt() +
@@ -147,9 +148,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
         if (strategyKey != null) {
           int pos = strategyKey.indexOf("_");
           if (pos < 0) {
-            int strategyId = Integer.parseInt(strategyKey);
-            Strategy strategy = user.getStrategy(strategyId);
-            stepId = Integer.toString(strategy.getLatestStepId());
+            long strategyId = Long.parseLong(strategyKey);
+            Strategy strategy = StepUtilities.getStrategy(user, strategyId);
+            stepId = Long.toString(strategy.getLatestStepId());
           }
           else {
             stepId = strategyKey.substring(pos + 1);
@@ -164,7 +165,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     // if stable value is assigned, also prepare the raw value
     if (stableValue != null) {
       requestParams.setParam(param.getName(), stableValue);
-      Step step = user.getStep(Integer.valueOf(stableValue));
+      Step step = StepUtilities.getStep(user, Integer.valueOf(stableValue));
       requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
   }

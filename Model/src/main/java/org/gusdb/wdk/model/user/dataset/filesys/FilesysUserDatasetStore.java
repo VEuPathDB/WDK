@@ -26,22 +26,23 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   @Override
   public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     super.initialize(configuration, typeHandlers);
-    try (FilesysUserDatasetSession session = getSession(usersRootDir)) {
+    try (FilesysUserDatasetSession session = getSession(_usersRootDir)) {
       session.checkRootDirExists();
-      id = session.initializeUserDatasetStoreId();
+      _id = session.initializeUserDatasetStoreId();
     }
     catch (WdkModelException e) {
       // if root dir does not exist, try to create with 777 access
       try {
         Set<PosixFilePermission> openAccess = new HashSet<>(Arrays.asList(PosixFilePermission.values()));
-        Files.createDirectories(usersRootDir, PosixFilePermissions.asFileAttribute(openAccess));
+        Files.createDirectories(_usersRootDir, PosixFilePermissions.asFileAttribute(openAccess));
       }
       catch (IOException e2) {
-        throw new WdkModelException("Users root dir [" + usersRootDir + "] does not exist and cannot be created.", e2);
+        throw new WdkModelException("Users root dir [" + _usersRootDir + "] does not exist and cannot be created.", e2);
       }
     }
   }
 
+  @Override
   public FilesysUserDatasetSession getSession(Path usersRootDir) {
     return new FilesysUserDatasetSession(usersRootDir);
   }

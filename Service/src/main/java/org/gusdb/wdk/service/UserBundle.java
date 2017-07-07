@@ -41,7 +41,7 @@ public class UserBundle {
       if (userId == sessionUser.getUserId()) {
         return getSessionUserBundle(userIdStr, sessionUser, isAdminSession);
       }
-      User user = userFactory.getUser(userId);
+      User user = userFactory.getUserById(userId);
       return new UserBundle(userIdStr, true, user, false, sessionUser, isAdminSession);
     }
     catch (NoSuchUserException | NumberFormatException | NullPointerException e) {

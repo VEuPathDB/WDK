@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 
@@ -51,7 +52,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
     Dataset dataset = (Dataset) rawValue;
-    return Integer.toString(dataset.getDatasetId());
+    return Long.toString(dataset.getDatasetId());
   }
 
   /**
@@ -66,7 +67,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public Dataset toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
-    return user.getDataset(datasetId);
+    return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
   }
 
   /**
@@ -111,7 +112,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
-    Dataset dataset = user.getDataset(datasetId);
+    Dataset dataset = user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
     return dataset.getChecksum();
   }
 
@@ -169,7 +170,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       else if (type.equals("strategy")) {
         String strId = requestParams.getParam(datasetParam.getStrategySubParam());
         int strategyId = Integer.valueOf(strId);
-        Strategy strategy = user.getStrategy(strategyId);
+        Strategy strategy = StepUtilities.getStrategy(user, strategyId);
         Step step = strategy.getLatestStep();
         List<RecordInstance> list = new ArrayList<>();
         try (RecordStream fullAnswer = step.getAnswerValue().getFullAnswer()) {
@@ -199,7 +200,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
       logger.info("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
-      return Integer.toString(dataset.getDatasetId());
+      return Long.toString(dataset.getDatasetId());
     }
     else
       return null;
@@ -209,7 +210,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(inputStableValue));
-    return Integer.toString(dataset.getDatasetId());    
+    return Long.toString(dataset.getDatasetId());    
   }
 
   private String toString(RecordInstance[] records) {

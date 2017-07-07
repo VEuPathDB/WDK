@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +8,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -58,16 +57,16 @@ public class CloseStrategyAction extends Action {
             String firstStrategyKey = "";
 
             if (changeViewStrategy) {
-                int[] activeStrategyIds = wdkUser.getActiveStrategyIds();
+                long[] activeStrategyIds = wdkUser.getUser().getSession().getActiveStrategyIds();
                 if (activeStrategyIds.length > 0) {
-                    int firstStrategyId = activeStrategyIds[activeStrategyIds.length - 1];
-                    firstStrategyKey = Integer.toString(firstStrategyId);
+                    long firstStrategyId = activeStrategyIds[activeStrategyIds.length - 1];
+                    firstStrategyKey = Long.toString(firstStrategyId);
                 }
             }
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+            url.append("?state=" + FormatUtil.urlEncodeUtf8(state));
             // reset the strategy id, otherwise it will be opened again by showStrategy.do
             url.append("&" + CConstants.WDK_STRATEGY_ID_KEY + "=");
             // open first active strategy, if there is one

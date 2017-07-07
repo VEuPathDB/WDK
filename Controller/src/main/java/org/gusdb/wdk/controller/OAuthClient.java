@@ -62,7 +62,7 @@ public class OAuthClient {
       new WdkTrustManager(Paths.get(keyStoreFile), config.getKeyStorePassPhrase()));
   }
 
-  public int getUserIdFromAuthCode(String authCode) throws WdkModelException {
+  public long getUserIdFromAuthCode(String authCode) throws WdkModelException {
 
     try {
       String oauthUrl = _oauthServerBase + "/token";
@@ -119,18 +119,21 @@ public class OAuthClient {
     }
   }
 
-  private int getUserIdFromGoogleIdToken(String idToken) throws WdkUserException, WdkModelException {
+  private long getUserIdFromGoogleIdToken(String idToken) throws WdkModelException {
     String gmailAddress = GoogleClientUtil.getEmailFromTokenResponse(idToken, _clientId);
     try {
       UserBean user = _userFactory.getUserByEmail(gmailAddress);
       return user.getUserId();
     }
-    catch (WdkUserException e) {
-      // user does not exist; automatically create user for this gmail user
-      String dummyFirstName = gmailAddress.substring(0, gmailAddress.indexOf("@"));
-      UserBean user = _userFactory.createUser(gmailAddress, dummyFirstName,
-          "", "", "", "", "", "", "", "", "", "", "", null, null, false);
-      return user.getUserId();
+    catch (WdkUserException ue) {
+      try {
+        // user does not exist; automatically create user for this gmail user
+        UserBean user = _userFactory.createUser(gmailAddress, null, null, null, false);
+        return user.getUserId();
+      }
+      catch (WdkUserException ue2) {
+        throw new WdkModelException("Could not create WDK user from validated Gmail email", ue2);
+      }
     }
   }
 

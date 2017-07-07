@@ -1,31 +1,27 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.RngAnnotations;
-import org.gusdb.wdk.model.RngAnnotations.FieldSetter;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-
+import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
 
 /**
  * <p>
@@ -58,13 +54,12 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
  */
 public class AttributeQueryReference extends Reference {
 
+  private static final Logger LOG = Logger.getLogger(AttributeQueryReference.class);
+
   private String _attributeMetaQueryRef;
   private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
   private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
-  /**
-     * 
-     */
   public AttributeQueryReference() {}
 
   /**
@@ -73,15 +68,15 @@ public class AttributeQueryReference extends Reference {
   public AttributeQueryReference(String twoPartName) throws WdkModelException {
     super(twoPartName);
   }
-  
+
   /**
    * Sets an optional reference to a dynamic columns query
    * @param dynamic columns query ref of the form "set.element"
    */
-  public void setAttributeMetaQueryRef(String attributeMetaQueryRef) throws WdkModelException {
-	_attributeMetaQueryRef = attributeMetaQueryRef;
+  public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
+    _attributeMetaQueryRef = attributeMetaQueryRef;
   }
-  
+
   public void addAttributeField(AttributeField attributeField) {
     attributeFieldList.add(attributeField);
   }
@@ -95,7 +90,7 @@ public class AttributeQueryReference extends Reference {
     attributeFieldMap.values().toArray(array);
     return array;
   }
-  
+
   /**
    * This resolver collects database defined column attributes that are obtained from a meta column
    * query table as specified by the _attributeMetaQueryRef.
@@ -104,67 +99,37 @@ public class AttributeQueryReference extends Reference {
   public void resolveReferences(final WdkModel wdkModel) throws WdkModelException {
     // Continue only if an attribute meta query reference is provided.  
     if(_attributeMetaQueryRef != null) {
-      try {
-        SqlQuery query = (SqlQuery) wdkModel.resolveReference(_attributeMetaQueryRef);
-        final List<AttributeField> attributeFields = new ArrayList<>();
-        new SQLRunner(wdkModel.getAppDb().getDataSource(), query.getSql(), query.getFullName() + "__dyn-cols")
-          .executeQuery(new ResultSetHandler() {
-            @Override
-            public void handleResult(ResultSet resultSet) throws SQLException {
-              try {
-                // Call the attribute meta query
-                ResultSetMetaData metaData = resultSet.getMetaData();
-  
-                // Compile a list of database column names - the list will likely be different for
-                // every attribute meta query table.
-                int columnCount = metaData.getColumnCount();
-                List<String> columnNames = new ArrayList<>();
-                for (int i = 1; i <= columnCount; i++ ) {
-                  String columnName = metaData.getColumnName(i).toLowerCase();
-                  columnNames.add(columnName);	
-                }
-  
-                // get field setters to populate
-                List<FieldSetter> fieldSetters = RngAnnotations.getRngFields(QueryColumnAttributeField.class);
-  
-                // Iterate over each row (database loaded attribute)
-                while(resultSet.next()) {
-                  AttributeField attributeField = new QueryColumnAttributeField();
-  
-                  // Need to call this here since this attribute field originates from the database
-                  attributeField.excludeResources(wdkModel.getProjectId());
-  
-                  // Populate the attributeField with the attribute meta data
-                  AttributeMetaQueryHandler.populate(attributeField, resultSet,
-                      metaData, columnNames, fieldSetters, wdkModel);
-  
-                  attributeFields.add(attributeField);
-                }
-              }
-              catch (WdkModelException e) {
-                throw new SQLRunnerException("Error loading dynamic attributes", e);
-              }
-            }
-          });
+      Timer timer = new Timer();
+      for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryRef, wdkModel)) {
+        AttributeField attributeField = new QueryColumnAttributeField();
 
-        // Add the the attribute field map because the attribute field list may already have been trashed by an
-        // excludeResources method
-        for (AttributeField attributeField : attributeFields) {
-          this.attributeFieldMap.put(attributeField.getName(), attributeField);
+        // Need to call this explicitly since this attribute field originates from the database
+        attributeField.excludeResources(wdkModel.getProjectId());
+
+        // Populate the attributeField with the attribute meta data
+        AttributeMetaQueryHandler.populate(attributeField, row);
+
+        // Populate the attribute plugin if present
+        DynamicAttributePluginReference plugin = AttributeMetaQueryHandler.populate(new DynamicAttributePluginReference(), row);
+        if (plugin.getName() != null) {
+          // plugin specified for this attribute
+          if (!plugin.hasAllDynamicFields()) {
+            throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() +
+                "' is missing at least one plugin field.  Configured values: " + plugin.getDynamicFieldsAsString());
+          }
+          // properties are allowed to be null, but if they are, we need to assign an empty map
+          if (!plugin.hasBeenAssignedProperties()) {
+            plugin.setProperties(Collections.EMPTY_MAP);
+          }
+          attributeField.addAttributePluginReference(plugin);
         }
+
+        attributeFieldMap.put(attributeField.getName(), attributeField);
       }
-      catch (SQLRunnerException se) {
-        throw new WdkModelException("Unable to resolve database loaded attributes.", se.getCause());
-      }
+      LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
   }
-  
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Reference#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);

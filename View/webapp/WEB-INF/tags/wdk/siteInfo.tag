@@ -38,7 +38,6 @@
     wdkConfig.wdkUser = {
       id: '${fn:replace(wdkUser.userId, "'", "\\'")}',
       name: '${fn:replace(wdkUser.firstName, "'", "\\'")} ${fn:replace(wdkUser.lastName, "'", "\\'")}',
-      country: '${fn:replace(wdkUser.country, "'", "\\'")}',
       email: '${fn:replace(wdkUser.email, "'", "\\'")}',
       isGuest: ${isGuest}
     };

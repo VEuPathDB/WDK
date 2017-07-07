@@ -22,8 +22,8 @@ public abstract class StepAnalysisDataStore {
 
   protected static class AnalysisInfo {
 
-    int analysisId;
-    int stepId;
+    long analysisId;
+    long stepId;
     String displayName;
     StepAnalysisState state;
     boolean hasParams;
@@ -31,7 +31,7 @@ public abstract class StepAnalysisDataStore {
     String contextHash;
     String serializedContext;
 
-    public AnalysisInfo(int analysisId, int stepId, String displayName, StepAnalysisState state,
+    public AnalysisInfo(long analysisId, long stepId, String displayName, StepAnalysisState state,
         boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
       this.stepId = stepId;
@@ -81,19 +81,19 @@ public abstract class StepAnalysisDataStore {
 
   // abstract methods to manage analysis information
   public abstract void createAnalysisTableAndSequence() throws WdkModelException;
-  public abstract int getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
-  public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
-  public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
-  public abstract void setState(int analysisId, StepAnalysisState state) throws WdkModelException;
-  public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
-  public abstract void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException;
-  public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
-  protected abstract List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
-  protected abstract List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException;
-  protected abstract List<Integer> getAllAnalysisIds() throws WdkModelException;
+  public abstract long getNextId() throws WdkModelException;
+  public abstract void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void deleteAnalysis(long analysisId) throws WdkModelException;
+  public abstract void renameAnalysis(long analysisId, String displayName) throws WdkModelException;
+  public abstract void setState(long analysisId, StepAnalysisState state) throws WdkModelException;
+  public abstract void setHasParams(long analysisId, boolean hasParams) throws WdkModelException;
+  public abstract void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException;
+  public abstract void updateContext(long analysisId, String contextHash, String serializedContext) throws WdkModelException;
+  protected abstract List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
+  protected abstract List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException;
+  protected abstract List<Long> getAllAnalysisIds() throws WdkModelException;
   // contract is: analysisInfo will be null if ID does not exist; status will be null if execution does not exist
-  protected abstract Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds) throws WdkModelException;
+  protected abstract Map<Long, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Long> analysisIds) throws WdkModelException;
 
   // abstract methods to manage result/status information
   public abstract void createExecutionTable() throws WdkModelException;
@@ -127,8 +127,8 @@ public abstract class StepAnalysisDataStore {
     updateExecution(contextHash, status, newStartDate, null, null);
   }
 
-  public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
-    Map<Integer, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Integer[]{ analysisId }));
+  public StepAnalysisContext getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
+    Map<Long, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Long[]{ analysisId }));
     if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
         " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
@@ -138,11 +138,11 @@ public abstract class StepAnalysisDataStore {
     return getContexts(getAnalysisInfoForIds(getAnalysisIdsByHash(contextHash)), fileStore);
   }
 
-  public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId,
+  public Map<Long, StepAnalysisContext> getAnalysesByStepId(long stepId,
       StepAnalysisFileStore fileStore) throws WdkModelException {
     List<StepAnalysisContext> values = getContexts(
         getAnalysisInfoForIds(getAnalysisIdsByStepId(stepId)), fileStore);
-    Map<Integer,StepAnalysisContext> contextMap = new LinkedHashMap<>();
+    Map<Long,StepAnalysisContext> contextMap = new LinkedHashMap<>();
     for (StepAnalysisContext context : values) {
       contextMap.put(context.getAnalysisId(), context);
     }
@@ -154,10 +154,10 @@ public abstract class StepAnalysisDataStore {
     return getContexts(getAnalysisInfoForIds(getAllAnalysisIds()), fileStore);
   }
 
-  private List<StepAnalysisContext> getContexts(Map<Integer, AnalysisInfoPlusStatus> dataMap, 
+  private List<StepAnalysisContext> getContexts(Map<Long, AnalysisInfoPlusStatus> dataMap, 
       StepAnalysisFileStore fileStore) throws WdkModelException {
     List<StepAnalysisContext> contextList = new ArrayList<StepAnalysisContext>();
-    for (Entry<Integer, AnalysisInfoPlusStatus> entry : dataMap.entrySet()) {
+    for (Entry<Long, AnalysisInfoPlusStatus> entry : dataMap.entrySet()) {
       if (entry.getValue().analysisInfo == null) {
         throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());
       }

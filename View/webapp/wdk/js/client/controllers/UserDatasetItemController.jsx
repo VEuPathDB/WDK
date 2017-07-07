@@ -43,10 +43,10 @@ class UserDatasetItemController extends WdkViewController {
     };
   }
 
-  loadData(state, props, nextProps) {
+  loadData(actionCreators, state, props, nextProps) {
     const idChanged = nextProps && nextProps.params.id !== props.params.id;
     if (idChanged || !state.userDatasetsById[props.params.id]) {
-      this.eventHandlers.loadUserDatasetItem(Number(props.params.id));
+      actionCreators.loadUserDatasetItem(Number(props.params.id));
     }
   }
 

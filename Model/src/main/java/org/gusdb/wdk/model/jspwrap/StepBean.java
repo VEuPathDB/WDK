@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import static org.gusdb.fgputil.FormatUtil.urlEncodeUtf8;
+
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -146,7 +146,7 @@ public class StepBean {
         return new AnswerValueBean(step.getViewAnswerValue());
     }
 
-    public int getStepId() {
+    public long getStepId() {
         return step.getStepId();
     }
 
@@ -343,7 +343,7 @@ public class StepBean {
      * @return
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
+    public StepBean deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
         return new StepBean(user, step.deepClone(strategyId, stepIdMap));
     }
 
@@ -371,19 +371,14 @@ public class StepBean {
                     paramValue = paramValue.substring(pos + 1).trim();
             }
 
-            try {
-                paramName = URLEncoder.encode("value(" + paramName + ")",
-                        "UTF-8");
-                paramValue = URLEncoder.encode(paramValue, "UTF-8");
-                sb.append("&" + paramName + "=" + paramValue);
-            } catch (UnsupportedEncodingException ex) {
-                throw new WdkModelException(ex);
-            }
+            paramName = urlEncodeUtf8("value(" + paramName + ")");
+            paramValue = urlEncodeUtf8(paramValue);
+            sb.append("&" + paramName + "=" + paramValue);
         }
         return sb.toString();
     }
 
-    public String getQuestionUrlParams() throws WdkModelException {
+    public String getQuestionUrlParams() {
         Question question;
         try {
             question = step.getQuestion();
@@ -413,13 +408,8 @@ public class StepBean {
             String wrapper = (param instanceof AbstractEnumParam && !(param instanceof FilterParam)) ? "array" : "value";
             // URL encode the values
             for (String value : values) {
-                
-                try {
-                    String pName = URLEncoder.encode(wrapper + "(" + paramName + ")", "UTF-8");
-                    sb.append("&" + pName + "=" + URLEncoder.encode(value.trim(), "UTF-8"));
-                } catch (UnsupportedEncodingException ex) {
-                    throw new WdkModelException(ex);
-                }
+              String pName = urlEncodeUtf8(wrapper + "(" + paramName + ")");
+              sb.append("&" + pName + "=" + urlEncodeUtf8(value.trim()));
             }
         }
         return sb.toString();
@@ -498,7 +488,7 @@ public class StepBean {
       return step.getException();
   }
   
-  public Map<Integer, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
+  public Map<Long, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
       return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
   }
 
@@ -546,7 +536,7 @@ public class StepBean {
     step.removeFilterOption(filterName);
   }
 
-  public Integer getStrategyId() {
+  public Long getStrategyId() {
     return step.getStrategyId();
   }
 

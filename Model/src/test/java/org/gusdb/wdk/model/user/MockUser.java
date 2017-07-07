@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.gusdb.wdk.model.WdkModel;
 
-public class MockUser extends User {
+public class MockUser extends RegisteredUser {
 
   private static final Random random = new Random();
 

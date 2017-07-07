@@ -19,7 +19,7 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
  */
 public class IrodsUserDatasetFile extends UserDatasetFile {
 
-  public IrodsUserDatasetFile(Path filePath, Integer userDatasetId) {
+  public IrodsUserDatasetFile(Path filePath, Long userDatasetId) {
 	super(filePath, userDatasetId);
   }
 
