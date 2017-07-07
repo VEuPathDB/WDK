@@ -22,6 +22,7 @@
 }
 .filter-param .filter-items-wrapper {
   height: 2em;
+  margin-bottom: .5em;
 }
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
@@ -105,11 +106,11 @@
 .filter-param .filters-server-side {
   border: 1px solid #999;
 }
-.filter-param .filters .field-list,
-.filter-param .filters .field-detail {
+.filter-param .field-list,
+.filter-param .field-detail {
   padding-top: 20px;
 }
-.filter-param .filters .field-list {
+.filter-param .field-list {
   width: 25%;
   padding-left: 8px;
   padding-right: 8px;
@@ -168,6 +169,11 @@
   margin-left: 25%;
   padding: 1em 2em 0;
   position: relative;
+}
+.filter-param .field-detail__fullWidth {
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 .filter-param .field-detail h4 {
   margin-top: 4em;

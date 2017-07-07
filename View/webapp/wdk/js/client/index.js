@@ -15,6 +15,7 @@ import * as CategoryUtils from './utils/CategoryUtils';
 import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import LazyFilterService from './utils/LazyFilterService';
+import * as FilterServiceUtils from './utils/FilterServiceUtils';
 import WdkService from './utils/WdkService';
 import * as AuthUtil from './utils/AuthUtil';
 import { wrapComponents, initialize } from './main';
@@ -39,6 +40,7 @@ export {
   Stores,
   TreeUtils,
   LazyFilterService,
+  FilterServiceUtils,
   WdkService,
   AuthUtil
 };
