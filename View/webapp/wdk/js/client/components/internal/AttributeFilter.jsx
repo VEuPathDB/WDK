@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
-import { getLeaves } from '../../utils/TreeUtils';
 import {
   debounce,
   find,
@@ -210,11 +209,8 @@ class FieldList extends React.Component {
     this.state = {
       searchTerm: '',
 
-      // expand all internal nodes
-      expandedNodes: Seq.from(Object.values(this.props.fields))
-      .map(field => field.parent)
-      .uniq()
-      .toArray()
+      // expand branch containing selected field
+      expandedNodes: this._getPathToField(this.props.fields[this.props.selectedField])
     };
   }
 
@@ -231,6 +227,11 @@ class FieldList extends React.Component {
         isActive={this.props.selectedField === node.field.term}
       />
     );
+  }
+
+  _getPathToField(field, path = []) {
+    if (field == null || field.parent == null) return path;
+    return this._getPathToField(this.props.fields[field.parent], path.concat(field.parent))
   }
 
   render() {
