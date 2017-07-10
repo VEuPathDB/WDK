@@ -1,6 +1,6 @@
 .filter-param h3 {
   margin: auto;
-  margin-bottom: 1em;
+  margin-bottom: .5em;
   padding: 0;
 }
 .filter-param p {
@@ -56,10 +56,6 @@
 .filter-param .range-filter .table tr {
   display: inline-block;
 }
-.filter-param .field-detail > div {
-  /*position: relative;*/
-  padding: 1em 0;
-}
 .filter-param .range-filter {
   position: relative;
 }
@@ -106,10 +102,6 @@
 .filter-param .filters-server-side {
   border: 1px solid #999;
 }
-.filter-param .field-list,
-.filter-param .field-detail {
-  padding-top: 20px;
-}
 .filter-param .field-list {
   width: 25%;
   padding-left: 8px;
@@ -148,7 +140,7 @@
 .filter-param .field-detail {
   width: 75%;
   margin-left: 25%;
-  padding: 1em 2em 0;
+  padding: 0 2em;
   position: relative;
 }
 .filter-param .field-detail__fullWidth {
