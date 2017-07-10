@@ -19,7 +19,6 @@ import {
 } from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Seq } from '../../utils/IterableUtils';
 import { findDOMNode } from 'react-dom';
 import Loading from '../Loading';
 import Tooltip from '../Tooltip';
@@ -1666,9 +1665,9 @@ fieldComponents.date = class DateFields extends React.Component {
     });
 
 
-    var values = knownDist.map(entry => entry.value);
-    var distMin = Math.min(...values);
-    var distMax = Math.max(...values);
+    var values = sortBy(knownDist.map(entry => entry.value), value => new Date(value).getTime());
+    var distMin = values[0];
+    var distMax = values[values.length - 1];
 
     var dateDist = knownDist.map(function(entry) {
       // convert value to time in ms
