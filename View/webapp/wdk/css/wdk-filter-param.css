@@ -159,9 +159,6 @@
 .filter-param .field-detail h4 {
   margin-top: 4em;
 }
-.filter-param .field-detail > div > div {
-  margin: 1em 0;
-}
 .filter-param .field-detail .apply-filter {
   text-align: right;
   padding: 1em 0;
