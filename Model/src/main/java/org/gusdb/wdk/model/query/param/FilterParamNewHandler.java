@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 /**
  * @author jerric
- * 
+ *
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
@@ -40,7 +40,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a JSON string, and same as the stable value.
-   * 
+   *
 {
    "filters": [
     {
@@ -69,7 +69,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a JSON string, and same as the stable value.
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
@@ -80,9 +80,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * return SQL that runs the metadataQuery, including its depended params, and applies
-   * the filters to it. 
-   * 
-   
+   * the filters to it.
+   *
+
     SELECT mf.internal
       FROM (${metadata_qc}) mf
       WHERE mf.ontology_term_id = 'age'
@@ -98,9 +98,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FROM (${metadata_qc}) mf
       WHERE mf.ontology_term_id = 'size'
       AND mf.string_value       IN ('large')
-   * 
+   *
    * @throws WdkUserException
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
@@ -116,7 +116,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
   }
 
-  // TODO: add OR clause if unknowns=true  
+  // TODO: add OR clause if unknowns=true
   static String toInternalValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param)
       throws WdkModelException {
 
@@ -127,8 +127,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throw new WdkModelException(ex);
     }
   }
- 
-  // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)	
+
+  // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
   static String getFilteredValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param, Query metadataQuery)
       throws WdkModelException {
 
@@ -163,20 +163,24 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
     String columnName = FilterParamNew.typeToColumn(type);
-    
+
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
-    
+
     if (ontologyItem.getIsRange())
       return whereClause + getRangeAndClause(jsFilter, columnName, metadataTableName);
-    else 
+    else
       return whereClause + getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
   }
 
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
+    // If min or max is null, use an unbounded range
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-    Double min = range.getDouble(FILTERS_MIN);
-    Double max = range.getDouble(FILTERS_MAX);
-    return " AND " + metadataTableName + "." + columnName + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max; 
+    Double min = range.isNull(FILTERS_MIN) ? null : range.getDouble(FILTERS_MIN);
+    Double max = range.isNull(FILTERS_MAX) ? null : range.getDouble(FILTERS_MAX);
+    String clauseStart = " AND " + metadataTableName + "." + columnName;
+    if (min == null) return clauseStart + " <= " + max;
+    if (max == null) return clauseStart + " >= " + min;
+    return clauseStart + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max;
   }
 
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
@@ -186,7 +190,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       return " AND 1 != 1";
     }
 
-    StringBuilder sb = new StringBuilder();    
+    StringBuilder sb = new StringBuilder();
     for (int j = 0; j < values.length(); j++) {
       String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
       if (!isNumber) val = "'" + val + "'";
@@ -205,10 +209,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the signature is a checksum of sorted stable value.
-   * 
+   *
    * @throws WdkModelException
-   * @throws WdkUserException 
-   * 
+   * @throws WdkUserException
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
@@ -245,10 +249,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     List<String> parts = new ArrayList<String>();
     try {
       //parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
-      
+
       // don't know if we have an array or object, so try both.
       if (jsFilter.has(FILTERS_VALUE)) {
-        try { 
+        try {
           JSONObject value = jsFilter.getJSONObject(FILTERS_VALUE);
           parts.add(FILTERS_MIN + ":" + value.getDouble(FILTERS_MIN));
           parts.add(FILTERS_MAX + ":" + value.getDouble(FILTERS_MIN));
@@ -260,7 +264,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         }
       } else jsFilter.getJSONObject(FILTERS_VALUE); // force an exception because this key is absent
       return parts.toString();
-    } 
+    }
     catch (JSONException ex) {
       throw new WdkModelException("Parameter " + param.getPrompt() + " has invalid filter param JSON", ex);
     }
@@ -268,7 +272,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * raw value is a String[] of terms
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
    *      org.gusdb.wdk.model.query.param.RequestParams)
    */
@@ -322,7 +326,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         JSONObject jsFilter = jsFilters.getJSONObject(i);
         OntologyItem ontologyItem = ontologyMap.get(jsFilter.getString(FILTERS_FIELD));
         display += ontologyItem.getDisplayName() + " is ";
-        
+
         if (ontologyItem.getIsRange()) {
           JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
           String min = range.getString(FILTERS_MIN);
