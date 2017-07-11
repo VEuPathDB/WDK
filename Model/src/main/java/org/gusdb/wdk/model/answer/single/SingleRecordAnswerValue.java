@@ -111,4 +111,9 @@ public class SingleRecordAnswerValue extends AnswerValue {
             FormatUtil.join(_pkMap.values().toArray(), ","))
         .toMap();
   }
+
+  @Override
+  public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+    // no-op since sorting is irrelevant in a single record answer
+  }
 }
