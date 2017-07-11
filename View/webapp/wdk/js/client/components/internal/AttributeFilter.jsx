@@ -9,6 +9,7 @@ import {
   isEqual,
   map,
   noop,
+  padStart,
   partial,
   partition,
   property,
@@ -53,8 +54,8 @@ function formatDate(format, date) {
   }
   return format
   .replace(/%Y/, String(date.getFullYear()))
-  .replace(/%m/, String(date.getMonth() + 1))
-  .replace(/%d/, String(date.getDate()));
+  .replace(/%m/, padStart(String(date.getMonth() + 1), 2, '0'))
+  .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
 }
 
 /**
