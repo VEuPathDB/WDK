@@ -1146,7 +1146,7 @@ public class Step {
       if (!forChecksum) {
         jsStep.put("size", this.estimateSize);
       }
-
+     
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
         int order = getUser().getSession().getStrategyOrder(subStratId);

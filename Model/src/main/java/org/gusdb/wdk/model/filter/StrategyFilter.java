@@ -87,7 +87,7 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(strategyId);
+    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(answer.getUser(), strategyId);
   }
   
   @Override
