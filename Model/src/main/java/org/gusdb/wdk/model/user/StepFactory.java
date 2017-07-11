@@ -1197,8 +1197,8 @@ public class StepFactory {
     return newStep;
   }
 
-  public Strategy getStrategyById(long strategyId) throws WdkModelException, WdkUserException {
-    return loadStrategy(null, strategyId, false);
+  public Strategy getStrategyById(User user, long strategyId) throws WdkModelException, WdkUserException {
+    return loadStrategy(user, strategyId, false);
   }
 
   Strategy loadStrategy(User user, long strategyId, boolean allowDeleted) throws WdkModelException,

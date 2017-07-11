@@ -143,20 +143,20 @@ class ActiveStrategyFactory {
     private String getParentKey(String strategyKey) throws WdkModelException, WdkUserException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
-        int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
-        int stepId = Integer.parseInt(strategyKey.substring(pos + 1));
+        long strategyId = Long.parseLong(strategyKey.substring(0, pos));
+        long stepId = Long.parseLong(strategyKey.substring(pos + 1));
         Strategy strategy = getStrategy(strategyId);
         Step parent = strategy.getStepById(stepId).getParentStep();
         while (parent.getNextStep() != null) {
             parent = parent.getNextStep();
         }
         // check if the parent is top level
-        if (parent.getParentStep() == null) return Integer.toString(strategyId);
+        if (parent.getParentStep() == null) return Long.toString(strategyId);
         else return strategyId + "_" + parent.getStepId();
     }
 
     private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
-      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId);
+      return _user.getWdkModel().getStepFactory().getStrategyById(_user, strategyId);
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {
