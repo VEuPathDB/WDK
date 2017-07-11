@@ -63,4 +63,20 @@ class ActiveStrategy {
         }
         return null;
     }
+    
+    public String toString() {
+      return toString(0);
+    }
+    
+    private String toString(int indent) {
+      String tree = "";
+      for (int i = 0; i < indent; i++) {
+        tree += "  ";
+      }
+      tree += strategyKey + "\n";
+      for (ActiveStrategy child: children.values()) {
+        tree += child.toString(indent + 1);
+      }
+      return tree;
+    }
 }
