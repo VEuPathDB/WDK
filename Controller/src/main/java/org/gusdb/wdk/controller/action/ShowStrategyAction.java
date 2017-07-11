@@ -99,7 +99,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     String stratKey = stratKeys[stratKeys.length - 1];
                     int pos = stratKey.indexOf('_');
                     if (pos >= 0) stratKey = stratKey.substring(0, pos);
-                    int stratId = Integer.parseInt(stratKey);
+                    long stratId = Long.parseLong(stratKey);
                     StrategyBean strategy = displayStrategies.get(stratId);
                     if (strategy != null && strategy.isValid()) {
                         long stepId = strategy.getLatestStep().getStepId();
@@ -133,7 +133,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Long, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException, WdkUserException, WdkModelException {
+            UserBean user, String state) throws JSONException, WdkUserException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;

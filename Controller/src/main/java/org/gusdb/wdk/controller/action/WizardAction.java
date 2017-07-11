@@ -140,7 +140,7 @@ public class WizardAction extends Action {
     private void loadStrategy(HttpServletRequest request,
             WizardForm wizardForm, UserBean user) throws WdkUserException,
             WdkModelException {
-        int stratId = wizardForm.getStrategyId();
+        long stratId = wizardForm.getStrategyId();
         StrategyBean strategy = user.getStrategy(stratId);
 
         int stepId = wizardForm.getStep();

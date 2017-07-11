@@ -711,8 +711,8 @@ public class StepFactory {
     Map<String, String> displayParams = step.getParamValues();
 
     Query query = question.getQuery();
-    int leftStepId = 0;
-    int rightStepId = 0;
+    long leftStepId = 0;
+    long rightStepId = 0;
     String customName = step.getBaseCustomName();
     if (query.isBoolean()) {
       // boolean result, set the left and right step ids accordingly, and
@@ -737,9 +737,9 @@ public class StepFactory {
           String stepId = displayParams.get(answerParam.getName());
           // put the first child into left, the second into right
           if (leftStepId == 0)
-            leftStepId = Integer.valueOf(stepId);
+            leftStepId = Long.valueOf(stepId);
           else {
-            rightStepId = Integer.valueOf(stepId);
+            rightStepId = Long.valueOf(stepId);
             break;
           }
         }

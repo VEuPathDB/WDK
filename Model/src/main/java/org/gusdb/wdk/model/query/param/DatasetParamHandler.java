@@ -66,7 +66,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public Dataset toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    int datasetId = Integer.valueOf(stableValue);
+    long datasetId = Long.valueOf(stableValue);
     return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
   }
 
@@ -81,7 +81,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (param.isNoTranslation())
       return stableValue;
 
-    int datasetId = Integer.valueOf(stableValue);
+    long datasetId = Long.valueOf(stableValue);
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     String dvSql = datasetFactory.getDatasetValueSql(datasetId);
 
@@ -111,7 +111,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue)
       throws WdkModelException {
-    int datasetId = Integer.valueOf(stableValue);
+    long datasetId = Long.valueOf(stableValue);
     Dataset dataset = user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
     return dataset.getChecksum();
   }
@@ -169,7 +169,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       }
       else if (type.equals("strategy")) {
         String strId = requestParams.getParam(datasetParam.getStrategySubParam());
-        int strategyId = Integer.valueOf(strId);
+        long strategyId = Long.valueOf(strId);
         Strategy strategy = StepUtilities.getStrategy(user, strategyId);
         Step step = strategy.getLatestStep();
         List<RecordInstance> list = new ArrayList<>();
@@ -209,7 +209,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(inputStableValue));
+    Dataset dataset = datasetFactory.getDataset(user, Long.valueOf(inputStableValue));
     return Long.toString(dataset.getDatasetId());    
   }
 
@@ -241,7 +241,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     Dataset dataset = null;
     if (stableValue != null) {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      Integer sv = Integer.valueOf(stableValue);
+      Long sv = Long.valueOf(stableValue);
       logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
       DatasetBean bean = new DatasetBean(dataset);

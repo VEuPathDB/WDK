@@ -43,13 +43,13 @@ public class ToggleFilterAction extends Action {
     boolean disabled = Boolean.valueOf(strDisabled);
     
     UserBean user = ActionUtility.getUser(servlet, request);
-    StepBean step = user.getStep(Integer.valueOf(stepId));
+    StepBean step = user.getStep(Long.valueOf(stepId));
 
 
     // before changing step, need to check if strategy is saved, if yes, make a copy.
     String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
     if (strStrategyId != null && !strStrategyId.isEmpty()) {
-      int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+      long strategyId = Long.valueOf(strStrategyId.split("_", 2)[0]);
       StrategyBean strategy = user.getStrategy(strategyId);
       if (strategy.getIsSaved())
         strategy.update(false);

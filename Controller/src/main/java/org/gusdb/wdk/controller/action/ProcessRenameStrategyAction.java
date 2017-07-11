@@ -133,14 +133,14 @@ public class ProcessRenameStrategyAction extends Action {
                 }
                 catch (Exception ex) {
                 }
-                Integer frontStep = null;
+                Long frontStep = null;
                 try {
-                    frontStep = Integer.valueOf(request.getParameter("actionStep"));
+                    frontStep = Long.valueOf(request.getParameter("actionStep"));
                 }
                 catch (Exception ex) {
                 }
         
-                if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
+                if (frontStrategy != null && frontStrategy.longValue() == oldStrategyId) {
                     frontStrategy = strategy.getStrategyId();
                 }
         

@@ -52,7 +52,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     String[] pieces = strStratId.split("_", 2);
     long strategyId = Long.valueOf(pieces[0]);
-    Integer branchId = (pieces.length == 1) ? null : Integer.valueOf(pieces[1]);
+    Long branchId = (pieces.length == 1) ? null : Long.valueOf(pieces[1]);
     StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), strategyId));
 
     String strStepId = request.getParameter(PARAM_STEP);
@@ -100,7 +100,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     else if (importStrategyId != null && importStrategyId.length() > 0) {
       // a step specified, it must come from an insert strategy. make a
       // copy of it, and mark it as collapsable.
-      childStep = createStepFromStrategy(user, strategy, Integer.valueOf(importStrategyId));
+      childStep = createStepFromStrategy(user, strategy, Long.valueOf(importStrategyId));
     }
 
     String customName = request.getParameter(PARAM_CUSTOM_NAME);
@@ -193,7 +193,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
   }
 
-  public static StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId)
+  public static StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, long importStrategyId)
       throws WdkModelException, WdkUserException {
     logger.debug("creating step from strategy: " + importStrategyId);
     StrategyBean importStrategy = user.getStrategy(importStrategyId);

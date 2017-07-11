@@ -29,10 +29,10 @@ public class WizardForm extends MapActionForm {
         return strategyKey;
     }
 
-    public int getStrategyId() {
+    public long getStrategyId() {
         int pos = strategyKey.indexOf("_");
         String strId = (pos < 0) ? strategyKey : strategyKey.substring(0, pos);
-        return Integer.valueOf(strId);
+        return Long.valueOf(strId);
     }
 
     /**

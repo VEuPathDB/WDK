@@ -216,8 +216,8 @@ public class UserBean {
     return beans;
   }
 
-  public StrategyBean getStrategy(int displayId) throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, StepUtilities.getStrategy(user, displayId));
+  public StrategyBean getStrategy(long strategyId) throws WdkUserException, WdkModelException {
+    return new StrategyBean(this, StepUtilities.getStrategy(user, strategyId));
   }
 
   public Map<String, List<StrategyBean>> getStrategiesByCategory() throws Exception {
@@ -457,8 +457,8 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#getStep(int)
    */
-  public StepBean getStep(int displayId) throws WdkModelException {
-    return new StepBean(this, StepUtilities.getStep(user, displayId));
+  public StepBean getStep(long stepId) throws WdkModelException {
+    return new StepBean(this, StepUtilities.getStep(user, stepId));
   }
 
   /**

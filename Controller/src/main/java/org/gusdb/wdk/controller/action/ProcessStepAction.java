@@ -71,12 +71,12 @@ public class ProcessStepAction extends Action {
       // Handle nested strategies, which have an id of the form {id}_{id}
       // did we get strategyId_stepId?
       int pos = strategyKey.indexOf("_");
-      int branchId = 0;
+      long branchId = 0;
       if (pos >= 0) {
-        branchId = Integer.valueOf(strategyKey.substring(pos + 1));
+        branchId = Long.valueOf(strategyKey.substring(pos + 1));
         strategyKey = strategyKey.substring(0, pos);
       }
-      long oldStrategyId = Integer.valueOf(strategyKey);
+      long oldStrategyId = Long.valueOf(strategyKey);
 
       // get strategy, and verify the checksum
       StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), oldStrategyId));
@@ -88,7 +88,7 @@ public class ProcessStepAction extends Action {
       long stepId = 0;
       String strStepId = request.getParameter(PARAM_STEP);
       if (strStepId != null && strStepId.length() > 0)
-        stepId = Integer.valueOf(strStepId);
+        stepId = Long.valueOf(strStepId);
 
       // cannot change step in saved strategy, will need to make a clone first
       Map<Long, Long> stepIdMap = new HashMap<>();
@@ -271,7 +271,7 @@ public class ProcessStepAction extends Action {
   }
 
   private static Map<Long, Long> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
-      UserBean user, StrategyBean strategy, StepBean previousStep, String customName, int branchId)
+      UserBean user, StrategyBean strategy, StepBean previousStep, String customName, long branchId)
       throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
