@@ -1,4 +1,4 @@
-/* global customShowError, customSampleTab, customHelpTab */
+/* global customShowError, customSampleTab, customHelpTab, wdk */
 /* jshint evil:true */
 
 import _ from 'lodash';
@@ -139,26 +139,6 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   function handleStratPanelVisibility(parentElement) {
-    // get DOM objects we will manipulate
-    var $stratPanel = $(parentElement).find('#strategies-panel');
-    var $togglePanel = $(parentElement).find('#strategies-panel-toggle');
-    // set cookie to default value if not already set
-    if ($.cookie("show-strat-panel") == undefined) {
-      $.cookie("show-strat-panel", $togglePanel.data('default'));
-    }
-    // define function to check cookie value and assign visibility accordingly
-    var doPanelVisibility = function(isToggle) {
-      var cookieValue = $.cookie("show-strat-panel") === 'true';
-      var showPanel = (isToggle ? !cookieValue : cookieValue);
-      $togglePanel.find('img').attr('src', wdk.webappUrl("wdk/images/" + (showPanel ? 'minus.gif' : 'plus.gif')));
-      $togglePanel.find('.toggle-command').html(showPanel ? 'Hide' : 'Show');
-      $stratPanel.css("display", (showPanel ? 'block' : 'none'));
-      $.cookie("show-strat-panel", (showPanel ? "true" : "false"));
-
-      // update button text
-      var $button = $('button[data-action="toggle-strat-panel"]')
-      $button.text($button.data(showPanel ? 'hide-text' : 'show-text'));
-    };
     // set initial visibility
     doPanelVisibility(false);
     // add click event to toggle
@@ -168,6 +148,27 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     $(parentElement).on('stepselect', function() {
       doPanelVisibility(false);
     });
+  }
+
+  // define function to check cookie value and assign visibility accordingly
+  function doPanelVisibility(isToggle = false) {
+    // get DOM objects we will manipulate
+    var $stratPanel = $('#strategies-panel');
+    var $togglePanel = $('#strategies-panel-toggle');
+    // set cookie to default value if not already set
+    if ($.cookie("show-strat-panel") == undefined) {
+      $.cookie("show-strat-panel", $togglePanel.data('default'));
+    }
+    var cookieValue = $.cookie("show-strat-panel") === 'true';
+    var showPanel = (isToggle ? !cookieValue : cookieValue);
+    $togglePanel.find('img').attr('src', wdk.webappUrl("wdk/images/" + (showPanel ? 'minus.gif' : 'plus.gif')));
+    $togglePanel.find('.toggle-command').html(showPanel ? 'Hide' : 'Show');
+    $stratPanel.css("display", (showPanel ? 'block' : 'none'));
+    $.cookie("show-strat-panel", (showPanel ? "true" : "false"));
+
+    // update button text
+    var $button = $('button[data-action="toggle-strat-panel"]')
+    $button.text($button.data(showPanel ? 'hide-text' : 'show-text'));
   }
 
   function setupStepActionButtons($element) {
@@ -501,6 +502,8 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       displayOpenSubStrategies(ns.strats[t], s2);
     }
     $("#strategy_messages").hide();
+    $("#strategy_results #strategies-panel-toggle").show();
+    doPanelVisibility();
 
     $('#Strategies').html(s2);
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
@@ -598,6 +601,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     var instr = getSimpleInstructionsHtml();
     $("#strategy_messages").append(instr);
     $("#strategy_results .resizable-wrapper:has(#Strategies)").hide();
+    $("#strategy_results #strategies-panel-toggle").hide();
     $("#strategy_messages").show();
   }
 
