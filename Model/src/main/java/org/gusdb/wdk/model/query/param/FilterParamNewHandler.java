@@ -158,7 +158,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   // include in where clause a filter by ontology_id
   private static String getFilterAsAndClause(JSONObject jsFilter, Map<String,
-      OntologyItem> ontology, String metadataTableName) {
+      OntologyItem> ontology, String metadataTableName) throws WdkUserException {
 
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
@@ -167,20 +167,39 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
     if (ontologyItem.getIsRange())
-      return whereClause + getRangeAndClause(jsFilter, columnName, metadataTableName);
+      return whereClause + getRangeAndClause(jsFilter, columnName, metadataTableName, type);
     else
       return whereClause + getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
   }
 
-  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName) {
+  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, String type) throws WdkUserException {
+
+    if (type.equals(OntologyItem.TYPE_STRING)) throw new WdkUserException("Invalid JSON:  a STRING type cannot be a range");
+
     // If min or max is null, use an unbounded range
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-    Double min = range.isNull(FILTERS_MIN) ? null : range.getDouble(FILTERS_MIN);
-    Double max = range.isNull(FILTERS_MAX) ? null : range.getDouble(FILTERS_MAX);
+    
+    String minStr;
+    String maxStr;
+    
+    if (type.equals(OntologyItem.TYPE_NUMBER)) {
+      Double min = range.isNull(FILTERS_MIN) ? null : range.getDouble(FILTERS_MIN);
+      Double max = range.isNull(FILTERS_MAX) ? null : range.getDouble(FILTERS_MAX);
+      minStr = min.toString();
+      maxStr = max.toString();
+    }
+    
+    else if (type.equals(OntologyItem.TYPE_DATE)) {
+      minStr = range.isNull(FILTERS_MIN) ? null : "date '" + range.getString(FILTERS_MIN) + "'";
+      maxStr = range.isNull(FILTERS_MAX) ? null : "date '" + range.getString(FILTERS_MAX) + "'";
+    }  
+    
+    else throw new WdkUserException("Invalid JSON:  a " + type + " type cannot be a range");
+    
     String clauseStart = " AND " + metadataTableName + "." + columnName;
-    if (min == null) return clauseStart + " <= " + max;
-    if (max == null) return clauseStart + " >= " + min;
-    return clauseStart + " >= " + min + " AND " + metadataTableName + "." + columnName + " <= " + max;
+    if (minStr == null) return clauseStart + " <= " + maxStr;
+    if (maxStr == null) return clauseStart + " >= " + minStr;
+    return clauseStart + " >= " + minStr + " AND " + metadataTableName + "." + columnName + " <= " + maxStr;
   }
 
   private static String getMembersAndClause(JSONObject jsFilter, String columnName, String metadataTableName, boolean isNumber) {
