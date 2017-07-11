@@ -189,6 +189,7 @@ public class CConstants {
 
     //keys for WDK cookies
     public static final String WDK_TAB_STATE_COOKIE = "wdk_tab_state";
+    public static final String WDK_STRATEGY_PANEL_VISIBILITY_COOKIE = "show-strat-panel";
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";

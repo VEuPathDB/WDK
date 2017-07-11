@@ -112,4 +112,8 @@ public class ShowApplicationAction extends ShowSummaryAction {
 
             response.addCookie(tabCookie);
     }
+
+    protected static void setStrategyPanelVisibilityCookie(HttpServletResponse response, boolean isVisible) {
+      response.addCookie(new Cookie(CConstants.WDK_STRATEGY_PANEL_VISIBILITY_COOKIE, isVisible ? "true": "false"));
+    }
 }

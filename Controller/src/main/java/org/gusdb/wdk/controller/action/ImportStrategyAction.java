@@ -50,6 +50,7 @@ public class ImportStrategyAction extends Action {
          * Strategies tab after importing a strategy
          */
         ShowApplicationAction.setWdkTabStateCookie(request, response);
+        ShowApplicationAction.setStrategyPanelVisibilityCookie(response, true);
 
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
         forward = new ActionForward(forward.getPath(), true);
