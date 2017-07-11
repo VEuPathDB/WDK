@@ -56,7 +56,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public Step toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    int stepId = Integer.valueOf(stableValue);
+    long stepId = Long.valueOf(stableValue);
     return StepUtilities.getStep(user, stepId);
   }
 
@@ -96,7 +96,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue)
       throws WdkModelException, WdkUserException {
-    int stepId = Integer.valueOf(stableValue);
+    long stepId = Long.valueOf(stableValue);
     Step step = StepUtilities.getStep(user, stepId);
     AnswerValue answerValue = step.getAnswerValue(false);
     String checksum= answerValue.getChecksum();
@@ -126,7 +126,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     if (stepId == null || stepId.length() == 0)
       throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
     try {
-      Step step = StepUtilities.getStep(user, Integer.valueOf(stepId));
+      Step step = StepUtilities.getStep(user, Long.valueOf(stepId));
       return Long.toString(step.getStepId());
     }
     catch (NumberFormatException ex) {
@@ -165,7 +165,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     // if stable value is assigned, also prepare the raw value
     if (stableValue != null) {
       requestParams.setParam(param.getName(), stableValue);
-      Step step = StepUtilities.getStep(user, Integer.valueOf(stableValue));
+      Step step = StepUtilities.getStep(user, Long.valueOf(stableValue));
       requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
   }

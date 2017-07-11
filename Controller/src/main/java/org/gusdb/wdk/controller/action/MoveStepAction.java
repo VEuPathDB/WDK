@@ -74,20 +74,6 @@ public class MoveStepAction extends ProcessFilterAction {
         return null;
       }
 
-      //int oldStrategyId = strategy.getStrategyId();
-      //int moveFromId = Integer.valueOf(strMoveFromId);
-      //int moveToId = Integer.valueOf(strMoveToId);
-
-      // Map<Integer, Integer> stepIdsMap = strategy.moveStep(moveFromId,
-      // moveToId, strBranchId);
-      //
-      // if (strBranchId != null) {
-      // strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-      // }
-      //
-      // wdkUser.replaceActiveStrategy(oldStrategyId,
-      // strategy.getStrategyId(), stepIdsMap);
-
       // Forward to ShowStrategyAction
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());

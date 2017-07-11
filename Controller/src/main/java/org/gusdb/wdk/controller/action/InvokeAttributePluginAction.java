@@ -40,7 +40,7 @@ public class InvokeAttributePluginAction extends Action {
 
         // get the step
         String strStep = request.getParameter(PARAM_STEP);
-        int stepId = Integer.valueOf(strStep);
+        long stepId = Long.valueOf(strStep);
         StepBean step = user.getStep(stepId);
 
         // get the attribute

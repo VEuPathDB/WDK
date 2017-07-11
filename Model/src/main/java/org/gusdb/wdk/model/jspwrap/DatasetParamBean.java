@@ -29,7 +29,7 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
   }
 
   public DatasetBean getDataset() throws WdkModelException {
-    int userDatasetId = Integer.valueOf(stableValue);
+    long userDatasetId = Long.valueOf(stableValue);
     DatasetBean dataset = user.getDataset(userDatasetId);
     return dataset;
   }

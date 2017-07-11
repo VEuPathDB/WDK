@@ -103,7 +103,7 @@ public class DatasetParamTest {
 
     String stableValue = datasetParam.getStableValue(user, dataset,
         contextValues);
-    int datasetId = Integer.valueOf(stableValue);
+    long datasetId = Long.valueOf(stableValue);
     Assert.assertEquals(dataset.getDatasetId(), datasetId);
     
     Dataset dataset1 = (Dataset)datasetParam.getRawValue(user, stableValue, contextValues);

@@ -47,12 +47,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
     try {
-      int stepId = Integer.valueOf(strStepId);
+      long stepId = Long.valueOf(strStepId);
 
       StepBean step;
       String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
       if (strStrategyId != null && !strStrategyId.isEmpty()) {
-        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+        long strategyId = Long.valueOf(strStrategyId.split("_", 2)[0]);
         StrategyBean strategy = user.getStrategy(strategyId);
         step = strategy.getStepById(stepId);
       } else step = user.getStep(stepId);

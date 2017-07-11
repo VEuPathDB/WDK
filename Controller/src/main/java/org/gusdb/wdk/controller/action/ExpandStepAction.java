@@ -64,11 +64,11 @@ public class ExpandStepAction extends Action {
       if (strStepId == null || strStepId.length() == 0) {
         throw new WdkModelException("No step specified to expand!");
       }
-      long stepId = Integer.valueOf(strStepId);
+      long stepId = Long.valueOf(strStepId);
 
       if (strStratId.indexOf("_") > 0)
         strStratId = strStratId.split("_")[0];
-      long oldStrategyId = Integer.valueOf(strStratId);
+      long oldStrategyId = Long.valueOf(strStratId);
 
       StrategyBean strategy = new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), oldStrategyId));
       // verify the checksum
@@ -136,8 +136,7 @@ public class ExpandStepAction extends Action {
       return forward;
     }
     catch (Exception ex) {
-      logger.error(ex);
-      ex.printStackTrace();
+      logger.error("Error in ExpandStepAction", ex);
       ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
       return null;
     }

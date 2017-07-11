@@ -762,6 +762,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    */
   private void resolveReferences() throws WdkModelException {
 
+    LOG.info("Resolving references...");
+
     // NOTE: the order of set resolution matters; this sequence has been well thought out and is important
 
     for (GroupSet groupSet : groupSets.values()) {
@@ -844,6 +846,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   private void excludeResources() throws WdkModelException {
+    LOG.info("Excluding model resources...");
     // decide model name, display name, and version
     boolean hasModelName = false;
     for (WdkModelName wdkModelName : wdkModelNames) {

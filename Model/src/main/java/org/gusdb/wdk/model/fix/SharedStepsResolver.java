@@ -223,10 +223,10 @@ public class SharedStepsResolver extends BaseCLI {
         step.oldId = resultSet.getInt("step_id");
         Object left = resultSet.getObject("left_child_id");
         if (left != null)
-          step.leftId = Integer.valueOf(left.toString());
+          step.leftId = Long.valueOf(left.toString());
         Object right = resultSet.getObject("right_child_id");
         if (right != null)
-          step.rightId = Integer.valueOf(right.toString());
+          step.rightId = Long.valueOf(right.toString());
         step.content = platform.getClobData(resultSet, "display_params");
         steps.put(step.oldId, step);
       }

@@ -48,7 +48,7 @@ public class StageHandlerUtility {
         // load branch root, if exists
         StepBean rootStep;
         if (pos > 0) {
-            int branchRootId = Integer.valueOf(strategyKey.substring(pos + 1));
+            long branchRootId = Long.valueOf(strategyKey.substring(pos + 1));
             rootStep = strategy.getStepById(branchRootId);
         } else {
             rootStep = strategy.getLatestStep();

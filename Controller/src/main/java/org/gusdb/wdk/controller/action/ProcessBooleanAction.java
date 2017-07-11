@@ -65,7 +65,7 @@ public class ProcessBooleanAction extends Action {
         branchId = Long.valueOf(strategyKey.substring(pos + 1));
         strategyKey = strategyKey.substring(0, pos);
       }
-      long oldStrategyId = Integer.valueOf(strategyKey); 
+      long oldStrategyId = Long.valueOf(strategyKey); 
 
       // get strategy, and verify the checksum
       StrategyBean strategy = new StrategyBean(user, StepUtilities.getStrategy(user.getUser(), oldStrategyId));
@@ -77,7 +77,7 @@ public class ProcessBooleanAction extends Action {
       String strStepId = request.getParameter(PARAM_STEP);
       if (strStepId == null || strStepId.isEmpty())
         throw new WdkUserException("The required param '" + PARAM_STEP + "' is missing.");
-      long stepId = Integer.valueOf(strStepId);
+      long stepId = Long.valueOf(strStepId);
       
       // cannot change step on saved strategy, will need to make a clone first
       if (strategy.getIsSaved()) {
@@ -201,7 +201,7 @@ public class ProcessBooleanAction extends Action {
     // + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
     StepBean previousStep = rootStep;
-    StepBean childStep = user.getStep(Integer.valueOf(strImport));
+    StepBean childStep = user.getStep(Long.valueOf(strImport));
 
     // use the default flags
     StepBean newStep = new StepBean(user, StepUtilities.createBooleanStep(user.getUser(),

@@ -211,7 +211,7 @@ public class DatasetFactory {
     }
   }
 
-  public String getDatasetValueSql(int datasetId) {
+  public String getDatasetValueSql(long datasetId) {
     ModelConfig config = wdkModel.getModelConfig();
     String dbLink = config.getAppDB().getUserDbLink();
 

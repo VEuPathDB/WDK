@@ -137,7 +137,7 @@ public class OAuthClient {
     }
   }
 
-  private int getUserIdFromIdToken(String idToken, String clientSecret) throws WdkModelException {
+  private long getUserIdFromIdToken(String idToken, String clientSecret) throws WdkModelException {
     try {
       LOG.debug("Attempting parse of id token [" + idToken + "] using client secret '" + clientSecret +"'");
       String encodedKey = TextCodec.BASE64.encode(clientSecret);
@@ -146,7 +146,7 @@ public class OAuthClient {
       String userIdStr = claims.getSubject();
       LOG.debug("Received token for sub '" + userIdStr + "' and preferred_username '" + claims.get("preferred_username"));
       if (FormatUtil.isInteger(userIdStr)) {
-        return Integer.valueOf(userIdStr);
+        return Long.valueOf(userIdStr);
       }
       throw new WdkModelException("Subject returned by OAuth server [" + userIdStr + "] is not a valid user ID.");
     }
