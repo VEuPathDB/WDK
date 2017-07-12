@@ -6,9 +6,9 @@
   version "2.0.32"
   resolved "https://registry.yarnpkg.com/@types/fbemitter/-/fbemitter-2.0.32.tgz#8ed204da0f54e9c8eaec31b1eec91e25132d082c"
 
-"@types/flux@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@types/flux/-/flux-3.0.1.tgz#690a1a67a5a0549c2a2dc3c2343f4505caad5143"
+"@types/flux@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@types/flux/-/flux-3.1.1.tgz#fd4dd48d5d3891b62fde5923bd7a6295a2043311"
   dependencies:
     "@types/fbemitter" "*"
     "@types/react" "*"
