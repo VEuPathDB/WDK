@@ -1,5 +1,6 @@
 .wdk-Loading {
-  position: absolute;
-  top: 2em;
-  left: 50%;
+  position: relative;
+  z-index: 1;
+  height: 2em;
+  padding: 2em;
 }
