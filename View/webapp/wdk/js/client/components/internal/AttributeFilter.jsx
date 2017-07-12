@@ -950,8 +950,8 @@ ServerSideAttributeFilter.propTypes = {
   // state
   fields: PropTypes.object.isRequired, // tree nodes
   filters: PropTypes.array.isRequired,
-  dataCount: PropTypes.number.isRequired,
-  filteredDataCount: PropTypes.number.isRequired,
+  dataCount: PropTypes.number,
+  filteredDataCount: PropTypes.number,
   activeField: PropTypes.string,
   activeFieldSummary: PropTypes.array,
   renderSelectionInfo: PropTypes.func,
