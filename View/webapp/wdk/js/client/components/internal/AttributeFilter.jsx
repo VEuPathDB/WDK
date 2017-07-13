@@ -1243,7 +1243,6 @@ var Histogram = (function() {
                 type="range" min={countsMin + 1} max={countsMax + countsMax * 0.1}
                 title={yaxisMax}
                 value={yaxisMax}
-                autoFocus={true}
                 onChange={e => this.setYAxisMax(Number(e.target.value))}/>
             </div>
           </div>
