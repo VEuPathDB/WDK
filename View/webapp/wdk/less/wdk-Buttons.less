@@ -1,0 +1,29 @@
+button.btn {
+  .transition;
+  padding: 8px 20px;
+  font-size: 1em;
+  line-height: 1em;
+  color: @white;
+  background: @blue;
+  border: none;
+
+  &:hover {
+    background: darken(@blue, 10%);
+    transform: scale(0.95);
+    -webkit-transform: scale(0.95);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .fa {
+    margin-left: 5px;
+    font-size: 1.2em;
+  }
+
+  &.btn-red {
+    background: @red;
+    color: @white;
+    &:hover {
+      background: darken(@red, 10%);
+    }
+  }
+}

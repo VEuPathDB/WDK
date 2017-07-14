@@ -1,0 +1,22 @@
+@import 'common/mixins.less';
+@import 'common/palette.less';
+
+.bulk-selection-toolbar {
+  .flex();
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+
+  .selection-count {
+    flex: 1;
+    text-align: right;
+    opacity: 0.6;
+    padding: 10px;
+  }
+
+  .toolbar-item {
+    flex: 0 0 auto;
+    border: none;
+    margin: 5px;
+  }
+}
