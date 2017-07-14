@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.answer.stream.RecordStream;
  * A PagedReporter outputs a result in a paged fashion in order to avoid memory problems.  To do so, it
  * iterates over a series of AnswerValues it generates, each of which represents a page of records.
  * 
- * The default page size is 100 records.
+ * The default page size is 200 records.
  * 
  * @author rdoherty
  */
