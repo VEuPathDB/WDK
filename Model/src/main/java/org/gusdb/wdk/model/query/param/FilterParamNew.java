@@ -463,7 +463,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
-    String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
+    String internalSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues,  this, getMetadataQuery());
     
     // use that set of ids to limit our ontology id's metadata 
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql + ")";
