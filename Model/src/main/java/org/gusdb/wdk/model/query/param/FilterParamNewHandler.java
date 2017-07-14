@@ -46,7 +46,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     {
       "value": {
         "min": 1.82,
-        "max": 2.19
+        "max": 2.19,
+        "includeUnknowns": true    (optional)
       },
       "field": "age"
     },
@@ -121,7 +122,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
-      return getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
+      Query mdQuery = param.getUseSummaryMetadataQueryForInternalValue()? param.getSummaryMetadataQuery() : param.getMetadataQuery();
+      return getFilteredValue(user, jsValue, contextParamValues, param, mdQuery);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -217,13 +219,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       sb.append(val);
     }
     return " AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
-  }
-
-  private static String getMetadataQuerySql(User user, Map<String, String> contextParamValues,
-      FilterParamNew filterParam) throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(
-        user, contextParamValues, filterParam.getMetadataQuery());
-    return instance.getSql();
   }
 
   /**

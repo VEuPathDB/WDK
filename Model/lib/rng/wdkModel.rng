@@ -695,6 +695,11 @@
           <data type="boolean" />
         </attribute>
       </optional>
+            <optional>
+        <attribute name="useSummaryMetadataQueryForInternalValue">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
