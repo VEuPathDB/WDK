@@ -20,9 +20,9 @@ class SingleSelect extends React.Component {
     let { name, value, items } = this.props;
     return (
       <select name={name} value={value} onChange={this.onChange}>
-        {items.map(item =>
-          ( <option key={item.value} value={item.value}>{item.display}</option> )
-        )}
+        {items.map(item => (
+          <option key={item.value} disabled={item.disabled} value={item.value}>{item.display}</option>
+        ))}
       </select>
     );
   }
