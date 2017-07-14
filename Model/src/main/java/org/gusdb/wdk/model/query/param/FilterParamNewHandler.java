@@ -213,7 +213,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     StringBuilder sb = new StringBuilder();
     for (int j = 0; j < values.length(); j++) {
-      String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
+      String val = (values.get(j) == JSONObject.NULL)? "unknown"
+        : isNumber ? new Double(values.getDouble(j)).toString()
+        : values.getString(j);
+      val = val.replaceAll("'", "''");
       if (!isNumber) val = "'" + val + "'";
       if (j != 0) sb.append(",");
       sb.append(val);
