@@ -119,6 +119,8 @@ public class FilterParamNew extends AbstractDependentParam {
   private String backgroundQueryRef;
   private Query backgroundQuery;
   
+  private boolean useSummaryMetadataQueryForInternalValue = false;
+  
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
@@ -150,6 +152,7 @@ public class FilterParamNew extends AbstractDependentParam {
       this.backgroundQuery = param.backgroundQuery.clone();
     
     this.trimMetadataTerms = param.trimMetadataTerms;
+    this.useSummaryMetadataQueryForInternalValue = param.useSummaryMetadataQueryForInternalValue;
   }
 
   /*
@@ -264,13 +267,19 @@ public class FilterParamNew extends AbstractDependentParam {
     this.backgroundQuery = backgroundQuery;
   }
 
-
   /**
    * @return the trimMetadataTerms
-   * TODO: either add this to service layer or remove
    */
   public boolean getTrimMetadataTerms() {
     return trimMetadataTerms;
+  }
+
+  public void setUseSummaryMetadataQueryForInternalValue(boolean useIt) {
+    this.useSummaryMetadataQueryForInternalValue = useIt;
+  }
+
+  public boolean getUseSummaryMetadataQueryForInternalValue() {
+    return useSummaryMetadataQueryForInternalValue;
   }
 
   /**
