@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
+import { Seq } from '../../utils/IterableUtils';
 import {
   debounce,
   find,
@@ -14,7 +15,6 @@ import {
   partition,
   property,
   reduce,
-  result,
   sortBy,
   throttle
 } from 'lodash';
@@ -273,7 +273,7 @@ FieldList.propTypes = {
  * Main interactive filtering interface for a particular field.
  */
 function FieldFilter(props) {
-  let FieldDetail = getFieldDetail(props.field);
+  let FieldDetail = getFieldDetailComponent(props.field);
   let fieldDetailProps = {
     displayName: props.displayName,
     field: props.field,
@@ -673,7 +673,7 @@ export class AttributeFilter extends React.Component {
    * @param {any} value Filter value
    */
   shouldAddFilter(field, value) {
-    return field.type === 'string' ? value.length !== this.props.activeFieldSummary.length
+    return field.type === 'string' || field.isRange == false ? value.length !== this.props.activeFieldSummary.length
          : field.type === 'number' ? value.min != null || value.max != null
          : field.type === 'date' ? value.min != null || value.max != null
          : false;
@@ -872,7 +872,7 @@ export class ServerSideAttributeFilter extends React.Component {
    * @param {any} value Filter value
    */
   shouldAddFilter(field, value) {
-    return field.type === 'string' ? value.length !== this.props.activeFieldSummary.length
+    return field.type === 'string' || field.isRange == false ? value.length !== this.props.activeFieldSummary.length
          : field.type === 'number' ? value.min != null || value.max != null
          : field.type === 'date' ? value.min != null || value.max != null
          : false;
@@ -1337,11 +1337,7 @@ class HistogramField extends React.Component {
   }
 
   emitChange(range) {
-    let { field } = this.props;
-    let min = range.min == null ? this.distributionRange.min : range.min;
-    let max = range.max == null ? this.distributionRange.max : range.max;
-    let display = field.display + ' between ' + min + ' and ' + max;
-    this.props.onChange(field, range, display);
+    this.props.onChange(this.props.field, range);
   }
 
   render() {
@@ -1415,13 +1411,11 @@ HistogramField.propTypes = {
   displayName: PropTypes.string.isRequired
 };
 
-var fieldComponents = {};
 
 var UNKNOWN_DISPLAY = 'unknown';
 var UNKNOWN_VALUE = '@@unknown@@';
 
-fieldComponents.string = class StringField extends React.Component {
-
+class MembershipField extends React.Component {
   static getTooltipContent(props) {
     var displayName = props.displayName;
     var fieldDisplay = props.field.display;
@@ -1449,6 +1443,14 @@ fieldComponents.string = class StringField extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSelectAll = this.handleSelectAll.bind(this);
     this.handleRemoveAll = this.handleRemoveAll.bind(this);
+    this.toFilterValue = this.toFilterValue.bind(this);
+  }
+
+  toFilterValue(value) {
+    return this.props.field.type === 'string' ? String(value)
+      : this.props.field.type === 'number' ? Number(value)
+      : this.props.field.type === 'date' ? Date(value)
+      : value;
   }
 
   handleClick(event) {
@@ -1460,11 +1462,11 @@ fieldComponents.string = class StringField extends React.Component {
   }
 
   handleChange() {
-    var value = $(findDOMNode(this))
-      .find('input[type=checkbox]:checked')
-      .toArray()
+    var value = Seq.from(findDOMNode(this).querySelectorAll('input[type=checkbox]:checked'))
       .map(property('value'))
-      .map(value => value === UNKNOWN_VALUE ? null : value);
+      .map(value => value === UNKNOWN_VALUE ? null : value)
+      .map(this.toFilterValue)
+      .toArray();
     this.emitChange(value);
   }
 
@@ -1481,11 +1483,7 @@ fieldComponents.string = class StringField extends React.Component {
   }
 
   emitChange(value) {
-    let { field } = this.props;
-    let display = value.length > 0
-      ? field.display + ' is ' + value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')
-      : 'No ' + field.display + ' selected';
-    this.props.onChange(field, value, display);
+    this.props.onChange(this.props.field, value);
   }
 
   render() {
@@ -1522,13 +1520,13 @@ fieldComponents.string = class StringField extends React.Component {
                   var percentage = (item.count / total) * 100;
                   var disabled = item.filteredCount === 0;
                   var filteredPercentage = (item.filteredCount / total) * 100;
-                  var isChecked = !this.props.filter || includes(this.props.filter.value, item.value);
+                  var value = this.toFilterValue(item.value) || UNKNOWN_VALUE;
+                  var display = item.value || UNKNOWN_DISPLAY;
+                  var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
+                  var isChecked = !this.props.filter || includes(this.props.filter.value, value);
                   var trClassNames = 'member' +
                     (isChecked & !disabled ? ' member__selected' : '') +
                     (disabled ? ' member__disabled' : '');
-                  var value = item.value || UNKNOWN_VALUE;
-                  var display = item.value || UNKNOWN_DISPLAY;
-                  var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
 
                   return (
                     <tr key={value} className={trClassNames} onClick={this.handleClick} title={tooltip}>
@@ -1552,8 +1550,7 @@ fieldComponents.string = class StringField extends React.Component {
   }
 }
 
-
-fieldComponents.number = class NumberField extends React.Component {
+class NumberField extends React.Component {
 
   static getTooltipContent(props) {
     return HistogramField.getTooltipContent(props);
@@ -1628,7 +1625,7 @@ fieldComponents.number = class NumberField extends React.Component {
 
 }
 
-fieldComponents.date = class DateFields extends React.Component {
+class DateField extends React.Component {
 
   static getTooltipContent(props) {
     return HistogramField.getTooltipContent(props);
@@ -1714,25 +1711,25 @@ function EmptyField(props) {
   );
 }
 
-function getFieldDetail(field) {
-  return fieldComponents[result(field, 'type')];
+function getFieldDetailComponent(field) {
+  return field.isRange == false ? MembershipField
+    : field.type == 'string' ? MembershipField
+    : field.type == 'number' ? NumberField
+    : field.type == 'date' ? DateField
+    : null;
 }
 
 function getFilterDisplay(field, value) {
-  if (typeof field === 'string') {
-    return `${field} is ${JSON.stringify(value)}`;
-  }
-
-  switch(field.type) {
-    case 'string': return value.length === 0 ? `No ${field.display} selected`
-      : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`;
-    case 'date':
-    case 'number': return `${field.display} is ` +
+  return typeof field === 'string' ? `${field} is ${JSON.stringify(value)}`
+    // range filter display
+    : field.isRange ? `${field.display} is ` +
       ( value.min == null ? `less than ${value.max}`
       : value.max == null ? `greater than ${value.min}`
-      : `between ${value.min} and ${value.max}`);
-    default: return JSON.stringify(value);
-  }
+      : `between ${value.min} and ${value.max}`)
+
+    // membership filter display
+    : ( value.length === 0 ? `No ${field.display} selected`
+      : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`);
 }
 
 function setStateFromArgs(instance, ...argsNames) {
