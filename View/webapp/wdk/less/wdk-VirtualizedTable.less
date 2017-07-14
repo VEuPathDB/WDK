@@ -1,0 +1,91 @@
+@import 'common/palette.less';
+@import 'common/mixins.less';
+
+/* WDK Classes -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+.wdk-VirtualizedTable {
+  background-color: @white;
+}
+
+.wdk-VirtualizedTableHeaderRow {
+  background-color: @lightgray;
+  border: 1px solid @gray;
+}
+
+.wdk-VirtualizedTableBodyRow {
+  border-bottom: 1px solid @lightgray;
+}
+
+.wdk-VirtualizedTableHeaderCell {
+  text-align: left;
+  text-transform: capitalize;
+  border-right: 1px solid @gray;
+}
+
+.wdk-VirtualizedTableCell  {
+  // background-color: @white;
+}
+
+/* ReactVirtualized Elements -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+.ReactVirtualized__List {}
+.ReactVirtualized__Collection {}
+.ReactVirtualized__Collection__innerScrollContainer {}
+.ReactVirtualized__Grid {}
+.ReactVirtualized__Grid__innerScrollContainer {}
+.ReactVirtualized__Table {
+}
+.ReactVirtualized__Table__Grid {
+  &:focus {
+    outline: none;
+  }
+}
+
+.ReactVirtualized__Table__headerRow {
+  font-weight: 700;
+  text-transform: uppercase;
+  .flex();
+  .row();
+  .alignCenter();
+}
+
+.ReactVirtualized__Table__row {
+  .flex();
+  .row();
+  .alignCenter();
+  overflow: visible;
+}
+
+.ReactVirtualized__Table__headerTruncatedText {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  .truncated();
+}
+
+.ReactVirtualized__Table__headerColumn, .ReactVirtualized__Table__rowColumn {
+  margin-right: 10px;
+  min-width: 0px;
+
+  &:first-of-type { margin-left: 10px; }
+}
+
+.ReactVirtualized__Table__rowColumn {
+  // .truncated();
+}
+
+.ReactVirtualized__Table__sortableHeaderColumn {
+  cursor: pointer;
+}
+
+.ReactVirtualized__Table__sortableHeaderIconContainer {
+  .flex();
+  .alignCenter();
+}
+.ReactVirtualized__Table__sortableHeaderIcon {
+  -webkit-flex: 0 0 24px;
+  -moz-box-flex: 0;
+  -ms-flex: 0 0 24px;
+  flex: 0 0 24px;
+  height: 1em;
+  width: 1em;
+  fill: currentColor;
+}
