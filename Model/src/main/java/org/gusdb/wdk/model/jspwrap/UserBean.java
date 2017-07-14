@@ -33,60 +33,60 @@ import org.gusdb.wdk.model.user.UserSession;
  */
 public class UserBean {
 
-  private static Logger logger = Logger.getLogger(UserBean.class);
+  private static final Logger LOG = Logger.getLogger(UserBean.class);
 
-  private final User user;
+  private final User _user;
   private final UserSession _userSession;
   private final WdkModel _wdkModel;
 
-  private Question currentQuestion;
-  private int stepId;
+  private Question _currentQuestion;
+  private int _stepId;
 
   public UserBean(User user) {
-    this.user = user;
+    _user = user;
     _userSession = user.getSession();
     _wdkModel = user.getWdkModel();
     
   }
 
   public void setCurrentQuestion(QuestionBean question) {
-    this.currentQuestion = question.question;
+    _currentQuestion = question.question;
   }
 
   public User getUser() {
-    return user;
+    return _user;
   }
 
   public long getUserId() {
-    return user.getUserId();
+    return _user.getUserId();
   }
 
   public String getEmail() {
-    return user.getEmail();
+    return _user.getEmail();
   }
 
   public String getSignature() {
-    return user.getSignature();
+    return _user.getSignature();
   }
 
   public boolean isGuest() {
-    return user.isGuest();
+    return _user.isGuest();
   }
 
   public String getFirstName() {
-    return user.getProfileProperties().get("firstName");
+    return _user.getProfileProperties().get("firstName");
   }
 
   public String getMiddleName() {
-    return user.getProfileProperties().get("middleName");
+    return _user.getProfileProperties().get("middleName");
   }
 
   public String getLastName() {
-    return user.getProfileProperties().get("lastName");
+    return _user.getProfileProperties().get("lastName");
   }
 
   public String getOrganization() {
-    return user.getProfileProperties().get("organization");
+    return _user.getProfileProperties().get("organization");
   }
 
   public String getFrontAction() {
@@ -102,11 +102,11 @@ public class UserBean {
   }
 
   public Map<String, String> getGlobalPreferences() {
-    return user.getPreferences().getGlobalPreferences();
+    return _user.getPreferences().getGlobalPreferences();
   }
 
   public Map<String, String> getProjectPreferences() {
-    return user.getPreferences().getProjectPreferences();
+    return _user.getPreferences().getProjectPreferences();
   }
 
   // =========================================================================
@@ -114,7 +114,7 @@ public class UserBean {
   // =========================================================================
 
   public DatasetBean getDataset(long userDatasetId) throws WdkModelException {
-    return new DatasetBean(_wdkModel.getDatasetFactory().getDataset(user, userDatasetId));
+    return new DatasetBean(_wdkModel.getDatasetFactory().getDataset(_user, userDatasetId));
   }
 
   // =========================================================================
@@ -127,7 +127,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#clearHistories()
    */
   public void deleteSteps() throws WdkModelException {
-    StepUtilities.deleteSteps(user);
+    StepUtilities.deleteSteps(_user);
   }
 
   /*
@@ -138,7 +138,7 @@ public class UserBean {
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
       String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
       WdkUserException {
-    Step step = StepUtilities.createStep(user, strategyId, question.question, params, filterName, deleted, validate,
+    Step step = StepUtilities.createStep(_user, strategyId, question.question, params, filterName, deleted, validate,
         assignedWeight);
     return new StepBean(this, step);
   }
@@ -158,7 +158,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getHistories()
    */
   public StepBean[] getSteps() throws WdkModelException {
-    Step[] steps = StepUtilities.getSteps(user);
+    Step[] steps = StepUtilities.getSteps(_user);
     StepBean[] beans = new StepBean[steps.length];
     for (int i = 0; i < steps.length; i++) {
       beans[i] = new StepBean(this, steps[i]);
@@ -172,7 +172,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getHistories()
    */
   public StepBean[] getInvalidSteps() throws WdkModelException {
-    Step[] steps = StepUtilities.getInvalidSteps(user);
+    Step[] steps = StepUtilities.getInvalidSteps(_user);
     StepBean[] beans = new StepBean[steps.length];
     for (int i = 0; i < steps.length; i++) {
       beans[i] = new StepBean(this, steps[i]);
@@ -181,15 +181,15 @@ public class UserBean {
   }
 
   public void deleteInvalidSteps() throws WdkModelException {
-    _wdkModel.getStepFactory().deleteInvalidSteps(user);
+    _wdkModel.getStepFactory().deleteInvalidSteps(_user);
   }
 
   public void deleteInvalidStrategies() throws WdkModelException {
-    _wdkModel.getStepFactory().deleteInvalidStrategies(user);
+    _wdkModel.getStepFactory().deleteInvalidStrategies(_user);
   }
 
   public Map<String, List<StepBean>> getStepsByCategory() throws WdkModelException {
-    Map<String, List<Step>> steps = StepUtilities.getStepsByCategory(user);
+    Map<String, List<Step>> steps = StepUtilities.getStepsByCategory(_user);
     Map<String, List<StepBean>> category = new LinkedHashMap<String, List<StepBean>>();
     for (String type : steps.keySet()) {
       List<Step> list = steps.get(type);
@@ -208,7 +208,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getHistories(java.lang.String)
    */
   public StepBean[] getSteps(String recordClassName) throws WdkModelException {
-    Step[] steps = StepUtilities.getSteps(user, recordClassName);
+    Step[] steps = StepUtilities.getSteps(_user, recordClassName);
     StepBean[] beans = new StepBean[steps.length];
     for (int i = 0; i < steps.length; i++) {
       beans[i] = new StepBean(this, steps[i]);
@@ -217,12 +217,12 @@ public class UserBean {
   }
 
   public StrategyBean getStrategy(long strategyId) throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, StepUtilities.getStrategy(user, strategyId));
+    return new StrategyBean(this, StepUtilities.getStrategy(_user, strategyId));
   }
 
   public Map<String, List<StrategyBean>> getStrategiesByCategory() throws Exception {
     try {
-      Map<String, List<Strategy>> strategies = StepUtilities.getStrategiesByCategory(user);
+      Map<String, List<Strategy>> strategies = StepUtilities.getStrategiesByCategory(_user);
       return convertMap(strategies);
     }
     catch (Exception ex) {
@@ -245,8 +245,8 @@ public class UserBean {
   }
 
   public int getPublicCount() throws WdkModelException {
-    int count = user.getWdkModel().getStepFactory().getPublicStrategyCount();
-    logger.debug("Found number of public strats: " + count);
+    int count = _user.getWdkModel().getStepFactory().getPublicStrategyCount();
+    LOG.debug("Found number of public strats: " + count);
     return count;
   }
 
@@ -265,7 +265,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getStrategyCount()
    */
   public int getStrategyCount() throws WdkModelException {
-    return _wdkModel.getStepFactory().getStrategyCount(user);
+    return _wdkModel.getStepFactory().getStrategyCount(_user);
   }
 
   /*
@@ -274,7 +274,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getHistoryCount()
    */
   public int getStepCount() throws WdkModelException {
-    return _wdkModel.getStepFactory().getStepCount(user);
+    return _wdkModel.getStepFactory().getStepCount(_user);
   }
 
   /*
@@ -283,7 +283,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getItemsPerPage()
    */
   public int getItemsPerPage() {
-    return user.getPreferences().getItemsPerPage();
+    return _user.getPreferences().getItemsPerPage();
   }
 
   /*
@@ -292,7 +292,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
    */
   public void setItemsPerPage(int itemsPerPage) throws WdkModelException {
-    user.getPreferences().setItemsPerPage(itemsPerPage);
+    _user.getPreferences().setItemsPerPage(itemsPerPage);
   }
 
   /*
@@ -302,7 +302,7 @@ public class UserBean {
    */
   @Override
   public String toString() {
-    return this.user.toString();
+    return _user.toString();
   }
 
   public void addActiveStrategy(String strategyKey) throws NumberFormatException, WdkUserException,
@@ -323,7 +323,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#deleteStrategies()
    */
   public void deleteStrategies() throws WdkModelException {
-    StepUtilities.deleteStrategies(user);
+    StepUtilities.deleteStrategies(_user);
   }
 
   /**
@@ -331,7 +331,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#deleteStrategy(int)
    */
   public void deleteStrategy(int strategyId) throws WdkModelException {
-    StepUtilities.deleteStrategy(user, strategyId);
+    StepUtilities.deleteStrategy(_user, strategyId);
   }
 
   /**
@@ -340,7 +340,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#importStrategyByAnswer(java.lang.String)
    */
   public StrategyBean importStrategy(String strategyKey) throws WdkModelException, WdkUserException {
-    Strategy strategy = StepUtilities.importStrategy(user, strategyKey);
+    Strategy strategy = StepUtilities.importStrategy(_user, strategyKey);
     return new StrategyBean(this, strategy);
   }
 
@@ -361,37 +361,37 @@ public class UserBean {
   }
 
   public Map<String, List<StrategyBean>> getSavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getSavedStrategiesByCategory(user);
+    Map<String, List<Strategy>> strategies = StepUtilities.getSavedStrategiesByCategory(_user);
     logFoundStrategies(strategies, "saved");
     return convertMap(strategies);
   }
 
   public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getUnsavedStrategiesByCategory(user);
+    Map<String, List<Strategy>> strategies = StepUtilities.getUnsavedStrategiesByCategory(_user);
     logFoundStrategies(strategies, "unsaved");
     return convertMap(strategies);
   }
 
   private void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
       int total = 0;
       for (Entry<String, List<Strategy>> entry : strategies.entrySet()) {
-        logger.debug("   " + entry.getKey() + ": " + entry.getValue().size() + " strategies.");
+        LOG.debug("   " + entry.getKey() + ": " + entry.getValue().size() + " strategies.");
         total += entry.getValue().size();
       }
-      logger.debug("   Total: " + total);
+      LOG.debug("   Total: " + total);
     }
   }
 
   public Map<String, List<StrategyBean>> getRecentStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getRecentStrategiesByCategory(user);
+    Map<String, List<Strategy>> strategies = StepUtilities.getRecentStrategiesByCategory(_user);
     return convertMap(strategies);
   }
 
   public Map<String, List<StrategyBean>> getActiveStrategiesByCategory() throws WdkModelException,
       WdkUserException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(user);
+    Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(_user);
     return convertMap(strategies);
   }
 
@@ -406,7 +406,7 @@ public class UserBean {
     Map<String, List<StrategyBean>> savedStrats = getSavedStrategiesByCategory();
     Map<String, List<StrategyBean>> recentStrats = getRecentStrategiesByCategory();
     Map<String, Map<String, List<StrategyBean>>> categories = new LinkedHashMap<String, Map<String, List<StrategyBean>>>();
-    WdkModel wdkModel = user.getWdkModel();
+    WdkModel wdkModel = _user.getWdkModel();
 
     for (String rcName : activeStrats.keySet()) {
       RecordClass recordClass = wdkModel.getRecordClass(rcName);
@@ -458,7 +458,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getStep(int)
    */
   public StepBean getStep(long stepId) throws WdkModelException {
-    return new StepBean(this, StepUtilities.getStep(user, stepId));
+    return new StepBean(this, StepUtilities.getStep(_user, stepId));
   }
 
   /**
@@ -474,34 +474,34 @@ public class UserBean {
    */
   public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
       String operator, String filterName) throws WdkModelException {
-    Step step = StepUtilities.createBooleanStep(user, strategyId, previousStep.step, childStep.step, operator, filterName);
+    Step step = StepUtilities.createBooleanStep(_user, strategyId, previousStep.step, childStep.step, operator, filterName);
     return new StepBean(this, step);
   }
 
   public void setViewResults(String strategyKey, int stepId, int viewPagerOffset) {
-    logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
-    user.getSession().setViewResults(strategyKey, stepId, viewPagerOffset);
+    LOG.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
+    _user.getSession().setViewResults(strategyKey, stepId, viewPagerOffset);
   }
 
   public void resetViewResults() {
-    user.getSession().resetViewResults();
+    _user.getSession().resetViewResults();
   }
 
   public String getViewStrategyId() {
-    return user.getSession().getViewStrategyKey();
+    return _user.getSession().getViewStrategyKey();
   }
 
   public long getViewStepId() {
-    return user.getSession().getViewStepId();
+    return _user.getSession().getViewStepId();
   }
 
   public Integer getViewPagerOffset() {
-    return user.getSession().getViewPagerOffset();
+    return _user.getSession().getViewPagerOffset();
   }
 
   public StrategyBean[] getActiveStrategies() throws WdkUserException {
     List<StrategyBean> strategies = new ArrayList<StrategyBean>();
-    for (Strategy strategy : user.getSession().getActiveStrategies()) {
+    for (Strategy strategy : _user.getSession().getActiveStrategies()) {
       strategies.add(new StrategyBean(this, strategy));
     }
     StrategyBean[] array = new StrategyBean[strategies.size()];
@@ -515,7 +515,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getStrategyOrder(java.lang.String)
    */
   public int getStrategyOrder(String strategyKey) {
-    return user.getSession().getStrategyOrder(strategyKey);
+    return _user.getSession().getStrategyOrder(strategyKey);
   }
 
   /**
@@ -523,15 +523,15 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getActiveStrategyIds()
    */
   public long[] getActiveStrategyIds() {
-    return user.getSession().getActiveStrategyIds();
+    return _user.getSession().getActiveStrategyIds();
   }
 
   public void setStepId(String stepId) {
-    this.stepId = Integer.parseInt(stepId);
+    _stepId = Integer.parseInt(stepId);
   }
 
   public StepBean getStepByCachedId() throws WdkModelException {
-    return new StepBean(this, StepUtilities.getStep(user, stepId));
+    return new StepBean(this, StepUtilities.getStep(_user, _stepId));
   }
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap)
@@ -545,32 +545,32 @@ public class UserBean {
   }
 
   public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {
-    BasketFactory factory = user.getWdkModel().getBasketFactory();
-    factory.addToBasket(user, recordClass.recordClass, ids);
+    BasketFactory factory = _user.getWdkModel().getBasketFactory();
+    factory.addToBasket(_user, recordClass.recordClass, ids);
   }
 
   public void addToBasket(StepBean step) throws WdkModelException, WdkUserException {
-    BasketFactory factory = user.getWdkModel().getBasketFactory();
-    factory.addToBasket(user, step.step);
+    BasketFactory factory = _user.getWdkModel().getBasketFactory();
+    factory.addToBasket(_user, step.step);
   }
 
   public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {
-    BasketFactory factory = user.getWdkModel().getBasketFactory();
-    factory.removeFromBasket(user, recordClass.recordClass, ids);
+    BasketFactory factory = _user.getWdkModel().getBasketFactory();
+    factory.removeFromBasket(_user, recordClass.recordClass, ids);
   }
 
   public void removeFromBasket(StepBean step) throws WdkModelException, WdkUserException {
-    BasketFactory factory = user.getWdkModel().getBasketFactory();
-    factory.removeFromBasket(user, step.step);
+    BasketFactory factory = _user.getWdkModel().getBasketFactory();
+    factory.removeFromBasket(_user, step.step);
   }
 
   public void clearBasket(RecordClassBean recordClass) throws SQLException {
-    BasketFactory factory = user.getWdkModel().getBasketFactory();
-    factory.clearBasket(user, recordClass.recordClass);
+    BasketFactory factory = _user.getWdkModel().getBasketFactory();
+    factory.clearBasket(_user, recordClass.recordClass);
   }
 
   public Map<RecordClassBean, Integer> getBasketCounts() throws WdkModelException {
-    Map<RecordClass, Integer> counts = _wdkModel.getBasketFactory().getBasketCounts(user);
+    Map<RecordClass, Integer> counts = _wdkModel.getBasketFactory().getBasketCounts(_user);
     Map<RecordClassBean, Integer> beans = new LinkedHashMap<RecordClassBean, Integer>();
     for (RecordClass recordClass : counts.keySet()) {
       RecordClassBean bean = new RecordClassBean(recordClass);
@@ -581,7 +581,7 @@ public class UserBean {
   }
 
   public int getBasketCount() throws WdkModelException {
-    Map<RecordClass, Integer> baskets = _wdkModel.getBasketFactory().getBasketCounts(user);
+    Map<RecordClass, Integer> baskets = _wdkModel.getBasketFactory().getBasketCounts(_user);
     int total = 0;
     for (int count : baskets.values()) {
       total += count;
@@ -597,14 +597,14 @@ public class UserBean {
    */
   public void addToFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
       throws WdkModelException, WdkUserException {
-    _wdkModel.getFavoriteFactory().addToFavorite(user, recordClass.recordClass, pkValues);
+    _wdkModel.getFavoriteFactory().addToFavorite(_user, recordClass.recordClass, pkValues);
   }
 
   /**
    * @see org.gusdb.wdk.model.user.User#clearFavorite()
    */
   public void clearFavorite() throws WdkModelException {
-    _wdkModel.getFavoriteFactory().clearFavorite(user);
+    _wdkModel.getFavoriteFactory().clearFavorite(_user);
   }
 
   /**
@@ -612,7 +612,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getFavoriteCount()
    */
   public int getFavoriteCount() throws WdkModelException {
-    return _wdkModel.getFavoriteFactory().getFavoriteCounts(user);
+    return _wdkModel.getFavoriteFactory().getFavoriteCounts(_user);
   }
 
   /**
@@ -620,7 +620,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getFavorites()
    */
   public Map<RecordClassBean, List<FavoriteBean>> getFavorites() throws WdkModelException {
-    Map<RecordClass, List<Favorite>> favorites = _wdkModel.getFavoriteFactory().getFavorites(user);
+    Map<RecordClass, List<Favorite>> favorites = _wdkModel.getFavoriteFactory().getFavorites(_user);
     Map<RecordClassBean, List<FavoriteBean>> beans = new LinkedHashMap<RecordClassBean, List<FavoriteBean>>();
     for (RecordClass recordClass : favorites.keySet()) {
       List<FavoriteBean> beanList = new ArrayList<FavoriteBean>();
@@ -641,7 +641,7 @@ public class UserBean {
    */
   public void removeFromFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
       throws WdkModelException {
-    _wdkModel.getFavoriteFactory().removeFromFavorite(user, recordClass.recordClass, pkValues);
+    _wdkModel.getFavoriteFactory().removeFromFavorite(_user, recordClass.recordClass, pkValues);
   }
 
   /**
@@ -653,7 +653,7 @@ public class UserBean {
    */
   public void setFavoriteGroups(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String group)
       throws WdkModelException {
-    _wdkModel.getFavoriteFactory().setGroups(user, recordClass.recordClass, pkValues, group);
+    _wdkModel.getFavoriteFactory().setGroups(_user, recordClass.recordClass, pkValues, group);
   }
 
   /**
@@ -665,7 +665,7 @@ public class UserBean {
    */
   public void setFavoriteNotes(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String note)
       throws WdkModelException {
-    _wdkModel.getFavoriteFactory().setNotes(user, recordClass.recordClass, pkValues, note);
+    _wdkModel.getFavoriteFactory().setNotes(_user, recordClass.recordClass, pkValues, note);
   }
 
   /**
@@ -673,7 +673,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#getFavoriteGroups()
    */
   public String[] getFavoriteGroups() throws WdkModelException {
-    return _wdkModel.getFavoriteFactory().getGroups(user);
+    return _wdkModel.getFavoriteFactory().getGroups(_user);
   }
 
   /**
@@ -682,7 +682,7 @@ public class UserBean {
    * @return
    */
   public int getBasketCount(List<String[]> records, RecordClassBean recordClass) throws WdkModelException {
-    return _wdkModel.getBasketFactory().getBasketCounts(user, records, recordClass.recordClass);
+    return _wdkModel.getBasketFactory().getBasketCounts(_user, records, recordClass.recordClass);
   }
 
   /**
@@ -692,12 +692,12 @@ public class UserBean {
    */
   public int getFavoriteCount(List<Map<String, Object>> records, RecordClassBean recordClass)
       throws WdkModelException {
-    return _wdkModel.getFavoriteFactory().getFavoriteCount(user, records, recordClass.recordClass);
+    return _wdkModel.getFavoriteFactory().getFavoriteCount(_user, records, recordClass.recordClass);
   }
 
   public SummaryView getCurrentSummaryView() throws Exception {
     try {
-      return user.getPreferences().getCurrentSummaryView(currentQuestion);
+      return _user.getPreferences().getCurrentSummaryView(_currentQuestion);
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -706,12 +706,12 @@ public class UserBean {
   }
 
   public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView) throws WdkModelException {
-    user.getPreferences().setCurrentSummaryView(question.question, summaryView);
+    _user.getPreferences().setCurrentSummaryView(question.question, summaryView);
   }
 
   public RecordView getCurrentRecordView() throws Exception {
     try {
-      return user.getPreferences().getCurrentRecordView(currentQuestion.getRecordClass());
+      return _user.getPreferences().getCurrentRecordView(_currentQuestion.getRecordClass());
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -719,9 +719,13 @@ public class UserBean {
     }
   }
 
+  public RecordClass getCurrentRecordClass() {
+    return _currentQuestion.getRecordClass();
+  }
+
   public void setCurrentRecordView(RecordClassBean recordClass, RecordView recordView)
       throws WdkModelException {
-    user.getPreferences().setCurrentRecordView(recordClass.recordClass, recordView);
+    _user.getPreferences().setCurrentRecordView(recordClass.recordClass, recordView);
   }
 
   public long getNewStrategyId() throws WdkModelException {
