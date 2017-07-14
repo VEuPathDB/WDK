@@ -33,6 +33,17 @@ var scriptLoaders = scripts.map(function(script) {
   };
 });
 
+var lessLoaders = [
+  {
+    test: /\.less$/,
+    use: [
+      { loader: 'style-loader' },
+      { loader: 'css-loader' },
+      { loader: 'less-loader' },
+    ]
+  }
+];
+
 // expose module exports as global vars
 var exposeModules = [
   { module: 'lodash', expose: '_' },
@@ -54,8 +65,17 @@ var exposeLoaders = exposeModules.map(function(entry) {
 
 module.exports = baseConfig.merge({
   entry: {
-    'wdk-client': [ 'whatwg-fetch', './webapp/wdk/css/wdk.css', './webapp/wdk/js/client/index.js' ],
-    'wdk': [ './webapp/wdk/css/wdk.css', './webapp/wdk/js/index.js' ]
+    'wdk-client': [
+      'whatwg-fetch',
+      './webapp/wdk/css/wdk.css',
+      './webapp/wdk/less/index.less',
+      './webapp/wdk/js/client/index.js'
+    ],
+    'wdk': [
+      './webapp/wdk/css/wdk.css',
+      './webapp/wdk/less/index.less',
+      './webapp/wdk/js/index.js'
+    ]
   },
   output: {
     path: __dirname + '/dist',
@@ -69,7 +89,7 @@ module.exports = baseConfig.merge({
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: scriptLoaders.concat(exposeLoaders)
+    rules: [].concat(scriptLoaders, exposeLoaders, lessLoaders),
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({
