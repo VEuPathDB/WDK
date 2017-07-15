@@ -1712,7 +1712,8 @@ function EmptyField(props) {
 }
 
 function getFieldDetailComponent(field) {
-  return field.isRange == false ? MembershipField
+  return field == null ? null
+    : field.isRange == false ? MembershipField
     : field.type == 'string' ? MembershipField
     : field.type == 'number' ? NumberField
     : field.type == 'date' ? DateField
