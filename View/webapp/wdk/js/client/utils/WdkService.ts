@@ -73,6 +73,12 @@ export interface ServiceConfig {
   webServiceUrl: string;
 }
 
+type BasketStatusResponse = {
+  processed: number;
+  all: number;
+  records: Record<string, number>;
+}
+
 type RequestOptions = {
   /** Request method */
   method: string;
@@ -356,7 +362,11 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson<{processed: number}>(method, url).then(data => data.processed > 0);
+    return this._fetchJson<BasketStatusResponse>(method, url).then(data => ({
+      status: data.processed > 0,
+      totalCount: data.all,
+      countsByRecordClass: data.records
+    }));
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -365,7 +375,11 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson(method, url).then(() => status);
+    return this._fetchJson<BasketStatusResponse>(method, url).then(data => ({
+      status,
+      totalCount: data.all,
+      countsByRecordClass: data.records
+    }));
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}

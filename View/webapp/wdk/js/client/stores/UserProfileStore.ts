@@ -44,8 +44,8 @@ export default class UserProfileStore extends WdkStore<State> {
       }
       let previousPrefs = this.getState().globalData.preferences;
       let nextPrefs = state.globalData.preferences;
-      if (previousUser != nextUser || previousPrefs != nextPrefs) {
-        return this.replaceUserFormData(state, { ...state.userFormData, preferences: nextPrefs });
+      if (previousPrefs != nextPrefs) {
+        return this.replaceUserFormData(state, { ...state.userFormData, ...previousUser, preferences: nextPrefs });
       }
     }
 

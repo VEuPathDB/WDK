@@ -1,5 +1,5 @@
 import React, {Component, Children, ReactChild} from 'react';
-import {render, unmountComponentAtNode} from 'react-dom';
+import {render, unmountComponentAtNode, findDOMNode} from 'react-dom';
 import $ from 'jquery';
 import { wrappable } from '../utils/componentUtils';
 
@@ -89,7 +89,7 @@ type Props = {
  *     });
  *
  */
-class Dialog extends Component<Props, void> {
+class Dialog extends Component<Props> {
 
   static defaultProps = {
     open: false,
@@ -138,6 +138,7 @@ class Dialog extends Component<Props, void> {
    * we will call handlePropsChanged() to finish off the rendering.
    */
   componentDidMount() {
+    this.node = findDOMNode(this);
     var options = {
       modal: this.props.modal,
       close: () => {
@@ -178,7 +179,7 @@ class Dialog extends Component<Props, void> {
    * we are doing with the jQueryUI plugin).
    */
   render() {
-    return <div ref={node => this.node = node} />;
+    return <div/>;
   }
 
 }

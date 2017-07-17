@@ -42,6 +42,7 @@ interface State extends BaseState {
   searchText: string;
   sortBy: string;
   sortDirection: string;
+  key: string;
 }
 
 export default class FavoritesListStore extends WdkStore<State> {

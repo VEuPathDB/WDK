@@ -143,6 +143,21 @@ class WdkViewController extends PureComponent {
     });
   }
 
+  setDocumentTitle(state) {
+    if (this.isRenderDataLoadError(state)) {
+      document.title = "Error";
+    }
+    else if (this.isRenderDataNotFound(state)) {
+      document.title = "Page not found";
+    }
+    else if (!this.isRenderDataLoaded(state)) {
+      document.title = "Loading...";
+    }
+    else {
+      document.title = this.getTitle(state);
+    }
+  }
+
   componentDidMount() {
     if (this.store != null) {
       this.storeSubscription = this.store.addListener(() => {
@@ -150,6 +165,7 @@ class WdkViewController extends PureComponent {
       });
     }
     this.loadData(this.eventHandlers, this.state, this.props, undefined);
+    this.setDocumentTitle(this.state);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -157,18 +173,7 @@ class WdkViewController extends PureComponent {
   }
 
   componentDidUpdate() {
-    if (this.isRenderDataLoadError(this.state)) {
-      document.title = "Error";
-    }
-    else if (this.isRenderDataNotFound(this.state)) {
-      document.title = "Page not found";
-    }
-    else if (!this.isRenderDataLoaded(this.state)) {
-      document.title = "Loading...";
-    }
-    else {
-      document.title = this.getTitle(this.state);
-    }
+    this.setDocumentTitle(this.state);
   }
 
   /**

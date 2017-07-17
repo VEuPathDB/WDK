@@ -20,7 +20,7 @@ type Props = {
  * to be convenient to simple form components, which will typically use it to
  * display a list of record attributes or tables for selection.
  */
-class CheckboxList extends Component<Props, void> {
+class CheckboxList extends Component<Props> {
 
   constructor(props: Props) {
     super(props);

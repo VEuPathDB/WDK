@@ -281,9 +281,12 @@ function FieldFilter(props) {
     filter: props.filter,
     onChange: props.onChange
   };
+  let className = 'field-detail';
+  if (props.useFullWidth) className += ' ' + className + '__fullWidth';
+  if (props.addTopPadding) className += ' ' + className + '__topPadding';
 
   return (
-    <div className={'field-detail' + (props.useFullWidth ? ' field-detail__fullWidth' : '')}>
+    <div className={className}>
       {!props.field ? <EmptyField displayName={props.displayName}/> : (
         <div>
           <h3>
@@ -320,7 +323,8 @@ FieldFilter.propTypes = {
   filter: PropTypes.object,
   distribution: PropTypes.array,
   onChange: PropTypes.func,
-  useFullWidth: PropTypes.bool.isRequired
+  useFullWidth: PropTypes.bool,
+  addTopPadding: PropTypes.bool
 };
 
 FieldFilter.defaultProps = {
@@ -673,7 +677,7 @@ export class AttributeFilter extends React.Component {
    * @param {any} value Filter value
    */
   shouldAddFilter(field, value) {
-    return field.type === 'string' || field.isRange == false ? value.length !== this.props.activeFieldSummary.length
+    return field.type === 'string' || isRange(field) == false ? value.length !== this.props.activeFieldSummary.length
          : field.type === 'number' ? value.min != null || value.max != null
          : field.type === 'date' ? value.min != null || value.max != null
          : false;
@@ -768,6 +772,7 @@ export class AttributeFilter extends React.Component {
                   filter={selectedFilter}
                   distribution={activeFieldSummary}
                   onChange={this.handleFieldFilterChange}
+                  addTopPadding
                 />
               </div>
             </div>
@@ -872,7 +877,7 @@ export class ServerSideAttributeFilter extends React.Component {
    * @param {any} value Filter value
    */
   shouldAddFilter(field, value) {
-    return field.type === 'string' || field.isRange == false ? value.length !== this.props.activeFieldSummary.length
+    return field.type === 'string' || isRange(field) == false ? value.length !== this.props.activeFieldSummary.length
          : field.type === 'number' ? value.min != null || value.max != null
          : field.type === 'date' ? value.min != null || value.max != null
          : false;
@@ -1713,7 +1718,7 @@ function EmptyField(props) {
 
 function getFieldDetailComponent(field) {
   return field == null ? null
-    : field.isRange == false ? MembershipField
+    : isRange(field) == false ? MembershipField
     : field.type == 'string' ? MembershipField
     : field.type == 'number' ? NumberField
     : field.type == 'date' ? DateField
@@ -1723,7 +1728,7 @@ function getFieldDetailComponent(field) {
 function getFilterDisplay(field, value) {
   return typeof field === 'string' ? `${field} is ${JSON.stringify(value)}`
     // range filter display
-    : field.isRange ? `${field.display} is ` +
+    : isRange(field) ? `${field.display} is ` +
       ( value.min == null ? `less than ${value.max}`
       : value.max == null ? `greater than ${value.min}`
       : `between ${value.min} and ${value.max}`)
@@ -1731,6 +1736,10 @@ function getFilterDisplay(field, value) {
     // membership filter display
     : ( value.length === 0 ? `No ${field.display} selected`
       : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`);
+}
+
+function isRange(field) {
+  return field && (field.isRange || field.filter === 'range');
 }
 
 function setStateFromArgs(instance, ...argsNames) {

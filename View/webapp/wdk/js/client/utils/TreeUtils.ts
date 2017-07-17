@@ -108,7 +108,7 @@ export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChil
 }
 
 export const foldStructure = curry(<T extends Node, U>(fn: (value: U, node: T) => U, seed: U, root: T): U =>
-  fn(root.children.reduce(foldStructure(fn), seed), root))
+  fn(root.children.reduce(foldStructure(fn), seed) as U, root))
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with

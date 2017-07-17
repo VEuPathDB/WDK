@@ -74,8 +74,8 @@ class AnswerController extends WdkViewController {
       allAttributes,
       visibleAttributes,
       filterTerm,
-      filterAttributes,
-      filterTables,
+      filterAttributes = [],
+      filterTables = [],
       question,
       recordClass
     } = state;
