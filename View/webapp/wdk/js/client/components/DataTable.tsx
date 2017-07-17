@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import { eq } from 'lodash';
-import React, {Component, ReactElement} from 'react';
+import React, {Component, PureComponent, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
-import {formatAttributeValue, lazy, wrappable, PureComponent} from '../utils/componentUtils';
+import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
 const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
@@ -93,7 +93,7 @@ type Props = {
  *
  * This uses DataTables jQuery plugin
  */
-class DataTable extends PureComponent<Props, void> {
+class DataTable extends PureComponent<Props> {
 
   /** Default DataTables jQuery plugin options. */
   static defaultDataTableOpts = {
@@ -120,7 +120,7 @@ class DataTable extends PureComponent<Props, void> {
 
   _searchTerm = '';
 
-  node: HTMLElement;
+  node: HTMLElement | null;
 
   columns: DataTables.ColumnSettings[];
 
@@ -187,6 +187,8 @@ class DataTable extends PureComponent<Props, void> {
 
   /** Initialize datatable plugin and set up handlers for creating child rows */
   _setup() {
+    if (this.node == null) return;
+
     let {
       childRow,
       data,

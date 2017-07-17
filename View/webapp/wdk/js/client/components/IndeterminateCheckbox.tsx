@@ -15,7 +15,7 @@ type Props<T> = {
 /**
  * React Component that provides a 3-state checkbox
  */
-export default class IndeterminateCheckbox<T> extends React.Component<Props<T>, void> {
+export default class IndeterminateCheckbox<T> extends React.Component<Props<T>> {
 
   constructor(props: Props<T>) {
     super(props);

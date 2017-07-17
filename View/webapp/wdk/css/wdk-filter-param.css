@@ -143,6 +143,9 @@
   padding: 0 2em;
   position: relative;
 }
+.filter-param .field-detail__topPadding {
+  padding-top: 2.5em;
+}
 .filter-param .field-detail__fullWidth {
   width: 100%;
   margin: 0;

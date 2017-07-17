@@ -38,7 +38,12 @@ class RecordController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return !state.isLoading;
+    return (
+      state.recordClass != null &&
+      state.record != null &&
+      state.user != null &&
+      !state.isLoading
+    );
   }
 
   isRenderDataLoadError(state) {

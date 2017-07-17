@@ -31,6 +31,7 @@ export interface State extends BaseState {
   userDatasetUpdateError?: Error;
   loadError?: Error;
   updateError?: Error;
+  userDatasetLoading: boolean;
 }
 
 /**

@@ -1,6 +1,7 @@
 import React from 'react';
 import Spinner from 'spin.js';
 import { wrappable } from '../utils/componentUtils';
+import { findDOMNode } from "react-dom";
 
 type Props = {
   /** Additional class name to use for container element */
@@ -14,20 +15,11 @@ type Props = {
 /**
  * See http://fgnass.github.io/spin.js/
  */
-class Loading extends React.Component<Props, void> {
+class Loading extends React.Component<Props> {
 
   node: HTMLElement;
 
   spinner: Spinner;
-
-  constructor(props: Props) {
-    super(props);
-    this.setNode = this.setNode.bind(this);
-  }
-
-  setNode(node: HTMLElement) {
-    this.node = node;
-  }
 
   componentDidMount() {
     const { radius = 8 } = this.props;
@@ -49,7 +41,8 @@ class Loading extends React.Component<Props, void> {
       top: '50%', // Top position relative to parent
       left: '50%' // Left position relative to parent
     };
-    this.spinner = new Spinner(opts).spin(this.node);
+    const node: HTMLElement = findDOMNode(this);
+    this.spinner = new Spinner(opts).spin(node);
   }
 
   componentWillUnmount() {
@@ -59,7 +52,7 @@ class Loading extends React.Component<Props, void> {
   render() {
     const { className = '' } = this.props;
     return (
-      <div ref={this.setNode} className={`wdk-Loading ${className}`}/>
+      <div className={`wdk-Loading ${className}`}/>
     );
   }
 
