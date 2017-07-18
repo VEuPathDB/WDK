@@ -7,8 +7,8 @@
   resolved "https://registry.yarnpkg.com/@types/fbemitter/-/fbemitter-2.0.32.tgz#8ed204da0f54e9c8eaec31b1eec91e25132d082c"
 
 "@types/flux@^3.1.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@types/flux/-/flux-3.1.1.tgz#fd4dd48d5d3891b62fde5923bd7a6295a2043311"
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@types/flux/-/flux-3.1.2.tgz#a73638438ecef59f55339588b704351c3f4bbf10"
   dependencies:
     "@types/fbemitter" "*"
     "@types/react" "*"
@@ -28,8 +28,8 @@
   resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-2.0.34.tgz#27615b369f30e572336126514e74672dda6e3d04"
 
 "@types/jqueryui@^1.11.34":
-  version "1.11.34"
-  resolved "https://registry.yarnpkg.com/@types/jqueryui/-/jqueryui-1.11.34.tgz#0caff65df8f9ae930f87a53fa35093ab683d995d"
+  version "1.11.35"
+  resolved "https://registry.yarnpkg.com/@types/jqueryui/-/jqueryui-1.11.35.tgz#3245b652c018a0d3f299c4577a610467e41f2af9"
   dependencies:
     "@types/jquery" "*"
 
@@ -38,12 +38,12 @@
   resolved "https://registry.yarnpkg.com/@types/json-stable-stringify/-/json-stable-stringify-1.0.31.tgz#b6c7bc507f5267e88cd2839b3ac6a2b39b653a32"
 
 "@types/lodash@^4.14.68":
-  version "4.14.68"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.68.tgz#754fbab68bd2bbb69547dc8ce7574f7012eed7f6"
+  version "4.14.70"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.70.tgz#37bda4acfb3bb79143009cc9d00abd559f7dca30"
 
 "@types/node@^6.0.81":
-  version "6.0.81"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.81.tgz#7a69740341b54a5b0c802289d852962cc5d2fd83"
+  version "6.0.84"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.84.tgz#193ffe5a9f42864d425ffd9739d95b753c6a1eab"
 
 "@types/qtip2@^2.2.29":
   version "2.2.29"
@@ -281,6 +281,10 @@ async@^2.1.2, async@^2.4.1:
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
+
+autobind-decorator@^1.3.4:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/autobind-decorator/-/autobind-decorator-1.4.3.tgz#4c96ffa77b10622ede24f110f5dbbf56691417d1"
 
 autoprefixer@^6.3.1:
   version "6.5.3"
@@ -995,7 +999,7 @@ chalk@^1.1.0, chalk@^1.1.1, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chalk@^2.0.0:
+chalk@^2.0.0, chalk@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.0.1.tgz#dbec49436d2ae15f536114e76d14656cdbc0f44d"
   dependencies:
@@ -1003,9 +1007,9 @@ chalk@^2.0.0:
     escape-string-regexp "^1.0.5"
     supports-color "^4.0.0"
 
-chokidar@^1.4.3:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-1.6.1.tgz#2f4447ab5e96e50fb3d789fd90d4c72e0e4c70c2"
+chokidar@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-1.7.0.tgz#798e689778151c8076b4b360e5edd28cda2bb468"
   dependencies:
     anymatch "^1.3.0"
     async-each "^1.0.0"
@@ -1118,7 +1122,7 @@ colormin@^1.0.5:
     css-color-names "0.0.4"
     has "^1.0.1"
 
-colors@^1.0.3, colors@~1.1.2:
+colors@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.1.2.tgz#168a4701756b6a7f51a12ce0c97bfa28c084ed63"
 
@@ -1335,13 +1339,13 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-debug@^2.1.1, debug@~2.2.0:
+debug@^2.1.1, debug@^2.2.0, debug@~2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.2.0.tgz#f87057e995b1a1f6ae6a4960664137bc56f039da"
   dependencies:
     ms "0.7.1"
 
-debug@^2.2.0, debug@^2.6.8:
+debug@^2.6.8:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -2444,8 +2448,8 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.0.tgz#650987da0dd74f4ebf5a11377a2aa2d273e97dfd"
 
 jschardet@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/jschardet/-/jschardet-1.4.2.tgz#2aa107f142af4121d145659d44f50830961e699a"
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/jschardet/-/jschardet-1.5.0.tgz#a61f310306a5a71188e1b1acd08add3cfbb08b1e"
 
 jsesc@^1.3.0:
   version "1.3.0"
@@ -3312,7 +3316,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6:
+prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.8:
   version "15.5.10"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.5.10.tgz#2797dfc3126182e3a95e3dfbb2e893ddd7456154"
   dependencies:
@@ -3411,6 +3415,13 @@ react-dom@^15.6.1:
     object-assign "^4.1.0"
     prop-types "^15.5.10"
 
+react-input-range@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/react-input-range/-/react-input-range-1.2.1.tgz#10ff5fc1ec6ab9d95e15cddebe6f6879db2c3386"
+  dependencies:
+    autobind-decorator "^1.3.4"
+    prop-types "^15.5.8"
+
 react-router@3:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/react-router/-/react-router-3.0.5.tgz#c3b7873758045a8bbc9562aef4ff4bc8cce7c136"
@@ -3467,7 +3478,7 @@ read-pkg@^1.0.0:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-"readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@^2.1.0, readable-stream@^2.2.2:
+"readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.1.0, readable-stream@^2.2.2:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.3.tgz#368f2512d79f9d46fdfc71349ae7878bbc1eb95c"
   dependencies:
@@ -3479,7 +3490,7 @@ read-pkg@^1.0.0:
     string_decoder "~1.0.3"
     util-deprecate "~1.0.1"
 
-readable-stream@^2.0.1, readable-stream@^2.0.5, readable-stream@~2.0.5:
+readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.5, readable-stream@~2.0.5:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.0.6.tgz#8f90341e68a53ccc928788dacfcd11b36eb9b78e"
   dependencies:
@@ -3850,8 +3861,8 @@ string-width@^1.0.1, string-width@^1.0.2:
     strip-ansi "^3.0.0"
 
 string-width@^2.0.0, string-width@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/string-width/-/string-width-2.1.0.tgz#030664561fc146c9423ec7d978fe2457437fe6d0"
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/string-width/-/string-width-2.1.1.tgz#ab93f27a8dc13d28cac815c462143a6d9012ae9e"
   dependencies:
     is-fullwidth-code-point "^2.0.0"
     strip-ansi "^4.0.0"
@@ -4045,10 +4056,10 @@ tryit@^1.0.1:
   resolved "https://registry.yarnpkg.com/tryit/-/tryit-1.0.2.tgz#c196b0073e6b1c595d93c9c830855b7acc32a453"
 
 ts-loader@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/ts-loader/-/ts-loader-2.2.2.tgz#6ea98ebe384ee9ba4c891fea6de6d4e7d8134730"
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/ts-loader/-/ts-loader-2.3.0.tgz#99ff0615ecaea7d554dd0cba733caedf9a2715a0"
   dependencies:
-    colors "^1.0.3"
+    chalk "^2.0.1"
     enhanced-resolve "^3.0.0"
     loader-utils "^1.0.2"
     semver "^5.0.1"
@@ -4219,12 +4230,12 @@ warning@^3.0.0:
   dependencies:
     loose-envify "^1.0.0"
 
-watchpack@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.3.1.tgz#7d8693907b28ce6013e7f3610aa2a1acf07dad87"
+watchpack@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.4.0.tgz#4a1472bcbb952bd0a9bb4036801f954dfb39faac"
   dependencies:
     async "^2.1.2"
-    chokidar "^1.4.3"
+    chokidar "^1.7.0"
     graceful-fs "^4.1.2"
 
 webpack-merge@^4.1.0:
@@ -4241,8 +4252,8 @@ webpack-sources@^1.0.1:
     source-map "~0.5.3"
 
 webpack@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.2.0.tgz#8b0cae0e1a9fd76bfbf0eab61a8c2ada848c312f"
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.3.0.tgz#ce2f9e076566aba91f74887133a883fd7da187bc"
   dependencies:
     acorn "^5.0.0"
     acorn-dynamic-import "^2.0.0"
@@ -4263,7 +4274,7 @@ webpack@^3.2.0:
     supports-color "^3.1.0"
     tapable "~0.2.5"
     uglifyjs-webpack-plugin "^0.4.6"
-    watchpack "^1.3.1"
+    watchpack "^1.4.0"
     webpack-sources "^1.0.1"
     yargs "^6.0.0"
 
