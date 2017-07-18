@@ -110,18 +110,75 @@ const DateUtils = {
     let [ year, month, day ] = dateString.split('-').map(x => x * 1);
     return { year, month, day };
   },
+
   getDefaults () {
     return DateUtils._defaultValues;
   },
   setDefaults (replacement) {
     DateUtils._defaultValues = Object.assign({}, DateUtils._defaultValues, replacement);
   },
+
   getEpochStart (year = epoch, month = 1, day = 1) {
     return { year, month, day };
   },
   getEpochEnd (year = currentYear, month = 12, day = 31) {
     return { year, month, day };
+  },
+
+  getPreviousMonth (monthNumber) {
+    return monthNumber > 1 ? --monthNumber : 12;
+  },
+  getNextMonth (monthNumber) {
+    return monthNumber < 12 ? ++monthNumber : 1;
+  },
+
+  getPreviousDay ({ day, month, year }) {
+    if (day > 1) {
+      day--;
+    } else {
+      month = DateUtils.getPreviousMonth(month);
+      if (month === 12) year--;
+      day = DateUtils.getDaysInMonth(month, year);
+    }
+    return { day, month, year };
+  },
+  getPreviousDayString (dateString) {
+    let date = DateUtils.parseDate(dateString);
+    return date ? DateUtils.formatDate(DateUtils.getPreviousDay(date)) : undefined;
+  },
+
+  getNextDay ({ day, month, year }) {
+    let lastDay = DateUtils.getDaysInMonth(month, year);
+    if (day < lastDay) {
+      day++;
+    } else {
+      month = DateUtils.getNextMonth(month);
+      if (month === 1) year++;
+      day = 1;
+    }
+    return { day, month, year };
+  },
+  getNextDayString (dateString) {
+    let date = DateUtils.parseDate(dateString);
+    return date ? DateUtils.formatDate(DateUtils.getNextDay(date)) : undefined;
+  },
+
+  dateIsAfter (dateString, checkAgainstDateString) {
+    const date = DateUtils.parseDate(dateString);
+    const check = DateUtils.parseDate(checkAgainstDateString);
+    if (!date || !check) return null;
+    return (date.year > check.year) ||
+           (date.year === check.year && date.month > check.month) ||
+           (date.year === check.year && date.month === check.month && date.day > check.day);
+  },
+  dateIsBefore (dateString, checkAgainstDateString) {
+    const date = DateUtils.parseDate(dateString);
+    const check = DateUtils.parseDate(checkAgainstDateString);
+    if (!date || !check) return null;
+    return (date.year < check.year) ||
+           (date.year === check.year && date.month < check.month) ||
+           (date.year === check.year && date.month === check.month && date.day < check.day);
   }
-}
+};
 
 export default DateUtils;
