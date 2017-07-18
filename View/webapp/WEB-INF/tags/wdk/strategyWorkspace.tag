@@ -83,12 +83,12 @@
   <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
   <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
   <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
-  <div id="strategies-panel-toggle" data-default="${showStratPanel}" style="display:flex;align-items:center">
-    <img style="cursor:pointer" src="${baseUrl}/wdk/images/${currentImgName}.gif" data-action="toggle-strat-panel" />
+  <button type="button" id="strategies-panel-toggle" class="wdk-Link" data-default="${showStratPanel}" style="display:flex;align-items:center;color:black;" data-action="toggle-strat-panel">
+    <img src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
     <span style="font-weight:bold">
       <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
     </span>
-  </div>
+  </button>
   <div id="strategies-panel" class="resizable-wrapper" style="display:${currentDisplayCss}">
     <div class="scrollable-wrapper edit-step-pane">
       <div id="Strategies" ${newStrat}>
@@ -100,7 +100,7 @@
 <!--
   <div style="font-size:120%" title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">&nbsp;My Step Result:</div>
 -->
-  <div class="Workspace">&nbsp;<span class="smaller-font"><i>(if this section is empty after the page is fully loaded, please click on a step to view its results in this section.)</i></span>
+  <div class="Workspace">&nbsp;<span class="smaller-font"><i>(if this section is empty after the page is fully loaded, please open the strategy panel and click on a step to view its results in this section.)</i></span>
   </div>
 
   <%-- preload background images --%>
