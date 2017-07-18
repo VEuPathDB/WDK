@@ -8,11 +8,11 @@
 
 import { wrappable } from '../utils/componentUtils';
 
-let Checkbox = function(props) {
-  let onChange = function(event) {
-    props.onChange(!props.value);
-  };
-  return ( <input type="checkbox" {...props} checked={props.value} onChange={onChange}/> );
+const Checkbox = (props) => {
+  let { onChange, value } = props;
+  let changeHandler = (event) => { onChange(!value); };
+
+  return <input type="checkbox" {...props} checked={value} onChange={changeHandler} />;
 }
 
 export default wrappable(Checkbox);
