@@ -267,6 +267,10 @@ public class UserPreferences {
     return summaryValue;
   }
 
+  public SummaryView getCurrentSummaryView(String questionName) throws WdkModelException {
+    return getCurrentSummaryView(_wdkModel.getQuestion(questionName));
+  }
+
   public SummaryView getCurrentSummaryView(Question question) {
     String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
     String viewName = _projectPreferences.get(key);
@@ -295,6 +299,10 @@ public class UserPreferences {
       String viewName = summaryView.getName();
       saveProjectPreference(key, viewName);
     }
+  }
+
+  public RecordView getCurrentRecordView(String rcName) throws WdkUserException, WdkModelException {
+    return getCurrentRecordView(_wdkModel.getRecordClass(rcName));
   }
 
   public RecordView getCurrentRecordView(RecordClass recordClass) throws WdkUserException {
