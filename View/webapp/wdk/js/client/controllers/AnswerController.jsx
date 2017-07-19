@@ -29,7 +29,7 @@ class AnswerController extends WdkViewController {
 
   loadData(actionCreators, state, props) {
     // incoming values from the router
-    let { question, recordClass: recordClassName } = props.params;
+    let { question, recordClass: recordClassName } = props.match.params;
     let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
     let parameters = props.location.query;
 

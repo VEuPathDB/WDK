@@ -1,9 +1,8 @@
 import $ from 'jquery';
 import {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Router, useRouterHistory} from 'react-router';
-import {createHistory} from 'history';
-import wdkRoutes from '../routes';
+import {Router, Switch, Route} from 'react-router';
+import {createBrowserHistory} from 'history';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
@@ -14,18 +13,21 @@ export default class Root extends Component {
 
   constructor(props, context) {
     super(props, context);
-    this.history = useRouterHistory(createHistory)({ basename: this.props.rootUrl });
+    this.history = createBrowserHistory({ basename: this.props.rootUrl });
+    this.renderRoute = this.renderRoute.bind(this);
+    this.handleGlobalClick = this.handleGlobalClick.bind(this);
+    this.removeHistoryListener = this.history.listen(location => this.props.onLocationChange(location));
+    this.props.onLocationChange(this.history.location);
+  }
+
+  renderRoute(RouteComponent) {
     // Used to inject wdk content as props of Route Component
-    this.createElement = (RouteComponent, routerProps) => {
+    return (routerProps) => {
       let { makeDispatchAction, stores } = this.props;
       return (
         <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
       );
     };
-    this.routes = this.props.wrapRoutes(wdkRoutes);
-    this.handleGlobalClick = this.handleGlobalClick.bind(this);
-    this.removeHistoryListener = this.history.listen(location => this.props.onLocationChange(location));
-    this.props.onLocationChange(this.history.getCurrentLocation());
   }
 
   handleGlobalClick(event) {
@@ -51,7 +53,13 @@ export default class Root extends Component {
 
   render() {
     return (
-      <Router history={this.history} createElement={this.createElement} routes={this.routes}/>
+      <Router history={this.history}>
+        <Switch>
+          {this.props.routes.map(route => (
+            <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
+          ))}
+        </Switch>
+      </Router>
     );
   }
 }
@@ -60,13 +68,12 @@ Root.propTypes = {
   rootUrl: PropTypes.string,
   makeDispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
-  wrapRoutes: PropTypes.func,
+  routes: PropTypes.array.isRequired,
   onLocationChange: PropTypes.func
 };
 
 Root.defaultProps = {
   rootUrl: '/',
-  wrapRoutes: routes => routes, // identity
   onLocationChange: () => {}    // noop
 };
 
