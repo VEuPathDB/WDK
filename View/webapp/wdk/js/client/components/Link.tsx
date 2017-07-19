@@ -1,5 +1,5 @@
 import React from 'react';
-import {Link as RRLink} from 'react-router';
+import {Link as RRLink} from 'react-router-dom';
 import {wrappable} from '../utils/componentUtils';
 
 /** React Router Link decorator that adds className */

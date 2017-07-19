@@ -66,8 +66,8 @@ class RecordController extends WdkViewController {
   loadData(actionCreators, state, props, previousProps) {
     // load data if location.pathname has changed
     if (get(props, 'location.pathname') !== get(previousProps, 'location.pathname')) {
-      let { recordClass, splat } = props.params;
-      let pkValues = splat.split('/');
+      let { recordClass, primaryKey } = props.match.params;
+      let pkValues = primaryKey.split('/');
       actionCreators.loadRecordData(recordClass, pkValues);
     }
   }

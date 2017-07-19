@@ -1,5 +1,5 @@
 /* global __DEV__ */
-import {mapValues, values} from 'lodash';
+import {identity, mapValues, values} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 
@@ -13,6 +13,7 @@ import WdkStore from './stores/WdkStore';
 import * as Components from './components';
 import * as Stores from './stores';
 import * as Controllers from './controllers';
+import wdkRoutes from './routes';
 
 /**
  * Initialize the application.
@@ -35,7 +36,7 @@ import * as Controllers from './controllers';
  *   object.
  */
 export function initialize(options) {
-  let { rootUrl, rootElement, endpoint, wrapRoutes, storeWrappers, onLocationChange } = options;
+  let { rootUrl, rootElement, endpoint, wrapRoutes = identity, storeWrappers, onLocationChange } = options;
   // define the elements of the Flux architecture
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
@@ -65,7 +66,7 @@ export function initialize(options) {
             rootUrl,
             makeDispatchAction,
             stores,
-            wrapRoutes,
+            routes: wrapRoutes(wdkRoutes),
             onLocationChange: handleLocationChange
           });
         ReactDOM.render(applicationElement, container);

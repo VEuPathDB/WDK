@@ -26,7 +26,7 @@ class UserDatasetItemController extends WdkViewController {
   }
 
   getTitle(state) {
-    const entry = state.userDatasetsById[this.props.params.id];
+    const entry = state.userDatasetsById[this.props.match.params.id];
     if (entry && entry.resource) {
       return `User Data Set ${entry.resource.meta.name}`;
     }
@@ -44,9 +44,9 @@ class UserDatasetItemController extends WdkViewController {
   }
 
   loadData(actionCreators, state, props, nextProps) {
-    const idChanged = nextProps && nextProps.params.id !== props.params.id;
-    if (idChanged || !state.userDatasetsById[props.params.id]) {
-      actionCreators.loadUserDatasetItem(Number(props.params.id));
+    const idChanged = nextProps && nextProps.match.params.id !== props.match.params.id;
+    if (idChanged || !state.userDatasetsById[props.match.params.id]) {
+      actionCreators.loadUserDatasetItem(Number(props.match.params.id));
     }
   }
 
@@ -55,12 +55,12 @@ class UserDatasetItemController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    const entry = state.userDatasetsById[this.props.params.id];
+    const entry = state.userDatasetsById[this.props.match.params.id];
     return entry && !entry.isLoading && state.user && state.questions && state.config;
   }
 
   renderView(state) {
-    const entry = state.userDatasetsById[this.props.params.id];
+    const entry = state.userDatasetsById[this.props.match.params.id];
     const isOwner = entry.resource && entry.resource.ownerUserId === state.user.id;
     return (
       <UserDatasetItem

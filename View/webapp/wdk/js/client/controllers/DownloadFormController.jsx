@@ -26,20 +26,20 @@ class DownloadFormController extends WdkViewController {
     // build props object to pass to form component
     let formProps = Object.assign({}, state, state.globalData, eventHandlers, {
       // passing summary view in case reporters handle view links differently
-      summaryView: this.props.location.query.summaryView
+      summaryView: this.props.location.query && this.props.location.query.summaryView
     });
     return ( <DownloadFormContainer {...formProps}/> );
   }
 
   loadData(actionCreators, state, props) {
     // must reinitialize with every new props
-    let { params } = props;
+    let { params } = props.match;
     if ('stepId' in params) {
       actionCreators.loadPageDataFromStepId(params.stepId);
     }
     else if ('recordClass' in params) {
       actionCreators.loadPageDataFromRecord(
-          params.recordClass, params.splat.split('/').join(','));
+          params.recordClass, params.primaryKey.split('/').join(','));
     }
     else {
       console.error("Neither stepId nor recordClass param was passed " +
