@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.DateRangeParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.Param;
@@ -29,6 +30,9 @@ public class ParamFormatterFactory {
     }
     if (param instanceof DatasetParam) {
       return new DatasetParamFormatter((DatasetParam)param);
+    }
+    if (param instanceof DateRangeParam) {
+      return new DateRangeParamFormatter((DateRangeParam)param);
     }
     if (param instanceof StringParam) {
       return new StringParamFormatter((StringParam)param);

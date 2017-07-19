@@ -136,7 +136,12 @@ public class Keys {
   public static final String GLOBAL = "global";
   public static final String PROJECT = "project";
   
+  // date and date range keys
+  public static final String MIN_DATE = "minDate";
+  public static final String MAX_DATE = "maxDate";
+  
   //favorites-specific keys
+  public static final String FAVORITE_ID = "favoriteId";
   public static final String DISPLAY = "display";
   public static final String NOTE = "note";
   public static final String FAV_NUMBER_PROCESSED = "numberProcessed";

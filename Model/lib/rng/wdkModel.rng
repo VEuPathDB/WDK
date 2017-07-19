@@ -369,16 +369,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <attribute name="min">
-          <data type="integer" />
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="max">
-          <data type="integer" />
-        </attribute>
-      </optional>
+      <attribute name="min">
+        <data type="integer" />
+      </attribute>
+      <attribute name="max">
+        <data type="integer" />
+      </attribute>
       <optional>
         <attribute name="numDecimalPlaces">
           <data type="integer" />
@@ -410,16 +406,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <attribute name="min">
-          <data type="integer" />
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="max">
-          <data type="integer" />
-        </attribute>
-      </optional>
+      <attribute name="min">
+        <data type="integer" />
+      </attribute>
+      <attribute name="max">
+        <data type="integer" />
+      </attribute>
       <optional>
         <attribute name="numDecimalPlaces">
           <data type="integer" />
@@ -446,16 +438,12 @@
   <define name="dateParam">
     <element name="dateParam">
       <ref name="ParamBaseProperties" />
-      <optional>
-        <attribute name="minDate">
-          <data type="string" />
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="maxDate">
-          <data type="string" />
-        </attribute>
-      </optional>
+      <attribute name="minDate">
+        <data type="string" />
+      </attribute>
+      <attribute name="maxDate">
+        <data type="string" />
+      </attribute>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
@@ -477,16 +465,12 @@
   <define name="dateRangeParam">
     <element name="dateRangeParam">
       <ref name="ParamBaseProperties" />
-      <optional>
-        <attribute name="minDate">
-          <data type="string" />
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="maxDate">
-          <data type="string" />
-        </attribute>
-      </optional>
+      <attribute name="minDate">
+        <data type="string" />
+      </attribute>
+      <attribute name="maxDate">
+        <data type="string" />
+      </attribute>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
@@ -1681,6 +1665,9 @@
       </zeroOrMore>
       <optional>
         <attribute name="attributeCategory" />
+      </optional>
+      <optional>  
+         <attribute name="attributeMetaQueryRef" />
       </optional>
     </element>
   </define>

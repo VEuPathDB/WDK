@@ -71,6 +71,12 @@ public class DateRangeParam extends Param {
   public String getMinDate() {
     return minDate;
   }
+  
+  @Override
+  public String getDefault() throws WdkModelException {
+	JSONObject json = new JSONObject().put("min", getMinDate()).put("max", getMaxDate());
+    return json.toString();
+  }
 
   /**
    * Setter for minimum allowed date that includes a check to insure that the
@@ -79,15 +85,13 @@ public class DateRangeParam extends Param {
    * @throws WdkModelException
    */
   public void setMinDate(String minDate) throws WdkModelException {
-	if(maxDate != null) {  
-	  try {  
-        LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
-	  }
-	  catch(DateTimeParseException dtpe) {
-	    throw new WdkModelException(dtpe);
-	  }
-	}
-	this.minDate = minDate;
+    try {  
+      LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
+    }
+    catch(DateTimeParseException dtpe) {
+      throw new WdkModelException(dtpe);
+    }
+    this.minDate = minDate;
   }
 
   public String getMaxDate() {
@@ -101,17 +105,14 @@ public class DateRangeParam extends Param {
    * @throws WdkModelException
    */
   public void setMaxDate(String maxDate) throws WdkModelException {
-	if(minDate != null) { 
-	  try {  
-	    LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
-	  }
-	  catch(DateTimeParseException dtpe) {
-	    throw new WdkModelException(dtpe);
-	  }
-	}  
+	try {  
+	    LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE);
+	}
+	catch(DateTimeParseException dtpe) {
+	  throw new WdkModelException(dtpe);
+	} 
 	this.maxDate = maxDate;
   }
-  
   
 
   @Override
@@ -218,15 +219,16 @@ public class DateRangeParam extends Param {
    * that the minimum value replace $$name.min$$ and the maximum value replace $$name.max$$
    * in the query.
    */
+  @Override
   public String replaceSql(String sql, String internalValue) {
 	JSONObject valueJson = new JSONObject(internalValue);
 	LocalDate values[] = new LocalDate[2];
 	values[0] = LocalDate.parse(valueJson.getString("min"), DateTimeFormatter.ISO_DATE);
 	values[1] = LocalDate.parse(valueJson.getString("max"), DateTimeFormatter.ISO_DATE);
 	String regex = "\\$\\$" + name + ".min\\$\\$";
-	String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("'" + values[0].toString() + "'"));
+	String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[0].toString() + "'"));
 	regex = "\\$\\$" + name + ".max\\$\\$";
-	replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement("'" + values[1].toString() + "'"));
+	replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[1].toString() + "'"));
 	return replacedSql;
   }
 
