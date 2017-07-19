@@ -2,17 +2,18 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -39,7 +40,7 @@ public class UserBean {
   private final UserSession _userSession;
   private final WdkModel _wdkModel;
 
-  private Question _currentQuestion;
+  // FIXME: This does not belong here
   private int _stepId;
 
   public UserBean(User user) {
@@ -47,10 +48,6 @@ public class UserBean {
     _userSession = user.getSession();
     _wdkModel = user.getWdkModel();
     
-  }
-
-  public void setCurrentQuestion(QuestionBean question) {
-    _currentQuestion = question.question;
   }
 
   public User getUser() {
@@ -695,37 +692,45 @@ public class UserBean {
     return _wdkModel.getFavoriteFactory().getFavoriteCount(_user, records, recordClass.recordClass);
   }
 
-  public SummaryView getCurrentSummaryView() throws Exception {
-    try {
-      return _user.getPreferences().getCurrentSummaryView(_currentQuestion);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  /**
+   * @return Map from question name to preferred summary view for that question
+   * @throws Exception
+   */
+  public Map<String,SummaryView> getCurrentSummaryViews() {
+    return exposeAsMap(questionName -> _user.getPreferences().getCurrentSummaryView(questionName));
   }
 
   public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView) throws WdkModelException {
     _user.getPreferences().setCurrentSummaryView(question.question, summaryView);
   }
 
-  public RecordView getCurrentRecordView() throws Exception {
-    try {
-      return _user.getPreferences().getCurrentRecordView(_currentQuestion.getRecordClass());
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
-  }
 
-  public RecordClass getCurrentRecordClass() {
-    return _currentQuestion.getRecordClass();
+  /**
+   * @return Map from record class name to preferred record view for that recordClass
+   * @throws Exception
+   */
+  public Map<String,RecordView> getCurrentRecordViews() {
+    return exposeAsMap(recordClassName -> _user.getPreferences().getCurrentRecordView(recordClassName));
   }
 
   public void setCurrentRecordView(RecordClassBean recordClass, RecordView recordView)
       throws WdkModelException {
     _user.getPreferences().setCurrentRecordView(recordClass.recordClass, recordView);
+  }
+
+  @SuppressWarnings("serial")
+  private static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {
+    return new HashMap<String, T>() {
+      @Override
+      public T get(Object objectName) {
+        try {
+          return getter.apply((String)objectName);
+        }
+        catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 
   public long getNewStrategyId() throws WdkModelException {
