@@ -29,7 +29,6 @@
 .wdk-RecordContainer {
   position: relative;
   height: 100%;
-  padding: 1em 2em;
 }
 
 .wdk-RecordMain, .wdk-RecordSidebar {
@@ -44,7 +43,7 @@
 }
 
 .wdk-RecordSidebar {
-  left: -298px;
+  left: -322px;
   width: 270px;
   position: absolute;
   padding-right: 48px;
@@ -82,6 +81,10 @@
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
+  left: 0;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
   left: 24px;
 }
 

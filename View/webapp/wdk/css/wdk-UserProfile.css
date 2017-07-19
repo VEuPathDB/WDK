@@ -1,7 +1,3 @@
-.wdk-UserProfile {
-  padding: 0 2em;
-}
-
 .wdk-UserProfile-banner {
   font-size: 1.3em;
   width: 45em;
@@ -24,10 +20,6 @@
 
 .wdk-UserProfile-success {
   background: rgba(0, 125, 0, 0.4)
-}
-
-.wdk-UserProfile-profileForm {
-  padding-bottom: 1em;
 }
 
 .wdk-UserProfile-profileForm fieldset {
