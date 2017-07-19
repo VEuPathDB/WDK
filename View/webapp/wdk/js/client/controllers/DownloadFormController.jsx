@@ -17,6 +17,22 @@ class DownloadFormController extends WdkViewController {
     return (state.step != null && !state.isLoading);
   }
 
+  isRenderDataLoadError(state) {
+    return state.error
+      && state.error.status !== 403
+      && state.error.status !== 404;
+  }
+
+  isRenderDataNotFound(state) {
+    return state.error
+      && state.error.status === 404;
+  }
+
+  isRenderDataPermissionDenied(state) {
+    return state.error
+      && state.error.status === 403;
+  }
+
   getTitle(state) {
     return (!this.isRenderDataLoaded(state) ? "Loading..." :
       "Download: " + state.step.displayName);

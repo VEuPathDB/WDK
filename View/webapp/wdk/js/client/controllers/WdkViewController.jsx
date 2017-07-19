@@ -2,6 +2,7 @@ import { cloneElement } from 'react';
 import PropTypes from 'prop-types';
 import Page from '../components/Page';
 import NotFound from '../components/NotFound';
+import PermissionDenied from '../components/PermissionDenied';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
 import { wrapActions, PureComponent } from '../utils/componentUtils';
@@ -114,6 +115,13 @@ class WdkViewController extends PureComponent {
     return false;
   }
 
+  /**
+   * Returns whether access to required data resources are forbidden for current user.
+   */
+  isRenderDataPermissionDenied(state) {
+    return false;
+  }
+
   /*------------- Methods that should probably not be overridden -------------*/
 
   /**
@@ -149,6 +157,9 @@ class WdkViewController extends PureComponent {
     }
     else if (this.isRenderDataNotFound(state)) {
       document.title = "Page not found";
+    }
+    else if (this.isRenderDataPermissionDenied(state)) {
+      document.title = "Permission denied";
     }
     else if (!this.isRenderDataLoaded(state)) {
       document.title = "Loading...";
@@ -209,6 +220,9 @@ class WdkViewController extends PureComponent {
     }
     else if (this.isRenderDataNotFound(this.state)) {
       page = ( <Page><NotFound/></Page> );
+    }
+    else if (this.isRenderDataPermissionDenied(this.state)) {
+      page = ( <Page><PermissionDenied/></Page> );
     }
     else if (!this.isRenderDataLoaded(this.state)) {
       page = ( <Page><Loading/></Page> );
