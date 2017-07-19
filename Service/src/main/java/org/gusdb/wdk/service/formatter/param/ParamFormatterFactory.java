@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DateRangeParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
+import org.gusdb.wdk.model.query.param.NumberRangeParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 
@@ -33,6 +34,9 @@ public class ParamFormatterFactory {
     }
     if (param instanceof DateRangeParam) {
       return new DateRangeParamFormatter((DateRangeParam)param);
+    }
+    if (param instanceof NumberRangeParam) {
+      return new NumberRangeParamFormatter((NumberRangeParam)param);
     }
     if (param instanceof StringParam) {
       return new StringParamFormatter((StringParam)param);

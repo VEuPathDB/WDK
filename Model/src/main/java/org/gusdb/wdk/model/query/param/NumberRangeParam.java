@@ -237,6 +237,12 @@ public class NumberRangeParam extends Param {
   public void setMax(Long max) {
 	this.max = max;
   }
+  
+  @Override
+  public String getDefault() throws WdkModelException {
+    JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
+    return json.toString();
+  }
 
   public boolean isInteger() {
 	return integer;
