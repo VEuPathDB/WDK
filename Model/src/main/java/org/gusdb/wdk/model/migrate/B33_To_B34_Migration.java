@@ -45,8 +45,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 public class B33_To_B34_Migration {
 
   // configuration constants
-  private static final boolean WRITE_TO_DB = true;     // keep off to check generated SQL
-  private static final boolean REPLICATED_DBS = false; // keep off until testing on apicommDev
+  private static final boolean WRITE_TO_DB = true; // keep off to check generated SQL
 
   // connection information to user DBs
   private static final String PRIMARY_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@apicommdevn"; // to be apicommdevn
@@ -55,12 +54,12 @@ public class B33_To_B34_Migration {
   // connection information to account DBs
   private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@acctdbn";
   //private static final String PRIMARY_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972";
-  private static final String REPLICATED_ACCTDB_CONNECTION_URL = "jdbc:oracle:oci:@acctdbs";
 
   // object names when operating in userDBs
   private static final String USER_DB_SCHEMA = "userlogins5.";
   private static final String USERS_TABLE = USER_DB_SCHEMA + "users";
   private static final String BACKUP_USERS_TABLE = USER_DB_SCHEMA + "users_backup";
+  private static final String COMMENT_USERS_TABLE = USER_DB_SCHEMA + "comment_users";
 
   // object names when operating in account DBs
   private static final String ACCOUNT_DB_SCHEMA = "useraccounts.";
@@ -79,10 +78,12 @@ public class B33_To_B34_Migration {
   /*          SQL to be executed on AccountDB             */
   /*======================================================*/
 
-  private static final String BACKUP_TABLE_CHECK_SQL =
-      "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB +
-      "  WHERE table_name = '" + BACKUP_USERS_TABLE.replace(USER_DB_SCHEMA, "").toUpperCase() + "'" +
-      "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1).toUpperCase()  + "'";
+  private static final String getUserDbTableCheck(String userDbTableWithSchema) {
+    return 
+        "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB +
+        "  WHERE table_name = '" + userDbTableWithSchema.replace(USER_DB_SCHEMA, "").toUpperCase() + "'" +
+        "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1).toUpperCase()  + "'";
+  }
 
   private static final String SEQUENCE_START_NUM_MACRO = "$$sequence_start_macro$$";
 
@@ -132,13 +133,23 @@ public class B33_To_B34_Migration {
   /*          SQL to be executed on UserDB             */
   /*======================================================*/
 
-  private static final String BACK_UP_USERS_TABLE =
+  private static final String CREATE_BACKUP_USERS_TABLE =
       "CREATE TABLE " + BACKUP_USERS_TABLE + " AS (" +
       "  SELECT * FROM " + USERS_TABLE +
       ")";
 
-  private static final String CREATE_BACKUP_TABLE_INDEX =
+  private static final String CREATE_BACKUP_USERS_TABLE_INDEX =
       "CREATE UNIQUE INDEX " + BACKUP_USERS_TABLE + "_PK ON " + BACKUP_USERS_TABLE + "(USER_ID)";
+
+  private static final String CREATE_COMMENT_USERS_TABLE =
+      "CREATE TABLE " + COMMENT_USERS_TABLE + " AS (" +
+      "  SELECT DISTINCT u.USER_ID, u.FIRST_NAME, u.LAST_NAME, u.ORGANIZATION" +
+      "  FROM " + BACKUP_USERS_TABLE + " u, " + USER_DB_SCHEMA + "COMMENTS c" +
+      "  WHERE u.USER_ID = c.USER_ID" +
+      ")";
+
+  private static final String CREATE_COMMENT_USERS_TABLE_INDEX =
+      "CREATE UNIQUE INDEX " + COMMENT_USERS_TABLE + "_PK ON " + COMMENT_USERS_TABLE + "(USER_ID)";
 
   private static final String DROP_COLS_FROM_USERS_TABLE =
       "ALTER TABLE " + USERS_TABLE + " DROP (" +
@@ -172,14 +183,15 @@ public class B33_To_B34_Migration {
   }
 
   private static SqlGetter conditionallyUseBackupTable(String originalSql) {
-    return ds -> usersBackupTableExists(ds) ?
+    return acctDbDs -> userSchemaTableExists(acctDbDs, BACKUP_USERS_TABLE) ?
         originalSql.replace(SOURCE_USERS_TABLE, SOURCE_USERS_BACKUP_TABLE) : originalSql;
   }
 
-  private static boolean usersBackupTableExists(DataSource ds) {
-    boolean exists = new SQLRunner(ds, BACKUP_TABLE_CHECK_SQL)
+  private static boolean userSchemaTableExists(DataSource acctDbDs, String tableWithSchema) {
+    String tableCheckSql = getUserDbTableCheck(tableWithSchema);
+    boolean exists = new SQLRunner(acctDbDs, tableCheckSql)
         .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue() > 0;
-    System.out.println("Backup table exists? " + exists + ", SQL: " + BACKUP_TABLE_CHECK_SQL);
+    System.out.println("Backup table exists? " + exists + ", SQL: " + tableCheckSql);
     return exists;
   }
 
@@ -201,19 +213,20 @@ public class B33_To_B34_Migration {
       doSql(OPEN_ACCOUNT_PROPS_TABLE_SQL)
   };
 
-  private static final SqlGetter[] REPLICATED_SQLS_TO_RUN_ACCOUNT_DB = {
-      createAccountSequenceFromUserSequence()
-  };
-
   private static final SqlGetter[] PRIMARY_SQLS_TO_RUN_USER_DB = {
       // make a copy of the users table
-      doSql(BACK_UP_USERS_TABLE),
+      doSql(CREATE_BACKUP_USERS_TABLE),
       // create index on newly created backup table
-      doSql(CREATE_BACKUP_TABLE_INDEX),
+      doSql(CREATE_BACKUP_USERS_TABLE_INDEX),
       // trim columns off existing user table
       doSql(DROP_COLS_FROM_USERS_TABLE),
       // rename date col to reflect new purpose
       doSql(RENAME_LAST_ACTIVE_COL)
+  };
+
+  private static final SqlGetter[] COMMENT_SQLS_ON_USERDB = {
+      doSql(CREATE_COMMENT_USERS_TABLE),
+      doSql(CREATE_COMMENT_USERS_TABLE_INDEX)
   };
 
   private static final SqlGetter[] DROP_ACCOUNT_DB_SQLS = {
@@ -239,15 +252,17 @@ public class B33_To_B34_Migration {
     String dbUser = args[1];
     String dbPassword = args[2];
     QueryLogger.setInactive();
-    try (DatabaseInstance userDb = getDb(PRIMARY_USERDB_CONNECTION_URL, dbUser, dbPassword)) {
+    try (DatabaseInstance accountDb = getDb(PRIMARY_ACCTDB_CONNECTION_URL, dbUser, dbPassword)) {
       switch (operation) {
         case "create":
           runSqls(PRIMARY_ACCTDB_CONNECTION_URL, PRIMARY_SQLS_TO_RUN_ACCOUNT_DB, dbUser, dbPassword);
-          if (!usersBackupTableExists(userDb.getDataSource())) {
+          // back up users table if we haven't already
+          if (!userSchemaTableExists(accountDb.getDataSource(), BACKUP_USERS_TABLE)) {
             runSqls(PRIMARY_USERDB_CONNECTION_URL, PRIMARY_SQLS_TO_RUN_USER_DB, dbUser, dbPassword);
-          }
-          if (REPLICATED_DBS) {
-            runSqls(REPLICATED_ACCTDB_CONNECTION_URL, REPLICATED_SQLS_TO_RUN_ACCOUNT_DB, dbUser, dbPassword);
+            // copy users with comments to new comment_users table but only if comments exist in this user DB
+            if (userSchemaTableExists(accountDb.getDataSource(), COMMENT_USERS_TABLE)) {
+              runSqls(PRIMARY_USERDB_CONNECTION_URL, COMMENT_SQLS_ON_USERDB, dbUser, dbPassword);
+            }
           }
           break;
         case "drop":
