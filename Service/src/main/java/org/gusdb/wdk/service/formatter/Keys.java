@@ -139,6 +139,8 @@ public class Keys {
   // date and date range keys
   public static final String MIN_DATE = "minDate";
   public static final String MAX_DATE = "maxDate";
+  public static final String MIN_VALUE = "min";
+  public static final String MAX_VALUE = "max";
   
   //favorites-specific keys
   public static final String FAVORITE_ID = "favoriteId";
