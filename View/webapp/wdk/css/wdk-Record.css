@@ -59,6 +59,7 @@
 .wdk-RecordSidebar__fixed {
   position: fixed;
   top: 0;
+  left: -298px;
 }
 
 .wdk-RecordSidebarHeader {
