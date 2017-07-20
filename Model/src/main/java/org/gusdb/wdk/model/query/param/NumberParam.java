@@ -219,6 +219,12 @@ public class NumberParam extends Param {
   public void setMax(Long max) {
 	this.max = max;
   }
+  
+  @Override
+  public String getDefault() {
+	return getMin().toString();
+  }
+  
 
   public boolean isInteger() {
 	return integer;
