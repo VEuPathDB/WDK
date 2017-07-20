@@ -80,9 +80,9 @@ public class B33_To_B34_Migration {
 
   private static final String getUserDbTableCheck(String userDbTableWithSchema) {
     return 
-        "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB +
-        "  WHERE table_name = '" + userDbTableWithSchema.replace(USER_DB_SCHEMA, "").toUpperCase() + "'" +
-        "  and owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1).toUpperCase()  + "'";
+        "SELECT count(*) FROM ALL_TABLES" + ACCOUNTDB_DBLINK_TO_USERDB + " " +
+        "WHERE table_name = '" + userDbTableWithSchema.replace(USER_DB_SCHEMA, "").toUpperCase() + "'" +
+        "  AND owner = '" + USER_DB_SCHEMA.substring(0, USER_DB_SCHEMA.length() - 1).toUpperCase()  + "'";
   }
 
   private static final String SEQUENCE_START_NUM_MACRO = "$$sequence_start_macro$$";
@@ -130,7 +130,7 @@ public class B33_To_B34_Migration {
   private static final String DELETE_ACCOUNT_PROPS_TABLE_SQL = "DROP TABLE " + NEW_TABLE_ACCOUNT_PROPS;
 
   /*======================================================*/
-  /*          SQL to be executed on UserDB             */
+  /*             SQL to be executed on UserDB             */
   /*======================================================*/
 
   private static final String CREATE_BACKUP_USERS_TABLE =
