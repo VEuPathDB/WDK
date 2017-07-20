@@ -97,7 +97,8 @@ public class Cache extends BeanBase implements CacheMBean {
         }
       }
     } catch (SQLException sqle) {
-      logger.fatal(sqle);
+      logger.warn("Failed attempting " + sql + ". This MBean data will not be registered.\n");
+      logger.debug(sqle);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs, ps);
     }
