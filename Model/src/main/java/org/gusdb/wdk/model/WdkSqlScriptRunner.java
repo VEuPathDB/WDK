@@ -49,7 +49,6 @@ public class WdkSqlScriptRunner {
           whichDb.equals(DbType.ACCT) ? modelConf.getAccountDB() :
           null ); // should never happen; value already validated
 
-      if (dbConfig == null)
       db = new DatabaseInstance(dbConfig);
       conn = db.getDataSource().getConnection();
 
