@@ -14,7 +14,8 @@ export let attachmentTypes = [
 
 export let tabularAttachmentTypes = [
   { value: "text", display: "Text File" },
-  { value: "excel", display: "Excel File*" },
+  { value: "csv", display: "Excel File*" },
+  /*{ value: "excel", display: "Excel File*" },*/
   { value: "plain", display: "Show in Browser"}
 ];
 

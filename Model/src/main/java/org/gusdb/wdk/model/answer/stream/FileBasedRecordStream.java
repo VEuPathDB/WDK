@@ -46,7 +46,7 @@ public class FileBasedRecordStream implements RecordStream {
   private static final Logger LOG = Logger.getLogger(FileBasedRecordStream.class);
 
   /** Buffer size for the buffered writer use to write CSV files */
-  private static final int BUFFER_SIZE = 32768;
+  public static final int BUFFER_SIZE = 32768;
 
   /** Determines whether temporary directory and containing files are deleted on close */
   private static final boolean DELETE_TEMPORARY_FILES = true;
