@@ -67,6 +67,10 @@
 }
 .filter-param .range-filter .selection-total {
   color: #666666;
+  float: right;
+}
+.filter-oaram .chart-container {
+  position: relative;
 }
 .filter-param .chart {
   height: 200px;
@@ -83,7 +87,7 @@
   width: 200px;
   position: absolute;
   left: 0;
-  top: 20em;
+  bottom: 0;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);

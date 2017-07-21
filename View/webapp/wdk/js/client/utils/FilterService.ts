@@ -55,13 +55,14 @@ export type Metadata = {
 export type IFilter<Value> = {
   field: string;
   value: Value;
+  includeUnknown: boolean;
   display: string;
   selection?: Datum[];
 }
 
 export type MemberFilter = IFilter<string[]>;
 
-export type RangeFilter = IFilter<{ min: string; max: string; }>;
+export type RangeFilter = IFilter<{ min: string; max: string;}>;
 
 export type Filter = MemberFilter | RangeFilter;
 

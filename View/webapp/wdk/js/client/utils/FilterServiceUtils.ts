@@ -51,18 +51,18 @@ export function uniqMetadataValues(metadata: Metadata) {
 }
 
 export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
-  let filterValue = filter.value;
+  const filterValue = filter.value;
+  const { includeUnknown } = filter;
   return function memberPredicate(datum: Datum) {
     var metadataValues = metadata[datum.term];
     var index = filterValue.length;
     var vIndex: number;
 
+    // If a data entry has no values, i.e. its value is unknown
+    if (metadataValues.length === 0) return includeUnknown;
+
     // Use a for loop for efficiency
     outer: while(index--) {
-      if (metadataValues.length === 0) {
-        if (filterValue[index] === null) return true;
-        continue;
-      }
       vIndex = metadataValues.length;
       while(vIndex--) {
         if (filterValue[index] === metadataValues[vIndex]) break outer;
@@ -82,6 +82,7 @@ export function getNumberRangePredicate<T>(metadata: Metadata, filter: RangeFilt
 }
 
 function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapValue: (value: string) => U) {
+  var { includeUnknown } = filter;
   var { min, max } = mapValues(filter.value, mapValue)
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
@@ -93,7 +94,8 @@ function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapVal
   }
 
   return function rangePredicate(datum: Datum) {
-    return metadata[datum.term].some(value => test(mapValue(value)));
+    const values = metadata[datum.term];
+    return values.length === 0 ? includeUnknown : values.some(value => test(mapValue(value)));
   }
 
 }
