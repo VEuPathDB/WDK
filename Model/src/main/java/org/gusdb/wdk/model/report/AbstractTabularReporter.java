@@ -129,6 +129,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
       // get the formatted result
       switch (getStandardConfig().getAttachmentType()) {
         case "text":
+        case "plain": // text, but shown in browser
           format2Text(out); break;
         case "excel":
           format2Excel(out); break;
@@ -136,6 +137,8 @@ public abstract class AbstractTabularReporter extends StandardReporter {
           format2PDF(out); break;
         case "csv":
           format2CSV(out); break;
+        default:
+          throw new WdkUserException("Illegal download type: " + getStandardConfig().getAttachmentType());
       }
     }
     catch (WdkUserException e) {
