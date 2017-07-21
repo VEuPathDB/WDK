@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -8,10 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.record.CsvResultList;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.json.JSONObject;
 
@@ -20,6 +24,8 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * A reporter that produces a tabular output from an answer. It takes a pluggable row provider that provides
@@ -85,6 +91,8 @@ public abstract class AbstractTabularReporter extends StandardReporter {
         return "application/vnd.ms-excel";
       case "pdf":
         return "application/pdf";
+      case "csv":
+        return "text/csv";
       default:
         return super.getHttpContentType();
     }
@@ -104,6 +112,8 @@ public abstract class AbstractTabularReporter extends StandardReporter {
         return baseName + "_" + suffix + ".xls";
       case "pdf":
         return baseName + "_" + suffix + ".pdf";
+      case "csv":
+        return baseName + "_" + suffix + ".csv";
       default:
         return super.getDownloadFileName();
     }
@@ -118,18 +128,39 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     try {
       // get the formatted result
       switch (getStandardConfig().getAttachmentType()) {
+        case "text":
+          format2Text(out); break;
         case "excel":
-          format2Excel(out);
-          break;
+          format2Excel(out); break;
         case "pdf":
-          format2PDF(out);
-          break;
-        default:
-          format2Text(out);
+          format2PDF(out); break;
+        case "csv":
+          format2CSV(out); break;
       }
     }
     catch (WdkUserException e) {
       throw new WdkModelException("Unable to write tabular report", e);
+    }
+  }
+
+  private void format2CSV(OutputStream out) throws WdkModelException, WdkUserException {
+    try (CSVWriter writer = new CSVWriter(new BufferedWriter(new OutputStreamWriter(out),
+        FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+
+      List<String> colNames = getHeader();
+      if (_includeHeader) {
+        writer.writeNext(colNames.toArray(new String[colNames.size()]));
+      }
+      try (RecordStream records = getRecords()) {
+        for (RecordInstance record : records) {
+          for (List<Object> row : getRowsProvider(record)) {
+            writer.writeNext(Functions.mapToList(row, obj -> String.valueOf(obj)).toArray(new String[colNames.size()]));
+          }
+        }
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to completely write CSV report", e);
     }
   }
 
