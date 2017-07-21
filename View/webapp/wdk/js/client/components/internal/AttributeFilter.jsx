@@ -1,9 +1,9 @@
 import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
-import { Seq } from '../../utils/IterableUtils';
 import {
   debounce,
+  get,
   find,
   includes,
   isEmpty,
@@ -13,7 +13,6 @@ import {
   padStart,
   partial,
   partition,
-  property,
   reduce,
   sortBy,
   throttle
@@ -127,7 +126,7 @@ class FilterList extends React.Component {
             var className = selectedField === filter.field ? 'selected' : '';
             var handleSelectClick = partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
-            var display = getFilterDisplay(fields[filter.field], filter.value);
+            var display = getFilterDisplay(fields[filter.field], filter.value, filter.includeUnknown);
 
             return (
               <li key={filter.field} className={className}>
@@ -165,8 +164,8 @@ FilterList.propTypes = {
 };
 
 FilterList.defaultProps = {
-  renderSelectionInfo(props) {
-    const { filteredDataCount, dataCount } = props;
+  renderSelectionInfo(parentProps) {
+    const { filteredDataCount, dataCount } = parentProps;
     return(
       <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
         {filteredDataCount} of {dataCount} selected
@@ -194,6 +193,12 @@ function FieldListNode({ node, onFieldSelect, isActive }) {
         {node.field.display}
       </a>
     );
+}
+
+FieldListNode.propTypes = {
+  node: PropTypes.object.isRequired,
+  onFieldSelect: PropTypes.func.isRequired,
+  isActive: PropTypes.bool.isRequired
 }
 
 /**
@@ -574,7 +579,6 @@ export class AttributeFilter extends React.Component {
     this.handleSort = this.handleSort.bind(this);
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
-    this.shouldAddFilter = this.shouldAddFilter.bind(this);
 
     this.state = {
       sortTerm: '__primary_key__',
@@ -663,24 +667,14 @@ export class AttributeFilter extends React.Component {
   /**
    * @param {Field} field Field term id
    * @param {any} value Filter value
+   * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
    */
-  handleFieldFilterChange(field, value) {
+  handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(this.shouldAddFilter(field, value)
-      ? filters.concat({ field: field.term, value })
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+      ? filters.concat({ field: field.term, value, includeUnknown })
       : filters
     );
-  }
-
-  /**
-   * @param {string} field Field term id
-   * @param {any} value Filter value
-   */
-  shouldAddFilter(field, value) {
-    return field.type === 'string' || isRange(field) == false ? value.length !== this.props.activeFieldSummary.length
-         : field.type === 'number' ? value.min != null || value.max != null
-         : field.type === 'date' ? value.min != null || value.max != null
-         : false;
   }
 
   render() {
@@ -847,7 +841,6 @@ export class ServerSideAttributeFilter extends React.Component {
     this.handleSelectFieldClick = this.handleSelectFieldClick.bind(this);
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
-    this.shouldAddFilter = this.shouldAddFilter.bind(this);
   }
 
   handleSelectFieldClick(field, event) {
@@ -863,24 +856,14 @@ export class ServerSideAttributeFilter extends React.Component {
   /**
    * @param {Field} field Field term id
    * @param {any} value Filter value
+   * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
    */
-  handleFieldFilterChange(field, value) {
+  handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(this.shouldAddFilter(field, value)
-      ? filters.concat({ field: field.term, value })
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+      ? filters.concat({ field: field.term, value, includeUnknown })
       : filters
     );
-  }
-
-  /**
-   * @param {string} field Field term id
-   * @param {any} value Filter value
-   */
-  shouldAddFilter(field, value) {
-    return field.type === 'string' || isRange(field) == false ? value.length !== this.props.activeFieldSummary.length
-         : field.type === 'number' ? value.min != null || value.max != null
-         : field.type === 'date' ? value.min != null || value.max != null
-         : false;
   }
 
   render() {
@@ -977,6 +960,9 @@ ServerSideAttributeFilter.defaultProps = {
   hideFieldPanel: false
 };
 
+/**
+ * List of filters with invalid fields and/or values
+ */
 function InvalidFilterList(props) {
   var { filters } = props;
 
@@ -987,11 +973,15 @@ function InvalidFilterList(props) {
       <p>Some of the options you previously selected are no longer available:</p>
       <ul>
         {map(filters, filter => (
-          <li className="invalid">{getFilterDisplay(filter.field, filter.value)}</li>
+          <li className="invalid">{getFilterDisplay(filter.field, filter.value, filter.includeUnknown)}</li>
         ))}
       </ul>
     </div>
   );
+}
+
+InvalidFilterList.propTypes = {
+  filters: PropTypes.array
 }
 
 
@@ -1016,6 +1006,8 @@ var distributionEntryPropType = PropTypes.shape({
 });
 
 var Histogram = (function() {
+
+  /** Common histogram component */
   class Histogram extends React.Component {
 
     constructor(props) {
@@ -1237,7 +1229,7 @@ var Histogram = (function() {
       var countsMax = Math.max(...counts);
 
       return (
-        <div>
+        <div className="chart-container">
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
           <div className="chart-title y-axis">
@@ -1293,7 +1285,12 @@ var Histogram = (function() {
   })(Histogram);
 })();
 
-// TODO Add binning
+/**
+ * Generic Histogram field component
+ *
+ * TODO Add binning
+ * TODO Interval snapping
+ */
 class HistogramField extends React.Component {
 
   static getTooltipContent(props) {
@@ -1310,8 +1307,14 @@ class HistogramField extends React.Component {
   constructor(props) {
     super(props);
     this.updateFilter = debounce(this.updateFilter.bind(this), 50);
-    this.handleChange = this.handleChange.bind(this)
+    this.handleMinInputChange = this.handleMinInputChange.bind(this)
+    this.handleMaxInputChange = this.handleMaxInputChange.bind(this)
+    this.handleUnknownCheckboxChange = this.handleUnknownCheckboxChange.bind(this)
     this.cacheDistributionOperations(this.props);
+
+    this.state = {
+      includeUnknown: get(props.filter, 'includeUnknown', false)
+    };
   }
 
   componentWillReceiveProps(nextProps) {
@@ -1327,12 +1330,26 @@ class HistogramField extends React.Component {
     this.distributionRange = { min, max };
   }
 
-  handleChange() {
-    var inputMin = this.refs.min.value
-    var inputMax = this.refs.max.value
-    var min = inputMin === '' ? null : this.props.toFilterValue(inputMin);
-    var max = inputMax === '' ? null : this.props.toFilterValue(inputMax);
-    if (!isNaN(min) && !isNaN(max)) this.emitChange({ min, max });
+  handleMinInputChange(event) {
+    const value = event.target.value;
+    const min = value === '' ? null : this.props.toFilterValue(value);
+    this.emitChange({ min })
+  }
+
+  handleMaxInputChange(event) {
+    const value = event.target.value;
+    const max = value === '' ? null : this.props.toFilterValue(value);
+    this.emitChange({ max })
+  }
+
+  /**
+   *
+   * @param {React.ChangeEvent.<HTMLInputElement>} event
+   */
+  handleUnknownCheckboxChange(event) {
+    const includeUnknown = event.target.checked;
+    this.setState({ includeUnknown });
+    this.emitChange({}, includeUnknown);
   }
 
   updateFilter(range) {
@@ -1341,16 +1358,21 @@ class HistogramField extends React.Component {
     this.emitChange({ min, max });
   }
 
-  emitChange(range) {
-    this.props.onChange(this.props.field, range);
+  emitChange({
+    min = get(this.props.filter, 'value.min', null),
+    max = get(this.props.filter, 'value.max', null)
+  }, includeUnknown = this.state.includeUnknown) {
+    if (!isNaN(min) && !isNaN(max))
+      this.props.onChange(this.props.field, { min, max }, includeUnknown);
   }
 
   render() {
-    var { field, filter, displayName } = this.props;
+    var { field, filter, displayName, includeUnknownOption } = this.props;
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
     var { min, max } = filter ? filter.value : {};
+    var includeUnknown = get(filter, 'includeUnknown', this.state.includeUnknown);
 
     var selectedMin = min == null ? null : this.props.toHistogramValue(min);
     var selectedMax = max == null ? null : this.props.toHistogramValue(max);
@@ -1371,22 +1393,30 @@ class HistogramField extends React.Component {
         <div>
           {'Between '}
           <input
-            ref="min"
             type="text"
             size="6"
             placeholder={distMin}
             value={min || ''}
-            onChange={this.handleChange}
+            onChange={this.handleMinInputChange}
           />
           {' and '}
           <input
-            ref="max"
             type="text"
             size="6"
             placeholder={distMax}
             value={max || ''}
-            onChange={this.handleChange}
+            onChange={this.handleMaxInputChange}
           />
+          {includeUnknownOption && (
+            <label>
+              {' '}
+              <input
+                type="checkbox"
+                checked={includeUnknown}
+                onChange={this.handleUnknownCheckboxChange}
+              /> Include Unknown
+            </label>
+          )}
           <span className="selection-total">{selection}</span>
         </div>
 
@@ -1413,13 +1443,18 @@ HistogramField.propTypes = {
   field: PropTypes.object.isRequired,
   filter: PropTypes.object,
   overview: PropTypes.node.isRequired,
-  displayName: PropTypes.string.isRequired
+  displayName: PropTypes.string.isRequired,
+  includeUnknownOption: PropTypes.bool.isRequired,
+  timeformat: PropTypes.string
 };
 
 
 var UNKNOWN_DISPLAY = 'unknown';
 var UNKNOWN_VALUE = '@@unknown@@';
 
+/**
+ * Membership field component
+ */
 class MembershipField extends React.Component {
   static getTooltipContent(props) {
     var displayName = props.displayName;
@@ -1444,8 +1479,7 @@ class MembershipField extends React.Component {
 
   constructor(props) {
     super(props);
-    this.handleClick = this.handleClick.bind(this);
-    this.handleChange = this.handleChange.bind(this);
+    this.handleItemClick = this.handleItemClick.bind(this);
     this.handleSelectAll = this.handleSelectAll.bind(this);
     this.handleRemoveAll = this.handleRemoveAll.bind(this);
     this.toFilterValue = this.toFilterValue.bind(this);
@@ -1458,41 +1492,48 @@ class MembershipField extends React.Component {
       : value;
   }
 
-  handleClick(event) {
-    if (!$(event.target).is('input[type=checkbox]')) {
-      var $target = $(event.currentTarget).find('input[type=checkbox]');
-      $target.prop('checked', !$target.prop('checked'));
-      this.handleChange();
+  getKnownValues() {
+    return this.props.distribution
+      .filter(({ value }) => value != null)
+      .map(({ value }) => value);
+  }
+
+  getValuesForFilter() {
+    return get(this.props, 'filter.value', this.getKnownValues());
+  }
+
+  handleItemClick(value, addItem) {
+    if (value == UNKNOWN_VALUE) {
+      this.handleUnknownChange(addItem);
+    }
+    else {
+      const filterValue = addItem
+        ? this.getValuesForFilter().concat(value)
+        : this.getValuesForFilter().filter(v => v !== value);
+      this.emitChange(filterValue, get(this.props, 'filter.includeUnknown', true));
     }
   }
 
-  handleChange() {
-    var value = Seq.from(findDOMNode(this).querySelectorAll('input[type=checkbox]:checked'))
-      .map(property('value'))
-      .map(value => value === UNKNOWN_VALUE ? null : value)
-      .map(this.toFilterValue)
-      .toArray();
-    this.emitChange(value);
+  handleUnknownChange(addUnknown) {
+    this.emitChange(this.getValuesForFilter(), addUnknown);
   }
 
   handleSelectAll(event) {
     event.preventDefault();
-    var { distribution } = this.props;
-    var value = map(distribution, property('value'));
-    this.emitChange(value);
+    this.emitChange(this.getKnownValues(), true);
   }
 
   handleRemoveAll(event) {
     event.preventDefault();
-    this.emitChange([]);
+    this.emitChange([], false);
   }
 
-  emitChange(value) {
-    this.props.onChange(this.props.field, value);
+  emitChange(value, includeUnknown) {
+    this.props.onChange(this.props.field, value, includeUnknown);
   }
 
   render() {
-    var dist = this.props.distribution;
+    var dist = this.props.distribution.filter(item => item.value != null);
     var total = reduce(dist, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
@@ -1525,17 +1566,17 @@ class MembershipField extends React.Component {
                   var percentage = (item.count / total) * 100;
                   var disabled = item.filteredCount === 0;
                   var filteredPercentage = (item.filteredCount / total) * 100;
-                  var value = this.toFilterValue(item.value) || UNKNOWN_VALUE;
-                  var display = item.value || UNKNOWN_DISPLAY;
+                  var value = item.value == null ? UNKNOWN_VALUE : this.toFilterValue(item.value);
+                  var display = item.value == null ? UNKNOWN_DISPLAY : String(item.value);
+                  var isChecked = !this.props.filter || (value == UNKNOWN_VALUE ? this.props.filter.includeUnknown : includes(this.props.filter.value, value));
                   var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
-                  var isChecked = !this.props.filter || includes(this.props.filter.value, value);
                   var trClassNames = 'member' +
                     (isChecked & !disabled ? ' member__selected' : '') +
                     (disabled ? ' member__disabled' : '');
 
                   return (
-                    <tr key={value} className={trClassNames} onClick={this.handleClick} title={tooltip}>
-                      <td><input value={value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
+                    <tr key={value} className={trClassNames} onClick={() => this.handleItemClick(value, !isChecked)} title={tooltip}>
+                      <td><input value={value} type="checkbox" checked={isChecked} onChange={() => this.handleItemClick(value, !isChecked)}/></td>
                       <td><span className="value">{display}</span></td>
                       <td><span className="frequency">{item.count}</span></td>
                       <td><span className="frequency">{item.filteredCount}</span></td>
@@ -1555,6 +1596,12 @@ class MembershipField extends React.Component {
   }
 }
 
+MembershipField.propTypes = FieldFilter.propTypes
+
+
+/**
+ * Number field component
+ */
 class NumberField extends React.Component {
 
   static getTooltipContent(props) {
@@ -1621,6 +1668,7 @@ class NumberField extends React.Component {
       <HistogramField
         {...this.props}
         distribution={knownDist}
+        includeUnknownOption={unknownCount > 0}
         toFilterValue={this.toFilterValue}
         toHistogramValue={this.toHistogramValue}
         overview={overview}
@@ -1630,6 +1678,11 @@ class NumberField extends React.Component {
 
 }
 
+NumberField.propTypes = FieldFilter.propTypes;
+
+/**
+ * Date field component
+ */
 class DateField extends React.Component {
 
   static getTooltipContent(props) {
@@ -1696,6 +1749,7 @@ class DateField extends React.Component {
         {...this.props}
         timeformat={this.timeformat}
         distribution={dateDist}
+        includeUnknownOption={unknownCount > 0}
         toFilterValue={this.toFilterValue}
         toHistogramValue={this.toHistogramValue}
         overview={overview}
@@ -1705,6 +1759,11 @@ class DateField extends React.Component {
 
 }
 
+DateField.propTypes = FieldFilter.propTypes;
+
+/**
+ * Empty field component
+ */
 function EmptyField(props) {
   return (
     <div>
@@ -1716,6 +1775,27 @@ function EmptyField(props) {
   );
 }
 
+EmptyField.propTypes = FieldFilter.propTypes;
+
+/**
+ * Determine if a filter should be created, or if the values represent the default state.
+ *
+ * @param {string} field Field term id
+ * @param {any} value Filter value
+ */
+function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
+  return field.type === 'string' || isRange(field) == false ? value.length !== fieldSummary.filter(item => item.value != null).length || !includeUnknown
+        : field.type === 'number' ? value.min != null || value.max != null || includeUnknown
+        : field.type === 'date' ? value.min != null || value.max != null || includeUnknown
+        : false;
+}
+
+
+/**
+ * Finds the component for a field.
+ *
+ * @param {Field} field
+ */
 function getFieldDetailComponent(field) {
   return field == null ? null
     : isRange(field) == false ? MembershipField
@@ -1725,23 +1805,53 @@ function getFieldDetailComponent(field) {
     : null;
 }
 
-function getFilterDisplay(field, value) {
-  return typeof field === 'string' ? `${field} is ${JSON.stringify(value)}`
-    // range filter display
-    : isRange(field) ? `${field.display} is ` +
-      ( value.min == null ? `less than ${value.max}`
-      : value.max == null ? `greater than ${value.min}`
-      : `between ${value.min} and ${value.max}`)
+/**
+ * Creates a display string describing a filter.
+ *
+ * @param {Field} field
+ * @param {any} value
+ * @param {boolean} includeUnknown
+ */
+function getFilterDisplay(field, value, includeUnknown) {
+  if (typeof field === 'string') {
+    return field + 'is ' + JSON.stringify({ value, includeUnknown });
+  }
 
-    // membership filter display
-    : ( value.length === 0 ? `No ${field.display} selected`
-      : `${field.display} is ${value.map(entry => entry === null ? UNKNOWN_DISPLAY : entry).join(', ')}`);
+  if (isRange(field)) {
+    const displayValue = value.min == null && value.max == null ? ''
+                       : value.min == null ? `less than ${value.max}`
+                       : value.max == null ? `greater than ${value.min}`
+                       : `between ${value.min} and ${value.max}`;
+    return field.display + ' is ' + displayValue +
+      (includeUnknown ? ( displayValue ? ', or is unknown' : 'unknown') : '');
+  }
+  else {
+    if (value.length === 0 && includeUnknown === false) {
+      return 'No ' + field.display + ' selected'
+    }
+    return field.display + ' is ' + value.join(', ') +
+      (includeUnknown ? (value.length === 0 ? 'unknown' : ', or unknown') : '');
+  }
 }
 
+/**
+ * Determine if a field should use a range filter display
+ *
+ * @param {Field} field
+ */
 function isRange(field) {
   return field && (field.isRange || field.filter === 'range');
 }
 
+/**
+ * Creates a function that can be used to update a component instance's state.
+ * Arguments passed to the created function are used as property values for the
+ * state object. The name of the property is determined by using its position
+ * as an index for `argNames`.
+ *
+ * @param {React.Component} instance
+ * @param {...string} argsNames Maps positional arguments to state property names.
+ */
 function setStateFromArgs(instance, ...argsNames) {
   const length = argsNames.length;
   return function (...args) {
