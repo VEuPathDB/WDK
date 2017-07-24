@@ -52,14 +52,10 @@ export function uniqMetadataValues(metadata: Metadata) {
 
 export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
   const filterValue = filter.value;
-  const { includeUnknown } = filter;
-  return function memberPredicate(datum: Datum) {
+  return withUnknownCheck(metadata, filter, function memberPredicate(datum: Datum) {
     var metadataValues = metadata[datum.term];
     var index = filterValue.length;
     var vIndex: number;
-
-    // If a data entry has no values, i.e. its value is unknown
-    if (metadataValues.length === 0) return includeUnknown;
 
     // Use a for loop for efficiency
     outer: while(index--) {
@@ -70,7 +66,7 @@ export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) 
     }
 
     return (index > -1);
-  };
+  });
 }
 
 export function getDateRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
@@ -82,7 +78,6 @@ export function getNumberRangePredicate<T>(metadata: Metadata, filter: RangeFilt
 }
 
 function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapValue: (value: string) => U) {
-  var { includeUnknown } = filter;
   var { min, max } = mapValues(filter.value, mapValue)
   var test = min !== null && max !== null ? makeWithin(min, max)
            : min !== null ? makeGte(min)
@@ -93,11 +88,20 @@ function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapVal
     throw new Error('Count not determine range predicate.');
   }
 
-  return function rangePredicate(datum: Datum) {
+  return withUnknownCheck(metadata, filter, function rangePredicate(datum: Datum) {
     const values = metadata[datum.term];
-    return values.length === 0 ? includeUnknown : values.some(value => test(mapValue(value)));
-  }
+    return values.some(value => test(mapValue(value)));
+  });
 
+}
+
+function withUnknownCheck(metadata: Metadata, filter: MemberFilter|RangeFilter, predicate: (datum: Datum) => boolean) {
+  return function (datum: Datum) {
+    const { includeUnknown = false } = filter;
+    const metadataValues = metadata[datum.term];
+    if (!Array.isArray(metadataValues)) throw new Error("Could not find metadata values for `" + datum.term + "`");
+    return metadataValues.length === 0 ? includeUnknown : predicate(datum);
+  }
 }
 
 // Helper filtering functions
