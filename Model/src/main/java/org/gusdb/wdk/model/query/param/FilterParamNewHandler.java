@@ -168,7 +168,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
-    String unknownClause = jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN)
+    String unknownClause = jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN)
         ? metadataTableName + "." + columnName + " is NULL OR " : "";
 
     String innerAndClause = ontologyItem.getIsRange()
