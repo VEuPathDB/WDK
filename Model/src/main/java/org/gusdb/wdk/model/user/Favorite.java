@@ -13,12 +13,14 @@ public class Favorite {
 
     private final User user;
     private final RecordClass recordClass;
+    private final long _favoriteId;
     private final PrimaryKeyValue id;
     private final String display;
     private String note;
     private String group;
 
-    public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey) {
+    public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey, long favoriteId) {
+    	this._favoriteId = favoriteId;
         this.user = user;
         this.recordClass = recordClass;
         this.id = primaryKey;
@@ -65,7 +67,7 @@ public class Favorite {
      * @param note
      *            the note to set
      */
-    void setNote(String note) {
+    public void setNote(String note) {
         this.note = note;
     }
 
@@ -80,7 +82,7 @@ public class Favorite {
      * @param group
      *            the group to set
      */
-    void setGroup(String group) {
+    public void setGroup(String group) {
         this.group = group;
     }
 
@@ -88,4 +90,12 @@ public class Favorite {
       return display;
     }
 
+    /**
+     * Return the sequence generated primary key for the Favorite table
+     * @return
+     */
+	public long getFavoriteId() {
+		return _favoriteId;
+	}
+    
 }

@@ -387,7 +387,8 @@ export default class WdkService {
     let action = 'check';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    //let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    let url = '/user/current/favorites/query';
     return this._fetchJson<{countProcessed: number}>(method, url).then(data => data.countProcessed > 0);
   }
 

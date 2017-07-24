@@ -18,6 +18,7 @@ import org.json.JSONObject;
  *    {name : record_id2_name: value " record_id2_value},
  *    ...
  *  ],
+ *   favoriteId: Long,
  *   display: String,
  *   note: String,
  *   group: String,
@@ -33,9 +34,7 @@ public class FavoritesFormatter {
     try {
       for(RecordClass recordClass : favorites.keySet()) {
     	List<Favorite> favoritesList = favorites.get(recordClass);
-    	//JSONArray favoritesArray = new JSONArray();
     	favoritesList.forEach((favorite) -> favoritesJson.put(getFavoriteJson(favorite)));
-        //favoritesJson.put(recordClass.getFullName(), favoritesArray);
       }
       return favoritesJson;
     }
@@ -55,6 +54,7 @@ public class FavoritesFormatter {
 	  }	  
       return favoriteJSON
     		.put(Keys.ID, pkValuesJson)
+    		.put(Keys.FAVORITE_ID, favorite.getFavoriteId())
 	        .put(Keys.DISPLAY, favorite.getDisplay())
 	        .put(Keys.NOTE, favorite.getNote())
 	        .put(Keys.GROUP, favorite.getGroup())

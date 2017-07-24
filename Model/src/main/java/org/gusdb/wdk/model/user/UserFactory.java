@@ -50,7 +50,7 @@ public class UserFactory {
   // sql and sql macro definitions
   // -------------------------------------------------------------------------
 
-  private static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+  protected static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
 
   private static final String COUNT_USER_REF_BY_ID_SQL =
       "select count(*)" +

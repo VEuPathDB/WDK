@@ -294,7 +294,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
    */
   function fetchStrategies(cb, options = {}) {
     var data = {
-      state: ns.stateString,
+      state: encodeURIComponent(ns.stateString),
       updateResults: Boolean(options.updateResults)
     };
 
@@ -853,7 +853,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: url,
       dataType: "html",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         wdk.util.showLoading(s);
       },
@@ -895,7 +895,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
@@ -925,7 +925,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
@@ -949,10 +949,11 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
 
   function openStrategy(stratId){
     var url = "showStrategy.do?strategy=" + stratId;
+    var encodedStateString = encodeURIComponent(ns.stateString);
     $.ajax({
       url: url,
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         $("body").block();
       },
@@ -997,7 +998,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       $.ajax({
         url: url,
         dataType: "json",
-        data: "state=" + ns.stateString,
+        data: "state=" + encodeURIComponent(ns.stateString),
         beforeSend: function() {
           if (!fromHist) wdk.util.showLoading(stratId);
         },
@@ -1029,7 +1030,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: url,
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         wdk.util.showLoading(stratId);
       },
@@ -1064,7 +1065,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
         $.ajax({
           url: url,
           dataType: "json",
-          data: "state=" + ns.stateString,
+          data: "state=" + encodeURIComponent(ns.stateString),
           beforeSend: function() {
             if (!fromHist) {
               wdk.util.showLoading(ss.frontId);
@@ -1100,7 +1101,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
             wdk.strategy.model.getStrategy(strategy.subStratOf).checksum :
             strategy.checksum,
         showHistory: fromHist,
-        state: ns.stateString
+        state: encodeURIComponent(ns.stateString)
       },
       beforeSend: function() {
         if (!fromHist) {
@@ -1143,7 +1144,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "GET",
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         $("#strategy_results > div.Workspace").block();
         wdk.util.showLoading(f_strategyId);
@@ -1248,7 +1249,7 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.stateString,
+      data: "state=" + encodeURIComponent(ns.stateString),
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
