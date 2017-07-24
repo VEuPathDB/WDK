@@ -2,7 +2,8 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "test": "tape \"tests/**/*.{j,t}s{,x}\"",
+    "test": "nyc ava",
+    "report": "nyc report --reporter=html && open coverage/index.html",
     "build": "webpack",
     "examples": "cd client-examples && webpack-dev-server --content-base public/"
   },
@@ -64,9 +65,34 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "ava": "^0.21.0",
     "eslint": "^4.2.0",
     "eslint-plugin-react": "^7.1.0",
-    "tape": "^4.7.0",
+    "nyc": "^11.0.3",
     "ts-node": "^3.2.0"
+  },
+  "nyc": {
+    "exclude": [
+      "tests/**"
+    ],
+    "extension": [
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx"
+    ]
+  },
+  "ava": {
+    "files": [
+      "tests/**"
+    ],
+    "source": [
+      "webapp/**/*.{js,jsx,ts,tsx}"
+    ],
+    "require": [
+      "ts-node/register",
+      "babel-core/register",
+      "babel-polyfill"
+    ]
   }
 }
