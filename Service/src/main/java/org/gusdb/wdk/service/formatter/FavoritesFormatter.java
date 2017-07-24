@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Favorite;
@@ -29,11 +30,11 @@ import org.json.JSONObject;
  */
 public class FavoritesFormatter {
 	
-  public static JSONArray getFavoritesJson(Map<RecordClass, List<Favorite>> favorites) throws WdkModelException {
+  public static JSONArray getFavoritesJson(Map<String, List<Favorite>> favorites) throws WdkModelException {
 	JSONArray favoritesJson = new JSONArray();
     try {
-      for(RecordClass recordClass : favorites.keySet()) {
-    	List<Favorite> favoritesList = favorites.get(recordClass);
+      for(String recordClassName : favorites.keySet()) {
+    	List<Favorite> favoritesList = favorites.get(recordClassName);
     	favoritesList.forEach((favorite) -> favoritesJson.put(getFavoriteJson(favorite)));
       }
       return favoritesJson;

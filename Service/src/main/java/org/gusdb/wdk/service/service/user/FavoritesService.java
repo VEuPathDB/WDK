@@ -56,7 +56,7 @@ public class FavoritesService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-    Map<RecordClass, List<Favorite>> favorites = getWdkModel().getFavoriteFactory().getAllFavorites(user);
+    Map<String, List<Favorite>> favorites = getWdkModel().getFavoriteFactory().getAllFavorites(user);
     return Response.ok(FavoritesFormatter.getFavoritesJson(favorites).toString()).build();
   }
   
