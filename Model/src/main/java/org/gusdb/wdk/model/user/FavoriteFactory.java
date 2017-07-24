@@ -63,7 +63,8 @@ public class FavoriteFactory {
   private static final String SELECT_ALL_FAVORITES_SQL =
     "SELECT * FROM " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
     " WHERE " + COLUMN_USER_ID + " = ? " +
-    "  AND " + COLUMN_IS_DELETED + " = 0";
+    "  AND " + COLUMN_IS_DELETED + " = 0 " +
+    " ORDER BY " + COLUMN_RECORD_CLASS;
     
   private static final String DELETE_ALL_FAVORITES_SQL =
 	"UPDATE " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
@@ -127,48 +128,51 @@ public class FavoriteFactory {
   public Map<RecordClass, List<Favorite>> getAllFavorites(User user) throws WdkModelException {
     long userId = user.getUserId();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    final Map<RecordClass, List<Favorite>> favoritesMap = new HashMap<>();
+    final Wrapper<String> priorRecordClassName = new Wrapper<>();
     final List<Favorite> favorites = new ArrayList<>();
-	    try {  
-	      final String selectAllFavoritesSql = SELECT_ALL_FAVORITES_SQL.replace(UserFactory.USER_SCHEMA_MACRO, schema);
-	      new SQLRunner(dataSource, selectAllFavoritesSql, "select-all-favorite").executeQuery(
-	        new Object[]{ userId }, new Integer[]{ Types.BIGINT }, resultSet -> {
-	          while (resultSet.next()) {
-	        	String recordClassName = resultSet.getString(COLUMN_RECORD_CLASS);
-	        	// Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
-	        	try {
-	        	  if(wdkModel.isExistsRecordClassSet(recordClassName)) {
-	                RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
-	                String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-	                Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
-	                for (int i = 1; i <= pkColumns.length; i++) {
-	                  Object value = resultSet.getObject(Utilities.COLUMN_PK_PREFIX + i);
-	                  primaryKeys.put(pkColumns[i - 1], value);
-	                }
-	                PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), primaryKeys);
-	                Long favoriteId = resultSet.getLong(COLUMN_FAVORITE_ID);
-	                Favorite favorite = new Favorite(user, recordClass, pkValue, favoriteId);
-	                favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
-	                favorite.setGroup(resultSet.getString(COLUMN_RECORD_GROUP));
-	                
-	                favoriteMap.add(favorite);
-	              }
-	        	}
-	        	catch(WdkModelException wme) {
-	        	  throw new RuntimeException(wme);
-	        	}
+    final Map<RecordClass, List<Favorite>> favoritesMap = new HashMap<>();
+	try {  
+	  final String selectAllFavoritesSql = SELECT_ALL_FAVORITES_SQL.replace(UserFactory.USER_SCHEMA_MACRO, schema);
+	  new SQLRunner(dataSource, selectAllFavoritesSql, "select-all-favorite").executeQuery(
+	   new Object[]{ userId }, new Integer[]{ Types.BIGINT }, resultSet -> {
+	    while (resultSet.next()) {
+	      String recordClassName = resultSet.getString(COLUMN_RECORD_CLASS);
+	      // Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
+	      try {
+	        if(wdkModel.isExistsRecordClassSet(recordClassName)) {
+	         
+	          RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
+	          String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+              Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
+              for (int i = 1; i <= pkColumns.length; i++) {
+	            Object value = resultSet.getObject(Utilities.COLUMN_PK_PREFIX + i);
+	            primaryKeys.put(pkColumns[i - 1], value);
 	          }
-	        }      
-	      );
-	      return favorites;
+	          PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), primaryKeys);
+	          Long favoriteId = resultSet.getLong(COLUMN_FAVORITE_ID);
+	          Favorite favorite = new Favorite(user, recordClass, pkValue, favoriteId);
+	          favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
+	          favorite.setGroup(resultSet.getString(COLUMN_RECORD_GROUP));
+	          if(!recordClassName.equalsIgnoreCase(priorRecordClassName.get())) {
+	        	favoritesMap.put(recordClass, favorites);
+	            favorites.clear();
+	          }
+	        }
+	      }
+	      catch(WdkModelException wme) {
+	        throw new RuntimeException(wme);
+	      }
 	    }
-	    catch(SQLRunnerException sre) {
-	      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
-	    }
-	    catch(Exception e) {
-	      throw new WdkModelException(e);
-	    }
-	  }
+	  });
+	  return favoritesMap;
+    }
+    catch(SQLRunnerException sre) {
+      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
+    }
+    catch(Exception e) {
+      throw new WdkModelException(e);
+    }
+  }
   
   /**
    * Deletes all of a user's favorites
