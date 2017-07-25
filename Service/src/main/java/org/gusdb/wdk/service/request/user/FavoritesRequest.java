@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.request.user;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,27 +21,35 @@ public class FavoritesRequest {
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(FavoritesRequest.class);
   
-  private final List<Long> _favoriteIds;
-  private final RecordClass _recordClass;
-  private final Map<String,Object> _pkValues;
-  private final String _note;
-  private final String _group;
+  public static final List<String> ACTION_TYPES = new ArrayList<>(Arrays.asList("delete","undelete"));
   
-  public FavoritesRequest(List<Long> favoriteIds) {
-    _favoriteIds = favoriteIds;
+  private Map<String,List<Long>> _favoriteActionMap;
+  private RecordClass _recordClass;
+  private Map<String,Object> _pkValues;
+  private String _note;
+  private String _group;
+  
+  public FavoritesRequest() {
+	_favoriteActionMap = null;
     _recordClass = null;
     _pkValues = null;
     _note = null;
 	_group = null;
+	
+  }
+  
+  public FavoritesRequest(Map<String,List<Long>> favoriteActionMap) {
+	this();  
+	_favoriteActionMap = favoriteActionMap;
   }
 
   public FavoritesRequest(RecordClass recordClass, Map<String,Object> pkValues,
-		  String note, String group) {  
+		  String note, String group) {
+	this();  
 	_recordClass = recordClass;
 	_pkValues = pkValues;
 	_note = note;
 	_group = group;
-	_favoriteIds = null;
   }
   
   /**
@@ -52,13 +61,26 @@ public class FavoritesRequest {
    * @param jsonArray
    * @return
    */
-  public static FavoritesRequest getFavoriteIdsFromJson(JSONArray jsonArray) {
+  /*
+  public static FavoritesRequest getFavoriteActionMapFromJson(JSONObject json) {
+	List<String> actionTypes = ACTION_TYPES;
+	Map<String,List<Long>> favoriteActionMap = new HashMap<>();  
+	for(Object actionType : json.keySet()) {
+	  if(actionTypes.contains(((String)actionType).trim())) {
+		List<Long> favoriteIds = new ArrayList<>();
+	    JSONArray jsonArray = json.getJSONArray((String)actionType);
+	    for(int i = 0; i < jsonArray.length(); i++) {
+	    
+	    }
+	    favoriteActionMap.put((String)actionType, favoriteIds);
+	  }
+	}
     List<Long> favoriteIds = new ArrayList<>();  
 	for(int i = 0; i < jsonArray.length(); i++) {
       favoriteIds.add(jsonArray.getLong(i));
 	}
 	return new FavoritesRequest(favoriteIds);
-  }
+  }*/
   
   /**
    * Input Format:
@@ -147,8 +169,8 @@ public class FavoritesRequest {
     return _group;
   }
 
-  public List<Long> getFavoriteIds() {
-	return _favoriteIds;
+  public Map<String, List<Long>> getFavoriteActionMap() {
+	return _favoriteActionMap;
   }
   
   

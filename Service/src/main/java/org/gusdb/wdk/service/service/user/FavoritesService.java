@@ -46,7 +46,11 @@ public class FavoritesService extends UserService {
   }
 
 
-  //gets a full list of favorites
+  /**
+   * Gets all the favorite belonging to the given user
+   * @return
+   * @throws WdkModelException
+   */
   @GET
   @Path("favorites")
   @Produces(MediaType.APPLICATION_JSON)
@@ -56,11 +60,16 @@ public class FavoritesService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-    Map<String, List<Favorite>> favorites = getWdkModel().getFavoriteFactory().getAllFavorites(user);
+    List<Favorite> favorites = getWdkModel().getFavoriteFactory().getAllFavorites(user);
     return Response.ok(FavoritesFormatter.getFavoritesJson(favorites).toString()).build();
   }
-  
-  //gets a favorite by its favorite id
+
+  /**
+   * Get the favorite, for favorite id, if it belongs to the given user.
+   * @param favoriteId
+   * @return
+   * @throws WdkModelException
+   */
   @GET
   @Path("favorites/{favoriteId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -139,10 +148,10 @@ public class FavoritesService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-    JSONArray json = new JSONArray(body);
-    FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteIdsFromJson(json);
-    List<Long> favoriteIds = favoritesRequest.getFavoriteIds();      
-	getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteIds);
+//    JSONArray json = new JSONArray(body);
+//    FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteIdsFromJson(json);
+//    Map<String,List<Long>> favoriteActionMap = favoritesRequest.getFavoriteActionMap();      
+//	getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteIds);
     return Response.noContent().build();
   }
   

@@ -30,13 +30,10 @@ import org.json.JSONObject;
  */
 public class FavoritesFormatter {
 	
-  public static JSONArray getFavoritesJson(Map<String, List<Favorite>> favorites) throws WdkModelException {
+  public static JSONArray getFavoritesJson(List<Favorite> favorites) throws WdkModelException {
 	JSONArray favoritesJson = new JSONArray();
     try {
-      for(String recordClassName : favorites.keySet()) {
-    	List<Favorite> favoritesList = favorites.get(recordClassName);
-    	favoritesList.forEach((favorite) -> favoritesJson.put(getFavoriteJson(favorite)));
-      }
+      favorites.forEach((favorite) -> favoritesJson.put(getFavoriteJson(favorite)));
       return favoritesJson;
     }
     catch(JSONException e) {
