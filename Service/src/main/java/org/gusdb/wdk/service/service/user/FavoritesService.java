@@ -45,10 +45,9 @@ public class FavoritesService extends UserService {
     super(uid);
   }
 
-
   /**
    * Gets all the favorite belonging to the given user
-   * @return
+   * @return - a json array representation of the list of favorites, which could be empty.
    * @throws WdkModelException
    */
   @GET
@@ -67,7 +66,7 @@ public class FavoritesService extends UserService {
   /**
    * Get the favorite, for favorite id, if it belongs to the given user.
    * @param favoriteId
-   * @return
+   * @return a json object representation of the favorite or a 404 if no such favorite is found
    * @throws WdkModelException
    */
   @GET

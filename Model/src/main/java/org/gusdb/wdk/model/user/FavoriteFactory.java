@@ -90,7 +90,7 @@ public class FavoriteFactory {
   
   private static final String UPDATE_FAVORITE_BY_ID_SQL =
     "UPDATE "  + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
-    " SET " + COLUMN_RECORD_NOTE + " = ? " + COLUMN_RECORD_GROUP + " = ? " +
+    " SET " + COLUMN_RECORD_NOTE + " = ?, " + COLUMN_RECORD_GROUP + " = ? " +
     " WHERE " + COLUMN_FAVORITE_ID + "= ? " +
     "  AND " + COLUMN_USER_ID + " = ? " +
     "  AND " + COLUMN_IS_DELETED + " = 0";
