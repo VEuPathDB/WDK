@@ -32,3 +32,9 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.buttonStyle (@base) {
+  background-color: @base;
+  color: @white;
+  &:hover { background-color: darken(@base, 10%); }
+}

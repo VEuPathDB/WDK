@@ -19,11 +19,9 @@ button.btn {
     font-size: 1.2em;
   }
 
-  &.btn-red {
-    background: @red;
-    color: @white;
-    &:hover {
-      background: darken(@red, 10%);
-    }
-  }
+  &.btn-red { .buttonStyle(@red); }
+  &.btn-blue { .buttonStyle(@blue); }
+  &.btn-gold { .buttonStyle(@gold); }
+  &.btn-green { .buttonStyle(@green); }
+  &.btn-orange { .buttonStyle(@orange); }
 }
