@@ -27,11 +27,21 @@
     flex: content;
 
     .control-cell {
-
       .wdk-DateSelector {
         flex: 0 0 auto;
         padding: 3px;
         align-self: center;
+      }
+
+      a {
+        color: @blue;
+        font-size: 0.9em;
+        font-weight: 400;
+        padding: 5px;
+        &:hover, &:active, &:focus {
+          text-decoration: none;
+          color: @darkblue;
+        }
       }
     }
   }
