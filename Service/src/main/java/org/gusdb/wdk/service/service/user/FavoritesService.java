@@ -91,6 +91,14 @@ public class FavoritesService extends UserService {
  }
   
   //updates an existing favorite found by favorite id with another (i.e. edits note and/or group)
+  /**
+   * Updates an existing favorite found by its favorite id (if belonging to the given user) with a
+   * new favorite.  The body need only contain note and group (both required but can be empty strings). 
+   * @param favoriteId
+   * @param body
+   * @return - a 204 response in the event of a successful edit.
+   * @throws WdkModelException
+   */
   @PUT
   @Path("favorites/{favoriteId}")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -178,7 +186,13 @@ public class FavoritesService extends UserService {
     return Response.noContent().build();  
   }
 
-  // creates a new favorite
+  /**
+   * Creates a new favorite for the given user.  If the favorite has previously existed but was
+   * deleted, the original is undeleted.
+   * @param body
+   * @return
+   * @throws WdkModelException
+   */
   @POST
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
