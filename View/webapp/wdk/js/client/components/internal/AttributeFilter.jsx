@@ -9,6 +9,8 @@ import {
   isEmpty,
   isEqual,
   map,
+  min,
+  max,
   noop,
   padStart,
   partial,
@@ -1313,7 +1315,7 @@ class HistogramField extends React.Component {
     this.cacheDistributionOperations(this.props);
 
     this.state = {
-      includeUnknown: get(props.filter, 'includeUnknown', false)
+      includeUnknown: get(props.filter, 'includeUnknown', true)
     };
   }
 
@@ -1359,8 +1361,8 @@ class HistogramField extends React.Component {
   }
 
   emitChange({
-    min = get(this.props.filter, 'value.min', null),
-    max = get(this.props.filter, 'value.max', null)
+    min = get(this.props.filter, 'value.min', this.distributionRange.min),
+    max = get(this.props.filter, 'value.max', this.distributionRange.max)
   }, includeUnknown = this.state.includeUnknown) {
     if (!isNaN(min) && !isNaN(max))
       this.props.onChange(this.props.field, { min, max }, includeUnknown);
@@ -1374,8 +1376,8 @@ class HistogramField extends React.Component {
     var { min, max } = filter ? filter.value : {};
     var includeUnknown = get(filter, 'includeUnknown', this.state.includeUnknown);
 
-    var selectedMin = min == null ? null : this.props.toHistogramValue(min);
-    var selectedMax = max == null ? null : this.props.toHistogramValue(max);
+    var selectedMin = min == null ? distMin : this.props.toHistogramValue(min);
+    var selectedMax = max == null ? distMax : this.props.toHistogramValue(max);
 
     var selectionTotal = filter && filter.selection && filter.selection.length;
 
@@ -1784,10 +1786,18 @@ EmptyField.propTypes = FieldFilter.propTypes;
  * @param {any} value Filter value
  */
 function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
-  return field.type === 'string' || isRange(field) == false ? value.length !== fieldSummary.filter(item => item.value != null).length || !includeUnknown
-        : field.type === 'number' ? value.min != null || value.max != null || includeUnknown
-        : field.type === 'date' ? value.min != null || value.max != null || includeUnknown
-        : false;
+  if (!includeUnknown) return true;
+
+  if (isRange(field)) {
+    const values = fieldSummary
+      .filter(entry => entry.value != null)
+      .map(entry => field.type === 'number' ? Number(entry.value) : entry.value);
+    const summaryMin = min(values);
+    const summaryMax = max(values);
+    return value.min !== summaryMin || value.max !== summaryMax;
+  }
+
+  return value.length !== fieldSummary.filter(item => item.value != null).length;
 }
 
 
@@ -1818,6 +1828,10 @@ function getFilterDisplay(field, value, includeUnknown) {
   }
 
   if (isRange(field)) {
+    if (value.min == null && value.max == null && includeUnknown == false) {
+      return 'No ' + field.display + ' value selected';
+    }
+
     const displayValue = value.min == null && value.max == null ? ''
                        : value.min == null ? `less than ${value.max}`
                        : value.max == null ? `greater than ${value.min}`
@@ -1825,6 +1839,7 @@ function getFilterDisplay(field, value, includeUnknown) {
     return field.display + ' is ' + displayValue +
       (includeUnknown ? ( displayValue ? ', or is unknown' : 'unknown') : '');
   }
+
   else {
     if (value.length === 0 && includeUnknown === false) {
       return 'No ' + field.display + ' selected'
