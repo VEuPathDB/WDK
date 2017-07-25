@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.User;
@@ -30,13 +29,14 @@ import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.FavoritesFormatter;
 import org.gusdb.wdk.service.request.user.FavoritesRequest;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class FavoritesService extends UserService {
 
   private static final String NOT_LOGGED_IN = "The user is not logged in.";
-  private final String FAVORITE_ID_PATH_PARAM = "favoriteId";
+  private static final String DELETE_ACTION = "delete";
+  private static final String UNDELETE_ACTION = "undelete";
+  private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
 
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(FavoritesService.class);	
@@ -148,10 +148,17 @@ public class FavoritesService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-//    JSONArray json = new JSONArray(body);
-//    FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteIdsFromJson(json);
-//    Map<String,List<Long>> favoriteActionMap = favoritesRequest.getFavoriteActionMap();      
-//	getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteIds);
+    JSONObject json = new JSONObject(body);
+    FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteActionMapFromJson(json);
+    Map<String,List<Long>> favoriteActionMap = favoritesRequest.getFavoriteActionMap();
+    for(String action : favoriteActionMap.keySet()) {
+      if(DELETE_ACTION.equals(action)) {
+        getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteActionMap.get(action));
+      }
+      if(UNDELETE_ACTION.equals(action)) {
+        getWdkModel().getFavoriteFactory().undeleteFavorites(user, favoriteActionMap.get(action));
+      }
+    }
     return Response.noContent().build();
   }
   
