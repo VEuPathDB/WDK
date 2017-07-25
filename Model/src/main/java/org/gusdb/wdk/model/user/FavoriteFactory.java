@@ -53,10 +53,6 @@ public class FavoriteFactory {
   private static final String PK_VALUES_MACRO = "$$PK_VALUES_MACRO$$";
   private static final String PK_PREDICATE_MACRO = "$$PK_PREDICATE_MACRO$$";
   
-  //private static final String DELETE_FAVORITE_BY_ID_SQL =
-  //  "DELETE FROM " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
-  //  " WHERE " + COLUMN_FAVORITE_ID + "= ? AND " + COLUMN_USER_ID + " = ?";
-  
   private static final String SELECT_ALL_FAVORITES_SQL =
     "SELECT * FROM " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
     " WHERE " + COLUMN_USER_ID + " = ? " +
@@ -202,8 +198,9 @@ public class FavoriteFactory {
    * @param favoriteIds
    * @throws WdkModelException
    */
-  public void removeFromFavorite(User user, List<Long> favoriteIds) throws WdkModelException {
+  public int removeFromFavorite(User user, List<Long> favoriteIds) throws WdkModelException {
 	Long userId = user.getUserId();
+	final Wrapper<Integer> updateCountWrapper = new Wrapper<>();
 	try {  
       final Connection conn = wdkModel.getUserDb().getDataSource().getConnection();
       try {
@@ -217,9 +214,11 @@ public class FavoriteFactory {
             for(Long favoriteId : favoriteIds) {
               batch.add(new Object[] { favoriteId, userId });
             }   
-            new SQLRunner(conn, deleteFavoriteSql, "delete-favorites").executeStatementBatch(batch); 
+            Integer count = new SQLRunner(conn, deleteFavoriteSql, "delete-favorites").executeUpdateBatch(batch);
+            updateCountWrapper.set(count);
           }
         });
+        return updateCountWrapper.get();
       }
       catch (SQLRunnerException sre) {
     	throw new WdkModelException(sre.getCause().getMessage(), sre.getCause()); 

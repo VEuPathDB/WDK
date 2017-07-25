@@ -59,6 +59,14 @@ public class FavoritesFormatter {
 	        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getFullName());
   }
   
+  public static JSONObject getCountsJson(Map<String, Integer> countsMap) {
+	JSONObject countsJson = new JSONObject();  
+    for(String key : countsMap.keySet()) {
+      countsJson.put(key, countsMap.get(key));
+    }
+    return countsJson;
+  }
+  
   public static JSONObject getCountJson(int count) throws JSONException {
     return new JSONObject().put("count", count);
   }
