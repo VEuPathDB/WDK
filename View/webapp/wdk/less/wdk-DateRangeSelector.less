@@ -1,26 +1,48 @@
 .wdk-DateRangeSelector {
   display: inline-flex;
-  flex-direction: column;
+
+  .label-column, .control-column {
+    display: inline-flex;
+    flex-direction: column;
+  }
+
+  .label-column {
+    flex: content;
+    border: 1px solid orange;
+    justify-content: space-around;
+    align-items: flex-end;
+
+    .label-cell {
+      border: 1px solid cyan;
+      flex: none;
+      label {
+        padding: 5px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.5;
+      }
+    }
+  }
+
+  .control-column {
+    flex: content;
+    border: 1px solid green;
+
+    .control-cell {
+      border: 1px solid pink;
+
+      .wdk-DateSelector {
+        flex: 0 0 auto;
+        padding: 3px;
+        align-self: center;
+      }
+    }
+  }
+
   div.control-row {
-    display: flex;
+    display: inline-flex;
     flex: 0 0 auto;
     flex-direction: row;
-
-    label {
-      flex: 0 0 auto;
-      padding: 5px;
-      min-width: 35px;
-      text-align: right;
-      align-self: center;
-      font-size: 0.9em;
-      text-transform: uppercase;
-      font-weight: bold;
-      opacity: 0.5;
-    }
-    .wdk-DateSelector {
-      flex: 0 0 auto;
-      padding: 3px;
-      align-self: center;
-    }
   }
 }
