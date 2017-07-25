@@ -182,8 +182,8 @@ public class FavoritesService extends UserService {
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-    getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
-    return Response.noContent().build();  
+    int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
+    return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
   }
 
   /**

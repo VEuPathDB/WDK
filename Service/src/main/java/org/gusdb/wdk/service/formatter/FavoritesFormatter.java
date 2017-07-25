@@ -58,5 +58,9 @@ public class FavoritesFormatter {
 	        .put(Keys.GROUP, favorite.getGroup())
 	        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getFullName());
   }
+  
+  public static JSONObject getCountJson(int count) throws JSONException {
+    return new JSONObject().put("count", count);
+  }
 
 }
