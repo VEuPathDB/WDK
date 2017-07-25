@@ -7,13 +7,11 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
@@ -30,7 +28,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -63,8 +60,7 @@ public class FavoriteFactory {
   private static final String SELECT_ALL_FAVORITES_SQL =
     "SELECT * FROM " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
     " WHERE " + COLUMN_USER_ID + " = ? " +
-    "  AND " + COLUMN_IS_DELETED + " = 0 " +
-    " ORDER BY " + COLUMN_RECORD_CLASS;
+    "  AND " + COLUMN_IS_DELETED + " = 0";
     
   private static final String DELETE_ALL_FAVORITES_SQL =
 	"UPDATE " + UserFactory.USER_SCHEMA_MACRO + TABLE_FAVORITES + 
@@ -125,23 +121,21 @@ public class FavoriteFactory {
     this.schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
   
-  public Map<RecordClass, List<Favorite>> getAllFavorites(User user) throws WdkModelException {
+  public List<Favorite> getAllFavorites(User user) throws WdkModelException {
     long userId = user.getUserId();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    final Wrapper<String> priorRecordClassName = new Wrapper<>();
     final List<Favorite> favorites = new ArrayList<>();
-    final Map<RecordClass, List<Favorite>> favoritesMap = new HashMap<>();
 	try {  
 	  final String selectAllFavoritesSql = SELECT_ALL_FAVORITES_SQL.replace(UserFactory.USER_SCHEMA_MACRO, schema);
 	  new SQLRunner(dataSource, selectAllFavoritesSql, "select-all-favorite").executeQuery(
 	   new Object[]{ userId }, new Integer[]{ Types.BIGINT }, resultSet -> {
-	    while (resultSet.next()) {
-	      String recordClassName = resultSet.getString(COLUMN_RECORD_CLASS);
+		String recordClassName = null;
+	    while (resultSet.next()) {	
+	      recordClassName = resultSet.getString(COLUMN_RECORD_CLASS);
 	      // Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
 	      try {
 	        if(wdkModel.isExistsRecordClassSet(recordClassName)) {
-	         
-	          RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
+	          RecordClass recordClass = wdkModel.getRecordClass(recordClassName);  
 	          String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
               Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
               for (int i = 1; i <= pkColumns.length; i++) {
@@ -153,10 +147,7 @@ public class FavoriteFactory {
 	          Favorite favorite = new Favorite(user, recordClass, pkValue, favoriteId);
 	          favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
 	          favorite.setGroup(resultSet.getString(COLUMN_RECORD_GROUP));
-	          if(!recordClassName.equalsIgnoreCase(priorRecordClassName.get())) {
-	        	favoritesMap.put(recordClass, favorites);
-	            favorites.clear();
-	          }
+	          favorites.add(favorite);
 	        }
 	      }
 	      catch(WdkModelException wme) {
@@ -164,7 +155,7 @@ public class FavoriteFactory {
 	      }
 	    }
 	  });
-	  return favoritesMap;
+	  return favorites;
     }
     catch(SQLRunnerException sre) {
       throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
@@ -287,7 +278,7 @@ public class FavoriteFactory {
       throw new WdkModelException(e);
     }
   }
-  
+
   public int undeleteFavorites(User user, List<Long> favoriteIds) throws WdkModelException {
     Long userId = user.getUserId();
     final Wrapper<Integer> updateCountWrapper = new Wrapper<>();

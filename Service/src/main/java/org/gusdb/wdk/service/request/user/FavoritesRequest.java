@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -18,7 +19,6 @@ import org.json.JSONObject;
 
 public class FavoritesRequest {
 	
-  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(FavoritesRequest.class);
   
   public static final List<String> ACTION_TYPES = new ArrayList<>(Arrays.asList("delete","undelete"));
@@ -61,26 +61,30 @@ public class FavoritesRequest {
    * @param jsonArray
    * @return
    */
-  /*
   public static FavoritesRequest getFavoriteActionMapFromJson(JSONObject json) {
 	List<String> actionTypes = ACTION_TYPES;
-	Map<String,List<Long>> favoriteActionMap = new HashMap<>();  
+	List<Object> unrecognizedActions = new ArrayList<>();
+	Map<String,List<Long>> favoriteActionMap = new HashMap<>();
 	for(Object actionType : json.keySet()) {
 	  if(actionTypes.contains(((String)actionType).trim())) {
 		List<Long> favoriteIds = new ArrayList<>();
 	    JSONArray jsonArray = json.getJSONArray((String)actionType);
 	    for(int i = 0; i < jsonArray.length(); i++) {
-	    
+	      Long favoriteId = jsonArray.getLong(i);	
+	      favoriteIds.add(favoriteId);
 	    }
 	    favoriteActionMap.put((String)actionType, favoriteIds);
 	  }
+	  else {
+		unrecognizedActions.add(actionType);
+	  }
 	}
-    List<Long> favoriteIds = new ArrayList<>();  
-	for(int i = 0; i < jsonArray.length(); i++) {
-      favoriteIds.add(jsonArray.getLong(i));
-	}
-	return new FavoritesRequest(favoriteIds);
-  }*/
+	if(!unrecognizedActions.isEmpty()) {
+      String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ",");
+      LOG.warn("This user service request contains the following unrecognized sharing actions: " + unrecognized);
+    }
+    return new FavoritesRequest(favoriteActionMap);
+  }
   
   /**
    * Input Format:
