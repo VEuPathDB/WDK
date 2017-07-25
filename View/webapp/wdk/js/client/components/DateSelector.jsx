@@ -24,9 +24,9 @@ class DateSelector extends React.Component {
     let initial = JSON.stringify([ year, month, day ]);
     ({ year, month, day } = DateUtils.conformDateToBounds({ year, month, day }, { start, end }));
 
-    if ('onChange' in props && JSON.stringify([ year, month, day ]) !== initial) {
-      onChange(DateUtils.formatDate(year, month, day));
-    };
+    // if ('onChange' in props && JSON.stringify([ year, month, day ]) !== initial) {
+    //   props.onChange(DateUtils.formatDate(year, month, day));
+    // };
 
     this.state = { year, month, day, value, start, end };
 

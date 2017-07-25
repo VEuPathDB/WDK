@@ -20,7 +20,7 @@ class DateRangeSelector extends React.Component {
     this.state = { start, end };
     this.handleMinValueChange = this.handleMinValueChange.bind(this);
     this.handleMaxValueChange = this.handleMaxValueChange.bind(this);
-    this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this)
+    this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
   componentWillReceiveProps (nextProps) {
@@ -53,16 +53,27 @@ class DateRangeSelector extends React.Component {
   render () {
     let { min, max } = this.props.value;
     let { start, end } = this.state;
-    
+
+    start = DateUtils.formatDateObject(start);
+    end = DateUtils.formatDateObject(end);
+
     return (
       <div className="wdk-DateRangeSelector">
-        <div className="control-row">
-          <label>From</label>
-          <DateSelector start={start} end={end} value={min} onChange={this.handleMinValueChange} />
+        <div className="label-column">
+          <div className="label-cell">
+            <label>From</label>
+          </div>
+          <div className="label-cell">
+            <label>To</label>
+          </div>
         </div>
-        <div className="control-row">
-          <label>To</label>
-          <DateSelector start={start} end={end} value={max} onChange={this.handleMaxValueChange} />
+        <div className="control-column">
+          <div className="control-cell">
+            <DateSelector start={start} end={end} value={min} onChange={this.handleMinValueChange} />
+          </div>
+          <div className="control-cell">
+            <DateSelector start={start} end={end} value={max} onChange={this.handleMaxValueChange} />
+          </div>
         </div>
       </div>
     )
