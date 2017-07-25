@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -158,15 +159,18 @@ public class FavoritesService extends UserService {
     JSONObject json = new JSONObject(body);
     FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteActionMapFromJson(json);
     Map<String,List<Long>> favoriteActionMap = favoritesRequest.getFavoriteActionMap();
+    Map<String,Integer> countMap = new HashMap<>();
     for(String action : favoriteActionMap.keySet()) {
       if(DELETE_ACTION.equals(action)) {
-        getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteActionMap.get(action));
+        int count = getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteActionMap.get(action));
+        countMap.put(DELETE_ACTION, count);
       }
       if(UNDELETE_ACTION.equals(action)) {
-        getWdkModel().getFavoriteFactory().undeleteFavorites(user, favoriteActionMap.get(action));
+        int count = getWdkModel().getFavoriteFactory().undeleteFavorites(user, favoriteActionMap.get(action));
+        countMap.put(UNDELETE_ACTION, count);
       }
     }
-    return Response.noContent().build();
+    return Response.ok(FavoritesFormatter.getCountsJson(countMap).toString()).build();
   }
   
   /**
