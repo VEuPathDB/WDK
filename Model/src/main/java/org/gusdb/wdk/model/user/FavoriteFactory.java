@@ -121,6 +121,13 @@ public class FavoriteFactory {
     this.schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
   
+  /**
+   * Returns a list of all undeleted favorites (i.e., the is_deleted flag is not raised)
+   * for the user provided
+   * @param user
+   * @return - list of favorites
+   * @throws WdkModelException
+   */
   public List<Favorite> getAllFavorites(User user) throws WdkModelException {
     long userId = user.getUserId();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -166,9 +173,9 @@ public class FavoriteFactory {
   }
   
   /**
-   * Deletes all of a user's favorites
+   * Deletes all of a given user's favorites (i.e., is_deleted flag is raised)
    * @param user
-   * @return
+   * @return - number of deletions
    * @throws WdkModelException
    */
   public Integer deleteAllFavorites(User user) throws WdkModelException {
