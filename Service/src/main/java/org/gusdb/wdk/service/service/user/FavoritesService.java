@@ -1,9 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -20,23 +18,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.json.JsonIterators;
+import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.FavoriteFactory;
+import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
+import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.FavoritesFormatter;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.FavoritesRequest;
+import org.gusdb.wdk.service.request.user.FavoritesRequest.FavoriteActions;
+import org.gusdb.wdk.service.request.user.FavoritesRequest.FavoriteEdit;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class FavoritesService extends UserService {
 
   private static final String NOT_LOGGED_IN = "The user is not logged in.";
-  private static final String DELETE_ACTION = "delete";
-  private static final String UNDELETE_ACTION = "undelete";
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
 
   @SuppressWarnings("unused")
@@ -55,11 +59,7 @@ public class FavoritesService extends UserService {
   @Path("favorites")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFavorites() throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+    User user = getPrivateRegisteredUser();
     List<Favorite> favorites = getWdkModel().getFavoriteFactory().getAllFavorites(user);
     return Response.ok(FavoritesFormatter.getFavoritesJson(favorites).toString()).build();
   }
@@ -74,27 +74,24 @@ public class FavoritesService extends UserService {
   @Path("favorites/{favoriteId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
-	try {
-      UserBundle userBundle = getUserBundle(Access.PRIVATE);
-      User user = userBundle.getTargetUser();
-      if (user.isGuest()) {
-        throw new ForbiddenException(NOT_LOGGED_IN);
-      }
+    try {
+      User user = getPrivateRegisteredUser();
       Favorite favorite = getWdkModel().getFavoriteFactory().getFavorite(user, favoriteId);
       if(favorite == null) {
-    	throw new NotFoundException("No favorite with the id " + favoriteId + " was found for this user.");
+        throw new NotFoundException("No favorite with the id " + favoriteId + " was found for this user.");
       }
       return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
     }
     catch(NumberFormatException nfe) {
-  	  throw new BadRequestException("The favoriteId, " + favoriteId + " is not a number.");
-  	}
- }
-  
-  //updates an existing favorite found by favorite id with another (i.e. edits note and/or group)
+      throw new BadRequestException("The favoriteId, " + favoriteId + " is not a number.");
+    }
+  }
+
   /**
    * Updates an existing favorite found by its favorite id (if belonging to the given user) with a
-   * new favorite.  The body need only contain note and group (both required but can be empty strings). 
+   * new favorite.  The body need only contain note and group (both required but can be empty strings).
+   * Note that once created, a user cannot alter the recordClass or primarykey data of a favorite.
+   * 
    * @param favoriteId
    * @param body
    * @return - a 204 response in the event of a successful edit.
@@ -104,23 +101,19 @@ public class FavoritesService extends UserService {
   @Path("favorites/{favoriteId}")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response editFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId, String body) throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+    User user = getPrivateRegisteredUser();
     JSONObject json = new JSONObject(body);
     try {
-      FavoritesRequest favoritesRequest = FavoritesRequest.createNoteAndGroupFromJson(json, getWdkModel());
+      NoteAndGroup noteAndGroup = FavoritesRequest.createNoteAndGroupFromJson(json);
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-      factory.editFavorite(user, favoriteId, favoritesRequest.getNote(), favoritesRequest.getGroup());
+      factory.editFavorite(user, favoriteId, noteAndGroup.getNote(), noteAndGroup.getGroup());
       return Response.noContent().build();
     }
     catch(WdkUserException e) {
       throw new BadRequestException(e);
     }   
   }
-  
+
   /**
    * Delete favorite by given favorite id in url (no body)
    * @param favoriteId
@@ -130,17 +123,13 @@ public class FavoritesService extends UserService {
   @DELETE
   @Path("favorites/{favoriteId}")
   public Response deleteFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+    User user = getPrivateRegisteredUser();
     List<Long> favoriteIds = new ArrayList<>();
     favoriteIds.add(favoriteId);
     getWdkModel().getFavoriteFactory().removeFromFavorite(user,favoriteIds);
     return Response.noContent().build(); 
   }
-  
+
   /**
    * Remove multiple favorites using a json array of favorite ids in the body of the request.
    * @param body - json array of favorite ids
@@ -151,28 +140,15 @@ public class FavoritesService extends UserService {
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+    User user = getPrivateRegisteredUser();
+    FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
-    FavoritesRequest favoritesRequest = FavoritesRequest.getFavoriteActionMapFromJson(json);
-    Map<String,List<Long>> favoriteActionMap = favoritesRequest.getFavoriteActionMap();
-    Map<String,Integer> countMap = new HashMap<>();
-    for(String action : favoriteActionMap.keySet()) {
-      if(DELETE_ACTION.equals(action)) {
-        int count = getWdkModel().getFavoriteFactory().removeFromFavorite(user, favoriteActionMap.get(action));
-        countMap.put(DELETE_ACTION, count);
-      }
-      if(UNDELETE_ACTION.equals(action)) {
-        int count = getWdkModel().getFavoriteFactory().undeleteFavorites(user, favoriteActionMap.get(action));
-        countMap.put(UNDELETE_ACTION, count);
-      }
-    }
-    return Response.ok(FavoritesFormatter.getCountsJson(countMap).toString()).build();
+    FavoriteActions actions = FavoritesRequest.getFavoriteActionsJson(json);
+    int numDeleted = factory.removeFromFavorite(user, actions.getIdsToDelete());
+    int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
+    return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
   }
-  
+
   /**
    * Delete all of the user's favorites
    * @return - no response for successful execution
@@ -181,11 +157,7 @@ public class FavoritesService extends UserService {
   @DELETE
   @Path("favorites")
   public Response deleteAllFavorites() throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+    User user = getPrivateRegisteredUser();
     int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
     return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
   }
@@ -196,57 +168,77 @@ public class FavoritesService extends UserService {
    * @param body
    * @return
    * @throws WdkModelException
+   * @throws DataValidationException 
    */
   @POST
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response addToFavorites(String body) throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
+  public Response addToFavorites(String body) throws WdkModelException, DataValidationException {
+    User user = getPrivateRegisteredUser();
     JSONObject json = new JSONObject(body);
     try {
-      FavoritesRequest favoritesRequest = FavoritesRequest.createFromJson(json, getWdkModel());
+      FavoriteEdit newFavorite = FavoritesRequest.createFromJson(json, getWdkModel());
+      FavoriteIdentity favSpec = newFavorite.getIdentity();
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-      factory.addToFavorites(user, favoritesRequest.getRecordClass(), favoritesRequest.getPkValues());
+      factory.addToFavorites(user, favSpec.getRecordClass(), favSpec.getPrimaryKey().getRawValues());
       return Response.noContent().build();
     }
     catch(WdkUserException e) {
       throw new BadRequestException(e);
     }
   }
-  
-  // GET by POST
+
+  /**
+   * Input is an array of favorite specs (RC+PK) in the form of:
+   * {
+   *   recordClass: String,
+   *   id: [
+   *     {name : record_id1_name, value : record_id1_value},
+   *     {name : record_id2_name: value " record_id2_value},
+   *     ...
+   *   ]
+   * }
+   * 
+   * Output is an integer array of identical size representing the
+   * favorite IDs of any favorites found, with null placeholders for
+   * favorites not found.  Ordering is the same as the incoming
+   * array (i.e. output element at index N is the ID of incoming
+   * favorite at index N (or null if not found)).
+   * 
+   * @param body
+   * @return
+   * @throws WdkModelException
+   * @throws RequestMisformatException
+   * @throws DataValidationException 
+   */
   @POST
   @Path("favorites/query")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFavoriteByProperties(String body) throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
+  public Response queryFavoriteStatus(String body) throws WdkModelException, RequestMisformatException, DataValidationException {
+    User user = getPrivateRegisteredUser();
+    WdkModel model = getWdkModel();
+    JSONArray output = new JSONArray();
+    for (JsonType favorite : JsonIterators.arrayIterable(new JSONArray(body))) {
+      if (!favorite.getType().equals(JsonType.ValueType.OBJECT)) {
+        throw new RequestMisformatException("All input array elements must be objects.");
+      }
+      FavoriteIdentity favId = FavoritesRequest.createFromJson(favorite.getJSONObject(), model).getIdentity();
+      Favorite fav = model.getFavoriteFactory().getFavorite(user, favId.getRecordClass(), favId.getPrimaryKey().getRawValues());
+      output.put(fav == null ? JSONObject.NULL : fav.getFavoriteId());
+    }
+    return Response.ok(output.toString()).build();
+  }
+
+  private User getPrivateRegisteredUser() throws WdkModelException {
+    User user = getUserBundle(Access.PRIVATE).getTargetUser();
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
-    JSONObject json = new JSONObject(body);
-    try {
-      WdkModel model = getWdkModel();
-      FavoritesRequest favoritesRequest = FavoritesRequest.createFromJson(json, model);
-      Favorite favorite = model.getFavoriteFactory().getFavorite(
-          user, favoritesRequest.getRecordClass(), favoritesRequest.getPkValues());
-      if(favorite == null) {
-      	return Response.ok("[]").build();
-      }
-      return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
-    }
-    catch(WdkUserException e) {
-      throw new BadRequestException(e);
-    }
+    return user;
   }
-  
 
-
+  /*
   // GET by POST: returns a single favorite (IDs + note + group)
   @Deprecated
   @POST
@@ -326,5 +318,5 @@ public class FavoritesService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+  */
 }

@@ -108,7 +108,31 @@ public class FavoriteFactory {
     " AND " +   COLUMN_PROJECT_ID + " = ? " +
     " AND " +   COLUMN_RECORD_CLASS + " = ? " +
                 PK_PREDICATE_MACRO;
-		  
+
+  public static interface NoteAndGroup {
+    public String getNote();
+    public String getGroup();
+  }
+
+  public static class FavoriteIdentity {
+
+    private final RecordClass _recordClass;
+    private final PrimaryKeyValue _pkValue;
+
+    public FavoriteIdentity(RecordClass recordClass, PrimaryKeyValue pkValue) {
+      _recordClass = recordClass;
+      _pkValue = pkValue;
+    }
+
+    public RecordClass getRecordClass() {
+      return _recordClass;
+    }
+
+    public PrimaryKeyValue getPrimaryKey() {
+      return _pkValue;
+    }
+  }
+
   private WdkModel wdkModel;
   private String schema;
 
@@ -116,7 +140,7 @@ public class FavoriteFactory {
     this.wdkModel = wdkModel;
     this.schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
-  
+
   /**
    * Returns a list of all undeleted favorites (i.e., the is_deleted flag is not raised)
    * for the user provided
@@ -398,7 +422,7 @@ public class FavoriteFactory {
     }
   }
   
-  public void addToFavorites(User user, RecordClass recordClass, Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
+  public void addToFavorites(User user, RecordClass recordClass, Map<String, Object> pkValues) throws WdkModelException {
     long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -759,7 +783,15 @@ public class FavoriteFactory {
   }
   
 
-  
+  /**
+   * Returns favorite if found, or null if not found
+   * 
+   * @param user owner of the desired favorite
+   * @param recordClass recordclass of the desired favorite
+   * @param recordId primary key values of the desired favorite
+   * @return favorite if found or null if not
+   * @throws WdkModelException if error occurs
+   */
   public Favorite getFavorite(User user, RecordClass recordClass, Map<String, Object> recordId) throws WdkModelException {
     long userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
@@ -782,7 +814,7 @@ public class FavoriteFactory {
       QueryLogger.logEndStatementExecution(sqlQuery, "wdk-favorite-instance-query", start);
       Favorite favorite = null;
       if (resultSet.next()) {
-    	long favoriteId = resultSet.getLong(COLUMN_FAVORITE_ID);  
+        long favoriteId = resultSet.getLong(COLUMN_FAVORITE_ID);  
         PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), recordId);
         favorite = new Favorite(user, recordClass, pkValue, favoriteId);
         favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
