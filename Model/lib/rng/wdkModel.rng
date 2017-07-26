@@ -370,10 +370,10 @@
         </attribute>
       </optional>
       <attribute name="min">
-        <data type="integer" />
+        <data type="double" />
       </attribute>
       <attribute name="max">
-        <data type="integer" />
+        <data type="dobule" />
       </attribute>
       <optional>
         <attribute name="numDecimalPlaces">
@@ -407,10 +407,10 @@
         </attribute>
       </optional>
       <attribute name="min">
-        <data type="integer" />
+        <data type="double" />
       </attribute>
       <attribute name="max">
-        <data type="integer" />
+        <data type="double" />
       </attribute>
       <optional>
         <attribute name="numDecimalPlaces">
