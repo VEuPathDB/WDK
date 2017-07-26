@@ -69,7 +69,7 @@ class DateRangeSelector extends React.Component {
     let alreadyDefault = (start === min && end === max);
 
     return (
-      <div className="wdk-DateRangeSelector">
+      <div className="wdk-DateRangeSelector wdk-ControlGrid">
         <div className="label-column">
           <div className="label-cell">
             <label>From</label>
