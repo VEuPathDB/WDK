@@ -485,7 +485,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
         //"     onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">" +
         "  <img style='width:50px;height:26px' src='" + wdk.assetsUrl('wdk/images/transparent1.gif') + "'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
-        "  <a href='#' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
+        "  <a href='#' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px;z-index:2;' " +
         "     >" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount'>" +
@@ -1265,7 +1265,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     inval.setAttribute("class","invalidStep");
     var i = document.createElement('img');
     $(i).attr("src",wdk.assetsUrl("wdk/images/InvalidStep.png"))
-        .attr("style","height:36;width:98;cursor:pointer");
+        .attr("style","height:36px;width:98px;cursor:pointer");
         //.attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
     $(inval).append(i);
     return inval;
