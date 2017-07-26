@@ -6,25 +6,24 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
+import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
+import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 
-public class Favorite {
+public class Favorite extends FavoriteIdentity implements NoteAndGroup {
 
     private static final Logger LOG = Logger.getLogger(Favorite.class);
 
-    private final User user;
-    private final RecordClass recordClass;
     private final long _favoriteId;
-    private final PrimaryKeyValue id;
-    private final String display;
-    private String note;
-    private String group;
+    private final User _user;
+    private final String _display;
+    private String _note;
+    private String _group;
 
     public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey, long favoriteId) {
-    	this._favoriteId = favoriteId;
-        this.user = user;
-        this.recordClass = recordClass;
-        this.id = primaryKey;
-        this.display = createDisplay(user, recordClass, id);
+      super(recordClass, primaryKey);
+      _favoriteId = favoriteId;
+      _user = user;
+      _display = createDisplay(user, recordClass, primaryKey);
     }
 
     private static String createDisplay(User user, RecordClass recordClass, PrimaryKeyValue pkValue) {
@@ -44,23 +43,24 @@ public class Favorite {
       return pkValue.getValuesAsString();
     }
 
+    /**
+     * Return the sequence generated primary key for the Favorite table
+     * @return
+     */
+    public long getFavoriteId() {
+      return _favoriteId;
+    }
+
     public User getUser() {
-        return user;
-    }
-
-    public RecordClass getRecordClass() {
-        return recordClass;
-    }
-
-    public PrimaryKeyValue getPrimaryKey() {
-        return id;
+        return _user;
     }
 
     /**
      * @return the note
      */
+    @Override
     public String getNote() {
-        return note;
+        return _note;
     }
 
     /**
@@ -68,14 +68,15 @@ public class Favorite {
      *            the note to set
      */
     public void setNote(String note) {
-        this.note = note;
+        this._note = note;
     }
 
     /**
      * @return the group
      */
+    @Override
     public String getGroup() {
-        return group;
+        return _group;
     }
 
     /**
@@ -83,19 +84,11 @@ public class Favorite {
      *            the group to set
      */
     public void setGroup(String group) {
-        this.group = group;
+        this._group = group;
     }
 
     public String getDisplay() {
-      return display;
+      return _display;
     }
 
-    /**
-     * Return the sequence generated primary key for the Favorite table
-     * @return
-     */
-	public long getFavoriteId() {
-		return _favoriteId;
-	}
-    
 }
