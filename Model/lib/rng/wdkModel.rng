@@ -373,7 +373,7 @@
         <data type="double" />
       </attribute>
       <attribute name="max">
-        <data type="dobule" />
+        <data type="double" />
       </attribute>
       <optional>
         <attribute name="numDecimalPlaces">
