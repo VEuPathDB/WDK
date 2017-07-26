@@ -26,23 +26,11 @@ class NumberRangeSelector extends React.Component {
   render () {
     let { start, end, value, onChange } = this.props;
     return (
-      <div className="wdk-NumberRangeSelector wdk-ControlGrid">
-        <div className="label-column">
-          <div className="label-cell">
-            <label>From</label>
-          </div>
-          <div className="label-cell">
-            <label>To</label>
-          </div>
-        </div>
-        <div className="control-column">
-          <div className="control-cell">
-            <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.min} />
-          </div>
-          <div className="control-cell">
-            <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.max} />
-          </div>
-        </div>
+      <div className="wdk-NumberRangeSelector">
+        <label>From </label>
+        <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.min} />
+        <label> To </label>
+        <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.max} />
       </div>
     );
   }
