@@ -6,6 +6,9 @@ import NumberSelector from './NumberSelector';
 class NumberRangeSelector extends React.Component {
   constructor (props) {
     super(props);
+
+    this.handleMinChange = this.handleMinChange.bind(this);
+    this.handleMaxChange = this.handleMaxChange.bind(this);
   }
 
   handleMinChange (min) {
