@@ -33,7 +33,7 @@ class NumberRangeSelector extends React.Component {
       <div className="wdk-NumberRangeSelector">
         <label>From {' '}</label>
         <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.min} />
-        <label>{' '} To {' '}</label>
+        <label>{' '} to {' '}</label>
         <NumberSelector start={start} end={end} onChange={this.handleMaxChange} value={value.max} />
       </div>
     );
