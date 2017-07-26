@@ -27,9 +27,9 @@ class NumberRangeSelector extends React.Component {
     let { start, end, value, onChange } = this.props;
     return (
       <div className="wdk-NumberRangeSelector">
-        <label>From </label>
+        <label>From {' '}</label>
         <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.min} />
-        <label> To </label>
+        <label>{' '} To {' '}</label>
         <NumberSelector start={start} end={end} onChange={this.handleMinChange} value={value.max} />
       </div>
     );
