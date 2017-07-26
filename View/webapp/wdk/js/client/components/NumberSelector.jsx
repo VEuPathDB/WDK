@@ -8,8 +8,8 @@ class NumberSelector extends React.Component {
   }
 
   handleChangeEvent (e) {
-    const { onChange, start, end } = this.props;
-    const { value } = e.currentTarget;
+    let { onChange, start, end } = this.props;
+    let { value } = e.currentTarget;
     value = value * 1;
     start = start * 1;
     end = end * 1;
