@@ -14,12 +14,16 @@ class NumberRangeSelector extends React.Component {
   handleMinChange (min) {
     let { value, onChange } = this.props;
     let { max } = value;
+    max = max * 1;
+    min = min * 1;
     if (onChange) onChange({ min, max });
   }
 
   handleMaxChange (max) {
     let { value, onChange } = this.props;
     let { min } = value;
+    max = max * 1;
+    min = min * 1;
     if (onChange) onChange({ min, max });
   }
 
