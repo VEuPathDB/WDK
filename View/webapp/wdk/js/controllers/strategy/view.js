@@ -538,7 +538,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
       "         href='#'>"+
       "        <a href='#'"+
-      "           class='edit-icon step-elem' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
+      "           class='edit-icon step-elem' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px;z-index:2;'>"+
       getEditImage('top')+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
@@ -653,7 +653,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       "         href='#'> "+
       "      <a href='#' class='edit-icon step-elem'"+
       "           id='stepId_" + modelstep.frontId + "' " +
-      "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
+      "           style='display:inline;position:absolute;z-index:2;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
       "        <div class='crumb_details'></div>"+
