@@ -25,11 +25,11 @@ public class NumberRangeParamBean extends ParamBean<NumberRangeParam> {
         return _param.isInteger();
     }
     
-    public Long getMin() {
+    public Double getMin() {
       return _param.getMin();
     }
     
-    public Long getMax() {
+    public Double getMax() {
       return _param.getMax();
     }
 
