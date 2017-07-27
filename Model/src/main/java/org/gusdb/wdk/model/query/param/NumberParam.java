@@ -223,11 +223,12 @@ public class NumberParam extends Param {
   }
   
   @Override
-  public void setDefault(String defaultValue) {
+  public String getDefault() throws WdkModelException {
+    String defaultValue = super.getDefault();  
 	if(defaultValue == null || defaultValue.isEmpty()) {
 	  defaultValue = this.min.toString();
 	}
-	super.setDefault(defaultValue);
+	return defaultValue;
   }
   
 
