@@ -162,6 +162,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private static String getFilterAsAndClause(JSONObject jsFilter, Map<String,
       OntologyItem> ontology, String metadataTableName) throws WdkUserException {
 
+    // A filter object must at minimum an `includeUnknown` or `value` property.
+    // Instead of throwing, we could just return an empty string.
+    if (!jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && !jsFilter.has(FILTERS_VALUE))
+      throw new WdkUserException("A value filter must have at minimum one of" +
+          " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
+          FILTERS_VALUE + "`.");
+
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
     String columnName = FilterParamNew.typeToColumn(type);
@@ -171,10 +178,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String unknownClause = jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN)
         ? metadataTableName + "." + columnName + " is NULL OR " : "";
 
-    String innerAndClause = ontologyItem.getIsRange()
-      ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
+    String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? "1 = 1"
+      : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
       : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
 
+    // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
     return whereClause + " AND (" + unknownClause + innerAndClause + ")";
   }
 
@@ -281,7 +289,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
             parts.add(value.getString(i));
           }
         }
-      } else jsFilter.getJSONObject(FILTERS_VALUE); // force an exception because this key is absent
+      }
       return parts.toString();
     }
     catch (JSONException ex) {

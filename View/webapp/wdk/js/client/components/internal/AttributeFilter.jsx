@@ -2,13 +2,14 @@ import $ from 'jquery';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
 import {
+  clamp,
   debounce,
   get,
   find,
-  includes,
   isEmpty,
   isEqual,
   map,
+  memoize,
   min,
   max,
   noop,
@@ -1327,21 +1328,27 @@ class HistogramField extends React.Component {
     this.convertedDistribution = props.distribution.map(entry =>
       Object.assign({}, entry, { value: props.toHistogramValue(entry.value)}));
     var values = this.convertedDistribution.map(entry => entry.value);
-    var min = props.toFilterValue(Math.min(...values));
-    var max = props.toFilterValue(Math.max(...values));
-    this.distributionRange = { min, max };
+    var min = Math.min(...values);
+    var max = Math.max(...values);
+    this.convertedDistributionRange = { min, max };
+    this.distributionRange = { min: props.toFilterValue(min), max: props.toFilterValue(max) };
+  }
+
+  formatRangeValue(value) {
+    const { min, max } = this.convertedDistributionRange;
+    return value ? this.props.toFilterValue(clamp(this.props.toHistogramValue(value), min, max)) : null;
   }
 
   handleMinInputChange(event) {
-    const value = event.target.value;
-    const min = value === '' ? null : this.props.toFilterValue(value);
-    this.emitChange({ min })
+    const min = this.formatRangeValue(event.target.value);
+    const max = get(this.props, 'filter.value.max', null);
+    this.emitChange({ min, max });
   }
 
   handleMaxInputChange(event) {
-    const value = event.target.value;
-    const max = value === '' ? null : this.props.toFilterValue(value);
-    this.emitChange({ max })
+    const max = this.formatRangeValue(event.target.value);
+    const min = get(this.props, 'filter.value.min', null);
+    this.emitChange({ min, max });
   }
 
   /**
@@ -1351,21 +1358,27 @@ class HistogramField extends React.Component {
   handleUnknownCheckboxChange(event) {
     const includeUnknown = event.target.checked;
     this.setState({ includeUnknown });
-    this.emitChange({}, includeUnknown);
+    this.emitChange(get(this.props, 'filter.value'), includeUnknown);
   }
 
   updateFilter(range) {
-    var min = range.min == null ? null : this.props.toFilterValue(range.min);
-    var max = range.max == null ? null : this.props.toFilterValue(range.max);
+    const min = this.formatRangeValue(range.min);
+    const max = this.formatRangeValue(range.max);
     this.emitChange({ min, max });
   }
 
-  emitChange({
-    min = get(this.props.filter, 'value.min', this.distributionRange.min),
-    max = get(this.props.filter, 'value.max', this.distributionRange.max)
-  }, includeUnknown = this.state.includeUnknown) {
-    if (!isNaN(min) && !isNaN(max))
-      this.props.onChange(this.props.field, { min, max }, includeUnknown);
+  emitChange(filterValue, includeUnknown = this.state.includeUnknown) {
+    if (
+      filterValue &&
+      filterValue.min <= this.distributionRange.min &&
+      filterValue.max >= this.distributionRange.max
+    ) {
+      this.props.onChange(this.props.field, undefined, includeUnknown);
+    }
+
+    else {
+      this.props.onChange(this.props.field, filterValue, includeUnknown);
+    }
   }
 
   render() {
@@ -1373,11 +1386,14 @@ class HistogramField extends React.Component {
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
-    var { min, max } = filter ? filter.value : {};
+    // if there is no filter value, then we want to select everything
+    var filterValue = get(filter, 'value');
+    var min = filterValue == null ? distMin : filterValue.min;
+    var max = filterValue == null ? distMax : filterValue.max;
     var includeUnknown = get(filter, 'includeUnknown', this.state.includeUnknown);
 
-    var selectedMin = min == null ? distMin : this.props.toHistogramValue(min);
-    var selectedMax = max == null ? distMax : this.props.toHistogramValue(max);
+    var selectedMin = min == null ? null : this.props.toHistogramValue(min);
+    var selectedMax = max == null ? null : this.props.toHistogramValue(max);
 
     var selectionTotal = filter && filter.selection && filter.selection.length;
 
@@ -1485,6 +1501,7 @@ class MembershipField extends React.Component {
     this.handleSelectAll = this.handleSelectAll.bind(this);
     this.handleRemoveAll = this.handleRemoveAll.bind(this);
     this.toFilterValue = this.toFilterValue.bind(this);
+    this.getKnownValues = memoize(this.getKnownValues);
   }
 
   toFilterValue(value) {
@@ -1501,7 +1518,7 @@ class MembershipField extends React.Component {
   }
 
   getValuesForFilter() {
-    return get(this.props, 'filter.value', this.getKnownValues());
+    return get(this.props, 'filter.value');
   }
 
   handleItemClick(value, addItem) {
@@ -1509,10 +1526,15 @@ class MembershipField extends React.Component {
       this.handleUnknownChange(addItem);
     }
     else {
+      const currentFilterValue = this.getValuesForFilter() || this.getKnownValues();
       const filterValue = addItem
-        ? this.getValuesForFilter().concat(value)
-        : this.getValuesForFilter().filter(v => v !== value);
-      this.emitChange(filterValue, get(this.props, 'filter.includeUnknown', true));
+        ? currentFilterValue.concat(value)
+        : currentFilterValue.filter(v => v !== value);
+
+      this.emitChange(
+        filterValue.length === this.getKnownValues().length ? undefined : filterValue,
+        get(this.props, 'filter.includeUnknown', true)
+      );
     }
   }
 
@@ -1522,7 +1544,7 @@ class MembershipField extends React.Component {
 
   handleSelectAll(event) {
     event.preventDefault();
-    this.emitChange(this.getKnownValues(), true);
+    this.emitChange(undefined, true);
   }
 
   handleRemoveAll(event) {
@@ -1542,6 +1564,11 @@ class MembershipField extends React.Component {
     var sortedDistribution = sortBy(this.props.distribution, function({ value }) {
       return value === null ? '\u200b' : value;
     })
+
+    // get filter, or create one for display purposes only
+    var filterValue = get(this.props, 'filter.value', this.getKnownValues());
+    var filterValueSet = new Set(filterValue);
+    var includeUnknown = get(this.props, 'filter.includeUnknown', true);
 
     return (
       <div className="membership-filter">
@@ -1570,7 +1597,7 @@ class MembershipField extends React.Component {
                   var filteredPercentage = (item.filteredCount / total) * 100;
                   var value = item.value == null ? UNKNOWN_VALUE : this.toFilterValue(item.value);
                   var display = item.value == null ? UNKNOWN_DISPLAY : String(item.value);
-                  var isChecked = !this.props.filter || (value == UNKNOWN_VALUE ? this.props.filter.includeUnknown : includes(this.props.filter.value, value));
+                  var isChecked = (value == UNKNOWN_VALUE && includeUnknown) || filterValueSet.has(value);
                   var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
                   var trClassNames = 'member' +
                     (isChecked & !disabled ? ' member__selected' : '') +
@@ -1782,11 +1809,21 @@ EmptyField.propTypes = FieldFilter.propTypes;
 /**
  * Determine if a filter should be created, or if the values represent the default state.
  *
+ * The following cases will return true:
+ *
+ *     - { includeUnknown: false }
+ *     - { value: ... }
+ *
  * @param {string} field Field term id
  * @param {any} value Filter value
  */
 function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
+
+  // user doesn't want unknowns
   if (!includeUnknown) return true;
+
+  // user wants everything except unknowns
+  if (value == null) return !includeUnknown;
 
   if (isRange(field)) {
     const values = fieldSummary
@@ -1828,11 +1865,12 @@ function getFilterDisplay(field, value, includeUnknown) {
   }
 
   if (isRange(field)) {
-    if (value.min == null && value.max == null && includeUnknown == false) {
+    if (value != null && value.min == null && value.max == null && includeUnknown == false) {
       return 'No ' + field.display + ' value selected';
     }
 
-    const displayValue = value.min == null && value.max == null ? ''
+    const displayValue = value == null && !includeUnknown? 'known'
+                       : value.min == null && value.max == null ? ''
                        : value.min == null ? `less than ${value.max}`
                        : value.max == null ? `greater than ${value.min}`
                        : `between ${value.min} and ${value.max}`;
@@ -1841,11 +1879,12 @@ function getFilterDisplay(field, value, includeUnknown) {
   }
 
   else {
-    if (value.length === 0 && includeUnknown === false) {
+    if (value != null && value.length === 0 && includeUnknown === false) {
       return 'No ' + field.display + ' selected'
     }
-    return field.display + ' is ' + value.join(', ') +
-      (includeUnknown ? (value.length === 0 ? 'unknown' : ', or unknown') : '');
+    return field.display + ' is ' +
+      (value == null ? '' : value.join(', ')) +
+      (includeUnknown ? (value && value.length === 0 ? 'unknown' : ', or unknown') : '');
   }
 }
 
