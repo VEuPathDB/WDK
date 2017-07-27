@@ -69,7 +69,10 @@
   color: #666666;
   float: right;
 }
-.filter-oaram .chart-container {
+.filter-param .range-filter .include-unknown {
+  margin-left: 1.5em;
+}
+.filter-param .chart-container {
   position: relative;
 }
 .filter-param .chart {

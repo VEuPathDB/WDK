@@ -1382,7 +1382,7 @@ class HistogramField extends React.Component {
   }
 
   render() {
-    var { field, filter, displayName, includeUnknownOption } = this.props;
+    var { field, filter, displayName, unknownCount } = this.props;
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
@@ -1425,14 +1425,14 @@ class HistogramField extends React.Component {
             value={max || ''}
             onChange={this.handleMaxInputChange}
           />
-          {includeUnknownOption && (
-            <label>
+          {unknownCount > 0 && (
+            <label className="include-unknown">
               {' '}
               <input
                 type="checkbox"
                 checked={includeUnknown}
                 onChange={this.handleUnknownCheckboxChange}
-              /> Include Unknown
+              /> Include {unknownCount} Unknown
             </label>
           )}
           <span className="selection-total">{selection}</span>
@@ -1462,7 +1462,7 @@ HistogramField.propTypes = {
   filter: PropTypes.object,
   overview: PropTypes.node.isRequired,
   displayName: PropTypes.string.isRequired,
-  includeUnknownOption: PropTypes.bool.isRequired,
+  unknownCount: PropTypes.number.isRequired,
   timeformat: PropTypes.string
 };
 
@@ -1697,7 +1697,7 @@ class NumberField extends React.Component {
       <HistogramField
         {...this.props}
         distribution={knownDist}
-        includeUnknownOption={unknownCount > 0}
+        unknownCount={unknownCount}
         toFilterValue={this.toFilterValue}
         toHistogramValue={this.toHistogramValue}
         overview={overview}
@@ -1778,7 +1778,7 @@ class DateField extends React.Component {
         {...this.props}
         timeformat={this.timeformat}
         distribution={dateDist}
-        includeUnknownOption={unknownCount > 0}
+        unknownCount={unknownCount}
         toFilterValue={this.toFilterValue}
         toHistogramValue={this.toHistogramValue}
         overview={overview}
