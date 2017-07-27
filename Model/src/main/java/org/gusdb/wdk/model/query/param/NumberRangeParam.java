@@ -47,7 +47,7 @@ public class NumberRangeParam extends Param {
     this.integer = param.integer;
     this.min = param.min;
     this.max = param.max;
-    this.step = param.step;
+    this.step = param.getStep();
   }
 
   // ///////////////////////////////////////////////////////////////////
