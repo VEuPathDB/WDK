@@ -24,6 +24,7 @@ public class NumberRangeParam extends Param {
   private Integer numDecimalPlaces = new Integer(1);
   private Double min;
   private Double max;
+  private Double step;
   private boolean integer;
 
   private List<WdkModelText> regexes;
@@ -239,9 +240,12 @@ public class NumberRangeParam extends Param {
   }
   
   @Override
-  public String getDefault() throws WdkModelException {
-    JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
-    return json.toString();
+  public void setDefault(String defaultValue) {
+	if(defaultValue == null || defaultValue.isEmpty()) {
+      JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
+      defaultValue = json.toString();
+	}
+	super.setDefault(defaultValue);
   }
 
   public boolean isInteger() {
@@ -250,6 +254,14 @@ public class NumberRangeParam extends Param {
 
   public void setInteger(boolean integer) {
 	this.integer = integer;
+  }
+  
+  public Double getStep() {
+    return step;
+  }
+	  
+  public void setStep(Double step) {
+    this.step = step;
   }
 
 }

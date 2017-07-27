@@ -18,6 +18,7 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
 	return super.getJson()
 		        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
 		        .put(Keys.MIN_VALUE, this._param.getMin())
-	            .put(Keys.MAX_VALUE, this._param.getMax());
+	            .put(Keys.MAX_VALUE, this._param.getMax())
+	            .put(Keys.STEP, this._param.getStep());
   }
 }

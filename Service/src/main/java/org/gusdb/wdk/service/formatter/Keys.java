@@ -141,6 +141,7 @@ public class Keys {
   public static final String MAX_DATE = "maxDate";
   public static final String MIN_VALUE = "min";
   public static final String MAX_VALUE = "max";
+  public static final String STEP = "step";
   
   //favorites-specific keys
   public static final String FAVORITE_ID = "favoriteId";

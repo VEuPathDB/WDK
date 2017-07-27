@@ -36,6 +36,7 @@ public class NumberParam extends Param {
   private Integer numDecimalPlaces = new Integer(1);
   private Double min;
   private Double max;
+  private Double step;
   private boolean integer;
 
   private List<WdkModelText> regexes;
@@ -221,8 +222,11 @@ public class NumberParam extends Param {
   }
   
   @Override
-  public String getDefault() {
-	return getMin().toString();
+  public void setDefault(String defaultValue) {
+	if(defaultValue == null || defaultValue.isEmpty()) {
+	  defaultValue = this.min.toString();
+	}
+	super.setDefault(defaultValue);
   }
   
 
@@ -232,6 +236,14 @@ public class NumberParam extends Param {
 
   public void setInteger(boolean integer) {
 	this.integer = integer;
+  }
+  
+  public Double getStep() {
+    return step;
+  }
+  
+  public void setStep(Double step) {
+    this.step = step;
   }
 
 }

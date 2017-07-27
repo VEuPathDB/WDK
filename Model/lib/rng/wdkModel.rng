@@ -376,6 +376,11 @@
         <data type="double" />
       </attribute>
       <optional>
+        <attribute name="step">
+          <data type="double" />
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="numDecimalPlaces">
           <data type="integer" />
         </attribute>
@@ -412,6 +417,11 @@
       <attribute name="max">
         <data type="double" />
       </attribute>
+      <optional>
+        <attribute name="step">
+          <data type="double" />
+        </attribute>
+      </optional>  
       <optional>
         <attribute name="numDecimalPlaces">
           <data type="integer" />
