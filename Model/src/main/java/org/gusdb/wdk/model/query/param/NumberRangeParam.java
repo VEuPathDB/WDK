@@ -261,6 +261,9 @@ public class NumberRangeParam extends Param {
   }
 	  
   public void setStep(Double step) {
+    if(step == null) {
+	  step = this.integer == true ? 1 : 0.01;
+	}
     this.step = step;
   }
 
