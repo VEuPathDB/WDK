@@ -73,9 +73,12 @@ public class DateRangeParam extends Param {
   }
   
   @Override
-  public String getDefault() throws WdkModelException {
-	JSONObject json = new JSONObject().put("min", getMinDate()).put("max", getMaxDate());
-    return json.toString();
+  public void setDefault(String defaultValue) {
+    if(defaultValue == null || defaultValue.isEmpty()) {	  
+	  JSONObject json = new JSONObject().put("min", getMinDate()).put("max", getMaxDate());
+      defaultValue = json.toString();
+    }
+    super.setDefault(defaultValue);
   }
 
   /**
