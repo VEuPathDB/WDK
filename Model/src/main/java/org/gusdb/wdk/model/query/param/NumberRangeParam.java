@@ -241,12 +241,13 @@ public class NumberRangeParam extends Param {
   }
   
   @Override
-  public void setDefault(String defaultValue) {
+  public String getDefault() throws WdkModelException {
+	String defaultValue = super.getDefault();  
 	if(defaultValue == null || defaultValue.isEmpty()) {
       JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
       defaultValue = json.toString();
 	}
-	super.setDefault(defaultValue);
+	return defaultValue;
   }
 
   public boolean isInteger() {
