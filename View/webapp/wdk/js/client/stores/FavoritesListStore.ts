@@ -198,9 +198,9 @@ export default class FavoritesListStore extends WdkStore<State> {
 
   _meetsSearchCriteria(favorite:Favorite, searchText:string, state:State) {
       return (
-          favorite.display.indexOf(searchText) > -1 ||
+          favorite.displayName.indexOf(searchText) > -1 ||
           (this._getType(favorite, state).indexOf(searchText) > -1) ||
-          (favorite.note != null && favorite.note.indexOf(searchText) > -1) ||
+          (favorite.description != null && favorite.description.indexOf(searchText) > -1) ||
           (favorite.group != null && favorite.group.indexOf(searchText) > -1)
       );
   }

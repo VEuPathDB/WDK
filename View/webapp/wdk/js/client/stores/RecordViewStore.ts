@@ -57,7 +57,7 @@ export type State = BaseState & {
   loadingBasketStatus: boolean;
   basketError?: Error;
 
-  inFavorites: boolean;
+  favoriteId?: number;
   loadingFavoritesStatus: boolean;
   favoritesError?: Error;
 }
@@ -184,7 +184,7 @@ export default class RecordViewStore extends WdkStore<State> {
         return action.payload.record.id === state.record.id
           ? {
             ...state,
-            inFavorites: action.payload.status,
+            favoriteId: action.payload.id,
             loadingFavoritesStatus: false
           }
           : state;

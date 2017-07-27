@@ -382,24 +382,79 @@ export default class WdkService {
     }));
   }
 
-  // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getFavoritesStatus(record: RecordInstance) {
-    let action = 'check';
-    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
-    let method = 'get';
-    //let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+  /**
+   * Gets favorite ID of a single record, or undefined if record is not a
+   * favorite of the current user.  Thus can be used to check whether a record
+   * is a favorite of the current user.
+   * 
+   * @param record Record instance to search for
+   */
+  getFavoriteId(record: RecordInstance) {
+    let data = [{
+      recordClassName: record.recordClassName,
+      primaryKey: record.id
+    }];
     let url = '/user/current/favorites/query';
-    return this._fetchJson<{countProcessed: number}>(method, url).then(data => data.countProcessed > 0);
+    return this._fetchJson<Array<number>>('post', url, JSON.stringify(data))
+        .then(data => data.length == 0 ? undefined : data[0]);
   }
 
-  // Service call to add - POST /user/current/favorites {'recordClassName': recordClassName, 'id' : {recordId}}
-  // Service call to remove - DELETE /user/current/favorites/instance {'recordClassName': recordClassName, 'id' : {recordId}}
-  updateFavoritesStatus(record: RecordInstance, status: boolean) {
-    let json = JSON.stringify({ recordClassName: record.recordClassName, id: record.id });
-    let method = status ? 'post' : 'delete';
+  /**
+   * Adds the passed record as a favorite of the current user and returns ID
+   * of the new favorite.
+   * 
+   * @param record Record to add as a favorite
+   */
+  addFavorite(record: RecordInstance) {
+    let favorite = {
+      recordClassName: record.recordClassName,
+      primaryKey: record.id
+    }
     let url = '/user/current/favorites';
-    url += (status ? '' : '/instance');
-    return this._fetchJson(method, url, json).then(() => status);
+    return this._fetchJson<Favorite>('post', url, JSON.stringify(favorite))
+        .then(data => data.id);
+  }
+
+  /**
+   * Deletes the favorite with the passed ID and returns a promise with the
+   * "new ID" i.e. undefined since favorite no longer exists
+   * 
+   * @param id id of favorite to delete
+   */
+  deleteFavorite(id: number) {
+    let url = '/user/current/favorites/' + id;
+    return this._fetchJson<void>('delete', url).then(() => undefined);
+  }
+
+  /**
+   * Returns an array of the current user's favorites
+   */
+  getCurrentFavorites() {
+    return this._fetchJson<Favorite[]>('get', '/user/current/favorites');
+  }
+
+  /**
+   * Saves the note and group on the passed favorite to the server
+   * 
+   * @param favorite
+   */
+  saveFavorite(favorite: Favorite) {
+    let url = '/user/current/favorites/' + favorite.id;
+    return this._fetchJson<void>('put', url, JSON.stringify(favorite));
+  }
+
+  deleteFavorites(ids: Array<number>) {
+    return this.setBulkDeleteStatus("delete", ids);
+  }
+
+  undeleteFavorites(ids: Array<number>) {
+    return this.setBulkDeleteStatus("undelete", ids);
+  }
+
+  setBulkDeleteStatus(operation: string, ids: Array<number>) {
+    let url = '/user/current/favorites';
+    let data = { [operation]: ids };
+    return this._fetchJson<void>('patch', url, JSON.stringify(data));
   }
 
   getCurrentUser() {
@@ -457,22 +512,6 @@ export default class WdkService {
 
   getCurrentUserDatasets() {
     return this._fetchJson<UserDataset[]>('get', '/user/current/user-dataset?expandDetails=true');
-  }
-
-  getCurrentFavorites() {
-    return this._fetchJson<Favorite[]>('get', '/user/current/favorites');
-  }
-
-  editFavorite(favorite: Favorite) {
-    return this._fetchJson<void>('put', '/user/current/favorites/instance', JSON.stringify(favorite));
-  }
-
-  deleteFavorite(favorite: Favorite) {
-    return this._fetchJson<void>('delete', '/user/current/favorites/instance', JSON.stringify(favorite));
-  }
-
-  addFavorite(favorite: Favorite) {
-    return this._fetchJson<void>('post', '/user/current/favorites', JSON.stringify(favorite));
   }
 
   getUserDataset(id: number) {

@@ -183,16 +183,28 @@ public class FavoritesRequest {
    * @param json
    * @return
    * @throws RequestMisformatException
+   * @throws DataValidationException 
    */
-  public static NoteAndGroup createNoteAndGroupFromJson(JSONObject json) throws RequestMisformatException {
+  public static NoteAndGroup createNoteAndGroupFromJson(JSONObject json)
+      throws RequestMisformatException, DataValidationException {
     try {
-      String note = json.getString(Keys.DESCRIPTION);
-      String group = json.getString(Keys.GROUP);
+      String note = getValidatedInputString(json, Keys.DESCRIPTION, 200);
+      String group = getValidatedInputString(json, Keys.GROUP, 50);
       return new NoteAndGroupImpl(note, group);
     }
     catch (JSONException e) {
       String detailMessage = e.getMessage() != null ? e.getMessage() : "No additional information.";
       throw new RequestMisformatException(detailMessage, e);
     }
+  }
+
+  private static String getValidatedInputString(JSONObject container, String key, int maxLength)
+      throws DataValidationException {
+    String value = container.getString(key);
+    if (FormatUtil.getUtf8EncodedBytes(value).length > maxLength) {
+      throw new DataValidationException(
+          "Value for property '" + key + "' cannot exceed " + maxLength + " UTF-8 characters.");
+    }
+    return value;
   }
 }

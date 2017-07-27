@@ -104,7 +104,7 @@ export type FavoritesStatusLoadingAction = {
 }
 export type FavoritesStatusReceivedAction = {
   type: 'user/favorites-status-received',
-  payload: { record: RecordInstance, status: boolean }
+  payload: { record: RecordInstance, id: number }
 }
 export type FavoritesStatusErrorAction = {
   type: 'user/favorites-status-error',
@@ -392,22 +392,28 @@ export let loadFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordI
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
       record,
-      wdkService.getFavoritesStatus(record)
+      wdkService.getFavoriteId(record)
     ));
   };
 };
 
-/**
- * @param {User} user
- * @param {Record} record
- * @param {Boolean} status
- */
-export let updateFavoritesStatus: ActionCreator<FavoriteAction|{type:'__'}> = (user: User, record: RecordInstance, status: boolean) => {
-  if (user.isGuest) return showLoginWarning('use favorites');
+export let removeFavorite: ActionCreator<FavoriteAction> = (record: RecordInstance, favoriteId: number) => {
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
       record,
-      wdkService.updateFavoritesStatus(record, status)
+      wdkService.deleteFavorite(favoriteId)
+    ));
+  };
+};
+
+export let addFavorite: ActionCreator<FavoriteAction|{type:'__'}> = (user: User, record: RecordInstance) => {
+  if (user.isGuest) {
+    return showLoginWarning('use favorites');
+  }
+  return function run(dispatch, { wdkService }) {
+    return dispatch(setFavoritesStatus(
+      record,
+      wdkService.addFavorite(record)
     ));
   };
 };
@@ -416,17 +422,17 @@ export let updateFavoritesStatus: ActionCreator<FavoriteAction|{type:'__'}> = (u
  * @param {Record} record
  * @param {Promise<Boolean>} statusPromise
  */
-let setFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance, statusPromise: Promise<boolean>) => {
+let setFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance, statusPromise: Promise<number>) => {
   return function run(dispatch) {
     dispatch({
       type: 'user/favorites-status-loading',
       payload: { record }
     });
     return statusPromise.then(
-      status => {
+      id => {
         dispatch({
           type: 'user/favorites-status-received',
-          payload: {record, status}
+          payload: {record, id}
         })
       },
       error => {

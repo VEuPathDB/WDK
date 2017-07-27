@@ -1,5 +1,5 @@
 import {ActionCreator} from "../ActionCreator";
-import {Favorite} from "../utils/WdkModel";
+import {Favorite, RecordInstance} from "../utils/WdkModel";
 import {ServiceError} from "../utils/WdkService";
 
 export type ListLoadingAction = {
@@ -131,7 +131,7 @@ export const changeCell = (value: string) => (dispatch: any) => {
 
 export const saveCellData:ActionCreator<SaveAction> = (updatedFavorite: Favorite) => (dispatch, { wdkService }) => {
   dispatch({ type: 'favorites/save-cell-data' });
-  wdkService.editFavorite(updatedFavorite)
+  wdkService.saveFavorite(updatedFavorite)
       .then(
           () => {
             dispatch({type: 'favorites/save-received', payload: {updatedFavorite}})
@@ -148,7 +148,7 @@ export const cancelCellEdit = () => (dispatch: any) => {
 
 export const deleteRow:ActionCreator<DeleteAction> = (deletedFavorite: Favorite) => (dispatch, { wdkService } ) => {
     dispatch({ type: 'favorites/delete-row' });
-    wdkService.deleteFavorite(deletedFavorite)
+    wdkService.deleteFavorite(deletedFavorite.id)
         .then(
             () => {
               dispatch({type: 'favorites/delete-received', payload: {deletedFavorite}})
@@ -167,10 +167,18 @@ export const sortColumn = (sortBy:string, sortDirection:string) => (dispatch: an
     dispatch({ type: 'favorites/sort-column', payload: {"sortBy" : sortBy, "sortDirection": sortDirection}});
 };
 
-
 export const addRow:ActionCreator<AddAction> = (addedFavorite: Favorite) => (dispatch, { wdkService }) => {
     dispatch({ type: 'favorites/add-row' });
-    wdkService.addFavorite(addedFavorite)
+    // TODO: Austin, not sure if we really need this method any more; see the PATCH methods in WdkService
+    let record: RecordInstance = {
+      displayName: "",
+      id: addedFavorite.primaryKey,
+      recordClassName: addedFavorite.recordClassName,
+      attributes: {},
+      tables: {},
+      tableErrors: []
+    };
+    wdkService.addFavorite(record)
         .then(
             () => {
                 dispatch({type: 'favorites/add-received', payload: {addedFavorite}})
