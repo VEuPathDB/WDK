@@ -18,6 +18,7 @@ public class Favorite extends FavoriteIdentity implements NoteAndGroup {
     private final String _display;
     private String _note;
     private String _group;
+    private boolean _isDeleted = false;
 
     public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey, long favoriteId) {
       super(recordClass, primaryKey);
@@ -89,6 +90,14 @@ public class Favorite extends FavoriteIdentity implements NoteAndGroup {
 
     public String getDisplay() {
       return _display;
+    }
+
+    public void setDeleted(boolean isDeleted) {
+      _isDeleted = isDeleted;
+    }
+
+    public boolean isDeleted() {
+      return _isDeleted;
     }
 
 }
