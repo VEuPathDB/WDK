@@ -1310,18 +1310,30 @@ class HistogramField extends React.Component {
   constructor(props) {
     super(props);
     this.updateFilter = debounce(this.updateFilter.bind(this), 50);
+    this.handleMinInputBlur = this.handleMinInputBlur.bind(this);
+    this.handleMinInputKeyPress = this.handleMinInputKeyPress.bind(this);
     this.handleMinInputChange = this.handleMinInputChange.bind(this)
+    this.handleMaxInputBlur = this.handleMaxInputBlur.bind(this);
+    this.handleMaxInputKeyPress = this.handleMaxInputKeyPress.bind(this);
     this.handleMaxInputChange = this.handleMaxInputChange.bind(this)
     this.handleUnknownCheckboxChange = this.handleUnknownCheckboxChange.bind(this)
     this.cacheDistributionOperations(this.props);
 
     this.state = {
-      includeUnknown: get(props.filter, 'includeUnknown', true)
+      includeUnknown: get(props.filter, 'includeUnknown', true),
+      minInputValue: get(props.filter, 'value.min', this.distributionRange.min),
+      maxInputValue: get(props.filter, 'value.max', this.distributionRange.max)
     };
   }
 
   componentWillReceiveProps(nextProps) {
     this.cacheDistributionOperations(nextProps);
+    if (this.props.filter !== nextProps.filter) {
+      this.setState({
+        minInputValue: get(nextProps.filter, 'value.min', this.distributionRange.min),
+        maxInputValue: get(nextProps.filter, 'value.max', this.distributionRange.max)
+      });
+    }
   }
 
   cacheDistributionOperations(props) {
@@ -1340,13 +1352,37 @@ class HistogramField extends React.Component {
   }
 
   handleMinInputChange(event) {
-    const min = this.formatRangeValue(event.target.value);
+    this.setState({ minInputValue: event.target.value });
+  }
+
+  handleMinInputBlur() {
+    this.updateMinFilterValueFromState();
+  }
+
+  handleMinInputKeyPress(event) {
+    if (event.key === 'Enter') this.updateMinFilterValueFromState();
+  }
+
+  updateMinFilterValueFromState() {
+    const min = this.formatRangeValue(this.state.minInputValue);
     const max = get(this.props, 'filter.value.max', null);
     this.emitChange({ min, max });
   }
 
   handleMaxInputChange(event) {
-    const max = this.formatRangeValue(event.target.value);
+    this.setState({ maxInputValue: event.target.value });
+  }
+
+  handleMaxInputBlur() {
+    this.updateMaxFilterValueFromState();
+  }
+
+  handleMaxInputKeyPress(event) {
+    if (event.key === 'Enter') this.updateMaxFilterValueFromState();
+  }
+
+  updateMaxFilterValueFromState() {
+    const max = this.formatRangeValue(this.state.maxInputValue);
     const min = get(this.props, 'filter.value.min', null);
     this.emitChange({ min, max });
   }
@@ -1368,17 +1404,18 @@ class HistogramField extends React.Component {
   }
 
   emitChange(filterValue, includeUnknown = this.state.includeUnknown) {
-    if (
+    filterValue = (
       filterValue &&
       filterValue.min <= this.distributionRange.min &&
       filterValue.max >= this.distributionRange.max
-    ) {
-      this.props.onChange(this.props.field, undefined, includeUnknown);
-    }
+    ) ? undefined : filterValue;
 
-    else {
-      this.props.onChange(this.props.field, filterValue, includeUnknown);
-    }
+    this.props.onChange(this.props.field, filterValue, includeUnknown);
+
+    this.setState({
+      minInputValue: get(filterValue, 'min', this.distributionRange.min),
+      maxInputValue: get(filterValue, 'max', this.distributionRange.max)
+    });
   }
 
   render() {
@@ -1414,16 +1451,20 @@ class HistogramField extends React.Component {
             type="text"
             size="6"
             placeholder={distMin}
-            value={min || ''}
+            value={this.state.minInputValue || ''}
             onChange={this.handleMinInputChange}
+            onKeyPress={this.handleMinInputKeyPress}
+            onBlur={this.handleMinInputBlur}
           />
           {' and '}
           <input
             type="text"
             size="6"
             placeholder={distMax}
-            value={max || ''}
+            value={this.state.maxInputValue || ''}
             onChange={this.handleMaxInputChange}
+            onKeyPress={this.handleMaxInputKeyPress}
+            onBlur={this.handleMaxInputBlur}
           />
           {unknownCount > 0 && (
             <label className="include-unknown">
