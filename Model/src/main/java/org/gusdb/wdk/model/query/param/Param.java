@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -120,6 +121,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected boolean allowEmpty;
 
   protected ParamSet paramSet;
+  private Map<String, Param> dependentParamsMap = new HashMap<String, Param>();
   private Set<Param> dependentParams = new HashSet<Param>();
 
   private List<ParamConfiguration> noTranslations;
@@ -181,6 +183,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       this.handler = param.handler.clone(this);
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
+    this.dependentParamsMap = new HashMap<String, Param>(param.dependentParamsMap);
     this.dependentParams = new HashSet<Param>(param.dependentParams);
   }
 
@@ -677,7 +680,10 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @param param
    */
   public void addDependentParam(Param param) {
-    if (!dependentParams.contains(param)) dependentParams.add(param);
+    if (!dependentParamsMap.containsKey(param.getName())) {
+      dependentParamsMap.put(param.getName(), param);  // fix bug where multiple copies of param were added to set
+      dependentParams.add(param);
+    }
   }
 
   public Set<Param> getDependentParams() {
