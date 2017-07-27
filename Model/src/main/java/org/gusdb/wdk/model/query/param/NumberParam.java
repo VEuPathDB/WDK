@@ -34,8 +34,8 @@ import org.json.JSONObject;
 public class NumberParam extends Param {
 	
   private Integer numDecimalPlaces = new Integer(1);
-  private Long min;
-  private Long max;
+  private Double min;
+  private Double max;
   private boolean integer;
 
   private List<WdkModelText> regexes;
@@ -204,19 +204,19 @@ public class NumberParam extends Param {
 	this.numDecimalPlaces = numDecimalPlaces;
   }
 
-  public Long getMin() {
+  public Double getMin() {
 	return min;
   }
 
-  public void setMin(Long min) {
+  public void setMin(Double min) {
 	this.min = min;
   }
 
-  public Long getMax() {
+  public Double getMax() {
 	return max;
   }
 
-  public void setMax(Long max) {
+  public void setMax(Double max) {
 	this.max = max;
   }
   
