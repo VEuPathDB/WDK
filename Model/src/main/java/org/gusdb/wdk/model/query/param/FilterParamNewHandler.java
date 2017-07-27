@@ -178,8 +178,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String unknownClause = jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN)
         ? metadataTableName + "." + columnName + " is NULL OR " : "";
 
-    String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? "1 = 1"
-      : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
+    String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? metadataTableName + "." + columnName + " is not NULL"
+        : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
       : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
 
     // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
