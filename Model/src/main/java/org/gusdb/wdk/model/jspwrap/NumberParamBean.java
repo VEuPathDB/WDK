@@ -35,8 +35,13 @@ public class NumberParamBean extends ParamBean<NumberParam> {
     public Double getMax() {
       return _param.getMax();
     }
+    
+    public Double getStep() {
+      return _param.getStep();
+    }
 
     public String getRegex() {
         return _param.getRegex();
     }
+    
 }
