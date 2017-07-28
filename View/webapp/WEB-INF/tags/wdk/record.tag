@@ -37,8 +37,7 @@
 <%-- display view list --%>
 <div id="Record_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
   <c:set var="views" value="${recordClass.recordViews}" />
-  <jsp:setProperty name="wdkUser" property="currentRecordClass" value="${recordClass}" />
-  <c:set var="currentView" value="${wdkUser.currentRecordView.name}" />
+  <c:set var="currentView" value="${wdkUser.currentRecordViews[recordClass.fullName].name}" />
 
   <%-- get the index of the current view --%>
   <c:set var="selectedTab" value="${0}" />

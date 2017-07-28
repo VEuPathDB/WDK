@@ -76,7 +76,7 @@ class AnswerTable extends React.Component {
     // If this is changed, be sure to update handleAttributeSelectorClose()
     this.state = Object.assign({}, this._getInitialAttributeSelectorState(), {
       columns: setVisibilityFlag(this.props.recordClass.attributes, this.props.visibleAttributes),
-      data: getDataFromRecords(this.props.records, this.props.recordClass, this.props.router),
+      data: getDataFromRecords(this.props.records, this.props.recordClass, this.props.history),
       sorting: getDataTableSorting(this.props.displayInfo.sorting)
     });
   }
@@ -86,7 +86,7 @@ class AnswerTable extends React.Component {
       pendingVisibleAttributes: nextProps.visibleAttributes
     });
     if (this.props.records !== nextProps.records) {
-      this.setState({ data: getDataFromRecords(nextProps.records, nextProps.recordClass, nextProps.router) });
+      this.setState({ data: getDataFromRecords(nextProps.records, nextProps.recordClass, nextProps.history) });
     }
     if (this.props.visibleAttributes !== nextProps.visibleAttributes) {
       this.setState({ columns: setVisibilityFlag(nextProps.recordClass.attributes, nextProps.visibleAttributes) });
@@ -189,7 +189,7 @@ AnswerTable.propTypes = {
   allAttributes: PropTypes.array.isRequired,
   visibleAttributes: PropTypes.array.isRequired,
   height: PropTypes.number.isRequired,
-  router: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
   onSort: PropTypes.func,
   onMoveColumn: PropTypes.func,
   onChangeColumns: PropTypes.func,
@@ -208,14 +208,16 @@ AnswerTable.defaultProps = {
 export default wrappable(withRouter(AnswerTable));
 
 /** Convert records array to DataTable format */
-function getDataFromRecords(records, recordClass, router) {
+function getDataFromRecords(records, recordClass, history) {
   let attributeNames = recordClass.attributes
     .filter(attr => attr.isDisplayable)
     .map(attr => attr.name);
 
   return records.map(record => {
     let trimmedAttrs = pick(record.attributes, attributeNames);
-    let recordUrl = router.createHref(`/record/${recordClass.urlSegment}/${record.id.map(property('value')).join('/')}`);
+    let recordUrl = history.createHref({
+      pathname: `/record/${recordClass.urlSegment}/${record.id.map(property('value')).join('/')}`
+    });
     trimmedAttrs.primary_key =
       `<a href="${recordUrl}">${trimmedAttrs.primary_key}</a>`;
     return trimmedAttrs;

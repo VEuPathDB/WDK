@@ -85,7 +85,7 @@ public class NumberParamHandler extends AbstractParamHandler {
     // If the number is not an integer, round it according to the number of decimal places
     // requested (or the default value).
     if(!((NumberParam)param).isInteger()) {
-      MathContext mathContext = new MathContext(((NumberRangeParam)param).getNumDecimalPlaces(), RoundingMode.HALF_UP);
+      MathContext mathContext = new MathContext(((NumberParam)param).getNumDecimalPlaces(), RoundingMode.HALF_UP);
       internalValue = (new BigDecimal(internalValue, mathContext)).toPlainString();
     }  
     return internalValue;

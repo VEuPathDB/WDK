@@ -22,8 +22,9 @@ import org.json.JSONObject;
 public class NumberRangeParam extends Param {
 	
   private Integer numDecimalPlaces = new Integer(1);
-  private Long min;
-  private Long max;
+  private Double min;
+  private Double max;
+  private Double step;
   private boolean integer;
 
   private List<WdkModelText> regexes;
@@ -46,6 +47,7 @@ public class NumberRangeParam extends Param {
     this.integer = param.integer;
     this.min = param.min;
     this.max = param.max;
+    this.setStep(param.step);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -222,20 +224,30 @@ public class NumberRangeParam extends Param {
 	this.numDecimalPlaces = numDecimalPlaces;
   }
 
-  public Long getMin() {
+  public Double getMin() {
 	return min;
   }
 
-  public void setMin(Long min) {
+  public void setMin(Double min) {
 	this.min = min;
   }
 
-  public Long getMax() {
+  public Double getMax() {
 	return max;
   }
 
-  public void setMax(Long max) {
+  public void setMax(Double max) {
 	this.max = max;
+  }
+  
+  @Override
+  public String getDefault() throws WdkModelException {
+	String defaultValue = super.getDefault();  
+	if(defaultValue == null || defaultValue.isEmpty()) {
+      JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
+      defaultValue = json.toString();
+	}
+	return defaultValue;
   }
 
   public boolean isInteger() {
@@ -244,6 +256,17 @@ public class NumberRangeParam extends Param {
 
   public void setInteger(boolean integer) {
 	this.integer = integer;
+  }
+  
+  public Double getStep() {
+    return step;
+  }
+	  
+  public void setStep(Double step) {
+    if(step == null) {
+	  step = this.integer ? 1 : 0.01;
+	}
+    this.step = step;
   }
 
 }

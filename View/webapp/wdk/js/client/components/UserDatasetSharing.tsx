@@ -13,7 +13,7 @@ const makeClassName = (element?: string, modifier?: string) =>
   (element ? `${element}` : ``) +
   (modifier ? `__${modifier}` : ``);
 
-class UserDatasetSharing extends Component<Props, void> {
+class UserDatasetSharing extends Component<Props> {
   render() {
     const { shares } = this.props;
     return (

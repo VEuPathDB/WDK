@@ -21,7 +21,8 @@ export type State = BaseState & {
   isLoading: boolean,
   selectedReporter: string,
   formState: any,
-  formUiState: any
+  formUiState: any,
+  error?: Error
 }
 
 type Action = ErrorAction
@@ -92,7 +93,7 @@ export default class DownloadFormStore extends WdkStore<State> {
         return updateFormUiState(state, action.payload.formUiState);
 
       case 'downloadForm/error':
-        return setFormLoading(state, false);
+        return setError(state, action.payload.error);
 
       default:
         return state;
@@ -107,6 +108,10 @@ export default class DownloadFormStore extends WdkStore<State> {
 
 function setFormLoading(state: State, isLoading: boolean) {
   return Object.assign({}, state, { isLoading });
+}
+
+function setError(state: State, error: Error) {
+  return Object.assign({}, state, { error });
 }
 
 function initialize(

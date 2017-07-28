@@ -222,9 +222,13 @@ public abstract class AbstractAttributesBean extends BeanBase implements Dynamic
                   !(value.getClass().getName().startsWith("java.lang.")) )
                       continue;
 
-            if ( (key.toLowerCase().contains("password") ||
-                  key.toLowerCase().contains("passwd") )
-                  && value instanceof String
+            if ( value instanceof String &&
+                 (
+                   key.toLowerCase().contains("password") ||
+                   key.toLowerCase().contains("passwd") ||
+                   key.toLowerCase().contains("passphrase") ||
+                   key.toLowerCase().contains("secret")
+                 )
                ) { value = "*****"; }
             LOG.debug("config key '" + key +
                          "', config value '" + value + "'");

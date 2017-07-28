@@ -23,6 +23,9 @@ public class CsvResultList implements ResultList {
   /** A tab char that may be employed as a CSV file column separator */
   public static final char TAB = '\t';
 
+  /** A comma char that may be employed as a CSV file column separator */
+  public static final char COMMA = ',';
+
   /** A quote char that may be employed to bracket items */
   public static final char QUOTE = '\"';
 

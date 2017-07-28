@@ -83,7 +83,8 @@ public abstract class AbstractDbInfo implements DbInfo {
       }
     }
     catch (SQLException sqle) {
-      logger.error(sqle);
+      logger.warn("Failed attempting getMetaDataSql(). This MBean data will not be registered.\n");
+      logger.debug(sqle);
     }
     finally {
       SqlUtils.closeResultSetAndStatement(rs, ps);
@@ -121,12 +122,13 @@ public abstract class AbstractDbInfo implements DbInfo {
         servernameDataMap.put("is_allowed_utl_inaddr", "true");
       }
     }
-    catch (SQLException e) {
-      if ( e.getMessage().startsWith("ORA-24247") ) {
+    catch (SQLException sqle) {
+      if ( sqle.getMessage().startsWith("ORA-24247") ) {
         // oracle user needs an ACL for UTL_INADDR
         servernameDataMap.put("is_allowed_utl_inaddr", "false");
       }
-      logger.error("Failed attempting\n" + sql + "\n", e);
+      logger.warn("Failed attempting getServerNameSql(). This MBean data will not be registered.\n");
+      logger.debug(sqle);
     }
     finally {
       SqlUtils.closeResultSetAndStatement(rs, ps);
@@ -156,7 +158,8 @@ public abstract class AbstractDbInfo implements DbInfo {
       }
     }
     catch (SQLException sqle) {
-      logger.error(sqle);
+      logger.warn("Failed attempting getDblinkSql(). This MBean data will not be registered.\n");
+      logger.debug(sqle);
     }
     catch (Exception e) {
       logger.error("NPE ", e);
@@ -189,8 +192,9 @@ public abstract class AbstractDbInfo implements DbInfo {
         }
       }
     }
-    catch (SQLException e) {
-      logger.error("Failed attempting\n" + sql + "\n", e);
+    catch (SQLException sqle) {
+      logger.warn("Failed attempting getDbfSizeOnDisk(). This MBean data will not be registered.\n");
+      logger.debug(sqle);
     }
     finally {
       SqlUtils.closeResultSetAndStatement(rs, ps);
@@ -240,7 +244,7 @@ public abstract class AbstractDbInfo implements DbInfo {
         logger.error("Error while trying DB link validation SQL", sqee);
         map.put(columnName, "-1" );
       }
-      catch (SQLException sqle) {
+       catch (SQLException sqle) {
         logger.error("Error while trying DB link validation SQL", sqle);
         map.put(columnName, "0" );
       }

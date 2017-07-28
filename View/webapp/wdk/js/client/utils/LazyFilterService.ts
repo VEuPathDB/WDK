@@ -76,7 +76,7 @@ export default class LazyFilterService extends FilterService {
     }
   }
 
-  getFieldDistribution(field: string) {
+  getFieldDistribution(field: string): Promise<Distribution>  {
     var term = field;
     var otherFilters =_.reject(this.filters, function(filter) {
       return filter.field === term;
@@ -111,7 +111,7 @@ export default class LazyFilterService extends FilterService {
     });
   }
 
-  getFieldMetadata(field: string) {
+  getFieldMetadata(field: string): Promise<Metadata> {
     return new Promise((resolve, reject) => {
       var term = field;
 
@@ -145,8 +145,7 @@ export default class LazyFilterService extends FilterService {
               [d.term]: _.get(fieldMetadata, [ d.term, 'values' ], [])
             }), {} as Metadata);
           resolve(this.fieldMetadataMap[term]);
-        })
-        .fail(function(err) {
+        }, (err) => {
           if (err.statusText !== 'abort') {
             // TODO Show user an error message
             reject(err);
@@ -158,7 +157,7 @@ export default class LazyFilterService extends FilterService {
     });
   }
 
-  getFilteredData(filters: Filter[]) {
+  getFilteredData(filters: Filter[]): Promise<Datum[]> {
       return Promise.all(
         _.map(filters, filter => this.getFieldMetadata(filter.field))
       ).then(() => {
@@ -177,7 +176,7 @@ export default class LazyFilterService extends FilterService {
           }, this);
         // Filter data by applying each predicate above to each data item.
         // If predicates is empty (i.e., no filters), all data is returned.
-        return _.filter(this.data, combinePredicates(predicates));
+        return _.filter(this.data, combinePredicates(predicates)) as Datum[];
       });
   }
 

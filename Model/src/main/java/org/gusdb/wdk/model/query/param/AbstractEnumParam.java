@@ -200,8 +200,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
               throw new NoDependedValueException(
                   "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
                       getName() + " without setting depended value.");
+	    contextParamValues.put(dependedParam.getName(), dependedParamVal);
           }
-          contextParamValues.put(dependedParam.getName(), dependedParamVal);
         }
       }
       catch (Exception ex) {

@@ -400,7 +400,7 @@ h6.resultCount {
   border:none;
   position:absolute;
   opacity: 0.6;
-  z-index:499;
+  z-index: 1;
 }
 
 a.crumb_name img {
@@ -986,6 +986,8 @@ table.history_controls {
   width:260px;
   border-color:grey;
   z-index: 85; /* show above step glyphs, yet below model_div */
+  height: 96px;
+  overflow: auto;
 }
 #invalid-step-text p {
   margin: 0;

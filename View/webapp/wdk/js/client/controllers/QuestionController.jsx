@@ -15,7 +15,7 @@ export default wrappable(class QuestionController extends WdkViewController {
   }
 
   loadData(actionCreators, state, nextProps) {
-    actionCreators.loadQuestion(nextProps.params.question);
+    actionCreators.loadQuestion(nextProps.match.params.question);
   }
 
   isRenderDataLoaded(state) {
@@ -31,7 +31,7 @@ export default wrappable(class QuestionController extends WdkViewController {
   }
 
   getTitle(state) {
-    return `Search for ${this.props.params.recordClass} by ${state.question.displayName}`;
+    return `Search for ${this.props.match.params.recordClass} by ${state.question.displayName}`;
   }
 
   renderView() {

@@ -85,6 +85,15 @@ public class DateParam extends Param {
   public String getMaxDate() {
     return this.maxDate;
   }
+  
+  @Override
+  public String getDefault() throws WdkModelException {
+	String defaultValue = super.getDefault();  
+	if(defaultValue == null || defaultValue.isEmpty()) {	
+      defaultValue = this.minDate;
+	} 
+	return defaultValue;
+  }
 
   public void setMaxDate(String maxDate) throws WdkModelException {
 	if(minDate != null) { 

@@ -11,7 +11,7 @@ export interface ActionCreatorServices {
   wdkService: WdkService;
 }
 
-type ActionCreatorResult<T extends Action> = T
+export type ActionCreatorResult<T extends Action> = T
                                            | Promise<T>
                                            | Promise<ActionThunk<T>>
                                            | ActionThunk<T>;

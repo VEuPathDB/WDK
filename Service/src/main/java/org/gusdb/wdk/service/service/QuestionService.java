@@ -185,7 +185,7 @@ public class QuestionService extends WdkService {
   /**
    * Get an updated set of vocabularies (and meta data info) for the parameters that depend on the specified changed parameter.
    * (Also validate the changed parameter.)
-   * Request must provide the parameter values of any other parameters that those vocabularies depend on.
+   * Request must provide the parameter values of any other parameters that those vocabularies depend on, as well as the changed parameter.
    * (This endpoint is typically used when a user changes a depended param.)
    *
    * Sample request body:
@@ -225,9 +225,6 @@ public class QuestionService extends WdkService {
     catch (JSONException e) {
       throw new BadRequestException(e);
     }
-
-    // remove the changed param from the context (maybe we should throw an exception instead?)
-    contextParamValues.remove(changedParamName);
 
     // find the param object for the changed param, and validate it. (this will also validate the paramValuesContext it needs, if dependent)
     Param changedParam = null;

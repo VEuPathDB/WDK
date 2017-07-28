@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import { eq } from 'lodash';
-import React, {Component, ReactElement} from 'react';
+import React, {Component, PureComponent, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
-import {formatAttributeValue, lazy, wrappable, PureComponent} from '../utils/componentUtils';
+import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
 const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
@@ -93,7 +93,7 @@ type Props = {
  *
  * This uses DataTables jQuery plugin
  */
-class DataTable extends PureComponent<Props, void> {
+class DataTable extends PureComponent<Props> {
 
   /** Default DataTables jQuery plugin options. */
   static defaultDataTableOpts = {
@@ -114,13 +114,13 @@ class DataTable extends PureComponent<Props, void> {
 
   _isRedrawing: boolean;
 
-  _dataTable: DataTables.DataTable;
+  _dataTable: DataTables.Api;
 
   _table: HTMLElement;
 
   _searchTerm = '';
 
-  node: HTMLElement;
+  node: HTMLElement | null;
 
   columns: DataTables.ColumnSettings[];
 
@@ -187,6 +187,8 @@ class DataTable extends PureComponent<Props, void> {
 
   /** Initialize datatable plugin and set up handlers for creating child rows */
   _setup() {
+    if (this.node == null) return;
+
     let {
       childRow,
       data,
@@ -235,7 +237,7 @@ class DataTable extends PureComponent<Props, void> {
     .width(width || '')
     .appendTo(this.node)
     // click handler for expand single row
-    .on('click', 'td .wdk-DataTableCellExpand', (e: JQueryEventObject) => {
+    .on('click', 'td .wdk-DataTableCellExpand', (e) => {
       let tr = $(e.target).closest('tr');
       let row = this._dataTable.row(tr);
       if (row.child.isShown()) {
@@ -412,7 +414,7 @@ export default wrappable(withLibs(DataTable));
 // -------
 
 /** helper to determine if all child rows are visible */
-function areAllChildRowsShown(dataTable: DataTables.DataTable) {
+function areAllChildRowsShown(dataTable: DataTables.Api) {
   return dataTable.rows().indexes().toArray().every((i: number) => !!dataTable.row(i).child.isShown());
 }
 
