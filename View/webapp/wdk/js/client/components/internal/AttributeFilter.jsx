@@ -1924,7 +1924,7 @@ function getFilterDisplay(field, value, includeUnknown) {
       return 'No ' + field.display + ' selected'
     }
     return field.display + ' is ' +
-      (value == null ? '' : value.join(', ')) +
+      (value == null ? 'known' : value.join(', ')) +
       (includeUnknown ? (value && value.length === 0 ? 'unknown' : ', or unknown') : '');
   }
 }
