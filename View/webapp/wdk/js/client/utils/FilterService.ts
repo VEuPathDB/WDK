@@ -54,7 +54,7 @@ export type Metadata = {
 
 export type IFilter<Value> = {
   field: string;
-  value: Value;
+  value?: Value;
   includeUnknown: boolean;
   display: string;
   selection?: Datum[];
