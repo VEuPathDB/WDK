@@ -36,7 +36,7 @@ type Props = {
   }
 }
 
-class Tooltip extends React.Component<Props, void> {
+class Tooltip extends React.Component<Props> {
 
   componentDidMount() {
     this._setupTooltip();

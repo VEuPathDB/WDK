@@ -1,6 +1,6 @@
-import test from 'tape';
+import test from 'ava';
 import {
   getTree
 } from '../../webapp/wdk/js/client/utils/OntologyUtils';
 
-test('getTree');
+test.todo('getTree');

@@ -1,10 +1,19 @@
-import React from 'react';
+import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let message = "We're sorry.  An error has occured and this page cannot be loaded.  Please try again later.";
+type Props = {
+  children?: React.ReactChildren;
+}
 
-let LoadError = () => (
-  <span style={{color: 'red' }}>{message}</span>
-);
-
-export default wrappable(LoadError);
+export default wrappable(function LoadError(props: Props) {
+  return (
+    <div className="wdk-LoadError">
+      <h1>Oops... something went wrong</h1>
+      {props.children || (
+        <p>
+          An error has occured and this page cannot be loaded.  Please try again later.
+        </p>
+      )}
+    </div>
+  );
+});

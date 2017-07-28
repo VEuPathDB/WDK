@@ -22,6 +22,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
  */
 exports.merge = function merge(additionConfig) {
   return function (env) {
+    env = env || { development: true };
     console.log('webpack env', env);
     var isDevelopment = !env.production;
     if (!isDevelopment) console.log('optimizing web assets');

@@ -1,8 +1,8 @@
-import tape from 'tape';
+import _test from 'ava';
 import * as TreeUtils from '../../webapp/wdk/js/client/utils/TreeUtils';
 
 const test = (label, testFn) => {
-  tape('TreeUtils#' + label, testFn);
+  _test('TreeUtils#' + label, testFn);
 }
 
 test('preorderSeq', function(t) {
@@ -22,8 +22,6 @@ test('preorderSeq', function(t) {
 
   t.deepEqual(ids, [ 1, 2, 3, 4]);
 
-  t.end();
-
 });
 
 test('postorderSeq', function(t) {
@@ -42,8 +40,6 @@ test('postorderSeq', function(t) {
     .toArray();
 
   t.deepEqual(ids, [ 2, 4, 3, 1 ]);
-
-  t.end();
 
 });
 
@@ -75,7 +71,6 @@ test('mapStructure', function(t) {
     },
     node => node.children, tree);
   t.deepEqual(mappedStructure, expectedStructure, 'mappedStructure does not match expectedStructure');
-  t.end();
 });
 
 test('foldStructure', t => {
@@ -102,7 +97,6 @@ test('foldStructure', t => {
   let fold = (path, node) => node.id === 6 || path.length ? [ node, ...path ] :  path;
   let result = TreeUtils.foldStructure(fold, [], tree).map(node => node.id)
   t.deepEqual(result, expected);
-  t.end();
 })
 
 test('compactRootNodes', function(t) {
@@ -127,9 +121,8 @@ test('compactRootNodes', function(t) {
 
   let compactedTree = TreeUtils.compactRootNodes(tree);
 
-  t.ok(compactedTree.id === 4, 'compactedTree does not have expected root.');
+  t.is(compactedTree.id, 4, 'compactedTree does not have expected root.');
 
-  t.end();
 });
 
 test('pruneDescendantNodes', function(t) {
@@ -188,6 +181,5 @@ test('pruneDescendantNodes', function(t) {
     ]
   }, 'prunedTree2 does not have expected shape.');
 
-  t.end();
 });
 

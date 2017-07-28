@@ -33,38 +33,15 @@ export type State = BaseState & Answer & AnswerOptions & FilterState & {
   visibleAttributes: AttributeField[];
   unfilteredRecords: RecordInstance[];
   isLoading: boolean;
+  error?: Error;
 }
 
 export default class AnswerViewStore extends WdkStore<State> {
 
-  getInitialState() {
-    return Object.assign({
-      meta: undefined,                // Object: meta object from last service response
-      records: undefined,             // Record[]: filtered records
-      question: undefined,            // Object: question for this answer page
-      recordClass: undefined,         // Object: record class for this answer page
-      parameters: undefined,          // Object: parameters used for answer
-      allAttributes: undefined,       // Attrib[]: all attributes available in the answer (from recordclass and question)
-      visibleAttributes: undefined,   // String[]: ordered list of attributes currently being displayed
-      unfilteredRecords: undefined,   // Record[]: list of records from last service response
-      isLoading: false,               // boolean: whether to show loading icon
-      filterTerm: '',                 // String: value user typed into filter box
-      filterAttributes: [],           // Attrib[]: list of attributes whose text is searched during filtering -- FIXME handle undefined in Components
-      filterTables: [],               // Table[]: list of tables whose text is searched during filtering      -- FIXME handle undefined in Components
-      displayInfo: {                  // Object: answer formatting object passed on answer request
-        sorting: undefined,
-        pagination: undefined,
-        attributes: undefined,
-        tables: undefined,
-        customName: undefined
-      }
-    }, super.getInitialState());
-  }
-
   handleAction(state: State, action: Action) {
     switch(action.type) {
       case 'answer/loading': return { ...state, isLoading: true, error: undefined };
-      case 'answer/error': return { ...this.getInitialState(), ...action.payload.error };
+      case 'answer/error': return { ...this.getInitialState(), ...action.payload };
       case 'answer/added': return addAnswer(state, action.payload);
       case 'answer/attributes-changed': return updateVisibleAttributes(state, action.payload);
       case 'answer/sorting-updated': return updateSorting(state, action.payload);

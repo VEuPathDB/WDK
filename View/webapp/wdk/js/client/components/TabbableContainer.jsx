@@ -16,7 +16,7 @@ class TabbableContainer extends Component {
   }
 
   componentDidMount() {
-    this.node.focus();
+    if (this.props.autoFocus) this.node.focus();
   }
 
   handleKeyDown(e) {
@@ -55,11 +55,16 @@ class TabbableContainer extends Component {
 }
 
 TabbableContainer.propTypes = {
+  autoFocus: PropTypes.bool,
   onKeyDown: PropTypes.func,
   children: PropTypes.oneOfType([
     PropTypes.element,
     PropTypes.arrayOf(PropTypes.element)
   ]).isRequired
+};
+
+TabbableContainer.defaultProps = {
+  autoFocus: false
 };
 
 export default wrappable(TabbableContainer);

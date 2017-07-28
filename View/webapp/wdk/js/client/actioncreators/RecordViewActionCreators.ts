@@ -274,13 +274,13 @@ function getRecordBase(wdkService: WdkService, recordClass: RecordClass, primary
       return {
         type: 'record-view/active-record-received',
         payload: { record, recordClass, categoryTree }
-      };
+      } as RecordReceivedAction;
     })
 }
 
 /** Load non-internal tables, optionally in batches */
 function getRecordTables(wdkService: WdkService, recordClass: RecordClass, primaryKey: PrimaryKey, fullCategoryTree: CategoryTreeNode, batchSize?: number): Promise<RecordUpdatedAction>[] {
-  let tables = getTables(fullCategoryTree).filter(isNotInternalNode).map(getNodeName);
+  let tables: string[] = getTables(fullCategoryTree).filter(isNotInternalNode).map(getNodeName);
   return chunk(tables, batchSize || tables.length)
     .map(tables => {
       let options = { tables };
@@ -289,7 +289,7 @@ function getRecordTables(wdkService: WdkService, recordClass: RecordClass, prima
           return {
             type: 'record-view/active-record-updated',
             payload: { record }
-          };
+          } as RecordUpdatedAction;
         })
     });
 }

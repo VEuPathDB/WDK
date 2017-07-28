@@ -31,15 +31,15 @@ export class Task<T, E> {
     this._operation = operation;
   }
 
-  run(onFulfill: (t: T) => void = noop, onRejected: (e: E) => void = noop) {
+  run(onFulfilled: (t: T) => void = noop, onRejected: (e: E) => void = noop) {
     let isCancelled = false;
-    function onFulfillProxy(t: T) {
-      if (!isCancelled) onFulfill(t);
+    function onFulfilledProxy(t: T) {
+      if (!isCancelled) onFulfilled(t);
     }
     function onRejectedProxy(e: E) {
       if (!isCancelled) onRejected(e);
     }
-    let _cancel = this._operation(onFulfillProxy, onRejectedProxy);
+    let _cancel = this._operation(onFulfilledProxy, onRejectedProxy);
     return function cance() {
       isCancelled = true;
       if (_cancel) (<CancelOperation>_cancel)();

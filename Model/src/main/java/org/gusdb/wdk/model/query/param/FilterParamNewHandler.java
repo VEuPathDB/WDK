@@ -31,6 +31,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_VALUE = "value";
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
+  public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
 
   public FilterParamNewHandler() {}
 
@@ -46,7 +47,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     {
       "value": {
         "min": 1.82,
-        "max": 2.19
+        "max": 2.19,
+        "includeUnknowns": true    (optional)
       },
       "field": "age"
     },
@@ -116,12 +118,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
   }
 
-  // TODO: add OR clause if unknowns=true
   static String toInternalValue(User user, JSONObject jsValue, Map<String, String> contextParamValues, FilterParamNew param)
       throws WdkModelException {
 
     try {
-      return getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
+      Query mdQuery = param.getUseSummaryMetadataQueryForInternalValue()? param.getSummaryMetadataQuery() : param.getMetadataQuery();
+      return getFilteredValue(user, jsValue, contextParamValues, param, mdQuery);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -160,16 +162,28 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private static String getFilterAsAndClause(JSONObject jsFilter, Map<String,
       OntologyItem> ontology, String metadataTableName) throws WdkUserException {
 
+    // A filter object must at minimum an `includeUnknown` or `value` property.
+    // Instead of throwing, we could just return an empty string.
+    if (!jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && !jsFilter.has(FILTERS_VALUE))
+      throw new WdkUserException("A value filter must have at minimum one of" +
+          " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
+          FILTERS_VALUE + "`.");
+
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     String type = ontologyItem.getType();
     String columnName = FilterParamNew.typeToColumn(type);
 
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
-    if (ontologyItem.getIsRange())
-      return whereClause + getRangeAndClause(jsFilter, columnName, metadataTableName, type);
-    else
-      return whereClause + getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
+    String unknownClause = jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN)
+        ? metadataTableName + "." + columnName + " is NULL OR " : "";
+
+    String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? metadataTableName + "." + columnName + " is not NULL"
+        : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
+      : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
+
+    // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
+    return whereClause + " AND (" + unknownClause + innerAndClause + ")";
   }
 
   private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, String type) throws WdkUserException {
@@ -183,20 +197,18 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String maxStr;
     
     if (type.equals(OntologyItem.TYPE_NUMBER)) {
-      Double min = range.isNull(FILTERS_MIN) ? null : range.getDouble(FILTERS_MIN);
-      Double max = range.isNull(FILTERS_MAX) ? null : range.getDouble(FILTERS_MAX);
-      minStr = min.toString();
-      maxStr = max.toString();
+      minStr = range.isNull(FILTERS_MIN) ? null : Double.toString(range.getDouble(FILTERS_MIN));
+      maxStr = range.isNull(FILTERS_MAX) ? null : Double.toString(range.getDouble(FILTERS_MAX));
     }
-    
+
     else if (type.equals(OntologyItem.TYPE_DATE)) {
       minStr = range.isNull(FILTERS_MIN) ? null : "date '" + range.getString(FILTERS_MIN) + "'";
       maxStr = range.isNull(FILTERS_MAX) ? null : "date '" + range.getString(FILTERS_MAX) + "'";
-    }  
-    
+    }
+
     else throw new WdkUserException("Invalid JSON:  a " + type + " type cannot be a range");
-    
-    String clauseStart = " AND " + metadataTableName + "." + columnName;
+
+    String clauseStart = metadataTableName + "." + columnName;
     if (minStr == null) return clauseStart + " <= " + maxStr;
     if (maxStr == null) return clauseStart + " >= " + minStr;
     return clauseStart + " >= " + minStr + " AND " + metadataTableName + "." + columnName + " <= " + maxStr;
@@ -206,24 +218,19 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     JSONArray values = jsFilter.getJSONArray(FILTERS_VALUE);
 
     if (values.length() == 0) {
-      return " AND 1 != 1";
+      return "1 != 1";
     }
 
     StringBuilder sb = new StringBuilder();
     for (int j = 0; j < values.length(); j++) {
-      String val = (values.get(j) == JSONObject.NULL)? "unknown" : values.getString(j);
+      String val = isNumber ? Double.toString(values.getDouble(j))
+        : values.getString(j);
+      val = val.replaceAll("'", "''");
       if (!isNumber) val = "'" + val + "'";
       if (j != 0) sb.append(",");
       sb.append(val);
     }
-    return " AND " + metadataTableName + "." + columnName + " IN (" + sb + ") ";
-  }
-
-  private static String getMetadataQuerySql(User user, Map<String, String> contextParamValues,
-      FilterParamNew filterParam) throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(
-        user, contextParamValues, filterParam.getMetadataQuery());
-    return instance.getSql();
+    return metadataTableName + "." + columnName + " IN (" + sb + ") ";
   }
 
   /**
@@ -272,16 +279,17 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       // don't know if we have an array or object, so try both.
       if (jsFilter.has(FILTERS_VALUE)) {
         try {
+          // this might throw, which probably means we have an array.
           JSONObject value = jsFilter.getJSONObject(FILTERS_VALUE);
-          parts.add(FILTERS_MIN + ":" + value.getDouble(FILTERS_MIN));
-          parts.add(FILTERS_MAX + ":" + value.getDouble(FILTERS_MIN));
+          parts.add(FILTERS_MIN + ":" + value.get(FILTERS_MIN));
+          parts.add(FILTERS_MAX + ":" + value.get(FILTERS_MIN));
         } catch (JSONException ex) {
           JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
           for (int i=0; i < value.length(); i++ ) {
             parts.add(value.getString(i));
           }
         }
-      } else jsFilter.getJSONObject(FILTERS_VALUE); // force an exception because this key is absent
+      }
       return parts.toString();
     }
     catch (JSONException ex) {

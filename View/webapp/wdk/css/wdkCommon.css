@@ -211,6 +211,7 @@ img[data-assets-src][src] {
 .wdk-PageContent {
   height: 100%;
   position: relative;
+  padding: 0 2em;
 }
 
 .wdk-Link {

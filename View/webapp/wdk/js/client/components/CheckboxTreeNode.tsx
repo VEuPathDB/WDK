@@ -16,7 +16,7 @@ type TreeRadioProps<T> = {
   className: string;
 }
 
-class TreeRadio<T> extends Component<TreeRadioProps<T>, void> {
+class TreeRadio<T> extends Component<TreeRadioProps<T>> {
 
   handleClick() {
     let { checked, onChange, node } = this.props;
@@ -57,7 +57,7 @@ type Props<T> = {
   nodeComponent: React.ComponentClass<{ node: T, path?: number[] }> | React.StatelessComponent<{ node: T, path?: number[] }>;
 }
 
-class CheckboxTreeNode<T> extends Component<Props<T>, void> {
+class CheckboxTreeNode<T> extends Component<Props<T>> {
 
   toggleExpansion = () => {
     this.props.toggleExpansion(this.props.node);

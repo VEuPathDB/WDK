@@ -58,7 +58,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
   @Override
   public EnumParamVocabInstance fetchItem(String cacheKey) throws UnfetchableItemException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
+    logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();

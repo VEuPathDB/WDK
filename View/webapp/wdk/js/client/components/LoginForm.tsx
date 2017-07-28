@@ -22,7 +22,7 @@ function LoginForm(props: Props) {
         <table>
           <tbody>
             <tr>
-              <td width="45%" style={{ textAlign: 'right' }}>
+              <td style={{ textAlign: 'right' }}>
                 <div className="small">
                   <b>Email: </b>
                 </div>

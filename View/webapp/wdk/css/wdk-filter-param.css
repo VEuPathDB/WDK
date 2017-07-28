@@ -67,6 +67,13 @@
 }
 .filter-param .range-filter .selection-total {
   color: #666666;
+  float: right;
+}
+.filter-param .range-filter .include-unknown {
+  margin-left: 1.5em;
+}
+.filter-param .chart-container {
+  position: relative;
 }
 .filter-param .chart {
   height: 200px;
@@ -83,7 +90,7 @@
   width: 200px;
   position: absolute;
   left: 0;
-  top: 20em;
+  bottom: 0;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
@@ -142,6 +149,9 @@
   margin-left: 25%;
   padding: 0 2em;
   position: relative;
+}
+.filter-param .field-detail__topPadding {
+  padding-top: 2.5em;
 }
 .filter-param .field-detail__fullWidth {
   width: 100%;

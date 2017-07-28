@@ -48,7 +48,7 @@ public class DateParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
-    return "'" + stableValue + "'";
+    return "date '" + stableValue + "'";
   }
 
   /**

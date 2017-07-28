@@ -28,15 +28,20 @@ public class NumberParamBean extends ParamBean<NumberParam> {
         return _param.isInteger();
     }
     
-    public Long getMin() {
+    public Double getMin() {
       return _param.getMin();
     }
     
-    public Long getMax() {
+    public Double getMax() {
       return _param.getMax();
+    }
+    
+    public Double getStep() {
+      return _param.getStep();
     }
 
     public String getRegex() {
         return _param.getRegex();
     }
+    
 }

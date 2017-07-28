@@ -126,16 +126,17 @@ public class QuestionFormatter {
   }
 
   /*
-   * { termValue: { "filtered" : 123, "unfiltered" : 234}, ... }
+   * [ { value: string|null; count: number; filteredCount: number; }, ... ]
    */
-  public static JSONObject getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
-    JSONObject json = new JSONObject();
+  public static JSONArray getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
+    JSONArray json = new JSONArray();
     for (String term : counts.keySet()) {
       FilterParamSummaryCounts fpsc = counts.get(term);
       JSONObject c = new JSONObject();
-      c.put("filtered", fpsc.filteredCount);
-      c.put("unfiltered", fpsc.unfilteredCount);
-      json.put(term, c);
+      c.put("value", term == null ? JSONObject.NULL : term);
+      c.put("count", fpsc.unfilteredCount);
+      c.put("filteredCount", fpsc.filteredCount);
+      json.put(c);
     }
     return json;
   

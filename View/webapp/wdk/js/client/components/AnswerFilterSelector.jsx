@@ -72,6 +72,7 @@ class AnswerFilterSelector extends Component {
 
     return (
       <TabbableContainer
+        autoFocus
         onKeyDown={this.handleKeyPress}
         className="wdk-Answer-filterFieldSelector">
 

@@ -119,6 +119,8 @@ public class FilterParamNew extends AbstractDependentParam {
   private String backgroundQueryRef;
   private Query backgroundQuery;
   
+  private boolean useSummaryMetadataQueryForInternalValue = false;
+  
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
@@ -150,6 +152,7 @@ public class FilterParamNew extends AbstractDependentParam {
       this.backgroundQuery = param.backgroundQuery.clone();
     
     this.trimMetadataTerms = param.trimMetadataTerms;
+    this.useSummaryMetadataQueryForInternalValue = param.useSummaryMetadataQueryForInternalValue;
   }
 
   /*
@@ -264,13 +267,19 @@ public class FilterParamNew extends AbstractDependentParam {
     this.backgroundQuery = backgroundQuery;
   }
 
-
   /**
    * @return the trimMetadataTerms
-   * TODO: either add this to service layer or remove
    */
   public boolean getTrimMetadataTerms() {
     return trimMetadataTerms;
+  }
+
+  public void setUseSummaryMetadataQueryForInternalValue(boolean useIt) {
+    this.useSummaryMetadataQueryForInternalValue = useIt;
+  }
+
+  public boolean getUseSummaryMetadataQueryForInternalValue() {
+    return useSummaryMetadataQueryForInternalValue;
   }
 
   /**
@@ -454,7 +463,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
-    String internalSql = FilterParamNewHandler.toInternalValue(user, appliedFilters, contextParamValues, this);
+    String internalSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues,  this, getMetadataQuery());
     
     // use that set of ids to limit our ontology id's metadata 
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql + ")";

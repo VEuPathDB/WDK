@@ -66,8 +66,7 @@
 
 <c:set var="question" value="${wdkStep.question}" />
 <c:set var="views" value="${question.summaryViews}" />
-<jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
-<c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
+<c:set var="currentView" value="${wdkUser.currentSummaryViews[question.fullName].name}" />
 
 <div id="Summary_Views" class="Summary_Views"
     data-controller="wdk.resultsPage.configureSummaryViews"

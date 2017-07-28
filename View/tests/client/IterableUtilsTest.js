@@ -1,4 +1,4 @@
-import test from 'tape';
+import test from 'ava';
 import * as i from '../../webapp/wdk/js/client/utils/IterableUtils';
 
 /**
@@ -22,8 +22,8 @@ test('Seq', t => {
     .takeWhile(n => n < 30)
     .reduce((sum, n) => sum + n)
 
-  t.equal(mapCallCount, 6);
-  t.equal(result, 55);
+  t.is(mapCallCount, 6);
+  t.is(result, 55);
 
 
   let s2 = i.Seq.from(s).map(n => n * 2);
@@ -37,14 +37,12 @@ test('Seq', t => {
   }
 
   let seqOfGen = i.seq(gen());
-  t.equal(
+  t.is(
     seqOfGen.first(),
     seqOfGen.first(),
     'seq should be reusable'
   );
   */
-
-  t.end();
 });
 
 test('concat', function(t) {
@@ -54,7 +52,6 @@ test('concat', function(t) {
     'concat should append elements'
   );
 
-  t.end();
 });
 
 test('map', function(t) {
@@ -64,7 +61,6 @@ test('map', function(t) {
     'map should apply the transform to each item in an iterable'
   );
 
-  t.end();
 });
 
 test('flatMap', function(t) {
@@ -74,7 +70,6 @@ test('flatMap', function(t) {
     'flatMap should apply the transform to each item in an iterable and flatten the resulting iterables'
   );
 
-  t.end();
 });
 
 test('uniq', function(t) {
@@ -84,7 +79,6 @@ test('uniq', function(t) {
     'uniq should apply the transform to each item in an iterable'
   );
 
-  t.end();
 });
 
 test('uniqBy', function(t) {
@@ -97,7 +91,6 @@ test('uniqBy', function(t) {
     Array.from(i.uniqBy(n => n, source)),
     [ { a: 1} ]
   );
-  t.end();
 });
 
 test('filter', function(t) {
@@ -106,7 +99,6 @@ test('filter', function(t) {
     [2,4,6,8,10]
   );
 
-  t.end();
 });
 
 test('take', function(t) {
@@ -115,7 +107,6 @@ test('take', function(t) {
     [1,2,3,4,5,6,7,8,9,10]
   );
 
-  t.end();
 });
 
 test('takeLast', function(t) {
@@ -129,7 +120,6 @@ test('takeLast', function(t) {
     [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
   );
 
-  t.end();
 });
 
 test('takeWhile', function(t) {
@@ -138,7 +128,6 @@ test('takeWhile', function(t) {
     [1,2,3,4,5,6,7,8,9]
   );
 
-  t.end();
 });
 
 test('drop', function(t) {
@@ -147,7 +136,6 @@ test('drop', function(t) {
     [2,3,4,5,6,7,8,9,10, 11]
   );
 
-  t.end();
 });
 
 test('dropLast', function(t) {
@@ -161,7 +149,6 @@ test('dropLast', function(t) {
     []
   );
 
-  t.end();
 });
 
 test('dropWhile', function(t) {
@@ -170,84 +157,76 @@ test('dropWhile', function(t) {
     [10, 11]
   );
 
-  t.end();
 });
 
 test('find', function(t) {
-  t.equal(
+  t.is(
     i.find(n => n > 10, [ 1,2,3,4,5,6,7,8,9,10,11 ]),
     11
   );
 
-  t.end();
 });
 
 test('findLast', function(t) {
-  t.equal(
+  t.is(
     i.findLast(n => n > 10, [ 1,2,3,4,5,6,7,8,9,10,11,12 ]),
     12
   );
 
-  t.end();
 });
 
 test('first', function(t) {
-  t.equal(
+  t.is(
     i.first([ 1,2,3,4,5,6,7,8,9,10,11]),
     1
   );
-  t.end();
 });
 
 test('last', function(t) {
-  t.equal(
+  t.is(
     i.last([1,2,3,4,5,6,7,8,9,10]),
     10
   );
-  t.end();
 });
 
 test('some', function(t) {
-  t.equal(
+  t.is(
     i.some(n => n > 1, [0, 1, 2]),
     true,
     'some should return true if any members pass the supplied test'
   );
-  t.equal(
+  t.is(
     i.some(n => n > 2, [0, 1, 2]),
     false,
     'some should return false if no member passes the supplied test'
   );
-  t.end();
 });
 
 test('every', function(t) {
-  t.equal(
+  t.is(
     i.every(n => n >= 0, [0, 1, 2]),
     true,
     'some should return true if any members pass the supplied test'
   );
-  t.equal(
+  t.is(
     i.every(n => n < 2, [0, 1, 2]),
     false,
     'some should return false if no member passes the supplied test'
   );
-  t.end();
 });
 
 test('reduce', function(t) {
-  t.equal(
+  t.is(
     i.reduce((acc, n) => acc + n, 5, [1,2,3,4,5,6,7,8,9,10]),
     60,
     'reduce should use seed value when provided'
   );
 
-  t.equal(
+  t.is(
     i.reduce((acc, n) => acc + n, [1,2,3,4,5,6,7,8,9,10]),
     55,
     'reduce should use first item if iterable when seed value is not provided'
   );
 
-  t.end();
 
 });
