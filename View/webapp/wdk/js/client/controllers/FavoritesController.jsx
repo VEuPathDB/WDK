@@ -60,8 +60,8 @@ class FavoritesListController extends WdkViewController {
     };
   }
 
-  loadData() {
-    this.eventHandlers.loadFavoritesList();
+  loadData ({ loadFavoritesList }) {
+    loadFavoritesList();
   }
 
   isRenderDataLoaded(state) {
