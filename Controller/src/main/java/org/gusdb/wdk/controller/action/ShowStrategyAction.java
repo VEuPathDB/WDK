@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -133,12 +134,22 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Long, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException, WdkUserException {
+            UserBean user, String state) throws JSONException, WdkUserException, WdkModelException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
-        JSONObject jsState = (state == null) ? new JSONObject()
-                : new JSONObject(state);
+        
+        // In newer versions of supported tomcats, braces must be escaped to avoid a
+        // security vulnerability.  We need to decode the string representing the JSON object.
+        JSONObject jsState = null;
+        try {
+          jsState = (state == null) ? new JSONObject()
+                  : new JSONObject(java.net.URLDecoder.decode(state, "UTF-8"));
+        }
+        catch(UnsupportedEncodingException uee) {
+          throw new WdkModelException(uee);
+        }
+        
         String[] keys = JSONObject.getNames(jsState);
         Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
         if (keys != null) {
