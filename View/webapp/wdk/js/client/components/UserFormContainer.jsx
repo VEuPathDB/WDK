@@ -64,16 +64,18 @@ class UserFormContainer extends React.Component {
             <h1>{this.props.titleText}</h1>
             <IntroComponent/>
             <FormMessage {...formConfig}/>
-            <UserAccountForm user={this.props.userFormData}
-                             showChangePasswordBox={this.props.showChangePasswordBox}
-                             disableSubmit={formConfig.disableSubmit}
-                             onEmailChange={this.onEmailChange}
-                             onConfirmEmailChange={this.onConfirmEmailChange}
-                             onPropertyChange={this.onPropertyChange}
-                             onPreferenceChange={this.onPreferenceChange}
-                             onSubmit={this.onSubmit}
-                             submitButtonText={this.props.submitButtonText}
-                             wdkConfig={this.props.globalData.config}/>
+            <UserAccountForm
+              user={this.props.userFormData}
+              showChangePasswordBox={this.props.showChangePasswordBox}
+              disableSubmit={formConfig.disableSubmit}
+              onEmailChange={this.onEmailChange}
+              onConfirmEmailChange={this.onConfirmEmailChange}
+              onPropertyChange={this.onPropertyChange}
+              onPreferenceChange={this.onPreferenceChange}
+              onSubmit={this.onSubmit}
+              submitButtonText={this.props.submitButtonText}
+              wdkConfig={this.props.globalData.config}
+            />
           </div>
         }
       </div>
@@ -94,7 +96,7 @@ class UserFormContainer extends React.Component {
   }
 
   /**
-   * Dynamically creates a change handler with the 
+   * Dynamically creates a change handler with the
    * @param {string} field
    * @param {string} newValue
    */

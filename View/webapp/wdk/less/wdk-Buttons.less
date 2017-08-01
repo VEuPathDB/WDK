@@ -3,27 +3,48 @@ button.btn {
   padding: 8px 20px;
   font-size: 1em;
   line-height: 1em;
-  color: @white;
-  background: @blue;
-  border: none;
+  color: #333;
+  background: #e6e6e7;
+  border: 1px solid rgba(0,0,0,0.2);
 
   &:hover {
-    background: darken(@blue, 10%);
-    transform: scale(0.95);
+    background-color: #e4e4e4;
+    transform: scale(0.98);
     -webkit-transform: scale(0.95);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
   .fa {
-    margin-left: 5px;
+    margin-right: 10px;
     font-size: 1.2em;
   }
 
-  &.btn-red {
-    background: @red;
-    color: @white;
+  &.btn-error {
     &:hover {
-      background: darken(@red, 10%);
+      background-color: @red;
+      color: @white;
     }
+  }
+  &.btn-info {
+    &:hover {
+      background-color: @blue;
+      color: @white;
+    }
+  }
+  &.btn-success {
+    :hover {
+      background-color: @green;
+      color: @white;
+    }
+  }
+  &.btn-hazard {
+    &:hover {
+      background-color: @orange;
+      color: @white;
+    }
+  }
+  &.btn-warning {
+    &:hover { .buttonStyle(@gold); }
+    text-shadow: 0px 0px 5px darken(@gold, 25%);
   }
 }
