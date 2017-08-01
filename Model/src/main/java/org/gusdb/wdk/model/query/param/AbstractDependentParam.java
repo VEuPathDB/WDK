@@ -222,6 +222,7 @@ public abstract class AbstractDependentParam extends Param {
         throw new WdkModelException("The " + queryType + query.getFullName() + " requires a depended param " +
             queryParamName + ", but the param " + getFullName() + " doesn't depend on it.");
     }
+    /*
     
     // and depended params should match query's params
     Map<String, Param> queryParams = query.getParamMap();
@@ -230,6 +231,7 @@ public abstract class AbstractDependentParam extends Param {
         throw new WdkModelException("The dependent param " + getFullName() + " depends on param " +
             dependedParamName + ", but the " + queryType + query.getFullName() + " doesn't use this depended param.");
     }
+    */
     return query;
   }
   

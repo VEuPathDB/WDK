@@ -1,0 +1,33 @@
+@import 'common/mixins.less';
+@import 'common/palette.less';
+
+.selection-toolbar {
+  .flex();
+  justify-content: flex-end;
+  align-items: center;
+
+  .selection-toolbar-children {
+    flex: 1;
+  }
+
+  .selection-count {
+    flex: 1;
+    text-align: right;
+    opacity: 0.5;
+    padding: 10px;
+  }
+
+  .toolbar-item {
+    flex: none;
+    border: none;
+    margin: 5px;
+  }
+
+  &.empty-selection {
+    .toolbar-item {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+  }
+}
