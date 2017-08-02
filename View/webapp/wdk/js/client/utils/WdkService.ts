@@ -1,14 +1,14 @@
 import stringify from 'json-stable-stringify';
-import {difference, keyBy, memoize} from 'lodash';
+import { difference, keyBy, memoize } from 'lodash';
 import localforage from 'localforage';
-import {Ontology} from './OntologyUtils';
+import { Ontology } from './OntologyUtils';
 import {
   CategoryTreeNode,
   pruneUnknownPaths,
   sortOntology,
   resolveWdkReferences
 } from './CategoryUtils';
-import {alert} from './Platform';
+import { alert } from './Platform';
 import {
   Answer,
   AnswerSpec,
@@ -24,7 +24,7 @@ import {
   OntologyTermSummary,
   Favorite
 } from './WdkModel';
-import {User, PreferenceScope, UserPreferences, Step, UserWithPrefs} from './WdkUser';
+import { User, PreferenceScope, UserPreferences, Step, UserWithPrefs } from './WdkUser';
 import { pendingPromise } from './PromiseUtils';
 
 /**
@@ -386,23 +386,32 @@ export default class WdkService {
    * Gets favorite ID of a single record, or undefined if record is not a
    * favorite of the current user.  Thus can be used to check whether a record
    * is a favorite of the current user.
-   * 
+   *
    * @param record Record instance to search for
    */
-  getFavoriteId(record: RecordInstance) {
-    let data = [{
+  getFavoriteId (record: RecordInstance) {
+    let criteria = {
       recordClassName: record.recordClassName,
       primaryKey: record.id
-    }];
-    let url = '/user/current/favorites/query';
-    return this._fetchJson<Array<number>>('post', url, JSON.stringify(data))
-        .then(data => data.length == 0 ? undefined : data[0]);
+    };
+
+    let url = '/user/current/favorites';
+
+    return this._fetchJson<Array<Favorite>>('get', url)
+      .then(data => {
+        if (!data || !data.length) return undefined;
+        let found = data.find(fav => (
+          fav.recordClassName === criteria.recordClassName &&
+          fav.primaryKey === criteria.primaryKey
+        ));
+        return found ? found.id : undefined;
+      });
   }
 
   /**
    * Adds the passed record as a favorite of the current user and returns ID
    * of the new favorite.
-   * 
+   *
    * @param record Record to add as a favorite
    */
   addFavorite(record: RecordInstance) {
@@ -412,46 +421,54 @@ export default class WdkService {
     }
     let url = '/user/current/favorites';
     return this._fetchJson<Favorite>('post', url, JSON.stringify(favorite))
-        .then(data => data.id);
+      .then(data => data.id);
   }
 
   /**
    * Deletes the favorite with the passed ID and returns a promise with the
    * "new ID" i.e. undefined since favorite no longer exists
-   * 
+   *
    * @param id id of favorite to delete
    */
-  deleteFavorite(id: number) {
+  deleteFavorite (id: number) {
     let url = '/user/current/favorites/' + id;
-    return this._fetchJson<void>('delete', url).then(() => undefined);
+    return this._fetchJson<void>('delete', url)
+      .then(() => undefined);
   }
 
   /**
    * Returns an array of the current user's favorites
    */
-  getCurrentFavorites() {
+  getCurrentFavorites () {
     return this._fetchJson<Favorite[]>('get', '/user/current/favorites');
   }
 
   /**
    * Saves the note and group on the passed favorite to the server
-   * 
+   *
    * @param favorite
    */
-  saveFavorite(favorite: Favorite) {
+  saveFavorite (favorite: Favorite) {
     let url = '/user/current/favorites/' + favorite.id;
+    favorite.group = favorite.group ? favorite.group : '';
+    favorite.description = favorite.description ? favorite.description : '';
+    console.log('Saving favorite', favorite);
     return this._fetchJson<void>('put', url, JSON.stringify(favorite));
   }
 
-  deleteFavorites(ids: Array<number>) {
-    return this.setBulkDeleteStatus("delete", ids);
+  deleteFavorites (ids: Array<number>) {
+    let url = '/user/current/favorites';
+    let payload = JSON.stringify({ delete: ids });
+    return this._fetchJson<void>('patch', url, payload);
   }
 
-  undeleteFavorites(ids: Array<number>) {
-    return this.setBulkDeleteStatus("undelete", ids);
+  undeleteFavorites (ids: Array<number>) {
+    let url = '/user/current/favorites';
+    let payload = JSON.stringify({ undelete: ids });
+    return this._fetchJson<void>('patch', url, payload);
   }
 
-  setBulkDeleteStatus(operation: string, ids: Array<number>) {
+  setBulkDeleteStatus (operation: string, ids: Array<number>) {
     let url = '/user/current/favorites';
     let data = { [operation]: ids };
     return this._fetchJson<void>('patch', url, JSON.stringify(data));
