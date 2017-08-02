@@ -31,7 +31,6 @@ class FavoritesList extends Component {
     this.renderSelectionCell = this.renderSelectionCell.bind(this);
     this.renderIdCell = this.renderIdCell.bind(this);
     this.renderTypeCell = this.renderTypeCell.bind(this);
-    this.renderDeleteCell = this.renderDeleteCell.bind(this);
     this.renderSelectHeaderCell = this.renderSelectHeaderCell.bind(this);
 
     this.handleSort = this.handleSort.bind(this);
@@ -65,7 +64,7 @@ class FavoritesList extends Component {
   createDeletedBanner (selection) {
     if (!selection || !selection.length) return;
     const { banners } = this.state;
-    const bannerId = selection.map(s => s.display).join('-');
+    const bannerId = selection.map(s => s.displayName).join('-');
 
     const output = {
       id: bannerId,
@@ -88,7 +87,7 @@ class FavoritesList extends Component {
       let deleted = selection[0];
       output.message = (
         <span>
-          <b>{deleted.display}</b> was removed from your favorites.
+          <b>{deleted.displayName}</b> was removed from your favorites.
           <a onClick={undoDelete}>Undo <Icon fa="undo" /></a>
         </span>
       );
@@ -110,7 +109,7 @@ class FavoritesList extends Component {
       {
         element: <button className="btn btn-error"><Icon fa="trash" /> Remove</button>,
         handler: (rowData) => {
-          this.handleRowDelete(rowData, true);
+          this.handleRowDelete(rowData);
         },
         callback: (selection) => {
           console.log('running delete callback. selection is', selection);
@@ -200,7 +199,7 @@ class FavoritesList extends Component {
             <Column
               headerRenderer={this.renderHeaderCell}
               label="ID"
-              dataKey='display'
+              dataKey='displayName'
               width={130}
               className="wdk-VirtualizedTableCell"
               cellRenderer={this.renderIdCell}
@@ -217,7 +216,7 @@ class FavoritesList extends Component {
               headerRenderer={this.renderHeaderCell}
               width={450}
               label='Notes'
-              dataKey='note'
+              dataKey='description'
               className="wdk-VirtualizedTableCell"
               cellRenderer={this.renderNoteCell}
             />
@@ -364,7 +363,7 @@ class FavoritesList extends Component {
         rowIndex={rowIndex}
       >
         <div style={{ whiteSpace:'normal' }}>
-          <RecordLink recordClass={recordClass} recordId={rowData.id}>{cellData}</RecordLink>
+          <RecordLink recordClass={recordClass} recordId={rowData.primaryKey}>{rowData.displayName}</RecordLink>
         </div>
       </CellMeasurer>
     );
@@ -372,7 +371,7 @@ class FavoritesList extends Component {
 
   toggleRowSelected (rowData) {
     let { selectedFavorites } = this.state;
-    const selectionIndex = selectedFavorites.findIndex(favorite => rowData.display === favorite.display);
+    const selectionIndex = selectedFavorites.findIndex(favorite => rowData.displayName === favorite.displayName);
     if (selectionIndex >= 0) {
       selectedFavorites.splice(selectionIndex, 1);
     } else {
@@ -395,7 +394,7 @@ class FavoritesList extends Component {
   */
   renderSelectionCell ({ rowData }) {
     const { selectedFavorites } = this.state;
-    const isSelected = !!selectedFavorites.find(favorite => rowData.display === favorite.display);
+    const isSelected = !!selectedFavorites.find(favorite => rowData.displayName === favorite.displayName);
     const handler = () => this.toggleRowSelected(rowData);
 
     return <Checkbox value={isSelected} onChange={handler} />
@@ -514,14 +513,6 @@ class FavoritesList extends Component {
         </CellMeasurer>
       );
     }
-  }
-
-  renderDeleteCell({ rowData }) {
-    return (
-      <div onClick={() => this.handleRowDelete(rowData)}>
-        <Icon fa="times-circle delete-link" />
-      </div>
-    );
   }
 
   getDataKeyTooltip (dataKey) {
