@@ -69,6 +69,9 @@ const DateUtils = {
     day = (day.toString().length === 1 ? '0' : '') + day.toString();
     return `${year}-${month}-${day}`;
   },
+  formatDateObject ({ year = currentYear, month = 1, day = 1 }) {
+    return DateUtils.formatDate(year, month, day);
+  },
   isValidDateString (dateString) {
     if (typeof dateString !== 'string') return false;
     if (!dateString.match(/([0-9]{4,4})-([0-9]{2,2})-([0-9]{2,2})/)) return false;
