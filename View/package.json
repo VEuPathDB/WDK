@@ -9,8 +9,8 @@
   },
   "private": true,
   "dependencies": {
+    "@types/datatables.net": "^1.10.5",
     "@types/flux": "^3.1.2",
-    "@types/jquery.datatables": "^1.10.36",
     "@types/jqueryui": "^1.11.35",
     "@types/json-stable-stringify": "^1.0.31",
     "@types/lodash": "^4.14.70",
@@ -22,7 +22,7 @@
     "@types/react-router": "^4.0.14",
     "@types/react-router-dom": "^4.0.7",
     "@types/react-virtualized": "^9.7.2",
-    "@types/spin": "^2.3.30",
+    "@types/spin.js": "^2.3.0",
     "@types/webpack-env": "^1.13.0",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.1.1",
