@@ -485,7 +485,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
         //"     onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">" +
         "  <img style='width:50px;height:26px' src='" + wdk.assetsUrl('wdk/images/transparent1.gif') + "'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
-        "  <a href='#' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px;z-index:2;' " +
+        "  <a href='#' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
         "     >" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount'>" +
@@ -538,7 +538,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
       "         href='#'>"+
       "        <a href='#'"+
-      "           class='edit-icon step-elem' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px;z-index:2;'>"+
+      "           class='edit-icon step-elem' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
       getEditImage('top')+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
@@ -653,7 +653,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       "         href='#'> "+
       "      <a href='#' class='edit-icon step-elem'"+
       "           id='stepId_" + modelstep.frontId + "' " +
-      "           style='display:inline;position:absolute;z-index:2;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
+      "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
       "        <div class='crumb_details'></div>"+
@@ -1265,7 +1265,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     inval.setAttribute("class","invalidStep");
     var i = document.createElement('img');
     $(i).attr("src",wdk.assetsUrl("wdk/images/InvalidStep.png"))
-        .attr("style","height:36px;width:98px;cursor:pointer");
+        .attr("style","height:36;width:98;cursor:pointer");
         //.attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
     $(inval).append(i);
     return inval;

@@ -1,17 +1,26 @@
 .wdk-DateRangeSelector {
   display: inline-flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
+  div.control-row {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
 
-  padding: 10px;
-  border: 1px solid #888;
-
-  label {
-    padding: 5px;
-    display: inline-block;
-    font-size: 0.9em;
-    line-height: 0.9em;
-    font-weight: bold;
-    opacity: 0.5;
+    label {
+      flex: 0 0 auto;
+      padding: 5px;
+      min-width: 35px;
+      text-align: right;
+      align-self: center;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      font-weight: bold;
+      opacity: 0.5;
+    }
+    .wdk-DateSelector {
+      flex: 0 0 auto;
+      padding: 3px;
+      align-self: center;
+    }
   }
 }

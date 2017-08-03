@@ -50,7 +50,7 @@ export function dialog(title: string, message: string, buttons: ButtonDescriptor
       if (button.focus) $button.attr('autofocus', 'autofocus');
       return $button;
     });
-    $node.find('.wdk-AlertButtons').append(...$buttons);
+    $node.find('.wdk-AlertButtons').append($buttons);
     try {
       $node.dialog({
         title: title,

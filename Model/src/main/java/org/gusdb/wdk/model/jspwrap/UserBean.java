@@ -601,7 +601,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#clearFavorite()
    */
   public void clearFavorite() throws WdkModelException {
-    _wdkModel.getFavoriteFactory().clearFavorite(_user);
+    _wdkModel.getFavoriteFactory().deleteAllFavorites(_user);
   }
 
   /**
