@@ -11,6 +11,7 @@ public class Keys {
   // response status keys
   public static final String ERRORS = "errors";
   public static final String TABLE_ERRORS = "tableErrors";
+  public static final String NUMBER_PROCESSED = "numberProcessed";
 
   // container keys
   public static final String META = "meta";
@@ -19,6 +20,7 @@ public class Keys {
   // identifying keys
   public static final String ID = "id";
   public static final String NAME = "name";
+  public static final String PRIMARY_KEY = "primaryKey";
   public static final String URL_SEGMENT = "urlSegment";
   public static final String RECORD_ID_ATTRIBUTE_NAME = "recordIdAttributeName";
   public static final String PRIMARY_KEY_REFS = "primaryKeyColumnRefs";
@@ -64,6 +66,10 @@ public class Keys {
   public static final String IS_IN_REPORT = "isInReport";
   public static final String NEW_BUILD = "newBuild";
   public static final String REVISE_BUILD = "reviseBuild";
+
+  // patch command keys
+  public static final String DELETE = "delete";
+  public static final String UNDELETE = "undelete";
 
   // keys for what and how data is being referenced
   public static final String TREE = "tree";
@@ -142,11 +148,10 @@ public class Keys {
   public static final String MIN_VALUE = "min";
   public static final String MAX_VALUE = "max";
   public static final String STEP = "step";
-  
+    
   //favorites-specific keys
   public static final String FAVORITE_ID = "favoriteId";
   public static final String DISPLAY = "display";
   public static final String NOTE = "note";
   public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
-
 }

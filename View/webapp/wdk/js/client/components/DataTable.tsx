@@ -114,7 +114,7 @@ class DataTable extends PureComponent<Props> {
 
   _isRedrawing: boolean;
 
-  _dataTable: DataTables.Api;
+  _dataTable: DataTables.DataTable;
 
   _table: HTMLElement;
 
@@ -237,7 +237,7 @@ class DataTable extends PureComponent<Props> {
     .width(width || '')
     .appendTo(this.node)
     // click handler for expand single row
-    .on('click', 'td .wdk-DataTableCellExpand', (e) => {
+    .on('click', 'td .wdk-DataTableCellExpand', (e: JQueryEventObject) => {
       let tr = $(e.target).closest('tr');
       let row = this._dataTable.row(tr);
       if (row.child.isShown()) {
@@ -414,7 +414,7 @@ export default wrappable(withLibs(DataTable));
 // -------
 
 /** helper to determine if all child rows are visible */
-function areAllChildRowsShown(dataTable: DataTables.Api) {
+function areAllChildRowsShown(dataTable: DataTables.DataTable) {
   return dataTable.rows().indexes().toArray().every((i: number) => !!dataTable.row(i).child.isShown());
 }
 
