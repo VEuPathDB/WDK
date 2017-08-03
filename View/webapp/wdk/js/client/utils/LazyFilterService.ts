@@ -145,8 +145,7 @@ export default class LazyFilterService extends FilterService {
               [d.term]: _.get(fieldMetadata, [ d.term, 'values' ], [])
             }), {} as Metadata);
           resolve(this.fieldMetadataMap[term]);
-        })
-        .fail(function(err) {
+        }, (err) => {
           if (err.statusText !== 'abort') {
             // TODO Show user an error message
             reject(err);

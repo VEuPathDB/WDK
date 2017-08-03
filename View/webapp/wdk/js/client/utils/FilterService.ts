@@ -54,7 +54,7 @@ export type Metadata = {
 
 export type IFilter<Value> = {
   field: string;
-  value: Value;
+  value?: Value;
   includeUnknown: boolean;
   display: string;
   selection?: Datum[];
@@ -177,7 +177,7 @@ export default class FilterService {
   }
 
   updateFilters(filters: Filter[]) {
-    this.filters = filters;
+    this.filters = fixFilters(filters);
     this.isLoading = true;
     this._emitChange();
 
@@ -253,4 +253,23 @@ export default class FilterService {
     this._emitter.emit(CHANGE_EVENT);
   }
 
+}
+
+/**
+ * Converts filters using older formats to current format.
+ * @param filters
+ */
+function fixFilters(filters: Filter[]): Filter[] {
+  return filters.map(function(filter) {
+
+    // We used to use `null` to indicate unknown, but now we use an explicit
+    // property. So, we will remove null and set the property to `true`.
+    if (Array.isArray(filter.value) && filter.value.includes(null as any)) {
+      return Object.assign({}, filter, {
+        value: filter.value.filter(value => value != null),
+        includeUnknown: true
+      })
+    }
+    return filter;
+  })
 }

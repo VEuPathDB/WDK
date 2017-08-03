@@ -21,7 +21,7 @@
   /* position: absolute; */
 }
 .filter-param .filter-items-wrapper {
-  height: 2em;
+  min-height: 2em;
   margin-bottom: .5em;
 }
 .filter-param, .filter-param * {
@@ -69,7 +69,10 @@
   color: #666666;
   float: right;
 }
-.filter-oaram .chart-container {
+.filter-param .range-filter .include-unknown {
+  margin-left: 1.5em;
+}
+.filter-param .chart-container {
   position: relative;
 }
 .filter-param .chart {
