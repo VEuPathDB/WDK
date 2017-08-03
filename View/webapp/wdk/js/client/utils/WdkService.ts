@@ -389,24 +389,15 @@ export default class WdkService {
    *
    * @param record Record instance to search for
    */
-  getFavoriteId (record: RecordInstance) {
-    let criteria = {
-      recordClassName: record.recordClassName,
-      primaryKey: record.id
-    };
-
-    let url = '/user/current/favorites';
-
-    return this._fetchJson<Array<Favorite>>('get', url)
-      .then(data => {
-        if (!data || !data.length) return undefined;
-        let found = data.find(fav => (
-          fav.recordClassName === criteria.recordClassName &&
-          fav.primaryKey === criteria.primaryKey
-        ));
-        return found ? found.id : undefined;
-      });
-  }
+  getFavoriteId(record: RecordInstance) {
+      let data = [{
+        recordClassName: record.recordClassName,
+        primaryKey: record.id
+      }];
+      let url = '/user/current/favorites/query';
+      return this._fetchJson<Array<number>>('post', url, JSON.stringify(data))
+          .then(data => data.length == 0 ? undefined : data[0]);
+    }
 
   /**
    * Adds the passed record as a favorite of the current user and returns ID
@@ -452,20 +443,15 @@ export default class WdkService {
     let url = '/user/current/favorites/' + favorite.id;
     favorite.group = favorite.group ? favorite.group : '';
     favorite.description = favorite.description ? favorite.description : '';
-    console.log('Saving favorite', favorite);
     return this._fetchJson<void>('put', url, JSON.stringify(favorite));
   }
 
   deleteFavorites (ids: Array<number>) {
-    let url = '/user/current/favorites';
-    let payload = JSON.stringify({ delete: ids });
-    return this._fetchJson<void>('patch', url, payload);
+    return this.setBulkDeleteStatus("delete", ids);
   }
 
   undeleteFavorites (ids: Array<number>) {
-    let url = '/user/current/favorites';
-    let payload = JSON.stringify({ undelete: ids });
-    return this._fetchJson<void>('patch', url, payload);
+    return this.setBulkDeleteStatus("undelete", ids);
   }
 
   setBulkDeleteStatus (operation: string, ids: Array<number>) {
