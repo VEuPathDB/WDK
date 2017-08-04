@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,6 +63,16 @@ public class FilterParam extends FlatVocabParam {
 
   private String metadataSpecQueryRef;
   private Query metadataSpecQuery;
+  
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = super.getContainedQueryFullNames();
+    names.add(metadataQueryRef);
+    names.add(metadataSpecQueryRef);
+    return names;
+  }
+
+
 
   private String defaultColumns;
 

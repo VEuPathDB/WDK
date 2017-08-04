@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,4 +174,11 @@ public class EnumParam extends AbstractEnumParam {
     // because
     // of it.
   }
+  
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = new HashSet<String>();
+    return names;
+  }
+
 }

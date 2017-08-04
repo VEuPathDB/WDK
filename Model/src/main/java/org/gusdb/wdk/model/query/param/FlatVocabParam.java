@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
@@ -34,6 +37,14 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   private Query vocabQuery;
   private String vocabQueryRef;
+  
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = new HashSet<String>();
+    names.add(vocabQueryRef);
+    return names;
+  }
+
 
   /**
    * The name of the query where is param is used. Please note that each query hold a separate copy of the

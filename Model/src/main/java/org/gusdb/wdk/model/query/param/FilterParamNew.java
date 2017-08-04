@@ -6,9 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.cache.ItemCache;
@@ -118,6 +121,16 @@ public class FilterParamNew extends AbstractDependentParam {
   
   private String backgroundQueryRef;
   private Query backgroundQuery;
+  
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = new HashSet<String>();
+    names.add(metadataQueryRef);
+    names.add(summaryMetadataQueryRef);
+    names.add(ontologyQueryRef);
+    names.add(backgroundQueryRef);
+    return names;
+  }
   
   private boolean useSummaryMetadataQueryForInternalValue = false;
   
@@ -708,7 +721,6 @@ public class FilterParamNew extends AbstractDependentParam {
     // TODO phase 2 
     return null;
   }
-
 
 }
  
