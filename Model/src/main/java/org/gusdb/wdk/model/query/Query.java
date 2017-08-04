@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -669,7 +671,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public void fillContextParamValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     for (Param param : paramMap.values()) {
-      if (param instanceof AbstractEnumParam) {
+      if (param instanceof AbstractDependentParam) {
         // for enum/flatVocab params, call a special method to process it
         Map<String, DependentParamInstance> caches = new HashMap<>();
         ((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
@@ -755,5 +757,19 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+  
+  public void validateDependentParams() throws WdkModelException {
+   validateDependentParams(paramMap.keySet());
+  }
+  
+  private void validateDependentParams(Set<String> rootQueryParamNames) throws WdkModelException {
+    for (Param param : paramMap.values()) {
+      if (param instanceof AbstractDependentParam) {
+        
+        //((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
+      }
+    }  
+
   }
 }

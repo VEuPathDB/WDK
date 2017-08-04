@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -57,7 +58,9 @@ import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.ontology.OntologyFactory;
 import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
@@ -654,6 +657,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     // create boolean questions
     createBooleanQuestions();
+   
+    validateDependentParams();
 
     // create step analysis factory - wait until the end since it spawns a thread
     //   that would have to be cleaned up if error occurs during reference resolving)
@@ -664,6 +669,31 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     LOG.info("WDK Model configured.");
   }
 
+  private void validateDependentParams() throws WdkModelException {
+    
+    // find names of all queries that are not owned by a parameter.  these are our "root" queries
+    Set<String> nonRootQueryNames = new HashSet<String>();
+    for (ParamSet paramSet : paramSets.values()) {
+      for (Param param : paramSet.getParams()) {
+        if (param instanceof AbstractDependentParam) {
+          nonRootQueryNames.addAll(((AbstractDependentParam)param).getContainedQueryFullNames());
+        }
+      }
+    }
+    
+    // gather all root queries (those that are not contained by a param).  
+    Set<Query> rootQueries = new HashSet<Query>();
+    for (QuerySet querySet : querySets.values()) {
+      for (Query query : querySet.getQueries()) {
+        if (!nonRootQueryNames.contains(query.getFullName())) rootQueries.add(query);
+      }
+    }
+    
+    // for each root query, put the names of its immediate parameters into a "context"
+    // then recurse down through its param-query tree, and validate that all queries use only params
+    // found in the context
+    for (Query rootQuery : rootQueries) rootQuery.validateDependentParams();
+  }
 
   @Override
   public void close() {
