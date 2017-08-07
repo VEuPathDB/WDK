@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
@@ -37,7 +38,7 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
     cacheKeyJson.put(METADATA_QUERY_REF_KEY, _metadataQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
         AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
-    return cacheKeyJson.toString();
+    return JsonUtil.serialize(cacheKeyJson);
   }
 
   /**
