@@ -167,10 +167,10 @@ export type UserDataset = {
 }
 
 export type Favorite = {
+  id: number;
   recordClassName: string;
-  id: PrimaryKey;
+  primaryKey: PrimaryKey;
+  displayName: string;
+  description: string;
   group: string;
-  note: string;
-  display: string;
 }
-

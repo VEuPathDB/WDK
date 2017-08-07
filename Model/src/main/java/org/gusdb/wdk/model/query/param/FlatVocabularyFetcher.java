@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -46,7 +47,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
         AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
-    return cacheKeyJson.toString();
+    return JsonUtil.serialize(cacheKeyJson);
   }
 
   /**

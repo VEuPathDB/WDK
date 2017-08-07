@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -275,7 +276,7 @@ public class StepAnalysisContext {
    */
   public String serializeContext() {
     try {
-      return getSharedJson().toString();
+      return JsonUtil.serialize(getSharedJson());
     }
     catch (JSONException e) {
       throw new WdkRuntimeException("Unable to serialize context.", e);

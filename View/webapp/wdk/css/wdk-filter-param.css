@@ -21,7 +21,7 @@
   /* position: absolute; */
 }
 .filter-param .filter-items-wrapper {
-  height: 2em;
+  min-height: 2em;
   margin-bottom: .5em;
 }
 .filter-param, .filter-param * {

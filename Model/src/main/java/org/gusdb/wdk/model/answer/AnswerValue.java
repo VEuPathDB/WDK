@@ -15,6 +15,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -268,7 +269,7 @@ public class AnswerValue {
         jsContent.put("filters", _filterOptions.getJSON());
 
       // encrypt the content to make step-independent checksum
-      _checksum = EncryptionUtil.encrypt(jsContent.toString());
+      _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsContent));
     }
     return _checksum;
   }

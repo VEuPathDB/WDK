@@ -84,7 +84,7 @@ class RecordController extends WdkViewController {
 
   renderRecord(state, eventHandlers) {
     if (state.record) {
-      let { user, record, recordClass, inBasket, inFavorites,
+      let { user, record, recordClass, inBasket, favoriteId,
         loadingBasketStatus, loadingFavoritesStatus } = state;
       let loadingClassName = 'fa fa-circle-o-notch fa-spin';
       let headerActions = [];
@@ -99,11 +99,16 @@ class RecordController extends WdkViewController {
         });
       }
       headerActions.push({
-        label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
+        label: favoriteId ? 'Remove from favorites' : 'Add to favorites',
         iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
         onClick(event) {
           event.preventDefault();
-          eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
+          if (favoriteId) {
+            eventHandlers.removeFavorite(record, favoriteId);
+          }
+          else {
+            eventHandlers.addFavorite(user, record);
+          }
         }
       },
       {
