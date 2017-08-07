@@ -41,6 +41,7 @@ my %dblinkMap = (
     'amazcomms'   => 'amazS.login_comment',
     'amazcommn'   => 'amazN.login_comment',
     'icmrcomm'    => 'icemr.login_comment',
+    'gatescommn'  => 'gatesn.login_comment',
     'gus4commn'   => 'gus4commN.login_comment',
     'gus4comms'   => 'gus4commS.login_comment',
     'gus4commt'   => 'gus4commT.login_comment',

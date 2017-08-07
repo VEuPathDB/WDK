@@ -33,6 +33,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -354,7 +355,7 @@ public class StepFactory {
       psInsertStep.setString(10, _wdkModel.getVersion());
       psInsertStep.setString(11, questionName);
       psInsertStep.setObject(12, strategyId);
-      _userDb.getPlatform().setClobData(psInsertStep, 13, jsParamFilters.toString(), false);
+      _userDb.getPlatform().setClobData(psInsertStep, 13, JsonUtil.serialize(jsParamFilters), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -879,7 +880,7 @@ public class StepFactory {
       else
         psStep.setObject(4, null);
       psStep.setInt(5, step.getAssignedWeight());
-      platform.setClobData(psStep, 6, jsContent.toString(), false);
+      platform.setClobData(psStep, 6, JsonUtil.serialize(jsContent), false);
       psStep.setBoolean(7, true);
       psStep.setLong(8, step.getStepId());
       int result = psStep.executeUpdate();

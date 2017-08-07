@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -406,7 +407,7 @@ public class FilterParam extends FlatVocabParam {
         JSONObject jsNewStableValue = new JSONObject();
         jsNewStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
         jsNewStableValue.put(FilterParamHandler.FILTERS_KEY, new JSONArray());
-        return jsNewStableValue.toString();
+        return JsonUtil.serialize(jsNewStableValue);
       }
 
       JSONObject jsStableValue = new JSONObject(stableValue);
