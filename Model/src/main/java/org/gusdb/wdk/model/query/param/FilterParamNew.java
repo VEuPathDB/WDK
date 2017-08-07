@@ -16,6 +16,7 @@ import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -612,7 +613,7 @@ public class FilterParamNew extends AbstractDependentParam {
       if (stableValue == null || stableValue.length() == 0) {
         JSONObject jsNewStableValue = new JSONObject();
         jsNewStableValue.put(FilterParamHandler.FILTERS_KEY, new JSONArray());
-        return jsNewStableValue.toString();
+        return JsonUtil.serialize(jsNewStableValue);
       }
 
       JSONObject jsStableValue = new JSONObject(stableValue);
@@ -639,6 +640,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return defaultValue;
   }
 
+  @Override
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
     // TODO phase 2 fix this.
     String defaultValue = new JSONObject().toString();

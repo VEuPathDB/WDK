@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -337,7 +338,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public String getChecksum(boolean extra) throws WdkModelException {
     try {
       JSONObject jsQuery = getChecksumJSON(extra);
-      return EncryptionUtil.encrypt(jsQuery.toString());
+      return EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
@@ -722,7 +723,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-    return EncryptionUtil.encrypt(jsQuery.toString());
+    return EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
   }
 
 

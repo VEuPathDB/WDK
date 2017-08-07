@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -283,6 +284,6 @@ public class FilterParamHandler extends AbstractParamHandler {
       if (!jsValue.has(TERMS_KEY))
         jsValue.put(TERMS_KEY, new JSONArray());
     }
-    return jsValue.toString();
+    return JsonUtil.serialize(jsValue);
   }
 }

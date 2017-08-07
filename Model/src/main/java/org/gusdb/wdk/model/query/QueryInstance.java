@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -140,7 +141,7 @@ public abstract class QueryInstance<T extends Query> {
   public String getChecksum() throws WdkModelException, WdkUserException {
     if (checksum == null) {
       JSONObject jsQuery = getJSONContent();
-      checksum = EncryptionUtil.encrypt(jsQuery.toString());
+      checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
     }
     return checksum;
   }
