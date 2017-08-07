@@ -6,23 +6,25 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
+import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
+import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 
-public class Favorite {
+public class Favorite extends FavoriteIdentity implements NoteAndGroup {
 
     private static final Logger LOG = Logger.getLogger(Favorite.class);
 
-    private final User user;
-    private final RecordClass recordClass;
-    private final PrimaryKeyValue id;
-    private final String display;
-    private String note;
-    private String group;
+    private final long _favoriteId;
+    private final User _user;
+    private final String _display;
+    private String _note;
+    private String _group;
+    private boolean _isDeleted = false;
 
-    public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey) {
-        this.user = user;
-        this.recordClass = recordClass;
-        this.id = primaryKey;
-        this.display = createDisplay(user, recordClass, id);
+    public Favorite(User user, RecordClass recordClass, PrimaryKeyValue primaryKey, long favoriteId) {
+      super(recordClass, primaryKey);
+      _favoriteId = favoriteId;
+      _user = user;
+      _display = createDisplay(user, recordClass, primaryKey);
     }
 
     private static String createDisplay(User user, RecordClass recordClass, PrimaryKeyValue pkValue) {
@@ -42,50 +44,60 @@ public class Favorite {
       return pkValue.getValuesAsString();
     }
 
+    /**
+     * Return the sequence generated primary key for the Favorite table
+     * @return
+     */
+    public long getFavoriteId() {
+      return _favoriteId;
+    }
+
     public User getUser() {
-        return user;
-    }
-
-    public RecordClass getRecordClass() {
-        return recordClass;
-    }
-
-    public PrimaryKeyValue getPrimaryKey() {
-        return id;
+        return _user;
     }
 
     /**
      * @return the note
      */
+    @Override
     public String getNote() {
-        return note;
+        return _note;
     }
 
     /**
      * @param note
      *            the note to set
      */
-    void setNote(String note) {
-        this.note = note;
+    public void setNote(String note) {
+        this._note = note;
     }
 
     /**
      * @return the group
      */
+    @Override
     public String getGroup() {
-        return group;
+        return _group;
     }
 
     /**
      * @param group
      *            the group to set
      */
-    void setGroup(String group) {
-        this.group = group;
+    public void setGroup(String group) {
+        this._group = group;
     }
 
     public String getDisplay() {
-      return display;
+      return _display;
+    }
+
+    public void setDeleted(boolean isDeleted) {
+      _isDeleted = isDeleted;
+    }
+
+    public boolean isDeleted() {
+      return _isDeleted;
     }
 
 }

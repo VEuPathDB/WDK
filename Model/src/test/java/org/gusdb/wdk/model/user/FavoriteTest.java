@@ -30,7 +30,7 @@ public class FavoriteTest {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        favs.clearFavorite(user);
+        favs.deleteAllFavorites(user);
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
 
         String rcName = recordClass.getFullName();
@@ -77,7 +77,7 @@ public class FavoriteTest {
 
         addSomeRecords(user, recordClass);
 
-        favs.clearFavorite(user);
+        favs.deleteAllFavorites(user);
 
         Assert.assertEquals(0, favs.getFavoriteCounts(user));
     }
@@ -86,7 +86,7 @@ public class FavoriteTest {
     public void testGetCounts() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
-        favs.clearFavorite(user);
+        favs.deleteAllFavorites(user);
 
         List<Map<String, Object>> added1 = addSomeRecords(user, recordClass);
 
@@ -101,7 +101,7 @@ public class FavoriteTest {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        favs.clearFavorite(user);
+        favs.deleteAllFavorites(user);
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
         Assert.assertEquals(added.size(), favs.getFavoriteCounts(user));
@@ -121,7 +121,7 @@ public class FavoriteTest {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
 
-        favs.clearFavorite(user);
+        favs.deleteAllFavorites(user);
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
         Assert.assertEquals(added.size(), favs.getFavoriteCounts(user));

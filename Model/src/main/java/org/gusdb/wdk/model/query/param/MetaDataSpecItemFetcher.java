@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -69,7 +70,7 @@ public class MetaDataSpecItemFetcher implements ItemFetcher<String, Map<String, 
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
         paramValuesJson.put(paramName, paramValues.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
-    return cacheKeyJson.toString();
+    return JsonUtil.serialize(cacheKeyJson);
   }
 
   @Override

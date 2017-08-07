@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -622,7 +623,7 @@ public class Strategy {
    */
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
-    String checksum = EncryptionUtil.encrypt(jsStrategy.toString());
+    String checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsStrategy));
     LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
     return checksum;
   }

@@ -19,10 +19,11 @@ class NumberSelector extends React.Component {
   }
 
   render () {
-    let { value, onChange, start, end } = this.props;
+    let { value, onChange, start, end, step } = this.props;
+    if (!step) step = 1;
     return (
       <span className="wdk-NumberSelector">
-        <input type="number" min={start} max={end} value={value} onChange={this.handleChangeEvent} />
+        <input type="number" min={start} max={end} step={step} value={value} onChange={this.handleChangeEvent} />
       </span>
     );
   }
