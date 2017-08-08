@@ -57,6 +57,19 @@ export type PasswordFormSubmissionStatusAction = {
   }
 }
 
+// actions to manage user password reset form
+export type ResetPasswordUpdateEmailAction = {
+  type: 'user/reset-password-email-update',
+  payload: string
+}
+export type ResetPasswordSubmissionStatusAction = {
+  type: 'user/reset-password-submission-status',
+  payload : {
+    success: boolean,
+    message: string
+  }
+}
+
 // actions related to login
 export type ShowLoginModalAction = {
   type: 'user/show-login-modal',
@@ -255,6 +268,37 @@ export let updateChangePasswordForm: ActionCreator<PasswordFormUpdateAction> = (
     type: 'user/password-form-update',
     payload: formData
   }
+};
+
+export let updatePasswordResetEmail: ActionCreator<ResetPasswordUpdateEmailAction> = (emailText: string) => {
+  return {
+    type: 'user/reset-password-email-update',
+    payload: emailText
+  };
+};
+
+let createResetPasswordStatusAction: ActionCreator<ResetPasswordSubmissionStatusAction> = (message: string) => {
+  return {
+    type: 'user/reset-password-submission-status',
+    payload: {
+      success: (message ? false : true),
+      message: message
+    }
+  }
+};
+
+export let submitPasswordReset: ActionCreator<ResetPasswordSubmissionStatusAction> = (email: string) => {
+  return function run(dispatch, { wdkService }) {
+    dispatch(createResetPasswordStatusAction("Submitting..."));
+    wdkService.resetUserPassword(email).then(
+        () => {
+          dispatch(createResetPasswordStatusAction(undefined));
+        },
+        error => {
+          dispatch(createResetPasswordStatusAction(error.response));
+        }
+    );
+  };
 };
 
 // Session management action creators and helpers
