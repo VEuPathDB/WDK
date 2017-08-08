@@ -181,7 +181,7 @@ public class ProfileService extends UserService {
       catch (WdkUserException e) {
         throw new DataValidationException(NO_USER_BY_THAT_EMAIL);
       }
-      return Response.accepted().build();
+      return Response.noContent().build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
