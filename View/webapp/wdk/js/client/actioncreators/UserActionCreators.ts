@@ -299,7 +299,7 @@ export let submitPasswordReset: ActionCreator<ResetPasswordSubmissionStatusActio
           transitioner.transitionToInternalPage('/user/message/password-reset-successful');
         },
         error => {
-          dispatch(createResetPasswordStatusAction(error.response));
+          dispatch(createResetPasswordStatusAction(error.response || error.message));
         }
     );
   };
