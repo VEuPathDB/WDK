@@ -38,7 +38,7 @@ UserPasswordReset.propTypes = {
   emailText: PropTypes.string.isRequired,
 
   /** message to be shown to the user */
-  message: PropTypes.string.isRequired,
+  message: PropTypes.string,
 
   /** event handler to call when textbox content changes */
   updatePasswordResetEmail: PropTypes.func.isRequired,
