@@ -26,6 +26,7 @@ import org.json.JSONObject;
 public class UserCreationService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(UserCreationService.class);
+
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)

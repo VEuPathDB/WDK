@@ -1,21 +1,16 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-//import UserRegistration from '../components/UserProfile';
-import { updateProfileForm, submitProfileForm } from '../actioncreators/UserActionCreators';
+import UserPasswordReset from '../components/UserPasswordReset';
+import { updatePasswordResetEmail, submitPasswordReset } from '../actioncreators/UserActionCreators';
 
 class UserPasswordResetController extends WdkViewController {
 
-  //getStoreName() {
-  //  return "UserRegistrationStore";
-  //}
-
-  getActionCreators() {
-    return { updateProfileForm, submitProfileForm };
+  getStoreName() {
+    return "UserPasswordResetStore";
   }
 
-  isRenderDataLoaded() {
-    return true;
-    //return (this.state.userFormData != null && this.state.globalData.config != null);
+  getActionCreators() {
+    return { updatePasswordResetEmail, submitPasswordReset };
   }
 
   getTitle() {
@@ -23,8 +18,7 @@ class UserPasswordResetController extends WdkViewController {
   }
 
   renderView(state, eventHandlers) {
-    return ( <div>Password reset page</div> );
-    //return ( <UserRegistration {...state} userEvents={eventHandlers}/> );
+    return ( <UserPasswordReset {...state} {...eventHandlers} /> );
   }
 }
 
