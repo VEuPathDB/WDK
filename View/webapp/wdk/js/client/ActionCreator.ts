@@ -7,8 +7,16 @@ import {Action} from "./dispatcher/Dispatcher";
  * Created by dfalke on 8/17/16.
  */
 
+export type TransitionFunction = (url: string) => void;
+
+export interface PageTransitioner {
+  transitionToExternalPage: TransitionFunction;
+  transitionToInternalPage: TransitionFunction;
+}
+
 export interface ActionCreatorServices {
   wdkService: WdkService;
+  transitioner: PageTransitioner;
 }
 
 export type ActionCreatorResult<T extends Action> = T

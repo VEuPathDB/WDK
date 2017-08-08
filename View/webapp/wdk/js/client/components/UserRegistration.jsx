@@ -68,7 +68,7 @@ let PrivacyPolicy = () => (
       <b>EuPathDB Websites Privacy Policy</b> 
     </div>
     <table>
-      <tableBody>
+      <tbody>
         <tr>
           <td width="40%">
             <p><b>How we will use your email:</b></p>
@@ -91,7 +91,7 @@ let PrivacyPolicy = () => (
             </div>
           </td>
         </tr>
-      </tableBody>
+      </tbody>
     </table>
   </div>
 );

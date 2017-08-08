@@ -40,7 +40,7 @@ export function initialize(options) {
   // define the elements of the Flux architecture
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
-  let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
+  let makeDispatchAction = getDispatchActionMaker(rootUrl, dispatcher, { wdkService });
   let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
@@ -143,15 +143,18 @@ function wrapStores(storeWrappers) {
  *
  * An `action` function should ultimately return an object to invoke a dispatch.
  *
+ * @param {String} rootUrl
  * @param {Dispatcher} dispatcher
- * @param {Object?} services
+ * @param {Object?} serviceSubset
  */
-export function getDispatchActionMaker(dispatcher, services) {
+export function getDispatchActionMaker(rootUrl, dispatcher, serviceSubset) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
-  return function makeDispatchAction(channel) {
+  return function makeDispatchAction(channel, history) {
     if (channel === undefined) {
       console.warn("Call to makeDispatchAction() with no channel defined.");
     }
+    let transitioner = getTransitioner(rootUrl, history);
+    let services = Object.assign({}, serviceSubset, { transitioner });
     return function dispatchAction(action) {
       if (typeof action === 'function') {
         // Call the function with dispatchAction and services
@@ -177,6 +180,19 @@ export function getDispatchActionMaker(dispatcher, services) {
       return dispatcher.dispatch(action);
     };
   };
+}
+
+/**
+ * Creates a page transitioner service that provides convenience methods for
+ * navigating seamlessly to a new page, either internally or externally.
+ * 
+ * @param {String} rootUrl
+ * @param {History} history
+ */
+function getTransitioner(rootUrl, history) {
+  let transitionToExternalPage = url => { history.push(url); };
+  let transitionToInternalPage = page => { transitionToExternalPage(rootUrl + page); };
+  return { transitionToExternalPage, transitionToInternalPage };
 }
 
 /**
