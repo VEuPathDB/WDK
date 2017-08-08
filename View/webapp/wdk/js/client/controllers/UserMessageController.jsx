@@ -5,7 +5,7 @@ import WdkViewController from './WdkViewController';
 class UserMessageController extends WdkViewController {
 
   getMessagePageContent() {
-    switch (this.props.messageKey) {
+    switch (this.props.match.params.messageKey) {
       case 'registration-successful':
         return {
           tabTitle: "Registration Successful!",
