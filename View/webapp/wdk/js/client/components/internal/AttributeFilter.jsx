@@ -1208,7 +1208,7 @@ var Histogram = (function() {
         // FIXME Format date
         qtipApi.set('content.text',
           this.props.xaxisLabel + ': ' + formattedValue +
-          '<br/>Total ' + this.props.yaxisLabel + ': ' + entry.count +
+          '<br/>All ' + this.props.yaxisLabel + ': ' + entry.count +
           '<br/>Matching ' + this.props.yaxisLabel + ': ' + entry.filteredCount);
         qtipApi.elements.tooltip.stop(1, 1);
         qtipApi.show(item);
@@ -1522,7 +1522,7 @@ class MembershipField extends React.Component {
       `<p>This table shows the distribution of ${displayName} with
         respect to ${fieldDisplay}.</p>
 
-        <p>The <i>Total</i> column indicates the number of
+        <p>The <i>All</i> column indicates the number of
         ${displayName} with the given ${fieldDisplay}
         value.</p>
 
@@ -1625,7 +1625,7 @@ class MembershipField extends React.Component {
               <thead>
                 <tr>
                   <th colSpan="2">{this.props.field.display}</th>
-                  <th>Total {this.props.displayName}</th>
+                  <th>All {this.props.displayName}</th>
                   <th>Matching {this.props.displayName}</th>
                   <th>Distribution</th>
                 </tr>
