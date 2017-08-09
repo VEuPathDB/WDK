@@ -309,12 +309,12 @@ function FieldFilter(props) {
               <FieldDetail key={props.field.term} {...fieldDetailProps} />
               <div className="filter-param-legend">
                 <div>
-                  <div className="bar"><div className="fill"></div></div>
-                  <div className="label">All {props.displayName}</div>
-                </div>
-                <div>
                   <div className="bar"><div className="fill filtered"></div></div>
                   <div className="label">{props.displayName} remaining when <em>other</em> criteria have been applied.</div>
+                </div>
+                <div>
+                  <div className="bar"><div className="fill"></div></div>
+                  <div className="label">All {props.displayName}</div>
                 </div>
               </div>
             </div>
@@ -1522,13 +1522,13 @@ class MembershipField extends React.Component {
       `<p>This table shows the distribution of ${displayName} with
         respect to ${fieldDisplay}.</p>
 
-        <p>The <i>All</i> column indicates the number of
-        ${displayName} with the given ${fieldDisplay}
-        value.</p>
-
         <p>The <i>Matching</i> column indicates the number of
         ${displayName} that match the critera chosen for other
         qualities and that have the given ${fieldDisplay}
+        value.</p>
+
+        <p>The <i>All</i> column indicates the number of
+        ${displayName} with the given ${fieldDisplay}
         value.</p>
 
         <p>You may add or remove ${displayName} with specific ${fieldDisplay}
@@ -1625,8 +1625,8 @@ class MembershipField extends React.Component {
               <thead>
                 <tr>
                   <th colSpan="2">{this.props.field.display}</th>
-                  <th>All {this.props.displayName}</th>
                   <th>Matching {this.props.displayName}</th>
+                  <th>All {this.props.displayName}</th>
                   <th>Distribution</th>
                 </tr>
               </thead>
@@ -1648,8 +1648,8 @@ class MembershipField extends React.Component {
                     <tr key={value} className={trClassNames} onClick={() => this.handleItemClick(value, !isChecked)} title={tooltip}>
                       <td><input value={value} type="checkbox" checked={isChecked} onChange={() => this.handleItemClick(value, !isChecked)}/></td>
                       <td><span className="value">{display}</span></td>
-                      <td><span className="frequency">{item.count}</span></td>
                       <td><span className="frequency">{item.filteredCount}</span></td>
+                      <td><span className="frequency">{item.count}</span></td>
                       <td><div className="bar">
                         <div className="fill" style={{ width: percentage + '%' }}/>
                         <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
