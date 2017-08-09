@@ -2,17 +2,11 @@
  * Temporary type declarations that should eventually be moved to code base
  */
 import WdkService from "./utils/WdkService";
+import {PageTransitioner} from "./utils/PageTransitioner";
 import {Action} from "./dispatcher/Dispatcher";
 /**
  * Created by dfalke on 8/17/16.
  */
-
-export type TransitionFunction = (url: string) => void;
-
-export interface PageTransitioner {
-  transitionToExternalPage: TransitionFunction;
-  transitionToInternalPage: TransitionFunction;
-}
 
 export interface ActionCreatorServices {
   wdkService: WdkService;

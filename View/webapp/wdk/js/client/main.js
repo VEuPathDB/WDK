@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
+import { getTransitioner } from './utils/PageTransitioner';
 import Root from './controllers/Root';
 import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
 import { updateLocation } from './actioncreators/RouterActionCreators';
@@ -40,7 +41,7 @@ export function initialize(options) {
   // define the elements of the Flux architecture
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
-  let makeDispatchAction = getDispatchActionMaker(rootUrl, dispatcher, { wdkService });
+  let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
   let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
@@ -147,13 +148,13 @@ function wrapStores(storeWrappers) {
  * @param {Dispatcher} dispatcher
  * @param {Object?} serviceSubset
  */
-export function getDispatchActionMaker(rootUrl, dispatcher, serviceSubset) {
+export function getDispatchActionMaker(dispatcher, serviceSubset) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
   return function makeDispatchAction(channel, history) {
     if (channel === undefined) {
       console.warn("Call to makeDispatchAction() with no channel defined.");
     }
-    let transitioner = getTransitioner(rootUrl, history);
+    let transitioner = getTransitioner(history);
     let services = Object.assign({}, serviceSubset, { transitioner });
     return function dispatchAction(action) {
       if (typeof action === 'function') {
@@ -180,19 +181,6 @@ export function getDispatchActionMaker(rootUrl, dispatcher, serviceSubset) {
       return dispatcher.dispatch(action);
     };
   };
-}
-
-/**
- * Creates a page transitioner service that provides convenience methods for
- * navigating seamlessly to a new page, either internally or externally.
- * 
- * @param {String} rootUrl
- * @param {History} history
- */
-function getTransitioner(rootUrl, history) {
-  let transitionToExternalPage = url => { history.push(url); };
-  let transitionToInternalPage = page => { transitionToExternalPage(rootUrl + page); };
-  return { transitionToExternalPage, transitionToInternalPage };
 }
 
 /**
