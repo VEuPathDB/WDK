@@ -1729,8 +1729,6 @@ class NumberField extends React.Component {
         <dd>{distMin}</dd>
         <dt>Max</dt>
         <dd>{distMax}</dd>
-        <dt>Unknown</dt>
-        <dd>{unknownCount}</dd>
       </dl>
     );
 
