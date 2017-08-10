@@ -1602,9 +1602,7 @@ class MembershipField extends React.Component {
     var total = reduce(dist, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
-    var sortedDistribution = sortBy(this.props.distribution, function({ value }) {
-      return value === null ? '\u200b' : value;
-    })
+    var sortedDistribution = sortBy(this.props.distribution, ({ value }) => value);
 
     // get filter, or create one for display purposes only
     var filterValue = get(this.props, 'filter.value', this.getKnownValues());
