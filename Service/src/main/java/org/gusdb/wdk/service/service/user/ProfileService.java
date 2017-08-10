@@ -33,11 +33,14 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.PasswordChangeRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
+import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
 import org.gusdb.wdk.session.LoginCookieFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ProfileService extends UserService {
+
+  private static final String PASSWORD_RESET_ENDPOINT = "password-reset";
 
   private static final String NOT_LOGGED_IN = "The user is not logged in.";
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
@@ -162,11 +165,13 @@ public class ProfileService extends UserService {
   }
 
   @POST
-  @Path("password-reset")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response resetUserPassword(String body)
       throws WdkModelException, DataValidationException {
     try {
+      if (!isUserIdSpecialString(PASSWORD_RESET_ENDPOINT)) {
+        return Response.status(new MethodNotAllowedStatusType()).build();
+      }
       JSONObject json = new JSONObject(body);
       String email = json.getString(Keys.EMAIL);
       UserFactory userMgr = getWdkModel().getUserFactory();
@@ -176,7 +181,7 @@ public class ProfileService extends UserService {
       catch (WdkUserException e) {
         throw new DataValidationException(NO_USER_BY_THAT_EMAIL);
       }
-      return Response.accepted().build();
+      return Response.noContent().build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);

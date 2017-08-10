@@ -85,7 +85,7 @@ function renderLoginForm(destination: string, webappUrl: string, open: boolean) 
     open: open,
     action: webappUrl + '/processLogin.do',
     redirectUrl: destination,
-    passwordResetUrl: webappUrl + '/showResetPassword.do',
-    registerUrl: webappUrl + '/showRegister.do'
+    passwordResetUrl: webappUrl + 'app/user/forgot-password',
+    registerUrl: webappUrl + 'app/user/registration'
   })), getLoginContainer());
 }

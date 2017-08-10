@@ -452,9 +452,11 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
+	 
     if (_resolved)
       return;
-
+    _resolved = true;
+    
     super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag
@@ -526,7 +528,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
             "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
                 Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
     }
-    _resolved = true;
   }
 
   /**
@@ -765,10 +766,11 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   }
   
   private void validateDependentParams(Set<String> rootQueryParamNames) throws WdkModelException {
+	// Need to validate that no params in the rootQuery paramMap have a short name that in fact refers to
+	// different params (i.e., params with different full names but the same short name).
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractDependentParam) {
-        
-        //((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
+        ((AbstractDependentParam) param).checkParam(getFullName(), null, paramMap, new ArrayList<String>());
       }
     }  
 

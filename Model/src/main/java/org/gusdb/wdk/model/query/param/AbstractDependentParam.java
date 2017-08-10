@@ -218,7 +218,7 @@ public abstract class AbstractDependentParam extends Param {
     
     // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {
-      String queryParamName = param.getName();
+      String queryParamName = param.getFullName();
       if (queryParamName.equals(PARAM_SERVED_QUERY) || queryParamName.equals(Utilities.PARAM_USER_ID))
         continue;
 
@@ -298,5 +298,27 @@ public abstract class AbstractDependentParam extends Param {
    * @return
    */
   public abstract Set<String> getContainedQueryFullNames();
+  
+  public void checkParam(String queryFullName, String parentParamName, Map<String,Param> rootParamMap, List<String> ancestorParamNames) throws WdkModelException {
+	if(!rootParamMap.keySet().contains(getName())) {
+	  throw new WdkModelException("The param " + getFullName() + " is not found in the param map of the root query " + queryFullName + ".");
+	}
+	if(ancestorParamNames.contains(getFullName())) {
+	  throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency in the root query " + queryFullName + ".");
+	}
+	ancestorParamNames.add(getFullName());
+	List<Query> queries = getQueries();
+	for(Query query : queries) {
+	  Map<String,Param> paramMap = query.getParamMap();
+	  for(Param param : paramMap.values()) {
+		if (param instanceof AbstractDependentParam) {
+		  ((AbstractDependentParam) param).checkParam(queryFullName, parentParamName, rootParamMap, new ArrayList<String>(ancestorParamNames));
+		}
+	  }
+	}
+	
+  }
+  
+  public abstract List<Query> getQueries();
 
 }

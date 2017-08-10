@@ -57,6 +57,19 @@ export type PasswordFormSubmissionStatusAction = {
   }
 }
 
+// actions to manage user password reset form
+export type ResetPasswordUpdateEmailAction = {
+  type: 'user/reset-password-email-update',
+  payload: string
+}
+export type ResetPasswordSubmissionStatusAction = {
+  type: 'user/reset-password-submission-status',
+  payload : {
+    success: boolean,
+    message: string
+  }
+}
+
 // actions related to login
 export type ShowLoginModalAction = {
   type: 'user/show-login-modal',
@@ -204,25 +217,26 @@ export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData
 /** Register user */
 type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
 export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserProfileFormData) => {
-  return function run(dispatch, { wdkService }) {
+  return function run(dispatch, { wdkService, transitioner }) {
     dispatch(createProfileFormStatusAction('pending'));
     let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
     let registrationData: UserWithPrefs = {
       user: trimmedUser,
       preferences: formData.preferences as UserPreferences
     }
-    return dispatch(wdkService.createNewUser(registrationData)
+    wdkService.createNewUser(registrationData)
       .then(responseData => {
         // success; clear the form in case user wants to register another user
         dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
+        // add success message to top of page (no longer needed with state transition)
+        //dispatch(createProfileFormStatusAction('success'));
         // then transition to registration success message page
-        
-        return createProfileFormStatusAction('success');
+        transitioner.transitionToInternalPage('/user/message/registration-successful');
       })
       .catch((error) => {
         console.error(error.response);
-        return createProfileFormStatusAction('error', error.response);
-      }));
+        dispatch(createProfileFormStatusAction('error', error.response));
+      });
   };
 };
 
@@ -255,6 +269,40 @@ export let updateChangePasswordForm: ActionCreator<PasswordFormUpdateAction> = (
     type: 'user/password-form-update',
     payload: formData
   }
+};
+
+export let updatePasswordResetEmail: ActionCreator<ResetPasswordUpdateEmailAction> = (emailText: string) => {
+  return {
+    type: 'user/reset-password-email-update',
+    payload: emailText
+  };
+};
+
+let createResetPasswordStatusAction: ActionCreator<ResetPasswordSubmissionStatusAction> = (message: string) => {
+  return {
+    type: 'user/reset-password-submission-status',
+    payload: {
+      success: (message ? false : true),
+      message: message
+    }
+  }
+};
+
+export let submitPasswordReset: ActionCreator<ResetPasswordSubmissionStatusAction> = (email: string) => {
+  return function run(dispatch, { wdkService, transitioner }) {
+    dispatch(createResetPasswordStatusAction("Submitting..."));
+    wdkService.resetUserPassword(email).then(
+        () => {
+          // clear form for next visitor to this page
+          dispatch(createResetPasswordStatusAction(undefined));
+          // transition to user message page
+          transitioner.transitionToInternalPage('/user/message/password-reset-successful');
+        },
+        error => {
+          dispatch(createResetPasswordStatusAction(error.response || error.message));
+        }
+    );
+  };
 };
 
 // Session management action creators and helpers
