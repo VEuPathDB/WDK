@@ -128,9 +128,9 @@ public class QuestionFormatter {
   /*
    * [ { value: string|null; count: number; filteredCount: number; }, ... ]
    */
-  public static JSONArray getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
+  public static <Value> JSONArray getOntologyTermSummaryJson(Map<Value, FilterParamSummaryCounts> counts) {
     JSONArray json = new JSONArray();
-    for (String term : counts.keySet()) {
+    for (Value term : counts.keySet()) {
       FilterParamSummaryCounts fpsc = counts.get(term);
       JSONObject c = new JSONObject();
       c.put("value", term == null ? JSONObject.NULL : term);

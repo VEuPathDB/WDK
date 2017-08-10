@@ -280,7 +280,7 @@ public class QuestionService extends WdkService {
   @Path("/{questionName}/{paramName}/ontologyTermSummary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
+  public <Value> Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
           throws WdkUserException, WdkModelException {
     
     Question question = getQuestionFromSegment(questionName);
@@ -292,7 +292,7 @@ public class QuestionService extends WdkService {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       String ontologyId = jsonBody.getString("ontologyId");
-      Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, jsonBody);
+      Map<Value, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, jsonBody);
       return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts).toString()).build();
     }
     catch (JSONException e) {
