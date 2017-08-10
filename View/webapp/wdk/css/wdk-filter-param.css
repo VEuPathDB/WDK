@@ -133,7 +133,6 @@
   font-weight: bold;
   position: relative;
   white-space: normal;
-  text-transform: capitalize;
   display: block;
 }
 .filter-param .wdk-AttributeFilterFieldParent,
