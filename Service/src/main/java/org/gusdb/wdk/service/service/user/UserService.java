@@ -25,6 +25,10 @@ public abstract class UserService extends WdkService {
     _userIdStr = userIdStr;
   }
 
+  protected boolean isUserIdSpecialString(String specialString) {
+    return _userIdStr.equals(specialString);
+  }
+
   /**
    * Ensures the target user exists and that the session user has the
    * permissions requested.  If either condition is not true, the appropriate

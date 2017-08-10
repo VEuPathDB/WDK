@@ -9,6 +9,7 @@ import java.util.Set;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -179,6 +180,11 @@ public class EnumParam extends AbstractEnumParam {
   public Set<String> getContainedQueryFullNames() {
     Set<String> names = new HashSet<String>();
     return names;
+  }
+  
+  @Override
+  public List<Query> getQueries() {
+	return new ArrayList<Query>();
   }
 
 }

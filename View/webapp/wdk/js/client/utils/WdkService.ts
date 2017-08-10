@@ -483,6 +483,12 @@ export default class WdkService {
     return this._fetchJson<void>('put', url, data);
   }
 
+  resetUserPassword(email: string) {
+    let url = '/user/password-reset';
+    let data = JSON.stringify({ email });
+    return this._fetchJson<void>('post', url, data);
+  }
+
   getCurrentUserPreferences() {
     if (!this._preferences) {
       this._preferences = this._fetchJson<UserPreferences>('get', '/user/current/preference');

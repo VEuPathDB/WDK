@@ -1,7 +1,9 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+
 
 /**
  * The FlatVocab param represents a list of param values that user can choose from. The difference between
@@ -43,6 +47,13 @@ public class FlatVocabParam extends AbstractEnumParam {
     Set<String> names = new HashSet<String>();
     names.add(vocabQueryRef);
     return names;
+  }
+  
+  @Override
+  public List<Query> getQueries() {
+	List<Query> queries = new ArrayList<Query>();
+	queries.add(vocabQuery);
+	return queries;
   }
 
 

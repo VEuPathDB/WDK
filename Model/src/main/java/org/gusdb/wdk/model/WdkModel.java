@@ -683,16 +683,22 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     
     // gather all root queries (those that are not contained by a param).  
     Set<Query> rootQueries = new HashSet<Query>();
+    Set<String> rootQueryNames = new HashSet<String>();
     for (QuerySet querySet : querySets.values()) {
       for (Query query : querySet.getQueries()) {
-        if (!nonRootQueryNames.contains(query.getFullName())) rootQueries.add(query);
+        if (!nonRootQueryNames.contains(query.getFullName())) {
+        	rootQueries.add(query);
+            rootQueryNames.add(query.getFullName());	
+        }
       }
     }
     
     // for each root query, put the names of its immediate parameters into a "context"
     // then recurse down through its param-query tree, and validate that all queries use only params
     // found in the context
-    for (Query rootQuery : rootQueries) rootQuery.validateDependentParams();
+    for (Query rootQuery : rootQueries) {
+    	rootQuery.validateDependentParams();	
+    }
   }
 
   @Override

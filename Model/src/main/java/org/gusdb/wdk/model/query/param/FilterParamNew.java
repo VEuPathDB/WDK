@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -702,13 +703,13 @@ public class FilterParamNew extends AbstractDependentParam {
     try {
       FilterParamNewFetcher fetcher = new FilterParamNewFetcher(this);
 
-      CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
+      return CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
     }
     catch (UnfetchableItemException e) {
       throw new WdkModelException(e);
     }
 
-    return null;
+    
   }
   
   @Override
@@ -722,6 +723,24 @@ public class FilterParamNew extends AbstractDependentParam {
       SelectMode sanitySelectMode) {
     // TODO phase 2 
     return null;
+  }
+  
+  @Override
+  public List<Query> getQueries() {
+	List<Query> queries = new ArrayList<Query>();
+	if(backgroundQuery != null) {
+	  queries.add(backgroundQuery);
+	}
+	if(metadataQuery != null) {
+	  queries.add(metadataQuery);
+	}
+	if(summaryMetadataQuery != null) {
+	  queries.add(summaryMetadataQuery);
+	}
+	if(ontologyQuery != null) {
+	  queries.add(ontologyQuery);
+	}
+	return queries;  
   }
 
 }

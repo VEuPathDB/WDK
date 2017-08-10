@@ -44,8 +44,8 @@
     <tr>
       <td colspan="2" align="center" valign="top">
         <span class="small">
-          <a style="padding-right:15px;" href="${pageContext.request.contextPath}/showResetPassword.do">Forgot Password?</a>
-          <a href="${pageContext.request.contextPath}/showRegister.do">Register/Subscribe</a>
+          <a style="padding-right:15px;" href="${pageContext.request.contextPath}/app/user/forgot-password">Forgot Password?</a>
+          <a href="${pageContext.request.contextPath}/app/user/registration">Register/Subscribe</a>
         </span>
       </td>
     </tr>
