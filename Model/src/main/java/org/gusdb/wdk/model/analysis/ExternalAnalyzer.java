@@ -17,6 +17,10 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.AbstractTabularReporter;
 import org.gusdb.wdk.model.report.AttributesTabularReporter;
 import org.gusdb.wdk.model.report.Reporter;
@@ -45,6 +49,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "attributesToExtract";
   protected static final String EXTRACTED_TABLES_PROP_KEY = "tablesToExtract";
   protected static final String ADD_HEADER_PROP_KEY = "addHeader";
+  protected static final String DUMP_HEADER_DISPLAY_MAP_PROP_KEY = "dumpDisplayMap";
 
   // properties determining result view information
   protected static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
@@ -54,12 +59,14 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   // file naming constants
   protected static final String FILE_NAME_SUFFIX = ".tab";
   protected static final String ATTRIBUTES_FILE_NAME = "attributes" + FILE_NAME_SUFFIX;
+  protected static final String HEADER_MAPPING_FILE_NAME = "header.mapping";
   protected static final String MODEL_PROPS_FILE_NAME = "model.prop";
 
   protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
   protected static final boolean ADD_HEADER_BY_DEFAULT = true;
   protected static final boolean DUMP_MODEL_PROPS_BY_DEFAULT = false;
+  protected static final boolean DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT = false;
 
   public static class ViewModel {
 
@@ -128,6 +135,11 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     // decide if header should be added to table and attribute tab files
     boolean hasHeader = determineBooleanProperty(ADD_HEADER_PROP_KEY, ADD_HEADER_BY_DEFAULT);
 
+    // if hasHeader and display value map requested, dump
+    if (hasHeader && determineBooleanProperty(DUMP_HEADER_DISPLAY_MAP_PROP_KEY, DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT)) {
+      dumpHeaderDisplayMap(answerValue.getQuestion().getRecordClass(), storageDir);
+    }
+
     // configure tabular reporter if attributes requested in config
     String attributes = getProperty(EXTRACTED_ATTRIBS_PROP_KEY);
     if (attributes != null && !attributes.trim().isEmpty()) {
@@ -148,6 +160,33 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     }
 
     return ExecutionStatus.COMPLETE;
+  }
+
+  private void dumpHeaderDisplayMap(RecordClass recordClass, String storageDir) throws WdkModelException {
+    String[] attributeNames = getProperty(EXTRACTED_ATTRIBS_PROP_KEY).trim().split(",");
+    String[] tableNames = getProperty(EXTRACTED_TABLES_PROP_KEY).trim().split(",");
+    File mappingOutFile = Paths.get(storageDir, HEADER_MAPPING_FILE_NAME).toFile();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(mappingOutFile))) {
+      writeField(out, recordClass.getIdAttributeField(), "");
+      for (String attributeName : attributeNames) {
+        writeField(out, recordClass.getAttributeFieldMap().get(attributeName), "");
+      }
+      for (String tableName : tableNames) {
+        TableField table = recordClass.getTableFieldMap().get(tableName);
+        writeField(out, table, "");
+        for (AttributeField attribute : table.getAttributeFields()) {
+          writeField(out, attribute, table.getName() + ":");
+        }
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to dump column header mapping to file.", e);
+    }
+  }
+
+  private void writeField(BufferedWriter out, Field field, String keyPrefix) throws IOException {
+    out.write(keyPrefix + field.getName() + "=" + field.getDisplayName());
+    out.newLine();
   }
 
   private static void dumpModelProps(WdkModel wdkModel, String storageDir) throws WdkModelException {
