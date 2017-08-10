@@ -14,7 +14,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
 import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
@@ -128,9 +127,9 @@ public class QuestionFormatter {
   /*
    * [ { value: string|null; count: number; filteredCount: number; }, ... ]
    */
-  public static <Value> JSONArray getOntologyTermSummaryJson(Map<Value, FilterParamSummaryCounts> counts) {
+  public static <T> JSONArray getOntologyTermSummaryJson(Map<T, FilterParamSummaryCounts> counts) {
     JSONArray json = new JSONArray();
-    for (Value term : counts.keySet()) {
+    for (T term : counts.keySet()) {
       FilterParamSummaryCounts fpsc = counts.get(term);
       JSONObject c = new JSONObject();
       c.put("value", term == null ? JSONObject.NULL : term);
