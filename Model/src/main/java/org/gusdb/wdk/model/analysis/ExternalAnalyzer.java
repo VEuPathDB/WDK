@@ -1,13 +1,18 @@
 package org.gusdb.wdk.model.analysis;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -34,21 +39,27 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   //   are configured with a tabular reporter
   protected static final String TABULAR_REPORTER_NAME = "tabular";
   protected static final String TABLE_TABULAR_REPORTER_NAME = "tableTabular";
-  
+
+  // properties determining what data to save into plugin output directory
+  protected static final String DUMP_MODEL_PROPS_PROP_KEY = "dumpModelProps";
   protected static final String EXTRACTED_ATTRIBS_PROP_KEY = "attributesToExtract";
   protected static final String EXTRACTED_TABLES_PROP_KEY = "tablesToExtract";
   protected static final String ADD_HEADER_PROP_KEY = "addHeader";
 
+  // properties determining result view information
   protected static final String EXTERNAL_APP_URL_PROP_KEY = "externalAppUrl";
   protected static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
   protected static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
 
+  // file naming constants
   protected static final String FILE_NAME_SUFFIX = ".tab";
   protected static final String ATTRIBUTES_FILE_NAME = "attributes" + FILE_NAME_SUFFIX;
+  protected static final String MODEL_PROPS_FILE_NAME = "model.prop";
 
   protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
   protected static final boolean ADD_HEADER_BY_DEFAULT = true;
+  protected static final boolean DUMP_MODEL_PROPS_BY_DEFAULT = false;
 
   public static class ViewModel {
 
@@ -105,11 +116,17 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
       throws WdkModelException, WdkUserException {
-    String hasHeader = getProperty(ADD_HEADER_PROP_KEY);
-    if (hasHeader == null || hasHeader.isEmpty()) {
-      hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
-    }
+
+    // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
+
+    // if dumpModelProp is set to true, dump model properties to disk
+    if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
+      dumpModelProps(getWdkModel(), storageDir);
+    }
+
+    // decide if header should be added to table and attribute tab files
+    boolean hasHeader = determineBooleanProperty(ADD_HEADER_PROP_KEY, ADD_HEADER_BY_DEFAULT);
 
     // configure tabular reporter if attributes requested in config
     String attributes = getProperty(EXTRACTED_ATTRIBS_PROP_KEY);
@@ -133,10 +150,31 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     return ExecutionStatus.COMPLETE;
   }
 
-  private Map<String, String> getConfig(String reportSpecificKey, String reportSpecificValue, String hasHeader) {
+  private static void dumpModelProps(WdkModel wdkModel, String storageDir) throws WdkModelException {
+    File propsOutFile = Paths.get(storageDir, MODEL_PROPS_FILE_NAME).toFile();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(propsOutFile))) {
+      for (Entry<String,String> prop : wdkModel.getProperties().entrySet()) {
+        out.write(prop.getKey() + "=" + prop.getValue());
+        out.newLine();
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to dump WDK Model properties to file.", e);
+    }
+  }
+
+  private boolean determineBooleanProperty(String propKey, boolean defaultValue) {
+    String propValue = getProperty(propKey);
+    if (propValue == null || propValue.trim().isEmpty()) {
+      return defaultValue;
+    }
+    return Boolean.valueOf(propValue.trim());
+  }
+
+  private static Map<String, String> getConfig(String reportSpecificKey, String reportSpecificValue, boolean hasHeader) {
     return new MapBuilder<String,String>()
         .put(StandardConfig.ATTACHMENT_TYPE, "text")
-        .put(AbstractTabularReporter.FIELD_HAS_HEADER, hasHeader)
+        .put(AbstractTabularReporter.FIELD_HAS_HEADER, String.valueOf(hasHeader))
         .put(AbstractTabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
         .put(reportSpecificKey, reportSpecificValue)
         .toMap();
