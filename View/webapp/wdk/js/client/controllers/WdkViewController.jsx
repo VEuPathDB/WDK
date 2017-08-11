@@ -129,7 +129,7 @@ class WdkViewController extends PureComponent {
    */
   constructor(...args) {
     super(...args);
-    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName());
+    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName(), this.props.history);
     this.eventHandlers = wrapActions(this.dispatchAction, this.getActionCreators());
     let storeName = this.getStoreName();
     if (storeName != null) {

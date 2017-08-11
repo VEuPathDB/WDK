@@ -272,7 +272,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   // write out an individual filter as a compact string, suitable for use in a signature
   // do not change this method, or risk invalidating existing signatures.
   private String getFilterSignature(JSONObject jsFilter) throws WdkModelException {
-    List<String> parts = new ArrayList<String>();
+    List<String> parts = new ArrayList<>();
     try {
       //parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
 
@@ -286,7 +286,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         } catch (JSONException ex) {
           JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
           for (int i=0; i < value.length(); i++ ) {
-            parts.add(value.getString(i));
+            Object v = value.get(i);
+            parts.add(v == null ? null : v.toString());
           }
         }
       }

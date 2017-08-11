@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
+import { getTransitioner } from './utils/PageTransitioner';
 import Root from './controllers/Root';
 import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
 import { updateLocation } from './actioncreators/RouterActionCreators';
@@ -143,15 +144,18 @@ function wrapStores(storeWrappers) {
  *
  * An `action` function should ultimately return an object to invoke a dispatch.
  *
+ * @param {String} rootUrl
  * @param {Dispatcher} dispatcher
- * @param {Object?} services
+ * @param {Object?} serviceSubset
  */
-export function getDispatchActionMaker(dispatcher, services) {
+export function getDispatchActionMaker(dispatcher, serviceSubset) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
-  return function makeDispatchAction(channel) {
+  return function makeDispatchAction(channel, history) {
     if (channel === undefined) {
       console.warn("Call to makeDispatchAction() with no channel defined.");
     }
+    let transitioner = getTransitioner(history);
+    let services = Object.assign({}, serviceSubset, { transitioner });
     return function dispatchAction(action) {
       if (typeof action === 'function') {
         // Call the function with dispatchAction and services
