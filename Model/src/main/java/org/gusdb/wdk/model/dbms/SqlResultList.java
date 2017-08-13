@@ -78,9 +78,12 @@ public class SqlResultList implements ResultList {
   public Object get(String columnName) throws WdkModelException {
     try {
       Object value = resultSet.getObject(columnName);
-      if (value != null && value instanceof Clob) {
+      if (resultSet.wasNull() || value == null) {
+        return null;
+      }
+      if (value instanceof Clob) {
         Clob clob = (Clob) value;
-        value = clob.getSubString(1, (int) clob.length());
+        return clob.getSubString(1, (int) clob.length());
       }
       return value;
     }
