@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Widget for selecting a single number
+ */
 class NumberSelector extends React.Component {
   constructor (props) {
     super(props);
@@ -19,7 +22,7 @@ class NumberSelector extends React.Component {
   }
 
   render () {
-    let { value, onChange, start, end, step } = this.props;
+    let { value, start, end, step } = this.props;
     if (!step) step = 1;
     return (
       <span className="wdk-NumberSelector">
@@ -27,13 +30,14 @@ class NumberSelector extends React.Component {
       </span>
     );
   }
-};
+}
 
 NumberSelector.propTypes = {
   start: PropTypes.number,
   end: PropTypes.number,
   value: PropTypes.number,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  step: PropTypes.number
 };
 
 export default NumberSelector;
