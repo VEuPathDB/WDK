@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,13 +8,16 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
@@ -29,7 +31,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -68,10 +69,14 @@ public class FilterParamNew extends AbstractDependentParam {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
-
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> { }
   public static class MetadataNewCache extends ItemCache<String, Map<String, MetaDataItem>> { }
   public static class FilterParamNewCache extends ItemCache<String, FilterParamNewInstance> { }
+
+  public static class FilterParamSummaryCounts {
+    public long unfilteredCount = 0;
+    public long filteredCount = 0;
+  }
 
   // ontology query columns
   static final String COLUMN_ONTOLOGY_ID = "ontology_term_name";
@@ -85,26 +90,6 @@ public class FilterParamNew extends AbstractDependentParam {
   
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
-  static final String COLUMN_NUMBER_VALUE = "number_value";
-  static final String COLUMN_DATE_VALUE = "date_value";
-  static final String COLUMN_STRING_VALUE = "string_value";
-  
-  /**
-   * convert a specification of type to the corresponding column name
-   * @param type
-   * @return
-   */
-  public static String typeToColumn(String type) { 
-    switch(type) {
-      case OntologyItem.TYPE_DATE:
-      return COLUMN_DATE_VALUE;
-      case OntologyItem.TYPE_NUMBER:
-      return COLUMN_NUMBER_VALUE;
-      case OntologyItem.TYPE_STRING:
-      default:
-      return COLUMN_STRING_VALUE;
-    }
-  }
 
   private static final int FETCH_SIZE = 1000;
 
@@ -309,8 +294,8 @@ public class FilterParamNew extends AbstractDependentParam {
         throw new WdkModelException("The ontologyQuery " + ontologyQueryRef + " in filterParam " +
             getFullName() + " must include column: " + col);
     }
-    
-    String[] metadataCols = { COLUMN_INTERNAL, COLUMN_STRING_VALUE, COLUMN_NUMBER_VALUE, COLUMN_DATE_VALUE };
+
+    String[] metadataCols = ArrayUtil.append(OntologyItemType.getTypedValueColumnNames(), COLUMN_INTERNAL);
 
     // resolve background query
     if (backgroundQueryRef != null) {
@@ -375,7 +360,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     return map;
   }
-  
+
   /**
    * 
    * @param user
@@ -405,7 +390,7 @@ public class FilterParamNew extends AbstractDependentParam {
           + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + bgdSql + ") where rownum = 1)";
     
     // get count
-    String sql = "select count(*) as cnt from (" + distinctInternalsSql + ")";
+    String sql = "select count(*) from (" + distinctInternalsSql + ")";
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
     fpsc.unfilteredCount = runCountSql(sql);
 
@@ -422,14 +407,10 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   private long runCountSql(String sql) {
-    Object[] args = {};
-    BasicResultSetHandler handler = new BasicResultSetHandler();
-    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts").executeQuery(args, handler);
-    List<Map<String,Object>> results = handler.getResults();
-    Map<String,Object> row = results.get(0);
-    return ((BigDecimal)row.get("CNT")).toBigInteger().longValue();
+    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts")
+        .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue();
   }
-  
+
   /**
    * @param user
    * @param contextParamValues
@@ -440,71 +421,68 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkUserException 
    * @throws WdkModelException 
    */
-  public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user, Map<String, String> contextParamValues, String ontologyId, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
+  public <T> Map<T,FilterParamSummaryCounts> getOntologyTermSummary(User user, Map<String, String> contextParamValues,
+      OntologyItem ontologyItem, JSONObject appliedFilters, Class<T> ontologyItemClass) throws WdkModelException, WdkUserException {
 
-    FilterParamNewInstance paramInstance = createFilterParamNewInstance(user, contextParamValues);
+    FilterParamNewInstance paramInstance = createFilterParamNewInstance(contextParamValues);
 
     /* GET UNFILTERED COUNTS */
     // use background query if provided, else use metadata query
-    
+
     // get base bgd query
     Query bgdQuery = backgroundQuery == null? metadataQuery : backgroundQuery;
     QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
     String bgdSql = queryInstance.getSql();
-    
+
     // limit it to our ontology_id
     String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
     // read into a map of internal -> value(s) 
-    Map<String, List<T>> unfiltered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyId);
-    
+    Map<String, List<T>> unfiltered = getMetaData(user, contextParamValues, ontologyItem, paramInstance, metadataSqlPerOntologyId, ontologyItemClass);
+
     // get histogram of those, stored in JSON 
-    Map<T, FilterParamSummaryCounts> summaryMap = new HashMap<T, FilterParamSummaryCounts>();
-    getSummaryCounts(unfiltered, summaryMap, false);  // stuff in to 0th position in array
-    
-    
+    Map<T,FilterParamSummaryCounts> summaryCounts = new HashMap<>();
+    populateSummaryCounts(unfiltered, summaryCounts, false);  // stuff in to 0th position in array
+
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
     String internalSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues,  this, getMetadataQuery());
-    
+
     // use that set of ids to limit our ontology id's metadata 
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql + ")";
-    
+
     // read this filtered set into map of internal -> value(s)
-    Map<String, List<T>> filtered = getMetaData(user, contextParamValues, ontologyId, paramInstance, metadataSqlPerOntologyIdFiltered);
+    Map<String, List<T>> filtered = getMetaData(user, contextParamValues, ontologyItem, paramInstance, metadataSqlPerOntologyIdFiltered, ontologyItemClass);
 
     // add the filtered set into the histogram
-    getSummaryCounts(filtered, summaryMap, true); // stuff in to 1st position in array
+    populateSummaryCounts(filtered, summaryCounts, true); // stuff in to 1st position in array
     
-    return summaryMap;
+    return summaryCounts;
   }
-  
-  public class FilterParamSummaryCounts {
-    public long unfilteredCount;
-    public long filteredCount;
-  }
-  
+
   /**
    * stuff counts per ontology term value into json structure.  first pair position is unfiltered, second is filtered
    * @param metadataForOntologyId
    * @param metadataForOntologyId
    * @param summary
    */
-  private <T> void getSummaryCounts(Map<String, List<T>> metadataForOntologyId, Map<T, FilterParamSummaryCounts> summary, boolean filtered) {
-    
+  private <T> void populateSummaryCounts(Map<String, List<T>> metadataForOntologyId, Map<T, FilterParamSummaryCounts> summary, boolean filtered) {
     for (List<T> values : metadataForOntologyId.values()) {
       for (T value : values) {
         FilterParamSummaryCounts counts;
-        if (summary.containsKey(value)) counts = summary.get(value);
+        if (summary.containsKey(value)) {
+          counts = summary.get(value);
+        }
         else {
-	  counts = new FilterParamSummaryCounts();
-	  summary.put(value, counts);
-	}
-        if (filtered) counts.filteredCount++;
-        else counts.unfilteredCount++;
+          counts = new FilterParamSummaryCounts();
+          summary.put(value, counts);
+        }
+        if (filtered)
+          counts.filteredCount++;
+        else
+          counts.unfilteredCount++;
       }
     }
-    
   }
 
   private void decodeException(UnfetchableItemException ex) throws WdkModelException, WdkUserException {
@@ -522,15 +500,16 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param cache
    *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
    *          initialized when a cache is created.)
-   * @param sql - sql that provides the meta data.  has a single bind variable for ontology id
+   * @param metaDataSql - sql that provides the meta data.  has a single bind variable for ontology id
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues, String ontologyId,
-                                               FilterParamNewInstance cache, String sql) throws WdkModelException, WdkUserException {
+  private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues,
+      OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
+          throws WdkModelException, WdkUserException {
  
-    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
+    String sql = "SELECT mq.* FROM (" + metaDataSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
     // run the composed sql, and get the metadata back
     Map<String, List<T>> metadata = new LinkedHashMap<>();
@@ -540,31 +519,21 @@ public class FilterParamNew extends AbstractDependentParam {
     try {
       ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setFetchSize(FETCH_SIZE);
-      ps.setString(1, ontologyId);
-      ps.setString(2, ontologyId);
+      ps.setString(1, ontologyItem.getOntologyId());
+      ps.setString(2, ontologyItem.getOntologyId());
       resultSet = ps.executeQuery();
       while (resultSet.next()) {
         String internal = resultSet.getString(COLUMN_INTERNAL);
-        String dateVal = resultSet.getString(COLUMN_DATE_VALUE);
-        if (resultSet.wasNull()) dateVal = null;
-        String stringVal = resultSet.getString(COLUMN_STRING_VALUE);
-        if (resultSet.wasNull()) stringVal = null;
-        Double numberVal = resultSet.getDouble(COLUMN_NUMBER_VALUE);
-        if (resultSet.wasNull()) numberVal = null;
+        T value = OntologyItemType.resolveTypedValue(resultSet, ontologyItem, ontologyItemClass);
 
+        // get list of values for this internal value, creating if not yet present
         List<T> values = metadata.get(internal);
-
         if (values == null) {
-          values = new ArrayList<T>();
+          values = new ArrayList<>();
           metadata.put(internal, values);
         }
 
-        // one of these should be non-null.
-        T value = null;
-        if (dateVal != null) value = (T)dateVal;
-        if (stringVal != null) value = (T)stringVal;
-        if (numberVal != null) value = (T)numberVal;
-        
+        // add next value to the list
         values.add(value);
       }
     }
@@ -578,7 +547,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return metadata;
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, FilterParamNewInstance cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     
     JSONObject jsParam = new JSONObject();
@@ -611,8 +580,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * remove invalid filters from stableValue.  if stableValue empty, use default.
    */
 
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
-      FilterParamNewInstance cache) throws WdkModelException {
+  protected String getValidStableValue(String stableValue) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
         JSONObject jsNewStableValue = new JSONObject();
@@ -688,24 +656,22 @@ public class FilterParamNew extends AbstractDependentParam {
     
   }
 
-  private FilterParamNewInstance createFilterParamNewInstance(User user,
-      Map<String, String> dependedParamValues) throws WdkModelException, WdkUserException {
+  private FilterParamNewInstance createFilterParamNewInstance(Map<String, String> dependedParamValues)
+      throws WdkModelException {
     try {
       FilterParamNewFetcher fetcher = new FilterParamNewFetcher(this);
-
       CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
     }
     catch (UnfetchableItemException e) {
       throw new WdkModelException(e);
     }
-
     return null;
   }
-  
+
   @Override
   protected DependentParamInstance createDependentParamInstance (User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException {
-    return createFilterParamNewInstance(user,  dependedParamValues);
+    return createFilterParamNewInstance(dependedParamValues);
   }
 
   @Override
@@ -714,7 +680,4 @@ public class FilterParamNew extends AbstractDependentParam {
     // TODO phase 2 
     return null;
   }
-
-
 }
- 

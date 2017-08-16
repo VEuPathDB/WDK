@@ -48,9 +48,9 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
           MetaDataItem mdItem = new MetaDataItem();
           mdItem.setOntologyId((String) resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID));
           mdItem.setInternal((String) resultList.get(FilterParamNew.COLUMN_INTERNAL));
-          mdItem.setStringValue((String) resultList.get(FilterParamNew.COLUMN_STRING_VALUE));
-          mdItem.setNumberValue((String) resultList.get(FilterParamNew.COLUMN_NUMBER_VALUE));
-          mdItem.setDateValue((String) resultList.get(FilterParamNew.COLUMN_DATE_VALUE));
+          mdItem.setStringValue((String) resultList.get(OntologyItemType.STRING.getMetadataQueryColumn()));
+          mdItem.setNumberValue((String) resultList.get(OntologyItemType.NUMBER.getMetadataQueryColumn()));
+          mdItem.setDateValue((String) resultList.get(OntologyItemType.DATE.getMetadataQueryColumn()));
 
           itemMap.put(mdItem.getOntologyId(), mdItem);
 

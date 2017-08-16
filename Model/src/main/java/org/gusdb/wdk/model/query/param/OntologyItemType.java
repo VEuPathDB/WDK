@@ -1,27 +1,39 @@
 package org.gusdb.wdk.model.query.param;
 
 import static java.util.Arrays.asList;
+import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
 
 public enum OntologyItemType {
 
-  STRING("string", "string_value", String.class),
-  NUMBER("number", "number_value", Double.class),
-  DATE("date", "date_value", String.class);
+  // special type to indicate an ontology branch node; no data is present in branch nodes
+  BRANCH (null, null, BranchNode.class),
 
-  private final String _dbTypeIdentifier;
+  // data types of ontology leaf nodes
+  STRING ("string", "string_value", String.class),
+  NUMBER ("number", "number_value", Double.class),
+  DATE   ("date",   "date_value",   String.class);
+
+  private static class BranchNode{}
+
+  private final String _identifier;
   private final String _metadataQueryColumn;
   private final Class<?> _javaClass;
 
-  private OntologyItemType(String dbTypeIdentifier, String metadataQueryColumn, Class<?> javaClass) {
-    _dbTypeIdentifier = dbTypeIdentifier;
+  private OntologyItemType(String identifier, String metadataQueryColumn, Class<?> javaClass) {
+    _identifier = identifier;
     _metadataQueryColumn = metadataQueryColumn;
     _javaClass = javaClass;
+  }
+
+  public String getIdentifier() {
+    return _identifier;
   }
 
   public String getMetadataQueryColumn() {
@@ -33,21 +45,27 @@ public enum OntologyItemType {
   }
 
   public static OntologyItemType getType(String typeIdentifier) throws WdkModelException {
-    for (OntologyItemType type : values()) {
-      if (type._dbTypeIdentifier.equalsIgnoreCase(typeIdentifier)) {
+    if (typeIdentifier == null) {
+      return BRANCH;
+    }
+    for (OntologyItemType type : normalValues()) {
+      if (type._identifier.equalsIgnoreCase(typeIdentifier)) {
         return type;
       }
     }
     throw new WdkModelException("Unrecognized ontology item type: " + typeIdentifier);
   }
 
-  public static String[] getMetadataQueryColumns() {
-    return mapToList(asList(values()),
-        type -> type._metadataQueryColumn
-    ).toArray(new String[values().length]);
+  private static List<OntologyItemType> normalValues() {
+    return filter(asList(values()), value -> !value.equals(BRANCH));
   }
 
-/*  @SuppressWarnings("unchecked")
+  public static String[] getTypedValueColumnNames() {
+    List<OntologyItemType> values = normalValues();
+    return mapToList(values, type -> type._metadataQueryColumn).toArray(new String[values.size()]);
+  }
+
+  @SuppressWarnings("unchecked")
   public static <T> T resolveTypedValue(ResultSet resultSet, OntologyItem ontologyItem,
       Class<T> ontologyItemClass) throws SQLException {
     if (!ontologyItem.getType().getJavaClass().getName().equals(ontologyItemClass.getName())) {
@@ -57,16 +75,19 @@ public enum OntologyItemType {
     }
     Object value = null;
     switch(ontologyItem.getType()) {
+      case BRANCH:
+        throw new IllegalStateException("Cannot resolve value for branch ontology node. " +
+            "Request made for node '" + ontologyItem.getOntologyId() + "'.");
       case NUMBER:
-        value = resultSet.getDouble(OntologyItemType.NUMBER.getMetadataQueryColumn());
+        value = resultSet.getDouble(OntologyItemType.NUMBER.getMetadataQueryColumn()); break;
       case STRING:
-        value = resultSet.getString(OntologyItemType.STRING.getMetadataQueryColumn());
+        value = resultSet.getString(OntologyItemType.STRING.getMetadataQueryColumn()); break;
       case DATE:
-        value = resultSet.getString(OntologyItemType.DATE.getMetadataQueryColumn());
+        value = resultSet.getString(OntologyItemType.DATE.getMetadataQueryColumn()); break;
     }
     if (resultSet.wasNull()) {
       value = null;
     }
     return (T) value;
-  }*/
+  }
 }
