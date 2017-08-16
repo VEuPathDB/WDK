@@ -239,15 +239,20 @@ public class NumberRangeParam extends Param {
   public void setMax(Double max) {
 	this.max = max;
   }
-  
+
   @Override
   public String getDefault() throws WdkModelException {
-	String defaultValue = super.getDefault();  
-	if(defaultValue == null || defaultValue.isEmpty()) {
-      JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
-      defaultValue = json.toString();
-	}
-	return defaultValue;
+    String defaultValue = super.getDefault();
+    try {
+      return (defaultValue == null || defaultValue.isEmpty()) ?
+          // incoming value may be using single quotes around keys; allow, but translate to proper JSON
+          new JSONObject(defaultValue).toString() :
+          // if default not provided, default is the entire range
+          new JSONObject().put("min", getMin()).put("max", getMax()).toString();
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("Supplied default value is not valid JSON.", e);
+    }
   }
 
   public boolean isInteger() {
