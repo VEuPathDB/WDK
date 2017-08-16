@@ -77,13 +77,13 @@ public class DateRangeParam extends Param {
     String defaultValue = super.getDefault();
     try {
       return (defaultValue == null || defaultValue.isEmpty()) ?
-          // incoming value may be using single quotes around keys; allow, but translate to proper JSON
-          new JSONObject(defaultValue).toString() :
           // if default not provided, default is the entire range
-          new JSONObject().put("min", getMinDate()).put("max", getMaxDate()).toString();
+          new JSONObject().put("min", getMinDate()).put("max", getMaxDate()).toString() :
+          // incoming value may be using single quotes around keys; allow, but translate to proper JSON
+          new JSONObject(defaultValue).toString();
     }
     catch (JSONException e) {
-      throw new WdkModelException("Supplied default value is not valid JSON.", e);
+      throw new WdkModelException("Supplied default value (" + defaultValue + ") is not valid JSON.", e);
     }
   }
 
