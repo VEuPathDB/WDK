@@ -42,7 +42,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       itemJson.put("parent", item.getParentOntologyId());
       itemJson.put("display", item.getDisplayName());
       itemJson.put("description", item.getDescription());
-      itemJson.put("type", item.getType());
+      itemJson.put("type", item.getType().getIdentifier());
       itemJson.put("units", item.getUnits());
       itemJson.put("precision", item.getPrecision());
       itemJson.put("isRange", item.getIsRange());

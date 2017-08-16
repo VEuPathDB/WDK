@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -127,12 +128,13 @@ public class QuestionFormatter {
   /*
    * [ { value: string|null; count: number; filteredCount: number; }, ... ]
    */
-  public static <T> JSONArray getOntologyTermSummaryJson(Map<T, FilterParamSummaryCounts> counts) {
+  public static <T> JSONArray getOntologyTermSummaryJson(Map<T,FilterParamSummaryCounts> counts) {
     JSONArray json = new JSONArray();
-    for (T term : counts.keySet()) {
-      FilterParamSummaryCounts fpsc = counts.get(term);
+    for (Entry<T,FilterParamSummaryCounts> entry : counts.entrySet()) {
+      T termValue = entry.getKey();
+      FilterParamSummaryCounts fpsc = entry.getValue();
       JSONObject c = new JSONObject();
-      c.put("value", term == null ? JSONObject.NULL : term);
+      c.put("value", termValue == null ? JSONObject.NULL : termValue);
       c.put("count", fpsc.unfilteredCount);
       c.put("filteredCount", fpsc.filteredCount);
       json.put(c);
