@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+{# $SourceFileURL$ #}
+Templated by Conifer using
+{{ template_path }}
+with vars from
+Cohort: {{ cohort }}
+Project: {{ project }}
+Environment: {{ env|default() }}
+site_vars file: {{ site_vars }}
+-->
+
+<modelConfig modelName="{{ modelconfig_modelName }}"
+             webServiceUrl="{{ modelconfig_webServiceUrl }}"
+             webAppUrl="{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}"
+             smtpServer="{{ modelconfig_smtpServer }}"
+             supportEmail="{{ modelconfig_supportEmail }}"
+             {% if modelconfig_adminEmail is defined -%}
+             adminEmail="
+              {%- if modelconfig_adminEmail is string -%}
+                {{ modelconfig_adminEmail }}
+              {%- elif modelconfig_adminEmail is iterable -%}
+                {{ modelconfig_adminEmail|join(', ') }}
+              {%- endif -%}
+              "
+             {% endif -%}
+             {% if modelconfig_assetsUrl is defined -%}
+             assetsUrl="{{ modelconfig_assetsUrl }}"
+             {% endif -%}
+             {% if modelconfig_useWeights is defined -%}
+             assetsUrl="{{ modelconfig_useWeights }}"
+             {% endif -%}
+             {% if modelconfig_secretKeyFile is defined -%}
+             secretKeyFile="{{ modelconfig_secretKeyFile }}"
+             {% endif -%}
+             {% if modelconfig_blockedThreshold is defined -%}
+             monitorBlockedThreads="{{ modelconfig_monitorBlockedThreads }}"
+             {% endif -%}
+             {% if modelconfig_blockedThreshold is defined -%}
+             blockedThreshold="{{ modelconfig_blockedThreshold }}"
+             {% endif -%}
+
+             {% if modelconfig_authenticationMethod is defined -%}
+             authenticationMethod="{{ modelconfig_authenticationMethod }}"
+             {% if modelconfig_authenticationMethod == 'oauth2' -%}
+             oauthUrl="{{ modelconfig_oauthUrl }}"
+             oauthClientId="{{ modelconfig_oauthClientId }}"
+             oauthClientSecret="{{ modelconfig_oauthClientSecret }}"
+             changePasswordUrl="{{ modelconfig_changePasswordUrl }}"
+             {% endif -%}
+             {% endif -%}
+
+             {% if modelconfig_keyStoreFile is defined -%}
+             keyStoreFile="{{ modelconfig_keyStoreFile }}"
+             keyStorePassPhrase="{{ modelconfig_keyStorePassPhrase }}"
+             {% endif -%}
+
+             wdkTempDir="{{ modelconfig_wdkTempDir }}"
+             >
+
+    <queryMonitor
+             {% if modelconfig_queryMonitor_baseline is defined -%}
+             baseline="{{ modelconfig_queryMonitor_baseline }}"
+             {% endif -%}
+             {% if modelconfig_queryMonitor_slow is defined -%}
+             slow="{{ modelconfig_queryMonitor_slow }}"
+             {% endif -%}
+             {% if modelconfig_queryMonitor_ignoreSlowRegex is defined -%}
+             slow="{{ modelconfig_queryMonitor_ignoreSlowRegex }}"
+             {% endif -%}
+             {% if modelconfig_queryMonitor_ignoreBaselineRegex is defined -%}
+             slow="{{ modelconfig_queryMonitor_ignoreBaselineRegex }}"
+             {% endif -%}
+    />
+
+    <appDb  login="{{ modelconfig_appDb_login }}"
+            password="{{ modelconfig_appDb_password }}"
+            connectionUrl="{{ modelconfig_appDb_connectionUrl }}"
+            platform="{{ modelconfig_appDb_platform }}"
+            userDbLink="{{ modelconfig_appDb_userDbLink }}"
+            {% if modelconfig_appDb_maxActive is defined -%}
+            maxActive="{{ modelconfig_appDb_maxActive }}"
+            {% endif -%}
+
+            {% if modelconfig_appDb_maxIdle is defined -%}
+            maxIdle="{{ modelconfig_appDb_maxIdle }}"
+            {% endif -%}
+            {% if modelconfig_appDb_minIdle is defined -%}
+            minIdle="{{ modelconfig_appDb_minIdle }}"
+            {% endif -%}
+            {% if modelconfig_appDb_maxWait is defined -%}
+            maxWait="{{ modelconfig_appDb_maxWait }}"
+            {% endif -%}
+            {% if modelconfig_appDb_showConnections is defined -%}
+            showConnections="{{ modelconfig_appDb_showConnections }}"
+            {% endif -%}
+            {% if modelconfig_appDb_showConnectionsInterval is defined -%}
+            showConnectionsInterval="{{ modelconfig_appDb_showConnectionsInterval }}"
+            {% endif -%}
+            {% if modelconfig_appDb_showConnectionsDuration is defined -%}
+            showConnectionsDuration="{{ modelconfig_appDb_showConnectionsDuration }}"
+            {% endif -%}
+            {% if modelconfig_appDb_maxPkColumnWidth is defined -%}
+            maxPkColumnWidth="{{ modelconfig_appDb_maxPkColumnWidth }}"
+            {% endif -%}
+            {% if modelconfig_appDb_driverInitClass is defined -%}
+            driverInitClass="{{ modelconfig_appDb_driverInitClass }}"
+            {% endif -%}
+    />
+
+    <userDb login="{{ modelconfig_userDb_login }}"
+            password="{{ modelconfig_userDb_password }}"
+            connectionUrl="{{ modelconfig_userDb_connectionUrl }}"
+            platform="{{ modelconfig_userDb_platform }}"
+            userSchema="{{ modelconfig_userDb_userSchema }}"
+            {% if modelconfig_userDb_maxActive is defined -%}
+            maxActive="{{ modelconfig_userDb_maxActive }}"
+            {% endif -%}
+            {% if modelconfig_userDb_minIdle is defined -%}
+            maxIdle="{{ modelconfig_userDb_maxIdle }}"
+            {% endif -%}
+            {% if modelconfig_userDb_minIdle is defined -%}
+            minIdle="{{ modelconfig_userDb_minIdle }}"
+            {% endif -%}
+            {% if modelconfig_userDb_maxWait is defined -%}
+            maxWait="{{ modelconfig_userDb_maxWait }}"
+            {% endif -%}
+            {% if modelconfig_userDb_showConnections is defined -%}
+            showConnections="{{ modelconfig_userDb_showConnections }}"
+            {% endif -%}
+            {% if modelconfig_userDb_showConnectionsInterval is defined -%}
+            showConnectionsInterval="{{ modelconfig_userDb_showConnectionsInterval }}"
+            {% endif -%}
+            {% if modelconfig_userDb_showConnectionsDuration is defined -%}
+            showConnectionsDuration="{{ modelconfig_userDb_showConnectionsDuration }}"
+            {% endif -%}
+            {% if modelconfig_userDb_driverInitClass is defined -%}
+            driverInitClass="{{ modelconfig_userDb_driverInitClass }}"
+            {% endif -%}
+    />
+
+    <accountDb login="{{ modelconfig_accountDb_login }}"
+            password="{{ modelconfig_accountDb_password }}"
+            connectionUrl="{{ modelconfig_accountDb_connectionUrl }}"
+            platform="{{ modelconfig_accountDb_platform }}"
+            accountSchema="{{ modelconfig_accountDb_accountSchema }}"
+            {% if modelconfig_accountDb_maxActive is defined -%}
+            maxActive="{{ modelconfig_accountDb_maxActive }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_maxIdle is defined -%}
+            maxIdle="{{ modelconfig_accountDb_maxIdle }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_minIdle is defined -%}
+            minIdle="{{ modelconfig_accountDb_minIdle }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_maxWait is defined -%}
+            maxWait="{{ modelconfig_accountDb_maxWait }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_showConnections is defined -%}
+            showConnections="{{ modelconfig_accountDb_showConnections }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_showConnectionsInterval is defined -%}
+            showConnectionsInterval="{{ modelconfig_accountDb_showConnectionsInterval }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_showConnectionsDuration is defined -%}
+            showConnectionsDuration="{{ modelconfig_accountDb_showConnectionsDuration }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_driverInitClass is defined -%}
+            driverInitClass="{{ modelconfig_accountDb_driverInitClass }}"
+            {% endif %}
+      >
+
+      <userProperty name="firstName" displayName="First Name" dbKey="first_name" required="true"/>
+      <userProperty name="middleName" displayName="Middle Name" dbKey="middle_name"/>
+      <userProperty name="lastName" displayName="Last Name" dbKey="last_name" required="true"/>
+      <userProperty name="organization" displayName="Organization" dbKey="organization" required="true"/>
+
+    </accountDb>
+
+    {% if modelconfig_userDatasetStoreConfig is defined -%}
+    {{ modelconfig_userDatasetStoreConfig|indent }}
+    {% endif -%}
+
+    <emailSubject>
+      {{ modelconfig_emailSubject|indent(6) }}
+    </emailSubject>
+
+    <emailContent>
+      {{ modelconfig_emailContent|indent(6) }}
+    </emailContent>
+</modelConfig>
