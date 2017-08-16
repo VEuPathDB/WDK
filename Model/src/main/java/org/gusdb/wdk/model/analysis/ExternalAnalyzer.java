@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
@@ -38,6 +39,8 @@ import org.json.JSONException;
  * @author rdoherty
  */
 public class ExternalAnalyzer extends AbstractStepAnalyzer {
+
+  private static final Logger LOG = Logger.getLogger(ExternalAnalyzer.class);
 
   // this plugin can only be assigned to questions/recordClasses that
   //   are configured with a tabular reporter
@@ -169,10 +172,19 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     try (BufferedWriter out = new BufferedWriter(new FileWriter(mappingOutFile))) {
       writeField(out, recordClass.getIdAttributeField(), "");
       for (String attributeName : attributeNames) {
-        writeField(out, recordClass.getAttributeFieldMap().get(attributeName), "");
+        AttributeField attr = recordClass.getAttributeFieldMap().get(attributeName);
+        if (attr == null) {
+          LOG.warn("Attribute '" + attributeName + "', specified in analysis plugin, is not valid for record class '" + recordClass.getFullName() + "'.");
+          continue;
+        }
+        writeField(out, attr, "");
       }
       for (String tableName : tableNames) {
         TableField table = recordClass.getTableFieldMap().get(tableName);
+        if (table == null) {
+          LOG.warn("Table '" + tableName + "', specified in analysis plugin, is not valid for record class '" + recordClass.getFullName() + "'.");
+          continue;
+        }
         writeField(out, table, "");
         for (AttributeField attribute : table.getAttributeFields()) {
           writeField(out, attribute, table.getName() + ":");
