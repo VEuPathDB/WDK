@@ -22,14 +22,13 @@ import org.gusdb.wdk.model.query.QueryInstance;
 
 public class ResultFactory {
 
-  @SuppressWarnings("unused")
-  private Logger logger = Logger.getLogger(ResultFactory.class);
+  private static Logger logger = Logger.getLogger(ResultFactory.class);
 
   public static class InstanceInfo {
     long instanceId;
     String message;
     final long creationDate;
-    public InstanceInfo(int instanceId, String message, String cacheTableName) {
+    public InstanceInfo(int instanceId, String message) {
       this.instanceId = instanceId;
       this.message = message;
       creationDate = new Date().getTime();
@@ -46,13 +45,11 @@ public class ResultFactory {
   private DatabaseInstance database;
   private DBPlatform platform;
   private CacheFactory cacheFactory;
-  private WdkModel wdkModel;
 
   public ResultFactory(WdkModel wdkModel) {
     this.database = wdkModel.getAppDb();
     this.platform = database.getPlatform();
     this.cacheFactory = new CacheFactory(wdkModel, database);
-    this.wdkModel = wdkModel;
     this.instanceInfoFetcher = new InstanceInfoFetcher(this); 
   }
 
@@ -113,14 +110,13 @@ public class ResultFactory {
   public ResultList getCachedResults(QueryInstance<?> queryInstance)
       throws WdkModelException, WdkUserException {
     String sql = getCachedSql(queryInstance);
-    //logger.debug("********* SQL to get the IDs from datasetparam: " + sql);
+    logger.debug("Performing the following SQL against WDK Cache: " + sql);
 
     // get the resultList
     try {
       DataSource dataSource = database.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(dataSource,
-          sql.toString(), queryInstance.getQuery().getFullName()
-              + "__select-cache");
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
+          queryInstance.getQuery().getFullName() + "__select-cache");
       return new SqlResultList(resultSet);
     }
     catch (SQLException e) {
@@ -165,7 +161,7 @@ public class ResultFactory {
       resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
           "wdk-check-instance-exist");
 
-      InstanceInfo instanceInfo = new InstanceInfo(UNKNOWN_INSTANCE_ID, null, null);
+      InstanceInfo instanceInfo = new InstanceInfo(UNKNOWN_INSTANCE_ID, null);
       if (resultSet.next()) {
         instanceInfo.instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
         instanceInfo.message = platform.getClobData(resultSet, CacheFactory.COLUMN_RESULT_MESSAGE);

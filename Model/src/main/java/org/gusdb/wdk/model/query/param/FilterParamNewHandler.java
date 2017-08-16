@@ -170,8 +170,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
           FILTERS_VALUE + "`.");
 
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
-    String type = ontologyItem.getType();
-    String columnName = FilterParamNew.typeToColumn(type);
+    OntologyItemType type = ontologyItem.getType();
+    String columnName = type.getMetadataQueryColumn();
 
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
@@ -180,15 +180,15 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? metadataTableName + "." + columnName + " is not NULL"
         : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
-      : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
+      : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItemType.NUMBER));
 
     // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
     return whereClause + " AND (" + unknownClause + innerAndClause + ")";
   }
 
-  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, String type) throws WdkUserException {
+  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, OntologyItemType type) throws WdkUserException {
 
-    if (type.equals(OntologyItem.TYPE_STRING)) throw new WdkUserException("Invalid JSON:  a STRING type cannot be a range");
+    if (type.equals(OntologyItemType.STRING)) throw new WdkUserException("Invalid JSON:  a STRING type cannot be a range");
 
     // If min or max is null, use an unbounded range
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
@@ -196,12 +196,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String minStr;
     String maxStr;
     
-    if (type.equals(OntologyItem.TYPE_NUMBER)) {
+    if (type.equals(OntologyItemType.NUMBER)) {
       minStr = range.isNull(FILTERS_MIN) ? null : Double.toString(range.getDouble(FILTERS_MIN));
       maxStr = range.isNull(FILTERS_MAX) ? null : Double.toString(range.getDouble(FILTERS_MAX));
     }
 
-    else if (type.equals(OntologyItem.TYPE_DATE)) {
+    else if (type.equals(OntologyItemType.DATE)) {
       minStr = range.isNull(FILTERS_MIN) ? null : "date '" + range.getString(FILTERS_MIN) + "'";
       maxStr = range.isNull(FILTERS_MAX) ? null : "date '" + range.getString(FILTERS_MAX) + "'";
     }

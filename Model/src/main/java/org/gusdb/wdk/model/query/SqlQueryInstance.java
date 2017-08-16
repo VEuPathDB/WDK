@@ -67,6 +67,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       String sql = getUncachedSql();
       DatabaseInstance platform = query.getWdkModel().getAppDb();
       DataSource dataSource = platform.getDataSource();
+      logger.debug("Performing the following SQL: " + sql);
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__select-uncached",
           SqlUtils.DEFAULT_FETCH_SIZE, query.isUseDBLink());
       return new SqlResultList(resultSet);
