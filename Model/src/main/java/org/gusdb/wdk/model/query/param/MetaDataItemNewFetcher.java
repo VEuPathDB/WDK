@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -47,9 +48,9 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
           MetaDataItem mdItem = new MetaDataItem();
           mdItem.setOntologyId((String) resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID));
           mdItem.setInternal((String) resultList.get(FilterParamNew.COLUMN_INTERNAL));
-          mdItem.setStringValue((String) resultList.get(FilterParamNew.COLUMN_STRING_VALUE));
-          mdItem.setNumberValue((String) resultList.get(FilterParamNew.COLUMN_NUMBER_VALUE));
-          mdItem.setDateValue((String) resultList.get(FilterParamNew.COLUMN_DATE_VALUE));
+          mdItem.setStringValue((String) resultList.get(OntologyItemType.STRING.getMetadataQueryColumn()));
+          mdItem.setNumberValue((String) resultList.get(OntologyItemType.NUMBER.getMetadataQueryColumn()));
+          mdItem.setDateValue((String) resultList.get(OntologyItemType.DATE.getMetadataQueryColumn()));
 
           itemMap.put(mdItem.getOntologyId(), mdItem);
 
@@ -73,7 +74,7 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
         paramValuesJson.put(paramName, paramValues.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
-    return cacheKeyJson.toString();
+    return JsonUtil.serialize(cacheKeyJson);
   }
 
   @Override

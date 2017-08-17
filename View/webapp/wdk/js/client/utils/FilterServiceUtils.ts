@@ -50,59 +50,68 @@ export function uniqMetadataValues(metadata: Metadata) {
   return flattenMetadataValues(metadata).sortBy().sortedUniq().value() as string[];
 }
 
-export function getMemberPredicate<T>(metadata: Metadata, filter: MemberFilter) {
-  const filterValue = filter.value;
-  return withUnknownCheck(metadata, filter, function memberPredicate(datum: Datum) {
-    var metadataValues = metadata[datum.term];
-    var index = filterValue.length;
-    var vIndex: number;
 
-    // Use a for loop for efficiency
-    outer: while(index--) {
-      vIndex = metadataValues.length;
-      while(vIndex--) {
-        if (filterValue[index] === metadataValues[vIndex]) break outer;
+type FilterPredicateFactory = (metadata: Metadata, filter: MemberFilter|RangeFilter) =>
+  (datum: Datum) => boolean
+
+function wrapFilterPredicateFactory(predicateFactory: FilterPredicateFactory): FilterPredicateFactory {
+  return function filterPredicateWrapper(metadata: Metadata, filter: MemberFilter|RangeFilter) {
+    const innerPredicate = predicateFactory(metadata, filter);
+    return function wrapperPredicate(datum: Datum) {
+      const { includeUnknown = false, value } = filter;
+      const metadataValues = metadata[datum.term];
+
+      // check for unknowns
+      return metadataValues.length === 0 ? includeUnknown
+        : value === undefined ? metadataValues.length > 0
+        : innerPredicate(datum);
+    }
+  }
+}
+
+export const getMemberPredicate = wrapFilterPredicateFactory(
+  <T>(metadata: Metadata, filter: MemberFilter) => {
+    const filterValue = filter.value;
+    return function memberPredicate(datum: Datum) {
+      var metadataValues = metadata[datum.term];
+      var index = filterValue!.length;
+      var vIndex: number;
+
+      // Use a for loop for efficiency
+      outer: while(index--) {
+        vIndex = metadataValues.length;
+        while(vIndex--) {
+          if (filterValue![index] === metadataValues[vIndex]) break outer;
+        }
       }
+
+      return (index > -1);
+    }
+  }
+);
+
+const getRangePredicateWith = <U>(mapValue: (value: string) => U) =>
+  <T>(metadata: Metadata, filter: RangeFilter) => {
+    var { min, max } = mapValues(filter.value, mapValue)
+    var test = min !== null && max !== null ? makeWithin(min, max)
+             : min !== null ? makeGte(min)
+             : max !== null ? makeLte(max)
+             : T;
+
+    if (test === T) {
+      throw new Error('Count not determine range predicate.');
     }
 
-    return (index > -1);
-  });
-}
+    return function rangePredicate(datum: Datum) {
+      const values = metadata[datum.term];
+      return values.some(value => test(mapValue(value)));
+    }
 
-export function getDateRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
-  return getRangePredicate(metadata, filter, Date);
-}
-
-export function getNumberRangePredicate<T>(metadata: Metadata, filter: RangeFilter) {
-  return getRangePredicate(metadata, filter, Number);
-}
-
-function getRangePredicate<T, U>(metadata: Metadata, filter: RangeFilter, mapValue: (value: string) => U) {
-  var { min, max } = mapValues(filter.value, mapValue)
-  var test = min !== null && max !== null ? makeWithin(min, max)
-           : min !== null ? makeGte(min)
-           : max !== null ? makeLte(max)
-           : T;
-
-  if (test === T) {
-    throw new Error('Count not determine range predicate.');
   }
 
-  return withUnknownCheck(metadata, filter, function rangePredicate(datum: Datum) {
-    const values = metadata[datum.term];
-    return values.some(value => test(mapValue(value)));
-  });
+export const getDateRangePredicate = wrapFilterPredicateFactory(getRangePredicateWith(Date))
 
-}
-
-function withUnknownCheck(metadata: Metadata, filter: MemberFilter|RangeFilter, predicate: (datum: Datum) => boolean) {
-  return function (datum: Datum) {
-    const { includeUnknown = false } = filter;
-    const metadataValues = metadata[datum.term];
-    if (!Array.isArray(metadataValues)) throw new Error("Could not find metadata values for `" + datum.term + "`");
-    return metadataValues.length === 0 ? includeUnknown : predicate(datum);
-  }
-}
+export const getNumberRangePredicate = wrapFilterPredicateFactory(getRangePredicateWith(Number))
 
 // Helper filtering functions
 // --------------------------

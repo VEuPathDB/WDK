@@ -21,7 +21,7 @@
   /* position: absolute; */
 }
 .filter-param .filter-items-wrapper {
-  height: 2em;
+  min-height: 2em;
   margin-bottom: .5em;
 }
 .filter-param, .filter-param * {
@@ -133,7 +133,6 @@
   font-weight: bold;
   position: relative;
   white-space: normal;
-  text-transform: capitalize;
   display: block;
 }
 .filter-param .wdk-AttributeFilterFieldParent,

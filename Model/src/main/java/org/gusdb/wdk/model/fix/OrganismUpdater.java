@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.json.JSONException;
@@ -121,7 +122,7 @@ public class OrganismUpdater {
           jsParams = jsParams.getJSONObject("params");
 
         if (jsParams!=null && changeParams(jsParams, clobKeys)) {
-          content = jsParams.toString();
+          content = JsonUtil.serialize(jsParams);
           platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setInt(2, stepId);
           psUpdate.addBatch();

@@ -104,20 +104,13 @@ public class RecordBean {
         }
     }
 
-    public boolean isInFavorite() throws WdkModelException {
-        try {
-            RecordClass recordClass = recordInstance.getRecordClass();
-            Map<String, String> pkValues = recordInstance.getPrimaryKey()
-                    .getValues();
-            Map<String, Object> values = new LinkedHashMap<String, Object>();
-            for (String column : pkValues.keySet()) {
-                values.put(column, pkValues.get(column));
-            }
-            return user.getWdkModel().getFavoriteFactory().isInFavorite(user, recordClass, values);
-        } catch (WdkModelException ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
-        }
+    public boolean isInFavorite() {
+      RecordClass recordClass = recordInstance.getRecordClass();
+      Map<String, String> pkValues = recordInstance.getPrimaryKey().getValues();
+      Map<String, Object> values = new LinkedHashMap<String, Object>();
+      for (String column : pkValues.keySet()) {
+        values.put(column, pkValues.get(column));
+      }
+      return user.getWdkModel().getFavoriteFactory().isInFavorite(user, recordClass, values);
     }
 }

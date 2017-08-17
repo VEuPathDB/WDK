@@ -28,6 +28,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
     pJson.put("ontology", getOntologyJson(user, dependedParamValues));
+    pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
     return pJson;
   }
 
@@ -41,7 +42,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       itemJson.put("parent", item.getParentOntologyId());
       itemJson.put("display", item.getDisplayName());
       itemJson.put("description", item.getDescription());
-      itemJson.put("type", item.getType());
+      itemJson.put("type", item.getType().getIdentifier());
       itemJson.put("units", item.getUnits());
       itemJson.put("precision", item.getPrecision());
       itemJson.put("isRange", item.getIsRange());

@@ -42,11 +42,11 @@ class FavoritesListController extends WdkViewController {
     };
   }
 
-  getTitle() {
+  getTitle () {
     return 'Favorites';
   }
 
-  getActionCreators() {
+  getActionCreators () {
     return {
       loadFavoritesList,
       editCell,
@@ -60,8 +60,8 @@ class FavoritesListController extends WdkViewController {
     };
   }
 
-  loadData() {
-    this.eventHandlers.loadFavoritesList();
+  loadData ({ loadFavoritesList }) {
+    loadFavoritesList();
   }
 
   isRenderDataLoaded(state) {
@@ -73,12 +73,15 @@ class FavoritesListController extends WdkViewController {
   }
 
   renderView(state, eventHandlers) {
-    return ( <FavoritesList {...state}
-                            favoritesEvents={eventHandlers}
-                            searchBoxPlaceholder="Search Favorites..."
-                            searchBoxHelp="All table columns will be searched"
-
-    /> );
+    console.log(this.state.filteredList);
+    return (
+      <FavoritesList
+        {...state}
+        favoritesEvents={eventHandlers}
+        searchBoxPlaceholder="Search Favorites..."
+        searchBoxHelp="All table columns will be searched"
+      />
+    );
   }
 }
 

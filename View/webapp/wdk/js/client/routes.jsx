@@ -29,7 +29,7 @@ export default [
   { path: '/user/profile', component: UserProfileController },
   { path: '/user/profile/password', component: UserPasswordChangeController },
   { path: '/user/forgot-password', component: UserPasswordResetController },
-  { path: '/user/message/:messageId', component: UserMessageController },
+  { path: '/user/message/:messageKey', component: UserMessageController },
   { path: '/workspace/datasets', component: UserDatasetListController },
   { path: '/workspace/datasets/:id', component: UserDatasetItemController },
   { path: '/favorites', component: FavoritesController },

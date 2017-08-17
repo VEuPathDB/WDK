@@ -542,7 +542,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       getEditImage('top')+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
-	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
+    //"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
       "      <h6 class='resultCount'>" + childResults + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
@@ -1187,7 +1187,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     $(div_sm).attr("class","strategy_menu");
 
     if (strat.subStratOf == null) {
-    //		name="Unnamed";
+    //      name="Unnamed";
       $(div_sn).html("<span title='Click to edit" +
           "'>Strategy: <span class='strategy-name wdk-editable' " +
           "data-id='" + strat.backId + "'" +

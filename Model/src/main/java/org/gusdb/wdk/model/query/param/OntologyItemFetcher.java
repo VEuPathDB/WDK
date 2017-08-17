@@ -1,11 +1,12 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
-import org.gusdb.fgputil.cache.ItemFetcher;
+import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -15,13 +16,14 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class OntologyItemFetcher implements ItemFetcher<String, Map<String, Map<String, String>>> {
+public class OntologyItemFetcher extends NoUpdateItemFetcher<String, Map<String, Map<String, String>>> {
+
+  private static final String QUERY_NAME_KEY = "queryName";
+  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   private Query query;
   private Map<String, String> paramValues;
   private User user;
-  private static final String QUERY_NAME_KEY = "queryName";
-  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   public OntologyItemFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
     this.query = metaDataQuery;
@@ -73,17 +75,6 @@ public class OntologyItemFetcher implements ItemFetcher<String, Map<String, Map<
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
         paramValuesJson.put(paramName, paramValues.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
-    return cacheKeyJson.toString();
-  }
-
-  @Override
-  public boolean itemNeedsUpdating(Map<String, Map<String, String>> item) {
-    return false;
-  }
-
-  @Override
-  public Map<String, Map<String, String>> updateItem(String key, Map<String, Map<String, String>> item) {
-    throw new UnsupportedOperationException(
-        "This method should never be called since itemNeedsUpdating() always returns false.");
+    return JsonUtil.serialize(cacheKeyJson);
   }
 }
