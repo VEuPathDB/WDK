@@ -130,7 +130,7 @@ export const loadPageDataFromRecord: ActionCreator<LoadingAction | ErrorAction |
 
 // FIXME figure out what to do about "ActionCreators" that don't dispatch actions
 // In this case, we just want access to wdkService.
-export const submitForm: ActionCreator<{ type: '__' }> = (step: Step, selectedReporter: string, formState: any, target = '_blank') => {
+export const submitForm: ActionCreator<never> = (step: Step, selectedReporter: string, formState: any, target = '_blank') => {
   return function run(dispatch, { wdkService }) {
     // a submission must trigger a form download, meaning we must POST the form
     let submissionJson = {

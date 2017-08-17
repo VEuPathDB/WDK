@@ -2,11 +2,12 @@ import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
 import {ActionCreator, DispatchAction} from "../ActionCreator";
-import {User, UserPreferences, PreferenceScope, UserWithPrefs} from "../utils/WdkUser";
+import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
 import { State as ProfileStoreState, UserProfileFormData } from '../stores/UserProfileStore';
+import { transitionToInternalPage, transitionToExternalPage } from './RouterActionCreators';
 
 // actions to update true user and preferences
 export type UserUpdateAction = {
@@ -125,6 +126,23 @@ export type FavoritesStatusErrorAction = {
 }
 
 /**
+ * Fetches the current user.  If the user passes the predicate, transitions to
+ * the passed path.  Optional external param lets caller specify if path is
+ * internal or external, defaulting to false (internal).
+ */
+export let conditionallyTransition: ActionCreator<never> = (test: UserPredicate, path: string, external: boolean = false) => {
+  return function run(dispatch, { wdkService }) {
+    wdkService.getCurrentUser().then(user => {
+      if (test(user)) {
+        dispatch(external ?
+          transitionToExternalPage(path) :
+          transitionToInternalPage(path));
+      }
+    });
+  };
+}
+
+/**
  * Merge supplied key-value pair with user preferences and update
  * on the server.
  */
@@ -217,7 +235,7 @@ export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData
 /** Register user */
 type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
 export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserProfileFormData) => {
-  return function run(dispatch, { wdkService, transitioner }) {
+  return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
     let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
     let registrationData: UserWithPrefs = {
@@ -228,10 +246,8 @@ export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserP
       .then(responseData => {
         // success; clear the form in case user wants to register another user
         dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
-        // add success message to top of page (no longer needed with state transition)
-        //dispatch(createProfileFormStatusAction('success'));
-        // then transition to registration success message page
-        transitioner.transitionToInternalPage('/user/message/registration-successful');
+        // add success message to top of page
+        dispatch(createProfileFormStatusAction('success'));
       })
       .catch((error) => {
         console.error(error.response);
@@ -311,7 +327,7 @@ export let submitPasswordReset: ActionCreator<ResetPasswordSubmissionStatusActio
 /**
  * Show a warning that user must be logged in for feature
  */
-export let showLoginWarning: ActionCreator<{type: '__'}> = (attemptedAction: string, destination?: string) => {
+export let showLoginWarning: ActionCreator<never> = (attemptedAction: string, destination?: string) => {
   return function(dispatch) {
     confirm(
       'Login Required',
@@ -325,7 +341,7 @@ export let showLoginWarning: ActionCreator<{type: '__'}> = (attemptedAction: str
 /**
  * Show the login form based on config.
  */
-export let showLoginForm: ActionCreator<{type:'__'}> = (destination = window.location.href) => {
+export let showLoginForm: ActionCreator<never> = (destination = window.location.href) => {
   return function(dispatch, {wdkService}) {
     wdkService.getConfig().then(config => {
       AuthUtil.login({
@@ -339,7 +355,7 @@ export let showLoginForm: ActionCreator<{type:'__'}> = (destination = window.loc
   };
 };
 
-export let showLogoutWarning: ActionCreator<{type:'__'}> = () => {
+export let showLogoutWarning: ActionCreator<never> = () => {
   return function(dispatch) {
     confirm(
       'Are you sure you want to logout?',
@@ -350,7 +366,7 @@ export let showLogoutWarning: ActionCreator<{type:'__'}> = () => {
   }
 };
 
-let logout: ActionCreator<{type:'__'}> = () => {
+let logout: ActionCreator<never> = () => {
   return function run(dispatch, { wdkService }) {
     wdkService.getConfig().then(config => {
       AuthUtil.logout({
@@ -388,7 +404,7 @@ export let loadBasketStatus: ActionCreator<BasketAction> = (record: RecordInstan
  * @param {Record} record
  * @param {Boolean} status
  */
-export let updateBasketStatus: ActionCreator<BasketAction|{type:'__'}> = (user: User, record: RecordInstance, status: boolean) => {
+export let updateBasketStatus: ActionCreator<BasketAction|never> = (user: User, record: RecordInstance, status: boolean) => {
   if (user.isGuest) return showLoginWarning('use baskets');
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
@@ -454,7 +470,7 @@ export let removeFavorite: ActionCreator<FavoriteAction> = (record: RecordInstan
   };
 };
 
-export let addFavorite: ActionCreator<FavoriteAction|{type:'__'}> = (user: User, record: RecordInstance) => {
+export let addFavorite: ActionCreator<FavoriteAction|never> = (user: User, record: RecordInstance) => {
   if (user.isGuest) {
     return showLoginWarning('use favorites');
   }
