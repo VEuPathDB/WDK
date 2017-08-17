@@ -474,7 +474,7 @@ export default class WdkService {
   updateCurrentUser(user: User) {
     let url = '/user/current';
     let data = JSON.stringify(user);
-    return this._fetchJson<void>('put', url, data).then(() => user);
+    return this._currentUserPromise = this._fetchJson<void>('put', url, data).then(() => user);
   }
 
   updateCurrentUserPassword(oldPassword: string, newPassword: string) {

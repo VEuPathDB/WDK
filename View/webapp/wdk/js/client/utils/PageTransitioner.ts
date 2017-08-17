@@ -17,7 +17,7 @@ export interface PageTransitioner {
  * @param {History} history
  */
 export function getTransitioner(history: History) {
-  let transitionToInternalPage: TransitionFunction = url => { history.push(url); };
-  let transitionToExternalPage: TransitionFunction = url => { window.location.assign(url); };
+  let transitionToInternalPage: TransitionFunction = path => { history.push(path); };
+  let transitionToExternalPage: TransitionFunction = path => { window.location.assign(path); };
   return { transitionToInternalPage, transitionToExternalPage };
 }
