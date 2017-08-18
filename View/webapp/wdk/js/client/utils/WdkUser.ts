@@ -16,6 +16,8 @@ export interface UserWithPrefs {
   preferences: UserPreferences;
 }
 
+export type UserPredicate = (user: User) => boolean;
+
 export interface Step {
   answerSpec: AnswerSpec;
   customName: string;

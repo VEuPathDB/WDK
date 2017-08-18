@@ -22,11 +22,13 @@ class NumberSelector extends React.Component {
   }
 
   render () {
-    let { value, start, end, step } = this.props;
+    let { value, start, end, step, size } = this.props;
     if (!step) step = 1;
+    if (!size) size = end;
+    let style = { width: size.toString().length + 'em' };
     return (
       <span className="wdk-NumberSelector">
-        <input type="number" min={start} max={end} step={step} value={value} onChange={this.handleChangeEvent} />
+        <input type="number" style={style} min={start} max={end} step={step} value={value} onChange={this.handleChangeEvent} />
       </span>
     );
   }
@@ -37,7 +39,8 @@ NumberSelector.propTypes = {
   end: PropTypes.number,
   value: PropTypes.number,
   onChange: PropTypes.func,
-  step: PropTypes.number
+  step: PropTypes.number,
+  size: PropTypes.number
 };
 
 export default NumberSelector;
