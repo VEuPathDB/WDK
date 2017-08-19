@@ -1126,7 +1126,7 @@ var Histogram = (function() {
         data: distribution.map(entry => [ entry.value, entry.filteredCount ]),
         color: '#DA7272',
         hoverable: false,
-        points: { show: true }
+        // points: { show: true }
       }];
 
       var plotOptions = {
