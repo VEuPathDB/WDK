@@ -1018,7 +1018,12 @@ var Histogram = (function() {
       this.handleResize = throttle(this.handleResize.bind(this), 100);
       // Set default yAxis max based on distribution
       var yaxisMax = this.computeYAxisMax();
-      this.state = { yaxisMax };
+      var values = this.props.distribution
+        .map(entry => entry.value)
+        .filter(value => value != null);
+      var xaxisMin = Math.min(...values);
+      var xaxisMax = Math.max(...values);
+      this.state = { yaxisMax, xaxisMin, xaxisMax };
     }
 
     computeYAxisMax() {
@@ -1223,18 +1228,54 @@ var Histogram = (function() {
       });
     }
 
+    setXAxisScale(xaxisMin, xaxisMax) {
+      this.setState({ xaxisMin, xaxisMax }, () => {
+        this.plot.getOptions().xaxes[0].min = xaxisMin;
+        this.plot.getOptions().xaxes[0].max = xaxisMax;
+        this.plot.setupGrid();
+        this.plot.draw();
+      });
+    }
+
     render() {
-      var { yaxisMax } = this.state;
-      var { xaxisLabel, yaxisLabel, distribution } = this.props;
+      var { yaxisMax, xaxisMin, xaxisMax } = this.state;
+      var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
       var countsMax = Math.max(...counts);
 
+      var values = distribution.map(entry => entry.value).filter(value => value != null);
+      var valuesMin = Math.min(...values);
+      var valuesMax = Math.max(...values);
+
       return (
         <div className="chart-container">
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
+          <div>
+            Scale x-axis from <input
+              type={chartType}
+              value={chartType === 'date' ? formatDate(timeformat, xaxisMin) : xaxisMin}
+              min={chartType === 'date' ? formatDate(timeformat, valuesMin) : valuesMin}
+              max={chartType === 'date' ? formatDate(timeformat, xaxisMax) : xaxisMax}
+              onChange={e => this.setXAxisScale(
+                chartType === 'date' ? new Date(e.target.value).getTime()
+                : Number(e.target.value),
+                xaxisMax)}
+            /> to <input
+              type={chartType}
+              value={chartType === 'date' ? formatDate(timeformat, xaxisMax) : xaxisMax}
+              min={chartType === 'date' ? formatDate(timeformat, xaxisMin) : xaxisMin}
+              max={chartType === 'date' ? formatDate(timeformat, valuesMax) : valuesMax}
+              onChange={e => this.setXAxisScale(xaxisMin,
+                chartType === 'date' ? new Date(e.target.value).getTime()
+                : Number(e.target.value))}
+            /> <button
+              type="button"
+              onClick={() => this.setXAxisScale(valuesMin, valuesMax)}
+            >reset</button>
+          </div>
           <div className="chart-title y-axis">
             <div>{yaxisLabel}</div>
             <div>
@@ -1762,11 +1803,21 @@ class DateField extends React.Component {
   }
 
   componentWillMount() {
-    this.timeformat = getFormatFromDateString(this.props.distribution[0].value);
+    this.setDateFormat(this.props.distribution);
   }
 
   componentWillUpdate(nextProps) {
-    this.timeformat = getFormatFromDateString(nextProps.distribution[0].value);
+    this.setDateFormat(nextProps.distribution);
+  }
+
+  setDateFormat(distribution) {
+    const firstDateEntry = distribution.find(entry => entry.value != null);
+    if (firstDateEntry == null) {
+      console.warn('Could not determine date format. No non-null distribution entry.', distribution);
+    }
+    else {
+      this.timeformat = getFormatFromDateString(firstDateEntry.value);
+    }
   }
 
   toHistogramValue(value) {
@@ -1805,8 +1856,6 @@ class DateField extends React.Component {
         <dd>{distMin}</dd>
         <dt>Max</dt>
         <dd>{distMax}</dd>
-        <dt>Unknown</dt>
-        <dd>{unknownCount}</dd>
       </dl>
     );
 
