@@ -27,6 +27,7 @@ import Loading from '../Loading';
 import Tooltip from '../Tooltip';
 import Dialog from '../Dialog';
 import CheckboxTree from '../CheckboxTree';
+import DateSelector from '../DateSelector';
 
 var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 
@@ -1249,29 +1250,46 @@ var Histogram = (function() {
       var valuesMin = Math.min(...values);
       var valuesMax = Math.max(...values);
 
+      var xaxisMinSelector = chartType === 'date' ? (
+        <DateSelector
+          value={formatDate(timeformat, xaxisMin)}
+          start={formatDate(timeformat, valuesMin)}
+          end={formatDate(timeformat, xaxisMax)}
+          onChange={value => this.setXAxisScale(new Date(value).getTime(), xaxisMax)}
+        />
+      ) : (
+        <input
+          type="number"
+          value={xaxisMin}
+          min={valuesMin}
+          max={xaxisMax}
+          onChange={e => this.setXAxisScale(Number(e.target.value), xaxisMax)}
+        />
+      );
+
+      var xaxisMaxSelector = chartType === 'date' ? (
+        <DateSelector
+          value={formatDate(timeformat, xaxisMax)}
+          start={formatDate(timeformat, xaxisMin)}
+          end={formatDate(timeformat, valuesMax)}
+          onChange={value => this.setXAxisScale(xaxisMin, new Date(value).getTime())}
+        />
+      ) : (
+        <input
+          type="number"
+          value={xaxisMax}
+          min={xaxisMin}
+          max={valuesMax}
+          onChange={e => this.setXAxisScale(xaxisMin, Number(e.target.value))}
+        />
+      );
+
       return (
         <div className="chart-container">
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
           <div>
-            Scale x-axis from <input
-              type={chartType}
-              value={chartType === 'date' ? formatDate(timeformat, xaxisMin) : xaxisMin}
-              min={chartType === 'date' ? formatDate(timeformat, valuesMin) : valuesMin}
-              max={chartType === 'date' ? formatDate(timeformat, xaxisMax) : xaxisMax}
-              onChange={e => this.setXAxisScale(
-                chartType === 'date' ? new Date(e.target.value).getTime()
-                : Number(e.target.value),
-                xaxisMax)}
-            /> to <input
-              type={chartType}
-              value={chartType === 'date' ? formatDate(timeformat, xaxisMax) : xaxisMax}
-              min={chartType === 'date' ? formatDate(timeformat, xaxisMin) : xaxisMin}
-              max={chartType === 'date' ? formatDate(timeformat, valuesMax) : valuesMax}
-              onChange={e => this.setXAxisScale(xaxisMin,
-                chartType === 'date' ? new Date(e.target.value).getTime()
-                : Number(e.target.value))}
-            /> <button
+            Scale x-axis from {xaxisMinSelector} to {xaxisMaxSelector} <button
               type="button"
               onClick={() => this.setXAxisScale(valuesMin, valuesMax)}
             >reset</button>
