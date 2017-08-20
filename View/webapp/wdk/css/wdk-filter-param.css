@@ -90,7 +90,7 @@
   width: 200px;
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: 3em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
