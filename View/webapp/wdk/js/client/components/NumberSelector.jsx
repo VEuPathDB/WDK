@@ -7,10 +7,20 @@ import PropTypes from 'prop-types';
 class NumberSelector extends React.Component {
   constructor (props) {
     super(props);
+    this.handleBlurEvent = this.handleBlurEvent.bind(this);
     this.handleChangeEvent = this.handleChangeEvent.bind(this);
+    this.state = { internalValue: props.value };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({ internalValue: nextProps.value });
   }
 
   handleChangeEvent (e) {
+    this.setState({ internalValue: e.target.value });
+  }
+
+  handleBlurEvent (e) {
     let { onChange, start, end } = this.props;
     let { value } = e.currentTarget;
     value = value * 1;
@@ -18,17 +28,29 @@ class NumberSelector extends React.Component {
     end = end * 1;
     if (value < start) value = start;
     if (value > end) value = end;
+    this.setState({ internalValue: value });
     if (onChange) onChange(value);
   }
 
   render () {
-    let { value, start, end, step, size } = this.props;
+    let { start, end, step, size } = this.props;
+    let { internalValue: value } = this.state;
     if (!step) step = 1;
-    if (!size) size = end;
-    let style = { width: size.toString().length + 'em' };
+    if (!size) size = end + step;
+    let width = Math.max(size.toString().length, 4);
+    let style = { width: width + 'em' };
     return (
       <span className="wdk-NumberSelector">
-        <input type="number" style={style} min={start} max={end} step={step} value={value} onChange={this.handleChangeEvent} />
+        <input
+          type="number"
+          style={style}
+          min={start}
+          max={end}
+          step={step}
+          value={value}
+          onChange={this.handleChangeEvent}
+          onBlur={this.handleBlurEvent}
+        />
       </span>
     );
   }
