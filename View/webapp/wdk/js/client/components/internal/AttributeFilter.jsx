@@ -1022,8 +1022,8 @@ var Histogram = (function() {
       var values = this.props.distribution
         .map(entry => entry.value)
         .filter(value => value != null);
-      var xaxisMin = Math.min(...values);
-      var xaxisMax = Math.max(...values);
+      var xaxisMin = Math.floor(Math.min(...values));
+      var xaxisMax = Math.ceil(Math.max(...values));
       this.state = { yaxisMax, xaxisMin, xaxisMax };
     }
 
@@ -1146,8 +1146,8 @@ var Histogram = (function() {
           }
         },
         xaxis: Object.assign({
-          min: min - barWidth,
-          max: max + barWidth,
+          min: this.state.xaxisMin,
+          max: this.state.xaxisMax,
           tickLength: 0
         }, xaxisBaseOptions),
         yaxis: {
@@ -1247,8 +1247,8 @@ var Histogram = (function() {
       var countsMax = Math.max(...counts);
 
       var values = distribution.map(entry => entry.value).filter(value => value != null);
-      var valuesMin = Math.min(...values);
-      var valuesMax = Math.max(...values);
+      var valuesMin = Math.floor(Math.min(...values));
+      var valuesMax = Math.ceil(Math.max(...values));
 
       var xaxisMinSelector = chartType === 'date' ? (
         <DateSelector
@@ -1351,6 +1351,7 @@ var Histogram = (function() {
  * Generic Histogram field component
  *
  * TODO Add binning
+ * TODO Use bin size for x-axis scale <input> step attribute
  * TODO Interval snapping
  */
 class HistogramField extends React.Component {
