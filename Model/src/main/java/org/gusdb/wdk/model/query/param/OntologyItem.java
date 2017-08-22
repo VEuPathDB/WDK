@@ -37,8 +37,9 @@ public class OntologyItem {
     this.description = description;
   }
 
-  public void setType(OntologyItemType type) {
+  public OntologyItem setType(OntologyItemType type) {
     this.type = type;
+    return this;
   }
   
   public void setIsRange(Boolean isRange) {
