@@ -54,10 +54,12 @@ export function latest<T>(promiseFactory: PromiseFactory<T>) {
  * @param promiseFactory Function that produces Promises
  */
 export function synchronized<T>(promiseFactory: PromiseFactory<T>) {
-  let queue: Promise<T>;
+  let queue: Promise<void>;
   return function enque(...args: any[]) {
-    return queue == null ? (queue = promiseFactory.apply(this, args))
-      : (queue = queue.then(() => promiseFactory.apply(this, args)));
+    const task = queue == null ? promiseFactory.apply(this, args)
+      : queue.then(() => promiseFactory.apply(this, args));
+    queue = task.then(() => {}, () => {});
+    return task;
   }
 }
 
