@@ -136,8 +136,10 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
           attributeField.getName() + "__attribute-histogram");
       while (resultSet.next()) {
         String column = resultSet.getString(attributeColumn);
-        if (column == null)
-          column = "";
+        // Skip null columns. We used to return an empty string, but this messes
+        // up the type inference done in getType(), causing an integer histogram
+        // type to be set to a category histogram type.
+        if (column == null) continue;
         int count = resultSet.getInt(COLUMN_COUNT);
         counts.put(column, count);
       }
