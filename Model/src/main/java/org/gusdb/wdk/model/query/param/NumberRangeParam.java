@@ -142,8 +142,8 @@ public class NumberRangeParam extends Param {
       }
 	}
 
-    // By convention, the first value of the range should be less than the second value.
-    if(values[0] >= values[1]) {
+    // By convention, the first value of the range should be less than or equal to the second value.
+    if(values[0] > values[1]) {
       throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
       		+ " must be less than the maximum value, '" + values[1] + "'");
     }

@@ -202,10 +202,10 @@ public class DateRangeParam extends Param {
       }
 	}
 	
-	// Insure that the minimum date comes earlier than the maximum date.
-	if(!values[0].isBefore(values[1])) {
+	// Ensure that the minimum date does not come after the maximum date
+	if(values[0].isAfter(values[1])) {
 	  throw new WdkUserException("The minimum date '" + values[0] + "' should " +
-	    "come before the maximum date '" + values[1] + "'");
+	    "come before, or equal, the maximum date '" + values[1] + "'");
 	}
 
     // Insure that the minimum date comes no earlier than the minimum allowed date
