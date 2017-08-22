@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * @author jerric
@@ -32,6 +34,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
   public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
+
 
   public FilterParamNewHandler() {}
 
@@ -169,6 +175,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
           " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
           FILTERS_VALUE + "`.");
 
+    LOG.info("************************************************************ jsFilter: " + jsFilter);
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     OntologyItemType type = ontologyItem.getType();
     String columnName = type.getMetadataQueryColumn();
@@ -353,12 +360,23 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       for (int i = 0; i < jsFilters.length(); i++) {
         JSONObject jsFilter = jsFilters.getJSONObject(i);
         OntologyItem ontologyItem = ontologyMap.get(jsFilter.getString(FILTERS_FIELD));
+        OntologyItemType type = ontologyItem.getType();
         display += ontologyItem.getDisplayName() + " is ";
 
         if (ontologyItem.getIsRange()) {
           JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-          String min = range.getString(FILTERS_MIN);
-          String max = range.getString(FILTERS_MAX);
+          String min = null;
+          String max = null;
+          if (type.equals(OntologyItemType.NUMBER)) {
+            min = range.isNull(FILTERS_MIN) ? null : Double.toString(range.getDouble(FILTERS_MIN));
+            max = range.isNull(FILTERS_MAX) ? null : Double.toString(range.getDouble(FILTERS_MAX));
+          }
+          else if (type.equals(OntologyItemType.DATE)) {
+            min = range.getString(FILTERS_MIN);
+            max = range.getString(FILTERS_MAX);         
+          }
+          else throw new WdkUserException("Invalid JSON:  a " + type + " type cannot be a range");
+
           display += min == null ? "less than " + max
               : max == null ? "greater than " + min : "between " + min + " and " + max;
         }
