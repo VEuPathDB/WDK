@@ -1188,7 +1188,7 @@ tr.headerRow th {
 .histogram .bin-size { width:40px; text-align:right; }
 .histogram .update { text-align:center; }
 
-#flot-tooltip { position:absolute; display:block; border:1px solid #fdd; padding:3px; border-radius:3px; background-color:#ffe; z-index:100; }
+#flot-tooltip { position:absolute; display:block; border:1px solid #fdd; padding:3px; border-radius:3px; background-color:#ffe; z-index:100000000000; }
 
 
 #word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
