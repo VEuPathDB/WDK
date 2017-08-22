@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -278,13 +279,14 @@ public class QuestionService extends WdkService {
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
+   * @throws DataValidationException 
    */
   @POST
   @Path("/{questionName}/{paramName}/ontologyTermSummary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
-          throws WdkUserException, WdkModelException {
+          throws WdkUserException, WdkModelException, DataValidationException {
     try {
       Question question = getQuestionFromSegment(questionName);
       FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
@@ -293,6 +295,9 @@ public class QuestionService extends WdkService {
       String ontologyId = jsonBody.getString("ontologyId");
       Map<String, String> contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       OntologyItem ontologyItem = filterParam.getOntology(user, contextParamValues).get(ontologyId);
+      if (ontologyItem == null) {
+        throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
+      }
       JSONArray summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
           ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
       return Response.ok(summaryJson.toString()).build();
