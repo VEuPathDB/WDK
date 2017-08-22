@@ -107,7 +107,7 @@ public abstract class StandardReporter extends AbstractReporter {
         }
         return new PagedAnswerRecordStream(_baseAnswer, pageSize);
       case FILE_BASED:
-        return new FileBasedRecordStream(_baseAnswer, getSelectedAttributes(), getSelectedTables()).populateFiles();
+        return new FileBasedRecordStream(_baseAnswer, getSelectedAttributes(), getSelectedTables());
       case SMART:
       default:
         // unspecified; let factory decide for us
