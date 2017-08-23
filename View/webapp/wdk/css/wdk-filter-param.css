@@ -296,6 +296,7 @@
   height: 1em;
   position: absolute;
   top: -.5em;
+  min-width: 1px;
 }
 .filter-param .fill.filtered {
   background-color: #DA7272;
