@@ -1022,8 +1022,8 @@ var Histogram = (function() {
       var values = this.props.distribution
         .map(entry => entry.value)
         .filter(value => value != null);
-      var xaxisMin = Math.floor(Math.min(...values));
-      var xaxisMax = Math.ceil(Math.max(...values));
+      var xaxisMin = Math.min(...values);
+      var xaxisMax = Math.max(...values);
       this.state = { yaxisMax, xaxisMin, xaxisMax };
     }
 
@@ -1031,6 +1031,8 @@ var Histogram = (function() {
       var counts = this.props.distribution.map(entry => entry.count);
       // Reverse sort, then pull out first and second highest values
       var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
+      // If max is more than twice the size of nextMax, assume it is
+      // an outlier and use nextMax as the max
       var yaxisMax = max >= nextMax * 2 ? nextMax : max;
       return yaxisMax + yaxisMax * 0.1;
     }
@@ -1247,8 +1249,8 @@ var Histogram = (function() {
       var countsMax = Math.max(...counts);
 
       var values = distribution.map(entry => entry.value).filter(value => value != null);
-      var valuesMin = Math.floor(Math.min(...values));
-      var valuesMax = Math.ceil(Math.max(...values));
+      var valuesMin = Math.min(...values);
+      var valuesMax = Math.max(...values);
 
       var xaxisMinSelector = chartType === 'date' ? (
         <DateSelector
@@ -1299,7 +1301,9 @@ var Histogram = (function() {
             <div>
               <input
                 style={{width: '90%'}}
-                type="range" min={countsMin + 1} max={countsMax + countsMax * 0.1}
+                type="range"
+                min={Math.max(countsMin, 1)}
+                max={countsMax + countsMax * 0.1}
                 title={yaxisMax}
                 value={yaxisMax}
                 onChange={e => this.setYAxisMax(Number(e.target.value))}/>
@@ -1658,8 +1662,7 @@ class MembershipField extends React.Component {
   }
 
   render() {
-    var dist = this.props.distribution.filter(item => item.value != null);
-    var total = reduce(dist, (acc, item) => acc + item.count, 0);
+    var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
     var sortedDistribution = sortBy(this.props.distribution, ({ value }) => value);
