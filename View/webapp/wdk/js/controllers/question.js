@@ -37,6 +37,9 @@ wdk.namespace("wdk.question", function(ns) {
     // turn off autocompletion
     $form.prop('autocomplete', 'off');
 
+    // turn off html5 validation
+    $form.attr('novalidate', '');
+
     // set up parameter handlers
     if ($el.data('showParams') === true) {
       wdk.parameterHandlers.init($el);
@@ -46,6 +49,7 @@ wdk.namespace("wdk.question", function(ns) {
     if (initializers.has(questionFullName)) {
       initializers.get(questionFullName)($form);
     }
+
     wdk.onloadQuestion();
   }
 
