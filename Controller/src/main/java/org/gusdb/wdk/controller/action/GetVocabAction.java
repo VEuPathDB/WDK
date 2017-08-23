@@ -2,6 +2,8 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -85,14 +87,20 @@ public class GetVocabAction extends Action {
       return question;
   }
   
-  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) throws WdkUserException {
+  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) throws WdkUserException, WdkModelException {
     String paramName = request.getParameter("name");
     if (paramName == null) throw new WdkUserException("Required parameter 'name' is missing.");
 
     // the dependent values are a JSON representation of {name: [values],
     // name: [values],...}
     Map<String, String> dependedValues = new LinkedHashMap<>();
-    String values = request.getParameter("dependedValue");
+    String values = null;
+    try {
+      values = URLDecoder.decode(request.getParameter("dependedValue"), "UTF-8");
+    }
+    catch(UnsupportedEncodingException uee) {
+      throw new WdkModelException(uee);
+    }
     if (values != null && values.length() > 0) {
       JSONObject jsValues = new JSONObject(values);
       Iterator<String> keys = jsValues.keys();
