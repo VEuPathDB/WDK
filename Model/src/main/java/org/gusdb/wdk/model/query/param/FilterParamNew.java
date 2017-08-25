@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -91,13 +92,15 @@ public class FilterParamNew extends AbstractDependentParam {
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
 
+  private static final String FILTERED_IDS_MACRO = "##FILTERED_IDS##"; 
+
   private static final int FETCH_SIZE = 1000;
 
   private String metadataQueryRef;
   private Query metadataQuery;
   
   private String summaryMetadataQueryRef;  // the summary can optionally use a dedicated metadata query ref, eg to report a diff record type
-  private Query summaryMetadataQuery;
+  private SqlQuery summaryMetadataQuery;
 
   private String ontologyQueryRef;
   private Query ontologyQuery;
@@ -127,7 +130,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     this.summaryMetadataQueryRef = param.summaryMetadataQueryRef;
     if (param.summaryMetadataQuery != null)
-      this.summaryMetadataQuery = param.summaryMetadataQuery.clone();
+      this.summaryMetadataQuery = param.summaryMetadataQuery;
     
     this.ontologyQueryRef = param.ontologyQueryRef;
     if (param.ontologyQuery != null)
@@ -190,7 +193,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return summaryMetadataQuery;
   }
 
-  public void setSummaryMetadataQuery(Query summaryMetadataQuery) {
+  public void setSummaryMetadataQuery(SqlQuery summaryMetadataQuery) {
     this.summaryMetadataQuery = summaryMetadataQuery;
   }
 
@@ -328,15 +331,15 @@ public class FilterParamNew extends AbstractDependentParam {
     // resolve optional summary metadata query
     if (summaryMetadataQueryRef != null) {
 
-      // validate dependent params
-      this.summaryMetadataQuery = resolveDependentQuery(model, summaryMetadataQueryRef, "summary metadata query");
+      Object obj = model.resolveReference(summaryMetadataQueryRef);
+      if (obj instanceof SqlQuery) {
+        summaryMetadataQuery = (SqlQuery) obj;
+      } else throw new WdkModelException("The summary metadata query " + summaryMetadataQueryRef + " in filterParam " +
+          getFullName() + " must point to an <sqlParam>");
 
-      // validate columns.
-      Map<String, Column> columns = summaryMetadataQuery.getColumnMap();
-      for (String col : metadataCols)
-        if (!columns.containsKey(col))
+      if (!summaryMetadataQuery.getSql().contains(FILTERED_IDS_MACRO))
           throw new WdkModelException("The summary metadata query " + summaryMetadataQueryRef + " in filterParam " +
-              getFullName() + " must include column: " + col);
+              getFullName() + "must have SQL that contains the macro " + FILTERED_IDS_MACRO);
     }
   }
 
@@ -371,15 +374,12 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkUserException
    */
   public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues, JSONObject appliedFilters) throws WdkModelException, WdkUserException {
-
-    // if optional summaryMetadataQuery provided, use it instead of metadata query
-    Query mdQuery = summaryMetadataQuery == null? metadataQuery : summaryMetadataQuery;
     
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     // use background query if provided, else use metadata query
     
     // get base background query
-    Query bgdQuery = backgroundQuery == null? mdQuery : backgroundQuery;
+    Query bgdQuery = backgroundQuery == null? metadataQuery : backgroundQuery;
     QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
     String bgdSql = queryInstance.getSql();
     
@@ -390,20 +390,25 @@ public class FilterParamNew extends AbstractDependentParam {
           + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + bgdSql + ") where rownum = 1)";
     
     // get count
-    String sql = "select count(*) from (" + distinctInternalsSql + ")";
+    String sql = "select count(*) from (" + transformIdSql(distinctInternalsSql) + ")";
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
     fpsc.unfilteredCount = runCountSql(sql);
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
-    String filteredInternalsSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues, this, mdQuery);
+    String filteredInternalsSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues, this, metadataQuery);
 
     // get count
-    sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
+    sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql) + ")";
 
     fpsc.filteredCount = runCountSql(sql);
     
     return fpsc;
+  }
+  
+  String transformIdSql(String idSql) {
+    if (summaryMetadataQuery == null) return idSql;
+    return summaryMetadataQuery.getSql().replace(FILTERED_IDS_MACRO, idSql);
   }
   
   private long runCountSql(String sql) {
