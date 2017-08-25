@@ -128,8 +128,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
-      Query mdQuery = param.getUseSummaryMetadataQueryForInternalValue()? param.getSummaryMetadataQuery() : param.getMetadataQuery();
-      return getFilteredValue(user, jsValue, contextParamValues, param, mdQuery);
+      String fv = getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
+      return param.getUseSummaryMetadataQueryForInternalValue()? param.transformIdSql(fv): fv;
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
