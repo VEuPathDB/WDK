@@ -1965,6 +1965,11 @@
       <attribute name="name" />
       <attribute name="analyzerClass" />
       <attribute name="releaseVersion" />
+      <optional>
+        <attribute name="hasParameters">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
       <ref name="stepAnalysisOptions" />
       <element name="shortDescription">
         <text />

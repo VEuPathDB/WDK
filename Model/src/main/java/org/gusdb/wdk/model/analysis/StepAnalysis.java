@@ -18,6 +18,7 @@ public interface StepAnalysis {
   public String getFormViewName();
   public String getAnalysisViewName();
 
+  public boolean getHasParameters();
   public Map<String,String> getProperties();
 
 }
