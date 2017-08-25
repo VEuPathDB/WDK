@@ -314,11 +314,11 @@ function FilterLegend(props) {
     <div className="filter-param-legend">
       <div>
         <div className="bar"><div className="fill"></div></div>
-        <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> All {props.displayName} having "{props.field.display}"</div>
+        <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.field.display}"</div>
       </div>
       <div>
         <div className="bar"><div className="fill filtered"></div></div>
-        <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
+        <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> &ndash; Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
       </div>
     </div>
   )
