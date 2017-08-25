@@ -3356,9 +3356,9 @@ make-error@^1.1.1:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-error/-/make-error-1.3.0.tgz#52ad3a339ccf10ce62b4040b708fe707244b8b96"
 
-mansion-ui@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/mansion-ui/-/mansion-ui-2.5.0.tgz#8876c1defa9e54e6932689d621a964a32b07c289"
+mansion-ui@^2.5.2:
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/mansion-ui/-/mansion-ui-2.5.2.tgz#ad44fc0fa5ce4a8a034ed177deb4bfdab47f5860"
 
 map-obj@^1.0.0, map-obj@^1.0.1:
   version "1.0.1"
