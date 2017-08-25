@@ -8,7 +8,7 @@
     <body>
       <div style="text-align:center">
         <form>
-          <input type="submit" value="Run Analysis"/>
+          <input type="submit" value="${hasParameters ? 'Run' : 'Reload'} Analysis"/>
         </form>
       </div>
     </body>
