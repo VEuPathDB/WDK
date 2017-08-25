@@ -9,8 +9,9 @@ public class ShowStepAnalysisAction extends AbstractStepAnalysisIdAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     // need to call this to verify access permission
-    getContextFromPassedId();
+    StepAnalysisContext context = getContextFromPassedId();
     return new ActionResult().setViewName(SUCCESS)
-        .setRequestAttribute(StepAnalysisContext.ANALYSIS_ID_KEY, getAnalysisId());
+        .setRequestAttribute(StepAnalysisContext.ANALYSIS_ID_KEY, getAnalysisId())
+        .setRequestAttribute("hasParameters", context.getStepAnalysis().getHasParameters());
   }
 }

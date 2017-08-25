@@ -286,7 +286,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
       data: { "analysisId": analysisId },
       success: function(data) {
 
-        if (data.status === 'OUT_OF_DATE') {
+        var hasParams = $element.find('.step-analysis-form-pane').data('hasparams');
+
+        if (data.status === 'OUT_OF_DATE' || (data.status === 'CREATED' && !hasParams)) {
           // rerun this analysis automatically using existing param values
           doAjax(ROUTES.rerunAnalysis, {
             data: { "analysisId": analysisId },
@@ -331,7 +333,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
           $element.find('.toggle-description').click(toggleFunction);
 
           // load form and (if necessary) populate selected values
-          loadAnalysisForm($element, data);
+          loadAnalysisForm($element, data, hasParams);
 
           // load results
           loadResultsPane($element, analysisId);
@@ -343,7 +345,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
-  function loadAnalysisForm($element, analysisObj) {
+  function loadAnalysisForm($element, analysisObj, hasParams) {
     var analysisId = analysisObj.analysisId;
     // fetch plugin's form
     return doAjax(ROUTES.getForm, {
@@ -366,12 +368,14 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
         var formPane = $element.find(".step-analysis-form-pane");
         formPane.find('> div').html(wrappingDiv);
-        formPane.accordion({
-          collapsible: true,
-          active: analysisObj.status === 'COMPLETE' ? false : 0,
-          animate: false,
-          heightStyle: "content"
-        });
+        if (hasParams) {
+          formPane.accordion({
+            collapsible: true,
+            active: analysisObj.status === 'COMPLETE' ? false : 0,
+            animate: false,
+            heightStyle: "content"
+          });
+        }
 
         // only overwrite any default values if params have been set for this instance in the past
         if (analysisObj.hasParams) {
@@ -441,7 +445,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
       success: function(data) {
         $.unblockUI();
         if (data.status == "success") {
-          $formPane.accordion("option", "active", false);
+          if ($formPane.data('hasparams')) { // accordion only present if this is true
+            $formPane.accordion("option", "active", false);
+          }
           // if success, then alert user and load results pane
           loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
         }
@@ -463,18 +469,6 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
       }
     });
   }
-
-  /* Guess I don't need this any more???
-  function findTabIndexById(tabContainerSelector, tabId) {
-    var tabs = $(tabContainerSelector).find('ul.ui-tabs-nav > li');
-    for (var i=0; i < tabs.length; i++) {
-      if ($(tabs[i]).attr('id') == tabId) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  */
 
   function analysisRefresh($obj, $attrs) {
     var analysisId = $attrs.analysisid;
