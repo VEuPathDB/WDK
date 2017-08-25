@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { Seq } from '../../utils/IterableUtils';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
 import {
@@ -298,6 +299,7 @@ function FieldFilter(props) {
     <div className={className}>
       {!props.field ? <EmptyField displayName={props.displayName}/> : (
         <div>
+          {props.distribution && <FilterLegend {...fieldDetailProps} />}
           <h3>
             {props.field.display + ' '}
             <Tooltip content={FieldDetail.getTooltipContent(fieldDetailProps)}>
@@ -306,19 +308,7 @@ function FieldFilter(props) {
           </h3>
           <div className="description">{props.field.description}</div>
           {!props.distribution ? <Loading/> : (
-            <div>
-              <FieldDetail key={props.field.term} {...fieldDetailProps} />
-              <div className="filter-param-legend">
-                <div>
-                  <div className="bar"><div className="fill filtered"></div></div>
-                  <div className="label">{props.displayName} remaining when <em>other</em> criteria have been applied.</div>
-                </div>
-                <div>
-                  <div className="bar"><div className="fill"></div></div>
-                  <div className="label">All {props.displayName}</div>
-                </div>
-              </div>
-            </div>
+            <FieldDetail key={props.field.term} {...fieldDetailProps} />
           )}
         </div>
       )}
@@ -339,6 +329,37 @@ FieldFilter.propTypes = {
 FieldFilter.defaultProps = {
   displayName: 'Items'
 }
+
+function concatCounts(countsA, countsB) {
+  return {
+    count: countsA.count + countsB.count,
+    filteredCount: countsA.filteredCount + countsB.filteredCount
+  }
+}
+
+/**
+ * Legend used for all filters
+ */
+function FilterLegend(props) {
+  const totalCounts = Seq.from(props.distribution)
+    .filter(entry => entry.value != null)
+    .reduce(concatCounts);
+
+  return (
+    <div className="filter-param-legend">
+      <div>
+        <div className="bar"><div className="fill filtered"></div></div>
+        <div className="label">Remaining <strong>{totalCounts.filteredCount}</strong> collected {props.displayName} when <em>other</em> criteria have been applied.</div>
+      </div>
+      <div>
+        <div className="bar"><div className="fill"></div></div>
+        <div className="label">All <strong>{totalCounts.count}</strong> collected {props.displayName}.</div>
+      </div>
+    </div>
+  )
+}
+
+FilterLegend.propTypes = FieldFilter.propTypes;
 
 
 var FilteredData = (function() {

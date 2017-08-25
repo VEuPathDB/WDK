@@ -187,6 +187,7 @@
 .filter-param .range-filter {
   min-height: 20em;
   padding: .5em 0;
+  clear: both;
 }
 .filter-param .membership-filter .text,
 .filter-param .membership-filter .distribution {
@@ -303,7 +304,6 @@
 }
 .filter-param .filter-param-legend {
   float: right;
-  margin-bottom: 1em;
   padding: 0;
   color: #666666;
   border: 1px solid #dadada;
