@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import natsort from 'natural-sort';
 import { Seq } from '../../utils/IterableUtils';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
@@ -30,37 +31,10 @@ import Dialog from '../Dialog';
 import CheckboxTree from '../CheckboxTree';
 import DateSelector from '../DateSelector';
 
-var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
-
-/**
- * Returns an strftime style format string.
- * @param {string} dateString
- */
-function getFormatFromDateString(dateString) {
-  var matches = dateString.match(dateStringRe);
-  if (matches !== null) {
-    var [ , , m, d ] = matches;
-    return  d !== undefined ? '%Y-%m-%d'
-          : m !== undefined ? '%Y-%m'
-          : '%Y';
-  }
-}
-
-/**
- * Returns a formatted date.
- *
- * @param {string} format strftime style format string
- * @param {Date} date
- */
-function formatDate(format, date) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  return format
-  .replace(/%Y/, String(date.getFullYear()))
-  .replace(/%m/, padStart(String(date.getMonth() + 1), 2, '0'))
-  .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
-}
+const natSortComparator = natsort();
+const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
+const UNKNOWN_DISPLAY = 'unknown';
+const UNKNOWN_VALUE = '@@unknown@@';
 
 /**
  * @typedef {string[]} StringFilterValue
@@ -328,13 +302,6 @@ FieldFilter.propTypes = {
 
 FieldFilter.defaultProps = {
   displayName: 'Items'
-}
-
-function concatCounts(countsA, countsB) {
-  return {
-    count: countsA.count + countsB.count,
-    filteredCount: countsA.filteredCount + countsB.filteredCount
-  }
 }
 
 /**
@@ -1010,20 +977,6 @@ InvalidFilterList.propTypes = {
 }
 
 
-// Reusable histogram field component. The parent component
-// is responsible for preparing the data.
-
-var unwrapXaxisRange = function unwrap(flotRanges) {
-  if (flotRanges == null) {
-    return { min: null, max: null };
-  }
-
-  var { from, to } = flotRanges.xaxis;
-  var min = Number(from.toFixed(2));
-  var max = Number(to.toFixed(2));
-  return { min, max };
-};
-
 var distributionEntryPropType = PropTypes.shape({
   value: PropTypes.number.isRequired,
   count: PropTypes.number.isRequired,
@@ -1593,9 +1546,6 @@ HistogramField.propTypes = {
 };
 
 
-var UNKNOWN_DISPLAY = 'unknown';
-var UNKNOWN_VALUE = '@@unknown@@';
-
 /**
  * Membership field component
  */
@@ -1686,7 +1636,7 @@ class MembershipField extends React.Component {
     var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
-    var sortedDistribution = sortBy(this.props.distribution, ({ value }) => value);
+    var sortedDistribution = sortDistribution(this.props.distribution);
 
     // get filter, or create one for display purposes only
     var filterValue = get(this.props, 'filter.value', this.getKnownValues());
@@ -1935,6 +1885,11 @@ function EmptyField(props) {
 
 EmptyField.propTypes = FieldFilter.propTypes;
 
+
+
+// Helpers
+// =======
+
 /**
  * Determine if a filter should be created, or if the values represent the default state.
  *
@@ -1965,7 +1920,6 @@ function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
 
   return value.length !== fieldSummary.filter(item => item.value != null).length;
 }
-
 
 /**
  * Finds the component for a field.
@@ -2052,4 +2006,77 @@ function setStateFromArgs(instance, ...argsNames) {
     }
     instance.setState(nextState);
   }
+}
+
+/**
+ * Comparator function using a natural comparison algorithm.
+ */
+function distributionComparator(entryA, entryB) {
+  return natSortComparator(
+    entryA.value == null ? '' : entryA.value,
+    entryB.value == null ? '' : entryB.value
+  );
+}
+
+/**
+ * Sort distribution by value
+ */
+function sortDistribution(distribution) {
+  return distribution.slice().sort(distributionComparator);
+}
+
+/**
+ * Returns an strftime style format string.
+ * @param {string} dateString
+ */
+function getFormatFromDateString(dateString) {
+  var matches = dateString.match(dateStringRe);
+  if (matches !== null) {
+    var [ , , m, d ] = matches;
+    return  d !== undefined ? '%Y-%m-%d'
+          : m !== undefined ? '%Y-%m'
+          : '%Y';
+  }
+}
+
+/**
+ * Returns a formatted date.
+ *
+ * @param {string} format strftime style format string
+ * @param {Date} date
+ */
+function formatDate(format, date) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  return format
+  .replace(/%Y/, String(date.getFullYear()))
+  .replace(/%m/, padStart(String(date.getMonth() + 1), 2, '0'))
+  .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
+}
+
+/**
+ * Creates a count object where `count` and `filteredCount` are the sum of
+ * `countsA` and `countsB` properties.
+ */
+function concatCounts(countsA, countsB) {
+  return {
+    count: countsA.count + countsB.count,
+    filteredCount: countsA.filteredCount + countsB.filteredCount
+  }
+}
+
+/**
+ * Reusable histogram field component. The parent component is responsible for
+ * preparing the data.
+ */
+function unwrapXaxisRange(flotRanges) {
+  if (flotRanges == null) {
+    return { min: null, max: null };
+  }
+
+  var { from, to } = flotRanges.xaxis;
+  var min = Number(from.toFixed(2));
+  var max = Number(to.toFixed(2));
+  return { min, max };
 }

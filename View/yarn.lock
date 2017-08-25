@@ -83,6 +83,10 @@
   version "4.14.71"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.71.tgz#0dc383f78981216ac76e2f2c3afd998e0450e4c1"
 
+"@types/natural-sort@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@types/natural-sort/-/natural-sort-0.0.19.tgz#c318532c1d5022c7c475473634da8dd765cb178b"
+
 "@types/node@^8.0.14":
   version "8.0.16"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.16.tgz#5aa51abd72621a0ce53fb86bccd76825ee1b4ca9"
@@ -3515,6 +3519,10 @@ nan@^2.3.0:
 natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
+
+natural-sort@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/natural-sort/-/natural-sort-1.0.0.tgz#eac301fd86c268a771222c62dc7719402aa34380"
 
 node-fetch@^1.0.1:
   version "1.7.1"
