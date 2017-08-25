@@ -281,9 +281,7 @@ function FieldFilter(props) {
             </Tooltip>
           </h3>
           <div className="description">{props.field.description}</div>
-          {!props.distribution ? <Loading/> : (
-            <FieldDetail key={props.field.term} {...fieldDetailProps} />
-          )}
+          {!props.distribution ? <Loading/> : <FieldDetail {...fieldDetailProps} />}
         </div>
       )}
     </div>
@@ -315,12 +313,12 @@ function FilterLegend(props) {
   return (
     <div className="filter-param-legend">
       <div>
-        <div className="bar"><div className="fill filtered"></div></div>
-        <div className="label">Remaining <strong>{totalCounts.filteredCount}</strong> collected {props.displayName} when <em>other</em> criteria have been applied.</div>
+        <div className="bar"><div className="fill"></div></div>
+        <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> All {props.displayName} having "{props.field.display}"</div>
       </div>
       <div>
-        <div className="bar"><div className="fill"></div></div>
-        <div className="label">All <strong>{totalCounts.count}</strong> collected {props.displayName}.</div>
+        <div className="bar"><div className="fill filtered"></div></div>
+        <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
       </div>
     </div>
   )
