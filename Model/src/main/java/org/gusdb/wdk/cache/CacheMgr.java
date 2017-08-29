@@ -1,8 +1,10 @@
 package org.gusdb.wdk.cache;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParam.MetadataCache;
@@ -35,6 +37,19 @@ public class CacheMgr {
   private final OntologyCache _ontologyCache = new OntologyCache();
   private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
 
+  private final Map<String,ItemCache<?,?>> _cacheRepo =
+      new MapBuilder<String,ItemCache<?,?>>(new LinkedHashMap<String,ItemCache<?,?>>())
+      .put("Filter Size Cache", _filterSizeCache.getCache())
+      .put("Step Cache", _stepCache)
+      .put("Vocab Instance Cache", _vocabCache)
+      .put("FilterParam Metadata Cache", _metadataCache)
+      .put("FilterParam MetadataSpec Cache", _metadataSpecCache)
+      .put("Dynamic Attribute Cache", _attributeMetaQueryCache)
+      .put("FilterParamNew Metadata Cache", _metadataNewCache)
+      .put("FilterParamNew Ontology Cache", _filterParamNewCache)
+      .put("FilterParamNew Cache", _filterParamNewCache)
+      .toMap();
+
   private CacheMgr() { }
 
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
@@ -47,4 +62,7 @@ public class CacheMgr {
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
 
+  public Map<String,ItemCache<?,?>> getAllCaches() {
+    return _cacheRepo;
+  }
 }
