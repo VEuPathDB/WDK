@@ -125,6 +125,10 @@ public class FilterSizeCache {
     subscribeToEvents();
   }
 
+  ItemCache<Long, FilterSizeGroup> getCache() {
+    return _cache;
+  }
+
   // Must subscribe to step-revised events so we know when to expire counts in the cache.
   //
   // FIXME: currently any step revise (change that impacts the result), including the
