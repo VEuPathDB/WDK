@@ -308,7 +308,7 @@ FieldFilter.defaultProps = {
 function FilterLegend(props) {
   const totalCounts = Seq.from(props.distribution)
     .filter(entry => entry.value != null)
-    .reduce(concatCounts);
+    .reduce(concatCounts, { count: 0, filteredCount: 0 });
 
   return (
     <div className="filter-param-legend">

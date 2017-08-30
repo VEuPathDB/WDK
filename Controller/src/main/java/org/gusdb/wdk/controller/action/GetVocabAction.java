@@ -2,8 +2,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,6 +14,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
@@ -75,7 +74,7 @@ public class GetVocabAction extends Action {
       }
     }
     catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Could not load vocabulary", ex);
       throw ex;
     }
   }
@@ -87,20 +86,14 @@ public class GetVocabAction extends Action {
       return question;
   }
   
-  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) throws WdkUserException, WdkModelException {
+  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) throws WdkUserException {
     String paramName = request.getParameter("name");
     if (paramName == null) throw new WdkUserException("Required parameter 'name' is missing.");
 
     // the dependent values are a JSON representation of {name: [values],
     // name: [values],...}
     Map<String, String> dependedValues = new LinkedHashMap<>();
-    String values = null;
-    try {
-      values = URLDecoder.decode(request.getParameter("dependedValue"), "UTF-8");
-    }
-    catch(UnsupportedEncodingException uee) {
-      throw new WdkModelException(uee);
-    }
+    String values = FormatUtil.urlDecodeUtf8(request.getParameter("dependedValue"));
     if (values != null && values.length() > 0) {
       JSONObject jsValues = new JSONObject(values);
       Iterator<String> keys = jsValues.keys();
