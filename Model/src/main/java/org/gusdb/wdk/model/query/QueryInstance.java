@@ -75,7 +75,7 @@ public abstract class QueryInstance<T extends Query> {
     this.context = context;
 
     this.context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
-    this.context.put(Utilities.QUERY_CTX_USER, user.getSignature());
+    this.context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
 
     setValues(stableValues, validate);
   }
