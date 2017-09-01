@@ -311,7 +311,8 @@ FieldFilter.defaultProps = {
  */
 function FilterLegend(props) {
   const totalCounts = Seq.from(props.distribution)
-    .filter(entry => entry.value != null)
+    // FIXME Always filter nulls when they are moved to different section for non-range fields
+    .filter(entry => !props.field.isRange || entry.value != null)
     .reduce(concatCounts, { count: 0, filteredCount: 0 });
 
   return (
