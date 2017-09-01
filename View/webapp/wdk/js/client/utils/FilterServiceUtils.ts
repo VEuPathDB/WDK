@@ -2,12 +2,14 @@ import {
   default as _,
   flowRight as compose,
   constant,
+  keyBy,
   memoize,
   mapValues,
   sortBy,
   reject,
   values
 } from 'lodash';
+import { Seq } from './IterableUtils';
 import {MemberFilter, RangeFilter} from "./FilterService";
 
 type Metadata = {
@@ -159,11 +161,12 @@ type FieldNode = {
   children: FieldNode[];
 }
 
-export const getTree = memoize((ontologyDict: Record<string, Field>): FieldNode => {
-  const ontologyEntries = values(ontologyDict);
-  const rootChildren = ontologyEntries
-    .filter((entry) => entry.parent == null)
-    .map((entry) => makeOntologyNode(entry, ontologyEntries));
+type ParentTerm = string | undefined;
+
+export const getTree = memoize((ontologyEntries: Iterable<Field>): FieldNode => {
+  const entriesByParentTerm = mapBy(ontologyEntries, term => term.parent);
+  const rootChildren = (entriesByParentTerm.has(undefined) ? entriesByParentTerm.get(undefined)! : [])
+    .map(entry => makeOntologyNode(entry, entriesByParentTerm));
 
   if (rootChildren.length == 1) return rootChildren[0];
 
@@ -176,12 +179,22 @@ export const getTree = memoize((ontologyDict: Record<string, Field>): FieldNode 
   }
 });
 
-function makeOntologyNode(entry: Field, ontologyEntries: Field[]): FieldNode {
-  const children = ontologyEntries
-    .filter(e => e.parent === entry.term)
-    .map(e => makeOntologyNode(e, ontologyEntries));
+function makeOntologyNode(entry: Field, ontologyEntriesByParent: Map<ParentTerm, Field[]>): FieldNode {
+  const children = (ontologyEntriesByParent.has(entry.term) ? ontologyEntriesByParent.get(entry.term)! : [])
+    .map(e => makeOntologyNode(e, ontologyEntriesByParent));
   return {
     field: entry,
     children: sortBy(children, entry => entry.children.length === 0 ? -1 : 1)
   };
+}
+
+function mapBy<T, S>(iter: Iterable<T>, keyAccessor: (item: T) => S) {
+  return Seq.from(iter)
+    .reduce(function(map: Map<S, T[]>, item: T) {
+      const key = keyAccessor(item);
+      const itemArray = map.get(key) || [];
+      itemArray.push(item);
+      map.set(key, itemArray);
+      return map;
+    }, new Map);
 }
