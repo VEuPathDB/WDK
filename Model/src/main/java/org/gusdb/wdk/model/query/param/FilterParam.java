@@ -134,7 +134,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   /**
-   * @param propertyQuery
+   * @param metadataQuery
    *          the propertyQuery to set
    */
   public void setMetadataQuery(Query metadataQuery) {
@@ -364,15 +364,15 @@ public class FilterParam extends FlatVocabParam {
       return;
 
     // create json for the metadata
-    JSONObject jsMetadataSpec = new JSONObject();
+    JSONArray jsMetadataSpec = new JSONArray();
     Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextParamValues);
     for (String property : metadataSpec.keySet()) {
-      JSONObject jsSpec = new JSONObject();
+      JSONObject jsSpec = new JSONObject().put("term", property);
       Map<String, String> spec = metadataSpec.get(property);
       for (String specProp : spec.keySet()) {
         jsSpec.put(specProp, spec.get(specProp));
       }
-      jsMetadataSpec.put(property, jsSpec);
+      jsMetadataSpec.put(jsSpec);
     }
     jsParam.put("metadataSpec", jsMetadataSpec);
 
