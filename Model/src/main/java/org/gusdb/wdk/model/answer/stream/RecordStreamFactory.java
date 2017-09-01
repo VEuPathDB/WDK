@@ -28,7 +28,6 @@ public class RecordStreamFactory {
    * @return most appropriate RecordStream given the passed arguments
    * @throws WdkModelException if anything goes wrong
    */
-  @SuppressWarnings("resource") // caller must close
   public static RecordStream getRecordStream(AnswerValue answerValue,
       Collection<AttributeField> attributes, Collection<TableField> tables) throws WdkModelException {
     try {
@@ -43,7 +42,7 @@ public class RecordStreamFactory {
       }
   
       // otherwise, use file-based; most efficient method for large results where we already know attrs/tables
-      return new FileBasedRecordStream(answerValue, attributes, tables).populateFiles();
+      return new FileBasedRecordStream(answerValue, attributes, tables);
     }
     catch (WdkUserException e) {
       throw new WdkModelException("Unable to instantiate record stream", e);

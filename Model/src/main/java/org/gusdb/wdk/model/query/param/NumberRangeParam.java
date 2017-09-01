@@ -142,8 +142,8 @@ public class NumberRangeParam extends Param {
       }
 	}
 
-    // By convention, the first value of the range should be less than the second value.
-    if(values[0] >= values[1]) {
+    // By convention, the first value of the range should be less than or equal to the second value.
+    if(values[0] > values[1]) {
       throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
       		+ " must be less than the maximum value, '" + values[1] + "'");
     }
@@ -239,15 +239,20 @@ public class NumberRangeParam extends Param {
   public void setMax(Double max) {
 	this.max = max;
   }
-  
+
   @Override
   public String getDefault() throws WdkModelException {
-	String defaultValue = super.getDefault();  
-	if(defaultValue == null || defaultValue.isEmpty()) {
-      JSONObject json = new JSONObject().put("min", getMin()).put("max", getMax());
-      defaultValue = json.toString();
-	}
-	return defaultValue;
+    String defaultValue = super.getDefault();
+    try {
+      return (defaultValue == null || defaultValue.isEmpty()) ?
+          // if default not provided, default is the entire range
+          new JSONObject().put("min", getMin()).put("max", getMax()).toString() :
+          // incoming value may be using single quotes around keys; allow, but translate to proper JSON
+          new JSONObject(defaultValue).toString();
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("Supplied default value (" + defaultValue + ") is not valid JSON.", e);
+    }
   }
 
   public boolean isInteger() {

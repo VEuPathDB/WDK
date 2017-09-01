@@ -65,7 +65,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
-  private static final boolean INVALID_DEFAULT_IS_FATAL = false;
+  private static final boolean INVALID_DEFAULT_IS_FATAL = true;
 
   /**
    * @author jerric
@@ -109,8 +109,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         return false;
     }
   }
-
-  static final String PARAM_SERVED_QUERY = "ServedQuery";
 
   public static final String DISPLAY_SELECT = "select";
   public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
@@ -364,6 +362,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return
    * @throws WdkModelException
    */
+  @Override
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
     if (isDependentParam() && !contextParamValues.isEmpty()) {
       LOG.debug("Default value requested for param " + getName() + " with context values " +

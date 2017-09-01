@@ -498,7 +498,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     // handle the empty case
     if (stableValue == null || stableValue.length() == 0) {
       if (!allowEmpty)
-        throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
+	throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
       // otherwise, got empty value and is allowed, no need for further
       // validation.
     }

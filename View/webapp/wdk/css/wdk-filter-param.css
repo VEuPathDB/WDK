@@ -1,7 +1,7 @@
 .filter-param h3 {
-  margin: auto;
-  margin-bottom: .5em;
-  padding: 0;
+  padding: 1em 0;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 .filter-param p {
   font-style: initial;
@@ -90,7 +90,7 @@
   width: 200px;
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: 3em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
@@ -133,7 +133,6 @@
   font-weight: bold;
   position: relative;
   white-space: normal;
-  text-transform: capitalize;
   display: block;
 }
 .filter-param .wdk-AttributeFilterFieldParent,
@@ -188,6 +187,7 @@
 .filter-param .range-filter {
   min-height: 20em;
   padding: .5em 0;
+  clear: both;
 }
 .filter-param .membership-filter .text,
 .filter-param .membership-filter .distribution {
@@ -297,13 +297,13 @@
   height: 1em;
   position: absolute;
   top: -.5em;
+  min-width: 1px;
 }
 .filter-param .fill.filtered {
   background-color: #DA7272;
 }
 .filter-param .filter-param-legend {
   float: right;
-  margin-bottom: 1em;
   padding: 0;
   color: #666666;
   border: 1px solid #dadada;
@@ -460,4 +460,9 @@
 
 .wdk-AttributeFilter-FieldSelector h4 {
   margin: 10px 0 5px 0;
+}
+
+/** DateSelector overrides */
+.filter-param .wdk-DateSelector {
+  display: inline-block;
 }

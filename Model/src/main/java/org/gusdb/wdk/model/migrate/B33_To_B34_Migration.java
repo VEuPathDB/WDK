@@ -48,7 +48,7 @@ public class B33_To_B34_Migration {
   private static final boolean WRITE_TO_DB = true; // keep off to check generated SQL
 
   // connection information to user DBs
-  private static final String PRIMARY_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@apicommdevn"; // to be apicommdevn
+  private static final String PRIMARY_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@apicommn"; // to be apicommdevn
   //private static final String REPLICATED_USERDB_CONNECTION_URL = "jdbc:oracle:oci:@rm9972"; // to be apicommdevs
 
   // connection information to account DBs
@@ -63,7 +63,6 @@ public class B33_To_B34_Migration {
 
   // object names when operating in account DBs
   private static final String ACCOUNT_DB_SCHEMA = "useraccounts.";
-  //private static final String ACCOUNT_DB_SCHEMA = "wdkmaint.";
   private static final String NEW_TABLE_ACCOUNTS = ACCOUNT_DB_SCHEMA + "accounts";
   private static final String NEW_TABLE_ACCOUNT_PROPS = ACCOUNT_DB_SCHEMA + "account_properties";
   private static final String NEW_USER_ID_SEQUENCE = NEW_TABLE_ACCOUNTS + "_PKSEQ";
@@ -120,10 +119,6 @@ public class B33_To_B34_Migration {
 
   private static final String RESIZE_PROPERTY_VALUE_COL_SQL =
       "ALTER TABLE " + NEW_TABLE_ACCOUNT_PROPS + " MODIFY VALUE VARCHAR2(4000)";
-
-  private static final String OPEN_ACCOUNT_SEQUENCE_SQL = "GRANT SELECT ON " + NEW_USER_ID_SEQUENCE + " TO PUBLIC";
-  private static final String OPEN_ACCOUNTS_TABLE_SQL = "GRANT SELECT ON " + NEW_TABLE_ACCOUNTS + " TO PUBLIC";
-  private static final String OPEN_ACCOUNT_PROPS_TABLE_SQL = "GRANT SELECT ON " + NEW_TABLE_ACCOUNT_PROPS + " TO PUBLIC";
 
   private static final String DELETE_ACCOUNT_SEQUENCE_SQL = "DROP SEQUENCE " + NEW_USER_ID_SEQUENCE;
   private static final String DELETE_ACCOUNTS_TABLE_SQL = "DROP TABLE " + NEW_TABLE_ACCOUNTS;
@@ -206,11 +201,7 @@ public class B33_To_B34_Migration {
       conditionallyUseBackupTable(CREATE_ACCOUNT_TABLE_SQL),
       conditionallyUseBackupTable(CREATE_ACCOUNT_PROPS_TABLE_SQL),
       // resize property column to max varchar (rather than largest prop value so far)
-      doSql(RESIZE_PROPERTY_VALUE_COL_SQL),
-      // open permissions on new objects
-      doSql(OPEN_ACCOUNT_SEQUENCE_SQL),
-      doSql(OPEN_ACCOUNTS_TABLE_SQL),
-      doSql(OPEN_ACCOUNT_PROPS_TABLE_SQL)
+      doSql(RESIZE_PROPERTY_VALUE_COL_SQL)
   };
 
   private static final SqlGetter[] PRIMARY_SQLS_TO_RUN_USER_DB = {

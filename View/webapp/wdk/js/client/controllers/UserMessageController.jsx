@@ -1,18 +1,12 @@
 import { wrappable } from '../utils/componentUtils';
 import NotFound from '../components/NotFound';
 import WdkViewController from './WdkViewController';
+import { conditionallyTransition } from '../actioncreators/UserActionCreators';
 
 class UserMessageController extends WdkViewController {
 
   getMessagePageContent() {
     switch (this.props.match.params.messageKey) {
-      case 'registration-successful':
-        return {
-          tabTitle: "Registration Successful!",
-          pageTitle: "Registration Successful!",
-          pageContent: (<span>You will receive an email shortly containing a 
-            temporary password.  Use your registration email to log in.</span>)
-        };
       case 'password-reset-successful':
         return {
           tabTitle: "Password Reset",
@@ -27,6 +21,17 @@ class UserMessageController extends WdkViewController {
           pageContent: (<NotFound/>)
         };
     }
+  }
+
+  loadData(actionCreators, state, nextProps, previousProps) {
+    // if registered user is logged in, show profile instead of password reset message
+    if (nextProps.match.params.messageKey == 'password-reset-successful') {
+      actionCreators.conditionallyTransition(user => !user.isGuest, '/user/profile');
+    }
+  }
+
+  getActionCreators() {
+    return { conditionallyTransition };
   }
 
   getTitle() {

@@ -57,14 +57,13 @@ public class TableTabularReporter extends AbstractTabularReporter {
    * results out the door, reading one RecordInstance at a time.
    */
   @Override
-  @SuppressWarnings("resource")
   public RecordStream getRecords() throws WdkModelException {
     RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     if (idAttributeContainsNonPkFields(recordClass)) {
       // need to use FileBasedRecordStream to support both this table and any needed attributes
       return new FileBasedRecordStream(_baseAnswer,
           asList(recordClass.getIdAttributeField()),
-          asList(_tableField)).populateFiles();
+          asList(_tableField));
     }
     else {
       // the records returned by this stream will have only PK and this single table field populated

@@ -489,7 +489,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var questionName = dependentParam.closest("form")
         .find("input:hidden[name=questionFullName]").val();
     var sendReqUrl = 'getVocab.do?questionFullName=' + questionName +
-        '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
+        '&name=' + paramName + '&dependedValue=' + encodeURIComponent(JSON.stringify(dependedValues));
 
     // Abort in-flight xhr to prevent race condition.
     var previousXhr = dependentParam.data(XHR_DATA_KEY);

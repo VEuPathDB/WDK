@@ -17,3 +17,15 @@ export const updateLocation: ActionCreator<LocationAction> = (location: Location
   type: 'router/location-updated',
   payload: { location }
 });
+
+export const transitionToInternalPage: ActionCreator<never> = (path: string) => {
+  return function run(dispatch, { transitioner }) {
+    transitioner.transitionToInternalPage(path);
+  };
+};
+
+export const transitionToExternalPage: ActionCreator<never> = (path: string) => {
+  return function run(dispatch, { transitioner }) {
+    transitioner.transitionToExternalPage(path);
+  };
+};

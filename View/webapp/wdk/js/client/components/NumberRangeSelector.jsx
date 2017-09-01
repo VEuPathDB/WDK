@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 
 import NumberSelector from './NumberSelector';
 
+/**
+ * Widget for selecting a numeric range.
+ */
 class NumberRangeSelector extends React.Component {
   constructor (props) {
     super(props);
@@ -28,19 +31,19 @@ class NumberRangeSelector extends React.Component {
   }
 
   render () {
-    let { start, end, value, onChange, step } = this.props;
+    let { start, end, value, step } = this.props;
     if (typeof value.min === 'string') value.min = value.min * 1;
     if (typeof value.max === 'string') value.max = value.max * 1;
 
     return (
       <div className="wdk-NumberRangeSelector">
-        <NumberSelector start={start} end={end} step={step} onChange={this.handleMinChange} value={value.min} />
+        <NumberSelector start={start} end={value.max} step={step} onChange={this.handleMinChange} value={value.min} />
         <label>&nbsp; to &nbsp;</label>
-        <NumberSelector start={start} end={end} step={step} onChange={this.handleMaxChange} value={value.max} />
+        <NumberSelector start={value.min} end={end} step={step} onChange={this.handleMaxChange} value={value.max} />
       </div>
     );
   }
-};
+}
 
 NumberRangeSelector.propTypes = {
   start: PropTypes.number,
@@ -49,7 +52,8 @@ NumberRangeSelector.propTypes = {
     min: PropTypes.number,
     max: PropTypes.number
   }),
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  step: PropTypes.number
 };
 
 export default NumberRangeSelector;

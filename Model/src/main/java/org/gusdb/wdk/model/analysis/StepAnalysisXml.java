@@ -26,7 +26,8 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   // for running and viewing the analysis
   private String _analyzerClass;
   private String _formViewName;     // form view name to be resolved by factory
-  private String _analysisViewName; // analysis view name to be resolved by factory 
+  private String _analysisViewName; // analysis view name to be resolved by factory
+  private Boolean _hasParameters; // decides how analysis is initially viewed and whether to auto-run
   private Map<String,String> _properties = new LinkedHashMap<>();
 
   // for ui
@@ -45,6 +46,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _analyzerClass = obj._analyzerClass;
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
+    _hasParameters = obj._hasParameters;
     _properties = new HashMap<String,String>(obj._properties);
     _customThumbnail = obj._customThumbnail;
   }
@@ -105,6 +107,14 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setAnalysisViewName(String analysisViewName) {
     _analysisViewName = analysisViewName;
+  }
+
+  @Override
+  public boolean getHasParameters() {
+    return _hasParameters;
+  }
+  public void setHasParameters(boolean hasParameters) {
+    _hasParameters = hasParameters;
   }
 
   @Override
@@ -187,6 +197,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
     _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
     _customThumbnail = chooseValue(_customThumbnail, saObj._customThumbnail, null);
+    _hasParameters = chooseValue(_hasParameters, saObj._hasParameters, true);
 
     // override properties, but retain non-conflicts from obj
     for (Entry<String,String> entry : saObj._properties.entrySet()) {
@@ -220,6 +231,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       .append("  FormViewName     : ").append(_formViewName).append(NL)
       .append("  AnalysisViewName : ").append(_analysisViewName).append(NL)
       .append("  CustomThumbnail  : ").append(_customThumbnail).append(NL)
+      .append("  HasParameters    : ").append(_hasParameters).append(NL)
       .append("  Properties {").append(NL);
     for (Entry<String,String> entry : _properties.entrySet()) {
       sb.append("    ").append(entry.getKey()).append(" = ")
