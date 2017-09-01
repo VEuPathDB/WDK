@@ -59,7 +59,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
           if (dbSize > MAX_PARAM_VALUE_LENGTH) {
             LOG.warn("Truncating value for parameter '" + paramName + "' (size=" + dbSize +
                 ") that exceeds " + MAX_PARAM_VALUE_LENGTH + " bytes: " + paramValue);
-            paramValue = shrinkUtf8String(paramValue, MAX_PARAM_VALUE_LENGTH);
+            paramValue = FormatUtil.shrinkUtf8String(paramValue, MAX_PARAM_VALUE_LENGTH);
           }
           newValues.add(paramValue);
           valueCount++;
@@ -68,16 +68,6 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
           params.put(paramName, newValues);
         }
       }
-    }
-
-    private static String shrinkUtf8String(String str, int maxBytes) {
-      // can assume passed value is too big; cut chars until small enough to fit
-      int newSize = maxBytes + 1;
-      do {
-        str = str.substring(0, str.length()-1);
-        newSize = FormatUtil.getUtf8EncodedBytes(str).length;
-      } while (newSize > maxBytes);
-      return str;
     }
   }
 
