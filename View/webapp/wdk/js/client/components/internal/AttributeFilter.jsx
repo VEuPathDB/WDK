@@ -105,7 +105,7 @@ class FilterList extends React.Component {
             var className = selectedField === filter.field ? 'selected' : '';
             var handleSelectClick = partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
-            var display = getFilterDisplay(fields[filter.field], filter.value, filter.includeUnknown);
+            var display = getFilterDisplay(fields.get(filter.field), filter.value, filter.includeUnknown);
 
             return (
               <li key={filter.field} className={className}>
@@ -136,7 +136,7 @@ class FilterList extends React.Component {
 FilterList.propTypes = {
   onFilterSelect: PropTypes.func.isRequired,
   onFilterRemove: PropTypes.func.isRequired,
-  fields: PropTypes.object.isRequired,
+  fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   selectedField: PropTypes.string,
   renderSelectionInfo: PropTypes.func
@@ -194,13 +194,17 @@ class FieldList extends React.Component {
       searchTerm: '',
 
       // expand branch containing selected field
-      expandedNodes: this._getPathToField(this.props.fields[this.props.selectedField])
+      expandedNodes: this._getPathToField(this.props.fields.get(this.props.selectedField))
     };
   }
 
   handleFieldSelect(field) {
     this.props.onFieldSelect(field.term);
-    this.setState({ searchTerm: '' });
+    const expandedNodes = Seq.from(this.state.expandedNodes)
+      .concat(this._getPathToField(field))
+      .uniq()
+      .toArray();
+    this.setState({ searchTerm: '', expandedNodes });
   }
 
   nodeComponent({node}) {
@@ -215,7 +219,7 @@ class FieldList extends React.Component {
 
   _getPathToField(field, path = []) {
     if (field == null || field.parent == null) return path;
-    return this._getPathToField(this.props.fields[field.parent], path.concat(field.parent))
+    return this._getPathToField(this.props.fields.get(field.parent), path.concat(field.parent))
   }
 
   render() {
@@ -225,7 +229,7 @@ class FieldList extends React.Component {
       <div className="field-list">
         <CheckboxTree
           autoFocusSearchBox={autoFocus}
-          tree={getTree(fields)}
+          tree={getTree(fields.values())}
           expandedList={this.state.expandedNodes}
           getNodeId={node => node.field.term}
           getNodeChildren={node => node.children}
@@ -247,7 +251,7 @@ class FieldList extends React.Component {
 
 FieldList.propTypes = {
   autoFocus: PropTypes.bool,
-  fields: PropTypes.object.isRequired,
+  fields: PropTypes.instanceOf(Map).isRequired,
   onFieldSelect: PropTypes.func.isRequired,
   selectedField: PropTypes.string
 };
@@ -468,7 +472,7 @@ var FilteredData = (function() {
                   <button>Update Columns</button>
                 </div>
                 <CheckboxTree
-                  tree={getTree(fields)}
+                  tree={getTree(fields.values())}
                   getNodeId={node => node.field.term}
                   getNodeChildren={node => node.children}
                   onExpansionChange={this.handleExpansionClick}
@@ -516,7 +520,7 @@ var FilteredData = (function() {
               isSortable={true}
             />
             {selectedFields.map(fieldTerm => {
-              const field = fields[fieldTerm];
+              const field = fields.get(fieldTerm);
               return (
                 <this.props.Column
                   label={field.display}
@@ -538,7 +542,7 @@ var FilteredData = (function() {
     tabWidth: PropTypes.number,
     totalSize: PropTypes.number.isRequired,
     filteredData: PropTypes.array,
-    fields: PropTypes.object,
+    fields: PropTypes.instanceOf(Map),
     selectedFields: PropTypes.array,
     ignoredData: PropTypes.array,
     metadata: PropTypes.object,
@@ -752,7 +756,7 @@ export class AttributeFilter extends React.Component {
 
                 <FieldFilter
                   displayName={displayName}
-                  field={this.props.fields[activeField]}
+                  field={this.props.fields.get(activeField)}
                   filter={selectedFilter}
                   distribution={activeFieldSummary}
                   onChange={this.handleFieldFilterChange}
@@ -793,7 +797,7 @@ AttributeFilter.propTypes = {
   collapsible: PropTypes.bool,
 
   // state
-  fields: PropTypes.object.isRequired,
+  fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number.isRequired,
   filteredData: PropTypes.array.isRequired,
@@ -905,7 +909,7 @@ export class ServerSideAttributeFilter extends React.Component {
 
           <FieldFilter
             displayName={displayName}
-            field={fields[activeField]}
+            field={fields.get(activeField)}
             filter={selectedFilter}
             distribution={activeFieldSummary}
             onChange={this.handleFieldFilterChange}
@@ -926,7 +930,7 @@ ServerSideAttributeFilter.propTypes = {
   hideFieldPanel: PropTypes.bool,
 
   // state
-  fields: PropTypes.object.isRequired, // tree nodes
+  fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,

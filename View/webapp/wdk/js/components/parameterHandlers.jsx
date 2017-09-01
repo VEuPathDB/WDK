@@ -3,6 +3,7 @@ import _ from 'lodash';
 import * as ReactDOM from 'react-dom';
 import LazyFilterService from '../client/utils/LazyFilterService';
 import { getTree } from '../client/utils/FilterServiceUtils';
+import { Seq } from '../client/utils/IterableUtils';
 import AttributeFilter from '../client/components/AttributeFilter';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
@@ -254,15 +255,13 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }
 
-    var fields = _.mapValues(filterData.metadataSpec, function(field, name) {
-        return Object.assign({
-          term: name,
-          display: name
-        }, field);
-      });
+    var fields = new Map(Seq.from(filterData.metadataSpec)
+      .filter(field => field.term != null)
+      .map(field =>
+        [field.term, Object.assign({ display: field.term }, field)]));
 
     var [ validFilters, invalidFilters ] = _(_.get(previousValue, 'filters'))
-      .partition(filter => filter.field in fields)
+      .partition(filter => fields.has(filter.field))
       .value();
 
     var filterParamOptions = { title, trimMetadataTerms };
@@ -278,7 +277,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterService.updateFilters(validFilters);
     filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
-    filterService.selectField(_.get(validFilters, '0.field', _.get(findLeaf(getTree(fields)), 'term')));
+    filterService.selectField(_.get(validFilters, '0.field', _.get(findLeaf(getTree(fields.values())), 'term')));
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -333,7 +332,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     /**
      * Find first leaf of tree
-     * @param {Record<string, Field>} fields
+     * @param {TreeNode<Field>} fields
      * @param {string?} parentTerm
      */
     function findLeaf(node) {
