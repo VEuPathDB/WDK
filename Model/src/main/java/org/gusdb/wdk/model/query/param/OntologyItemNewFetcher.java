@@ -1,13 +1,18 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.HashMap;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.functional.Functions.transformValues;
+
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-
-import org.gusdb.fgputil.cache.ItemFetcher;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -17,18 +22,15 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
-public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, OntologyItem>> {
+public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<String, OntologyItem>> {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(OntologyItemNewFetcher.class);
+  private static final String QUERY_NAME_KEY = "queryName";
+  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   private Query query;
   private Map<String, String> paramValues;
   private User user;
-  private static final String QUERY_NAME_KEY = "queryName";
-  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   public OntologyItemNewFetcher(Query ontologyQuery, Map<String, String> paramValues, User user) {
     this.query = ontologyQuery;
@@ -56,13 +58,13 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
           oItem.setParentOntologyId((String) resultList.get(FilterParamNew.COLUMN_PARENT_ONTOLOGY_ID));
           oItem.setDisplayName((String) resultList.get(FilterParamNew.COLUMN_DISPLAY_NAME));
           oItem.setDescription((String) resultList.get(FilterParamNew.COLUMN_DESCRIPTION));
-          oItem.setType((String) resultList.get(FilterParamNew.COLUMN_TYPE));
+          oItem.setType(OntologyItemType.getType((String)resultList.get(FilterParamNew.COLUMN_TYPE)));
           oItem.setUnits((String) resultList.get(FilterParamNew.COLUMN_UNITS));
 
-	  BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
-
+          BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
           if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
-	  BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
+
+          BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
           if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
 
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
@@ -71,10 +73,58 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
       finally {
         resultList.close();
       }
+
+      // secondary validation: make sure node types are compatible with placement in the graph
+      validateOntologyItems(ontologyItemMap);
+
       return ontologyItemMap;
     }
     catch (WdkModelException | WdkUserException ex) {
       throw new UnfetchableItemException(ex);
+    }
+  }
+
+  private static void validateOntologyItems(Map<String, OntologyItem> ontologyItemMap) throws WdkModelException {
+
+    // first, build a new map from name to TreeNode from the map
+    Map<String, TreeNode<OntologyItem>> nodeMap = transformValues(ontologyItemMap, item -> new TreeNode<OntologyItem>(item));
+
+    // build the tree by attaching children
+    TreeNode<OntologyItem> root = new TreeNode<>(new OntologyItem().setType(OntologyItemType.BRANCH));
+    for (TreeNode<OntologyItem> node : nodeMap.values()) {
+      String parentId = node.getContents().getParentOntologyId();
+      if (parentId == null) {
+        // no parent ID means this is a root node (i.e. child of "master" root)
+        root.addChildNode(node);
+      }
+      else {
+        TreeNode<OntologyItem> parent = nodeMap.get(parentId);
+        // if parent not present then child's parent ontology ID is invalid; throw error
+        if (parent == null) {
+          throw new WdkModelException("Parent ontology ID '" + parentId + "' for ontology item '" +
+              node.getContents().getOntologyId() + "' cannot be found.");
+        }
+        // parent found; add as child
+        parent.addChildNode(node);
+      }
+    }
+
+    // tree populated; try to find illegal types
+    List<TreeNode<OntologyItem>> badLeafNodes = root.findAll(
+        root.LEAF_PREDICATE, item -> item.getType().equals(OntologyItemType.BRANCH));
+    if (!badLeafNodes.isEmpty()) {
+      String message = "The following ontology items have no children (i.e. is are leaf nodes) but have a null item type: " +
+          FormatUtil.join(mapToList(badLeafNodes, node -> node.getContents().getOntologyId()),", ");
+      throw new WdkModelException(message);
+    }
+
+    List<TreeNode<OntologyItem>> badBranchNodes = root.findAll(
+        root.NONLEAF_PREDICATE, item -> !item.getType().equals(OntologyItemType.BRANCH));
+    if (!badBranchNodes.isEmpty()) {
+      for (TreeNode<OntologyItem> branchWithNonNullType : badBranchNodes) {
+        // FIXME: for now, warn and correct branch node types if non-null; should probably fix data in DB
+        branchWithNonNullType.getContents().setType(OntologyItemType.BRANCH);
+      }
     }
   }
 
@@ -89,15 +139,4 @@ public class OntologyItemNewFetcher implements ItemFetcher<String, Map<String, O
     return JsonUtil.serialize(cacheKeyJson);
   }
 
-  @Override
-  public boolean itemNeedsUpdating(Map<String, OntologyItem> item) {
-    return false;
-  }
-
-  @Override
-  public Map<String, OntologyItem> updateItem(String key, Map<String, OntologyItem> item) {
-    throw new UnsupportedOperationException(
-        "This method should never be called since itemNeedsUpdating() always returns false.");
-  }
-  
 }

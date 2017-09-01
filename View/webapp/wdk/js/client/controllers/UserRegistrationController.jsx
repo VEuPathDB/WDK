@@ -1,7 +1,7 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import UserRegistration from '../components/UserRegistration';
-import { updateProfileForm, submitRegistrationForm } from '../actioncreators/UserActionCreators';
+import { updateProfileForm, submitRegistrationForm, conditionallyTransition } from '../actioncreators/UserActionCreators';
 
 class UserRegistrationController extends WdkViewController {
 
@@ -10,13 +10,17 @@ class UserRegistrationController extends WdkViewController {
   }
 
   getActionCreators() {
-    return { updateProfileForm, submitRegistrationForm };
+    return { updateProfileForm, submitRegistrationForm, conditionallyTransition };
   }
 
-  isRenderDataLoaded() {
-    return (this.state.userFormData != null &&
-            this.state.userFormData.preferences != null &&
-            this.state.globalData.config != null);
+  isRenderDataLoaded(state) {
+    return (state.userFormData != null &&
+            state.userFormData.preferences != null &&
+            state.globalData.config != null &&
+            // show Loading if user is guest
+            //   (will transition to Profile page in loadData() if non-guest)
+            state.globalData.user != null &&
+            state.globalData.user.isGuest);
   }
 
   getTitle() {
@@ -25,6 +29,10 @@ class UserRegistrationController extends WdkViewController {
 
   renderView(state, eventHandlers) {
     return ( <UserRegistration {...state} userEvents={eventHandlers}/> );
+  }
+
+  loadData(actionCreators) {
+    actionCreators.conditionallyTransition(user => !user.isGuest, '/user/profile');
   }
 }
 

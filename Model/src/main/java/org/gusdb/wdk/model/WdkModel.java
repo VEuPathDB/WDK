@@ -1501,16 +1501,23 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public void logStepAnalysisPlugins() {
-    StringBuilder sb = new StringBuilder().append("*******************************************\n").append(
-        "Included Step Analysis Plugin Configuration:\n").append(stepAnalysisPlugins.toString()).append(
-        "*******************************************\n").append("Step Analysis Plugins per Question:\n");
-    for (QuestionSet questionSet : getQuestionSets().values()) {
-      for (Question question : questionSet.getQuestions()) {
-        Map<String, StepAnalysis> sas = question.getStepAnalyses();
-        if (!sas.isEmpty()) {
-          sb.append("Plugins for Question:" + question.getFullName() + "\n");
-          for (StepAnalysis sa : sas.values()) {
-            sb.append(sa);
+    StringBuilder sb = new StringBuilder()
+        .append("*******************************************\n")
+        .append("Included Step Analysis Plugin Configuration:\n")
+        .append(stepAnalysisPlugins == null ?
+            "No step analysis plugins were configured in this WDK Model.\n" :
+            stepAnalysisPlugins.toString())
+        .append("*******************************************\n");
+    if (stepAnalysisPlugins != null) {
+      sb.append("Step Analysis Plugins per Question:\n");
+      for (QuestionSet questionSet : getQuestionSets().values()) {
+        for (Question question : questionSet.getQuestions()) {
+          Map<String, StepAnalysis> sas = question.getStepAnalyses();
+          if (!sas.isEmpty()) {
+            sb.append("Plugins for Question:" + question.getFullName() + "\n");
+            for (StepAnalysis sa : sas.values()) {
+              sb.append(sa);
+            }
           }
         }
       }

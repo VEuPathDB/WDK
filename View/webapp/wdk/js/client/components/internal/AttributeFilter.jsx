@@ -1,4 +1,6 @@
 import $ from 'jquery';
+import natsort from 'natural-sort';
+import { Seq } from '../../utils/IterableUtils';
 import { lazy } from '../../utils/componentUtils';
 import { getTree } from '../../utils/FilterServiceUtils';
 import {
@@ -27,38 +29,12 @@ import Loading from '../Loading';
 import Tooltip from '../Tooltip';
 import Dialog from '../Dialog';
 import CheckboxTree from '../CheckboxTree';
+import DateSelector from '../DateSelector';
 
-var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
-
-/**
- * Returns an strftime style format string.
- * @param {string} dateString
- */
-function getFormatFromDateString(dateString) {
-  var matches = dateString.match(dateStringRe);
-  if (matches !== null) {
-    var [ , , m, d ] = matches;
-    return  d !== undefined ? '%Y-%m-%d'
-          : m !== undefined ? '%Y-%m'
-          : '%Y';
-  }
-}
-
-/**
- * Returns a formatted date.
- *
- * @param {string} format strftime style format string
- * @param {Date} date
- */
-function formatDate(format, date) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  return format
-  .replace(/%Y/, String(date.getFullYear()))
-  .replace(/%m/, padStart(String(date.getMonth() + 1), 2, '0'))
-  .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
-}
+const natSortComparator = natsort();
+const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
+const UNKNOWN_DISPLAY = 'unknown';
+const UNKNOWN_VALUE = '@@unknown@@';
 
 /**
  * @typedef {string[]} StringFilterValue
@@ -297,6 +273,7 @@ function FieldFilter(props) {
     <div className={className}>
       {!props.field ? <EmptyField displayName={props.displayName}/> : (
         <div>
+          {props.distribution && <FilterLegend {...fieldDetailProps} />}
           <h3>
             {props.field.display + ' '}
             <Tooltip content={FieldDetail.getTooltipContent(fieldDetailProps)}>
@@ -304,21 +281,7 @@ function FieldFilter(props) {
             </Tooltip>
           </h3>
           <div className="description">{props.field.description}</div>
-          {!props.distribution ? <Loading/> : (
-            <div>
-              <FieldDetail key={props.field.term} {...fieldDetailProps} />
-              <div className="filter-param-legend">
-                <div>
-                  <div className="bar"><div className="fill filtered"></div></div>
-                  <div className="label">{props.displayName} remaining when <em>other</em> criteria have been applied.</div>
-                </div>
-                <div>
-                  <div className="bar"><div className="fill"></div></div>
-                  <div className="label">All {props.displayName}</div>
-                </div>
-              </div>
-            </div>
-          )}
+          {!props.distribution ? <Loading/> : <FieldDetail {...fieldDetailProps} />}
         </div>
       )}
     </div>
@@ -338,6 +301,30 @@ FieldFilter.propTypes = {
 FieldFilter.defaultProps = {
   displayName: 'Items'
 }
+
+/**
+ * Legend used for all filters
+ */
+function FilterLegend(props) {
+  const totalCounts = Seq.from(props.distribution)
+    .filter(entry => entry.value != null)
+    .reduce(concatCounts);
+
+  return (
+    <div className="filter-param-legend">
+      <div>
+        <div className="bar"><div className="fill"></div></div>
+        <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.field.display}"</div>
+      </div>
+      <div>
+        <div className="bar"><div className="fill filtered"></div></div>
+        <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> &ndash; Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
+      </div>
+    </div>
+  )
+}
+
+FilterLegend.propTypes = FieldFilter.propTypes;
 
 
 var FilteredData = (function() {
@@ -988,20 +975,6 @@ InvalidFilterList.propTypes = {
 }
 
 
-// Reusable histogram field component. The parent component
-// is responsible for preparing the data.
-
-var unwrapXaxisRange = function unwrap(flotRanges) {
-  if (flotRanges == null) {
-    return { min: null, max: null };
-  }
-
-  var { from, to } = flotRanges.xaxis;
-  var min = Number(from.toFixed(2));
-  var max = Number(to.toFixed(2));
-  return { min, max };
-};
-
 var distributionEntryPropType = PropTypes.shape({
   value: PropTypes.number.isRequired,
   count: PropTypes.number.isRequired,
@@ -1018,13 +991,20 @@ var Histogram = (function() {
       this.handleResize = throttle(this.handleResize.bind(this), 100);
       // Set default yAxis max based on distribution
       var yaxisMax = this.computeYAxisMax();
-      this.state = { yaxisMax };
+      var values = this.props.distribution
+        .map(entry => entry.value)
+        .filter(value => value != null);
+      var xaxisMin = Math.min(...values);
+      var xaxisMax = Math.max(...values);
+      this.state = { yaxisMax, xaxisMin, xaxisMax };
     }
 
     computeYAxisMax() {
       var counts = this.props.distribution.map(entry => entry.count);
       // Reverse sort, then pull out first and second highest values
       var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
+      // If max is more than twice the size of nextMax, assume it is
+      // an outlier and use nextMax as the max
       var yaxisMax = max >= nextMax * 2 ? nextMax : max;
       return yaxisMax + yaxisMax * 0.1;
     }
@@ -1126,7 +1106,7 @@ var Histogram = (function() {
         data: distribution.map(entry => [ entry.value, entry.filteredCount ]),
         color: '#DA7272',
         hoverable: false,
-        points: { show: true }
+        // points: { show: true }
       }];
 
       var plotOptions = {
@@ -1140,8 +1120,8 @@ var Histogram = (function() {
           }
         },
         xaxis: Object.assign({
-          min: min - barWidth,
-          max: max + barWidth,
+          min: this.state.xaxisMin,
+          max: this.state.xaxisMax,
           tickLength: 0
         }, xaxisBaseOptions),
         yaxis: {
@@ -1223,24 +1203,79 @@ var Histogram = (function() {
       });
     }
 
+    setXAxisScale(xaxisMin, xaxisMax) {
+      this.setState({ xaxisMin, xaxisMax }, () => {
+        this.plot.getOptions().xaxes[0].min = xaxisMin;
+        this.plot.getOptions().xaxes[0].max = xaxisMax;
+        this.plot.setupGrid();
+        this.plot.draw();
+      });
+    }
+
     render() {
-      var { yaxisMax } = this.state;
-      var { xaxisLabel, yaxisLabel, distribution } = this.props;
+      var { yaxisMax, xaxisMin, xaxisMax } = this.state;
+      var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
       var countsMax = Math.max(...counts);
 
+      var values = distribution.map(entry => entry.value).filter(value => value != null);
+      var valuesMin = Math.min(...values);
+      var valuesMax = Math.max(...values);
+
+      var xaxisMinSelector = chartType === 'date' ? (
+        <DateSelector
+          value={formatDate(timeformat, xaxisMin)}
+          start={formatDate(timeformat, valuesMin)}
+          end={formatDate(timeformat, xaxisMax)}
+          onChange={value => this.setXAxisScale(new Date(value).getTime(), xaxisMax)}
+        />
+      ) : (
+        <input
+          type="number"
+          value={xaxisMin}
+          min={valuesMin}
+          max={xaxisMax}
+          onChange={e => this.setXAxisScale(Number(e.target.value), xaxisMax)}
+        />
+      );
+
+      var xaxisMaxSelector = chartType === 'date' ? (
+        <DateSelector
+          value={formatDate(timeformat, xaxisMax)}
+          start={formatDate(timeformat, xaxisMin)}
+          end={formatDate(timeformat, valuesMax)}
+          onChange={value => this.setXAxisScale(xaxisMin, new Date(value).getTime())}
+        />
+      ) : (
+        <input
+          type="number"
+          value={xaxisMax}
+          min={xaxisMin}
+          max={valuesMax}
+          onChange={e => this.setXAxisScale(xaxisMin, Number(e.target.value))}
+        />
+      );
+
       return (
         <div className="chart-container">
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
+          <div>
+            Scale x-axis from {xaxisMinSelector} to {xaxisMaxSelector} <button
+              type="button"
+              onClick={() => this.setXAxisScale(valuesMin, valuesMax)}
+            >reset</button>
+          </div>
           <div className="chart-title y-axis">
             <div>{yaxisLabel}</div>
             <div>
               <input
                 style={{width: '90%'}}
-                type="range" min={countsMin + 1} max={countsMax + countsMax * 0.1}
+                type="range"
+                min={Math.max(countsMin, 1)}
+                max={countsMax + countsMax * 0.1}
                 title={yaxisMax}
                 value={yaxisMax}
                 onChange={e => this.setYAxisMax(Number(e.target.value))}/>
@@ -1292,6 +1327,7 @@ var Histogram = (function() {
  * Generic Histogram field component
  *
  * TODO Add binning
+ * TODO Use bin size for x-axis scale <input> step attribute
  * TODO Interval snapping
  */
 class HistogramField extends React.Component {
@@ -1508,9 +1544,6 @@ HistogramField.propTypes = {
 };
 
 
-var UNKNOWN_DISPLAY = 'unknown';
-var UNKNOWN_VALUE = '@@unknown@@';
-
 /**
  * Membership field component
  */
@@ -1598,13 +1631,10 @@ class MembershipField extends React.Component {
   }
 
   render() {
-    var dist = this.props.distribution.filter(item => item.value != null);
-    var total = reduce(dist, (acc, item) => acc + item.count, 0);
+    var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
 
     // sort Unkonwn to end of list
-    var sortedDistribution = sortBy(this.props.distribution, function({ value }) {
-      return value === null ? '\u200b' : value;
-    })
+    var sortedDistribution = sortDistribution(this.props.distribution);
 
     // get filter, or create one for display purposes only
     var filterValue = get(this.props, 'filter.value', this.getKnownValues());
@@ -1764,11 +1794,21 @@ class DateField extends React.Component {
   }
 
   componentWillMount() {
-    this.timeformat = getFormatFromDateString(this.props.distribution[0].value);
+    this.setDateFormat(this.props.distribution);
   }
 
   componentWillUpdate(nextProps) {
-    this.timeformat = getFormatFromDateString(nextProps.distribution[0].value);
+    this.setDateFormat(nextProps.distribution);
+  }
+
+  setDateFormat(distribution) {
+    const firstDateEntry = distribution.find(entry => entry.value != null);
+    if (firstDateEntry == null) {
+      console.warn('Could not determine date format. No non-null distribution entry.', distribution);
+    }
+    else {
+      this.timeformat = getFormatFromDateString(firstDateEntry.value);
+    }
   }
 
   toHistogramValue(value) {
@@ -1807,8 +1847,6 @@ class DateField extends React.Component {
         <dd>{distMin}</dd>
         <dt>Max</dt>
         <dd>{distMax}</dd>
-        <dt>Unknown</dt>
-        <dd>{unknownCount}</dd>
       </dl>
     );
 
@@ -1845,6 +1883,11 @@ function EmptyField(props) {
 
 EmptyField.propTypes = FieldFilter.propTypes;
 
+
+
+// Helpers
+// =======
+
 /**
  * Determine if a filter should be created, or if the values represent the default state.
  *
@@ -1875,7 +1918,6 @@ function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
 
   return value.length !== fieldSummary.filter(item => item.value != null).length;
 }
-
 
 /**
  * Finds the component for a field.
@@ -1962,4 +2004,77 @@ function setStateFromArgs(instance, ...argsNames) {
     }
     instance.setState(nextState);
   }
+}
+
+/**
+ * Comparator function using a natural comparison algorithm.
+ */
+function distributionComparator(entryA, entryB) {
+  return natSortComparator(
+    entryA.value == null ? '' : entryA.value,
+    entryB.value == null ? '' : entryB.value
+  );
+}
+
+/**
+ * Sort distribution by value
+ */
+function sortDistribution(distribution) {
+  return distribution.slice().sort(distributionComparator);
+}
+
+/**
+ * Returns an strftime style format string.
+ * @param {string} dateString
+ */
+function getFormatFromDateString(dateString) {
+  var matches = dateString.match(dateStringRe);
+  if (matches !== null) {
+    var [ , , m, d ] = matches;
+    return  d !== undefined ? '%Y-%m-%d'
+          : m !== undefined ? '%Y-%m'
+          : '%Y';
+  }
+}
+
+/**
+ * Returns a formatted date.
+ *
+ * @param {string} format strftime style format string
+ * @param {Date} date
+ */
+function formatDate(format, date) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  return format
+  .replace(/%Y/, String(date.getFullYear()))
+  .replace(/%m/, padStart(String(date.getMonth() + 1), 2, '0'))
+  .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
+}
+
+/**
+ * Creates a count object where `count` and `filteredCount` are the sum of
+ * `countsA` and `countsB` properties.
+ */
+function concatCounts(countsA, countsB) {
+  return {
+    count: countsA.count + countsB.count,
+    filteredCount: countsA.filteredCount + countsB.filteredCount
+  }
+}
+
+/**
+ * Reusable histogram field component. The parent component is responsible for
+ * preparing the data.
+ */
+function unwrapXaxisRange(flotRanges) {
+  if (flotRanges == null) {
+    return { min: null, max: null };
+  }
+
+  var { from, to } = flotRanges.xaxis;
+  var min = Number(from.toFixed(2));
+  var max = Number(to.toFixed(2));
+  return { min, max };
 }

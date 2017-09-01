@@ -3,9 +3,9 @@ package org.gusdb.wdk.service.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -19,20 +19,24 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
+import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamHandler;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -275,31 +279,42 @@ public class QuestionService extends WdkService {
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
+   * @throws DataValidationException 
    */
   @POST
   @Path("/{questionName}/{paramName}/ontologyTermSummary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
-          throws WdkUserException, WdkModelException {
-    
-    Question question = getQuestionFromSegment(questionName);
-    FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
-    
-    Map<String, String> contextParamValues = new HashMap<String, String>();
-    
+          throws WdkUserException, WdkModelException, DataValidationException {
     try {
+      Question question = getQuestionFromSegment(questionName);
+      FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
+      User user = getSessionUser();
       JSONObject jsonBody = new JSONObject(body);
-      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       String ontologyId = jsonBody.getString("ontologyId");
-      Map<String, FilterParamSummaryCounts> counts = filterParam.getOntologyTermSummary(getSessionUser(), contextParamValues, ontologyId, jsonBody);
-      return Response.ok(QuestionFormatter.getOntologyTermSummaryJson(counts).toString()).build();
+      Map<String, String> contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
+      OntologyItem ontologyItem = filterParam.getOntology(user, contextParamValues).get(ontologyId);
+      if (ontologyItem == null) {
+        throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
+      }
+      JSONArray summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
+          ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
+      return Response.ok(summaryJson.toString()).build();
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
     }
   }
-  
+
+  private <T> JSONArray getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
+      FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
+          throws WdkModelException, WdkUserException {
+    Map<T,FilterParamSummaryCounts> counts = param.getOntologyTermSummary(
+        user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
+    return QuestionFormatter.getOntologyTermSummaryJson(counts);
+  }
+
   /**
    * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts.
    *
@@ -341,7 +356,7 @@ public class QuestionService extends WdkService {
     }
   }
 
-  private Param getParam(String questionName, Question question, String paramName) throws WdkUserException {
+  private Param getParam(String questionName, Question question, String paramName) {
     if (question == null)
       throw new NotFoundException(WdkService.NOT_FOUND + questionName);
     Param param = question.getQuery().getParamMap().get(paramName);
@@ -355,10 +370,10 @@ public class QuestionService extends WdkService {
     if (!(param instanceof FilterParamNew)) throw new WdkUserException(paramName + " is not a FilterParam");
     return (FilterParamNew)param;
   }
+
   /*
    * { internalValue: "la de dah" }
    */
-
   @POST
   @Path("/{questionName}/{paramName}/internalValue")
   @Consumes(MediaType.APPLICATION_JSON)

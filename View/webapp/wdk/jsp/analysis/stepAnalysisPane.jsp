@@ -8,10 +8,12 @@
       <div class="step-analysis-pane" data-analysis-id="${analysisId}"
            data-controller="wdk.stepAnalysis.loadDisplaySubpanes">
         <div class="ui-helper-clearfix">
-          <span style="float:right">
-           [ <a href="#rename">Rename This Analysis</a> |
-             <a href="#copy">Copy These Parameter Values</a> ]
-          </span>
+          <div style="text-align:right">
+            <span>
+              [ <a href="#rename">Rename This Analysis</a> |
+                <a href="#copy">Copy These Parameter Values</a> ]
+            </span>
+          </div>
           <h2 id="step-analysis-title" data-bind="displayName"><jsp:text/></h2>
           <div class="step-analysis-description">
             <span data-bind="shortDescription"><jsp:text/></span>
@@ -23,12 +25,15 @@
           <div class="step-analysis-errors-pane">
             <jsp:text/>
           </div>
-          <div class="step-analysis-form-pane">
-            <h3>Parameters</h3>
+          <c:set var="parameterHeader" value="${hasParameters ? 'Parameters' : ''}"/>
+          <div class="step-analysis-form-pane" data-hasparams="${hasParameters}">
+            <h3>${parameterHeader}</h3>
             <div> <jsp:text/> </div>
           </div>
         </div>
-
+        <c:if test="${!hasParameters}">
+          <hr/>
+        </c:if>
         <div class="step-analysis-subpane step-analysis-results-pane">
           <jsp:text/>
         </div>

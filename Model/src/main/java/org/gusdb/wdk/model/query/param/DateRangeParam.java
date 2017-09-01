@@ -71,15 +71,20 @@ public class DateRangeParam extends Param {
   public String getMinDate() {
     return minDate;
   }
-  
+
   @Override
   public String getDefault() throws WdkModelException {
-	String defaultValue = super.getDefault();  
-    if(defaultValue == null || defaultValue.isEmpty()) {	  
-	  JSONObject json = new JSONObject().put("min", getMinDate()).put("max", getMaxDate());
-      defaultValue = json.toString();
+    String defaultValue = super.getDefault();
+    try {
+      return (defaultValue == null || defaultValue.isEmpty()) ?
+          // if default not provided, default is the entire range
+          new JSONObject().put("min", getMinDate()).put("max", getMaxDate()).toString() :
+          // incoming value may be using single quotes around keys; allow, but translate to proper JSON
+          new JSONObject(defaultValue).toString();
     }
-    return defaultValue;
+    catch (JSONException e) {
+      throw new WdkModelException("Supplied default value (" + defaultValue + ") is not valid JSON.", e);
+    }
   }
 
   /**
@@ -197,10 +202,10 @@ public class DateRangeParam extends Param {
       }
 	}
 	
-	// Insure that the minimum date comes earlier than the maximum date.
-	if(!values[0].isBefore(values[1])) {
+	// Ensure that the minimum date does not come after the maximum date
+	if(values[0].isAfter(values[1])) {
 	  throw new WdkUserException("The minimum date '" + values[0] + "' should " +
-	    "come before the maximum date '" + values[1] + "'");
+	    "come before, or equal, the maximum date '" + values[1] + "'");
 	}
 
     // Insure that the minimum date comes no earlier than the minimum allowed date

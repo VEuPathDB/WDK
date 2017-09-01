@@ -1,24 +1,25 @@
 package org.gusdb.wdk.model.query.param;
 
 /**
- * captures the information from an ontology query used by filter param.  Only vaguely related to the official Ontology objects.
+ * Captures the information from an ontology query used by filter param.
+ * Only vaguely related to the official Ontology objects.
+ * 
  * @author steve
- *
  */
 
 public class OntologyItem {
+
   private String ontologyId;
   private String parentOntologyId;
   private String displayName;
   private String description;
-  private String type;
+  private OntologyItemType type;
   private String units;
   private long precision;  // TODO: this is long only because jdbc gives us a big decimal.
   private boolean isRange;
-  
-  public static final String TYPE_STRING = "string";
-  public static final String TYPE_NUMBER = "number";
-  public static final String TYPE_DATE = "date";
+
+  // package-protect constructor
+  OntologyItem(){}
 
   public void setOntologyId(String ontologyId) {
     this.ontologyId = ontologyId;
@@ -36,8 +37,9 @@ public class OntologyItem {
     this.description = description;
   }
 
-  public void setType(String type) {
+  public OntologyItem setType(OntologyItemType type) {
     this.type = type;
+    return this;
   }
   
   public void setIsRange(Boolean isRange) {
@@ -68,7 +70,7 @@ public class OntologyItem {
     return description;
   }
 
-  public String getType() {
+  public OntologyItemType getType() {
     return type;
   }
 

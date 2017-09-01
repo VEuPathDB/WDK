@@ -19,7 +19,7 @@ public class RerunStepAnalysisAction extends AbstractStepAnalysisIdAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     StepAnalysisContext context = getContextFromPassedId();
     JSONObject json = new JSONObject();
-    if (context.hasParams()) {
+    if (context.hasParams() || !context.getStepAnalysis().getHasParameters()) {
       context = getAnalysisMgr().runAnalysis(context);
       json.put(JsonKey.status.name(), "success");
       json.put(JsonKey.context.name(), context.getInstanceJson());

@@ -103,12 +103,12 @@ public class FileBasedRecordStream implements RecordStream {
    * @throws WdkModelException
    *           if unable to complete population
    */
-  public FileBasedRecordStream populateFiles() throws WdkModelException {
+  private synchronized void populateFiles() throws WdkModelException {
 
     // throw if files already populated
     if (_filesPopulated) {
       LOG.warn("Multiple calls to populateFiles() on open stream.  This method need only be called once.  Ignoring...");
-      return this;
+      return;
     }
 
     // create directory to store temporary files for this stream
@@ -119,7 +119,6 @@ public class FileBasedRecordStream implements RecordStream {
     _tableFileMap = assembleTableFiles(_answerValue, _temporaryDirectory, _tables);
 
     _filesPopulated = true;
-    return this;
   }
 
   /**
@@ -427,12 +426,9 @@ public class FileBasedRecordStream implements RecordStream {
    */
   @Override
   public Iterator<RecordInstance> iterator() {
-    if (!_filesPopulated) {
-      throw new IllegalStateException(
-          "Iterators are not available from this class until files are populated.");
-    }
     FileBasedRecordIterator iter;
     try {
+      populateFiles(); // will do nothing if already called
       iter = new FileBasedRecordIterator(_answerValue, _attributeFileMap, _tableFileMap);
     }
     catch (WdkModelException | WdkUserException e) {

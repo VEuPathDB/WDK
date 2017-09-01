@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
@@ -15,6 +16,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * @author jerric
@@ -32,6 +35,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
   public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
+
 
   public FilterParamNewHandler() {}
 
@@ -122,8 +129,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
-      Query mdQuery = param.getUseSummaryMetadataQueryForInternalValue()? param.getSummaryMetadataQuery() : param.getMetadataQuery();
-      return getFilteredValue(user, jsValue, contextParamValues, param, mdQuery);
+      String fv = getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
+      return param.getUseSummaryMetadataQueryForInternalValue()? param.transformIdSql(fv): fv;
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -135,7 +142,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
-      QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, metadataQuery);
+      //QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, metadataQuery);
+      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+
       String metadataSql = instance.getSql();
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
       JSONArray jsFilters = getFilters(jsValue);
@@ -169,9 +178,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
           " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
           FILTERS_VALUE + "`.");
 
+    LOG.info("************************************************************ jsFilter: " + jsFilter);
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
-    String type = ontologyItem.getType();
-    String columnName = FilterParamNew.typeToColumn(type);
+    OntologyItemType type = ontologyItem.getType();
+    String columnName = type.getMetadataQueryColumn();
 
     String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
@@ -180,15 +190,15 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     String innerAndClause = !jsFilter.has(FILTERS_VALUE) ? metadataTableName + "." + columnName + " is not NULL"
         : ontologyItem.getIsRange() ? getRangeAndClause(jsFilter, columnName, metadataTableName, type)
-      : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItem.TYPE_NUMBER));
+      : getMembersAndClause(jsFilter, columnName, metadataTableName, type.equals(OntologyItemType.NUMBER));
 
     // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
     return whereClause + " AND (" + unknownClause + innerAndClause + ")";
   }
 
-  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, String type) throws WdkUserException {
+  private static String getRangeAndClause(JSONObject jsFilter, String columnName, String metadataTableName, OntologyItemType type) throws WdkUserException {
 
-    if (type.equals(OntologyItem.TYPE_STRING)) throw new WdkUserException("Invalid JSON:  a STRING type cannot be a range");
+    if (type.equals(OntologyItemType.STRING)) throw new WdkUserException("Invalid JSON:  a STRING type cannot be a range");
 
     // If min or max is null, use an unbounded range
     JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
@@ -196,12 +206,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String minStr;
     String maxStr;
     
-    if (type.equals(OntologyItem.TYPE_NUMBER)) {
+    if (type.equals(OntologyItemType.NUMBER)) {
       minStr = range.isNull(FILTERS_MIN) ? null : Double.toString(range.getDouble(FILTERS_MIN));
       maxStr = range.isNull(FILTERS_MAX) ? null : Double.toString(range.getDouble(FILTERS_MAX));
     }
 
-    else if (type.equals(OntologyItem.TYPE_DATE)) {
+    else if (type.equals(OntologyItemType.DATE)) {
       minStr = range.isNull(FILTERS_MIN) ? null : "date '" + range.getString(FILTERS_MIN) + "'";
       maxStr = range.isNull(FILTERS_MAX) ? null : "date '" + range.getString(FILTERS_MAX) + "'";
     }
@@ -272,7 +282,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   // write out an individual filter as a compact string, suitable for use in a signature
   // do not change this method, or risk invalidating existing signatures.
   private String getFilterSignature(JSONObject jsFilter) throws WdkModelException {
-    List<String> parts = new ArrayList<String>();
+    List<String> parts = new ArrayList<>();
     try {
       //parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
 
@@ -286,7 +296,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
         } catch (JSONException ex) {
           JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
           for (int i=0; i < value.length(); i++ ) {
-            parts.add(value.getString(i));
+            Object v = value.get(i);
+            parts.add(v == null ? null : v.toString());
           }
         }
       }
@@ -352,12 +363,23 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       for (int i = 0; i < jsFilters.length(); i++) {
         JSONObject jsFilter = jsFilters.getJSONObject(i);
         OntologyItem ontologyItem = ontologyMap.get(jsFilter.getString(FILTERS_FIELD));
+        OntologyItemType type = ontologyItem.getType();
         display += ontologyItem.getDisplayName() + " is ";
 
         if (ontologyItem.getIsRange()) {
           JSONObject range = jsFilter.getJSONObject(FILTERS_VALUE);
-          String min = range.getString(FILTERS_MIN);
-          String max = range.getString(FILTERS_MAX);
+          String min = null;
+          String max = null;
+          if (type.equals(OntologyItemType.NUMBER)) {
+            min = range.isNull(FILTERS_MIN) ? null : Double.toString(range.getDouble(FILTERS_MIN));
+            max = range.isNull(FILTERS_MAX) ? null : Double.toString(range.getDouble(FILTERS_MAX));
+          }
+          else if (type.equals(OntologyItemType.DATE)) {
+            min = range.getString(FILTERS_MIN);
+            max = range.getString(FILTERS_MAX);         
+          }
+          else throw new WdkUserException("Invalid JSON:  a " + type + " type cannot be a range");
+
           display += min == null ? "less than " + max
               : max == null ? "greater than " + min : "between " + min + " and " + max;
         }

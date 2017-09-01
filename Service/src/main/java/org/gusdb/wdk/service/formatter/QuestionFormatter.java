@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -14,7 +15,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
 import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
@@ -128,12 +128,13 @@ public class QuestionFormatter {
   /*
    * [ { value: string|null; count: number; filteredCount: number; }, ... ]
    */
-  public static JSONArray getOntologyTermSummaryJson(Map<String, FilterParamSummaryCounts> counts) {
+  public static <T> JSONArray getOntologyTermSummaryJson(Map<T,FilterParamSummaryCounts> counts) {
     JSONArray json = new JSONArray();
-    for (String term : counts.keySet()) {
-      FilterParamSummaryCounts fpsc = counts.get(term);
+    for (Entry<T,FilterParamSummaryCounts> entry : counts.entrySet()) {
+      T termValue = entry.getKey();
+      FilterParamSummaryCounts fpsc = entry.getValue();
       JSONObject c = new JSONObject();
-      c.put("value", term == null ? JSONObject.NULL : term);
+      c.put("value", termValue == null ? JSONObject.NULL : termValue);
       c.put("count", fpsc.unfilteredCount);
       c.put("filteredCount", fpsc.filteredCount);
       json.put(c);

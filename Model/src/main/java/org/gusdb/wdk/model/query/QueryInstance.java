@@ -268,7 +268,7 @@ public abstract class QueryInstance<T extends Query> {
       }
     }
     if (errors != null) {
-      WdkUserException ex = new ParamValuesInvalidException("Some of the input parameters are invalid or missing.", errors);
+      WdkUserException ex = new ParamValuesInvalidException("In query " + query.getFullName() + " some of the input parameters are invalid or missing.", errors);
       logger.error(ex.formatErrors());
       throw ex;
     }
@@ -325,7 +325,7 @@ public abstract class QueryInstance<T extends Query> {
         String internalValue, stableValue = stableValues.get(paramName);
 
         // TODO: refactor so this fork isn't necessary
-        if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
+        if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam() && param == null) {
           AbstractDependentParam adParam = (AbstractDependentParam) param;
           Map<String, String> dependedParamValues = new LinkedHashMap<>();
           for (Param dependedParam : adParam.getDependedParams()) {
