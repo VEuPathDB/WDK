@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,9 +33,9 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return pJson;
   }
 
-  public JSONObject getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException, WdkUserException {
+  public JSONArray getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException, WdkUserException {
     Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, dependedParamValues);
-    JSONObject ontologyJson = new JSONObject();
+    JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
       JSONObject itemJson = new JSONObject();
       OntologyItem item = ontologyMap.get(term);
@@ -47,7 +48,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       itemJson.put("precision", item.getPrecision());
       itemJson.put("isRange", item.getIsRange());
       
-      ontologyJson.put(term, itemJson);
+      ontologyJson.put(itemJson);
     }
     return ontologyJson; 
   }
