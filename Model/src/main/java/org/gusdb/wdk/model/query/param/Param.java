@@ -67,7 +67,7 @@ import org.json.JSONObject;
  * 
  * 
  */
-public abstract class Param extends WdkModelBase implements Cloneable {
+public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param> {
 
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
@@ -609,7 +609,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
-    return handler.toSignature(user, stableValue);
+    return handler.toSignature(user, stableValue, contextParamValues);
   }
 
   @Override
@@ -702,5 +702,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public ParamHandler getParamHandler() {
     return this.handler;
   }
+  
+  public int compareTo(Param other) {
+    return this.getFullName().compareTo(other.getFullName());
+}
 
 }
