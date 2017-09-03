@@ -116,10 +116,10 @@ public class FilterParamHandler extends AbstractParamHandler {
    * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String)
+   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue)
+  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     stableValue = normalizeStableValue(stableValue);
     try {

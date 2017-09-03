@@ -627,7 +627,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
+  public Map<String, String> getSignatures(User user, Map<String, String> stableValues, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
@@ -641,7 +641,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
         continue;
       }
       String stableValue = stableValues.get(paramName);
-      String signature = param.getSignature(user, stableValue, stableValues);
+      String signature = param.getSignature(user, stableValue, context);
       signatures.put(paramName, signature);
     }
     return signatures;

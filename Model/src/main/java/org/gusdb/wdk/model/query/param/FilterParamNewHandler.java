@@ -250,11 +250,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    * @throws WdkUserException
    *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String)
+   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue) throws WdkModelException, WdkUserException {
-    return EncryptionUtil.encrypt(toSignatureString(stableValue));
+  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    return EncryptionUtil.encrypt(toSignatureString(stableValue) + dependedParamsSignature(user, contextParamValues));
   }
 
   // convert stable value to a compact string, suitable for use in a signature
@@ -306,6 +306,19 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (JSONException ex) {
       throw new WdkModelException("Parameter " + param.getPrompt() + " has invalid filter param JSON", ex);
     }
+  }
+  
+  private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    FilterParamNew filterParam  = (FilterParamNew) param;
+    List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
+    java.util.Collections.sort(dependedParamsList);
+    StringBuilder sb = new StringBuilder();
+    for (Param dependedParam : dependedParamsList)  {
+      String stableValue = contextParamValues.get(dependedParam.getName());
+      sb.append(dependedParam.getParamHandler().toSignature(user, stableValue, contextParamValues));
+    }
+    
+    return sb.toString();
   }
 
   /**
