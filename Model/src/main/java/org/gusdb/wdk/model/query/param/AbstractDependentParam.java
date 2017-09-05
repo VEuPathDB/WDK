@@ -215,7 +215,9 @@ public abstract class AbstractDependentParam extends Param {
     // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {
       String queryParamName = param.getFullName();
-      if (queryParamName.equals(PARAM_SERVED_QUERY) || queryParamName.equals(Utilities.PARAM_USER_ID))
+      
+      if (queryParamName.equals(PARAM_SERVED_QUERY) 
+          || (param.getFullName().equals(Utilities.INTERNAL_PARAM_SET + "." + Utilities.PARAM_USER_ID)))
         continue;
 
       if (!_dependedParamRefs.contains(queryParamName))
