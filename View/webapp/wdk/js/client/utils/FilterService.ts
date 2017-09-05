@@ -67,7 +67,7 @@ export type RangeFilter = IFilter<{ min: string; max: string;}>;
 export type Filter = MemberFilter | RangeFilter;
 
 export interface FilterServiceAttrs {
-  fields: Record<string, Field>;
+  fields: Map<string, Field>;
   data: Datum[];
   columns: string[];
   fieldMetadataMap: {
@@ -82,7 +82,7 @@ export default class FilterService {
   isLoading: boolean;
   filters: Filter[];
   ignoredData: Datum[];
-  fields: Record<string, Field>;
+  fields: Map<string, Field>;
   selectedField: string;
   data: Datum[];
   filteredData: Datum[];

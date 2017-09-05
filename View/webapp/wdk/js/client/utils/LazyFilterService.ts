@@ -166,7 +166,7 @@ export default class LazyFilterService extends FilterService {
         var predicates = filters
           .map(function(filter) {
             var metadata = this.fieldMetadataMap[filter.field];
-            var { type } = this.fields[filter.field];
+            var { type } = this.fields.get(filter.field);
             switch(type) {
               case 'string': return getMemberPredicate(metadata, <MemberFilter>filter);
               case 'date':   return getDateRangePredicate(metadata, <RangeFilter>filter);
