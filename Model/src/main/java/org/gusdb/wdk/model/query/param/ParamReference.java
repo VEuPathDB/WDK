@@ -194,32 +194,32 @@ public class ParamReference extends Reference {
   }
 
   // set of overridable values
-  private String defaultValue;
-  private Boolean allowEmpty;
-  private Boolean multiPick;
-  private String queryRef;
-  private Boolean quote;
-  private Boolean number;
-  private String emptyValue;
-  private String displayType;
-  private Boolean visible;
-  private SelectMode selectMode;
-  private Boolean noTranslation;
-  private Boolean suppressNode;
-  private Integer minSelectedCount;
-  private Integer maxSelectedCount;
-  private Boolean countOnlyLeaves;
-  private String prompt;
-  private Integer depthExpanded;
+  private String _defaultValue;
+  private Boolean _allowEmpty;
+  private Boolean _multiPick;
+  private String _queryRef;
+  private Boolean _quote;
+  private Boolean _isNumber;
+  private String _emptyValue;
+  private String _displayType;
+  private Boolean _isVisible;
+  private SelectMode _selectMode;
+  private Boolean _noTranslation;
+  private Boolean _suppressNode;
+  private Integer _minSelectedCount;
+  private Integer _maxSelectedCount;
+  private Boolean _countOnlyLeaves;
+  private String _prompt;
+  private Integer _depthExpanded;
 
-  private List<WdkModelText> helps = new ArrayList<WdkModelText>();
-  private String help;
+  private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
+  private String _help;
 
-	private List<WdkModelText> visibleHelps = new ArrayList<WdkModelText>();
-  private String visibleHelp;
+	private List<WdkModelText> _visibleHelps = new ArrayList<WdkModelText>();
+  private String _visibleHelp;
 
   // this property only applies to timestamp param.
-  private Long interval;
+  private Long _interval;
 
   public ParamReference() {}
 
@@ -234,7 +234,7 @@ public class ParamReference extends Reference {
    * @return Returns the defaultValue.
    */
   public String getDefault() {
-    return this.defaultValue;
+    return _defaultValue;
   }
 
   /**
@@ -242,14 +242,14 @@ public class ParamReference extends Reference {
    *          The defaultValue to set.
    */
   public void setDefault(String defaultValue) {
-    this.defaultValue = defaultValue;
+    _defaultValue = defaultValue;
   }
 
   /**
    * @return the allowEmpty
    */
   public Boolean isAllowEmpty() {
-    return this.allowEmpty;
+    return _allowEmpty;
   }
 
   /**
@@ -257,14 +257,14 @@ public class ParamReference extends Reference {
    *          the allowEmpty to set
    */
   public void setAllowEmpty(boolean allowEmpty) {
-    this.allowEmpty = allowEmpty;
+    _allowEmpty = allowEmpty;
   }
 
   /**
    * @return the multiPick
    */
   public Boolean isMultiPick() {
-    return this.multiPick;
+    return _multiPick;
   }
 
   /**
@@ -272,14 +272,14 @@ public class ParamReference extends Reference {
    *          the multiPick to set
    */
   public void setMultiPick(boolean multiPick) {
-    this.multiPick = multiPick;
+    _multiPick = multiPick;
   }
 
   /**
    * @return the queryRef
    */
   public String getQueryRef() {
-    return this.queryRef;
+    return _queryRef;
   }
 
   /**
@@ -287,14 +287,14 @@ public class ParamReference extends Reference {
    *          the queryRef to set
    */
   public void setQueryRef(String queryRef) {
-    this.queryRef = queryRef;
+    _queryRef = queryRef;
   }
 
   /**
    * @return the quote
    */
   public Boolean getQuote() {
-    return quote;
+    return _quote;
   }
 
   /**
@@ -302,22 +302,22 @@ public class ParamReference extends Reference {
    *          the quote to set
    */
   public void setQuote(Boolean quote) {
-    this.quote = quote;
+    _quote = quote;
   }
 
   public String getEmptyValue() {
-    return emptyValue;
+    return _emptyValue;
   }
 
   public void setEmptyValue(String emptyValue) {
-    this.emptyValue = emptyValue;
+    _emptyValue = emptyValue;
   }
 
   /**
    * @return the displayType
    */
   public String getDisplayType() {
-    return displayType;
+    return _displayType;
   }
 
   /**
@@ -325,14 +325,14 @@ public class ParamReference extends Reference {
    *          the displayType to set
    */
   public void setDisplayType(String displayType) {
-    this.displayType = displayType;
+    _displayType = displayType;
   }
 
   /**
    * @return the visible
    */
   public Boolean getVisible() {
-    return visible;
+    return _isVisible;
   }
 
   /**
@@ -340,18 +340,18 @@ public class ParamReference extends Reference {
    *          the visible to set
    */
   public void setVisible(Boolean visible) {
-    this.visible = visible;
+    _isVisible = visible;
   }
 
   /**
    * @return the selectMode
    */
   public String getSelectMode() {
-    return selectMode.name();
+    return _selectMode.name();
   }
 
   public SelectMode getSelectModeEnum() {
-    return selectMode;
+    return _selectMode;
   }
 
   /**
@@ -359,14 +359,14 @@ public class ParamReference extends Reference {
    *          the selectMode to set
    */
   public void setSelectMode(String selectMode) {
-    this.selectMode = SelectMode.valueOf(selectMode.toUpperCase());
+    _selectMode = SelectMode.valueOf(selectMode.toUpperCase());
   }
 
   /**
    * @return the noTranslation
    */
   public Boolean getNoTranslation() {
-    return noTranslation;
+    return _noTranslation;
   }
 
   /**
@@ -374,14 +374,14 @@ public class ParamReference extends Reference {
    *          the noTranslation to set
    */
   public void setNoTranslation(Boolean noTranslation) {
-    this.noTranslation = noTranslation;
+    _noTranslation = noTranslation;
   }
 
   /**
    * @return the number
    */
   public Boolean getNumber() {
-    return number;
+    return _isNumber;
   }
 
   /**
@@ -389,14 +389,14 @@ public class ParamReference extends Reference {
    *          the number to set
    */
   public void setNumber(Boolean number) {
-    this.number = number;
+    _isNumber = number;
   }
 
   /**
    * @return the suppressNode
    */
   public Boolean getSuppressNode() {
-    return suppressNode;
+    return _suppressNode;
   }
 
   /**
@@ -404,113 +404,113 @@ public class ParamReference extends Reference {
    *          the suppressNode to set
    */
   public void setSuppressNode(Boolean suppressNode) {
-    this.suppressNode = suppressNode;
+    _suppressNode = suppressNode;
   }
   
   public Integer getDepthExpanded() {
-    return this.depthExpanded;
+    return _depthExpanded;
   }
   
   public void setDepthExpanded(Integer depthExpanded) {
-    this.depthExpanded = depthExpanded;
+    _depthExpanded = depthExpanded;
   }
 
   public Boolean getMultiPick() {
-    return multiPick;
+    return _multiPick;
   }
 
   public void setMultiPick(Boolean multiPick) {
-    this.multiPick = multiPick;
+    _multiPick = multiPick;
   }
 
   public Integer getMinSelectedCount() {
-    return minSelectedCount;
+    return _minSelectedCount;
   }
 
   public void setMinSelectedCount(Integer minSelectedCount) {
-    this.minSelectedCount = minSelectedCount;
+    _minSelectedCount = minSelectedCount;
   }
 
   public Integer getMaxSelectedCount() {
-    return maxSelectedCount;
+    return _maxSelectedCount;
   }
 
   public void setMaxSelectedCount(Integer maxSelectedCount) {
-    this.maxSelectedCount = maxSelectedCount;
+    _maxSelectedCount = maxSelectedCount;
   }
 
   public Boolean getCountOnlyLeaves() {
-    return countOnlyLeaves;
+    return _countOnlyLeaves;
   }
 
   public void setCountOnlyLeaves(Boolean countOnlyLeaves) {
-    this.countOnlyLeaves = countOnlyLeaves;
+    _countOnlyLeaves = countOnlyLeaves;
   }
 
   public void addHelp(WdkModelText help) {
-    this.helps.add(help);
+    _helps.add(help);
   }
 
   public String getHelp() {
-    return help;
+    return _help;
   }
 
  public void addVisibleHelp(WdkModelText visibleHelp) {
-    this.visibleHelps.add(visibleHelp);
+    _visibleHelps.add(visibleHelp);
   }
 
   public String getVisibleHelp() {
-    return visibleHelp;
+    return _visibleHelp;
   }
 
   public void setPrompt(String prompt) {
-    this.prompt = prompt;
+    _prompt = prompt;
   }
 
   public String getPrompt() {
-    return prompt;
+    return _prompt;
   }
   
   /**
    * @return the interval
    */
   public Long getInterval() {
-    return interval;
+    return _interval;
   }
 
   /**
    * @param interval the interval to set
    */
   public void setInterval(Long interval) {
-    this.interval = interval;
+    _interval = interval;
   }
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
-    for (WdkModelText help : helps) {
+    for (WdkModelText help : _helps) {
       if (help.include(projectId)) {
-        if (this.help != null)
+        if (_help != null)
           throw new WdkModelException("More than one <help> are "
               + "defined in the paramRef '" + this.getTwoPartName());
 
         help.excludeResources(projectId);
-        this.help = help.getText();
+        _help = help.getText();
       }
     }
-    helps = null;
+    _helps = null;
 
- for (WdkModelText visibleHelp : visibleHelps) {
+ for (WdkModelText visibleHelp : _visibleHelps) {
       if (visibleHelp.include(projectId)) {
-        if (this.visibleHelp != null)
+        if (_visibleHelp != null)
           throw new WdkModelException("More than one <visibleHelp> are "
               + "defined in the paramRef '" + this.getTwoPartName());
 
         visibleHelp.excludeResources(projectId);
-        this.visibleHelp = visibleHelp.getText();
+        _visibleHelp = visibleHelp.getText();
       }
     }
-    visibleHelps = null;
+    _visibleHelps = null;
 	 }
 }

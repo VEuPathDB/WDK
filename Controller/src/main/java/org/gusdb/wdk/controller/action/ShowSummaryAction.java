@@ -56,7 +56,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.debug("entering showSummary");
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
 
         String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
         boolean resultOnly = false;
@@ -212,9 +212,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (strategy != null) {
                 queryString += "&strategy=" + strategy.getStrategyId();
             }
-            if (step != null) {
-                queryString += "&step=" + step.getStepId();
-            }
+            queryString += "&step=" + step.getStepId();
+
             logger.debug("query string: " + request.getQueryString());
 
             String requestUrl = request.getRequestURI() + "?" + queryString;
@@ -240,8 +239,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     return new ActionForward(path, false);
                 }
             }
-            return showError(wdkModel, wdkUser, mapping, request, response, ex,
-                    resultOnly);
+            return showError(wdkModel, wdkUser, request, ex, resultOnly);
         }
 
     }
@@ -393,8 +391,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
-            ActionMapping mapping, HttpServletRequest request,
-            HttpServletResponse response, Exception ex, boolean resultOnly) {
+            HttpServletRequest request, Exception ex, boolean resultOnly) {
         logger.info("Show the details of an invalid userAnswer/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);

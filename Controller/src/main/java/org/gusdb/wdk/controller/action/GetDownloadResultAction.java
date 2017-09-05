@@ -54,7 +54,7 @@ public class GetDownloadResultAction extends Action {
                 WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
                 wdkUser = wdkModel.getUserFactory().getUser(signature);
             } else {
-                wdkUser = ActionUtility.getUser(servlet, request);
+                wdkUser = ActionUtility.getUser(request);
             }
 
             int histId = Integer.parseInt(stepId);

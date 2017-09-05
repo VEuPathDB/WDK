@@ -8,10 +8,8 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wdk.model.user.UserFactory;
 
 /**
  * @author xingao
@@ -21,7 +19,7 @@ import org.gusdb.wdk.model.user.UserFactory;
 public class HistoryRecycler implements Runnable {
 
     private static final String STOP_SIGNAL_FILE = "recycle-history.stop";
-    private static final int USER_EXPIRE_TIME = 24; // in hours
+    //private static final int USER_EXPIRE_TIME = 24; // in hours
 
     private WdkModel wdkModel;
     private int interval;
@@ -68,11 +66,10 @@ public class HistoryRecycler implements Runnable {
         return stopFile.exists();
     }
 
-    private void recycle() throws WdkModelException, WdkUserException {
+    private void recycle() throws WdkModelException {
         System.out.println("========== Start recycling histories on "
                 + wdkModel.getProjectId() + " ==========");
         // construct model
-        UserFactory factory = wdkModel.getUserFactory();
 
         // construct query signature
         Map<String, String> signatures = new LinkedHashMap<String, String>();

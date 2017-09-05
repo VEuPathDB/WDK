@@ -63,13 +63,13 @@ public class DatasetParamTest {
     }
   }
 
-  private final User user;
-  private final DatasetParam datasetParam;
-  private final Random random;
+  private final User _user;
+  private final DatasetParam _datasetParam;
+  private final Random _random;
 
   public DatasetParamTest() throws Exception {
     WdkModel wdkModel = UnitTestHelper.getModel();
-    this.user = UnitTestHelper.getRegisteredUser();
+    _user = UnitTestHelper.getRegisteredUser();
     DatasetParam datasetParam = null;
     for (ParamSet paramSet : wdkModel.getAllParamSets()) {
       for (Param param : paramSet.getParams()) {
@@ -84,8 +84,8 @@ public class DatasetParamTest {
       datasetParam.excludeResources(wdkModel.getProjectId());
       datasetParam.resolveReferences(wdkModel);
     }
-    this.datasetParam = datasetParam;
-    this.random = new Random();
+    _datasetParam = datasetParam;
+    _random = new Random();
   }
 
   @Test
@@ -94,19 +94,19 @@ public class DatasetParamTest {
     List<String[]> data = generateRandomValues();
     String content = generateContent(data);
     DatasetParser parser = new ListDatasetParser();
-    String uploadFile = "file-" + random.nextInt();
+    String uploadFile = "file-" + _random.nextInt();
 
-    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
+    DatasetFactory datasetFactory = _user.getWdkModel().getDatasetFactory();
+    Dataset dataset = datasetFactory.createOrGetDataset(_user, parser, content, uploadFile);
     
     Map<String, String> contextValues = new LinkedHashMap<>();
 
-    String stableValue = datasetParam.getStableValue(user, dataset,
+    String stableValue = _datasetParam.getStableValue(_user, dataset,
         contextValues);
     long datasetId = Long.valueOf(stableValue);
     Assert.assertEquals(dataset.getDatasetId(), datasetId);
     
-    Dataset dataset1 = (Dataset)datasetParam.getRawValue(user, stableValue, contextValues);
+    Dataset dataset1 = (Dataset)_datasetParam.getRawValue(_user, stableValue, contextValues);
 
     Assert.assertEquals(dataset.getDatasetId(), dataset1.getDatasetId());
     assertEquals(data, dataset.getValues());
@@ -118,14 +118,14 @@ public class DatasetParamTest {
     List<String[]> data = generateRandomValues();
     String content = generateContent(data);
     DatasetParser parser = new ListDatasetParser();
-    String uploadFile = "file-" + random.nextInt();
+    String uploadFile = "file-" + _random.nextInt();
 
-    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
+    DatasetFactory datasetFactory = _user.getWdkModel().getDatasetFactory();
+    Dataset dataset = datasetFactory.createOrGetDataset(_user, parser, content, uploadFile);
 
     String stableValue = Long.toString(dataset.getDatasetId());
 
-    Dataset rawValue = (Dataset)datasetParam.getRawValue(user, stableValue,
+    Dataset rawValue = (Dataset)_datasetParam.getRawValue(_user, stableValue,
         null);
     Assert.assertEquals(dataset.getDatasetId(), rawValue.getDatasetId());
   }

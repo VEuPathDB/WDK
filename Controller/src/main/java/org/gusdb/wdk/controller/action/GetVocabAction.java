@@ -42,7 +42,7 @@ public class GetVocabAction extends Action {
       QuestionBean question = getQuestion(request, wdkModel);
       EnumParamBean param = getParam(request, question);
 
-      UserBean user = ActionUtility.getUser(servlet, request);
+      UserBean user = ActionUtility.getUser(request);
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
       param.prepareDisplay(user, requestParams);

@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public class ActionUtility {
 
-    public static UserBean getUser(HttpServlet servlet, HttpServletRequest request) {
+    public static UserBean getUser(HttpServletRequest request) {
         try {
             HttpSession session = request.getSession();
             UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);

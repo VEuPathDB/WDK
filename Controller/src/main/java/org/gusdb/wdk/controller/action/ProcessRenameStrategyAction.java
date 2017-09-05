@@ -38,7 +38,7 @@ public class ProcessRenameStrategyAction extends Action {
             throws Exception {
         logger.debug("Entering Rename Strategy...");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
         try {

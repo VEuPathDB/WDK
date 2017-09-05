@@ -45,7 +45,7 @@ public class ApplyFilterAction extends Action {
         throw new WdkUserException("Required step parameter is missing.");
       long stepId = Long.valueOf(strStepId);
 
-      UserBean user = ActionUtility.getUser(servlet, request);
+      UserBean user = ActionUtility.getUser(request);
  
       // before changing step, need to check if strategy is saved, if yes, make a copy.
       String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);

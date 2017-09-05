@@ -36,7 +36,7 @@ public class RemoveFilterAction extends Action {
       HttpServletResponse response) throws Exception {
     LOG.debug("Entering RemoveFilterAction...");
  
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     StepFactory stepFactory = ActionUtility.getWdkModel(servlet).getModel().getStepFactory();
 
     String filterName = request.getParameter(PARAM_FILTER);

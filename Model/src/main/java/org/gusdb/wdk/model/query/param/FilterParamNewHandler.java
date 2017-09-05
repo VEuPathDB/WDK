@@ -2,9 +2,9 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -35,10 +34,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
   public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
-
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
-
 
   public FilterParamNewHandler() {}
 
@@ -118,7 +113,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
     try {
       JSONObject jsValue = new JSONObject(stableValue);
-      return toInternalValue(user, jsValue, contextParamValues, (FilterParamNew)this.param);
+      return toInternalValue(user, jsValue, contextParamValues, (FilterParamNew)this._param);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -303,12 +298,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       return parts.toString();
     }
     catch (JSONException ex) {
-      throw new WdkModelException("Parameter " + param.getPrompt() + " has invalid filter param JSON", ex);
+      throw new WdkModelException("Parameter " + _param.getPrompt() + " has invalid filter param JSON", ex);
     }
   }
   
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
-    FilterParamNew filterParam  = (FilterParamNew) param;
+    FilterParamNew filterParam  = (FilterParamNew) _param;
     if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
     java.util.Collections.sort(dependedParamsList);
@@ -331,7 +326,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
 
   @Override
@@ -339,10 +334,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
-      if (!param.isAllowEmpty()) {
-        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
+      if (!_param.isAllowEmpty()) {
+        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
       }
-      stableValue = param.getDefault();
+      stableValue = _param.getDefault();
     }
     toSignatureString(stableValue);  // this method validates the syntax
     return stableValue;
@@ -367,10 +362,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     JSONArray jsFilters = getFilters(jsValue);
 
     if (jsFilters.length() == 0)
-      return "All " + param.prompt;
+      return "All " + _param._prompt;
 
     try {
-      Map<String, OntologyItem> ontologyMap = ((FilterParamNew) this.param).getOntology(user,
+      Map<String, OntologyItem> ontologyMap = ((FilterParamNew) this._param).getOntology(user,
           contextParamValues);
 
       String display = "";

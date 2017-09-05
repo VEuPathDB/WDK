@@ -532,7 +532,7 @@ public class StepBean {
     step.addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) throws WdkModelException {
+  public void removeFilterOption(String filterName) {
     step.removeFilterOption(filterName);
   }
 

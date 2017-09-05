@@ -39,7 +39,7 @@ public class ShowBasketAction extends Action {
       HttpServletResponse response) throws Exception {
     logger.debug("Entering ShowBasketAction...");
 
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
       String rcName = request.getParameter(PARAM_RECORD_CLASS);

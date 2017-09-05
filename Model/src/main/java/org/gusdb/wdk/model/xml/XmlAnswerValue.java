@@ -4,11 +4,10 @@
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -98,17 +97,17 @@ public class XmlAnswerValue {
 	return recordInstanceMap;
     }
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences() throws WdkModelException {
         // resolve references for record instances
         for (XmlRecordInstance record : recordInstances) {
             // set record class for the record, who will be used in the record's
             // resolveReferences() method.
             record.setRecordClass(question.getRecordClass());
-            record.resolveReferences(model);
+            record.resolveReferences();
         }
     }
 
-    public void setResources(WdkModel model) {
+    public void setResources() {
         // create summary attribute index
         XmlAttributeField[] sumArray = question.getSummaryAttributes();
         Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();

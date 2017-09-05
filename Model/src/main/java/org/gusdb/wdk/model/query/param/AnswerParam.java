@@ -50,7 +50,7 @@ public class AnswerParam extends Param {
 
     // register the handler
     setHandler(new AnswerParamHandler());
-    visible = false; // default answer param is hidden
+    _visible = false; // default answer param is hidden
   }
 
   private AnswerParam(AnswerParam param) {

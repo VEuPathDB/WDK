@@ -18,10 +18,10 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
   private final static String COUNT_COLUMN = "count";
 
-  Query query;
+  Query _query;
 
   public SqlQueryResultSizePlugin(Query query) throws WdkModelException {
-    this.query = query;
+    _query = query;
     validateQuery(query);
   }
 
@@ -51,7 +51,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
     params.put(WDK_ID_SQL_PARAM, idSql);
     QueryInstance<?> queryInstance;
     try {
-      queryInstance = query.makeInstance(answerValue.getUser(), params, true, 0,
+      queryInstance = _query.makeInstance(answerValue.getUser(), params, true, 0,
           new LinkedHashMap<String, String>());
     }
     catch (WdkUserException ex) {

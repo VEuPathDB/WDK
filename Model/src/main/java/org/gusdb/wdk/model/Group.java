@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
@@ -26,16 +23,16 @@ public class Group extends WdkModelBase {
   private static Group empty;
   private static Group hidden;
 
-  private String name;
-  private String displayName;
+  private String _name;
+  private String _displayName;
 
-  private List<WdkModelText> descriptions;
-  private String description;
+  private List<WdkModelText> _descriptions;
+  private String _description;
 
-  private String displayType;
-  private boolean visible;
+  private String _displayType;
+  private boolean _visible;
 
-  private GroupSet groupSet;
+  private GroupSet _groupSet;
 
   /**
    * The default display style of a group, which will render nothing around the
@@ -46,7 +43,7 @@ public class Group extends WdkModelBase {
   public static Group Empty() {
     if (empty == null) {
       empty = new Group();
-      empty.displayType = DISPLAY_EMPTY;
+      empty._displayType = DISPLAY_EMPTY;
     }
     return empty;
   }
@@ -60,8 +57,8 @@ public class Group extends WdkModelBase {
   public static Group Hidden() {
     if (hidden == null) {
       hidden = new Group();
-      hidden.displayType = DISPLAY_HIDDEN;
-      hidden.name = "_hidden";
+      hidden._displayType = DISPLAY_HIDDEN;
+      hidden._name = "_hidden";
     }
     return hidden;
   }
@@ -72,17 +69,17 @@ public class Group extends WdkModelBase {
    */
   public Group() {
     // initialize an empty group
-    name = DISPLAY_EMPTY;
-    displayName = "";
-    description = "";
-    descriptions = new ArrayList<WdkModelText>();
+    _name = DISPLAY_EMPTY;
+    _displayName = "";
+    _description = "";
+    _descriptions = new ArrayList<WdkModelText>();
   }
 
   /**
    * @return the description
    */
   public String getDescription() {
-    return description;
+    return _description;
   }
 
   /**
@@ -90,14 +87,14 @@ public class Group extends WdkModelBase {
    *          the description to set
    */
   public void addDescription(WdkModelText description) {
-    this.descriptions.add(description);
+    _descriptions.add(description);
   }
 
   /**
    * @return the displayName
    */
   public String getDisplayName() {
-    return displayName;
+    return _displayName;
   }
 
   /**
@@ -105,14 +102,14 @@ public class Group extends WdkModelBase {
    *          the displayName to set
    */
   public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+    _displayName = displayName;
   }
 
   /**
    * @return the groupSet
    */
   public GroupSet getGroupSet() {
-    return groupSet;
+    return _groupSet;
   }
 
   /**
@@ -120,14 +117,14 @@ public class Group extends WdkModelBase {
    *          the groupSet to set
    */
   public void setGroupSet(GroupSet groupSet) {
-    this.groupSet = groupSet;
+    _groupSet = groupSet;
   }
 
   /**
    * @return the name
    */
   public String getName() {
-    return name;
+    return _name;
   }
 
   /**
@@ -135,14 +132,14 @@ public class Group extends WdkModelBase {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   public String getFullName() {
-    if (groupSet != null)
-      return groupSet.getName() + "." + name;
+    if (_groupSet != null)
+      return _groupSet.getName() + "." + _name;
     else
-      return name;
+      return _name;
   }
 
   /**
@@ -152,7 +149,7 @@ public class Group extends WdkModelBase {
    * @return the displayType
    */
   public String getDisplayType() {
-    return displayType;
+    return _displayType;
   }
 
   /**
@@ -160,7 +157,7 @@ public class Group extends WdkModelBase {
    *          the displayType to set
    */
   public void setDisplayType(String displayType) {
-    this.displayType = displayType;
+    _displayType = displayType;
   }
 
   @Override
@@ -168,38 +165,29 @@ public class Group extends WdkModelBase {
     // do nothing
   }
 
-  public void setResources(WdkModel model) {
-    // do nothing
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude descriptions
     boolean hasDescription = false;
-    for (WdkModelText description : descriptions) {
+    for (WdkModelText description : _descriptions) {
       if (description.include(projectId)) {
         if (hasDescription) {
           throw new WdkModelException("The group " + getFullName()
               + " has more than one description for project " + projectId);
         } else {
-          this.description = description.getText();
+          _description = description.getText();
           hasDescription = true;
         }
       }
     }
-    descriptions = null;
+    _descriptions = null;
   }
 
   /**
    * @return the visible
    */
   public boolean isVisible() {
-    return visible;
+    return _visible;
   }
 
   /**
@@ -207,6 +195,6 @@ public class Group extends WdkModelBase {
    *          the visible to set
    */
   public void setVisible(boolean visible) {
-    this.visible = visible;
+    _visible = visible;
   }
 }

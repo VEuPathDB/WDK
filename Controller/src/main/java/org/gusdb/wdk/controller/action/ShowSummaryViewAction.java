@@ -38,7 +38,7 @@ public class ShowSummaryViewAction extends Action {
         logger.debug("Entering ShowSummaryViewAction");
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
 
         String strStep = request.getParameter(PARAM_STEP);
         if (strStep == null || strStep.length() == 0)

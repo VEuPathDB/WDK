@@ -47,7 +47,7 @@ public class StepFetcherProvider {
     public boolean itemNeedsUpdating(Step step) {
       long now = System.currentTimeMillis();
       // if step is too old, then refresh (trying to keep this close to a request-scope cache)
-      return (step.objectCreationDate < now - (EXPIRATION_SECS * 1000));
+      return (step._objectCreationDate < now - (EXPIRATION_SECS * 1000));
     }
   }
 }

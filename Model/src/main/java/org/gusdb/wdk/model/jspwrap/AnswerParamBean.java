@@ -21,16 +21,16 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
 
     public StepBean[] getSteps(UserBean user) throws WdkModelException {
         // only get the steps for the first record class
-        Map<String, RecordClass> recordClasses = param.getRecordClasses();
+        Map<String, RecordClass> recordClasses = _param.getRecordClasses();
         RecordClass recordClass = recordClasses.values().iterator().next();
         return user.getSteps(recordClass.getFullName());
     }
 
     public AnswerValueBean getAnswerValue() throws Exception {
-      AnswerParam answerParam = param;
+      AnswerParam answerParam = _param;
         try {
-            User user = this.user.getUser();
-            Step step = (Step)answerParam.getRawValue(user, stableValue, contextValues);
+            User user = this._userBean.getUser();
+            Step step = (Step)answerParam.getRawValue(user, _stableValue, _contextValues);
             AnswerValue answerValue = step.getAnswerValue();
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
@@ -45,6 +45,6 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
      * @see org.gusdb.wdk.model.query.param.AnswerParam#allowRecordClass(java.lang.String)
      */
     public boolean allowRecordClass(String recordClassName) {
-        return param.allowRecordClass(recordClassName);
+        return _param.allowRecordClass(recordClassName);
     }
 }

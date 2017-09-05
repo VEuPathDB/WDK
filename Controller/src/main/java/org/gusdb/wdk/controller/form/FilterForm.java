@@ -24,23 +24,19 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 /**
  * form bean for holding the boolean expression string fro queryStep.jsp page
  */
-
 public class FilterForm extends QuestionForm {
 
-  /**
-     * 
-     */
   private static final long serialVersionUID = -6678685794514383434L;
-  private static Logger logger = Logger.getLogger(FilterForm.class);
+  private static final Logger logger = Logger.getLogger(FilterForm.class);
 
-  protected String qFullName = null;
-  private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
-  private Map<?, ?> myLabels = new LinkedHashMap<String, String>();
-  private Map<?, ?> myValues = new LinkedHashMap<String, String>();
-  private Map<String, Object> myPropObjects = new LinkedHashMap<String, Object>();
-  private QuestionBean question = null;
-  private boolean validating = true;
-  private boolean paramsFilled = false;
+  protected String _qFullName = null;
+  private Map<String, Object> _myProps = new LinkedHashMap<String, Object>();
+  private Map<?, ?> _myLabels = new LinkedHashMap<String, String>();
+  private Map<?, ?> _myValues = new LinkedHashMap<String, String>();
+  private Map<String, Object> _myPropObjects = new LinkedHashMap<String, Object>();
+  private QuestionBean _question = null;
+  private boolean _validating = true;
+  private boolean _paramsFilled = false;
 
   @Override
   public void reset() {
@@ -48,9 +44,9 @@ public class FilterForm extends QuestionForm {
   }
 
   protected void resetMappedProps() {
-    myProps.clear();
-    myLabels.clear();
-    myValues.clear();
+    _myProps.clear();
+    _myLabels.clear();
+    _myValues.clear();
   }
 
   /**
@@ -59,13 +55,13 @@ public class FilterForm extends QuestionForm {
    */
   @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
 
     // set the question name into request
-    request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
+    request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, _qFullName);
 
     ActionErrors errors = new ActionErrors();
-    if (!validating) {
+    if (!_validating) {
       return errors;
     }
 
@@ -165,16 +161,16 @@ public class FilterForm extends QuestionForm {
 
   @Override
   public void setQuestion(QuestionBean s) {
-    question = s;
+    _question = s;
   }
 
   @Override
   public QuestionBean getQuestion() throws WdkModelException {
-    if (question == null) {
-      if (qFullName == null) return null;
-      int dotI = qFullName.indexOf('.');
-      String qSetName = qFullName.substring(0, dotI);
-      String qName = qFullName.substring(dotI + 1, qFullName.length());
+    if (_question == null) {
+      if (_qFullName == null) return null;
+      int dotI = _qFullName.indexOf('.');
+      String qSetName = _qFullName.substring(0, dotI);
+      String qName = _qFullName.substring(dotI + 1, _qFullName.length());
 
       WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
           CConstants.WDK_MODEL_KEY);
@@ -182,46 +178,46 @@ public class FilterForm extends QuestionForm {
       QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
           qSetName);
       if (wdkQuestionSet == null) return null;
-      question = wdkQuestionSet.getQuestionsMap().get(qName);
+      _question = wdkQuestionSet.getQuestionsMap().get(qName);
     }
-    return question;
+    return _question;
   }
 
   @Override
   public void setNonValidating() {
-    validating = false;
+    _validating = false;
   }
 
   @Override
   public void setParamsFilled(boolean paramsFilled) {
-    this.paramsFilled = paramsFilled;
+    _paramsFilled = paramsFilled;
   }
 
   @Override
   public boolean getParamsFilled() {
-    return paramsFilled;
+    return _paramsFilled;
   }
 
   @Override
   public void setQuestionFullName(String qFN) {
-    this.qFullName = qFN;
+    _qFullName = qFN;
   }
 
   @Override
   public String getQuestionFullName() {
-    return this.qFullName;
+    return _qFullName;
   }
 
   public void setMyProp(String key, String val) {
     // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
     // val + "\n");
-    myProps.put(key, val.trim());
+    _myProps.put(key, val.trim());
   }
 
   public void setMyPropObject(String key, Object val) {
     // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
     // val + "\n");
-    myPropObjects.put(key, val);
+    _myPropObjects.put(key, val);
     logger.info("setMyPropObject: " + key + " = '" + val + "' ("
         + val.getClass().getName() + ")");
   }
@@ -229,7 +225,7 @@ public class FilterForm extends QuestionForm {
   public void setMyMultiProp(String key, String[] vals) {
     // System.err.println("*** QuestionSetForm.setMyMultiProp: " + key +
     // " with " + vals.length + " values\n");
-    myProps.put(key, vals);
+    _myProps.put(key, vals);
   }
 
   public String getMyProp(String key) {
@@ -250,7 +246,7 @@ public class FilterForm extends QuestionForm {
   }
 
   public Object getMyPropObject(String key) {
-    return myPropObjects.get(key);
+    return _myPropObjects.get(key);
   }
 
   /* returns a list of labels for a select box */
@@ -267,34 +263,34 @@ public class FilterForm extends QuestionForm {
   }
 
   void setMyProps(Map<String, Object> props) {
-    myProps = props;
+    _myProps = props;
   }
 
   public Map<String, Object> getMyProps() {
-    return myProps;
+    return _myProps;
   }
 
   void setMyPropObjects(Map<String, Object> props) {
-    myPropObjects = props;
+    _myPropObjects = props;
   }
 
   public Map<String, Object> getMyPropObjects() {
-    return myPropObjects;
+    return _myPropObjects;
   }
 
   void setMyLabels(Map<?, ?> lbls) {
-    myLabels = lbls;
+    _myLabels = lbls;
   }
 
   Map<?, ?> getMyLabels() {
-    return myLabels;
+    return _myLabels;
   }
 
   void setMyValues(Map<?, ?> vals) {
-    myValues = vals;
+    _myValues = vals;
   }
 
   Map<?, ?> getMyValues() {
-    return myValues;
+    return _myValues;
   }
 }

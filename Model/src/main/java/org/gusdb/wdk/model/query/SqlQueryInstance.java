@@ -43,7 +43,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, values, validate, assignedWeight, context);
-    this.query = query;
+    this._query = query;
   }
 
   /*
@@ -65,11 +65,11 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
     try {
       String sql = getUncachedSql();
-      DatabaseInstance platform = query.getWdkModel().getAppDb();
+      DatabaseInstance platform = _query.getWdkModel().getAppDb();
       DataSource dataSource = platform.getDataSource();
       logger.debug("Performing the following SQL: " + sql);
-      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__select-uncached",
-          SqlUtils.DEFAULT_FETCH_SIZE, query.isUseDBLink());
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, _query.getFullName() + "__select-uncached",
+          SqlUtils.DEFAULT_FETCH_SIZE, _query.isUseDBLink());
       return new SqlResultList(resultSet);
     }
     catch (SQLException e) {
@@ -87,18 +87,18 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
     String rowIdColumn = CacheFactory.COLUMN_ROW_ID;
 
-    Map<String, Column> columns = query.getColumnMap();
+    Map<String, Column> columns = _query.getColumnMap();
     StringBuffer columnList = new StringBuffer();
     for (Column column : columns.values()) {
       columnList.append(", " + column.getName());
     }
-    if (query.isHasWeight()) {
+    if (_query.isHasWeight()) {
       String weightColumn = Utilities.COLUMN_WEIGHT;
       if (!columns.containsKey(weightColumn))
         columnList.append(", " + weightColumn);
     }
 
-    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     String rowNumber = platform.getRowNumberColumn();
 
     // get the sql with param values applied. The last column has to be the
@@ -115,9 +115,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append(columnList + " FROM (" + sql + ") f");
 
     try {
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName() + "__insert-cache",
-          query.isUseDBLink());
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__insert-cache",
+          _query.isUseDBLink());
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
@@ -128,31 +128,31 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   public String getUncachedSql() throws WdkModelException, WdkUserException {
     Map<String, String> internalValues = getParamInternalValues();
-    Map<String, Param> params = query.getParamMap();
-    String sql = query.getSql();
+    Map<String, Param> params = _query.getParamMap();
+    String sql = _query.getSql();
     for (String paramName : params.keySet()) {
       Param param = params.get(paramName);
       String value = internalValues.get(paramName);
       if (value == null) {
         logger.warn("value doesn't exist for param " + param.getFullName() + " in query " +
-            query.getFullName());
+            _query.getFullName());
         value = "";
       }
       sql = param.replaceSql(sql, value);
     }
     StringBuilder buffer = new StringBuilder("SELECT o.* ");
-    if (query.isHasWeight()) {
+    if (_query.isHasWeight()) {
       // add weight to the last column if it doesn't exist, it has to be
       // the last column.
-      Map<String, Column> columns = query.getColumnMap();
+      Map<String, Column> columns = _query.getColumnMap();
       if (!columns.containsKey(Utilities.COLUMN_WEIGHT)) {
-        buffer.append(", " + assignedWeight + " AS " + Utilities.COLUMN_WEIGHT);
+        buffer.append(", " + _assignedWeight + " AS " + Utilities.COLUMN_WEIGHT);
       }
     }
     buffer.append(" FROM (" + sql + ") o");
 
     // append sorting columns to the sql
-    Map<String, Boolean> sortingMap = query.getSortingMap();
+    Map<String, Boolean> sortingMap = _query.getSortingMap();
     boolean firstSortingColumn = true;
     for (String column : sortingMap.keySet()) {
       if (firstSortingColumn) {
@@ -189,10 +189,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    */
   @Override
   public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
-    logger.debug("creating cache table for query " + query.getFullName());
+    logger.debug("creating cache table for query " + _query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();
-    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     String rowNumber = platform.getRowNumberColumn();
 
     StringBuffer buffer = new StringBuffer("CREATE TABLE " + tableName);
@@ -203,9 +203,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append(" f.* FROM (").append(sql).append(") f");
 
     try {
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName() + "__create-cache",
-          query.isUseDBLink());
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__create-cache",
+          _query.isUseDBLink());
     }
     catch (SQLException e) {
       logger.error("Failed to run sql:\n" + buffer);
@@ -213,6 +213,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     }
     
     executePostCacheUpdateSql(tableName, instanceId);
-    logger.debug("created!!  cache table for query " + query.getFullName());
+    logger.debug("created!!  cache table for query " + _query.getFullName());
   }
 }

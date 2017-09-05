@@ -15,18 +15,18 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public abstract class AbstractParamHandler implements ParamHandler {
 
-  protected WdkModel wdkModel;
-  protected Param param;
-  protected Map<String, String> properties;
+  protected WdkModel _wdkModel;
+  protected Param _param;
+  protected Map<String, String> _properties;
 
   public AbstractParamHandler() {
-    properties = new LinkedHashMap<>();
+    _properties = new LinkedHashMap<>();
   }
   
   public AbstractParamHandler(AbstractParamHandler handler, Param param) {
-    this.wdkModel = handler.wdkModel;
-    this.param = param;
-    this.properties = new LinkedHashMap<>(handler.properties);
+    this._wdkModel = handler._wdkModel;
+    this._param = param;
+    this._properties = new LinkedHashMap<>(handler._properties);
   }
   
   /*
@@ -38,7 +38,7 @@ public abstract class AbstractParamHandler implements ParamHandler {
    */
   @Override
   public void setParam(Param param) {
-    this.param = param;
+    this._param = param;
   }
 
   /*
@@ -50,7 +50,7 @@ public abstract class AbstractParamHandler implements ParamHandler {
    */
   @Override
   public void setWdkModel(WdkModel wdkModel) {
-    this.wdkModel = wdkModel;
+    this._wdkModel = wdkModel;
   }
 
   /*
@@ -62,6 +62,6 @@ public abstract class AbstractParamHandler implements ParamHandler {
    */
   @Override
   public void setProperties(Map<String, String> properties) throws WdkModelException {
-    this.properties = properties;
+    this._properties = properties;
   }
 }

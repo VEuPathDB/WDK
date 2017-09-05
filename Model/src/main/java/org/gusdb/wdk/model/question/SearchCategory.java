@@ -28,80 +28,80 @@ public class SearchCategory extends WdkModelBase {
   public static final String USED_BY_WEBSERVICE = "webservice";
   public static final String USED_BY_DATASET = "dataset";
 
-  private static final Logger logger = Logger.getLogger(SearchCategory.class);
+  private static final Logger LOG = Logger.getLogger(SearchCategory.class);
 
-  private String name;
-  private String displayName;
-  private String shortDisplayName;
-  private String description;
-  private boolean flattenInMenu;
-  private String parentRef;
-  private SearchCategory parent;
-  private String usedBy;
-  private Map<String, SearchCategory> children;
-  private List<CategoryQuestionRef> questionRefList;
-  private Map<String, CategoryQuestionRef> questionRefMap;
-  private List<WdkModelText> descriptions;
+  private String _name;
+  private String _displayName;
+  private String _shortDisplayName;
+  private String _description;
+  private boolean _flattenInMenu;
+  private String _parentRef;
+  private SearchCategory _parent;
+  private String _usedBy;
+  private Map<String, SearchCategory> _children;
+  private List<CategoryQuestionRef> _questionRefList;
+  private Map<String, CategoryQuestionRef> _questionRefMap;
+  private List<WdkModelText> _descriptions;
 
   public SearchCategory() {
-    questionRefList = new ArrayList<CategoryQuestionRef>();
-    questionRefMap = new LinkedHashMap<>();
-    children = new LinkedHashMap<String, SearchCategory>();
-    descriptions = new ArrayList<>();
-    flattenInMenu = false;
+    _questionRefList = new ArrayList<CategoryQuestionRef>();
+    _questionRefMap = new LinkedHashMap<>();
+    _children = new LinkedHashMap<String, SearchCategory>();
+    _descriptions = new ArrayList<>();
+    _flattenInMenu = false;
   }
 
   public String getName() {
-    return name;
+    return _name;
   }
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   public String getDisplayName() {
-    return displayName;
+    return _displayName;
   }
 
   public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+    _displayName = displayName;
   }
 
   public String getShortDisplayName() {
-    return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
+    return (_shortDisplayName != null) ? _shortDisplayName : getDisplayName();
   }
 
   public void setShortDisplayName(String shortDisplayName) {
-    this.shortDisplayName = shortDisplayName;
+    _shortDisplayName = shortDisplayName;
   }
 
   public void setFlattenInMenu(boolean flattenInMenu) {
-    this.flattenInMenu = flattenInMenu;
+    _flattenInMenu = flattenInMenu;
   }
 
   public boolean isFlattenInMenu() {
-    return this.flattenInMenu;
+    return _flattenInMenu;
   }
 
   public String getDescription() {
-    return description;
+    return _description;
   }
 
   public void setDescription(String description) {
-    this.description = description;
+    _description = description;
   }
 
   public void addDescription(WdkModelText description) {
-    descriptions.add(description);
+    _descriptions.add(description);
   }
 
   public void addQuestionRef(CategoryQuestionRef questionRef) {
-    this.questionRefList.add(questionRef);
+    _questionRefList.add(questionRef);
   }
 
   // temporary method
   public void addResolvedQuestionRef(CategoryQuestionRef questionRef) {
-    this.questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
+    _questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
   }
   
   /**
@@ -110,11 +110,11 @@ public class SearchCategory extends WdkModelBase {
    * @param questionRefMap
    */
   public void setResolvedQuestionRefMap(Map<String, CategoryQuestionRef> questionRefMap) {
-    this.questionRefMap = questionRefMap;
+    _questionRefMap = questionRefMap;
   }
   
   public Collection<CategoryQuestionRef> getQuestionRefs() {
-    return questionRefMap.values();
+    return _questionRefMap.values();
   }
 
   public Question[] getWebsiteQuestions() {
@@ -131,7 +131,7 @@ public class SearchCategory extends WdkModelBase {
 
   private Question[] getQuestions(String usedBy, boolean strict) {
     List<Question> questions = new ArrayList<Question>();
-    for (CategoryQuestionRef questionRef : questionRefMap.values()) {
+    for (CategoryQuestionRef questionRef : _questionRefMap.values()) {
       if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
         try {
@@ -139,7 +139,7 @@ public class SearchCategory extends WdkModelBase {
           questions.add(question);
         } 
         catch (WdkModelException e ){
-          logger.debug("************* question not resolved: " + questionName);
+          LOG.debug("************* question not resolved: " + questionName);
         }
       }
     }
@@ -149,11 +149,11 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public void setParentRef(String parentRef) {
-    this.parentRef = parentRef;
+    _parentRef = parentRef;
   }
 
   public SearchCategory getParent() {
-    return parent;
+    return _parent;
   }
 
   public Map<String, SearchCategory> getWebsiteChildren() {
@@ -170,7 +170,7 @@ public class SearchCategory extends WdkModelBase {
 
   private Map<String, SearchCategory> getChildren(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = new LinkedHashMap<String, SearchCategory>();
-    for (SearchCategory child : children.values()) {
+    for (SearchCategory child : _children.values()) {
       String cusedBy = child.getUsedBy();
       if ((strict && usedBy != null && cusedBy != null && cusedBy.equalsIgnoreCase(usedBy)) ||
           (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy))) {
@@ -181,76 +181,76 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public boolean isAncesterOf(SearchCategory category) {
-    SearchCategory parent = category.parent;
+    SearchCategory parent = category._parent;
     while (parent != null) {
       if (parent.equals(this))
         return true;
-      parent = parent.parent;
+      parent = parent._parent;
     }
     return false;
   }
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
-    for (CategoryQuestionRef ref : questionRefList) {
+    for (CategoryQuestionRef ref : _questionRefList) {
       if (ref.include(projectId)) {
         String questionName = ref.getQuestionFullName();
-        if (questionRefMap.containsKey(questionName))
-          logger.warn("Duplicate question reference '"
+        if (_questionRefMap.containsKey(questionName))
+          LOG.warn("Duplicate question reference '"
               + questionName + "' detected in searchCategory '" + getName()
               + "'");
         ref.excludeResources(projectId);
-        questionRefMap.put(questionName, ref);
+        _questionRefMap.put(questionName, ref);
       }
     }
-    questionRefList.clear();
-    questionRefList = null;
+    _questionRefList.clear();
+    _questionRefList = null;
 
     // exclude descriptions
-    for (WdkModelText text : descriptions) {
+    for (WdkModelText text : _descriptions) {
       if (text.include(projectId)) {
-        if (description != null)
+        if (_description != null)
           throw new WdkModelException("Duplicated descriptions detected in "
               + "searchCategory '" + getName() + "'");
         text.excludeResources(projectId);
-        description = text.getText();
+        _description = text.getText();
       }
     }
-    descriptions.clear();
-    descriptions = null;
+    _descriptions.clear();
+    _descriptions = null;
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    this._wdkModel = wdkModel;
+    _wdkModel = wdkModel;
     // get try resolving the question
     List<String> toRemove = new ArrayList<>();
-    for (String key : questionRefMap.keySet()) {
-      CategoryQuestionRef ref = questionRefMap.get(key);
+    for (String key : _questionRefMap.keySet()) {
+      CategoryQuestionRef ref = _questionRefMap.get(key);
       String questionName = ref.getQuestionFullName();
       try {
         wdkModel.resolveReference(questionName);
       } catch (WdkModelException ex) {
         // relax a bit, just ignore the missing questions
-        logger.debug("The question [" + questionName + "] is defined "
-            + "in category [" + name + "], but doesn't exist in "
+        LOG.debug("The question [" + questionName + "] is defined "
+            + "in category [" + _name + "], but doesn't exist in "
             + "the model.");
         toRemove.add(key);
       }
     }
     for (String key : toRemove) {
-      questionRefMap.remove(key);
+      _questionRefMap.remove(key);
     }
 
     // resolve the parent
-    SearchCategory parent = wdkModel.getCategories().get(parentRef);
+    SearchCategory parent = wdkModel.getCategories().get(_parentRef);
     if (parent != null) {
       // parent cannot be the same node as this one, or a child of it
       if (parent.equals(this) || this.isAncesterOf(parent))
-        throw new WdkModelException("the category '" + name
-            + "' cannot have a parent of '" + parentRef + "'");
-      this.parent = parent;
-      this.parent.children.put(name, this);
+        throw new WdkModelException("the category '" + _name
+            + "' cannot have a parent of '" + _parentRef + "'");
+      _parent = parent;
+      _parent._children.put(_name, this);
     }
   }
   
@@ -259,42 +259,32 @@ public class SearchCategory extends WdkModelBase {
    * @param kids
    */
   public void addChild(SearchCategory kid) {
-      children.put(kid.getName(), kid);
+      _children.put(kid.getName(), kid);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof SearchCategory))
       return false;
     SearchCategory category = (SearchCategory) obj;
-    return this.name.equalsIgnoreCase(category.name);
+    return _name.equalsIgnoreCase(category._name);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
-    return (name != null) ? name.toLowerCase().hashCode() : 0;
+    return (_name != null) ? _name.toLowerCase().hashCode() : 0;
   }
 
   public boolean isMultiCategory() {
-    return children.size() > 1;
+    return _children.size() > 1;
   }
 
   public String getUsedBy() {
-    return usedBy;
+    return _usedBy;
   }
 
   public void setUsedBy(String usedBy) {
-    this.usedBy = usedBy;
+    _usedBy = usedBy;
   }
 
   public boolean isUsedBy(String usedBy) {
@@ -303,12 +293,12 @@ public class SearchCategory extends WdkModelBase {
 
   public boolean isUsedBy(String usedBy, boolean strict) {
     if (strict)
-      return (usedBy != null && this.usedBy != null && this.usedBy.equalsIgnoreCase(usedBy));
-    return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
+      return (usedBy != null && _usedBy != null && _usedBy.equalsIgnoreCase(usedBy));
+    return (usedBy == null || _usedBy == null || _usedBy.equalsIgnoreCase(usedBy));
   }
 
   public boolean hasQuestion(String questionFullName, String usedBy) {
-    CategoryQuestionRef ref = questionRefMap.get(questionFullName);
+    CategoryQuestionRef ref = _questionRefMap.get(questionFullName);
     if (ref == null)
       return false;
     return ref.isUsedBy(usedBy);
@@ -316,12 +306,12 @@ public class SearchCategory extends WdkModelBase {
 
   public void prettyPrint(StringBuilder builder, String indent) {
     builder.append(indent + getName() + " : " + getDisplayName() + System.lineSeparator());
-    for (String name : questionRefMap.keySet()) builder.append(indent + "  --" + name + System.lineSeparator());
-    for (SearchCategory kid : children.values()) kid.prettyPrint(builder, indent + "|");
+    for (String name : _questionRefMap.keySet()) builder.append(indent + "  --" + name + System.lineSeparator());
+    for (SearchCategory kid : _children.values()) kid.prettyPrint(builder, indent + "|");
   }
 
   // temporary method for EuPathCategoriesFactory
   public void setWdkModel(WdkModel model) {
-    this._wdkModel = model;
+    _wdkModel = model;
   }
 }

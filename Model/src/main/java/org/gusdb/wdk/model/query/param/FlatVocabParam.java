@@ -122,6 +122,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     this.vocabQuery = resolveDependentQuery(model, vocabQueryRef, "vocab query");
   }
 
+  @Override
   protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
     Query query = super.resolveDependentQuery(model, queryName, queryType);
 
@@ -193,8 +194,8 @@ public class FlatVocabParam extends AbstractEnumParam {
   @Override
   public void setContextQuery(Query query) {
     super.setContextQuery(query);
-    if (contextQuery != null)
-      servedQueryName = contextQuery.getFullName();
+    if (_contextQuery != null)
+      servedQueryName = _contextQuery.getFullName();
   }
 
   public String getServedQueryName() {

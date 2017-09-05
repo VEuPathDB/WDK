@@ -113,7 +113,7 @@ public class DownloadStepAnswerValueAction extends Action {
                 WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
                 wdkUser = wdkModel.getUserFactory().getUser(signature);
             } else {
-                wdkUser = ActionUtility.getUser(servlet, request);
+                wdkUser = ActionUtility.getUser(request);
             }
             // also set the user as the attribute of the request, so that the jsp can use it.
             request.setAttribute("wdkUser", wdkUser);

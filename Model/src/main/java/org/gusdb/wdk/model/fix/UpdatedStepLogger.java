@@ -55,19 +55,19 @@ public class UpdatedStepLogger {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     // load previously logged steps
-    Set<Integer> steps = new HashSet<>();
+    Set<Integer> newSteps = new HashSet<>();
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, "SELECT step_id FROM "
           + TABLE_UPDATED_STEPS, "organism-updater-select-log", 5000);
       while (resultSet.next()) {
-        steps.add(resultSet.getInt("step_id"));
+        newSteps.add(resultSet.getInt("step_id"));
       }
     } finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
-    logger.info(steps.size() + " steps are previously logged.");
-    return steps;
+    logger.info(newSteps.size() + " steps are previously logged.");
+    return newSteps;
   }
 
   public void logStep(int stepId) throws SQLException {

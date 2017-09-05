@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.answer;
 
 import java.sql.ResultSet;
@@ -41,34 +38,34 @@ import org.gusdb.wdk.model.user.User;
  */
 public class AnswerFilterInstance extends WdkModelBase {
 
-  private String name;
-  private boolean isDefault;
+  private String _name;
+  private boolean _isDefault;
 
   /**
    * A record class can have at most one booleanExpansion filter, and this
    * filter will be used in the boolean query to convert input steps to make the
    * operand results to be able to do boolean.
    */
-  private boolean isBooleanExpansion;
+  private boolean _isBooleanExpansion;
 
-  private List<WdkModelText> displayNameList = new ArrayList<WdkModelText>();
-  private String displayName;
+  private List<WdkModelText> _displayNameList = new ArrayList<WdkModelText>();
+  private String _displayName;
 
-  private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
-  private String description;
+  private List<WdkModelText> _descriptionList = new ArrayList<WdkModelText>();
+  private String _description;
 
-  private List<WdkModelText> paramValueList = new ArrayList<WdkModelText>();
-  private Map<String, String> stableValues = new LinkedHashMap<String, String>();
+  private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
+  private Map<String, String> _stableValues = new LinkedHashMap<String, String>();
 
-  private RecordClass recordClass;
-  private SqlQuery filterQuery;
-  private AnswerParam answerParam;
+  private RecordClass _recordClass;
+  private SqlQuery _filterQuery;
+  private AnswerParam _answerParam;
 
   /**
    * @return the name
    */
   public String getName() {
-    return name;
+    return _name;
   }
 
   /**
@@ -76,14 +73,14 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the name of the instance has be to unique in the recordClass.
    */
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   /**
    * @return the displayName
    */
   public String getDisplayName() {
-    return displayName;
+    return _displayName;
   }
 
   /**
@@ -91,18 +88,18 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the displayName to set
    */
   public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+    _displayName = displayName;
   }
 
   public void addDisplayName(WdkModelText displayName) {
-    this.displayNameList.add(displayName);
+    _displayNameList.add(displayName);
   }
 
   /**
    * @return the isDefault
    */
   public boolean isDefault() {
-    return isDefault;
+    return _isDefault;
   }
 
   /**
@@ -110,14 +107,14 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the isDefault to set
    */
   public void setDefault(boolean isDefault) {
-    this.isDefault = isDefault;
+    _isDefault = isDefault;
   }
 
   /**
    * @return the isBooleanExpansion
    */
   public boolean isBooleanExpansion() {
-    return isBooleanExpansion;
+    return _isBooleanExpansion;
   }
 
   /**
@@ -125,29 +122,29 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the isBooleanExpansion to set
    */
   public void setBooleanExpansion(boolean isBooleanExpansion) {
-    this.isBooleanExpansion = isBooleanExpansion;
+    _isBooleanExpansion = isBooleanExpansion;
   }
 
   /**
    * @return the description
    */
   public String getDescription() {
-    return description;
+    return _description;
   }
 
   public void addDescription(WdkModelText description) {
-    this.descriptionList.add(description);
+    _descriptionList.add(description);
   }
 
   public void addParamValue(WdkModelText param) {
-    this.paramValueList.add(param);
+    _paramValueList.add(param);
   }
 
   /**
    * @return the recordClass
    */
   public RecordClass getRecordClass() {
-    return recordClass;
+    return _recordClass;
   }
 
   /**
@@ -155,14 +152,14 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the recordClass to set
    */
   void setRecordClass(RecordClass recordClass) {
-    this.recordClass = recordClass;
+    _recordClass = recordClass;
   }
 
   /**
    * @return the filterQuery
    */
   public SqlQuery getFilterQuery() {
-    return filterQuery;
+    return _filterQuery;
   }
 
   /**
@@ -170,14 +167,14 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the filterQuery to set
    */
   void setFilterQuery(SqlQuery filterQuery) {
-    this.filterQuery = filterQuery;
+    _filterQuery = filterQuery;
   }
 
   /**
    * @return the answerParam
    */
   public AnswerParam getAnswerParam() {
-    return answerParam;
+    return _answerParam;
   }
 
   /**
@@ -185,92 +182,81 @@ public class AnswerFilterInstance extends WdkModelBase {
    *          the answerParam to set
    */
   void setAnswerParam(AnswerParam answerParam) {
-    this.answerParam = answerParam;
+    _answerParam = answerParam;
   }
 
   public Map<String, Object> getParamValueMap() {
-    return new LinkedHashMap<String, Object>(stableValues);
+    return new LinkedHashMap<String, Object>(_stableValues);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude the display names
-    for (WdkModelText text : displayNameList) {
+    for (WdkModelText text : _displayNameList) {
       if (text.include(projectId)) {
         text.excludeResources(projectId);
-        if (displayName != null)
+        if (_displayName != null)
           throw new WdkModelException("Display Name of "
-              + "answerFilterInstance '" + name + "' in "
-              + recordClass.getFullName() + " is included more than once.");
-        this.displayName = text.getText();
+              + "answerFilterInstance '" + _name + "' in "
+              + _recordClass.getFullName() + " is included more than once.");
+        _displayName = text.getText();
       }
     }
-    displayNameList = null;
+    _displayNameList = null;
 
     // exclude the descriptions
-    for (WdkModelText text : descriptionList) {
+    for (WdkModelText text : _descriptionList) {
       if (text.include(projectId)) {
         text.excludeResources(projectId);
-        if (description != null)
+        if (_description != null)
           throw new WdkModelException("Description of "
-              + "answerFilterInstance '" + name + "' in "
-              + recordClass.getFullName() + " is included more than once.");
-        this.description = text.getText();
+              + "answerFilterInstance '" + _name + "' in "
+              + _recordClass.getFullName() + " is included more than once.");
+        _description = text.getText();
       }
     }
-    descriptionList = null;
+    _descriptionList = null;
 
     // exclude the param values
-    for (WdkModelText param : paramValueList) {
+    for (WdkModelText param : _paramValueList) {
       if (param.include(projectId)) {
         param.excludeResources(projectId);
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        if (stableValues.containsKey(paramName))
+        if (_stableValues.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
-              + "] for answerFilterInstance [" + name + "] of type "
-              + recordClass.getFullName() + "  is included more than once.");
-        stableValues.put(paramName, paramValue);
+              + "] for answerFilterInstance [" + _name + "] of type "
+              + _recordClass.getFullName() + "  is included more than once.");
+        _stableValues.put(paramName, paramValue);
       }
     }
-    paramValueList = null;
+    _paramValueList = null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     if (_resolved)
       return;
 
-    this._wdkModel = wdkModel;
+    _wdkModel = wdkModel;
 
     // make sure the params provides match with those in the filter query
-    Map<String, Param> params = filterQuery.getParamMap();
-    for (String paramName : stableValues.keySet()) {
+    Map<String, Param> params = _filterQuery.getParamMap();
+    for (String paramName : _stableValues.keySet()) {
       if (!params.containsKey(paramName))
         throw new WdkModelException("The param [" + paramName
-            + "] declared in answerFilterInstance [" + name + "] of type "
-            + recordClass.getFullName()
+            + "] declared in answerFilterInstance [" + _name + "] of type "
+            + _recordClass.getFullName()
             + " does not exist in the filter query ["
-            + filterQuery.getFullName() + "]");
+            + _filterQuery.getFullName() + "]");
     }
     // User user = wdkModel.getSystemUser();
     // make sure the required param is defined
     for (String paramName : params.keySet()) {
-      if (answerParam.getName().equals(paramName))
+      if (_answerParam.getName().equals(paramName))
         continue;
-      if (!stableValues.containsKey(paramName))
+      if (!_stableValues.containsKey(paramName))
         throw new WdkModelException("The required param value of [" + paramName
             + "] is not assigned to filter [" + getName() + "]");
 
@@ -293,7 +279,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
-          idInstance.getQuery().getFullName() + "__" + name + "-filtered");
+          idInstance.getQuery().getFullName() + "__" + _name + "-filtered");
       return new SqlResultList(resultSet);
     } catch (SQLException e) {
       throw new WdkModelException("Could not get answer results.", e);
@@ -302,33 +288,33 @@ public class AnswerFilterInstance extends WdkModelBase {
 
   public String applyFilter(User user, String sql, int assignedWeight)
       throws WdkModelException, WdkUserException {
-    Map<String, Param> params = filterQuery.getParamMap();
+    Map<String, Param> params = _filterQuery.getParamMap();
 
-    String filterSql = filterQuery.getSql();
+    String filterSql = _filterQuery.getSql();
     // replace the answer param
-    String answerName = answerParam.getName();
+    String answerName = _answerParam.getName();
     filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
         + sql + ")");
 
     // replace the rest of the params; the answer param has been replaced
     // and will be ignored here.
     for (Param param : params.values()) {
-      if (param.getFullName().equals(answerParam.getFullName()))
+      if (param.getFullName().equals(_answerParam.getFullName()))
         continue;
 
-      String stableValue = stableValues.get(param.getName());
+      String stableValue = _stableValues.get(param.getName());
       try {
-        param.validate(user, stableValue, stableValues);
+        param.validate(user, stableValue, _stableValues);
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
       }
-      String internal = param.getInternalValue(user, stableValue, stableValues);
+      String internal = param.getInternalValue(user, stableValue, _stableValues);
       filterSql = param.replaceSql(filterSql, internal);
     }
 
     // if the filter doesn't return weight, assigned weight will be used
-    if (!filterQuery.getColumnMap().containsKey(Utilities.COLUMN_WEIGHT)) {
+    if (!_filterQuery.getColumnMap().containsKey(Utilities.COLUMN_WEIGHT)) {
       filterSql = "SELECT f.*, " + assignedWeight + " AS "
           + Utilities.COLUMN_WEIGHT + " FROM (" + filterSql + ") f";
     }

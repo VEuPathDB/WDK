@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.wizard;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.action.WizardAction;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.form.WizardForm;
@@ -25,8 +24,7 @@ public class StageHandlerUtility {
         return (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
     }
 
-    public static StepBean getRootStep(ActionServlet servlet,
-            HttpServletRequest request, WizardForm wizardForm)
+    public static StepBean getRootStep(HttpServletRequest request, WizardForm wizardForm)
             throws WdkUserException, NumberFormatException, WdkModelException {
         // get current strategy
         String strategyKey = wizardForm.getStrategy();
@@ -40,7 +38,7 @@ public class StageHandlerUtility {
                 : strategyKey;
 
         // get strategy, and verify the checksum
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         StrategyBean strategy = user.getStrategy(Integer.parseInt(strStratId));
 
         logger.debug("strategy key: " + strategyKey);
@@ -57,17 +55,16 @@ public class StageHandlerUtility {
         return rootStep;
     }
 
-    public static StepBean getPreviousStep(ActionServlet servlet,
-            HttpServletRequest request, WizardForm wizardForm)
+    public static StepBean getPreviousStep(HttpServletRequest request, WizardForm wizardForm)
             throws NumberFormatException, WdkUserException, WdkModelException {
         StepBean previousStep;
         String action = wizardForm.getAction();
         if (action.equals(WizardForm.ACTION_ADD)) {
             // add, the current step is the last step of a strategy or a
             // sub-strategy, use it as the input;
-            previousStep = StageHandlerUtility.getRootStep(servlet, request,
-                    wizardForm);
-        } else { // revise or insert,
+            previousStep = StageHandlerUtility.getRootStep(request, wizardForm);
+        }
+        else { // revise or insert,
             // the current step is always the lower step in the graph, no
             // matter whether it's a boolean, or a combined step. Use the
             // previous step as the input.

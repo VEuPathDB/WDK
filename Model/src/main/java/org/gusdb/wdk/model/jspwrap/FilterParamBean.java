@@ -29,7 +29,7 @@ public class FilterParamBean extends EnumParamBean {
    */
   public Map<String, Map<String, String>> getMetadataSpec(UserBean user) throws WdkModelException,
       WdkUserException {
-    return filterParam.getMetadataSpec(user.getUser(), contextValues);
+    return filterParam.getMetadataSpec(user.getUser(), _contextValues);
   }
 
   /**
@@ -47,12 +47,12 @@ public class FilterParamBean extends EnumParamBean {
   }
 
   public Map<String, List<String>> getMetadata(String property) throws WdkModelException, WdkUserException {
-    return filterParam.getMetaData(user.getUser(), contextValues, property, getVocabInstance());
+    return filterParam.getMetaData(_userBean.getUser(), _contextValues, property, getVocabInstance());
   }
 
   /**
-   * @param user
-   * @param contextValues
+   * @param _userBean
+   * @param _contextValues
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
@@ -61,7 +61,7 @@ public class FilterParamBean extends EnumParamBean {
    */
   @Override
   public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
-    return filterParam.getJsonValues(user.getUser(), contextValues);
+    return filterParam.getJsonValues(_userBean.getUser(), _contextValues);
   }
 
   @Override
@@ -70,7 +70,7 @@ public class FilterParamBean extends EnumParamBean {
 
     if (stableValue == null)
       stableValue = getDefault();
-    this.stableValue = stableValue;
+    this._stableValue = stableValue;
 
     // also set the current values
     if (stableValue != null) {
@@ -92,7 +92,7 @@ public class FilterParamBean extends EnumParamBean {
 
   @Override
   public String getDefault() throws WdkModelException {
-    return filterParam.getDefault(user.getUser(), contextValues);
+    return filterParam.getDefault(_userBean.getUser(), _contextValues);
   }
 
   public String getDefaultColumns() {

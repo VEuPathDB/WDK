@@ -55,7 +55,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     // parse operator
     String operator = internalValues.get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
-    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);
 
     String leftSql = getLeftSql();

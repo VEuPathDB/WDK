@@ -53,7 +53,6 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    @SuppressWarnings("unchecked")
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while (paramNames.hasNext()) {
@@ -63,9 +62,8 @@ public class FilterParamNewFetcher implements ItemFetcher<String, FilterParamNew
     return fetchItem(dependedParamValues);
   }
 
-  public FilterParamNewInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
-    FilterParamNewInstance instance = new FilterParamNewInstance(dependedParamValues, _param);
-    return instance;
+  public FilterParamNewInstance fetchItem(Map<String, String> dependedParamValues) {
+    return new FilterParamNewInstance(dependedParamValues, _param);
   }
 
   @Override

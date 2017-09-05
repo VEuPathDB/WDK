@@ -85,10 +85,20 @@ public class QueryTest implements ElementTest {
     return result;
   }
 
+  /**
+   * Tests query
+   * 
+   * @param user user to run query as
+   * @param query query to run
+   * @param paramValuesSet param values to test
+   * @param result result to populate
+   * @return number of rows returned
+   * @throws Exception if something goes wrong
+   */
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
     int count = 0;
-    QueryInstance<?> instance = query.makeInstance(_user,
+    QueryInstance<?> instance = query.makeInstance(user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
     try (ResultList resultList = instance.getResults()) {

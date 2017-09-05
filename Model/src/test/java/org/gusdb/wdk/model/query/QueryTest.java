@@ -48,7 +48,7 @@ public class QueryTest {
           Query query = ((FlatVocabParam) param).getQuery();
           String queryName = query.getFullName();
           if (!testedQueries.contains(queryName)) {
-            testQuery(user, query);
+            testQuery(query);
             testedQueries.add(queryName);
           }
         }
@@ -62,7 +62,7 @@ public class QueryTest {
           Query flatQuery = ((FlatVocabParam) param).getQuery();
           String queryName = flatQuery.getFullName();
           if (!testedQueries.contains(queryName)) {
-            testQuery(user, flatQuery);
+            testQuery(flatQuery);
             testedQueries.add(queryName);
           }
         }
@@ -84,14 +84,14 @@ public class QueryTest {
 
         String queryName = query.getFullName();
         if (!testedQueries.contains(queryName)) {
-          testQuery(user, query);
+          testQuery(query);
           testedQueries.add(queryName);
         }
       }
     }
   }
 
-  private void testQuery(User user, Query query) throws Exception {
+  private void testQuery(Query query) throws Exception {
     // try all sample values
     int setCount = 1;
     for (ParamValuesSet valueSet : ParamValuesFactory.getParamValuesSets(user, query)) {

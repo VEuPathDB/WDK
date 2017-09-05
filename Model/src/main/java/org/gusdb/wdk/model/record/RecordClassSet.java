@@ -19,21 +19,21 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClass> {
 
-  private List<RecordClass> recordClassList = new ArrayList<RecordClass>();
-  private Map<String, RecordClass> recordClassMap = new LinkedHashMap<String, RecordClass>();
-  private String name;
+  private List<RecordClass> _recordClassList = new ArrayList<RecordClass>();
+  private Map<String, RecordClass> _recordClassMap = new LinkedHashMap<String, RecordClass>();
+  private String _name;
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   @Override
   public String getName() {
-    return name;
+    return _name;
   }
 
   public RecordClass getRecordClass(String name) throws WdkModelException {
-    RecordClass s = recordClassMap.get(name);
+    RecordClass s = _recordClassMap.get(name);
     if (s == null)
       throw new WdkModelException("RecordClass Set " + getName()
           + " does not include recordClass " + name);
@@ -42,34 +42,34 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClas
 
   @Override
   public RecordClass getElement(String name) {
-    return recordClassMap.get(name);
+    return _recordClassMap.get(name);
   }
 
   public RecordClass[] getRecordClasses() {
-    RecordClass[] array = new RecordClass[recordClassMap.size()];
-    recordClassMap.values().toArray(array);
+    RecordClass[] array = new RecordClass[_recordClassMap.size()];
+    _recordClassMap.values().toArray(array);
     return array;
   }
   
   public Map<String, RecordClass> getRecordClassMap() {
-    return new LinkedHashMap<>(recordClassMap);
+    return new LinkedHashMap<>(_recordClassMap);
   }
 
   boolean hasRecordClass(RecordClass recordClass) {
-    return recordClassMap.containsKey(recordClass.getName());
+    return _recordClassMap.containsKey(recordClass.getName());
   }
 
   public void addRecordClass(RecordClass recordClass) {
     recordClass.setRecordClassSet(this);
-    recordClassList.add(recordClass);
+    _recordClassList.add(recordClass);
   }
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer("RecordClassSet: name='" + name + "'");
+    StringBuffer buf = new StringBuffer("RecordClassSet: name='" + _name + "'");
     buf.append(newline);
-    Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
+    Iterator<RecordClass> recordClassIterator = _recordClassMap.values().iterator();
     while (recordClassIterator.hasNext()) {
       buf.append(newline);
       buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
@@ -82,11 +82,11 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClas
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (name.length() == 0 || name.indexOf('\'') >= 0)
+    if (_name.length() == 0 || _name.indexOf('\'') >= 0)
       throw new WdkModelException("recordClassSet name cannot be empty "
-          + "or having single quotes: " + name);
+          + "or having single quotes: " + _name);
 
-    Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
+    Iterator<RecordClass> recordClassIterator = _recordClassMap.values().iterator();
     while (recordClassIterator.hasNext()) {
       RecordClass recordClass = recordClassIterator.next();
       recordClass.resolveReferences(model);
@@ -95,29 +95,24 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClas
 
   @Override
   public void setResources(WdkModel model) throws WdkModelException {
-    for (RecordClass recordClass : recordClassMap.values()) {
+    for (RecordClass recordClass : _recordClassMap.values()) {
       recordClass.setResources(model);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude record classes
-    for (RecordClass recordClass : recordClassList) {
+    for (RecordClass recordClass : _recordClassList) {
       if (recordClass.include(projectId)) {
         recordClass.excludeResources(projectId);
         String rcName = recordClass.getName();
-        if (recordClassMap.containsKey(rcName))
+        if (_recordClassMap.containsKey(rcName))
           throw new WdkModelException("RecordClass " + rcName
               + " already exists in recordClass set " + getName());
-        recordClassMap.put(rcName, recordClass);
+        _recordClassMap.put(rcName, recordClass);
       }
     }
-    recordClassList = null;
+    _recordClassList = null;
   }
 }

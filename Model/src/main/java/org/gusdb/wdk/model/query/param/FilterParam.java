@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -345,10 +344,9 @@ public class FilterParam extends FlatVocabParam {
     return metadata;
   }
 
-  @Override
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
-    JSONObject jsParam = super.getJsonValues(user, contextParamValues, cache);
+    JSONObject jsParam = super.getJsonValues(cache);
     try { // add additional info into the json
       appendJsonFilterValue(jsParam, user, contextParamValues);
     }

@@ -20,18 +20,18 @@ import org.json.JSONObject;
  * and for non-integers, rounded according to the number of decimal places specified.
  */
 public class NumberRangeParam extends Param {
-	
-  private Integer numDecimalPlaces = new Integer(1);
-  private Double min;
-  private Double max;
-  private Double step;
-  private boolean integer;
 
-  private List<WdkModelText> regexes;
-  private String regex;
- 
+  private Integer _numDecimalPlaces = new Integer(1);
+  private Double _min;
+  private Double _max;
+  private Double _step;
+  private boolean _isInteger;
+
+  private List<WdkModelText> _regexes;
+  private String _regex;
+
   public NumberRangeParam() {
-    regexes = new ArrayList<WdkModelText>();
+    _regexes = new ArrayList<WdkModelText>();
 
     // register handler
     setHandler(new NumberRangeParamHandler());
@@ -39,70 +39,59 @@ public class NumberRangeParam extends Param {
 
   public NumberRangeParam(NumberRangeParam param) {
     super(param);
-    if (param.regexes != null)
-      this.regexes = new ArrayList<WdkModelText>();
-    this.regex = param.regex;
-    this.numDecimalPlaces = param.numDecimalPlaces;
-    this.numDecimalPlaces = param.numDecimalPlaces == null ? this.numDecimalPlaces : param.numDecimalPlaces;
-    this.integer = param.integer;
-    this.min = param.min;
-    this.max = param.max;
-    this.setStep(param.step);
+    if (param._regexes != null)
+      _regexes = new ArrayList<WdkModelText>();
+    _regex = param._regex;
+    _numDecimalPlaces = param._numDecimalPlaces;
+    _numDecimalPlaces = param._numDecimalPlaces == null ? _numDecimalPlaces : param._numDecimalPlaces;
+    _isInteger = param._isInteger;
+    _min = param._min;
+    _max = param._max;
+    this.setStep(param._step);
   }
 
-  // ///////////////////////////////////////////////////////////////////
-  // /////////// Public properties ////////////////////////////////////
-  // ///////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////
+  ///////////// Public properties ////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////
 
   public void addRegex(WdkModelText regex) {
-    this.regexes.add(regex);
+    _regexes.add(regex);
   }
 
   public void setRegex(String regex) {
-    this.regex = regex;
+    _regex = regex;
   }
 
   public String getRegex() {
-    return regex;
+    return _regex;
   }
-
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
-      .append("  regex='").append(regex).append("'").append(newline).toString();
+      .append("  regex='").append(_regex).append("'").append(newline).toString();
   }
 
-  // ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
   // protected methods
-  // ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
-    if (regex == null)
-      regex = model.getModelConfig().getParamRegex();
-    if (regex == null) {
-      regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
+    if (_regex == null)
+      _regex = model.getModelConfig().getParamRegex();
+    if (_regex == null) {
+      _regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#clone()
-   */
   @Override
   public Param clone() {
     return new NumberRangeParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // nothing to be added
@@ -118,92 +107,88 @@ public class NumberRangeParam extends Param {
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
-	  
-	Double values[] = new Double[2];
-	
-	// Insure that the JSON Object format is valid.
-	try {
-	  JSONObject stableValueJson = new JSONObject(stableValue);
-	  values[0] = stableValueJson.getDouble("min");
-	  values[1] = stableValueJson.getDouble("max");
-	}
-	catch(JSONException je) {
-	  throw new WdkUserException("Could not parse '" + stableValue + "'. "
-	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
-	}
-	
-	// Validate each value in the range against regex.  The regex could be a more
-	// restrictive test.
-	for(Double value : values) {
-	  String stringValue = String.valueOf(value);
-      if (regex != null && !stringValue.matches(regex)) {
+
+    Double values[] = new Double[2];
+
+    // Insure that the JSON Object format is valid.
+    try {
+      JSONObject stableValueJson = new JSONObject(stableValue);
+      values[0] = stableValueJson.getDouble("min");
+      values[1] = stableValueJson.getDouble("max");
+    }
+    catch(JSONException je) {
+      throw new WdkUserException("Could not parse '" + stableValue + "'. "
+          + "The range should be is the format {'min':'min value','max':'max value'}");
+    }
+
+    // Validate each value in the range against regex.  The regex could be a more
+    // restrictive test.
+    for(Double value : values) {
+      String stringValue = String.valueOf(value);
+      if (_regex != null && !stringValue.matches(_regex)) {
         throw new WdkUserException("value '" + value + "' is invalid. " +
-        	  "It must match the regular expression '" + regex + "'");
+            "It must match the regular expression '" + _regex + "'");
       }
-	}
+    }
 
     // By convention, the first value of the range should be less than or equal to the second value.
     if(values[0] > values[1]) {
       throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
-      		+ " must be less than the maximum value, '" + values[1] + "'");
+          + " must be less than the maximum value, '" + values[1] + "'");
     }
-    
+
     // Verify both ends of the range are integers if such is specified.
     for(Double value : values) {
-      if(this.integer && value.doubleValue() % 1 != 0) {
+      if(_isInteger && value.doubleValue() % 1 != 0) {
         throw new WdkUserException("value '" + value + "' must be an integer.");
       }
-    }  
-      
-    // Verify the given range in within any required limits
-    if(this.min != null && values[0] < new Double(this.min)) {
-        throw new WdkUserException("value '" + values[0] + "' must be greater than or equal to '" + this.min + "'" );
     }
-    if(this.max != null && values[1] > new Double(this.max)) {
-      throw new WdkUserException("value '" + values[1] + "' must be less than or equal to '" + this.max + "'" );
+
+    // Verify the given range in within any required limits
+    if(_min != null && values[0] < new Double(_min)) {
+        throw new WdkUserException("value '" + values[0] + "' must be greater than or equal to '" + _min + "'" );
+    }
+    if(_max != null && values[1] > new Double(_max)) {
+      throw new WdkUserException("value '" + values[1] + "' must be less than or equal to '" + _max + "'" );
     }
   }
-  
+
   /**
    * Need to alter sql replacement to accommodate fact that internal value
    * is really a JSON string containing min and max ends of range.  The convention is
    * that the minimum value replace $$name.min$$ and the maximum value replace $$name.max$$
    * in the query.
    */
+  @Override
   public String replaceSql(String sql, String internalValue) {
-	JSONObject valueJson = new JSONObject(internalValue);
-	Double values[] = new Double[2];
-	values[0] = valueJson.getDouble("min");
-	values[1] = valueJson.getDouble("max");
-	String regex = "\\$\\$" + name + ".min\\$\\$";
-	String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement(values[0].toString()));
-	regex = "\\$\\$" + name + ".max\\$\\$";
-	replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement(values[1].toString()));
-	return replacedSql;
+    JSONObject valueJson = new JSONObject(internalValue);
+    Double values[] = new Double[2];
+    values[0] = valueJson.getDouble("min");
+    values[1] = valueJson.getDouble("max");
+    String regex = "\\$\\$" + _name + ".min\\$\\$";
+    String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement(values[0].toString()));
+    regex = "\\$\\$" + _name + ".max\\$\\$";
+    replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement(values[1].toString()));
+    return replacedSql;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
     boolean hasRegex = false;
-    for (WdkModelText regex : regexes) {
+    for (WdkModelText regex : _regexes) {
       if (regex.include(projectId)) {
         if (hasRegex) {
           throw new WdkModelException("The param " + getFullName() + " has more than one regex for project " +
               projectId);
         }
         else {
-          this.regex = regex.getText();
+          _regex = regex.getText();
           hasRegex = true;
         }
       }
     }
-    regexes = null;
+    _regexes = null;
   }
 
   @Override
@@ -217,27 +202,27 @@ public class NumberRangeParam extends Param {
   }
 
   public Integer getNumDecimalPlaces() {
-	return numDecimalPlaces;
+    return _numDecimalPlaces;
   }
 
   public void setNumDecimalPlaces(Integer numDecimalPlaces) {
-	this.numDecimalPlaces = numDecimalPlaces;
+    _numDecimalPlaces = numDecimalPlaces;
   }
 
   public Double getMin() {
-	return min;
+    return _min;
   }
 
   public void setMin(Double min) {
-	this.min = min;
+    _min = min;
   }
 
   public Double getMax() {
-	return max;
+    return _max;
   }
 
   public void setMax(Double max) {
-	this.max = max;
+    _max = max;
   }
 
   @Override
@@ -256,22 +241,22 @@ public class NumberRangeParam extends Param {
   }
 
   public boolean isInteger() {
-	return integer;
+    return _isInteger;
   }
 
   public void setInteger(boolean integer) {
-	this.integer = integer;
+    _isInteger = integer;
   }
-  
+
   public Double getStep() {
-    return step;
+    return _step;
   }
-	  
+
   public void setStep(Double step) {
     if(step == null) {
-	  step = this.integer ? 1 : 0.01;
-	}
-    this.step = step;
+      step = _isInteger ? 1 : 0.01;
+    }
+    _step = step;
   }
 
 }

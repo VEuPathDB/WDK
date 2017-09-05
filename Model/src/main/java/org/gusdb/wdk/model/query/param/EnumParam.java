@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -21,16 +22,18 @@ import org.json.JSONObject;
  */
 public class EnumParam extends AbstractEnumParam {
 
-  private List<EnumItemList> enumItemLists;
-  private EnumItemList enumItemList;
+  private static final Logger LOG = Logger.getLogger(EnumParam.class);
+
+  private List<EnumItemList> _enumItemLists;
+  private EnumItemList _enumItemList;
 
   public EnumParam() {
-    enumItemLists = new ArrayList<EnumItemList>();
+    _enumItemLists = new ArrayList<EnumItemList>();
   }
 
   public EnumParam(EnumParam param) {
     super(param);
-    this.enumItemList = param.enumItemList;
+    _enumItemList = param._enumItemList;
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -38,7 +41,7 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   public void addEnumItemList(EnumItemList enumItemList) {
-    this.enumItemLists.add(enumItemList);
+    _enumItemLists.add(enumItemList);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -48,10 +51,10 @@ public class EnumParam extends AbstractEnumParam {
   @Override
   protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
-    logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
     EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues, this);
-    EnumItem[] enumItems = enumItemList.getEnumItems();
+    EnumItem[] enumItems = _enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();
       String display = item.getDisplay();
@@ -84,7 +87,7 @@ public class EnumParam extends AbstractEnumParam {
 
     initTreeMap(cache);
     applySelectMode(cache);
-    logger.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    LOG.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     return cache;
   }
 
@@ -99,7 +102,7 @@ public class EnumParam extends AbstractEnumParam {
 
     // exclude enum items
     boolean hasEnumList = false;
-    for (EnumItemList itemList : enumItemLists) {
+    for (EnumItemList itemList : _enumItemLists) {
       if (itemList.include(projectId)) {
         if (hasEnumList) {
           throw new WdkModelException("enumParam " + getFullName() +
@@ -108,18 +111,18 @@ public class EnumParam extends AbstractEnumParam {
         else {
           EnumItem[] enumItems = itemList.getEnumItems();
           if (enumItems.length == 0)
-            throw new WdkModelException("enumParam '" + this.name + "' has zero items");
+            throw new WdkModelException("enumParam '" + _name + "' has zero items");
 
           itemList.setParam(this);
           itemList.excludeResources(projectId);
-          this.enumItemList = itemList;
+          _enumItemList = itemList;
 
           hasEnumList = true;
         }
       }
     }
-    enumItemLists = null;
-    if (enumItemList == null || enumItemList.getEnumItems().length == 0)
+    _enumItemLists = null;
+    if (_enumItemList == null || _enumItemList.getEnumItems().length == 0)
       throw new WdkModelException("No enum items available in enumParam " + getFullName());
   }
 
@@ -132,15 +135,15 @@ public class EnumParam extends AbstractEnumParam {
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
 
-    enumItemList.resolveReferences(model);
+    _enumItemList.resolveReferences(model);
 
     StringBuffer sb = new StringBuffer();
-    EnumItem[] enumItems = enumItemList.getEnumItems();
+    EnumItem[] enumItems = _enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       if (item.isDefault()) {
         if (sb.length() > 0) {
           // single pick default should be singular value
-          if (!multiPick)
+          if (!_multiPick)
             break;
           sb.append(",");
         }

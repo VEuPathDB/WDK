@@ -43,7 +43,7 @@ public class ProcessBooleanAction extends Action {
     logger.debug("Entering ProcessBooleanAction...");
 
     // get user;
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
 
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
     try {
@@ -95,7 +95,7 @@ public class ProcessBooleanAction extends Action {
       String action = request.getParameter(PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
         // revise a boolean step
-        reviseBoolean(request, user, strategy, operator, step);
+        reviseBoolean(operator, step);
         rootMap = new HashMap<>();
       }
       else if (action.equals(WizardForm.ACTION_INSERT)) {
@@ -132,8 +132,7 @@ public class ProcessBooleanAction extends Action {
     }
   }
 
-  private void reviseBoolean(HttpServletRequest request, UserBean user, StrategyBean strategy,
-      String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException {
+  private void reviseBoolean(String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException {
     logger.debug("Revising boolean...");
 
     // current step has to exist for revise

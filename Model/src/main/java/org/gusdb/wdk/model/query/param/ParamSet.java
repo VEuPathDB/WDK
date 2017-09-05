@@ -18,24 +18,24 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
 
-    private List<Param> paramList = new ArrayList<Param>();
-    private Map<String, Param> paramMap = new LinkedHashMap<String, Param>();
-    private String name;
+    private List<Param> _paramList = new ArrayList<Param>();
+    private Map<String, Param> _paramMap = new LinkedHashMap<String, Param>();
+    private String _name;
 
-    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
-    private boolean useTermOnly = false;
+    private List<ParamConfiguration> _useTermOnlies = new ArrayList<ParamConfiguration>();
+    private boolean _useTermOnly = false;
 
     public void setName(String name) {
-        this.name = name;
+        _name = name;
     }
 
     @Override
     public String getName() {
-        return name;
+        return _name;
     }
 
     public Param getParam(String name) throws WdkModelException {
-        Param q = paramMap.get(name);
+        Param q = _paramMap.get(name);
         if (q == null)
             throw new WdkModelException("Param Set " + getName()
                     + " does not include param " + name);
@@ -44,43 +44,43 @@ public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
 
     @Override
     public Param getElement(String name) {
-        return paramMap.get(name);
+        return _paramMap.get(name);
     }
 
     public Param[] getParams() {
-        Param[] array = new Param[paramMap.size()];
-        paramMap.values().toArray(array);
+        Param[] array = new Param[_paramMap.size()];
+        _paramMap.values().toArray(array);
         return array;
     }
 
     public boolean contains(String paramName) {
-        return paramMap.containsKey(paramName);
+        return _paramMap.containsKey(paramName);
     }
 
     public void addParam(Param param) {
         param.setParamSet(this);
-        if (paramList != null) paramList.add(param);
-        else paramMap.put(param.getName(), param);
+        if (_paramList != null) _paramList.add(param);
+        else _paramMap.put(param.getName(), param);
     }
 
     public void addUseTermOnly(ParamConfiguration paramConfig) {
-        useTermOnlies.add(paramConfig);
+        _useTermOnlies.add(paramConfig);
     }
 
     public boolean isUseTermOnly() {
-        return useTermOnly;
+        return _useTermOnly;
     }
 
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
-        for (Param param : paramMap.values()) {
+        for (Param param : _paramMap.values()) {
             param.resolveReferences(model);
         }
     }
 
     @Override
     public void setResources(WdkModel model) throws WdkModelException {
-        for (Param param : paramMap.values()) {
+        for (Param param : _paramMap.values()) {
             param.setResources(model);
         }
     }
@@ -88,10 +88,10 @@ public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
     @Override
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("ParamSet: name='" + name + "'");
+        StringBuffer buf = new StringBuffer("ParamSet: name='" + _name + "'");
         buf.append(newline);
 
-        for (Param param : paramMap.values()) {
+        for (Param param : _paramMap.values()) {
             buf.append(newline);
             buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
             buf.append(newline);
@@ -110,22 +110,22 @@ public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
         // exclude use term only. this must happen before processing params,
         // since enum/vocab params will use the value as default
         boolean hasUseTermOnly = false;
-        for (ParamConfiguration paramConfig : useTermOnlies) {
+        for (ParamConfiguration paramConfig : _useTermOnlies) {
             if (paramConfig.include(projectId)) {
                 if (hasUseTermOnly) {
                     throw new WdkModelException("paramSet " + getName()
                             + " has more than one <useTermOnly> tag "
                             + "for project " + projectId);
                 } else {
-                    useTermOnly = paramConfig.isValue();
+                    _useTermOnly = paramConfig.isValue();
                     hasUseTermOnly = true;
                 }
             }
         }
-        useTermOnlies = null;
+        _useTermOnlies = null;
 
         // exclude resources in each question
-        for (Param param : paramList) {
+        for (Param param : _paramList) {
             // set the paramSet to each child param. The paramSet contains the
             // default value for the param, therefore it should happen before
             // excluding the resource from param
@@ -133,13 +133,13 @@ public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
                 param.excludeResources(projectId);
                 String paramName = param.getName();
 
-                if (paramMap.containsKey(paramName))
+                if (_paramMap.containsKey(paramName))
                     throw new WdkModelException("Param named " + paramName
-                            + " already exists in param set " + this.name);
-                paramMap.put(param.getName(), param);
+                            + " already exists in param set " + this._name);
+                _paramMap.put(param.getName(), param);
             }
         }
-        paramList = null;
+        _paramList = null;
     }
 
     // ///////////////////////////////////////////////////////////////

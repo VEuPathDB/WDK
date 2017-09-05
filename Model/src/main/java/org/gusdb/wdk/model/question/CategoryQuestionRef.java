@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.question;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelText;
 
 /**
@@ -11,19 +10,16 @@ import org.gusdb.wdk.model.WdkModelText;
  */
 public class CategoryQuestionRef extends WdkModelText implements Comparable<CategoryQuestionRef> {
 
-  @SuppressWarnings("unused")
-  private static final Logger logger = Logger.getLogger(CategoryQuestionRef.class);
-
-  private String usedBy;
-  private Integer sortOrder = null;
-  private String questionDisplayName = ""; // default to unknown (but still sortable)
+  private String _usedBy;
+  private Integer _sortOrder = null;
+  private String _questionDisplayName = ""; // default to unknown (but still sortable)
 
   public String getUsedBy() {
-    return usedBy;
+    return _usedBy;
   }
 
   public void setUsedBy(String usedBy) {
-    this.usedBy = usedBy;
+    this._usedBy = usedBy;
   }
 
   public String getQuestionFullName() {
@@ -36,27 +32,27 @@ public class CategoryQuestionRef extends WdkModelText implements Comparable<Cate
 
   public boolean isUsedBy(String usedBy, boolean strict) {
     if (strict) 
-      return (usedBy != null && this.usedBy != null && this.usedBy.equalsIgnoreCase(usedBy));
-    return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
+      return (usedBy != null && this._usedBy != null && this._usedBy.equalsIgnoreCase(usedBy));
+    return (usedBy == null || this._usedBy == null || this._usedBy.equalsIgnoreCase(usedBy));
   }
-  
+
   public void setSortOrder(int sortOrder) {
-    this.sortOrder = new Integer(sortOrder);
+    this._sortOrder = new Integer(sortOrder);
   }
-  
+
   public void setQuestionDisplayName(String name) {
-    questionDisplayName = name;
+    _questionDisplayName = name;
   }
-  
+
   @Override
   public int compareTo(CategoryQuestionRef cqr) {
-    if (sortOrder != null) {
-      if (cqr.sortOrder != null) return sortOrder - cqr.sortOrder;
+    if (_sortOrder != null) {
+      if (cqr._sortOrder != null) return _sortOrder - cqr._sortOrder;
       return 1;
     } else {
-      if (cqr.sortOrder != null) return -1;
+      if (cqr._sortOrder != null) return -1;
       else {
-        return questionDisplayName.compareTo(cqr.questionDisplayName);
+        return _questionDisplayName.compareTo(cqr._questionDisplayName);
       }
     }
   }

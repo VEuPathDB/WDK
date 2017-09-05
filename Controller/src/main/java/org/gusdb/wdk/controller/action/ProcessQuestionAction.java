@@ -62,7 +62,7 @@ public class ProcessQuestionAction extends Action {
     // get question name first so it can be used in error reporting
     String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
     try {
-      UserBean wdkUser = ActionUtility.getUser(servlet, request);
+      UserBean wdkUser = ActionUtility.getUser(request);
 
       // validate question name
       ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);

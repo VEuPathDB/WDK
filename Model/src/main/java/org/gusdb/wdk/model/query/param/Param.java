@@ -5,15 +5,14 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -72,8 +71,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
 
-  protected static Logger logger = Logger.getLogger(Param.class);
-
   @Override
   public abstract Param clone();
 
@@ -92,99 +89,99 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
 
-  protected String id;
-  protected String name;
-  protected String prompt;
+  protected String _id;
+  protected String _name;
+  protected String _prompt;
 
-  private List<WdkModelText> helps;
-  protected String help;
+  private List<WdkModelText> _helps;
+  protected String _help;
 
-	// requested by PRISM, array will contain different values for different projects
-  private List<WdkModelText> visibleHelps;
-  protected String visibleHelp;
+  // requested by PRISM, array will contain different values for different projects
+  private List<WdkModelText> _visibleHelps;
+  protected String _visibleHelp;
 
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.
-  private String defaultValue;
-  private String emptyValue;
+  private String _defaultValue;
+  private String _emptyValue;
 
   // sometimes different values are desired for normal operation vs. sanity test;
   //   in that case, this value will be used if it exists
-  private String sanityDefaultValue;
+  private String _sanityDefaultValue;
 
-  protected boolean visible;
-  protected boolean readonly;
+  protected boolean _visible;
+  protected boolean _readonly;
 
-  private Group group;
+  private Group _group;
 
-  private List<ParamSuggestion> suggestions;
-  protected boolean allowEmpty;
+  private List<ParamSuggestion> _suggestions;
+  protected boolean _allowEmpty;
 
-  protected ParamSet paramSet;
-  private Map<String, Param> dependentParamsMap = new HashMap<String, Param>();
-  private Set<Param> dependentParams = new HashSet<Param>();
+  protected ParamSet _paramSet;
+  private Map<String, Param> _dependentParamsMap = new HashMap<String, Param>();
+  private Set<Param> _dependentParams = new HashSet<Param>();
 
-  private List<ParamConfiguration> noTranslations;
+  private List<ParamConfiguration> _noTranslations;
 
   /**
    * if this flag is set to true, the internal value will be the same as dependent value. This flag is useful
    * when the dependent value is sent to other sites to process using ProcessQuery.
    */
-  private boolean noTranslation = false;
+  private boolean _noTranslation = false;
 
-  protected Question contextQuestion;
-  protected Query contextQuery;
+  protected Question _contextQuestion;
+  protected Query _contextQuery;
 
-  private List<ParamHandlerReference> handlerReferences;
-  private ParamHandlerReference handlerReference;
-  protected ParamHandler handler;
+  private List<ParamHandlerReference> _handlerReferences;
+  private ParamHandlerReference _handlerReference;
+  protected ParamHandler _handler;
 
   public Param() {
-    visible = true;
-    readonly = false;
-    group = Group.Empty();
-    helps = new ArrayList<WdkModelText>();
-    visibleHelps = new ArrayList<WdkModelText>();
-    suggestions = new ArrayList<ParamSuggestion>();
-    noTranslations = new ArrayList<ParamConfiguration>();
-    allowEmpty = false;
-    emptyValue = null;
-    defaultValue = null;
-    sanityDefaultValue = null;
-    handlerReferences = new ArrayList<>();
+    _visible = true;
+    _readonly = false;
+    _group = Group.Empty();
+    _helps = new ArrayList<WdkModelText>();
+    _visibleHelps = new ArrayList<WdkModelText>();
+    _suggestions = new ArrayList<ParamSuggestion>();
+    _noTranslations = new ArrayList<ParamConfiguration>();
+    _allowEmpty = false;
+    _emptyValue = null;
+    _defaultValue = null;
+    _sanityDefaultValue = null;
+    _handlerReferences = new ArrayList<>();
   }
 
   public Param(Param param) {
     super(param);
-    this.id = param.id;
-    this.name = param.name;
-    this.prompt = param.prompt;
-    this.help = param.help;
-    this.visibleHelp = param.visibleHelp;
-    this.defaultValue = param.defaultValue;
-    this.sanityDefaultValue = param.sanityDefaultValue;
-    this.visible = param.visible;
-    this.readonly = param.readonly;
-    this.group = param.group;
-    this.allowEmpty = param.allowEmpty;
-    this.emptyValue = param.emptyValue;
-    this.paramSet = param.paramSet;
-    this._wdkModel = param._wdkModel;
-    this.noTranslation = param.noTranslation;
-    this._resolved = param._resolved;
-    if (param.handlerReferences != null) {
-      this.handlerReferences = new ArrayList<>();
-      for (ParamHandlerReference reference : param.handlerReferences) {
-        this.handlerReferences.add(new ParamHandlerReference(this, reference));
+    _id = param._id;
+    _name = param._name;
+    _prompt = param._prompt;
+    _help = param._help;
+    _visibleHelp = param._visibleHelp;
+    _defaultValue = param._defaultValue;
+    _sanityDefaultValue = param._sanityDefaultValue;
+    _visible = param._visible;
+    _readonly = param._readonly;
+    _group = param._group;
+    _allowEmpty = param._allowEmpty;
+    _emptyValue = param._emptyValue;
+    _paramSet = param._paramSet;
+    _wdkModel = param._wdkModel;
+    _noTranslation = param._noTranslation;
+    _resolved = param._resolved;
+    if (param._handlerReferences != null) {
+      _handlerReferences = new ArrayList<>();
+      for (ParamHandlerReference reference : param._handlerReferences) {
+        _handlerReferences.add(new ParamHandlerReference(this, reference));
       }
     }
-    this.handlerReference = param.handlerReference;
-    if (param.handler != null)
-      this.handler = param.handler.clone(this);
-    this.contextQuestion = param.contextQuestion;
-    this.contextQuery = param.contextQuery;
-    this.dependentParamsMap = new HashMap<String, Param>(param.dependentParamsMap);
-    this.dependentParams = new HashSet<Param>(param.dependentParams);
+    _handlerReference = param._handlerReference;
+    if (param._handler != null)
+      _handler = param._handler.clone(this);
+    _contextQuestion = param._contextQuestion;
+    _contextQuery = param._contextQuery;
+    _dependentParamsMap = new HashMap<String, Param>(param._dependentParamsMap);
+    _dependentParams = new HashSet<Param>(param._dependentParams);
   }
 
   @Override
@@ -196,7 +193,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * @return the id
    */
   public String getId() {
-    return id;
+    return _id;
   }
 
   /**
@@ -204,67 +201,67 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    *          the id to set
    */
   public void setId(String id) {
-    this.id = id;
+    _id = id;
   }
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   public String getName() {
-    return name;
+    return _name;
   }
 
   void setParamSet(ParamSet paramSet) {
-    this.paramSet = paramSet;
+    _paramSet = paramSet;
   }
 
   public String getFullName() {
-    if (name == null) return null;
-    String paramSetName = (paramSet == null ? "<unknown_param_set>" : paramSet.getName());
-    return paramSetName + "." + name;
+    if (_name == null) return null;
+    String paramSetName = (_paramSet == null ? "<unknown_param_set>" : _paramSet.getName());
+    return paramSetName + "." + _name;
   }
 
   public void setPrompt(String prompt) {
-    this.prompt = prompt;
+    _prompt = prompt;
   }
 
   public String getPrompt() {
-    if (prompt == null)
-      return name;
-    return prompt;
+    if (_prompt == null)
+      return _name;
+    return _prompt;
   }
 
   public void addHelp(WdkModelText help) {
-    this.helps.add(help);
+    _helps.add(help);
   }
 
   public String getHelp() {
-    if (help == null)
+    if (_help == null)
       return getPrompt();
-    return help;
+    return _help;
   }
 
   void setHelp(String help) {
-    this.help = help;
+    _help = help;
   }
 
 public void addVisibleHelp(WdkModelText visibleHelp) {
-    this.visibleHelps.add(visibleHelp);
+    _visibleHelps.add(visibleHelp);
   }
 
   public String getVisibleHelp() {
 		// if (visibleHelp == null)
 		// return getHelp(); //should return empty???
-    return visibleHelp;
+    return _visibleHelp;
   }
 
   void setVisibleHelp(String visibleHelp) {
-    this.visibleHelp = visibleHelp;
+    _visibleHelp = visibleHelp;
   }
 
   public void setDefault(String defaultValue) {
-    this.defaultValue = defaultValue;
+    _defaultValue = defaultValue;
   }
 
   /**
@@ -272,25 +269,25 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *           if unable to retrieve default value
    */
   public String getDefault() throws WdkModelException {
-    return defaultValue;
+    return _defaultValue;
   }
 
   public void setSanityDefault(String sanityDefaultValue) {
-    this.sanityDefaultValue = sanityDefaultValue;
+    _sanityDefaultValue = sanityDefaultValue;
   }
 
   public final String getSanityDefault() {
-    if (sanityDefaultValue == null && isAllowEmpty() && getEmptyValue() != null) {
+    if (_sanityDefaultValue == null && isAllowEmpty() && getEmptyValue() != null) {
       return getEmptyValue();
     }
-    return sanityDefaultValue;
+    return _sanityDefaultValue;
   }
 
   /**
    * @return Returns the readonly.
    */
   public boolean isReadonly() {
-    return this.readonly;
+    return _readonly;
   }
 
   /**
@@ -298,14 +295,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *          The readonly to set.
    */
   public void setReadonly(boolean readonly) {
-    this.readonly = readonly;
+    _readonly = readonly;
   }
 
   /**
    * @return Returns the visible.
    */
   public boolean isVisible() {
-    return this.visible;
+    return _visible;
   }
 
   /**
@@ -313,25 +310,25 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *          The visible to set.
    */
   public void setVisible(boolean visible) {
-    this.visible = visible;
+    _visible = visible;
   }
 
   /**
    * @return the allowEmpty
    */
   public boolean isAllowEmpty() {
-    return this.allowEmpty;
+    return _allowEmpty;
   }
 
   public void setAllowEmpty(boolean allowEmpty) {
-    this.allowEmpty = allowEmpty;
+    _allowEmpty = allowEmpty;
   }
 
   /**
    * @return the emptyValue
    */
   public String getEmptyValue() {
-    return emptyValue;
+    return _emptyValue;
   }
 
   /**
@@ -339,14 +336,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *          the emptyValue to set
    */
   public void setEmptyValue(String emptyValue) {
-    this.emptyValue = emptyValue;
+    _emptyValue = emptyValue;
   }
 
   /**
    * @return the group
    */
   public Group getGroup() {
-    return group;
+    return _group;
   }
 
   /**
@@ -354,27 +351,27 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *          the group to set
    */
   public void setGroup(Group group) {
-    this.group = group;
+    _group = group;
   }
 
   public void addSuggest(ParamSuggestion suggest) {
-    this.suggestions.add(suggest);
+    _suggestions.add(suggest);
   }
 
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder(getClass().getName())
-      .append(": name='").append(name).append("'").append(NL)
-      .append("  prompt='").append(prompt).append("'").append(NL)
-      .append("  help='").append(help).append("'").append(NL)
-      .append("  visibleHelp='").append(visibleHelp).append("'").append(NL)
-      .append("  default='").append(defaultValue).append("'").append(NL)
-      .append("  sanityDefault='").append(sanityDefaultValue).append("'").append(NL)
-      .append("  readonly=").append(readonly).append(NL)
-      .append("  visible=").append(visible).append(NL)
-      .append("  noTranslation=").append(noTranslation).append(NL);
-    if (group != null)
-      buf.append("  group='").append(group.getName()).append("'").append(NL);
+      .append(": name='").append(_name).append("'").append(NL)
+      .append("  prompt='").append(_prompt).append("'").append(NL)
+      .append("  help='").append(_help).append("'").append(NL)
+      .append("  visibleHelp='").append(_visibleHelp).append("'").append(NL)
+      .append("  default='").append(_defaultValue).append("'").append(NL)
+      .append("  sanityDefault='").append(_sanityDefaultValue).append("'").append(NL)
+      .append("  readonly=").append(_readonly).append(NL)
+      .append("  visible=").append(_visible).append(NL)
+      .append("  noTranslation=").append(_noTranslation).append(NL);
+    if (_group != null)
+      buf.append("  group='").append(_group.getName()).append("'").append(NL);
 
     return buf.toString();
   }
@@ -390,48 +387,48 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
     // exclude visibleHelps
     boolean hasVisibleHelp = false;
-    for (WdkModelText visibleHelp : visibleHelps) {
+    for (WdkModelText visibleHelp : _visibleHelps) {
       if (visibleHelp.include(projectId)) {
         if (hasVisibleHelp) {
           throw new WdkModelException("The param " + getFullName() + " has more than one visibleHelp for project " +
               projectId);
         }
         else {
-          this.visibleHelp = visibleHelp.getText();
+          _visibleHelp = visibleHelp.getText();
           hasVisibleHelp = true;
         }
       }
     }
-    visibleHelps = null;
+    _visibleHelps = null;
 
  // exclude helps
     boolean hasHelp = false;
-    for (WdkModelText help : helps) {
+    for (WdkModelText help : _helps) {
       if (help.include(projectId)) {
         if (hasHelp) {
           throw new WdkModelException("The param " + getFullName() + " has more than one help for project " +
               projectId);
         }
         else {
-          this.help = help.getText();
+          _help = help.getText();
           hasHelp = true;
         }
       }
 	  }
-    helps = null;
+    _helps = null;
 
     // exclude suggestions
     boolean hasSuggest = false;
-    for (ParamSuggestion suggest : suggestions) {
+    for (ParamSuggestion suggest : _suggestions) {
       if (suggest.include(projectId)) {
         if (hasSuggest)
           throw new WdkModelException("The param " + getFullName() +
               " has more than one <suggest> for project " + projectId);
 
         suggest.excludeResources(projectId);
-        defaultValue = suggest.getDefault();
-        allowEmpty = suggest.isAllowEmpty();
-        emptyValue = suggest.getEmptyValue();
+        _defaultValue = suggest.getDefault();
+        _allowEmpty = suggest.isAllowEmpty();
+        _emptyValue = suggest.getEmptyValue();
 
         applySuggestion(suggest);
 
@@ -439,33 +436,33 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
       }
     }
-    suggestions = null;
+    _suggestions = null;
 
     // exclude noTranslations
     boolean hasNoTranslation = false;
-    for (ParamConfiguration noTrans : noTranslations) {
+    for (ParamConfiguration noTrans : _noTranslations) {
       if (noTrans.include(projectId)) {
         if (hasNoTranslation)
           throw new WdkModelException("The param " + getFullName() +
               " has more than one <noTranslation> for project " + projectId);
-        noTranslation = noTrans.isValue();
+        _noTranslation = noTrans.isValue();
         hasNoTranslation = true;
       }
     }
-    noTranslations = null;
+    _noTranslations = null;
 
     // exclude handler references
-    for (ParamHandlerReference reference : handlerReferences) {
+    for (ParamHandlerReference reference : _handlerReferences) {
       if (reference.include(projectId)) {
         // make sure the handler is not defined more than once
-        if (handlerReference != null)
+        if (_handlerReference != null)
           throw new WdkModelException("param handler is defined more than " + "once for project " +
               projectId + " in param " + getFullName());
         reference.excludeResources(projectId);
-        handlerReference = reference;
+        _handlerReference = reference;
       }
     }
-    handlerReferences = null;
+    _handlerReferences = null;
   }
 
   public JSONObject getChecksumJSON(boolean extra) throws JSONException {
@@ -481,11 +478,11 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *           if unable to load resources from model
    */
   public void setResources(WdkModel model) throws WdkModelException {
-    this._wdkModel = model;
+    _wdkModel = model;
   }
 
   public String replaceSql(String sql, String internalValue) {
-    String regex = "\\$\\$" + name + "\\$\\$";
+    String regex = "\\$\\$" + _name + "\\$\\$";
     // escape all single quotes in the value
 
     //logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
@@ -497,7 +494,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
       throws WdkModelException, WdkUserException {
     // handle the empty case
     if (stableValue == null || stableValue.length() == 0) {
-      if (!allowEmpty)
+      if (!_allowEmpty)
 	throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
       // otherwise, got empty value and is allowed, no need for further
       // validation.
@@ -510,15 +507,15 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   public void addNoTranslation(ParamConfiguration noTranslation) {
-    this.noTranslations.add(noTranslation);
+    _noTranslations.add(noTranslation);
   }
 
   public boolean isNoTranslation() {
-    return noTranslation;
+    return _noTranslation;
   }
 
   public void setNoTranslation(boolean noTranslation) {
-    this.noTranslation = noTranslation;
+    _noTranslation = noTranslation;
   }
 
   /**
@@ -529,24 +526,24 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException
    */
   public void setContextQuestion(Question question) throws WdkModelException {
-    this.contextQuestion = question;
+    _contextQuestion = question;
   }
 
   public Question getContextQuestion() {
-    return contextQuestion;
+    return _contextQuestion;
   }
 
   public void setContextQuery(Query query) {
-    this.contextQuery = query;
+    _contextQuery = query;
   }
 
   public Query getContextQuery() {
-    return contextQuery;
+    return _contextQuery;
   }
 
   public void setHandler(ParamHandler handler) {
     handler.setParam(this);
-    this.handler = handler;
+    _handler = handler;
   }
 
   /**
@@ -561,12 +558,12 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    */
   public String getStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    return handler.toStableValue(user, rawValue, contextParamValues);
+    return _handler.toStableValue(user, rawValue, contextParamValues);
   }
 
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return handler.getStableValue(user, requestParams);
+    return _handler.getStableValue(user, requestParams);
   }
 
   /**
@@ -581,7 +578,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    */
   public Object getRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return handler.toRawValue(user, stableValue, contextParamValues);
+    return _handler.toRawValue(user, stableValue, contextParamValues);
   }
 
   /**
@@ -603,13 +600,22 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
       if (isAllowEmpty())
         stableValue = getEmptyValue();
 
-    return handler.toInternalValue(user, stableValue, contextParamValues);
+    return _handler.toInternalValue(user, stableValue, contextParamValues);
   }
 
+  /**
+   * 
+   * @param user
+   * @param stableValue
+   * @param contextParamValues context (used by some subclasses)
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
   public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
-    return handler.toSignature(user, stableValue, contextParamValues);
+    return _handler.toSignature(user, stableValue, contextParamValues);
   }
 
   @Override
@@ -619,28 +625,28 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
     super.resolveReferences(wdkModel);
 
-    this._wdkModel = wdkModel;
+    _wdkModel = wdkModel;
 
     // resolve reference for handler
-    if (handlerReference != null) {
+    if (_handlerReference != null) {
       try {
-        Class<? extends ParamHandler> handlerClass = Class.forName(handlerReference.getImplementation()).asSubclass(
+        Class<? extends ParamHandler> handlerClass = Class.forName(_handlerReference.getImplementation()).asSubclass(
             ParamHandler.class);
-        handler = handlerClass.newInstance();
-        handler.setProperties(handlerReference.getProperties());
+        _handler = handlerClass.newInstance();
+        _handler.setProperties(_handlerReference.getProperties());
       }
       catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
         throw new WdkModelException(ex);
       }
-      handlerReference = null;
+      _handlerReference = null;
     }
-    if (handler == null)
+    if (_handler == null)
       throw new WdkModelException("The param handler is not provided for param " + getFullName());
 
     // the handler might not be initialized from reference, it might be created
     // by the param by default.
-    handler.setParam(this);
-    handler.setWdkModel(wdkModel);
+    _handler.setParam(this);
+    _handler.setWdkModel(wdkModel);
   }
 
   public Set<String> getAllValues() throws WdkModelException {
@@ -651,7 +657,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    handler.prepareDisplay(user, requestParams, contextParamValues);
+    _handler.prepareDisplay(user, requestParams, contextParamValues);
   }
 
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
@@ -661,6 +667,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   /**
+   * @param writer
+   * @param indent
    * @throws WdkModelException if unable to print dependency content 
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
@@ -668,11 +676,11 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
   
   public void addHandler(ParamHandlerReference handlerReference) {
-    this.handlerReferences.add(handlerReference);
+    _handlerReferences.add(handlerReference);
   }
   
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
-    return handler.getDisplayValue(user, stableValue, contextParamValues);
+    return _handler.getDisplayValue(user, stableValue, contextParamValues);
   }
   
   /**
@@ -680,31 +688,31 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @param param
    */
   public void addDependentParam(Param param) {
-    if (!dependentParamsMap.containsKey(param.getName())) {
-      dependentParamsMap.put(param.getName(), param);  // fix bug where multiple copies of param were added to set
-      dependentParams.add(param);
+    if (!_dependentParamsMap.containsKey(param.getName())) {
+      _dependentParamsMap.put(param.getName(), param);  // fix bug where multiple copies of param were added to set
+      _dependentParams.add(param);
     }
   }
 
   public Set<Param> getDependentParams() {
-    return Collections.unmodifiableSet(dependentParams);
+    return Collections.unmodifiableSet(_dependentParams);
   }
 
   public Set<Param> getAllDependentParams() {
     Set<Param> answer = new HashSet<Param>();
-    answer.addAll(dependentParams);
-    for (Param dependent : dependentParams) {
+    answer.addAll(_dependentParams);
+    for (Param dependent : _dependentParams) {
       answer.addAll(dependent.getAllDependentParams());
     }
     return answer;
   }
-  
+
   public ParamHandler getParamHandler() {
-    return this.handler;
+    return _handler;
   }
-  
+
+  @Override
   public int compareTo(Param other) {
     return this.getFullName().compareTo(other.getFullName());
-}
-
+  }
 }

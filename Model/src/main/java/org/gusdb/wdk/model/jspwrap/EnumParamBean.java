@@ -47,47 +47,47 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public Boolean getMultiPick() {
-    return param.getMultiPick();
+    return _param.getMultiPick();
   }
 
   public boolean getQuote() {
-    return param.getQuote();
+    return _param.getQuote();
   }
 
   public boolean isSkipValidation() {
-    return param.isSkipValidation();
+    return _param.isSkipValidation();
   }
 
   public String getDisplayType() {
-    return param.getDisplayType();
+    return _param.getDisplayType();
   }
 
   public int getMinSelectedCount() {
-    return param.getMinSelectedCount();
+    return _param.getMinSelectedCount();
   }
 
   public int getMaxSelectedCount() {
-    return param.getMaxSelectedCount();
+    return _param.getMaxSelectedCount();
   }
 
   public boolean getCountOnlyLeaves() {
-    return param.getCountOnlyLeaves();
+    return _param.getCountOnlyLeaves();
   }
   
   public int getDepthExpanded() {
-    return param.getDepthExpanded();
+    return _param.getDepthExpanded();
   }
 
   public boolean isDependentParam() {
-    return param.isDependentParam();
+    return _param.isDependentParam();
   }
 
   @Override
   public void setContextValues(Map<String, String> contextValues) {
     super.setContextValues(contextValues);
-    if ((this.contextValues == null && contextValues != null) ||
-        (this.contextValues != null && !compareValues(this.contextValues, contextValues))) {
-      this.contextValues = contextValues;
+    if ((this._contextValues == null && contextValues != null) ||
+        (this._contextValues != null && !compareValues(this._contextValues, contextValues))) {
+      this._contextValues = contextValues;
       _dependedValueChanged = true;
     }
   }
@@ -116,7 +116,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   // thread
   protected EnumParamVocabInstance getVocabInstance() {
     if (_cache == null || _dependedValueChanged) {
-      _cache = param.getVocabInstance(user.getUser(), contextValues);
+      _cache = _param.getVocabInstance(_userBean.getUser(), _contextValues);
       _dependedValueChanged = false;
     }
     return _cache;
@@ -147,15 +147,15 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String getInternalValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
-    return param.getInternalValue(user, dependentValue, contextValues);
+    return _param.getInternalValue(user, dependentValue, _contextValues);
   }
 
   public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
-    Set<Param> dependedParams = param.getDependedParams();
+    Set<Param> dependedParams = _param.getDependedParams();
     if (dependedParams != null) {
       Set<ParamBean<?>> paramBeans = new LinkedHashSet<>();
       for (Param param : dependedParams) {
-        paramBeans.add(ParamBeanFactory.createBeanFromParam(param.getWdkModel(), user, param));
+        paramBeans.add(ParamBeanFactory.createBeanFromParam(param.getWdkModel(), _userBean, param));
       }
       return paramBeans;
     }
@@ -163,7 +163,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String getDependedParamNames() throws WdkModelException {
-    Set<Param> dependedParams = param.getDependedParams();
+    Set<Param> dependedParams = _param.getDependedParams();
     if (dependedParams == null)
       return null;
     StringBuilder buffer = new StringBuilder();
@@ -180,11 +180,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String[] getTerms(String termList) {
-    return param.convertToTerms(termList);
+    return _param.convertToTerms(termList);
   }
 
   public String getRawDisplayValue() throws WdkModelException {
-    String[] terms = param.getTerms(user.getUser(), stableValue, contextValues);
+    String[] terms = _param.getTerms(_userBean.getUser(), _stableValue, _contextValues);
 		if (terms == null) return null;
 
 
@@ -253,7 +253,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     EnumParamTermNode[] rootNodes = getVocabTreeRoots();
     FieldTree tree = getParamTree(getName(), rootNodes);
     populateParamTree(tree, currentValues);
-    logger.debug("param " + getName() + ", stable=" + stableValue + ", current=" + currentValues);
+    logger.debug("param " + getName() + ", stable=" + _stableValue + ", current=" + currentValues);
 
     return tree;
   }
@@ -285,28 +285,28 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       throws WdkModelException, WdkUserException {
     logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" +
         FormatUtil.prettyPrint(contextValues));
-    param.validate(user.getUser(), rawOrDependentValue, contextValues);
+    _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   public boolean isSuppressNode() {
-    return param.isSuppressNode();
+    return _param.isSuppressNode();
   }
 
   @Override
   public void setStableValue(String stabletValue) throws WdkModelException {
     super.setStableValue(stabletValue);
     // also set the current values
-    if (stableValue == null)
-      stableValue = getDefault();
+    if (_stableValue == null)
+      _stableValue = getDefault();
 
-    if (stableValue != null)
-      currentValues = (String[]) param.getRawValue(user.getUser(), stabletValue, contextValues);
+    if (_stableValue != null)
+      currentValues = (String[]) _param.getRawValue(_userBean.getUser(), stabletValue, _contextValues);
 
   }
 
   /**
-   * @param user
-   * @param contextValues
+   * @param _userBean
+   * @param _contextValues
    * @param cache
    * @return
    * @throws WdkModelException
@@ -315,7 +315,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    *      java.util.Map, org.gusdb.wdk.model.query.param.EnumParamVocabInstance)
    */
   public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
-    return enumParam.getJsonValues(user.getUser(), contextValues, getVocabInstance());
+    return enumParam.getJsonValues(getVocabInstance());
   }
 
   public boolean isFilterParam() {

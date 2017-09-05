@@ -93,7 +93,7 @@ public class ProcessBasketAction extends Action {
         logger.debug("Entering ProcessBasketAction...");
 
         try {
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
         String data = request.getParameter(PARAM_DATA);

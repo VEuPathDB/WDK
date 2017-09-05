@@ -17,18 +17,13 @@ import java.util.Map;
  */
 public class GroupSet extends WdkModelBase implements ModelSetI<Group> {
 
-  private String name;
-  private List<Group> groupList = new ArrayList<Group>();
-  private Map<String, Group> groupMap = new LinkedHashMap<String, Group>();
+  private String _name;
+  private List<Group> _groupList = new ArrayList<Group>();
+  private Map<String, Group> _groupMap = new LinkedHashMap<String, Group>();
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.ModelSetI#getName()
-   */
   @Override
   public String getName() {
-    return name;
+    return _name;
   }
 
   /**
@@ -36,70 +31,50 @@ public class GroupSet extends WdkModelBase implements ModelSetI<Group> {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   public Group getGroup(String name) throws WdkModelException {
-    Group group = groupMap.get(name);
+    Group group = _groupMap.get(name);
     if (group == null)
       throw new WdkModelException("Group Set " + getName()
           + " does not include group " + name);
     return group;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
-   */
   @Override
   public Group getElement(String elementName) {
-    return groupMap.get(elementName);
+    return _groupMap.get(elementName);
   }
 
   public Group[] getGroups() {
-    Group[] array = new Group[groupMap.size()];
-    groupMap.values().toArray(array);
+    Group[] array = new Group[_groupMap.size()];
+    _groupMap.values().toArray(array);
     return array;
   }
 
   public void addGroup(Group group) {
-    groupList.add(group);
+    _groupList.add(group);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel
-   * )
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    for (Group group : groupMap.values()) {
+    for (Group group : _groupMap.values()) {
       group.resolveReferences(model);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void setResources(WdkModel model) throws WdkModelException {
-    for (Group group : groupMap.values()) {
-      group.setResources(model);
-    }
+    // nothing to do here
   }
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer("GroupSet: name='" + name + "'");
+    StringBuffer buf = new StringBuffer("GroupSet: name='" + _name + "'");
     buf.append(newline);
-    for (Group group : groupMap.values()) {
+    for (Group group : _groupMap.values()) {
       buf.append(newline);
       buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
       buf.append(newline);
@@ -109,25 +84,20 @@ public class GroupSet extends WdkModelBase implements ModelSetI<Group> {
     return buf.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude groups
-    for (Group group : groupList) {
+    for (Group group : _groupList) {
       if (group.include(projectId)) {
         group.excludeResources(projectId);
         String groupName = group.getName();
-        if (groupMap.containsKey(groupName))
+        if (_groupMap.containsKey(groupName))
           throw new WdkModelException("Group named " + groupName
-              + " already exists in group set " + name);
+              + " already exists in group set " + _name);
         group.setGroupSet(this);
-        groupMap.put(groupName, group);
+        _groupMap.put(groupName, group);
       }
     }
-    groupList = null;
+    _groupList = null;
   }
 }

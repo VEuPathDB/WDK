@@ -58,8 +58,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         }
 
         // get previous step
-        StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
-                request, wizardForm);
+        StepBean previousStep = StageHandlerUtility.getPreviousStep(request, wizardForm);
 
         logger.debug("previous step: " + previousStep);
 

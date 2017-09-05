@@ -32,18 +32,18 @@ import org.json.JSONObject;
  *         change.
  */
 public class NumberParam extends Param {
-	
-  private Integer numDecimalPlaces = new Integer(1);
-  private Double min;
-  private Double max;
-  private Double step;
-  private boolean integer;
 
-  private List<WdkModelText> regexes;
-  private String regex;
- 
+  private Integer _numDecimalPlaces = new Integer(1);
+  private Double _min;
+  private Double _max;
+  private Double _step;
+  private boolean _isInteger;
+
+  private List<WdkModelText> _regexes;
+  private String _regex;
+
   public NumberParam() {
-    regexes = new ArrayList<WdkModelText>();
+    _regexes = new ArrayList<WdkModelText>();
 
     // register handler
     setHandler(new NumberParamHandler());
@@ -51,15 +51,15 @@ public class NumberParam extends Param {
 
   public NumberParam(NumberParam param) {
     super(param);
-    if (param.regexes != null)
-      this.regexes = new ArrayList<WdkModelText>();
-    this.regex = param.regex;
-    this.numDecimalPlaces = param.numDecimalPlaces;
-    this.numDecimalPlaces = param.numDecimalPlaces == null ? this.numDecimalPlaces : param.numDecimalPlaces;
-    this.integer = param.integer;
-    this.min = param.min;
-    this.max = param.max;
-    this.setStep(param.step);
+    if (param._regexes != null)
+      _regexes = new ArrayList<WdkModelText>();
+    _regex = param._regex;
+    _numDecimalPlaces = param._numDecimalPlaces;
+    _numDecimalPlaces = param._numDecimalPlaces == null ? _numDecimalPlaces : param._numDecimalPlaces;
+    _isInteger = param._isInteger;
+    _min = param._min;
+    _max = param._max;
+    this.setStep(param._step);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -67,23 +67,22 @@ public class NumberParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   public void addRegex(WdkModelText regex) {
-    this.regexes.add(regex);
+    _regexes.add(regex);
   }
 
   public void setRegex(String regex) {
-    this.regex = regex;
+    _regex = regex;
   }
 
   public String getRegex() {
-    return regex;
+    return _regex;
   }
-
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
-      .append("  regex='").append(regex).append("'").append(newline).toString();
+      .append("  regex='").append(_regex).append("'").append(newline).toString();
   }
 
   // ///////////////////////////////////////////////////////////////
@@ -93,28 +92,18 @@ public class NumberParam extends Param {
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
-    if (regex == null)
-      regex = model.getModelConfig().getParamRegex();
-    if (regex == null) {
-      regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
+    if (_regex == null)
+      _regex = model.getModelConfig().getParamRegex();
+    if (_regex == null) {
+      _regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#clone()
-   */
   @Override
   public Param clone() {
     return new NumberParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // nothing to be added
@@ -128,64 +117,59 @@ public class NumberParam extends Param {
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
-	  
-	Double numericalValue = null; 
-	
+
+    Double numericalValue = null; 
+
 	// Insure that the value provided can be converted into a proper number
-    try {  
+    try {
       numericalValue = Double.valueOf(stableValue);
     }
     catch (NumberFormatException ex) {
       throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
     }
-    
+
     // Insure that the value provided matches the regular expression provided.  This could be
- 	// more restrictive than the number test above.
-    if (regex != null && !stableValue.matches(regex)) {
+    // more restrictive than the number test above.
+    if (_regex != null && !stableValue.matches(_regex)) {
       throw new WdkUserException("value '" + stableValue + "' is invalid. "
-         + "It must match the regular expression '" + regex + "'");
+         + "It must match the regular expression '" + _regex + "'");
     }
-    
+
     // Verify the value provided is an integer if that property is specified.
-    if(this.integer && numericalValue.doubleValue() % 1 != 0) {
+    if(_isInteger && numericalValue.doubleValue() % 1 != 0) {
       throw new WdkUserException("value '" + stableValue + "' must be an integer.");
     }
-    
+
     // Verify the value provided is greater than the minimum allowed value, if that property
     // is specified.
-    if(this.min != null && numericalValue.doubleValue() < this.min) {
-      throw new WdkUserException("value '" + stableValue + "' must be greater than or equal to '" + this.min + "'" );
+    if(_min != null && numericalValue.doubleValue() < _min) {
+      throw new WdkUserException("value '" + stableValue + "' must be greater than or equal to '" + _min + "'" );
     }
-    
+
     // Verify the value provided is no greater than the maximum allowed value, if that property
     // is specified.
-    if(this.max != null && numericalValue.doubleValue() > this.max) {
-      throw new WdkUserException("value '" + stableValue + "' must be less than or equal to '" + this.max + "'" );
+    if(_max != null && numericalValue.doubleValue() > _max) {
+      throw new WdkUserException("value '" + stableValue + "' must be less than or equal to '" + _max + "'" );
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
     boolean hasRegex = false;
-    for (WdkModelText regex : regexes) {
+    for (WdkModelText regex : _regexes) {
       if (regex.include(projectId)) {
         if (hasRegex) {
           throw new WdkModelException("The param " + getFullName() + " has more than one regex for project " +
               projectId);
         }
         else {
-          this.regex = regex.getText();
+          _regex = regex.getText();
           hasRegex = true;
         }
       }
     }
-    regexes = null;
+    _regexes = null;
   }
 
   @Override
@@ -199,56 +183,55 @@ public class NumberParam extends Param {
   }
 
   public Integer getNumDecimalPlaces() {
-	return numDecimalPlaces;
+    return _numDecimalPlaces;
   }
 
   public void setNumDecimalPlaces(Integer numDecimalPlaces) {
-	this.numDecimalPlaces = numDecimalPlaces;
+    _numDecimalPlaces = numDecimalPlaces;
   }
 
   public Double getMin() {
-	return min;
+    return _min;
   }
 
   public void setMin(Double min) {
-	this.min = min;
+    _min = min;
   }
 
   public Double getMax() {
-	return max;
+    return _max;
   }
 
   public void setMax(Double max) {
-	this.max = max;
+    _max = max;
   }
-  
+
   @Override
   public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();  
-	if(defaultValue == null || defaultValue.isEmpty()) {
-	  defaultValue = this.min.toString();
-	}
-	return defaultValue;
+    String defaultValue = super.getDefault();
+    if(defaultValue == null || defaultValue.isEmpty()) {
+      defaultValue = _min.toString();
+    }
+    return defaultValue;
   }
-  
 
   public boolean isInteger() {
-	return integer;
+    return _isInteger;
   }
 
   public void setInteger(boolean integer) {
-	this.integer = integer;
+    _isInteger = integer;
   }
-  
+
   public Double getStep() {
-    return step;
+    return _step;
   }
-  
+
   public void setStep(Double step) {
-	if(step == null) {
-	  step = this.integer ? 1 : 0.01;
-	}
-    this.step = step;
+    if(step == null) {
+      step = _isInteger ? 1 : 0.01;
+    }
+    _step = step;
   }
 
 }

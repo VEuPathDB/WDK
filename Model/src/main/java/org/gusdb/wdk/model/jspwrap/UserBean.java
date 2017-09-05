@@ -135,7 +135,7 @@ public class UserBean {
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
       String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
       WdkUserException {
-    Step step = StepUtilities.createStep(_user, strategyId, question.question, params, filterName, deleted, validate,
+    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted, validate,
         assignedWeight);
     return new StepBean(this, step);
   }
@@ -592,6 +592,7 @@ public class UserBean {
    * @throws WdkUserException
    * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass, java.util.List)
    */
+  @Deprecated // pending struts removal
   public void addToFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
       throws WdkModelException, WdkUserException {
     _wdkModel.getFavoriteFactory().addToFavorite(_user, recordClass.recordClass, pkValues);
@@ -608,6 +609,7 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#getFavoriteCount()
    */
+  @Deprecated // pending struts removal
   public int getFavoriteCount() throws WdkModelException {
     return _wdkModel.getFavoriteFactory().getFavoriteCounts(_user);
   }
@@ -616,6 +618,7 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#getFavorites()
    */
+  @Deprecated // pending struts removal
   public Map<RecordClassBean, List<FavoriteBean>> getFavorites() throws WdkModelException {
     Map<RecordClass, List<Favorite>> favorites = _wdkModel.getFavoriteFactory().getFavorites(_user);
     Map<RecordClassBean, List<FavoriteBean>> beans = new LinkedHashMap<RecordClassBean, List<FavoriteBean>>();
@@ -636,6 +639,7 @@ public class UserBean {
    * @param pkValues
    * @see org.gusdb.wdk.model.user.User#removeFromFavorite(org.gusdb.wdk.model.RecordClass, java.util.List)
    */
+  @Deprecated // pending struts removal
   public void removeFromFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
       throws WdkModelException {
     _wdkModel.getFavoriteFactory().removeFromFavorite(_user, recordClass.recordClass, pkValues);
@@ -648,6 +652,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#setFavoriteGroups(org.gusdb.wdk.model.RecordClass, java.util.List,
    *      java.lang.String)
    */
+  @Deprecated // pending struts removal
   public void setFavoriteGroups(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String group)
       throws WdkModelException {
     _wdkModel.getFavoriteFactory().setGroups(_user, recordClass.recordClass, pkValues, group);
@@ -660,6 +665,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#setFavoriteNotes(org.gusdb.wdk.model.RecordClass, java.util.List,
    *      java.lang.String)
    */
+  @Deprecated // pending struts removal
   public void setFavoriteNotes(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String note)
       throws WdkModelException {
     _wdkModel.getFavoriteFactory().setNotes(_user, recordClass.recordClass, pkValues, note);
@@ -669,6 +675,7 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#getFavoriteGroups()
    */
+  @Deprecated // pending struts removal
   public String[] getFavoriteGroups() throws WdkModelException {
     return _wdkModel.getFavoriteFactory().getGroups(_user);
   }
@@ -687,8 +694,8 @@ public class UserBean {
    * @param recordClass
    * @return
    */
-  public int getFavoriteCount(List<Map<String, Object>> records, RecordClassBean recordClass)
-      throws WdkModelException {
+  @Deprecated // pending struts removal
+  public int getFavoriteCount(List<Map<String, Object>> records, RecordClassBean recordClass) {
     return _wdkModel.getFavoriteFactory().getFavoriteCount(_user, records, recordClass.recordClass);
   }
 
@@ -701,7 +708,7 @@ public class UserBean {
   }
 
   public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView) throws WdkModelException {
-    _user.getPreferences().setCurrentSummaryView(question.question, summaryView);
+    _user.getPreferences().setCurrentSummaryView(question._question, summaryView);
   }
 
 

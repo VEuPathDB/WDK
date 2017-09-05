@@ -28,7 +28,7 @@ public class DeleteStrategyAction extends Action {
             throws Exception {
         logger.debug("Entering DeleteStrategyAction...");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 

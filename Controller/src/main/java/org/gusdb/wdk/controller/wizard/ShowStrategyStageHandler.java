@@ -36,7 +36,7 @@ public class ShowStrategyStageHandler implements StageHandler {
             throw new WdkUserException("Required " + PARAM_IMPORT_STRATEGY
                     + " parameter is missing");
 
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         int strategyId = Integer.parseInt(strStrategyId);
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean childStep = strategy.getLatestStep();
@@ -46,8 +46,7 @@ public class ShowStrategyStageHandler implements StageHandler {
         attributes.put(ATTR_IMPORT_STRATEGY, strategy);
 
         // need to check if the boolean is allowed
-        StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
-                request, wizardForm);
+        StepBean previousStep = StageHandlerUtility.getPreviousStep(request, wizardForm);
 
         // insert strategy before first step. use current step (the first step
         // as childStep, and the root step of the imported strategy as previous

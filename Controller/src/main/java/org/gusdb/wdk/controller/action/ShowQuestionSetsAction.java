@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,12 +45,12 @@ public class ShowQuestionSetsAction extends Action {
             forward = mapping.findForward(CConstants.SHOW_QUESTIONSETS_MAPKEY);
         }
 
-        sessionStart(request, getServlet());
+        sessionStart(request);
 
         return forward;
     }
 
-    protected void sessionStart(HttpServletRequest request, HttpServlet servlet)
+    protected void sessionStart(HttpServletRequest request)
             throws WdkModelException {
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);

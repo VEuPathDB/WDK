@@ -40,7 +40,7 @@ public class ProcessSummaryViewAction extends Action {
     LOG.debug("Entering ProcessSummaryViewAction...");
 
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     StepBean step = getStep(user, request);
     QuestionBean question = step.getQuestion();
     SummaryView summaryView = getSummaryView(question, request);
@@ -101,6 +101,7 @@ public class ProcessSummaryViewAction extends Action {
   }
 
   private Map<String, String[]> getParamMap(HttpServletRequest request) {
+    @SuppressWarnings("unchecked")
     Map<String, String[]> params = new HashMap<>(request.getParameterMap());
     params.remove(PARAM_STEP);
     params.remove(PARAM_VIEW);

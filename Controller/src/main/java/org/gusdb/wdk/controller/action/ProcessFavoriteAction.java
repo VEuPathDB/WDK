@@ -85,12 +85,13 @@ public class ProcessFavoriteAction extends Action {
     private static final Logger logger = Logger.getLogger(ProcessFavoriteAction.class);
 
     @Override
+    @Deprecated // pending struts removal
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering ProcessFavoriteAction...");
 
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
         if (action == null) action = "OOPS_A_NULL_ACTION";

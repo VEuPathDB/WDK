@@ -1,11 +1,10 @@
 package org.gusdb.wdk.model.fix;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.List;
-import java.sql.Date;
 
 import javax.sql.DataSource;
 
@@ -13,11 +12,10 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import java.math.BigDecimal;
 
 public class RemoveBrokenStratsSteps extends BaseCLI {
   private static final int PAGE_SIZE = 9000;
@@ -67,7 +65,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
       if ((Boolean) getOptionValue(ARG_REPORT_ONLY)) {
 	LOG.info("Remove Broken Steps: Reporting only! Not removing broken steps.");
 
-        reportBroken(wdkModel, sqlFroms, userSchema);
+        reportBroken(wdkModel, sqlFroms);
       } else {
 	LOG.info("Remove Broken Steps: removing broken steps.");
 	removeBroken(wdkModel, sqlFroms, userSchema);
@@ -113,17 +111,12 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     return selects;
   }
   
-  private void reportBroken(WdkModel wdkModel, Map<String,String> sqlFroms, String userSchema) throws Exception {
+  private void reportBroken(WdkModel wdkModel, Map<String,String> sqlFroms) throws Exception {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    Object[] args = {};
-    BasicResultSetHandler handler = new BasicResultSetHandler();
     for (String queryName : sqlFroms.keySet()) {
-      String countCol = "BROKENCOUNT";
-      String sql = "select count(*) as " + countCol + " " + sqlFroms.get(queryName);
-      new SQLRunner(dataSource, sql, "report-broken-" + queryName).executeQuery(args, handler);
-      List<Map<String,Object>> results = handler.getResults();
-      BigDecimal count = (BigDecimal)results.get(0).get(countCol);
-
+      String sql = "select count(*) " + sqlFroms.get(queryName);
+      long count = new SQLRunner(dataSource, sql, "report-broken-" + queryName)
+          .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue();
       System.out.println(queryName + ": " + count);
     }
   }
@@ -167,11 +160,11 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " user_id NOT in (select user_id from userlogins5.users) "); // deleted 2
     GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", " root_step_id NOT in (select step_id from userlogins5.steps) "); // deleted 48
 
-    deleteStepsAndAnalyses(dataSource, userSchema, sqlFroms);
+    deleteStepsAndAnalyses(dataSource, sqlFroms);
     
   }
 
-  private void deleteStepsAndAnalyses(DataSource dataSource, String userSchema, Map<String,String> sqlFroms) throws SQLException {
+  private void deleteStepsAndAnalyses(DataSource dataSource, Map<String,String> sqlFroms) throws SQLException {
     
     // for one page of the current set of orphaned steps, first delete their analyses, then delete them.
     // this leads to a new set of orphane steps.  continue until none remain.

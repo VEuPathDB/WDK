@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
@@ -8,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -144,7 +140,7 @@ public class XmlRecordInstance {
         return attrArray;
     }
 
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    public void resolveReferences() throws WdkModelException {
         // resolve attribute fields, and reorder it
         Map<String, XmlAttributeValue> orderedAttributes = new LinkedHashMap<String, XmlAttributeValue>();
         XmlAttributeField[] attributeFields = recordClass.getAttributeFields();
@@ -246,9 +242,9 @@ public class XmlRecordInstance {
         }
 
         // print out table attributes
-        XmlTableValue[] tables = getTables();
+        XmlTableValue[] tableValues = getTables();
         sb.append("\r\n========== Table Attributes ==========\r\n");
-        for (XmlTableValue table : tables) {
+        for (XmlTableValue table : tableValues) {
             sb.append("Table : ");
             sb.append(table.getName());
             sb.append("\r\n");

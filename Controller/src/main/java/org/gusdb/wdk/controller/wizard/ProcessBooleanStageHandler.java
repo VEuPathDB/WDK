@@ -43,7 +43,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     Map<String, Object> attributes = new HashMap<String, Object>();
 
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
     String strStratId = request.getParameter(PARAM_STRATEGY);
@@ -89,8 +89,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
       // a question name specified, either create a step from it, or revise a current step
       String action = request.getParameter(ProcessBooleanAction.PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
-        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user,
-            wdkModel, stepId);
+        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user, stepId);
       }
       else {
         childStep = createStepFromQuestion(servlet, request, wizardForm, strategy, questionName, user,
@@ -120,7 +119,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
   public static StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
       WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user,
-      WdkModelBean wdkModel, long stepId) throws WdkUserException, WdkModelException {
+      long stepId) throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
 
     // get the assigned weight

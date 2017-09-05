@@ -36,7 +36,7 @@ public class InvokeAttributePluginAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
                 HttpServletRequest request, HttpServletResponse response) throws Exception {
         logger.debug("Entering InvokeAttributePluginAction...");
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
 
         // get the step
         String strStep = request.getParameter(PARAM_STEP);

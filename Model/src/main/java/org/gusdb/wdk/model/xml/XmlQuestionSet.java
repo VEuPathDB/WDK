@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
@@ -20,37 +17,31 @@ import org.gusdb.wdk.model.WdkModelText;
  */
 public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestion> {
 
-    private String name;
-    private String displayName;
+    private String _name;
+    private String _displayName;
 
-    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
-    private String description;
+    private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+    private String _description;
 
-    private boolean isInternal;
+    private boolean _isInternal;
 
-    private List<XmlQuestion> questionList = new ArrayList<XmlQuestion>();
-    private Map<String, XmlQuestion> questions =
-            new LinkedHashMap<String, XmlQuestion>();
+    private List<XmlQuestion> _questionList = new ArrayList<XmlQuestion>();
+    private Map<String, XmlQuestion> _questions = new LinkedHashMap<String, XmlQuestion>();
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#getName()
-     */
     @Override
     public String getName() {
-        return name;
+        return _name;
     }
 
     public void setName(String name) {
-        this.name = name;
+        _name = name;
     }
 
     /**
      * @return Returns the description.
      */
     public String getDescription() {
-        return this.description;
+        return _description;
     }
 
     /**
@@ -58,14 +49,14 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
      *                The description to set.
      */
     public void addDescription(WdkModelText description) {
-        this.descriptions.add(description);
+        _descriptions.add(description);
     }
 
     /**
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return this.displayName;
+        return _displayName;
     }
 
     /**
@@ -73,14 +64,14 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
      *                The displayName to set.
      */
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        _displayName = displayName;
     }
 
     /**
      * @return Returns the isInternal.
      */
     public boolean isInternal() {
-        return this.isInternal;
+        return _isInternal;
     }
 
     /**
@@ -88,11 +79,11 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
      *                The isInternal to set.
      */
     public void setInternal(boolean isInternal) {
-        this.isInternal = isInternal;
+        _isInternal = isInternal;
     }
 
     public XmlQuestion getQuestion(String name) throws WdkModelException {
-        XmlQuestion question = questions.get(name);
+        XmlQuestion question = _questions.get(name);
         if (question == null)
             throw new WdkModelException("Question " + name
                     + " not found in set " + getName());
@@ -100,57 +91,37 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
     }
 
     public XmlQuestion[] getQuestions() {
-        XmlQuestion[] quesArray = new XmlQuestion[questions.size()];
-        questions.values().toArray(quesArray);
+        XmlQuestion[] quesArray = new XmlQuestion[_questions.size()];
+        _questions.values().toArray(quesArray);
         return quesArray;
     }
 
     public void addQuestion(XmlQuestion question) {
-        questionList.add(question);
+        _questionList.add(question);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
-     */
     @Override
     public XmlQuestion getElement(String elementName) {
-        return questions.get(elementName);
+        return _questions.get(elementName);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve the references of questions
-        for (XmlQuestion question : questions.values()) {
+        for (XmlQuestion question : _questions.values()) {
             question.resolveReferences(model);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void setResources(WdkModel model) throws WdkModelException {
         // set resources for questions
-        for (XmlQuestion question : questions.values()) {
+        for (XmlQuestion question : _questions.values()) {
             question.setQuestionSet(this);
             question.setResources(model);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer("QuestionSet: name='");
@@ -161,7 +132,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
         buf.append(getDescription());
         buf.append("'\r\n\r\n");
 
-        for (XmlQuestion question : questions.values()) {
+        for (XmlQuestion question : _questions.values()) {
             buf.append("\r\n:::::::::::::::::::::::::::::::::::::::::::::\r\n");
             buf.append(question);
             buf.append("\r\n");
@@ -169,42 +140,37 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
         return buf.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude descriptions
         boolean hasDescription = false;
-        for (WdkModelText description : descriptions) {
+        for (WdkModelText description : _descriptions) {
             if (description.include(projectId)) {
                 if (hasDescription) {
                     throw new WdkModelException("The xmlQuestionSet "
                             + getName() + " has more than one description "
                             + "for project " + projectId);
                 } else {
-                    this.description = description.getText();
+                    _description = description.getText();
                     hasDescription = true;
                 }
             }
         }
-        descriptions = null;
+        _descriptions = null;
 
         // exclude xml questions
-        for (XmlQuestion question : questionList) {
+        for (XmlQuestion question : _questionList) {
             if (question.include(projectId)) {
                 question.setQuestionSet(this);
                 question.excludeResources(projectId);
                 String questionName = question.getName();
-                if (questions.containsKey(questionName))
+                if (_questions.containsKey(questionName))
                     throw new WdkModelException("The xmlQuestion "
                             + questionName + " is duplicated in the "
-                            + "xmlQuestionSet " + this.name);
-                questions.put(questionName, question);
+                            + "xmlQuestionSet " + _name);
+                _questions.put(questionName, question);
             }
         }
-        questionList = null;
+        _questionList = null;
     }
 }

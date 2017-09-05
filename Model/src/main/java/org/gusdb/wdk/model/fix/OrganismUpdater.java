@@ -8,9 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -81,11 +79,10 @@ public class OrganismUpdater {
   }
 
   public void update() throws SQLException, JSONException {
-    Set<String> clobKeys = new HashSet<String>();
-    updateStepParams(clobKeys);
+    updateStepParams();
   }
 
-  private void updateStepParams(Set<String> clobKeys) throws SQLException, JSONException {
+  private void updateStepParams() throws SQLException, JSONException {
     logger.info("Checking step params...");
 
     DatabaseInstance database = _wdkModel.getUserDb();
@@ -121,7 +118,7 @@ public class OrganismUpdater {
         if (jsParams.has("params")) 
           jsParams = jsParams.getJSONObject("params");
 
-        if (jsParams!=null && changeParams(jsParams, clobKeys)) {
+        if (jsParams!=null && changeParams(jsParams)) {
           content = JsonUtil.serialize(jsParams);
           platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setInt(2, stepId);
@@ -147,7 +144,7 @@ public class OrganismUpdater {
     }
   }
 
-  private boolean changeParams(JSONObject jsParams, Set<String> clobKeys) throws JSONException {
+  private boolean changeParams(JSONObject jsParams) throws JSONException {
     boolean updated = false;
     String[] names = JSONObject.getNames(jsParams);
     if ( names == null) return updated;

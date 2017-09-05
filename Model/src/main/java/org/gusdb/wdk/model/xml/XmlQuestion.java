@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.io.*;
@@ -24,30 +21,30 @@ import org.gusdb.wdk.model.WdkModelText;
  */
 public class XmlQuestion extends WdkModelBase {
 
-    private String name;
-    private String displayName;
-    private String recordClassRef;
-    private String xmlData;
-    private String xsl;
-    private String summaryAttributeNames;
-    private XmlAttributeField[] summaryAttributes;
+    private String _name;
+    private String _displayName;
+    private String _recordClassRef;
+    private String _xmlData;
+    private String _xsl;
+    private String _summaryAttributeNames;
+    private XmlAttributeField[] _summaryAttributes;
 
-    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
-    private String description;
+    private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+    private String _description;
 
-    private List<WdkModelText> helps = new ArrayList<WdkModelText>();
-    private String help;
+    private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
+    private String _help;
 
-    private XmlQuestionSet questionSet;
-    private XmlRecordClass recordClass;
-    private XmlDataLoader loader;
-    private WdkModel model;
+    private XmlQuestionSet _questionSet;
+    private XmlRecordClass _recordClass;
+    private XmlDataLoader _loader;
+    private WdkModel _model;
 
     /**
      * @return Returns the description.
      */
     public String getDescription() {
-        return this.description;
+        return _description;
     }
 
     /**
@@ -55,14 +52,14 @@ public class XmlQuestion extends WdkModelBase {
      *                The description to set.
      */
     public void addDescription(WdkModelText description) {
-        this.descriptions.add(description);
+        _descriptions.add(description);
     }
 
     /**
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return this.displayName;
+        return _displayName;
     }
 
     /**
@@ -70,14 +67,14 @@ public class XmlQuestion extends WdkModelBase {
      *                The displayName to set.
      */
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        _displayName = displayName;
     }
 
     /**
      * @return Returns the help.
      */
     public String getHelp() {
-        return this.help;
+        return _help;
     }
 
     /**
@@ -85,19 +82,19 @@ public class XmlQuestion extends WdkModelBase {
      *                The help to set.
      */
     public void addHelp(WdkModelText help) {
-        this.helps.add(help);
+        _helps.add(help);
     }
 
     /**
      * @return Returns the name.
      */
     public String getName() {
-        return this.name;
+        return _name;
     }
 
     public String getFullName() {
-        if (questionSet == null) return getName();
-        else return questionSet.getName() + "." + getName();
+        if (_questionSet == null) return getName();
+        else return _questionSet.getName() + "." + getName();
     }
 
     /**
@@ -105,7 +102,7 @@ public class XmlQuestion extends WdkModelBase {
      *                The name to set.
      */
     public void setName(String name) {
-        this.name = name;
+        _name = name;
     }
 
     /**
@@ -113,45 +110,45 @@ public class XmlQuestion extends WdkModelBase {
      *                The summaryAttributesRef to set.
      */
     public void setSummaryAttributes(String summaryAttributeNames) {
-        this.summaryAttributeNames = summaryAttributeNames;
+        _summaryAttributeNames = summaryAttributeNames;
     }
 
     public XmlAttributeField[] getSummaryAttributes() {
-        return summaryAttributes;
+        return _summaryAttributes;
     }
 
     /**
      * @param xmlData
      */
     public void setXmlDataURL(String xmlData) {
-        this.xmlData = xmlData;
+        _xmlData = xmlData;
     }
 
     public String getXmlDataURL() {
-        return xmlData;
+        return _xmlData;
     }
 
     public String getXslURL() {
-        return xsl;
+        return _xsl;
     }
 
     public void setXslURL(String xsl) {
-        this.xsl = xsl;
+        _xsl = xsl;
     }
 
     public XmlQuestionSet getQuestionSet() {
-        return questionSet;
+        return _questionSet;
     }
 
     public void setQuestionSet(XmlQuestionSet questionSet) {
-        this.questionSet = questionSet;
+        _questionSet = questionSet;
     }
 
     /**
      * @return Returns the recordClass.
      */
     public XmlRecordClass getRecordClass() {
-        return this.recordClass;
+        return _recordClass;
     }
 
     /*
@@ -178,26 +175,26 @@ public class XmlQuestion extends WdkModelBase {
      *                The recordClassRef to set.
      */
     public void setRecordClassRef(String recordClassRef) {
-        this.recordClassRef = recordClassRef;
+        _recordClassRef = recordClassRef;
     }
 
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve the reference to XmlRecordClass
-        recordClass = (XmlRecordClass) model.resolveReference(recordClassRef);
+        _recordClass = (XmlRecordClass) model.resolveReference(_recordClassRef);
 
         // resolve the references to summary attributes
-        if (summaryAttributeNames == null) { // default use all attribute
+        if (_summaryAttributeNames == null) { // default use all attribute
             // fields
-            summaryAttributes = recordClass.getAttributeFields();
+            _summaryAttributes = _recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
             Map<String, XmlAttributeField> summaries =
                     new LinkedHashMap<String, XmlAttributeField>();
-            String[] names = summaryAttributeNames.split(",");
+            String[] names = _summaryAttributeNames.split(",");
             for (String name : names) {
                 try {
                     XmlAttributeField field =
-                            recordClass.getAttributeField(name);
+                            _recordClass.getAttributeField(name);
                     summaries.put(field.getName(), field);
                 } catch (WdkModelException ex) {
                     // TODO Auto-generated catch block
@@ -205,37 +202,36 @@ public class XmlQuestion extends WdkModelBase {
                     // System.err.println(ex);
                 }
             }
-            summaryAttributes = new XmlAttributeField[summaries.size()];
-            summaries.values().toArray(summaryAttributes);
+            _summaryAttributes = new XmlAttributeField[summaries.size()];
+            summaries.values().toArray(_summaryAttributes);
         }
     }
 
     public void setResources(WdkModel model) {
         // initialize data loader
-        loader = new XmlDataLoader(model.getXmlSchemaURL());
-        this.model = model;
+        _loader = new XmlDataLoader(model.getXmlSchemaURL());
+        _model = model;
     }
 
-    public XmlAnswerValue makeAnswer(Map<String, String> params, int startIndex,
-            int endIndex) throws WdkModelException {
+    public XmlAnswerValue makeAnswer(int startIndex, int endIndex) throws WdkModelException {
         XmlAnswerValue answer;
         InputStream inXmlStream = null;
         InputStream inXslStream = null;
         ByteArrayOutputStream outXmlStream = null;
         InputStream convertedStream = null;
         try {
-            URL xmlDataURL = createURL(xmlData);
+            URL xmlDataURL = createURL(_xmlData);
 
             // check if we have the XSL assigned
-            if (xsl != null && xsl.length() != 0) {
+            if (_xsl != null && _xsl.length() != 0) {
                 // yes, convert the xml first
-                URL xslURL = createURL(xsl);
+                URL xslURL = createURL(_xsl);
                 inXmlStream = xmlDataURL.openStream();
                 inXslStream = xslURL.openStream();
 
                 outXmlStream = new ByteArrayOutputStream();
 
-                XmlTransformer.convert(inXmlStream, inXslStream, outXmlStream, name);
+                XmlTransformer.convert(inXmlStream, inXslStream, outXmlStream, _name);
 
                 byte[] buffer = outXmlStream.toByteArray();
 
@@ -244,9 +240,9 @@ public class XmlQuestion extends WdkModelBase {
 
                 convertedStream = new ByteArrayInputStream(buffer);
 
-                answer = loader.parseDataStream(convertedStream);
+                answer = _loader.parseDataStream(convertedStream);
             } else { // no, just parse the xml directly
-                answer = loader.parseDataFile(xmlDataURL);
+                answer = _loader.parseDataFile(xmlDataURL);
             }
         } catch (IOException | TransformException ex) {
             throw new WdkModelException(ex);
@@ -264,8 +260,8 @@ public class XmlQuestion extends WdkModelBase {
         answer.setStartIndex((startIndex <= endIndex) ? startIndex : endIndex);
         answer.setEndIndex((startIndex <= endIndex) ? endIndex : startIndex);
         answer.setQuestion(this);
-        answer.resolveReferences(this.model);
-        answer.setResources(this.model);
+        answer.resolveReferences();
+        answer.setResources();
 
         return answer;
     }
@@ -275,25 +271,20 @@ public class XmlQuestion extends WdkModelBase {
                 || data.startsWith("https://")) {
             return new URL(data);
         } else {
-            File xmlDataDir = model.getXmlDataDir();
+            File xmlDataDir = _model.getXmlDataDir();
             File xmlDataFile = new File(xmlDataDir, data);
             return xmlDataFile.toURI().toURL();
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer("XmlQuestion: name='");
-        buf.append(name);
+        buf.append(_name);
         buf.append("'\r\n\trecordClass='");
-        buf.append(recordClassRef);
+        buf.append(_recordClassRef);
         buf.append("'\r\n\txmlDataURL='");
-        buf.append(xmlData);
+        buf.append(_xmlData);
         buf.append("'\r\n\tdisplayName='");
         buf.append(getDisplayName());
         buf.append("'\r\n\tdescription='");
@@ -304,43 +295,38 @@ public class XmlQuestion extends WdkModelBase {
         return buf.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude the descriptions
         boolean hasDescription = false;
-        for (WdkModelText description : descriptions) {
+        for (WdkModelText description : _descriptions) {
             if (description.include(projectId)) {
                 if (hasDescription) {
                     throw new WdkModelException("The xmlQuestion "
                             + getFullName() + " has more than one description "
                             + "for project " + projectId);
                 } else {
-                    this.description = description.getText();
+                    _description = description.getText();
                     hasDescription = true;
                 }
             }
         }
-        descriptions = null;
+        _descriptions = null;
 
         // exclude the helps
         boolean hasHelp = false;
-        for (WdkModelText help : helps) {
+        for (WdkModelText help : _helps) {
             if (help.include(projectId)) {
                 if (hasHelp) {
                     throw new WdkModelException("The xmlQuestion "
                             + getFullName() + " has more than one help "
                             + "for project " + projectId);
                 } else {
-                    this.help = help.getText();
+                    _help = help.getText();
                     hasHelp = true;
                 }
             }
         }
-        helps = null;
+        _helps = null;
     }
 }

@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;

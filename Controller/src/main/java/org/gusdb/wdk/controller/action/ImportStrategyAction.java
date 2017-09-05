@@ -36,7 +36,7 @@ public class ImportStrategyAction extends Action {
         }
 
         // load model, user
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
         StrategyBean strategy = wdkUser.importStrategy(strategyKey);
 
         wdkUser.getUser().getSession().addActiveStrategy(Long.toString(strategy.getStrategyId()));

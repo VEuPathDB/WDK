@@ -8,7 +8,6 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
@@ -42,7 +41,7 @@ public class ToggleFilterAction extends Action {
       throw new WdkUserException("Required disabled parameter is missing.");
     boolean disabled = Boolean.valueOf(strDisabled);
     
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     StepBean step = user.getStep(Long.valueOf(stepId));
 
 

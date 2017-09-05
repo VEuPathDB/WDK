@@ -60,7 +60,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     result.put(ATTR_MAX, range[1]);
 
     // get bin size
-    result.put(ATTR_BIN_SIZE, getBinSize(data, type, range));
+    result.put(ATTR_BIN_SIZE, getBinSize(type, range));
 
     return result;
   }
@@ -89,7 +89,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     }
   }
 
-  private Number getBinSize(Map<String, Integer> data, String type, Number[] range) {
+  private Number getBinSize(String type, Number[] range) {
     // if min & max is the same, return binSize as 1.
     float min = Float.valueOf(range[0].toString());
     float max = Float.valueOf(range[1].toString()); 

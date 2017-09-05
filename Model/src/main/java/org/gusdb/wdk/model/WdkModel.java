@@ -697,7 +697,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // then recurse down through its param-query tree, and validate that all queries use only params
     // found in the context
     for (Query rootQuery : rootQueries) {
-    	rootQuery.validateDependentParams();	
+      rootQuery.validateDependentParams();	
     }
   }
 

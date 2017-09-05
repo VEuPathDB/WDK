@@ -28,7 +28,7 @@ public class StepFilterDefinition extends FilterDefinition {
       if (className == null) throw new WdkModelException("null implementation for StepFilter '" + getName() + "'");
       LOG.debug("Checking filter '" + getName() + "' implementation class: " + className);
       _class = Class.forName(className).asSubclass(StepFilter.class);
-      String summaryQueryRef = (String) properties.get("summaryQueryRef");
+      String summaryQueryRef = properties.get("summaryQueryRef");
       summaryQuery = summaryQueryRef != null ? (Query) wdkModel.resolveReference(summaryQueryRef) : null;
     }
     catch (ClassNotFoundException | ClassCastException ex) {

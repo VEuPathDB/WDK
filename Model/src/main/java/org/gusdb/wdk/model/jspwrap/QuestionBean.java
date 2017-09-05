@@ -30,13 +30,13 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
  */
 public class QuestionBean {
 
-  private static final Logger logger = Logger.getLogger(QuestionBean.class.getName());
+  private static final Logger LOG = Logger.getLogger(QuestionBean.class.getName());
 
-  Question question;
+  Question _question;
 
-  private Map<String, String> params = new LinkedHashMap<String, String>();
-  private UserBean user;
-  private int weight;
+  private Map<String, String> _params = new LinkedHashMap<String, String>();
+  private UserBean _user;
+  private int _weight;
 
   private Map<String, ParamBean<?>> _paramBeanMap;
 
@@ -46,21 +46,21 @@ public class QuestionBean {
   private String inputType;
 
   public QuestionBean(Question question) throws WdkModelException {
-    this.question = question;
+    _question = question;
     initializeParamBeans();
   }
 
   private void initializeParamBeans() throws WdkModelException {
-    Param[] params = question.getParams();
+    Param[] params = _question.getParams();
     _paramBeanMap = new LinkedHashMap<String, ParamBean<?>>();
     for (int i = 0; i < params.length; i++) {
       _paramBeanMap.put(params[i].getName(),
-          ParamBeanFactory.createBeanFromParam(question.getWdkModel(), user, params[i]));
+          ParamBeanFactory.createBeanFromParam(_question.getWdkModel(), _user, params[i]));
     }
   }
 
   public RecordClassBean getRecordClass() {
-    return new RecordClassBean(question.getRecordClass());
+    return new RecordClassBean(_question.getRecordClass());
   }
 
   public ParamBean<?>[] getParams() {
@@ -76,7 +76,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getParamMapByGroups()
    */
   public Map<GroupBean, Map<String, ParamBean<?>>> getParamMapByGroups() {
-    Map<Group, Map<String, Param>> paramGroups = question.getParamMapByGroups();
+    Map<Group, Map<String, Param>> paramGroups = _question.getParamMapByGroups();
     Map<GroupBean, Map<String, ParamBean<?>>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean<?>>>();
     for (Group group : paramGroups.keySet()) {
       GroupBean groupBean = new GroupBean(group);
@@ -97,7 +97,7 @@ public class QuestionBean {
    */
   public Map<GroupBean, Map<String, ParamBean<?>>> getParamMapByGroups(
       String displayType) {
-    Map<Group, Map<String, Param>> paramGroups = question.getParamMapByGroups(displayType);
+    Map<Group, Map<String, Param>> paramGroups = _question.getParamMapByGroups(displayType);
     Map<GroupBean, Map<String, ParamBean<?>>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean<?>>>();
     for (Group group : paramGroups.keySet()) {
       GroupBean groupBean = new GroupBean(group);
@@ -112,7 +112,7 @@ public class QuestionBean {
   }
 
   public Map<String, AttributeFieldBean> getSummaryAttributesMap() {
-    Map<String, AttributeField> attribs = question.getSummaryAttributeFieldMap();
+    Map<String, AttributeField> attribs = _question.getSummaryAttributeFieldMap();
     Map<String, AttributeFieldBean> beanMap = new LinkedHashMap<String, AttributeFieldBean>();
     for (AttributeField field : attribs.values()) {
       beanMap.put(field.getName(), new AttributeFieldBean(field));
@@ -121,7 +121,7 @@ public class QuestionBean {
   }
 
   public Map<String, AttributeFieldBean> getDisplayableAttributeFields() {
-    Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
+    Map<String, AttributeField> attribs = _question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
     Map<String, AttributeFieldBean> beanMap = new LinkedHashMap<String, AttributeFieldBean>();
     for (AttributeField field : attribs.values()) {
       beanMap.put(field.getName(), new AttributeFieldBean(field));
@@ -130,7 +130,7 @@ public class QuestionBean {
   }
 
   public Map<String, AttributeFieldBean> getReportMakerAttributesMap() {
-    Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.REPORT_MAKER);
+    Map<String, AttributeField> attribs = _question.getAttributeFieldMap(FieldScope.REPORT_MAKER);
     Iterator<String> ai = attribs.keySet().iterator();
 
     Map<String, AttributeFieldBean> rmaMap = new LinkedHashMap<String, AttributeFieldBean>();
@@ -142,7 +142,7 @@ public class QuestionBean {
   }
 
   public Map<String, TableFieldBean> getReportMakerTablesMap() {
-    Map<String, TableField> tables = question.getRecordClass().getTableFieldMap(
+    Map<String, TableField> tables = _question.getRecordClass().getTableFieldMap(
         FieldScope.REPORT_MAKER);
     Iterator<String> ti = tables.keySet().iterator();
 
@@ -155,7 +155,7 @@ public class QuestionBean {
   }
 
   public Map<String, FieldBean> getReportMakerFieldsMap() {
-    Map<String, Field> fields = question.getFields(FieldScope.REPORT_MAKER);
+    Map<String, Field> fields = _question.getFields(FieldScope.REPORT_MAKER);
     Iterator<String> fi = fields.keySet().iterator();
 
     Map<String, FieldBean> rmfMap = new LinkedHashMap<String, FieldBean>();
@@ -172,7 +172,7 @@ public class QuestionBean {
   }
 
   public Map<String, AttributeFieldBean> getAttributeFields() {
-    Map<String, AttributeField> fields = question.getAttributeFieldMap();
+    Map<String, AttributeField> fields = _question.getAttributeFieldMap();
     Map<String, AttributeFieldBean> beans = new LinkedHashMap<String, AttributeFieldBean>();
     for (AttributeField field : fields.values()) {
       AttributeFieldBean bean = new AttributeFieldBean(field);
@@ -196,11 +196,11 @@ public class QuestionBean {
   }
 
   public String getName() {
-    return question.getName();
+    return _question.getName();
   }
 
   public String getFullName() {
-    return question.getFullName();
+    return _question.getFullName();
   }
 
   /**
@@ -208,35 +208,35 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getQuestionSetName()
    */
   public String getQuestionSetName() {
-    return question.getQuestionSetName();
+    return _question.getQuestionSetName();
   }
 
   public String getQueryName() {
-    return question.getQueryName();
+    return _question.getQueryName();
   }
 
   public String getDisplayName() {
-    return question.getDisplayName();
+    return _question.getDisplayName();
   }
 
   public String getShortDisplayName() {
-    return question.getShortDisplayName();
+    return _question.getShortDisplayName();
   }
 
   public String getHelp() {
-    return question.getHelp();
+    return _question.getHelp();
   }
 
   public String getDescription() {
-    return question.getDescription();
+    return _question.getDescription();
   }
 
   public String getSummary() {
-    return question.getSummary();
+    return _question.getSummary();
   }
 
   public String getCustomJavascript() {
-    return question.getCustomJavascript();
+    return _question.getCustomJavascript();
   }
 
   /**
@@ -247,7 +247,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#isFullAnswer()
    */
   public boolean isFullAnswer() {
-    return question.isFullAnswer();
+    return _question.isFullAnswer();
   }
 
   /**
@@ -261,7 +261,7 @@ public class QuestionBean {
   public AnswerValueBean makeAnswerValue(UserBean user,
       Map<String, String> paramValues, boolean validate, int assignedWeight)
       throws WdkModelException, WdkUserException {
-    return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
+    return new AnswerValueBean(_question.makeAnswerValue(user.getUser(),
         paramValues, validate, assignedWeight));
   }
 
@@ -271,7 +271,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getPropertyList(java.lang.String)
    */
   public String[] getPropertyList(String propertyListName) {
-    return question.getPropertyList(propertyListName);
+    return _question.getPropertyList(propertyListName);
   }
 
   /**
@@ -279,7 +279,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getPropertyLists()
    */
   public Map<String, String[]> getPropertyLists() {
-    return question.getPropertyLists();
+    return _question.getPropertyLists();
   }
 
   /**
@@ -287,19 +287,19 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#isNoSummaryOnSingleRecord()
    */
   public boolean isNoSummaryOnSingleRecord() {
-    return question.isNoSummaryOnSingleRecord();
+    return _question.isNoSummaryOnSingleRecord();
   }
 
   public boolean getIsBoolean() {
-    return question.getQuery().isBoolean();
+    return _question.getQuery().isBoolean();
   }
 
   public boolean getIsCombined() {
-    return question.getQuery().isCombined();
+    return _question.getQuery().isCombined();
   }
 
   public boolean getIsTransform() {
-    return question.getQuery().isTransform();
+    return _question.getQuery().isTransform();
   }
 
   public void setInputType(String inputType) {
@@ -308,8 +308,8 @@ public class QuestionBean {
 
   public List<AnswerParamBean> getTransformParams() throws WdkModelException {
     List<AnswerParamBean> beans = new ArrayList<AnswerParamBean>();
-    RecordClass input = question.getWdkModel().getRecordClass(inputType);
-    for (AnswerParam answerParam : question.getTransformParams(input)) {
+    RecordClass input = _question.getWdkModel().getRecordClass(inputType);
+    for (AnswerParam answerParam : _question.getTransformParams(input)) {
       beans.add(new AnswerParamBean(answerParam));
     }
     return beans;
@@ -319,34 +319,34 @@ public class QuestionBean {
     String[] parts = nameValue.split("=");
     String name = parts[0].trim();
     String value = parts[1].trim();
-    params.put(name, value);
+    _params.put(name, value);
   }
 
   public void setUser(UserBean user) {
-    this.user = user;
+    _user = user;
   }
 
   public void setWeight(int weight) {
-    this.weight = weight;
+    _weight = weight;
   }
 
   public AnswerValueBean getAnswerValue() throws WdkModelException {
     try {
-      if (user == null)
+      if (_user == null)
         throw new WdkUserException("User is not set. Please set user to "
             + "the questionBean before calling to create answerValue.");
 
-      AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-          params, false, weight);
+      AnswerValue answerValue = _question.makeAnswerValue(_user.getUser(),
+          _params, false, _weight);
 
       // reset the params
-      params.clear();
+      _params.clear();
 
       return new AnswerValueBean(answerValue);
     } catch (Exception ex) {
-      logger.error("Exception thrown in getAnswerValue(): " + ex);
+      LOG.error("Exception thrown in getAnswerValue(): " + ex);
       for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-        logger.error("  " + elem.toString());
+        LOG.error("  " + elem.toString());
       }
       throw new WdkModelException(ex);
     }
@@ -357,7 +357,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getSummaryViews()
    */
   public Map<String, SummaryView> getSummaryViews() {
-    return question.getSummaryViews();
+    return _question.getSummaryViews();
   }
 
   /**
@@ -365,7 +365,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getDefaultSummaryView()
    */
   public SummaryView getDefaultSummaryView() {
-    return question.getDefaultSummaryView();
+    return _question.getDefaultSummaryView();
   }
 
   /**
@@ -373,7 +373,7 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#getStepAnalyses()
    */
   public Map<String, StepAnalysis> getStepAnalyses() {
-    return question.getStepAnalyses();
+    return _question.getStepAnalyses();
   }
   
   public boolean getContainsWildcardTextParam() {
@@ -390,11 +390,11 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#isNew()
    */
   public boolean isNew() {
-    return question.isNew();
+    return _question.isNew();
   }
 
   public boolean isRevised() {
-    return question.isRevised();
+    return _question.isRevised();
   }
 
   public List<CategoryBean> getWebsiteCategories() {
@@ -411,7 +411,7 @@ public class QuestionBean {
 
   private List<CategoryBean> getCategories(String usedBy, boolean strict) {
     List<CategoryBean> beans = new ArrayList<>();
-    Map<String, SearchCategory> categories = question.getCategories(usedBy,
+    Map<String, SearchCategory> categories = _question.getCategories(usedBy,
         strict);
     for (SearchCategory category : categories.values()) {
       beans.add(new CategoryBean(category));
@@ -421,20 +421,20 @@ public class QuestionBean {
 
   public void fillContextParamValues(UserBean user,
       Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
-    question.getQuery().fillContextParamValues(user.getUser(),
+    _question.getQuery().fillContextParamValues(user.getUser(),
         contextParamValues);
   }
 
   public Map<String, Filter> getFilters() {
-    return question.getFilters();
+    return _question.getFilters();
   }
 
   public Filter getFilter(String filterName) throws WdkModelException {
-    return question.getFilter(filterName);
+    return _question.getFilter(filterName);
   }
 
   public Question getQuestion() {
-    return question;
+    return _question;
   }
   
   /**
@@ -444,7 +444,7 @@ public class QuestionBean {
    * @throws WdkModelException
    */
   public Filter getFilterOrNull(String filterName) throws WdkModelException {
-    return question.getFilterOrNull(filterName);
+    return _question.getFilterOrNull(filterName);
   }
   
 }

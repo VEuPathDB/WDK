@@ -36,7 +36,7 @@ public class ShowXmlDataContentAction extends Action {
     XmlQuestionBean xmlQuestion = getXmlQuestionByFullName(xmlQName);
     XmlAnswerBean xmlAnswer = xmlQuestion.getFullAnswer();
     request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlAnswer);
-    return getForward(xmlAnswer, mapping);
+    return getForward(xmlAnswer);
   }
 
   protected XmlQuestionBean getXmlQuestionByFullName(String qFullName) {
@@ -52,7 +52,7 @@ public class ShowXmlDataContentAction extends Action {
     return wdkQuestion;
   }
 
-  private ActionForward getForward (XmlAnswerBean xmlAnswer, ActionMapping mapping) {
+  private ActionForward getForward (XmlAnswerBean xmlAnswer) {
     ServletContext svltCtx = getServlet().getServletContext();
     String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
         + File.separator + CConstants.WDK_PAGES_DIR;

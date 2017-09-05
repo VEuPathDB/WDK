@@ -37,7 +37,7 @@ import org.gusdb.wdk.model.query.param.RequestParams;
 
 public class ShowQuestionAction extends Action {
 
-  private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
+  private static final Logger LOG = Logger.getLogger(ShowQuestionAction.class.getName());
 
   public static final String PARAM_INPUT_STEP = "inputStep";
 
@@ -95,10 +95,10 @@ public class ShowQuestionAction extends Action {
 
   public static void prepareQuestionForm(QuestionBean wdkQuestion, ActionServlet servlet,
       HttpServletRequest request, QuestionForm qForm) throws WdkUserException, WdkModelException {
-    logger.trace("Entering prepareQustionForm()");
+    LOG.trace("Entering prepareQustionForm()");
 
     // get the current user
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     wdkQuestion.setUser(user);
 
     qForm.setServlet(servlet);
@@ -141,20 +141,19 @@ public class ShowQuestionAction extends Action {
     request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
     request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
     request.setAttribute("params", stableValues);
-    logger.trace("Leaving prepareQustionForm()");
+    LOG.trace("Leaving prepareQustionForm()");
   }
 
 	// ============================= STARTS HERE =======================
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
-    logger.debug("Entering ShowQuestionAction..");
+    LOG.debug("Entering ShowQuestionAction..");
 
-    ActionServlet servlet = getServlet();
     QuestionForm qForm = (QuestionForm) form;
     String qFullName = getQuestionName(qForm, request);
     ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
-    QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
+    QuestionBean wdkQuestion = getQuestionBean(qFullName);
 
     prepareQuestionForm(wdkQuestion, servlet, request, qForm);
     setParametersAsAttributes(request);
@@ -162,7 +161,7 @@ public class ShowQuestionAction extends Action {
     return determineView(servlet, request, wdkQuestion, qForm, mapping);
   }
 
-  private QuestionBean getQuestionBean(ActionServlet servlet, String qFullName) throws WdkUserException,
+  private QuestionBean getQuestionBean(String qFullName) throws WdkUserException,
       WdkModelException {
     QuestionBean questionBean = ActionUtility.getWdkModel(servlet).getQuestion(qFullName);
     if (questionBean == null)
@@ -176,9 +175,9 @@ public class ShowQuestionAction extends Action {
     ActionForward forward = new ActionForward(DEFAULT_VIEW_FILE);
     if (qForm.getParamsFilled() && "1".equals(request.getParameter(CConstants.GOTO_SUMMARY_PARAM))) {
       forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
-      logger.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
+      LOG.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
     }
-    logger.info("ShowQuestionAction will go to: " + forward);
+    LOG.info("ShowQuestionAction will go to: " + forward);
     return forward;
   }
 

@@ -26,6 +26,7 @@ public class ShowFavoriteAction extends Action {
     private static Logger logger = Logger.getLogger(ShowFavoriteAction.class);
 
     @Override
+    @Deprecated // pending struts removal
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -39,7 +40,7 @@ public class ShowFavoriteAction extends Action {
                 return new ActionForward(path, false);
             } else { // display group in json format
                 JSONArray jsGroups = new JSONArray();
-                UserBean wdkUser = ActionUtility.getUser(servlet, request);
+                UserBean wdkUser = ActionUtility.getUser(request);
                 String[] groups = wdkUser.getFavoriteGroups();
                 for (String group : groups) {
                     jsGroups.put(group);

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
@@ -19,27 +16,22 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class XmlRecordClassSet extends WdkModelBase implements ModelSetI<XmlRecordClass> {
 
-    private String name;
+    private String _name;
 
-    private List<XmlRecordClass> recordClassList = new ArrayList<XmlRecordClass>();
-    private Map<String, XmlRecordClass> recordClasses = new LinkedHashMap<String, XmlRecordClass>();
+    private List<XmlRecordClass> _recordClassList = new ArrayList<XmlRecordClass>();
+    private Map<String, XmlRecordClass> _recordClasses = new LinkedHashMap<String, XmlRecordClass>();
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#getName()
-     */
     @Override
     public String getName() {
-        return name;
+        return _name;
     }
 
     public void setName(String name) {
-        this.name = name;
+        _name = name;
     }
 
     public XmlRecordClass getRecordClass(String name) throws WdkModelException {
-        XmlRecordClass recordClass = recordClasses.get(name);
+        XmlRecordClass recordClass = _recordClasses.get(name);
         if (recordClass == null)
             throw new WdkModelException("RecordClass \"" + name
                     + "\" not found in set " + getName());
@@ -47,59 +39,39 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI<XmlReco
     }
 
     public XmlRecordClass[] getRecordClasses() {
-        XmlRecordClass[] rcArray = new XmlRecordClass[recordClasses.size()];
-        recordClasses.values().toArray(rcArray);
+        XmlRecordClass[] rcArray = new XmlRecordClass[_recordClasses.size()];
+        _recordClasses.values().toArray(rcArray);
         return rcArray;
     }
 
     public void addRecordClass(XmlRecordClass recordClass) {
-        recordClassList.add(recordClass);
+        _recordClassList.add(recordClass);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
-     */
     @Override
     public XmlRecordClass getElement(String elementName) {
-        return recordClasses.get(elementName);
+        return _recordClasses.get(elementName);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void setResources(WdkModel model) throws WdkModelException {
-        for (XmlRecordClass recordClass : recordClasses.values()) {
+        for (XmlRecordClass recordClass : _recordClasses.values()) {
             recordClass.setRecordClassSet(this);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
-        for (XmlRecordClass recordClass : recordClasses.values()) {
+        for (XmlRecordClass recordClass : _recordClasses.values()) {
             recordClass.resolveReferences(model);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer("XmlRecordClassSet: name='");
-        buf.append(name);
-        for (XmlRecordClass rc : recordClasses.values()) {
+        buf.append(_name);
+        for (XmlRecordClass rc : _recordClasses.values()) {
             buf.append("\r\n:::::::::::::::::::::::::::::::::::::::::::::\r\n");
             buf.append(rc);
             buf.append("\r\n");
@@ -107,26 +79,21 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI<XmlReco
         return buf.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude recordClasses
-        for (XmlRecordClass recordClass : recordClassList) {
+        for (XmlRecordClass recordClass : _recordClassList) {
             if (recordClass.include(projectId)) {
                 recordClass.setRecordClassSet(this);
                 recordClass.excludeResources(projectId);
                 String rcName = recordClass.getName();
-                if (recordClasses.containsKey(rcName))
+                if (_recordClasses.containsKey(rcName))
                     throw new WdkModelException("The xmlRecordClass " + rcName
                             + " is duplicated in xmlRecordClassSet "
-                            + this.name);
-                recordClasses.put(rcName, recordClass);
+                            + _name);
+                _recordClasses.put(rcName, recordClass);
             }
         }
-        recordClassList = null;
+        _recordClassList = null;
     }
 }
