@@ -641,7 +641,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
         continue;
       }
       String stableValue = stableValues.get(paramName);
-      String signature = param.getSignature(user, stableValue, context);
+      String signature = param.getSignature(user, stableValue, stableValues);
       signatures.put(paramName, signature);
     }
     return signatures;
