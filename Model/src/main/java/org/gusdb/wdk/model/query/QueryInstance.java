@@ -171,7 +171,7 @@ public abstract class QueryInstance<T extends Query> {
   public JSONObject getParamSignatures() throws WdkModelException, WdkUserException {
     // the values are dependent values. need to convert it into independent
     // values
-    Map<String, String> signatures = query.getSignatures(user, stableValues);
+    Map<String, String> signatures = query.getSignatures(user, stableValues, context);
 
     // construct param-value map; param is sorted by name
     String[] paramNames = new String[signatures.size()];
@@ -268,7 +268,7 @@ public abstract class QueryInstance<T extends Query> {
       }
     }
     if (errors != null) {
-      WdkUserException ex = new ParamValuesInvalidException("Some of the input parameters are invalid or missing.", errors);
+      WdkUserException ex = new ParamValuesInvalidException("In query " + query.getFullName() + " some of the input parameters are invalid or missing.", errors);
       logger.error(ex.formatErrors());
       throw ex;
     }
@@ -323,21 +323,7 @@ public abstract class QueryInstance<T extends Query> {
       for (String paramName : params.keySet()) {
         Param param = params.get(paramName);
         String internalValue, stableValue = stableValues.get(paramName);
-
-        // TODO: refactor so this fork isn't necessary
-        if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
-          AbstractDependentParam adParam = (AbstractDependentParam) param;
-          Map<String, String> dependedParamValues = new LinkedHashMap<>();
-          for (Param dependedParam : adParam.getDependedParams()) {
-            String value = stableValues.get(dependedParam.getName());
-            dependedParamValues.put(dependedParam.getName(), value);
-          }
-          internalValue = adParam.getInternalValue(user, stableValue, dependedParamValues);
-        }
-        else {
-          internalValue = param.getInternalValue(user, stableValue, stableValues);
-        }
-
+        internalValue = param.getInternalValue(user, stableValue, stableValues);
         paramInternalValues.put(paramName, internalValue);
       }
     }

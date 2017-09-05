@@ -50,7 +50,9 @@ public class FilterParamNewInstance implements DependentParamInstance {
       throws WdkModelException, WdkUserException {
     // TODO phase 2 - use metadata and ontologyMap to correct stableValue
     Map<String, OntologyItem> ontologyMap = _param.getOntology(user, contextParamValues);
-
+    if(stableValue == null) {
+      return _param.getDefault();
+    }
     return stableValue;
   }
 	

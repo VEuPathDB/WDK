@@ -192,7 +192,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     logger.debug("creating cache table for query " + query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();
-
     DBPlatform platform = wdkModel.getAppDb().getPlatform();
     String rowNumber = platform.getRowNumberColumn();
 

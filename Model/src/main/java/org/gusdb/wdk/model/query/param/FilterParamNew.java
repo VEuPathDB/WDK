@@ -5,10 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -107,6 +108,16 @@ public class FilterParamNew extends AbstractDependentParam {
   
   private String backgroundQueryRef;
   private Query backgroundQuery;
+  
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = new HashSet<String>();
+    names.add(metadataQueryRef);
+    names.add(summaryMetadataQueryRef);
+    names.add(ontologyQueryRef);
+    names.add(backgroundQueryRef);
+    return names;
+  }
   
   private boolean useSummaryMetadataQueryForInternalValue = false;
   
@@ -401,6 +412,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // get count
     sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql) + ")";
 
+    LOG.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& filtered sql " + getName() + " " + sql + " " + contextParamValues);
     fpsc.filteredCount = runCountSql(sql);
     
     return fpsc;
@@ -665,12 +677,12 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
     try {
       FilterParamNewFetcher fetcher = new FilterParamNewFetcher(this);
-      CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
+      return CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher);
     }
     catch (UnfetchableItemException e) {
       throw new WdkModelException(e);
     }
-    return null;
+    
   }
 
   @Override
@@ -685,4 +697,23 @@ public class FilterParamNew extends AbstractDependentParam {
     // TODO phase 2 
     return null;
   }
+  
+  @Override
+  public List<Query> getQueries() {
+	List<Query> queries = new ArrayList<Query>();
+	if(backgroundQuery != null) {
+	  queries.add(backgroundQuery);
+	}
+	if(metadataQuery != null) {
+	  queries.add(metadataQuery);
+	}
+	if(summaryMetadataQuery != null) {
+	  queries.add(summaryMetadataQuery);
+	}
+	if(ontologyQuery != null) {
+	  queries.add(ontologyQuery);
+	}
+	return queries;  
+  }
+
 }

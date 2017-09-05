@@ -60,7 +60,14 @@ public abstract class AbstractDependentParam extends Param {
   }
 
   /**
-   * TODO - describe why we get depended param dynamically every time.
+   * This method should be called only after the complete Resolve References phase is done.
+   * Before then, we do not have the proper contexts.
+   * 
+   * We do not validate the existance of the param ref in the context because
+   * some params that call this are contained by queries that are not "root" queries (eg, ID queries).
+   * They might have an incomplete context.  Instead, validation is done as a dedicated
+   * post-process after resolve references.
+   * 
    * 
    * @return
    * @throws WdkModelException
@@ -72,8 +79,8 @@ public abstract class AbstractDependentParam extends Param {
     if (!isResolved())
       throw new WdkModelException(
           "This method can't be called before the references for the object are resolved.");
-
-    if (dependedParams == null) {
+ 
+    if (dependedParams == null) {  
       dependedParams = new LinkedHashSet<>();
       Map<String, Param> params = null;
       
@@ -84,24 +91,24 @@ public abstract class AbstractDependentParam extends Param {
         params = contextQuery.getParamMap();
       
       for (String paramRef : dependedParamRefs) {
+        
+        // find the best param available to fulfill the dependedParamRefs.
+        // first try the question context, then the query context, and finally the wdk model
         String paramName = paramRef.split("\\.", 2)[1].trim();
-        Param param = (params != null) ? params.get(paramName) : (Param) _wdkModel.resolveReference(paramRef);
+        Param param = null;
+        if (params != null) param = params.get(paramName);
+        if (param == null) param = (Param) _wdkModel.resolveReference(paramRef);
         if (param != null) {
           dependedParams.add(param);
           param.addDependentParam(this);
-        }
-        else {
-          String message = "Missing depended param: " + paramRef + " for enum param " + getFullName();
-          if (contextQuestion != null)
-            message += ", in context question " + contextQuestion.getFullName();
-          if (contextQuery != null)
-            message += ", in context query " + contextQuery.getFullName() +
-                ". Please check the context query, and make sure " + paramRef +
-                " is a valid param, and is declared in the context query.";
+        } else {
+          String message = "Dependent param " + getFullName() + " declares a depended param " + paramRef +
+              ", but that depended param does not exist";
           throw new WdkModelException(message);
         }
       }
     }
+    
     if (logger.isTraceEnabled()) {
       for (Param param : dependedParams) {
         String vocab = "";
@@ -148,17 +155,6 @@ public abstract class AbstractDependentParam extends Param {
 
     _resolved = true;
 
-    // make sure the depended params exist in the context query.
-    if (isDependentParam() && contextQuery != null) {
-      Map<String, Param> params = contextQuery.getParamMap();
-      Set<Param> dependedParams = getDependedParams();
-      for (Param param : dependedParams) {
-        if (!params.containsKey(param.getName()))
-          throw new WdkModelException("Param " + getFullName() + " depends on param " + param.getFullName() +
-              ", but the depended param doesn't exist in the same query " + contextQuery.getFullName());
-      }
-    }
-
   }
 
   @Override
@@ -185,7 +181,10 @@ public abstract class AbstractDependentParam extends Param {
 
   
   /**
-   * resolve a query that might have depended params.
+   * resolve a query that might have depended params.  such a query will be declared by a dependent parameter, to provide
+   * data for that parameter.  for example, the parameter might need a metadata or a vocabulary query.
+   * a parameter might have multiple such queries.  each query can depend on any subset (or none) of the parameter's declared
+   * parameters.  in theory, the union of the query's dependencies would match those declared by the parameter, but we do not enforce that.
    * @param model
    * @param queryName
    * @param queryType
@@ -202,6 +201,10 @@ public abstract class AbstractDependentParam extends Param {
     query.resolveReferences(model);
     query = query.clone();
 
+    /* I don't think we should call getDependedParams() during resolve references, as the query context
+     * is not set.  we were only doing so here to get the names of the param's depended params.  but we can
+     * get that from their paramrefs.
+     
     // get set of names of declared depended params
     getDependedParams();
     Set<String> dependedParamNames = new HashSet<>();
@@ -211,27 +214,19 @@ public abstract class AbstractDependentParam extends Param {
       }
     }
     
-
-    // the query's params should match the depended params;
+    */
+    
+    // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {
-      String queryParamName = param.getName();
+      String queryParamName = param.getFullName();
       if (queryParamName.equals(PARAM_SERVED_QUERY) || queryParamName.equals(Utilities.PARAM_USER_ID))
         continue;
 
-      if (!dependedParamNames.contains(queryParamName))
-        throw new WdkModelException("The " + queryType + query.getFullName() + " requires a depended param " +
-            queryParamName + ", but the param " + getFullName() + " doesn't depend on it.");
+      if (!dependedParamRefs.contains(queryParamName))
+        throw new WdkModelException("The " + queryType + query.getFullName() + " declares a depended param " +
+            queryParamName + ", but its containing param " + getFullName() + " doesn't declare it in its depended params.");
     }
-    /*
-    
-    // and depended params should match query's params
-    Map<String, Param> queryParams = query.getParamMap();
-    for (String dependedParamName : dependedParamNames) {
-      if (!queryParams.containsKey(dependedParamName))
-        throw new WdkModelException("The dependent param " + getFullName() + " depends on param " +
-            dependedParamName + ", but the " + queryType + query.getFullName() + " doesn't use this depended param.");
-    }
-    */
+
     return query;
   }
   
@@ -297,5 +292,33 @@ public abstract class AbstractDependentParam extends Param {
     }
     return dependedParamValuesJson;
   }
+
+  /**
+   * A list of the <query> objects used by this parameter.  
+   * @return
+   */
+  public abstract Set<String> getContainedQueryFullNames();
+  
+  public void checkParam(String queryFullName, String parentParamName, Map<String,Param> rootParamMap, List<String> ancestorParamNames) throws WdkModelException {
+	if(!rootParamMap.keySet().contains(getName())) {
+	  throw new WdkModelException("The param " + getFullName() + " is not found in the param map of the root query " + queryFullName + ".");
+	}
+	if(ancestorParamNames.contains(getFullName())) {
+	  throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency in the root query " + queryFullName + ".");
+	}
+	ancestorParamNames.add(getFullName());
+	List<Query> queries = getQueries();
+	for(Query query : queries) {
+	  Map<String,Param> paramMap = query.getParamMap();
+	  for(Param param : paramMap.values()) {
+		if (param instanceof AbstractDependentParam) {
+		  ((AbstractDependentParam) param).checkParam(queryFullName, parentParamName, rootParamMap, new ArrayList<String>(ancestorParamNames));
+		}
+	  }
+	}
+	
+  }
+  
+  public abstract List<Query> getQueries();
 
 }

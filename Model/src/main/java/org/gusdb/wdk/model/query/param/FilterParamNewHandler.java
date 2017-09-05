@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
@@ -141,7 +142,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     try {
-      QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, metadataQuery);
+      //QueryInstance<?> instance = MetaDataItemFetcher.getQueryInstance(user, contextParamValues, metadataQuery);
+      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+
       String metadataSql = instance.getSql();
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
       JSONArray jsFilters = getFilters(jsValue);
@@ -175,7 +178,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
           " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
           FILTERS_VALUE + "`.");
 
-    LOG.info("************************************************************ jsFilter: " + jsFilter);
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     OntologyItemType type = ontologyItem.getType();
     String columnName = type.getMetadataQueryColumn();
@@ -247,11 +249,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    * @throws WdkUserException
    *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String)
+   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue) throws WdkModelException, WdkUserException {
-    return EncryptionUtil.encrypt(toSignatureString(stableValue));
+  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    return EncryptionUtil.encrypt(toSignatureString(stableValue) + dependedParamsSignature(user, contextParamValues));
   }
 
   // convert stable value to a compact string, suitable for use in a signature
@@ -303,6 +305,21 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     catch (JSONException ex) {
       throw new WdkModelException("Parameter " + param.getPrompt() + " has invalid filter param JSON", ex);
     }
+  }
+  
+  private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    FilterParamNew filterParam  = (FilterParamNew) param;
+    if (filterParam.getDependedParams() == null) return "";
+    List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
+    java.util.Collections.sort(dependedParamsList);
+    StringBuilder sb = new StringBuilder();
+    for (Param dependedParam : dependedParamsList)  {
+      String stableValue = contextParamValues.get(dependedParam.getName());
+      if (stableValue == null) throw new WdkModelException("can't find value for param " + dependedParam.getName());
+      sb.append(dependedParam.getParamHandler().toSignature(user, stableValue, contextParamValues));
+    }
+
+    return sb.toString();
   }
 
   /**
