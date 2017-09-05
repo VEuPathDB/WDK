@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -450,9 +452,11 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
+	 
     if (_resolved)
       return;
-
+    _resolved = true;
+    
     super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag
@@ -524,7 +528,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
             "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
                 Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
     }
-    _resolved = true;
   }
 
   /**
@@ -624,7 +627,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
+  public Map<String, String> getSignatures(User user, Map<String, String> stableValues, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
@@ -670,7 +673,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public void fillContextParamValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     for (Param param : paramMap.values()) {
-      if (param instanceof AbstractEnumParam) {
+      if (param instanceof AbstractDependentParam) {
         // for enum/flatVocab params, call a special method to process it
         Map<String, DependentParamInstance> caches = new HashMap<>();
         ((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
@@ -756,5 +759,20 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+  
+  public void validateDependentParams() throws WdkModelException {
+   validateDependentParams(paramMap.keySet());
+  }
+  
+  private void validateDependentParams(Set<String> rootQueryParamNames) throws WdkModelException {
+	// Need to validate that no params in the rootQuery paramMap have a short name that in fact refers to
+	// different params (i.e., params with different full names but the same short name).
+    for (Param param : paramMap.values()) {
+      if (param instanceof AbstractDependentParam) {
+        ((AbstractDependentParam) param).checkParam(getFullName(), null, paramMap, new ArrayList<String>());
+      }
+    }  
+
   }
 }
