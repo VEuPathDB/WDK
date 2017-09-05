@@ -12,30 +12,30 @@ import org.gusdb.wdk.model.WdkModelText;
 
 public class DatasetParserReference extends WdkModelBase {
 
-  private String name;
-  private String display;
-  private String implementation;
-  private List<WdkModelText> propertyList = new ArrayList<>();
-  private List<WdkModelText> descriptionList = new ArrayList<>();
+  private String _name;
+  private String _display;
+  private String _implementation;
+  private List<WdkModelText> _propertyList = new ArrayList<>();
+  private List<WdkModelText> _descriptionList = new ArrayList<>();
 
-  private DatasetParser parser;
-  private Map<String, String> properties = new HashMap<>();
-  private String description;
+  private DatasetParser _parser;
+  private Map<String, String> _properties = new HashMap<>();
+  private String _description;
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
   
   public String getName() {
-    return name;
+    return _name;
   }
 
   public void setImplementation(String implementation) {
-    this.implementation = implementation;
+    _implementation = implementation;
   }
 
   public void addProperty(WdkModelText property) {
-    propertyList.add(property);
+    _propertyList.add(property);
   }
 
   @Override
@@ -43,47 +43,47 @@ public class DatasetParserReference extends WdkModelBase {
     super.excludeResources(projectId);
 
     // exclude property resource
-    for (WdkModelText property : propertyList) {
+    for (WdkModelText property : _propertyList) {
       if (property.include(projectId)) {
         property.excludeResources(projectId);
         String name = property.getName();
-        if (properties.containsKey(name))
+        if (_properties.containsKey(name))
           throw new WdkModelException("Property name \"" + name
               + "\" duplicated.");
-        properties.put(name, property.getText());
+        _properties.put(name, property.getText());
       }
     }
-    propertyList = null;
+    _propertyList = null;
 
     // exclude description resource
-    for (WdkModelText description : descriptionList) {
+    for (WdkModelText description : _descriptionList) {
       if (description.include(projectId)) {
-        if (this.description != null)
+        if (_description != null)
           throw new WdkModelException("Description of the dataset param "
-              + "parser is duplicated in " + this.name);
+              + "parser is duplicated in " + _name);
         
         description.excludeResources(projectId);
-        this.description = description.getText();
+        _description = description.getText();
       }
     }
-    this.descriptionList = null;
+    _descriptionList = null;
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     try {
-      Class<? extends DatasetParser> parserClass = Class.forName(implementation).asSubclass(DatasetParser.class);
-      parser = parserClass.newInstance();
-      parser.setName(name);
-      if (display != null) parser.setDisplay(display);
-      if (description != null) parser.setDescription(description);
-      parser.setProperties(properties);
+      Class<? extends DatasetParser> parserClass = Class.forName(_implementation).asSubclass(DatasetParser.class);
+      _parser = parserClass.newInstance();
+      _parser.setName(_name);
+      if (_display != null) _parser.setDisplay(_display);
+      if (_description != null) _parser.setDescription(_description);
+      _parser.setProperties(_properties);
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
       throw new WdkModelException(ex);
     }
   }
 
   public DatasetParser getParser() {
-    return parser;
+    return _parser;
   }
 }

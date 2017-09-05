@@ -22,23 +22,17 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
  * You can define isCacheable on querySet to provide default value to the contained queries.
  * 
  * @author jerric
- * 
- */
-/**
- * @author jerric
- * 
  */
 public class QuerySet extends WdkModelBase implements ModelSetI<Query>, OptionallyTestable {
 
-  protected static final Logger logger = Logger.getLogger(Query.class);
-
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(QuerySet.class);
+  private static final Logger LOG = Logger.getLogger(Query.class);
 
-  private List<Query> queryList = new ArrayList<Query>();
-  private Map<String, Query> queries = new LinkedHashMap<String, Query>();
-  private String name;
-  private List<PostCacheUpdateSql> postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
+  private List<Query> _queryList = new ArrayList<Query>();
+  private Map<String, Query> _queries = new LinkedHashMap<String, Query>();
+  private String _name;
+  private List<PostCacheUpdateSql> _postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
+  private boolean _cacheable = false;
 
   /* for sanity testing */
   public static enum QueryType {
@@ -51,23 +45,21 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
     UNSPECIFIED,  // default value if not set in model; not sanity testable
     TABLE_TOTAL;  // special type used only by sanity tester; not a valid query type
   }
-  private QueryType queryType = QueryType.UNSPECIFIED;
-  private boolean doNotTest = false;
-  private List<ParamValuesSet> unexcludedDefaultParamValuesSets = new ArrayList<ParamValuesSet>();
-  private ParamValuesSet defaultParamValuesSet;
-  private List<WdkModelText> unexcludedTestRowCountSqls = new ArrayList<WdkModelText>();
-  private String testRowCountSql;
+  private QueryType _queryType = QueryType.UNSPECIFIED;
+  private boolean _doNotTest = false;
+  private List<ParamValuesSet> _unexcludedDefaultParamValuesSets = new ArrayList<ParamValuesSet>();
+  private ParamValuesSet _defaultParamValuesSet;
+  private List<WdkModelText> _unexcludedTestRowCountSqls = new ArrayList<WdkModelText>();
+  private String _testRowCountSql;
   /* end sanity testing fields */
 
-  private boolean cacheable = false;
-
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   @Override
   public String getName() {
-    return name;
+    return _name;
   }
 
   /**
@@ -77,11 +69,11 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
    *         cached.
    */
   public boolean isCacheable() {
-    return cacheable;
+    return _cacheable;
   }
 
   public void setCacheable(boolean cacheable) {
-    this.cacheable = cacheable;
+    _cacheable = cacheable;
   }
 
   /**
@@ -89,11 +81,11 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
    * @param cacheable
    */
   public void setIsCacheable(boolean cacheable) {
-    this.cacheable = cacheable;
+    _cacheable = cacheable;
   }
 
   public Query getQuery(String name) throws WdkModelException {
-    Query q = queries.get(name);
+    Query q = _queries.get(name);
     if (q == null)
       throw new WdkModelException("Query Set " + getName()
           + " does not include query " + name);
@@ -102,12 +94,12 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
 
   @Override
   public Query getElement(String name) {
-    return queries.get(name);
+    return _queries.get(name);
   }
 
   public Query[] getQueries() {
-    Query[] array = new Query[queries.size()];
-    queries.values().toArray(array);
+    Query[] array = new Query[_queries.size()];
+    _queries.values().toArray(array);
     return array;
   }
 
@@ -117,77 +109,77 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
       throw new IllegalArgumentException("QueryType TABLE_TOTAL " +
           "is an internal value and cannot be specified in the model");
     }
-    queryType = queryTypeLocal;
+    _queryType = queryTypeLocal;
   }
 
   // needed for digester to recognize bean property
   public String getQueryType() {
-    return queryType.name();
+    return _queryType.name();
   }
 
   // proper method to use to retrive query type
   public QueryType getQueryTypeEnum() {
-    return queryType;
+    return _queryType;
   }
 
   public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
-    return Collections.unmodifiableList(postCacheUpdateSqls);
+    return Collections.unmodifiableList(_postCacheUpdateSqls);
   }
 
   public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
-    this.postCacheUpdateSqls.add(postCacheUpdateSql);
+    _postCacheUpdateSqls.add(postCacheUpdateSql);
   }
 
   public void setDoNotTest(boolean doNotTest) {
-    this.doNotTest = doNotTest;
+    _doNotTest = doNotTest;
   }
 
   @Override
   public boolean getDoNotTest() {
-    return doNotTest;
+    return _doNotTest;
   }
 
   public void addDefaultParamValuesSet(ParamValuesSet paramValuesSet) {
-    unexcludedDefaultParamValuesSets.add(paramValuesSet);
+    _unexcludedDefaultParamValuesSets.add(paramValuesSet);
   }
 
   public ParamValuesSet getDefaultParamValuesSet() {
-    return defaultParamValuesSet;
+    return _defaultParamValuesSet;
   }
 
   // sql that returns number of rows expected by all queries in this query set
   public void addTestRowCountSql(WdkModelText text) {
-    unexcludedTestRowCountSqls.add(text);
+    _unexcludedTestRowCountSqls.add(text);
   }
 
   public String getTestRowCountSql() {
-    return testRowCountSql;
+    return _testRowCountSql;
   }
 
   public boolean contains(String queryName) {
-    return queries.containsKey(queryName);
+    return _queries.containsKey(queryName);
   }
 
   public void addQuery(Query query) {
     query.setQuerySet(this);
-    if (queryList != null)
-      queryList.add(query);
+    if (_queryList != null)
+      _queryList.add(query);
     else {
       // if (queries.containsKey(query.getName()))
       // throw new WdkModelException("query [" + query.getFullName()
       // + "] already exists in the set.");
-      queries.put(query.getName(), query);
+      _queries.put(query.getName(), query);
     }
   }
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
-    for (Query query : queries.values()) {
+    for (Query query : _queries.values()) {
       query.resolveReferences(model);
     }
 
-    for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
+    for (PostCacheUpdateSql postCacheUpdateSql : _postCacheUpdateSqls)
       if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
           !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
           !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
@@ -208,9 +200,9 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer("QuerySet: name='" + name + "'");
+    StringBuffer buf = new StringBuffer("QuerySet: name='" + _name + "'");
     buf.append(newline);
-    for (Query query : queries.values()) {
+    for (Query query : _queries.values()) {
       buf.append(newline);
       buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
       buf.append(newline);
@@ -229,38 +221,38 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude queries
-    for (Query query : queryList) {
+    for (Query query : _queryList) {
       if (query.include(projectId)) {
         query.excludeResources(projectId);
         String queryName = query.getName();
-        if (queries.containsKey(queryName))
+        if (_queries.containsKey(queryName))
           throw new WdkModelException("Query named " + queryName
               + " already exists in query set " + getName());
-        queries.put(queryName, query);
+        _queries.put(queryName, query);
       }
     }
-    queryList = null;
+    _queryList = null;
 
     // exclude paramValuesSets
-    for (ParamValuesSet paramValuesSet : unexcludedDefaultParamValuesSets) {
+    for (ParamValuesSet paramValuesSet : _unexcludedDefaultParamValuesSets) {
       if (paramValuesSet.include(projectId)) {
-        if (defaultParamValuesSet != null)
+        if (_defaultParamValuesSet != null)
           throw new WdkModelException(
               "Duplicate <defaultTestParamValues> included in query set "
                   + getName() + " for projectId " + projectId);
-        defaultParamValuesSet = paramValuesSet;
+        _defaultParamValuesSet = paramValuesSet;
 
       }
     }
 
     // exclude textRowCountSqls
-    for (WdkModelText text : unexcludedTestRowCountSqls) {
+    for (WdkModelText text : _unexcludedTestRowCountSqls) {
       if (text.include(projectId)) {
-        if (testRowCountSql != null)
+        if (_testRowCountSql != null)
           throw new WdkModelException(
               "Duplicate <testRowCountSql> included in query set " + getName()
                   + " for projectId " + projectId);
-        testRowCountSql = text.getText();
+        _testRowCountSql = text.getText();
 
       }
     }

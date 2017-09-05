@@ -31,13 +31,13 @@ import org.json.JSONObject;
  */
 public class DateRangeParam extends Param {
 
-  private List<WdkModelText> regexes;
-  private String regex;
-  private String minDate;
-  private String maxDate;
+  private List<WdkModelText> _regexes;
+  private String _regex;
+  private String _minDate;
+  private String _maxDate;
 
   public DateRangeParam() {
-    regexes = new ArrayList<WdkModelText>();
+    _regexes = new ArrayList<WdkModelText>();
 
     // register handler
     setHandler(new DateRangeParamHandler());
@@ -45,11 +45,11 @@ public class DateRangeParam extends Param {
 
   public DateRangeParam(DateRangeParam param) {
     super(param);
-    if (param.regexes != null)
-      this.regexes = new ArrayList<WdkModelText>();
-    this.regex = param.regex;
-    this.minDate = param.minDate;
-    this.maxDate = param.maxDate;
+    if (param._regexes != null)
+      _regexes = new ArrayList<WdkModelText>();
+    _regex = param._regex;
+    _minDate = param._minDate;
+    _maxDate = param._maxDate;
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -57,19 +57,19 @@ public class DateRangeParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   public void addRegex(WdkModelText regex) {
-    this.regexes.add(regex);
+    _regexes.add(regex);
   }
 
   public void setRegex(String regex) {
-    this.regex = regex;
+    _regex = regex;
   }
 
   public String getRegex() {
-    return regex;
+    return _regex;
   }
 
   public String getMinDate() {
-    return minDate;
+    return _minDate;
   }
 
   @Override
@@ -100,11 +100,11 @@ public class DateRangeParam extends Param {
     catch(DateTimeParseException dtpe) {
       throw new WdkModelException(dtpe);
     }
-    this.minDate = minDate;
+    _minDate = minDate;
   }
 
   public String getMaxDate() {
-    return this.maxDate;
+    return _maxDate;
   }
 
   /**
@@ -114,21 +114,20 @@ public class DateRangeParam extends Param {
    * @throws WdkModelException
    */
   public void setMaxDate(String maxDate) throws WdkModelException {
-	try {  
-	    LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE);
-	}
-	catch(DateTimeParseException dtpe) {
-	  throw new WdkModelException(dtpe);
-	} 
-	this.maxDate = maxDate;
+    try {  
+      LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE);
+    }
+    catch(DateTimeParseException dtpe) {
+      throw new WdkModelException(dtpe);
+    }
+    _maxDate = maxDate;
   }
-  
 
   @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
-    .append("  regex='").append(regex).append("'").append(newline).toString();
+    .append("  regex='").append(_regex).append("'").append(newline).toString();
   }
 
   // ///////////////////////////////////////////////////////////////
@@ -138,29 +137,19 @@ public class DateRangeParam extends Param {
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
-    if (regex == null)
-      regex = model.getModelConfig().getParamRegex();
+    if (_regex == null)
+      _regex = model.getModelConfig().getParamRegex();
     // The default regex is just a date string expressed in iso1806 format
-    if (regex == null) {
-      regex = "\\d{4}-\\d{2}-\\d{2}";
+    if (_regex == null) {
+      _regex = "\\d{4}-\\d{2}-\\d{2}";
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#clone()
-   */
   @Override
   public Param clone() {
     return new DateRangeParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // nothing to be added
@@ -174,54 +163,54 @@ public class DateRangeParam extends Param {
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
-	
-	LocalDate values[] = new LocalDate[2];
-	JSONObject stableValueJson = null;
-	
-	// Insure that the JSON Object format is valid.
-	try {
-	  stableValueJson = new JSONObject(stableValue);
-	  values[0] = LocalDate.parse(stableValueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-	  values[1] = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
-	}
-	catch(JSONException je) {
-	  throw new WdkUserException("Could not parse '" + stableValue + "'. "
-	  		+ "The range should be is the format {'min':'min value','max':'max value'}");
-	}
-	  
-	// Validate each value in the range against regex.  The regex could potentially be
-	// more restrictive than LocalDate.
-	if(regex != null) {
-     if(!stableValueJson.getString("min").matches(regex)) {
+
+    LocalDate values[] = new LocalDate[2];
+    JSONObject stableValueJson = null;
+
+    // Insure that the JSON Object format is valid.
+    try {
+      stableValueJson = new JSONObject(stableValue);
+      values[0] = LocalDate.parse(stableValueJson.getString("min"), DateTimeFormatter.ISO_DATE);
+      values[1] = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+    }
+    catch(JSONException je) {
+      throw new WdkUserException("Could not parse '" + stableValue + "'. "
+          + "The range should be is the format {'min':'min value','max':'max value'}");
+    }
+
+    // Validate each value in the range against regex.  The regex could potentially be
+    // more restrictive than LocalDate.
+    if(_regex != null) {
+     if(!stableValueJson.getString("min").matches(_regex)) {
        throw new WdkUserException("value '" + stableValueJson.getString("min") + "' is invalid. " +
-         "It must match the regular expression '" + regex + "'");
+         "It must match the regular expression '" + _regex + "'");
      }
- 	 if(!stableValueJson.getString("max").matches(regex)) {
+     if(!stableValueJson.getString("max").matches(_regex)) {
        throw new WdkUserException("value '" + stableValueJson.getString("max") + "' is invalid. " +
-         "It must match the regular expression '" + regex + "'");
+         "It must match the regular expression '" + _regex + "'");
       }
-	}
-	
-	// Ensure that the minimum date does not come after the maximum date
-	if(values[0].isAfter(values[1])) {
-	  throw new WdkUserException("The minimum date '" + values[0] + "' should " +
-	    "come before, or equal, the maximum date '" + values[1] + "'");
-	}
+    }
+
+    // Ensure that the minimum date does not come after the maximum date
+    if(values[0].isAfter(values[1])) {
+      throw new WdkUserException("The minimum date '" + values[0] + "' should " +
+          "come before, or equal, the maximum date '" + values[1] + "'");
+    }
 
     // Insure that the minimum date comes no earlier than the minimum allowed date
-    if(this.minDate != null &&
-     values[0].isBefore(LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE))) {
-   	  throw new WdkUserException("The date '" + values[0] + "' should not be earlier than '" + this.minDate + "'");
+    if(_minDate != null &&
+     values[0].isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
+      throw new WdkUserException("The date '" + values[0] + "' should not be earlier than '" + _minDate + "'");
     }
     
     // Insure that the maximum data comes no earlier than the maximum allowed date
-    if(this.maxDate != null && 
-     values[1].isAfter(LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + values[1] + "' should not be after '" + this.maxDate + "'");
+    if(_maxDate != null && 
+     values[1].isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
+      throw new WdkUserException("The date '" + values[1] + "' should not be after '" + _maxDate + "'");
     }
     
   }
-  
+
   /**
    * Need to alter sql replacement to accommodate fact that internal value
    * is really a JSON string containing min and max ends of range.  The convention is
@@ -230,40 +219,35 @@ public class DateRangeParam extends Param {
    */
   @Override
   public String replaceSql(String sql, String internalValue) {
-	JSONObject valueJson = new JSONObject(internalValue);
-	LocalDate values[] = new LocalDate[2];
-	values[0] = LocalDate.parse(valueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-	values[1] = LocalDate.parse(valueJson.getString("max"), DateTimeFormatter.ISO_DATE);
-	String regex = "\\$\\$" + name + ".min\\$\\$";
-	String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[0].toString() + "'"));
-	regex = "\\$\\$" + name + ".max\\$\\$";
-	replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[1].toString() + "'"));
-	return replacedSql;
+    JSONObject valueJson = new JSONObject(internalValue);
+    LocalDate values[] = new LocalDate[2];
+    values[0] = LocalDate.parse(valueJson.getString("min"), DateTimeFormatter.ISO_DATE);
+    values[1] = LocalDate.parse(valueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+    String regex = "\\$\\$" + _name + ".min\\$\\$";
+    String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[0].toString() + "'"));
+    regex = "\\$\\$" + _name + ".max\\$\\$";
+    replacedSql = replacedSql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[1].toString() + "'"));
+    return replacedSql;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
     boolean hasRegex = false;
-    for (WdkModelText regex : regexes) {
+    for (WdkModelText regex : _regexes) {
       if (regex.include(projectId)) {
         if (hasRegex) {
           throw new WdkModelException("The param " + getFullName() + " has more than one regex for project " +
               projectId);
         }
         else {
-          this.regex = regex.getText();
+          _regex = regex.getText();
           hasRegex = true;
         }
       }
     }
-    regexes = null;
+    _regexes = null;
   }
 
   @Override

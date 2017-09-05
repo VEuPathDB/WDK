@@ -58,7 +58,7 @@ public class ProcessStepAction extends Action {
     // ProcessBooleanStepAction.java.
 
     // get user & model
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
@@ -337,18 +337,13 @@ public class ProcessStepAction extends Action {
     String childStepParamName = step.getChildStepParam();
     if (params.containsKey(previousStepParamName)) {
       Long newStepId = step.getPreviousStep().getStepId();
-      logger.debug("updating previous step '" + previousStepParamName
-          + "' id: " + newStepId);
-      if (newStepId != null) {
-        params.put(previousStepParamName, newStepId.toString());
-      }
+      logger.debug("updating previous step '" + previousStepParamName + "' id: " + newStepId);
+      params.put(previousStepParamName, newStepId.toString());
     }
     if (params.containsKey(childStepParamName)) {
       Long newStepId = step.getChildStep().getStepId();
       logger.debug("updating child step id: " + newStepId);
-      if (newStepId != null) {
-        params.put(childStepParamName, newStepId.toString());
-      }
+      params.put(childStepParamName, newStepId.toString());
     }
   }
 }

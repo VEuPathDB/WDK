@@ -26,6 +26,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testAddToFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -44,6 +45,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testRemoveFromFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -71,6 +73,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testClearFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -83,6 +86,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testGetCounts() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -97,6 +101,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testSetNote() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -117,6 +122,7 @@ public class FavoriteTest {
     }
 
     @Test
+    @Deprecated // pending struts removal
     public void testSetGroup() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         FavoriteFactory favs = user.getWdkModel().getFavoriteFactory();
@@ -136,6 +142,7 @@ public class FavoriteTest {
         }
     }
 
+    @Deprecated // pending struts removal
     private static List<Map<String, Object>> addSomeRecords(User user,
             RecordClass recordClass) throws Exception {
         // get a list of record ids

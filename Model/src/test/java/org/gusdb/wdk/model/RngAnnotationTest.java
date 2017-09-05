@@ -13,7 +13,7 @@ public class RngAnnotationTest {
     dumpRngFields(QueryColumnAttributeField.class);
   }
 
-  private void dumpRngFields(Class<?> clazz) throws WdkModelException {
+  private void dumpRngFields(Class<?> clazz) {
     System.out.println(clazz.getSimpleName() + ":");
     for (FieldSetter fs : RngAnnotations.getRngFields(clazz)) {
       System.out.println(fs);

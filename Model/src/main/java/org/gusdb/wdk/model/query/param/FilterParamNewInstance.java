@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -23,9 +22,6 @@ import org.gusdb.wdk.model.user.User;
  * @author rdoherty
  */
 public class FilterParamNewInstance implements DependentParamInstance {
-	
-  @SuppressWarnings("unused")
-  private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
 
   // param this cache was created by
   private FilterParamNew _param;
@@ -36,15 +32,11 @@ public class FilterParamNewInstance implements DependentParamInstance {
   // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
   private String _defaultValue;
 
-
   public FilterParamNewInstance(Map<String, String> dependedParamValues, FilterParamNew param) {
     _dependedParamValues = dependedParamValues;
     _param = param;
   }
-	
-  /**
-   * 
-   */
+
   @Override
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {

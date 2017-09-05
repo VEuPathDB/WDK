@@ -17,51 +17,51 @@ import org.gusdb.wdk.model.query.param.RequestParams;
 public abstract class ParamBean<T extends Param> {
 
   @SuppressWarnings("unused")
-  private static Logger logger = Logger.getLogger(ParamBean.class.getName());
+  private static Logger logger = Logger.getLogger(ParamBean.class);
 
-  protected UserBean user;
-  protected String stableValue;
-  protected int truncateLength;
-  protected T param;
+  protected UserBean _userBean;
+  protected String _stableValue;
+  protected int _truncateLength;
+  protected T _param;
 
-  protected Map<String, String> contextValues;
+  protected Map<String, String> _contextValues;
 
   public ParamBean(T param) {
-    this.param = param;
-    truncateLength = Utilities.TRUNCATE_DEFAULT;
-    this.contextValues = new LinkedHashMap<>();
+    _param = param;
+    _truncateLength = Utilities.TRUNCATE_DEFAULT;
+    _contextValues = new LinkedHashMap<>();
   }
 
   public void setUser(UserBean user) {
-    this.user = user;
+    _userBean = user;
   }
 
   public String getName() {
-    return param.getName();
+    return _param.getName();
   }
 
   public String getId() {
-    return param.getId();
+    return _param.getId();
   }
 
   public String getFullName() {
-    return param.getFullName();
+    return _param.getFullName();
   }
 
   public String getPrompt() {
-    return param.getPrompt();
+    return _param.getPrompt();
   }
 
   public String getHelp() {
-    return param.getHelp();
+    return _param.getHelp();
   }
 
 	public String getVisibleHelp() {
-    return param.getVisibleHelp();
+    return _param.getVisibleHelp();
   }
 
   public String getDefault() throws WdkModelException {
-    return param.getDefault();
+    return _param.getDefault();
   }
 
   /*
@@ -70,15 +70,15 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.Param#isReadonly()
    */
   public boolean getIsReadonly() {
-    return this.param.isReadonly();
+    return _param.isReadonly();
   }
 
   public boolean getIsAllowEmpty() {
-    return this.param.isAllowEmpty();
+    return _param.isAllowEmpty();
   }
 
   public String getEmptyValue() {
-    return this.param.getEmptyValue();
+    return _param.getEmptyValue();
   }
 
   /*
@@ -87,7 +87,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.Param#isVisible()
    */
   public boolean getIsVisible() {
-    return this.param.isVisible();
+    return _param.isVisible();
   }
 
   /**
@@ -95,7 +95,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.Param#getGroup()
    */
   public GroupBean getGroup() {
-    return new GroupBean(param.getGroup());
+    return new GroupBean(_param.getGroup());
   }
 
   /**
@@ -103,7 +103,7 @@ public abstract class ParamBean<T extends Param> {
    */
   public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
-    param.validate(user.getUser(), rawOrDependentValue, contextValues);
+    _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   /**
@@ -111,25 +111,25 @@ public abstract class ParamBean<T extends Param> {
    *           if unable to set stable value
    */
   public void setStableValue(String stableValue) throws WdkModelException {
-    this.stableValue = stableValue;
+    _stableValue = stableValue;
   }
 
   public String getStableValue() {
-    return stableValue;
+    return _stableValue;
   }
 
   public Object getRawValue() throws WdkModelException {
-    return param.getRawValue(user.getUser(), stableValue, contextValues);
+    return _param.getRawValue(_userBean.getUser(), _stableValue, _contextValues);
   }
 
   public String getBriefRawValue() throws WdkModelException {
     Object rawValue = getRawValue();
-    return param.getBriefRawValue(rawValue, truncateLength);
+    return _param.getBriefRawValue(rawValue, _truncateLength);
   }
 
   public void setTruncateLength(int truncateLength) {
     if (truncateLength >= 0) {
-      this.truncateLength = truncateLength;
+      _truncateLength = truncateLength;
     }
   }
 
@@ -143,7 +143,7 @@ public abstract class ParamBean<T extends Param> {
    */
   public String getSignature(UserBean user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
-    return param.getSignature(user.getUser(), stableValue, contextValues);
+    return _param.getSignature(user.getUser(), stableValue, contextValues);
   }
 
   /**
@@ -156,7 +156,7 @@ public abstract class ParamBean<T extends Param> {
    */
   public String getStableValue(UserBean user, RequestParams requestParams) throws WdkModelException,
       WdkUserException {
-    return param.getStableValue(user.getUser(), requestParams);
+    return _param.getStableValue(user.getUser(), requestParams);
   }
 
   /**
@@ -169,26 +169,26 @@ public abstract class ParamBean<T extends Param> {
    */
   public String getStableValue(UserBean user, Object rawValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
-    return param.getStableValue(user.getUser(), rawValue, contextValues);
+    return _param.getStableValue(user.getUser(), rawValue, contextValues);
   }
 
   public UserBean getUser() {
-    return this.user;
+    return _userBean;
   }
 
   public String getType() {
-    return param.getClass().getSimpleName();
+    return _param.getClass().getSimpleName();
   }
 
   public Set<String> getAllValues() throws WdkModelException {
-    return param.getAllValues();
+    return _param.getAllValues();
   }
 
   /**
    * @return the contextValues
    */
   public Map<String, String> getContextValues() {
-    return contextValues;
+    return _contextValues;
   }
 
   /**
@@ -196,21 +196,21 @@ public abstract class ParamBean<T extends Param> {
    *          the contextValues to set
    */
   public void setContextValues(Map<String, String> contextValues) {
-    this.contextValues = contextValues;
+    _contextValues = contextValues;
   }
 
   public void prepareDisplay(UserBean user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
-    param.prepareDisplay(user.getUser(), requestParams, contextValues);
+    _param.prepareDisplay(user.getUser(), requestParams, _contextValues);
   }
 
   public void prepareDisplay(UserBean user, RequestParams requestParams, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
-    param.prepareDisplay(user.getUser(), requestParams, contextValues);
+    _param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }
 
   public String getDisplayValue() throws WdkModelException {
-    return param.getDisplayValue(user.getUser(), stableValue, contextValues);
+    return _param.getDisplayValue(_userBean.getUser(), _stableValue, _contextValues);
   }
 
 }

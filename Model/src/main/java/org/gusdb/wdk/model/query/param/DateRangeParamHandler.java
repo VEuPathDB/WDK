@@ -65,7 +65,7 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
   
   @Override 
@@ -73,9 +73,9 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   WdkModelException {
     String stableValue = inputStableValue;
     if (inputStableValue == null) {
-      if (!param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
-      stableValue = param.getEmptyValue();
+      if (!_param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required");
+      stableValue = _param.getEmptyValue();
     }
     return stableValue;
   }
@@ -83,11 +83,11 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
-      stableValue = param.getDefault();
+      stableValue = _param.getDefault();
       if (stableValue != null)
-        requestParams.setParam(param.getName(), stableValue);
+        requestParams.setParam(_param.getName(), stableValue);
     }
   }
 

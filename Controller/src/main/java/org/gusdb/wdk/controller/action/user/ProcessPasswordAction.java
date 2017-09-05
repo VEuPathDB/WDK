@@ -40,6 +40,7 @@ public class ProcessPasswordAction extends WdkAction {
     }
 
     @Override
+    @Deprecated // pending struts removal
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
       // get the current user
       UserBean user = getCurrentUser();

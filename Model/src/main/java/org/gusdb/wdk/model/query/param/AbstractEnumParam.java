@@ -117,12 +117,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   public static final String DISPLAY_TREEBOX = "treeBox";
   public static final String DISPLAY_TYPEAHEAD = "typeAhead";
 
-  protected Boolean multiPick = false;
-  protected boolean quote = true;
+  protected Boolean _multiPick = false;
+  protected boolean _quote = true;
 
-
-  private String displayType = null;
-  private int minSelectedCount = -1;
+  private String _displayType = null;
+  private int _minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = false;
 
@@ -159,12 +158,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public AbstractEnumParam(AbstractEnumParam param) {
     super(param);
-    this.multiPick = param.multiPick;
-    this.quote = param.quote;
-    this.displayType = param.displayType;
+    this._multiPick = param._multiPick;
+    this._quote = param._quote;
+    this._displayType = param._displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
-    this.minSelectedCount = param.minSelectedCount;
+    this._minSelectedCount = param._minSelectedCount;
     this.maxSelectedCount = param.maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
     this.depthExpanded = param.depthExpanded;
@@ -223,11 +222,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   // used only to initially set this property
   public void setMultiPick(boolean multiPick) {
-    this.multiPick = multiPick;
+    this._multiPick = multiPick;
   }
 
   public boolean getMultiPick() {
-    return multiPick;
+    return _multiPick;
   }
 
   public boolean isSkipValidation() {
@@ -239,7 +238,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   public void setQuote(boolean quote) {
-    this.quote = quote;
+    this._quote = quote;
   }
 
   /**
@@ -249,7 +248,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return
    */
   public boolean getQuote() {
-    return quote;
+    return _quote;
   }
 
   /**
@@ -259,7 +258,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return the displayType of this param
    */
   public String getDisplayType() {
-    return (displayType != null ? displayType :
+    return (_displayType != null ? _displayType :
       (getMultiPick() ? DISPLAY_CHECKBOX : DISPLAY_SELECT));
   }
 
@@ -280,7 +279,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           "' is deprecated.  Please use '" + DISPLAY_SELECT + "' instead.");
       displayType = DISPLAY_SELECT;
     }
-    this.displayType = displayType;
+    this._displayType = displayType;
   }
 
   /**
@@ -288,7 +287,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *         return -1.
    */
   public int getMinSelectedCount() {
-    return minSelectedCount;
+    return _minSelectedCount;
   }
 
   /**
@@ -297,7 +296,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *          of values can be assigned.
    */
   public void setMinSelectedCount(int minSelectedCount) {
-    this.minSelectedCount = minSelectedCount;
+    this._minSelectedCount = minSelectedCount;
   }
 
   /**
@@ -490,7 +489,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       EnumParamTermNode child = children.get(0);
       EnumParamTermNode[] grandChildren = child.getChildren();
       if (grandChildren.length > 0) {
-        logger.debug(child.getTerm() + " suppressed.");
+        LOG.debug(child.getTerm() + " suppressed.");
         children.remove(0);
         for (EnumParamTermNode grandChild : grandChildren) {
           children.add(grandChild);
@@ -517,7 +516,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       return new String[0];
     
     String[] terms;
-    if (multiPick) {
+    if (_multiPick) {
       terms = stableValue.split("[,]+");
       for (int i = 0; i < terms.length; i++) {
         terms[i] = terms[i].trim();
@@ -529,29 +528,23 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return terms;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
       String[] terms = getTerms(user, stableValue, contextParamValues);
-      logger.debug("param=" + getFullName() + " - validating: " + stableValue +
+      LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
           ", with contextParamValues=" + FormatUtil.prettyPrint(contextParamValues));
 
-      if (terms.length == 0 && !allowEmpty)
+      if (terms.length == 0 && !_allowEmpty)
         throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");
 
       // verify that user did not select too few or too many values for this
       // param
       int numSelected = getNumSelected(user, terms, contextParamValues);
       if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
-          (minSelectedCount > 0 && numSelected < minSelectedCount)) {
-        String range = (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
+          (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
+        String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
             (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
         throw new WdkUserException("Number of selected values (" + numSelected + ") was not in range " +
             range + " for parameter " + getPrompt());
@@ -570,7 +563,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         throw new WdkUserException(message.toString());
     }
     else {
-      logger.debug("param=" + getFullName() + " - skip validation");
+      LOG.debug("param=" + getFullName() + " - skip validation");
     }
   }
   
@@ -585,7 +578,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     //logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
     //   ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
     //   ", countOnlyLeaves = " + getCountOnlyLeaves());
-    if (displayType != null && displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
+    if (_displayType != null && _displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
       FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
@@ -637,11 +630,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
             // intended.
             // Cannot throws exception here, since the default might
             // not be valid for a different depended value.
-            logger.warn(errorMessage);
+            LOG.warn(errorMessage);
           }
           else {
             // param doesn't depend on anything. The default must be wrong.
-            logger.warn(errorMessage);
+            LOG.warn(errorMessage);
             if (INVALID_DEFAULT_IS_FATAL) {
               throw new WdkModelException(errorMessage);
             }
@@ -654,7 +647,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
 
     String defaultFromSelectMode = getDefaultWithSelectMode(
-        cache.getTerms(), selectMode, multiPick,
+        cache.getTerms(), selectMode, _multiPick,
         cache.getTermTreeListRef().isEmpty() ? null :
           cache.getTermTreeListRef().get(0));
 
@@ -723,7 +716,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     // throw error if user selects treeBox displayType but multiSelect=false
     //   note: no technical reason not to allow this, but we think UX for this is bad
     if (!getMultiPick() && getDisplayType().equals(DISPLAY_TREEBOX)) {
-      String contextQueryName = contextQuery == null ? "null" : contextQuery.getFullName();
+      String contextQueryName = _contextQuery == null ? "null" : _contextQuery.getFullName();
       throw new WdkModelException("Param ['" + getFullName() +
           "'] in context query ['" + contextQueryName + "']: " +
           "TreeBox display type cannot be selected when multiPick is false.");
@@ -841,15 +834,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues) throws WdkModelException,
       WdkUserException {
-    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
-    return getJsonValues(user, contextParamValues, cache);
+    return getJsonValues(createVocabInstance(user, contextParamValues));
   }
 
   /**
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
+  public JSONObject getJsonValues(EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
     JSONObject jsParam = new JSONObject();
     try {

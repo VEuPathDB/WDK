@@ -59,7 +59,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @param resource
    * @return
    */
-  private static IRODSAccount initializeAccount(String host, int port, String user, String password, String zone, String resource) throws WdkModelException {
+  private static IRODSAccount initializeAccount(String host, int port, String user, String password, String zone, String resource) {
     if(account == null) {
       String homeDir = "/" + zone + "/home/" + user;
       account = new IRODSAccount(host,port,user,password,homeDir,zone,resource);

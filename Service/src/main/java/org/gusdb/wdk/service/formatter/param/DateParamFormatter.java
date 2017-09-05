@@ -13,11 +13,12 @@ public class DateParamFormatter extends ParamFormatter<DateParam> {
     super(param);
   }
 
+  @Override
   public JSONObject getJson()
       throws JSONException, WdkModelException, WdkUserException {
-	return super.getJson()
-		        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
-		        .put(Keys.MIN_DATE, this._param.getMinDate())
-	            .put(Keys.MAX_DATE, this._param.getMaxDate());
+    return super.getJson()
+        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
+        .put(Keys.MIN_DATE, this._param.getMinDate())
+        .put(Keys.MAX_DATE, this._param.getMaxDate());
   }
 }

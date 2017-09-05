@@ -48,7 +48,7 @@ public class ShowRecordAction extends Action {
 
         ServletContext svltCtx = getServlet().getServletContext();
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                 + CConstants.WDK_PAGES_DIR;
 

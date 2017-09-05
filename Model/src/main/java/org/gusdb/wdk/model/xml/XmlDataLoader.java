@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.io.IOException;
@@ -25,15 +22,15 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
  */
 public class XmlDataLoader {
 
-    private URL schemaURL;
+    private URL _schemaURL;
 
     public XmlDataLoader(URL schemaURL) {
-        this.schemaURL = schemaURL;
+        _schemaURL = schemaURL;
     }
 
     public XmlAnswerValue parseDataFile(URL xmlDataURL) throws WdkModelException {
         // validate the xml data file
-        if (!validDataFile(xmlDataURL, schemaURL))
+        if (!validDataFile(xmlDataURL, _schemaURL))
             throw new WdkModelException("Validation to data xml file failed: "
                     + xmlDataURL.toExternalForm());
 

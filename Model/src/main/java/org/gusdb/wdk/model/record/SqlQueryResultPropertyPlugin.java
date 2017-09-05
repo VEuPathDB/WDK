@@ -25,12 +25,12 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
   private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
   private final static String PROPERTY_COLUMN = "propertyValue";
 
-  Query query;
-  String propertyName;
+  Query _query;
+  String _propertyName;
 
   public SqlQueryResultPropertyPlugin(Query query, String propertyName) throws WdkModelException {
-    this.query = query;
-    this.propertyName = propertyName;
+    this._query = query;
+    this._propertyName = propertyName;
     // logger.debug("*******Result Property: " + propertyName + " and Query: " + query.toString() + " and SQL:
     // \n" + ((SqlQuery)query).getSql() );
     validateQuery(query);
@@ -44,10 +44,10 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
     // " and question: " + answerValue.getQuestion().getDisplayName());
     // logger.debug(" .... with idSQL: " + answerValue.getIdSql());
 
-    if (!propertyName.equals(this.propertyName))
+    if (!propertyName.equals(this._propertyName))
       throw new WdkModelException("Accessing result property plugin for record class '" +
           recordClass.getName() + "' with illegal property name '" + propertyName +
-          "'.  The allowed property name is '" + this.propertyName + "'");
+          "'.  The allowed property name is '" + this._propertyName + "'");
 
     QueryInstance<?> queryInstance = getQueryInstance(answerValue);
     try (ResultList results = queryInstance.getResults()) {
@@ -66,7 +66,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
     params.put(WDK_ID_SQL_PARAM, answerValue.getIdSql());
     QueryInstance<?> queryInstance;
     try {
-      queryInstance = query.makeInstance(answerValue.getUser(), params, true, 0,
+      queryInstance = _query.makeInstance(answerValue.getUser(), params, true, 0,
           new LinkedHashMap<String, String>());
     }
     catch (WdkUserException ex) {

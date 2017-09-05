@@ -33,7 +33,7 @@ public class CopyStrategyAction extends Action {
       HttpServletResponse response) throws Exception {
     logger.debug("Entering Copy Strategy...");
 
-    UserBean wdkUser = ActionUtility.getUser(servlet, request);
+    UserBean wdkUser = ActionUtility.getUser(request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
       String state = request.getParameter(CConstants.WDK_STATE_KEY);

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.util.Map;
@@ -94,11 +91,9 @@ public class GroupTest {
         String fullName = "NonexistGroupSet.NonexistGroup";
         wdkModel.resolveReference(fullName);
     }
-    
-    
+
     @Test
     public void testGetParamGroups() throws Exception {
-        WdkModel wdkModel = UnitTestHelper.getModel();
         WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
         for (QuestionSetBean questionSet : wdkModelBean.getQuestionSets()) {
             for(QuestionBean question : questionSet.getQuestions()) {

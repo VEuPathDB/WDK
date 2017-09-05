@@ -96,6 +96,8 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
    * Does any processing that needs to be done before the analyzer process
    * runs.  Default implementation does nothing and returns null.
    * 
+   * @param answerValue
+   * @param log
    * @throws WdkModelException if something goes wrong in child implementation
    * @return execution status if it is determined that analyzer subprocess
    * should NOT run.  If processing should continue, returns null.
@@ -112,6 +114,8 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
    * memory, etc.  Default implementation returns COMPLETE if exit value is 0,
    * else ERROR, and logs the error with relevant information.
    * 
+   * @param answerValue
+   * @param log
    * @throws WdkModelException if something goes wrong in child implementation
    * @return final execution status of this plugin
    */

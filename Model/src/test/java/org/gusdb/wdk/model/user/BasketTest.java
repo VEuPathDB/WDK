@@ -111,7 +111,7 @@ public class BasketTest {
         return selected;
     }
 
-    private List<String[]> getIds(int limit) throws Exception {
+    private static List<String[]> getIds(int limit) throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
         AnswerValue answerValue = step.getAnswerValue();

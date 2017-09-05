@@ -50,7 +50,7 @@ public class AttributeQueryTest extends QueryTest {
 
   @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet, TestResult result) throws WdkModelException, WdkUserException, SQLException {
-    int count = testAttributeQueryCount(user, query, paramValuesSet);
+    int count = testAttributeQueryCount(user, query);
     result.restartTimer();
     testAttributeQueryTime(user, query, paramValuesSet, count);
     return count;
@@ -80,7 +80,7 @@ public class AttributeQueryTest extends QueryTest {
     }
   }
 
-  private static int testAttributeQueryCount(User user, Query query, ParamValuesSet paramValuesSet)
+  private static int testAttributeQueryCount(User user, Query query)
       throws SQLException, WdkModelException, WdkUserException {
 
     Map<String, String> params = new LinkedHashMap<String, String>();

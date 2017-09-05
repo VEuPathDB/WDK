@@ -125,7 +125,7 @@ public class MigratorController {
     return commandLine;
   }
 
-  private Options declareOptions(Migrator migrator) {
+  private static Options declareOptions(Migrator migrator) {
     Options options = new Options();
     Option option = new Option("model", true,
         "the name of the model.  This is used to find the Model XML "

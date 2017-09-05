@@ -5,11 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -20,15 +18,14 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractDependentParam;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DependentParamInstance;
-import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
+import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.User;
@@ -627,7 +624,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  public Map<String, String> getSignatures(User user, Map<String, String> stableValues, Map<String, String> context)
+  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
@@ -707,7 +704,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * The only info we need for the query checksum is the columns to make sure we have correct columns to store
    * info we need.
    * 
-   * @param query
+   * @param _query
    * @return
    * @throws JSONException
    * @throws WdkModelException
@@ -760,19 +757,18 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
-  
+
   public void validateDependentParams() throws WdkModelException {
-   validateDependentParams(paramMap.keySet());
+   validateDependentParams(getFullName(), paramMap);
   }
-  
-  private void validateDependentParams(Set<String> rootQueryParamNames) throws WdkModelException {
-	// Need to validate that no params in the rootQuery paramMap have a short name that in fact refers to
-	// different params (i.e., params with different full names but the same short name).
+
+  private static void validateDependentParams(String queryName, Map<String, Param> paramMap) throws WdkModelException {
+    // TODO: Need to validate that no params in the rootQuery paramMap have a short name that in fact refers
+    //       to different params (i.e., params with different full names but the same short name).
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractDependentParam) {
-        ((AbstractDependentParam) param).checkParam(getFullName(), null, paramMap, new ArrayList<String>());
+        ((AbstractDependentParam) param).checkParam(queryName, null, paramMap, new ArrayList<String>());
       }
-    }  
-
+    }
   }
 }

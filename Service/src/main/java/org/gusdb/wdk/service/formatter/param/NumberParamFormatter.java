@@ -13,12 +13,13 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
     super(param);
   }
 
+  @Override
   public JSONObject getJson()
       throws JSONException, WdkModelException, WdkUserException {
-	return super.getJson()
-		        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
-		        .put(Keys.MIN_VALUE, this._param.getMin())
-	            .put(Keys.MAX_VALUE, this._param.getMax())
-	            .put(Keys.STEP, this._param.getStep());
+    return super.getJson()
+        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
+        .put(Keys.MIN_VALUE, this._param.getMin())
+        .put(Keys.MAX_VALUE, this._param.getMax())
+        .put(Keys.STEP, this._param.getStep());
   }
 }

@@ -46,7 +46,6 @@ public class StepValidator extends BaseCLI {
     try {
       validator.invoke(args);
       logger.info("step validator done.");
-      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -96,7 +95,7 @@ public class StepValidator extends BaseCLI {
       }
       projects = "(" + buffer.toString() + ")";
       
-      deleteStrategiesWithUnknownQuestions(wdkModel, projects);
+      deleteStrategiesWithUnknownQuestions(wdkModel);
 
       // we are cleaning apicomm from broken strategies in a new script wdkCleanBroken that we run before we
       // remove guests but this takes care of broken strategies in the middle, not just the root step, with
@@ -118,7 +117,7 @@ public class StepValidator extends BaseCLI {
     }
   }
   
-  private void deleteStrategiesWithUnknownQuestions(WdkModel wdkModel, String projects) throws SQLException {
+  private void deleteStrategiesWithUnknownQuestions(WdkModel wdkModel) throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String userSchema = userDB.getUserSchema();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -153,7 +152,7 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 042911>
-    resetByBatch(wdkModel, dataSource,
+    resetByBatch(dataSource,
         "UPDATE " + userSchema + "steps " + " SET is_valid = NULL WHERE project_id IN " + projects,
         "wdk-reset-step-flag");
   }
@@ -180,7 +179,7 @@ public class StepValidator extends BaseCLI {
         "                    AND s.project_id IN " + projects +
         "                    AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-question", null, null);
+    executeByBatch(source, sql, "STEPS:wdk-invalidate-question", null, null);
   }
 
   private void detectParams(WdkModel wdkModel, String projects) throws SQLException {
@@ -210,7 +209,7 @@ public class StepValidator extends BaseCLI {
         "     AND sp.param_name = d.param_name " +
         "     AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-param", null, null);
+    executeByBatch(source, sql, "STEPS:wdk-invalidate-param", null, null);
   }
 
   private void detectEnumParams(WdkModel wdkModel, String projects) throws SQLException {
@@ -250,7 +249,7 @@ public class StepValidator extends BaseCLI {
         "     AND sp.param_value = d.param_value " +
         "     AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-enum-param", null, null);
+    executeByBatch(source, sql, "STEPS:wdk-invalidate-enum-param", null, null);
   }
 
   private void flagDependentSteps(WdkModel wdkModel, String projects) throws SQLException {
@@ -294,7 +293,7 @@ public class StepValidator extends BaseCLI {
       logger.info("\n\nWARNING: this final SQL might take 3 hours when using" +
           " all projects; please let it run, killing the job would" +
           " break replication.\n...................................\n");
-      executeByBatch(wdkModel, source, sql, "STEP:wdk-invalidate-parent-step", null, null);
+      executeByBatch(source, sql, "STEP:wdk-invalidate-parent-step", null, null);
 
     }
     finally {
@@ -502,8 +501,7 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 050511>
-    executeByBatch(wdkModel, dataSource, sql.toString(), "STRATEGIES:wdk-delete-dangling-strategy", null,
-        null);
+    executeByBatch(dataSource, sql.toString(), "STRATEGIES:wdk-delete-dangling-strategy", null, null);
   }
 
   private void deleteDanglingSteps(WdkModel wdkModel, String schema, String parentTable) throws SQLException {
@@ -516,14 +514,14 @@ public class StepValidator extends BaseCLI {
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    executeByBatch(wdkModel, dataSource, sql.toString(), "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
+    executeByBatch(dataSource, sql.toString(), "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
                                                                                                         // 050511>
   }
 
   // <ADD-AG 042911>
   // -----------------------------------------------------------
 
-  public static void executeByBatch(WdkModel wdkModel, DataSource dataSource, String sql, String name,
+  public static void executeByBatch(DataSource dataSource, String sql, String name,
       String dmlSql, String selectSql) throws SQLException {
 
     if ((dmlSql == null) || (selectSql == null)) {
@@ -576,7 +574,7 @@ public class StepValidator extends BaseCLI {
 
   // ---------------------------------------------------------------------------
 
-  private void resetByBatch(WdkModel wdkModel, DataSource dataSource, String sql, String name)
+  private void resetByBatch(DataSource dataSource, String sql, String name)
       throws SQLException {
 
     sql = sql + " AND is_valid is not NULL and rownum < 1000";

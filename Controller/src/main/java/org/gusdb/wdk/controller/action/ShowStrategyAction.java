@@ -63,7 +63,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         response.setContentType("application/json");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean wdkUser = ActionUtility.getUser(request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);

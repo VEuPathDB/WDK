@@ -78,14 +78,14 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
-    if (param.isNoTranslation())
+    if (_param.isNoTranslation())
       return stableValue;
 
     long datasetId = Long.valueOf(stableValue);
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     String dvSql = datasetFactory.getDatasetValueSql(datasetId);
 
-    RecordClass recordClass = ((DatasetParam) param).getRecordClass();
+    RecordClass recordClass = ((DatasetParam) _param).getRecordClass();
     if (recordClass == null)
       return dvSql;
 
@@ -127,13 +127,13 @@ public class DatasetParamHandler extends AbstractParamHandler {
       WdkModelException {
 
     // check if stable value is assigned
-    String datasetId = requestParams.getParam(param.getName());
+    String datasetId = requestParams.getParam(_param.getName());
     if (datasetId != null) {
       return validateStableValueSyntax(user, datasetId);
     }
 
     // dataset id not assigned, create one.
-    DatasetParam datasetParam = (DatasetParam) param;
+    DatasetParam datasetParam = (DatasetParam) _param;
     String type = requestParams.getParam(datasetParam.getTypeSubParam());
     if (type == null) // use data as default input type
       type = DatasetParam.TYPE_DATA;
@@ -149,13 +149,13 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (type.equalsIgnoreCase(DatasetParam.TYPE_DATA)) {
       data = requestParams.getParam(datasetParam.getDataSubParam());
       if (data == null || data.length() == 0)
-        throw new WdkUserException("Please input data for parameter '" + param.getPrompt() + "'.");
+        throw new WdkUserException("Please input data for parameter '" + _param.getPrompt() + "'.");
     }
     else if (type.equalsIgnoreCase(DatasetParam.TYPE_FILE)) {
       String fileParam = datasetParam.getFileSubParam();
       uploadFile = requestParams.getParam(fileParam);
       if (uploadFile == null || uploadFile.length() == 0)
-        throw new WdkUserException("Please select a file to upload for parameter '" + param.getPrompt() +
+        throw new WdkUserException("Please select a file to upload for parameter '" + _param.getPrompt() +
             "'.");
       logger.debug("upload file: " + uploadFile);
       data = requestParams.getUploadFileContent(fileParam);
@@ -186,9 +186,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
     logger.debug("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
-      if (!param.isAllowEmpty())
-        throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
-      data = param.getEmptyValue();
+      if (!_param.isAllowEmpty())
+        throw new WdkUserException("The dataset param '" + _param.getPrompt() + "' does't allow empty value.");
+      data = _param.getEmptyValue();
     }
 
     if (data != null) {
@@ -233,9 +233,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    DatasetParam datasetParam = (DatasetParam) param;
+    DatasetParam datasetParam = (DatasetParam) _param;
     // check if the stable value is available
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
 
     // get dataset if possible
     Dataset dataset = null;
@@ -245,11 +245,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
       logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
       DatasetBean bean = new DatasetBean(dataset);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, bean);
+      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, bean);
     }
 
     // get data
-    String data = (dataset != null) ? dataset.getContent() : param.getDefault();
+    String data = (dataset != null) ? dataset.getContent() : _param.getDefault();
     requestParams.setParam(datasetParam.getDataSubParam(), data);
 
     if (dataset != null) {

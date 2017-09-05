@@ -52,8 +52,7 @@ public class XmlQuestionTester {
               int nextStartRow = Integer.parseInt(rows[i]);
               int nextEndRow = Integer.parseInt(rows[i + 1]);
   
-              XmlAnswerValue answer = question.makeAnswer(null, nextStartRow,
-                      nextEndRow);
+              XmlAnswerValue answer = question.makeAnswer(nextStartRow, nextEndRow);
   
               System.out.println("Printing Record Instances on page " + pageCount);
               System.out.println(answer.print());

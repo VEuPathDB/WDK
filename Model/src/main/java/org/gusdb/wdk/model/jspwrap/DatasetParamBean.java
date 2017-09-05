@@ -29,13 +29,13 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
   }
 
   public DatasetBean getDataset() throws WdkModelException {
-    long userDatasetId = Long.valueOf(stableValue);
-    DatasetBean dataset = user.getDataset(userDatasetId);
+    long userDatasetId = Long.valueOf(_stableValue);
+    DatasetBean dataset = _userBean.getDataset(userDatasetId);
     return dataset;
   }
 
   public String getDefaultType() {
-    return param.getDefaultType();
+    return _param.getDefaultType();
   }
 
   /**
@@ -76,10 +76,10 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
   }
 
   public Integer getBasketCount() throws WdkModelException {
-    return datasetParam.getBasketCount(user.getUser());
+    return datasetParam.getBasketCount(_userBean.getUser());
   }
 
   public Strategy[] getStrategies() throws WdkModelException {
-    return datasetParam.getStrategies(user.getUser());
+    return datasetParam.getStrategies(_userBean.getUser());
   }
 }

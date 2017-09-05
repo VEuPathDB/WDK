@@ -52,7 +52,7 @@ public class WizardAction extends Action {
             throws Exception {
         logger.debug("Entering WizardAction.....");
         
-        UserBean user = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(request);
         try {
             WizardForm wizardForm = (WizardForm) form;
 

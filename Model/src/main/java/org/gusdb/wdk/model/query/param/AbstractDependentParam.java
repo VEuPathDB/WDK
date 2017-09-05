@@ -4,15 +4,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -29,25 +28,24 @@ import org.json.JSONObject;
  */
 public abstract class AbstractDependentParam extends Param {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(AbstractDependentParam.class);
  
-  static final String PARAM_SERVED_QUERY = "ServedQuery";
+  protected static final String PARAM_SERVED_QUERY = "ServedQuery";
 
-  private String dependedParamRef;
-  private Set<String> dependedParamRefs; 
-  private Set<Param> dependedParams;
+  private String _dependedParamRef;
+  private Set<String> _dependedParamRefs; 
+  private Set<Param> _dependedParams;
  
   public AbstractDependentParam() {
     super();
-    dependedParamRefs = new LinkedHashSet<>();
+    _dependedParamRefs = new LinkedHashSet<>();
   }
 
   public AbstractDependentParam(AbstractDependentParam param) {
     super(param);
 
-    this.dependedParamRef = param.dependedParamRef;
-    this.dependedParamRefs = new LinkedHashSet<>(param.dependedParamRefs);
+    this._dependedParamRef = param._dependedParamRef;
+    this._dependedParamRefs = new LinkedHashSet<>(param._dependedParamRefs);
   }
 
 
@@ -56,7 +54,7 @@ public abstract class AbstractDependentParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   public boolean isDependentParam() {
-    return (dependedParamRefs.size() > 0);
+    return (_dependedParamRefs.size() > 0);
   }
 
   /**
@@ -79,18 +77,18 @@ public abstract class AbstractDependentParam extends Param {
     if (!isResolved())
       throw new WdkModelException(
           "This method can't be called before the references for the object are resolved.");
- 
-    if (dependedParams == null) {  
-      dependedParams = new LinkedHashSet<>();
+
+    if (_dependedParams == null) {  
+      _dependedParams = new LinkedHashSet<>();
       Map<String, Param> params = null;
       
-      if (contextQuestion != null) {
-        params = contextQuestion.getParamMap();
+      if (_contextQuestion != null) {
+        params = _contextQuestion.getParamMap();
       }
-      else if (contextQuery != null)
-        params = contextQuery.getParamMap();
+      else if (_contextQuery != null)
+        params = _contextQuery.getParamMap();
       
-      for (String paramRef : dependedParamRefs) {
+      for (String paramRef : _dependedParamRefs) {
         
         // find the best param available to fulfill the dependedParamRefs.
         // first try the question context, then the query context, and finally the wdk model
@@ -99,7 +97,7 @@ public abstract class AbstractDependentParam extends Param {
         if (params != null) param = params.get(paramName);
         if (param == null) param = (Param) _wdkModel.resolveReference(paramRef);
         if (param != null) {
-          dependedParams.add(param);
+          _dependedParams.add(param);
           param.addDependentParam(this);
         } else {
           String message = "Dependent param " + getFullName() + " declares a depended param " + paramRef +
@@ -108,22 +106,21 @@ public abstract class AbstractDependentParam extends Param {
         }
       }
     }
-    
-    if (logger.isTraceEnabled()) {
-      for (Param param : dependedParams) {
+    if (LOG.isTraceEnabled()) {
+      for (Param param : _dependedParams) {
         String vocab = "";
         if ((param instanceof FlatVocabParam)) {
           Query query = ((FlatVocabParam) param).getQuery();
           vocab = (query != null) ? query.getFullName() : "N/A";
         }
-        logger.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
+        LOG.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
       }
     }
-    return dependedParams;
+    return _dependedParams;
   }
 
   public void setDependedParamRef(String dependedParamRef) {
-    this.dependedParamRef = dependedParamRef;
+    this._dependedParamRef = dependedParamRef;
   }
 
 
@@ -139,22 +136,21 @@ public abstract class AbstractDependentParam extends Param {
     super.resolveReferences(wdkModel);
 
     // resolve depended param refs
-    dependedParamRefs.clear();
-    if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
-      for (String paramRef : dependedParamRef.split(",\\s*")) {
+    _dependedParamRefs.clear();
+    if (_dependedParamRef != null && _dependedParamRef.trim().length() > 0) {
+      for (String paramRef : _dependedParamRef.split(",\\s*")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
 
         // make sure the paramRef is unique
-        if (dependedParamRefs.contains(paramRef))
+        if (_dependedParamRefs.contains(paramRef))
           throw new WdkModelException("Duplicate depended param [" + paramRef +
               "] defined in dependent param " + getFullName());
-        dependedParamRefs.add(paramRef);
+        _dependedParamRefs.add(paramRef);
       }
     }
 
     _resolved = true;
-
   }
 
   @Override
@@ -188,7 +184,7 @@ public abstract class AbstractDependentParam extends Param {
    * @param model
    * @param queryName
    * @param queryType
-   * @param dependedParams
+   * @param _dependedParams
    * @param paramFullName
    * @return
    * @throws WdkModelException
@@ -208,8 +204,8 @@ public abstract class AbstractDependentParam extends Param {
     // get set of names of declared depended params
     getDependedParams();
     Set<String> dependedParamNames = new HashSet<>();
-    if (dependedParams != null) {
-      for (Param param : dependedParams) {
+    if (_dependedParams != null) {
+      for (Param param : _dependedParams) {
         dependedParamNames.add(param.getName());
       }
     }
@@ -222,7 +218,7 @@ public abstract class AbstractDependentParam extends Param {
       if (queryParamName.equals(PARAM_SERVED_QUERY) || queryParamName.equals(Utilities.PARAM_USER_ID))
         continue;
 
-      if (!dependedParamRefs.contains(queryParamName))
+      if (!_dependedParamRefs.contains(queryParamName))
         throw new WdkModelException("The " + queryType + query.getFullName() + " declares a depended param " +
             queryParamName + ", but its containing param " + getFullName() + " doesn't declare it in its depended params.");
     }
@@ -245,7 +241,7 @@ public abstract class AbstractDependentParam extends Param {
     // make sure the values for depended params are fetched first.
     if (isDependentParam()) {
       for (Param dependedParam : getDependedParams()) {
-        logger.debug(name + " depends on " + dependedParam.getName());
+        LOG.debug(_name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractDependentParam) {
           ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
         }
@@ -253,17 +249,17 @@ public abstract class AbstractDependentParam extends Param {
     }
 
     // check if the value for this param is correct
-    DependentParamInstance instance = instances.get(name);
+    DependentParamInstance instance = instances.get(_name);
     if (instance == null) {
       instance = createDependentParamInstance(user, contextParamValues);
-      instances.put(name, instance);
+      instances.put(_name, instance);
     }
   
-    String stableValue = contextParamValues.get(name);
+    String stableValue = contextParamValues.get(_name);
     String value = instance.getValidStableValue(user, stableValue, contextParamValues);
 
     if (value != null)
-    contextParamValues.put(name, value);
+    contextParamValues.put(_name, value);
     //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
   }
 

@@ -30,14 +30,14 @@ import org.gusdb.wdk.model.query.param.RequestParams;
 public class QuestionForm extends MapActionForm {
 
   private static final long serialVersionUID = -7848685794514383434L;
-  private static final Logger logger = Logger.getLogger(QuestionForm.class);
+  private static final Logger LOG = Logger.getLogger(QuestionForm.class);
 
-  private String questionFullName;
-  private QuestionBean question;
-  private boolean validating = true;
-  private boolean paramsFilled = false;
-  private String weight;
-  private String customName;
+  private String _questionFullName;
+  private QuestionBean _question;
+  private boolean _validating = true;
+  private boolean _paramsFilled = false;
+  private String _weight;
+  private String _customName;
 
   /**
    * validate the properties that have been sent from the HTTP request, and return an ActionErrors object that
@@ -45,18 +45,18 @@ public class QuestionForm extends MapActionForm {
    */
   @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-    logger.debug("\n\n\n\n\n\nstart form validation...");
+    LOG.debug("\n\n\n\n\n\nstart form validation...");
     ActionErrors errors = super.validate(mapping, request);
     if (errors == null)
       errors = new ActionErrors();
 
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
 
     // set the question name into request
     request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
-    request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, questionFullName);
+    request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, _questionFullName);
 
-    if (!validating)
+    if (!_validating)
       return errors;
 
     String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
@@ -71,7 +71,7 @@ public class QuestionForm extends MapActionForm {
     catch (WdkUserException | WdkModelException ex) {
       ActionMessage message = new ActionMessage("mapped.properties", ex.getMessage());
       errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-      logger.error("Unable to get question", ex);
+      LOG.error("Unable to get question", ex);
       return errors;
     }
     if (wdkQuestion == null)
@@ -91,7 +91,7 @@ public class QuestionForm extends MapActionForm {
       catch (Exception ex) {
         ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-        logger.error("getting stable value failed", ex);
+        LOG.error("getting stable value failed", ex);
       }
     }
 
@@ -111,24 +111,24 @@ public class QuestionForm extends MapActionForm {
       catch (Exception ex) {
         ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-        logger.error("validation failed.", ex);
+        LOG.error("validation failed.", ex);
       }
     }
 
     // validate weight
-    boolean hasWeight = (weight != null && weight.length() > 0);
+    boolean hasWeight = (_weight != null && _weight.length() > 0);
     if (hasWeight) {
       String message = null;
-      if (!weight.matches("[\\-\\+]?\\d+")) {
-        message = "Invalid weight value: '" + weight + "'. Only integer numbers are allowed.";
+      if (!_weight.matches("[\\-\\+]?\\d+")) {
+        message = "Invalid weight value: '" + _weight + "'. Only integer numbers are allowed.";
       }
-      else if (weight.length() > 9) {
-        message = "Weight number is too big: " + weight;
+      else if (_weight.length() > 9) {
+        message = "Weight number is too big: " + _weight;
       }
       if (message != null) {
         ActionMessage am = new ActionMessage("mapped.properties", "Assigned weight", message);
         errors.add(ActionErrors.GLOBAL_MESSAGE, am);
-        logger.error(message);
+        LOG.error(message);
       }
     }
 
@@ -138,52 +138,52 @@ public class QuestionForm extends MapActionForm {
           "Unable to validate params in request."));
     }
 
-    logger.debug("finish validation...\n\n");
+    LOG.debug("finish validation...\n\n");
     return errors;
   }
 
   public void setQuestionFullName(String questionFullName) {
-    this.questionFullName = questionFullName;
+    _questionFullName = questionFullName;
   }
 
   public String getQuestionFullName() {
-    return this.questionFullName;
+    return _questionFullName;
   }
 
   public void setQuestion(QuestionBean question) {
-    this.question = question;
-    this.questionFullName = question.getFullName();
+    _question = question;
+    _questionFullName = question.getFullName();
   }
 
   public QuestionBean getQuestion() throws WdkModelException, WdkUserException {
-    if (question == null) {
-      if (questionFullName == null)
+    if (_question == null) {
+      if (_questionFullName == null)
         return null;
       WdkModelBean wdkModel = ActionUtility.getWdkModel(getServlet());
-      wdkModel.validateQuestionFullName(questionFullName);
-      question = wdkModel.getQuestion(questionFullName);
+      wdkModel.validateQuestionFullName(_questionFullName);
+      _question = wdkModel.getQuestion(_questionFullName);
     }
-    return question;
+    return _question;
   }
 
   public void setNonValidating() {
-    validating = false;
+    _validating = false;
   }
 
   public void setParamsFilled(boolean paramsFilled) {
-    this.paramsFilled = paramsFilled;
+    _paramsFilled = paramsFilled;
   }
 
   public boolean getParamsFilled() {
-    return paramsFilled;
+    return _paramsFilled;
   }
 
   public void setWeight(String weight) {
-    this.weight = weight;
+    _weight = weight;
   }
 
   public String getWeight() {
-    return weight;
+    return _weight;
   }
 
   @Override
@@ -195,7 +195,7 @@ public class QuestionForm extends MapActionForm {
    * @return the customName
    */
   public String getCustomName() {
-    return customName;
+    return _customName;
   }
 
   /**
@@ -203,19 +203,19 @@ public class QuestionForm extends MapActionForm {
    *          the customName to set
    */
   public void setCustomName(String customName) {
-    this.customName = customName;
+    _customName = customName;
   }
 
   public Map<String, String> getInvalidParams() {
-    Map<String, ParamBean<?>> params = question.getParamsMap();
+    Map<String, ParamBean<?>> params = _question.getParamsMap();
     Map<String, String> invalidParams = new LinkedHashMap<String, String>();
-    for (String param : values.keySet()) {
+    for (String param : _values.keySet()) {
       if (!params.containsKey(param))
-        invalidParams.put(param, values.get(param).toString());
+        invalidParams.put(param, _values.get(param).toString());
     }
-    for (String param : arrays.keySet()) {
+    for (String param : _arrays.keySet()) {
       if (!params.containsKey(param)) {
-        String value = Utilities.fromArray(arrays.get(param));
+        String value = Utilities.fromArray(_arrays.get(param));
         invalidParams.put(param, value);
       }
     }

@@ -86,7 +86,7 @@ public class FilterParamHandler extends AbstractParamHandler {
         terms[i] = jsTerms.getString(i);
       }
 
-      AbstractEnumParam enumParam = (AbstractEnumParam) param;
+      AbstractEnumParam enumParam = (AbstractEnumParam) _param;
       EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
       Set<String> internals = new LinkedHashSet<>();
@@ -95,13 +95,13 @@ public class FilterParamHandler extends AbstractParamHandler {
         if (!cache.containsTerm(term))
           continue;
 
-        String internal = param.isNoTranslation() ? term : cache.getInternal(term);
+        String internal = _param.isNoTranslation() ? term : cache.getInternal(term);
 
         if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
           internal = "'" + internal.replaceAll("'", "''") + "'";
         internals.add(internal);
       }
-      DBPlatform platform = wdkModel.getAppDb().getPlatform();
+      DBPlatform platform = _wdkModel.getAppDb().getPlatform();
       return platform.prepareExpressionList(internals.toArray(new String[0]));
     }
     catch (JSONException ex) {
@@ -131,7 +131,7 @@ public class FilterParamHandler extends AbstractParamHandler {
       }
 
       // return stable values, instead of list of terms
-      if (param.isNoTranslation()) {
+      if (_param.isNoTranslation()) {
         return stableValue;
       }
 
@@ -153,7 +153,7 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
   
   @Override
@@ -161,10 +161,10 @@ public class FilterParamHandler extends AbstractParamHandler {
     String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
-      if (!param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
+      if (!_param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
 
-      stableValue = param.getDefault();
+      stableValue = _param.getDefault();
     }
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
@@ -173,17 +173,17 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) param;
+    AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
     // set labels
     Map<String, String> displayMap = aeParam.getDisplayMap(user, contextParamValues);
     String[] terms = displayMap.keySet().toArray(new String[0]);
     String[] labels = displayMap.values().toArray(new String[0]);
-    requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
-    requestParams.setArray(param.getName() + TERMS_SUFFIX, terms);
+    requestParams.setArray(_param.getName() + LABELS_SUFFIX, labels);
+    requestParams.setArray(_param.getName() + TERMS_SUFFIX, terms);
 
     // get the stable value
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
       stableValue = aeParam.getDefault(user, contextParamValues);
@@ -202,16 +202,16 @@ public class FilterParamHandler extends AbstractParamHandler {
     // store the invalid values
     String[] invalids = invalidValues.toArray(new String[0]);
     Arrays.sort(invalids);
-    requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
+    requestParams.setAttribute(_param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
 
     // set the stable & raw value
     if (stableValue != null)
-      requestParams.setParam(param.getName(), stableValue);
+      requestParams.setParam(_param.getName(), stableValue);
 
     if (values.size() > 0) {
       String[] rawValue = values.toArray(new String[0]);
-      requestParams.setArray(param.getName(), rawValue);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
+      requestParams.setArray(_param.getName(), rawValue);
+      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
     }
   }
 
@@ -227,9 +227,9 @@ public class FilterParamHandler extends AbstractParamHandler {
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
     try {
-      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this.param).getMetadataSpec(user, contextParamValues);
+      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this._param).getMetadataSpec(user, contextParamValues);
       if (jsFilters.length() == 0)
-        return "All " + param.prompt;
+        return "All " + _param._prompt;
       else {
         String display = "";
         for (int i = 0; i < jsFilters.length(); i++) {

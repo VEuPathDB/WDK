@@ -10,24 +10,24 @@ import org.gusdb.wdk.model.WdkModelText;
 
 public class Stage extends WdkModelBase {
 
-    private Wizard wizard;
-    private String name;
-    private String display;
+    private Wizard _wizard;
+    private String _name;
+    private String _display;
 
-    private String handlerClass;
-    private StageHandler handler;
+    private String _handlerClass;
+    private StageHandler _handler;
 
-    private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
-    private String description;
+    private List<WdkModelText> _descriptionList = new ArrayList<WdkModelText>();
+    private String _description;
 
-    private List<Result> resultList = new ArrayList<Result>();
-    private Result result;
+    private List<Result> _resultList = new ArrayList<Result>();
+    private Result _result;
 
     /**
      * @return the wizard
      */
     public Wizard getWizard() {
-        return wizard;
+        return _wizard;
     }
 
     /**
@@ -35,14 +35,14 @@ public class Stage extends WdkModelBase {
      *            the wizard to set
      */
     public void setWizard(Wizard wizard) {
-        this.wizard = wizard;
+        _wizard = wizard;
     }
 
     /**
      * @return the name
      */
     public String getName() {
-        return name;
+        return _name;
     }
 
     /**
@@ -50,14 +50,14 @@ public class Stage extends WdkModelBase {
      *            the name to set
      */
     public void setName(String name) {
-        this.name = name;
+        _name = name;
     }
 
     /**
      * @return the display
      */
     public String getDisplay() {
-        return (display == null) ? name : display;
+        return (_display == null) ? _name : _display;
     }
 
     /**
@@ -65,7 +65,7 @@ public class Stage extends WdkModelBase {
      *            the display to set
      */
     public void setDisplay(String display) {
-        this.display = display;
+        _display = display;
     }
 
     /**
@@ -73,93 +73,81 @@ public class Stage extends WdkModelBase {
      *            the handlerClass to set
      */
     public void setHandlerClass(String handlerClass) {
-        this.handlerClass = handlerClass;
+        _handlerClass = handlerClass;
     }
 
     /**
      * @return the handler
      */
     public StageHandler getHandler() {
-        return handler;
+        return _handler;
     }
 
     public void addDescription(WdkModelText description) {
-        this.descriptionList.add(description);
+        _descriptionList.add(description);
     }
 
     public String getDescription() {
-        return this.description;
+        return _description;
     }
 
     public void addResult(Result result) {
-        this.resultList.add(result);
+        _resultList.add(result);
     }
 
     public Result getResult() {
-        return result;
+        return _result;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude the description
-        for (WdkModelText desc : descriptionList) {
+        for (WdkModelText desc : _descriptionList) {
             if (desc.include(projectId)) {
-                if (this.description != null)
+                if (_description != null)
                     throw new WdkModelException("There are more than one "
-                            + "description defined in the stage '" + this.name
+                            + "description defined in the stage '" + _name
                             + "' for " + projectId);
                 desc.excludeResources(projectId);
-                this.description = desc.getText();
+                _description = desc.getText();
             }
         }
-        this.descriptionList = null;
+        _descriptionList = null;
 
         // exclude result
-        for (Result result : resultList) {
+        for (Result result : _resultList) {
             if (result.include(projectId)) {
-                if (this.result != null)
+                if (_result != null)
                     throw new WdkModelException("Only one result is allowed in"
-                            + " stage [" + name + "]");
+                            + " stage [" + _name + "]");
                 result.excludeResources(projectId);
-                this.result = result;
+                _result = result;
             }
         }
-        this.resultList = null;
+        _resultList = null;
 
-        if (result == null)
+        if (_result == null)
             throw new WdkModelException("No result is defined in stage ["
-                    + name + "]");
+                    + _name + "]");
 
         super.excludeResources(projectId);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-     * .WdkModel)
-     */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // resolve the handler
-        if (handlerClass != null) {
+        if (_handlerClass != null) {
             try {
-                Class<?> hClass = Class.forName(handlerClass);
-                this.handler = (StageHandler) hClass.newInstance();
+                Class<?> hClass = Class.forName(_handlerClass);
+                _handler = (StageHandler) hClass.newInstance();
             } catch (Exception ex) {
                 throw new WdkModelException("The flow stage handler is not of type: "
-                        + StageHandler.class + ". stage: " + name, ex);
+                        + StageHandler.class + ". stage: " + _name, ex);
             }
         }
 
         // resolve the reference in the result;
-        result.resolveReferences(wdkModel);
+        _result.resolveReferences(wdkModel);
 
         super.resolveReferences(wdkModel);
     }

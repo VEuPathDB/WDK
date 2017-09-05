@@ -15,14 +15,14 @@ import org.gusdb.wsf.client.WsfResponseListener;
  */
 public class ArrayResultList implements ResultList, WsfResponseListener {
 
-  private final Map<String, Integer> columns;
+  private final Map<String, Integer> _columns;
 
-  private final List<String[]> rows;
-  private final Map<String, String> attachments;
-  private String message;
-  private int rowIndex;
-  private boolean hasWeight;
-  private int assignedWeight;
+  private final List<String[]> _rows;
+  private final Map<String, String> _attachments;
+  private String _message;
+  private int _rowIndex;
+  private boolean _hasWeight;
+  private int _assignedWeight;
 
   /**
    * @param columns
@@ -30,57 +30,47 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
    *           if the result has fewer columns than the column definition
    */
   public ArrayResultList(Map<String, Integer> columns) throws WdkModelException {
-    this.columns = new LinkedHashMap<String, Integer>(columns);
-    this.rows = new ArrayList<>();
-    this.attachments = new LinkedHashMap<>();
-    this.rowIndex = -1;
+    _columns = new LinkedHashMap<String, Integer>(columns);
+    _rows = new ArrayList<>();
+    _attachments = new LinkedHashMap<>();
+    _rowIndex = -1;
   }
   
   public String getMessage() {
-    return message;
+    return _message;
   }
   
   public Map<String, String> getAttachments() {
-    return attachments;
+    return _attachments;
   }
 
   public boolean isHasWeight() {
-    return hasWeight;
+    return _hasWeight;
   }
 
   public void setHasWeight(boolean hasWeight) {
-    this.hasWeight = hasWeight;
+    _hasWeight = hasWeight;
   }
 
   public int getAssignedWeight() {
-    return assignedWeight;
+    return _assignedWeight;
   }
 
   public void setAssignedWeight(int assignedWeight) {
-    this.assignedWeight = assignedWeight;
+    _assignedWeight = assignedWeight;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#close()
-   */
   @Override
   public void close() {
-    rows.clear();
+    _rows.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#contains(java.lang.String)
-   */
   @Override
   public boolean contains(String columnName) {
-    if (columns.containsKey(columnName)) {
+    if (_columns.containsKey(columnName)) {
       return true;
     }
-    else if (hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName)) {
+    else if (_hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName)) {
       return true;
     }
     else {
@@ -88,11 +78,6 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#get(java.lang.String)
-   */
   @Override
   public Object get(String columnName) throws WdkModelException {
     if (!contains(columnName) && !Utilities.COLUMN_WEIGHT.equals(columnName)) {
@@ -102,46 +87,41 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
       throw new WdkModelException("No more rows in the resultList.");
 
     if (contains(columnName)) {
-      int columnIndex = columns.get(columnName);
-      return rows.get(rowIndex)[columnIndex];
+      int columnIndex = _columns.get(columnName);
+      return _rows.get(_rowIndex)[columnIndex];
     }
     else {
       // must be a weight column, and no value available, use assignedWeight.
-      return new Integer(assignedWeight);
+      return new Integer(_assignedWeight);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#next()
-   */
   @Override
   public boolean next() throws WdkModelException {
-    rowIndex++;
+    _rowIndex++;
     return hasNext();
   }
 
   private boolean hasNext() {
-    return (rowIndex < rows.size());
+    return (_rowIndex < _rows.size());
   }
 
   @Override
   public synchronized void onRowReceived(String[] row) {
-    rows.add(row);
+    _rows.add(row);
   }
 
   @Override
   public void onAttachmentReceived(String key, String content) {
-    attachments.put(key, content);
+    _attachments.put(key, content);
   }
 
   @Override
   public void onMessageReceived(String message) {
-    this.message = message;
+    _message = message;
   }
 
   public int getSize() {
-    return rows.size();
+    return _rows.size();
   }
 }

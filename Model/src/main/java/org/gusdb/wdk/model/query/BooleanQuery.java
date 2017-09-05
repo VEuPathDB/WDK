@@ -59,10 +59,10 @@ public class BooleanQuery extends SqlQuery {
     return QUERY_NAME_PREFIX + rcName;
   }
 
-  private AnswerParam leftOperand;
-  private AnswerParam rightOperand;
-  private StringParam operator;
-  private RecordClass recordClass;
+  private AnswerParam _leftOperand;
+  private AnswerParam _rightOperand;
+  private StringParam _operator;
+  private RecordClass _recordClass;
 
   public BooleanQuery(RecordClass recordClass) throws WdkModelException {
 	  setRecordClass(recordClass);
@@ -76,28 +76,28 @@ public class BooleanQuery extends SqlQuery {
   }
   
   public void setRecordClass(RecordClass recordClass) throws WdkModelException {
-    this.recordClass = recordClass;
+    this._recordClass = recordClass;
     this._wdkModel = recordClass.getWdkModel();
     String rcName = recordClass.getFullName().replace('.', '_');
 
     // create or get the historyParam for the query
     ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    leftOperand = prepareOperand(internalParamSet, recordClass,
+    _leftOperand = prepareOperand(internalParamSet, recordClass,
         LEFT_OPERAND_PARAM_PREFIX + rcName);
-    leftOperand.setPrompt("Left Operand");
-    rightOperand = prepareOperand(internalParamSet, recordClass,
+    _leftOperand.setPrompt("Left Operand");
+    _rightOperand = prepareOperand(internalParamSet, recordClass,
         RIGHT_OPERAND_PARAM_PREFIX + rcName);
-    rightOperand.setPrompt("Right Operand");
+    _rightOperand.setPrompt("Right Operand");
 
     // create the stringParam for the others
-    operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
-    operator.setPrompt("Operator");
+    _operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
+    _operator.setPrompt("Operator");
 
     // create the query
     this.setName(getQueryName(recordClass));
-    this.addParam(leftOperand);
-    this.addParam(rightOperand);
-    this.addParam(operator);
+    this.addParam(_leftOperand);
+    this.addParam(_rightOperand);
+    this.addParam(_operator);
 
     prepareColumns(recordClass);
 
@@ -107,38 +107,38 @@ public class BooleanQuery extends SqlQuery {
   protected BooleanQuery(BooleanQuery query) {
     super(query);
 
-    this.recordClass = query.recordClass;
-    this.leftOperand = (AnswerParam) paramMap.get(query.leftOperand.getName());
-    this.operator = (StringParam) paramMap.get(query.operator.getName());
-    this.rightOperand = (AnswerParam) paramMap.get(query.rightOperand.getName());
+    this._recordClass = query._recordClass;
+    this._leftOperand = (AnswerParam) paramMap.get(query._leftOperand.getName());
+    this._operator = (StringParam) paramMap.get(query._operator.getName());
+    this._rightOperand = (AnswerParam) paramMap.get(query._rightOperand.getName());
   }
 
   /**
    * @return the recordClass
    */
   public RecordClass getRecordClass() {
-    return recordClass;
+    return _recordClass;
   }
 
   /**
    * @return the leftOperand
    */
   public AnswerParam getLeftOperandParam() {
-    return leftOperand;
+    return _leftOperand;
   }
 
   /**
    * @return the rightOperand
    */
   public AnswerParam getRightOperandParam() {
-    return rightOperand;
+    return _rightOperand;
   }
 
   /**
    * @return the operator
    */
   public StringParam getOperatorParam() {
-    return operator;
+    return _operator;
   }
 
   private AnswerParam prepareOperand(ParamSet paramSet,
@@ -188,7 +188,7 @@ public class BooleanQuery extends SqlQuery {
   protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
     super.appendChecksumJSON(jsQuery, extra);
-    jsQuery.append("recordClass", recordClass.getFullName());
+    jsQuery.append("recordClass", _recordClass.getFullName());
   }
 
   @Override

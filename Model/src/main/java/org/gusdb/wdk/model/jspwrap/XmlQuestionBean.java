@@ -1,9 +1,4 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.jspwrap;
-
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -16,100 +11,55 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
  */
 public class XmlQuestionBean {
 
-    private static final Logger logger = Logger.getLogger(XmlQuestionBean.class);
+    private static final Logger LOG = Logger.getLogger(XmlQuestionBean.class);
 
-    private XmlQuestion question;
+    private XmlQuestion _question;
 
-    /**
-     * 
-     */
     public XmlQuestionBean(XmlQuestion question) {
-        this.question = question;
+        _question = question;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getDescription()
-     */
     public String getDescription() {
-        return this.question.getDescription();
+        return _question.getDescription();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getDisplayName()
-     */
     public String getDisplayName() {
-        return this.question.getDisplayName();
+        return _question.getDisplayName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getFullName()
-     */
     public String getFullName() {
-        return this.question.getFullName();
+        return _question.getFullName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getHelp()
-     */
     public String getHelp() {
-        return this.question.getHelp();
+        return _question.getHelp();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getName()
-     */
     public String getName() {
-        return this.question.getName();
+        return _question.getName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getName()
-     */
     public String getXmlDataURL() {
-        return this.question.getXmlDataURL();
+        return _question.getXmlDataURL();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#getRecordClass()
-     */
     public XmlRecordClassBean getRecordClass() {
-        return new XmlRecordClassBean(question.getRecordClass());
+        return new XmlRecordClassBean(_question.getRecordClass());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#makeAnswer(java.util.Map, int,
-     * int)
-     */
-    public XmlAnswerBean makeAnswer(Map<String, String> params, int startIndex,
+    public XmlAnswerBean makeAnswer(int startIndex,
             int endIndex) throws WdkModelException {
-        XmlAnswerValue answer = question.makeAnswer(params, startIndex,
-                endIndex);
+        XmlAnswerValue answer = _question.makeAnswer(startIndex, endIndex);
         return new XmlAnswerBean(answer);
     }
 
     public XmlAnswerBean getFullAnswer() throws WdkModelException {
         try {
-            XmlAnswerBean a = makeAnswer(null, 1, 3);
+            XmlAnswerBean a = makeAnswer(1, 3);
             int c = a.getResultSize();
-            return makeAnswer(null, 1, c);
+            return makeAnswer(1, c);
         } catch (WdkModelException ex) {
-            logger.error("Error on getting answer from xmlQuestion '"
+            LOG.error("Error on getting answer from xmlQuestion '"
                     + getFullName() + "': " + ex);
             ex.printStackTrace();
             throw ex;

@@ -29,13 +29,6 @@ public class GetMetadataAction extends GetVocabAction {
 
   private static final Logger logger = Logger.getLogger(GetMetadataAction.class);
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action. ActionMapping,
-   * org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest,
-   * javax.servlet.http.HttpServletResponse)
-   */
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
@@ -52,7 +45,7 @@ public class GetMetadataAction extends GetVocabAction {
 
       // TODO -- the following steps are to make sure the param is initialized properly;
       //         need further investigation to remove this need, and to improve performance.
-      UserBean user = ActionUtility.getUser(servlet, request);
+      UserBean user = ActionUtility.getUser(request);
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
       param.prepareDisplay(user, requestParams);

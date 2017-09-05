@@ -36,18 +36,16 @@ import org.json.JSONObject;
  */
 public class StringParam extends Param {
 
-  private List<WdkModelText> regexes;
-  private String regex;
-  private int length = 0;
-  /**
-     * 
-     */
-  private boolean number = false;
-  private boolean isSql = false;
-  private boolean multiLine = false;
+  private List<WdkModelText> _regexes;
+  private String _regex;
+  private int _length = 0;
+
+  private boolean _isNumber = false;
+  private boolean _isSql = false;
+  private boolean _multiLine = false;
 
   public StringParam() {
-    regexes = new ArrayList<WdkModelText>();
+    _regexes = new ArrayList<WdkModelText>();
 
     // register handler
     setHandler(new StringParamHandler());
@@ -55,13 +53,13 @@ public class StringParam extends Param {
 
   public StringParam(StringParam param) {
     super(param);
-    if (param.regexes != null)
-      this.regexes = new ArrayList<WdkModelText>();
-    this.regex = param.regex;
-    this.length = param.length;
-    this.number = param.number;
-    this.isSql = param.isSql;
-    this.multiLine = param.multiLine;
+    if (param._regexes != null)
+      _regexes = new ArrayList<WdkModelText>();
+    _regex = param._regex;
+    _length = param._length;
+    _isNumber = param._isNumber;
+    _isSql = param._isSql;
+    _multiLine = param._multiLine;
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -69,22 +67,22 @@ public class StringParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   public void addRegex(WdkModelText regex) {
-    this.regexes.add(regex);
+    _regexes.add(regex);
   }
 
   public void setRegex(String regex) {
-    this.regex = regex;
+    _regex = regex;
   }
 
   public String getRegex() {
-    return regex;
+    return _regex;
   }
 
   /**
    * @return the length
    */
   public int getLength() {
-    return length;
+    return _length;
   }
 
   /**
@@ -92,14 +90,14 @@ public class StringParam extends Param {
    *          the length to set
    */
   public void setLength(int length) {
-    this.length = length;
+    _length = length;
   }
 
   /**
    * @return the isNumber
    */
   public boolean isNumber() {
-    return number;
+    return _isNumber;
   }
 
   /**
@@ -107,14 +105,14 @@ public class StringParam extends Param {
    *          the isNumber to set
    */
   public void setNumber(boolean isNumber) {
-    this.number = isNumber;
+    _isNumber = isNumber;
   }
 
   /**
    * @return the isSql
    */
   public boolean getIsSql() {
-    return isSql;
+    return _isSql;
   }
 
   /**
@@ -122,7 +120,7 @@ public class StringParam extends Param {
    *          the isNumber to set
    */
   public void setIsSql(boolean isSql) {
-    this.isSql = isSql;
+    _isSql = isSql;
   }
 
   /**
@@ -132,7 +130,7 @@ public class StringParam extends Param {
    *          set to true if textarea is desired (default false)
    */
   public void setMultiLine(boolean multiLine) {
-    this.multiLine = multiLine;
+    _multiLine = multiLine;
   }
 
   /**
@@ -142,7 +140,7 @@ public class StringParam extends Param {
    * @return
    */
   public boolean getMultiLine() {
-    return multiLine;
+    return _multiLine;
   }
 
   @Override
@@ -150,8 +148,8 @@ public class StringParam extends Param {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
     // .append("  sample='").append(sample).append("'").append(newline)
-    .append("  regex='").append(regex).append("'").append(newline).append("  length='").append(length).append(
-        "'").append(newline).append("  multiLine='").append(multiLine).append("'").toString();
+    .append("  regex='").append(_regex).append("'").append(newline).append("  length='").append(_length).append(
+        "'").append(newline).append("  multiLine='").append(_multiLine).append("'").toString();
   }
 
   // ///////////////////////////////////////////////////////////////
@@ -161,42 +159,27 @@ public class StringParam extends Param {
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
-    if (regex == null)
-      regex = model.getModelConfig().getParamRegex();
-    if (regex == null && isNumber()) {
-      regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
+    if (_regex == null)
+      _regex = model.getModelConfig().getParamRegex();
+    if (_regex == null && isNumber()) {
+      _regex = "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?";
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#clone()
-   */
   @Override
   public Param clone() {
     return new StringParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // nothing to be added
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
-   */
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
-    if (number) {
+    if (_isNumber) {
       try {
         // strip off the comma, if any
         String value = stableValue.replaceAll(",", "");
@@ -206,43 +189,38 @@ public class StringParam extends Param {
         throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
       }
     }
-    if (regex != null && !stableValue.matches(regex)) {
+    if (_regex != null && !stableValue.matches(_regex)) {
       if (stableValue.equals("*"))
         throw new WdkUserException("value '" + stableValue +
             "' cannot be used on its own; it needs to be part of a word.");
       else
         throw new WdkUserException("value '" + stableValue + "' is " +
             "invalid and probably contains illegal characters. " + "It must match the regular expression '" +
-            regex + "'");
+            _regex + "'");
     }
-    if (length != 0 && stableValue.length() > length)
-      throw new WdkUserException("value cannot be longer than " + length + " characters (it is " +
+    if (_length != 0 && stableValue.length() > _length)
+      throw new WdkUserException("value cannot be longer than " + _length + " characters (it is " +
           stableValue.length() + ").");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
     boolean hasRegex = false;
-    for (WdkModelText regex : regexes) {
+    for (WdkModelText regex : _regexes) {
       if (regex.include(projectId)) {
         if (hasRegex) {
           throw new WdkModelException("The param " + getFullName() + " has more than one regex for project " +
               projectId);
         }
         else {
-          this.regex = regex.getText();
+          _regex = regex.getText();
           hasRegex = true;
         }
       }
     }
-    regexes = null;
+    _regexes = null;
   }
 
   @Override

@@ -75,7 +75,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
       throws WdkModelException, WdkUserException {
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
 
-    if (param.isNoTranslation())
+    if (_param.isNoTranslation())
       return Integer.toString(stepId);
 
     Step step = StepUtilities.getStep(user, stepId);
@@ -116,7 +116,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(param.getName()));
+    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
   
   @Override
@@ -124,13 +124,13 @@ public class AnswerParamHandler extends AbstractParamHandler {
   WdkModelException {
     String stepId = inputStableValue;
     if (stepId == null || stepId.length() == 0)
-      throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
+      throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     try {
       Step step = StepUtilities.getStep(user, Long.valueOf(stepId));
       return Long.toString(step.getStepId());
     }
     catch (NumberFormatException ex) {
-      throw new WdkUserException("Invalid input to parameter '" + param.getPrompt() +
+      throw new WdkUserException("Invalid input to parameter '" + _param.getPrompt() +
           "'; the input must be a step id.", ex);
     }    
   }
@@ -138,7 +138,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) { // stable value is not set, choose a default stable value;
       String stepId = (String) requestParams.getAttribute(PARAM_INPUT_STEP);
       if (stepId == null)
@@ -164,9 +164,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
     // if stable value is assigned, also prepare the raw value
     if (stableValue != null) {
-      requestParams.setParam(param.getName(), stableValue);
+      requestParams.setParam(_param.getName(), stableValue);
       Step step = StepUtilities.getStep(user, Long.valueOf(stableValue));
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, step);
+      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
   }
 

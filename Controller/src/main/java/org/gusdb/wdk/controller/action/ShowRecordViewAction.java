@@ -38,7 +38,7 @@ public class ShowRecordViewAction extends Action {
 
       // get record
       WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-      UserBean wdkUser = ActionUtility.getUser(servlet, request);
+      UserBean wdkUser = ActionUtility.getUser(request);
 
       String rcName = request.getParameter(PARAM_NAME);
       if (rcName == null || rcName.length() == 0)

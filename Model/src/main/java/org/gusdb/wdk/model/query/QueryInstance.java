@@ -41,8 +41,16 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance<T extends Query> {
 
+  /**
+   * @param tableName name of table
+   * @param instanceId id of query cache table
+   */
   public abstract void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
+  /**
+   * @param tableName name of table
+   * @param instanceId id of query cache table
+   */
   public abstract void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
   public abstract String getSql() throws WdkModelException, WdkUserException;
@@ -51,44 +59,44 @@ public abstract class QueryInstance<T extends Query> {
 
   protected abstract ResultList getUncachedResults() throws WdkModelException, WdkUserException;
 
-  private static final Logger logger = Logger.getLogger(QueryInstance.class);
+  private static final Logger LOG = Logger.getLogger(QueryInstance.class);
 
-  protected User user;
-  private long instanceId;
-  protected T query;
-  protected WdkModel wdkModel;
-  protected Map<String, String> stableValues;
-  protected String resultMessage;
+  protected User _user;
+  private long _instanceId;
+  protected T _query;
+  protected WdkModel _wdkModel;
+  protected Map<String, String> _stableValues;
+  protected String _resultMessage;
 
-  private String checksum;
-  protected int assignedWeight;
+  private String _checksum;
+  protected int _assignedWeight;
 
-  protected Map<String, String> context;
-  private Map<String, String> paramInternalValues = null;
+  protected Map<String, String> _context;
+  private Map<String, String> _paramInternalValues = null;
 
   protected QueryInstance(User user, T query, Map<String, String> stableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    this.user = user;
-    this.query = query;
-    this.wdkModel = query.getWdkModel();
-    this.assignedWeight = assignedWeight;
-    this.context = context;
+    _user = user;
+    _query = query;
+    _wdkModel = query.getWdkModel();
+    _assignedWeight = assignedWeight;
+    _context = context;
 
-    this.context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
-    this.context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
+    _context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
+    _context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
 
     setValues(stableValues, validate);
   }
 
   public Query getQuery() {
-    return query;
+    return _query;
   }
 
   /**
    * @return the instanceId
    */
   public long getInstanceId() {
-    return instanceId;
+    return _instanceId;
   }
 
   /**
@@ -96,70 +104,70 @@ public abstract class QueryInstance<T extends Query> {
    *          the instanceId to set
    */
   public void setInstanceId(long instanceId) {
-    this.instanceId = instanceId;
+    _instanceId = instanceId;
   }
 
   private void setValues(Map<String, String> stableValues, boolean validate) throws WdkModelException,
       WdkUserException {
-    logger.trace("----- input value for [" + query.getFullName() + "] -----");
+    LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
     for (String paramName : stableValues.keySet()) {
-      logger.trace(paramName + "='" + stableValues.get(paramName) + "'");
+      LOG.trace(paramName + "='" + stableValues.get(paramName) + "'");
     }
 
     // add user_id into the param values
-    Map<String, Param> params = query.getParamMap();
+    Map<String, Param> params = _query.getParamMap();
     String userKey = Utilities.PARAM_USER_ID;
     if (params.containsKey(userKey) && !stableValues.containsKey(userKey)) {
-      stableValues.put(userKey, Long.toString(user.getUserId()));
+      stableValues.put(userKey, Long.toString(_user.getUserId()));
     }
 
     if (validate)
-      validateValues(user, stableValues);
+      validateValues(_user, stableValues);
 
     // passed, assign the value
-    this.stableValues = stableValues;
-    checksum = null;
+    _stableValues = stableValues;
+    _checksum = null;
   }
 
   public String getResultMessage() {
     // make sure the result message is loaded by getting instance id
     getInstanceId();
-    return resultMessage;
+    return _resultMessage;
   }
 
   public void setResultMessage(String message) {
-    this.resultMessage = message;
+    _resultMessage = message;
   }
 
   /**
    * @return the cached
    */
   public boolean getIsCacheable() {
-    return query.getIsCacheable();
+    return _query.getIsCacheable();
   }
 
   public String getChecksum() throws WdkModelException, WdkUserException {
-    if (checksum == null) {
+    if (_checksum == null) {
       JSONObject jsQuery = getJSONContent();
-      checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
+      _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
     }
-    return checksum;
+    return _checksum;
   }
 
   public JSONObject getJSONContent() throws WdkModelException, WdkUserException {
     try {
       JSONObject jsInstance = new JSONObject();
-      jsInstance.put("project", wdkModel.getProjectId());
-      jsInstance.put("query", query.getFullName());
-      jsInstance.put("queryChecksum", query.getChecksum());
+      jsInstance.put("project", _wdkModel.getProjectId());
+      jsInstance.put("query", _query.getFullName());
+      jsInstance.put("queryChecksum", _query.getChecksum());
 
       jsInstance.put("params", getParamSignatures());
-      jsInstance.put("assignedWeight", assignedWeight);
+      jsInstance.put("assignedWeight", _assignedWeight);
 
       // include extra info from child
       appendJSONContent(jsInstance);
 
-			logger.debug("json:\n" + jsInstance.toString(2));
+      LOG.debug("json:\n" + jsInstance.toString(2));
 
       return jsInstance;
     }
@@ -169,9 +177,8 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public JSONObject getParamSignatures() throws WdkModelException, WdkUserException {
-    // the values are dependent values. need to convert it into independent
-    // values
-    Map<String, String> signatures = query.getSignatures(user, stableValues, context);
+    // the values are dependent values. need to convert it into independent values
+    Map<String, String> signatures = _query.getSignatures(_user, _stableValues);
 
     // construct param-value map; param is sorted by name
     String[] paramNames = new String[signatures.size()];
@@ -207,8 +214,8 @@ public abstract class QueryInstance<T extends Query> {
       //logger.debug("start getting query size");
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), query.getFullName() + "__count");
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), _query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
       //logger.debug("end getting query size");
       return resultSize;
@@ -219,22 +226,22 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public Map<String, String> getParamStableValues() {
-    return stableValues;
+    return _stableValues;
   }
 
   private ResultList getCachedResults() throws WdkModelException, WdkUserException {
-    ResultFactory factory = wdkModel.getResultFactory();
+    ResultFactory factory = _wdkModel.getResultFactory();
     return factory.getCachedResults(this);
   }
 
   protected String getCachedSql() throws WdkModelException, WdkUserException {
-    ResultFactory resultFactory = wdkModel.getResultFactory();
+    ResultFactory resultFactory = _wdkModel.getResultFactory();
     return resultFactory.getCachedSql(this);
   }
 
   private void validateValues(User user, Map<String, String> values) throws WdkUserException,
       WdkModelException {
-    Map<String, Param> params = query.getParamMap();
+    Map<String, Param> params = _query.getParamMap();
     Map<String, String> errors = null;
 
     values = fillEmptyValues(values);
@@ -245,7 +252,7 @@ public abstract class QueryInstance<T extends Query> {
       String prompt = paramName;
       try {
         if (!params.containsKey(paramName)) {
-          logger.warn("The parameter '" + paramName + "' doesn't exist in query " + query.getFullName());
+          LOG.warn("The parameter '" + paramName + "' doesn't exist in query " + _query.getFullName());
           continue;
         }
 
@@ -268,15 +275,15 @@ public abstract class QueryInstance<T extends Query> {
       }
     }
     if (errors != null) {
-      WdkUserException ex = new ParamValuesInvalidException("In query " + query.getFullName() + " some of the input parameters are invalid or missing.", errors);
-      logger.error(ex.formatErrors());
+      WdkUserException ex = new ParamValuesInvalidException("In query " + _query.getFullName() + " some of the input parameters are invalid or missing.", errors);
+      LOG.error(ex.formatErrors());
       throw ex;
     }
   }
 
   private Map<String, String> fillEmptyValues(Map<String, String> stableValues) throws WdkModelException {
     Map<String, String> newValues = new LinkedHashMap<String, String>(stableValues);
-    Map<String, Param> paramMap = query.getParamMap();
+    Map<String, Param> paramMap = _query.getParamMap();
 
     // iterate through this query's params, filling values
     for (String paramName : paramMap.keySet()) {
@@ -298,7 +305,7 @@ public abstract class QueryInstance<T extends Query> {
           String dependedName = dependedParam.getName();
           dependedValues.put(dependedName, stableValues.get(dependedName));
         }
-        value = adParam.getDefault(user, dependedValues);
+        value = adParam.getDefault(_user, dependedValues);
       }
       else {
         value = param.getDefault();
@@ -315,35 +322,35 @@ public abstract class QueryInstance<T extends Query> {
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
 
-    if (paramInternalValues == null) {
+    if (_paramInternalValues == null) {
       // the empty & default values are filled
-      Map<String, String> stableValues = fillEmptyValues(this.stableValues);
-      paramInternalValues = new LinkedHashMap<String, String>();
-      Map<String, Param> params = query.getParamMap();
+      Map<String, String> stableValues = fillEmptyValues(_stableValues);
+      _paramInternalValues = new LinkedHashMap<String, String>();
+      Map<String, Param> params = _query.getParamMap();
       for (String paramName : params.keySet()) {
         Param param = params.get(paramName);
         String internalValue, stableValue = stableValues.get(paramName);
-        internalValue = param.getInternalValue(user, stableValue, stableValues);
-        paramInternalValues.put(paramName, internalValue);
+        internalValue = param.getInternalValue(_user, stableValue, stableValues);
+        _paramInternalValues.put(paramName, internalValue);
       }
     }
-    return Collections.unmodifiableMap(paramInternalValues);
+    return Collections.unmodifiableMap(_paramInternalValues);
   }
   
   protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
-    List<PostCacheUpdateSql> list = query.getPostCacheUpdateSqls() != null ? query.getPostCacheUpdateSqls()
-        : query.getQuerySet().getPostCacheUpdateSqls();
+    List<PostCacheUpdateSql> list = _query.getPostCacheUpdateSqls() != null ? _query.getPostCacheUpdateSqls()
+        : _query.getQuerySet().getPostCacheUpdateSqls();
     for (PostCacheUpdateSql pcis : list) {
 
       String sql = pcis.getSql();
       sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
       sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
 
-      logger.debug("POST sql: " + sql);
+      LOG.debug("POST sql: " + sql);
       // get results and time process();
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       try {
-        SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheUpdateSql",
+        SqlUtils.executeUpdate(dataSource, sql, _query.getQuerySet().getName() + "__postCacheUpdateSql",
             false);
       }
       catch (SQLException ex) {
@@ -354,6 +361,6 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public int getAssignedWeight() {
-    return assignedWeight;
+    return _assignedWeight;
   }
 }

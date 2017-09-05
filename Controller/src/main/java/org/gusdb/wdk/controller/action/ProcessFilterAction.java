@@ -43,7 +43,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     String filterName = request.getParameter(PARAM_FILTER);
     if (strStepId == null) throw new WdkUserException("Required step param is missing.");
 
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
     try {

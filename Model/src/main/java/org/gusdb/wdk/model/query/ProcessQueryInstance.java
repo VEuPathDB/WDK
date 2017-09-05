@@ -50,7 +50,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, values, validate, assignedWeight, context);
-    this.query = query;
+    this._query = query;
   }
 
   /*
@@ -71,23 +71,23 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   @Override
   public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     logger.debug("inserting process query result to cache...");
-    List<Column> columns = Arrays.asList(query.getColumns());
-    Set<String> columnNames = query.getColumnMap().keySet();
+    List<Column> columns = Arrays.asList(_query.getColumns());
+    Set<String> columnNames = _query.getColumnMap().keySet();
 
     // prepare the sql
     String sql = buildCacheInsertSql(tableName, instanceId, columns, columnNames);
 
     // get results and time process
     long startTime = System.currentTimeMillis();
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     PreparedStatement psInsert = null;
     try {
       // make a prepared statement, and invoke the wsf;
       psInsert = SqlUtils.getPreparedStatement(dataSource, sql);
-      int batchSize = query.getCacheInsertBatchSize();
+      int batchSize = _query.getCacheInsertBatchSize();
       ProcessQueryResponseListener listener = new ProcessQueryResponseListener(columns, psInsert, batchSize);
       invokeWsf(listener);
-      this.resultMessage = listener.getMessage();
+      this._resultMessage = listener.getMessage();
       // currently, the attachments from the WSF are ignored.
 
       // finish up the last batch
@@ -110,8 +110,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
     // prepare request.
     ClientRequest request = new ClientRequest();
-    request.setPluginClass(query.getProcessName());
-    request.setProjectId(wdkModel.getProjectId());
+    request.setPluginClass(_query.getProcessName());
+    request.setProjectId(_wdkModel.getProjectId());
 
     // prepare parameters
     Map<String, String> paramValues = getParamInternalValues();
@@ -122,7 +122,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     request.setParams(params);
 
     // prepare columns
-    Map<String, Column> columns = query.getColumnMap();
+    Map<String, Column> columns = _query.getColumnMap();
     String[] columnNames = new String[columns.size()];
     Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
     columns.keySet().toArray(columnNames);
@@ -134,18 +134,18 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       indices.put(column.getName(), i);
     }
     request.setOrderedColumns(columnNames);
-    request.setContext(context);
+    request.setContext(_context);
 
     // create client
     WsfClient client;
     try {
-      if (query.isLocal()) {
+      if (_query.isLocal()) {
         logger.debug("Using local service...");
         client = _wsfClientFactory.newClient(listener);
       }
       else {
-        logger.debug("Using remote service at " + query.getWebServiceUrl() + "...");
-        client = _wsfClientFactory.newClient(listener, new URI(query.getWebServiceUrl()));
+        logger.debug("Using remote service at " + _query.getWebServiceUrl() + "...");
+        client = _wsfClientFactory.newClient(listener, new URI(_query.getWebServiceUrl()));
       }
 
       // invoke the WSF, and set signal.
@@ -182,7 +182,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     }
     
     // insert name of weight as the last column, if it doesn't exist
-    if (query.isHasWeight() && !columnNames.contains(weightColumn))
+    if (_query.isHasWeight() && !columnNames.contains(weightColumn))
       sql.append(", ").append(weightColumn);
 
     sql.append(") VALUES (");
@@ -192,8 +192,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     }
 
     // insert weight to the last column, if doesn't exist
-    if (query.isHasWeight() && !columnNames.contains(weightColumn))
-      sql.append(", ").append(assignedWeight);
+    if (_query.isHasWeight() && !columnNames.contains(weightColumn))
+      sql.append(", ").append(_assignedWeight);
 
     return sql.append(")").toString();
   }
@@ -228,8 +228,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   @Override
   public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     logger.debug("creating process query cache...");
-    DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
-    Column[] columns = query.getColumns();
+    DBPlatform platform = _query.getWdkModel().getAppDb().getPlatform();
+    Column[] columns = _query.getColumns();
 
     StringBuffer sqlTable = new StringBuffer("CREATE TABLE " + tableName + " (");
 
@@ -237,13 +237,13 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     String numberType = platform.getNumberDataType(12);
     sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID + " " + numberType + " NOT NULL, ");
     sqlTable.append(CacheFactory.COLUMN_ROW_ID + " " + numberType + " NOT NULL");
-    if (query.isHasWeight())
+    if (_query.isHasWeight())
       sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
     
     // define the rest of the columns
     for (Column column : columns) {
       // weight column is already added to the sql.
-      if (column.getName().equals(Utilities.COLUMN_WEIGHT) && query.isHasWeight())
+      if (column.getName().equals(Utilities.COLUMN_WEIGHT) && _query.isHasWeight())
         continue;
 
       int width = column.getWidth();
@@ -277,8 +277,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     sqlTable.append(")");
 
     try {
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, sqlTable.toString(), query.getFullName() + "__create-cache-table");
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, sqlTable.toString(), _query.getFullName() + "__create-cache-table");
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to create cache table.", e);

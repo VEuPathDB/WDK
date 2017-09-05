@@ -86,23 +86,23 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
-    AbstractEnumParam enumParam = (AbstractEnumParam) param;
+    AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
     Set<String> internals = new LinkedHashSet<>();
     for (String term : terms) {
       if (!cache.containsTerm(term))
-        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+        throw new WdkUserException("The term '" + term + "' is invalid for param " + _param.getPrompt());
 
-      String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+      String internal = (_param.isNoTranslation()) ? term : cache.getInternal(term);
 
       if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
         internal = "'" + internal.replaceAll("'", "''") + "'";
       
       internals.add(internal);
     }
-    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     return platform.prepareExpressionList(internals.toArray(new String[0]));
   }
 
@@ -118,7 +118,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    AbstractEnumParam enumParam = (AbstractEnumParam) param;
+    AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
@@ -150,51 +150,51 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
     if (stableValue != null)
       return stableValue;
 
     // stable value not assigned, get raw value first;
-    String[] rawValue = requestParams.getArray(param.getName());
+    String[] rawValue = requestParams.getArray(_param.getName());
 
     // get the single value, and convert it into array
     if (rawValue == null || rawValue.length == 0) {
-      String value = requestParams.getParam(param.getName());
+      String value = requestParams.getParam(_param.getName());
       if (value != null && value.length() > 0)
         rawValue = new String[] { value };
     }
 
     // use empty value if needed
     if (rawValue == null || rawValue.length == 0) {
-      if (!param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
-      rawValue = param.getDefault().split(",+");
+      if (!_param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
+      rawValue = _param.getDefault().split(",+");
     }
 
-    return param.getStableValue(user, rawValue, new HashMap<String, String>());
+    return _param.getStableValue(user, rawValue, new HashMap<String, String>());
   }
 
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
-    if (inputStableValue == null && !param.isAllowEmpty())
-      throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
+    if (inputStableValue == null && !_param.isAllowEmpty())
+      throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     return inputStableValue;
   }
   
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) param;
+    AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
     // set labels
     Map<String, String> displayMap = aeParam.getDisplayMap(user, contextParamValues);
     String[] terms = displayMap.keySet().toArray(new String[0]);
     String[] labels = displayMap.values().toArray(new String[0]);
-    requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
-    requestParams.setArray(param.getName() + TERMS_SUFFIX, terms);
+    requestParams.setArray(_param.getName() + LABELS_SUFFIX, labels);
+    requestParams.setArray(_param.getName() + TERMS_SUFFIX, terms);
 
     // get the stable value
-    String stableValue = requestParams.getParam(param.getName());
+    String stableValue = requestParams.getParam(_param.getName());
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
       stableValue = aeParam.getDefault(user, contextParamValues);
@@ -217,16 +217,16 @@ public class EnumParamHandler extends AbstractParamHandler {
       // store the invalid values
       String[] invalids = invalidValues.toArray(new String[0]);
       Arrays.sort(invalids);
-      requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
+      requestParams.setAttribute(_param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
     }
 
     // set the stable & raw value
     if (stableValue != null)
-      requestParams.setParam(param.getName(), stableValue);
+      requestParams.setParam(_param.getName(), stableValue);
     if (values.size() > 0) {
       String[] rawValue = values.toArray(new String[0]);
-      requestParams.setArray(param.getName(), rawValue);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
+      requestParams.setArray(_param.getName(), rawValue);
+      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
     }
   }
 
@@ -238,7 +238,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) param;
+    AbstractEnumParam aeParam = (AbstractEnumParam) _param;
     Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);
     String[] terms = toRawValue(user, stableValue, contextParamValues);
     StringBuilder buffer = new StringBuilder();

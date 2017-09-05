@@ -78,7 +78,7 @@ public class ProcessRESTAction extends Action {
     String outputType = null;
     try {
       WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-      UserBean wdkUser = ActionUtility.getUser(servlet, request);
+      UserBean wdkUser = ActionUtility.getUser(request);
 
       // get question from URL
       String strutsParam = mapping.getParameter();

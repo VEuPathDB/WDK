@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.LinkedHashMap;
@@ -11,70 +8,58 @@ import java.util.LinkedHashMap;
  */
 class ActiveStrategy {
 
-    int strategyId;
-    String strategyKey;
-    ActiveStrategy parent;
-    LinkedHashMap<String, ActiveStrategy> children;
+    int _strategyId;
+    String _strategyKey;
+    ActiveStrategy _parent;
+    LinkedHashMap<String, ActiveStrategy> _children;
 
-    /**
-     * 
-     */
     ActiveStrategy(String strategyKey) {
-        this.strategyKey = strategyKey;
+        this._strategyKey = strategyKey;
         if (strategyKey != null) {
             int pos = strategyKey.indexOf('_');
-            if (pos < 0) strategyId = Integer.parseInt(strategyKey);
-            else strategyId = Integer.parseInt(strategyKey.substring(0, pos));
+            if (pos < 0) _strategyId = Integer.parseInt(strategyKey);
+            else _strategyId = Integer.parseInt(strategyKey.substring(0, pos));
         }
-        children = new LinkedHashMap<String, ActiveStrategy>();
+        _children = new LinkedHashMap<String, ActiveStrategy>();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof ActiveStrategy)) return false;
         ActiveStrategy strategy = (ActiveStrategy) obj;
-        if (strategyKey == null) {
-          return (strategy.strategyKey == null);
+        if (_strategyKey == null) {
+          return (strategy._strategyKey == null);
         } else {
-          return strategyKey.equals(strategy.strategyKey);
+          return _strategyKey.equals(strategy._strategyKey);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
-        return (strategyKey == null) ? 0 : strategyKey.hashCode();
+        return (_strategyKey == null) ? 0 : _strategyKey.hashCode();
     }
 
     ActiveStrategy getDescendent(String strategyKey) {
-        for (ActiveStrategy child : children.values()) {
-            if (child.strategyKey.equals(strategyKey)) return child;
+        for (ActiveStrategy child : _children.values()) {
+            if (child._strategyKey.equals(strategyKey)) return child;
             ActiveStrategy strategy = child.getDescendent(strategyKey);
             if (strategy != null) return strategy;
         }
         return null;
     }
-    
+
+    @Override
     public String toString() {
       return toString(0);
     }
-    
+
     private String toString(int indent) {
       String tree = "";
       for (int i = 0; i < indent; i++) {
         tree += "  ";
       }
-      tree += strategyKey + "\n";
-      for (ActiveStrategy child: children.values()) {
+      tree += _strategyKey + "\n";
+      for (ActiveStrategy child: _children.values()) {
         tree += child.toString(indent + 1);
       }
       return tree;

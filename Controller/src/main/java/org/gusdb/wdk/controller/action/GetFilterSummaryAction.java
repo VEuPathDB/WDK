@@ -37,7 +37,7 @@ public class GetFilterSummaryAction extends Action {
     if (stepId == null)
       throw new WdkUserException("Required step parameter is missing.");
     
-    UserBean user = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(request);
     StepBean step = user.getStep(Long.valueOf(stepId));
     AnswerValueBean answer = step.getAnswerValue();
     Filter filter = answer.getQuestion().getFilter(filterName);
