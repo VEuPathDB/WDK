@@ -178,7 +178,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
           " the following properties: `" + FILTERS_INCLUDE_UNKNOWN + "`, `" +
           FILTERS_VALUE + "`.");
 
-    LOG.info("************************************************************ jsFilter: " + jsFilter);
     OntologyItem ontologyItem = ontology.get(jsFilter.getString(FILTERS_FIELD));
     OntologyItemType type = ontologyItem.getType();
     String columnName = type.getMetadataQueryColumn();
@@ -310,14 +309,16 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew filterParam  = (FilterParamNew) param;
+    if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
     java.util.Collections.sort(dependedParamsList);
     StringBuilder sb = new StringBuilder();
     for (Param dependedParam : dependedParamsList)  {
       String stableValue = contextParamValues.get(dependedParam.getName());
+      if (stableValue == null) throw new WdkModelException("can't find value for param " + dependedParam.getName());
       sb.append(dependedParam.getParamHandler().toSignature(user, stableValue, contextParamValues));
     }
-    
+
     return sb.toString();
   }
 

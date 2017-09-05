@@ -128,7 +128,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   public String getUncachedSql() throws WdkModelException, WdkUserException {
     Map<String, String> internalValues = getParamInternalValues();
-    logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  internal values: " + internalValues);
     Map<String, Param> params = query.getParamMap();
     String sql = query.getSql();
     for (String paramName : params.keySet()) {
@@ -193,8 +192,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     logger.debug("creating cache table for query " + query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();
-    logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% creating cache table " + tableName + " " + query.getFullName() + " " + sql);
-
     DBPlatform platform = wdkModel.getAppDb().getPlatform();
     String rowNumber = platform.getRowNumberColumn();
 
