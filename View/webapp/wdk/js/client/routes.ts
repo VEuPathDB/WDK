@@ -1,3 +1,5 @@
+import { RouteSpec } from './CommonTypes';
+
 import IndexController from './controllers/IndexController';
 import RecordController from './controllers/RecordController';
 import NotFoundController from './controllers/NotFoundController';
@@ -17,7 +19,7 @@ import FavoritesController from './controllers/FavoritesController';
 // TODO Uncomment when question page is moved
 // import QuestionController from './controllers/QuestionController';
 
-export default [
+export default <RouteSpec[]> [
   { path: '/', component: IndexController },
   // TODO Uncomment when question page is moved to new arch
   // { path:'search/:recordClass/:question', component: QuestionController },
