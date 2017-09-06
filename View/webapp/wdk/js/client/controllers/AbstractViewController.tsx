@@ -1,18 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { ActionCreator, ActionCreatorResult } from '../ActionCreator';
+import { ActionCreator } from '../ActionCreator';
+import { wrapActions } from '../utils/componentUtils';
+import WdkStore, { BaseState } from '../stores/WdkStore';
+import { Action } from "../dispatcher/Dispatcher";
+import { ViewControllerProps, DispatchAction, MakeDispatchAction, StoreConstructor } from "../CommonTypes";
+
 import Page from '../components/Page';
 import NotFound from '../components/NotFound';
 import PermissionDenied from '../components/PermissionDenied';
 import LoadError from '../components/LoadError';
 import Loading from '../components/Loading';
-import { wrapActions } from '../utils/componentUtils';
-import WdkStore, { BaseState } from '../stores/WdkStore';
-import { Action, default as WdkDispatcher } from "../dispatcher/Dispatcher";
-import { RouteComponentProps } from 'react-router';
-import { History } from 'history';
-import GlobalDataStore from "../stores/GlobalDataStore";
-import { ViewControllerProps, DispatchAction, MakeDispatchAction, StoreConstructor } from "../CommonTypes";
 
 /**
  * Abstract base class for all ViewContoller classes in WDK. This base class is
