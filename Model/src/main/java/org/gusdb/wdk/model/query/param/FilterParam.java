@@ -63,6 +63,8 @@ public class FilterParam extends FlatVocabParam {
 
   private String metadataSpecQueryRef;
   private Query metadataSpecQuery;
+
+  private String filterDataType;
   
   @Override
   public Set<String> getContainedQueryFullNames() {
@@ -98,6 +100,7 @@ public class FilterParam extends FlatVocabParam {
     if (param.defaultColumns != null)
       this.defaultColumns = param.defaultColumns;
     this.trimMetadataTerms = param.trimMetadataTerms;
+    this.filterDataType = param.filterDataType;
   }
 
   /*
@@ -190,6 +193,14 @@ public class FilterParam extends FlatVocabParam {
    */
   public boolean getTrimMetadataTerms() {
     return trimMetadataTerms;
+  }
+
+  public void setFilterDataType(String filterDataType) {
+    this.filterDataType = filterDataType;
+  }
+
+  public String getFilterDataType() {
+    return filterDataType;
   }
 
   /**

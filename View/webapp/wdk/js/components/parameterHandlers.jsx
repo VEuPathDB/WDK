@@ -230,6 +230,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     var form = $param.closest('form');
     var title = $data.title;
+    var filterDataType = $data.filterDataType;
     // var isAllowEmpty = $param.data('isAllowEmpty');
     var minSelectedCount = $data.minSelectedCount;
     var maxSelectedCount = $data.maxSelectedCount;
@@ -264,7 +265,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       .partition(filter => fields.has(filter.field))
       .value();
 
-    var filterParamOptions = { title, trimMetadataTerms };
+    var filterParamOptions = { title, filterDataType, trimMetadataTerms };
 
     var filterService = new LazyFilterService({
       name,
@@ -344,7 +345,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     let state = filterService.getState();
     ReactDOM.render(
       <AttributeFilter
-        displayName={options.title}
+        displayName={options.filterDataType || options.title}
 
         fields={state.fields}
         filters={state.filters}
