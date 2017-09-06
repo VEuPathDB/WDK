@@ -2,11 +2,8 @@ import {flattenDeep, partial, pick, values} from 'lodash';
 import { filterItems } from './SearchUtils';
 import { RecordInstance, AttributeValue, TableValue } from './WdkModel';
 
-type Dictionary<T> = {
-  [key: string]: T
-};
-type AttributeValueDict = Dictionary<AttributeValue>;
-type TableValueDict = Dictionary<TableValue>;
+type AttributeValueDict = Record<string, AttributeValue>;
+type TableValueDict = Record<string, TableValue>;
 type FilterSpec = {
   /** Search string */
   filterTerm: string;
