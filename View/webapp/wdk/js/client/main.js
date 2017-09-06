@@ -42,7 +42,13 @@ export function initialize(options) {
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
   let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
-  let stores = configureStores(dispatcher, storeWrappers);
+  let storeMap = configureStores(dispatcher, storeWrappers);
+  let stores = Array.from(storeMap.entries())
+    .reduce(function(stores, [ Class, instance ]) {
+      return Object.assign(stores, {
+        [Class.name]: instance
+      })
+    }, {});
 
   // load static WDK data into service cache and view stores that need it
   let dispatchAction = makeDispatchAction('global');
@@ -66,7 +72,7 @@ export function initialize(options) {
           Root, {
             rootUrl,
             makeDispatchAction,
-            stores,
+            stores: storeMap,
             routes: wrapRoutes(wdkRoutes),
             onLocationChange: handleLocationChange
           });
@@ -86,22 +92,22 @@ export function initialize(options) {
 }
 
 /**
- * Creates a `stores` object.
+ * Creates a Map<StoreClas, Store>.
  *
  * @param {Dispatcher} dispatcher
  * @param {Object} storeWrappers Named functions that return store override classes
  */
 function configureStores(dispatcher, storeWrappers) {
-  let storeClasses = wrapStores(storeWrappers);
-  let globalDataStore = new storeClasses.GlobalDataStore(dispatcher);
-  let storeInstances = {};
-  Object.keys(storeClasses).forEach(function(className) {
-    if (className != 'GlobalDataStore') {
-      storeInstances[className] =
-        new storeClasses[className](dispatcher, className, globalDataStore);
+  const storeClassMap = wrapStores(storeWrappers);
+  const globalDataStore = new (storeClassMap.get(Stores.GlobalDataStore))(dispatcher);
+  const storeInstanceMap = new Map();
+  storeClassMap.forEach(function(ProviderClass, Class) {
+    if (Class !== Stores.GlobalDataStore) {
+      storeInstanceMap.set(Class,
+        new ProviderClass(dispatcher, Class.name, globalDataStore));
     }
-  });
-  return storeInstances;
+  })
+  return storeInstanceMap;
 }
 
 /**
@@ -109,25 +115,29 @@ function configureStores(dispatcher, storeWrappers) {
  * Store names. Values of `storeWrappers` are functions that take the current
  * Store class and return a new Store class.
  *
+ * If a Store wrapper provides an unknown key, it will be created as a new
+ * application store, and it will be passed WdkStore as a base implementation.
+ *
  * @param {Object} storeWrappers
  */
 function wrapStores(storeWrappers) {
-  let stores = Object.assign({}, Stores);
-  for (let key in storeWrappers) {
-    let wdkStore = stores[key];
-    if (wdkStore == null) {
+  /* @type Map<StoreClass, StoreClass> */
+  const storeClassMap = new Map(Object.values(Stores).map(S => [S, S]));
+  Object.entries(storeWrappers).forEach(function([key, storeWrapper]) {
+    const Store = Stores[key];
+    if (Store == null) {
       console.log("Creating new application store: `%s`.", key);
     }
-    let storeWrapper = storeWrappers[key];
-    let storeWrapperType = typeof storeWrapper;
+    const storeWrapperType = typeof storeWrapper;
     if (storeWrapperType !== 'function') {
-      console.error("Expected Store wrapper for `%s` to be a 'function', " +
-          "but is `%s`.  Skipping...", key, storeWrapperType);
-      continue;
+      console.error("Expected Store wrapper for %s to be a `function`, " +
+        "but is `%s`. Skipping...", key, storeWrapperType);
+      return;
     }
-    stores[key] = (wdkStore == null ? storeWrapper(WdkStore) : storeWrapper(wdkStore));
-  }
-  return stores;
+    const Provider = storeWrapper(Store == null ? WdkStore : Store);
+    storeClassMap.set(Store == null ? Provider : Store, Provider);
+  })
+  return storeClassMap;
 }
 
 /**

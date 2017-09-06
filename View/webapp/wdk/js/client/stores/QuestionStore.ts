@@ -8,7 +8,7 @@ export type State = BaseState & {
   question?: Question;
 }
 
-export default class QuestionStore extends WdkStore<BaseState> {
+export default class QuestionStore extends WdkStore<State> {
 
   handleAction(state: State, action: Action): State {
     switch(action.type) {

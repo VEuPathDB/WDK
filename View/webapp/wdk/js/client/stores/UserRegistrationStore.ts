@@ -2,6 +2,9 @@ import UserProfileStore, { State, Action, UserProfileFormData } from './UserProf
 import { ClearRegistrationFormAction } from '../actioncreators/UserActionCreators';
 import { User, UserPreferences } from '../utils/WdkUser';
 
+// Re-export state to follow convention
+export { State };
+
 type RegistrationAction = Action | ClearRegistrationFormAction;
 
 const emptyUserFormData: UserProfileFormData = {

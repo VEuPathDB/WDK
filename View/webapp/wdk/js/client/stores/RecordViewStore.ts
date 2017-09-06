@@ -22,6 +22,7 @@ import {
   FavoritesStatusErrorAction
 } from '../actioncreators/UserActionCreators';
 import {RecordInstance, RecordClass} from "../utils/WdkModel";
+import { ServiceError } from "../utils/WdkService";
 
 export type Action = NavigationQueryAction
             | NavigationVisibilityAction
@@ -45,7 +46,7 @@ export type State = BaseState & {
   recordClass: RecordClass;
   categoryTree: CategoryTreeNode;
   requestId: string;
-  error?: Error,
+  error?: ServiceError,
 
   collapsedSections: string[];
 

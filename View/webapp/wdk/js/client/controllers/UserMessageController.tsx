@@ -1,9 +1,12 @@
+import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import NotFound from '../components/NotFound';
 import WdkViewController from './WdkViewController';
 import { conditionallyTransition } from '../actioncreators/UserActionCreators';
 
-class UserMessageController extends WdkViewController {
+const ActionCreators = { conditionallyTransition };
+
+class UserMessageController extends WdkViewController<typeof ActionCreators> {
 
   getMessagePageContent() {
     switch (this.props.match.params.messageKey) {
@@ -23,10 +26,10 @@ class UserMessageController extends WdkViewController {
     }
   }
 
-  loadData(actionCreators, state, nextProps, previousProps) {
+  loadData() {
     // if registered user is logged in, show profile instead of password reset message
-    if (nextProps.match.params.messageKey == 'password-reset-successful') {
-      actionCreators.conditionallyTransition(user => !user.isGuest, '/user/profile');
+    if (this.props.match.params.messageKey == 'password-reset-successful') {
+      this.eventHandlers.conditionallyTransition(user => !user.isGuest, '/user/profile');
     }
   }
 

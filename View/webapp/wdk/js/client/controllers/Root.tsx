@@ -1,18 +1,46 @@
 import $ from 'jquery';
-import {Component} from 'react';
+import * as React from 'react';
 import PropTypes from 'prop-types';
-import {Router, Switch, Route} from 'react-router';
-import {createBrowserHistory} from 'history';
+import { Router, Switch, Route, RouteComponentProps } from 'react-router';
+import {createBrowserHistory, History, Location} from 'history';
+import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "../CommonTypes";
+import WdkStore from "../stores/WdkStore";
+
+type Props = {
+  rootUrl: string,
+  makeDispatchAction: MakeDispatchAction,
+  stores: Container<WdkStore>,
+  routes: RouteSpec[],
+  onLocationChange: (location: Location) => void;
+};
+
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
 let RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
 
 /** WDK Application Root */
-export default class Root extends Component {
+export default class Root extends React.Component<Props> {
 
-  constructor(props, context) {
-    super(props, context);
+  static propTypes = {
+    rootUrl: PropTypes.string,
+    makeDispatchAction: PropTypes.func.isRequired,
+    stores: PropTypes.object.isRequired,
+    routes: PropTypes.array.isRequired,
+    onLocationChange: PropTypes.func
+  };
+
+  static defaultProps = {
+    rootUrl: '/',
+    onLocationChange: () => {}    // noop
+  };
+
+  history: History;
+
+  removeHistoryListener: () => void;
+
+  constructor(props: Props) {
+    super(props);
     this.history = createBrowserHistory({ basename: this.props.rootUrl });
     this.renderRoute = this.renderRoute.bind(this);
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
@@ -20,9 +48,9 @@ export default class Root extends Component {
     this.props.onLocationChange(this.history.location);
   }
 
-  renderRoute(RouteComponent) {
+  renderRoute(RouteComponent: React.ComponentType<ViewControllerProps<WdkStore>>) {
     // Used to inject wdk content as props of Route Component
-    return (routerProps) => {
+    return (routerProps: RouteComponentProps<any>) => {
       let { makeDispatchAction, stores } = this.props;
       return (
         <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
@@ -30,11 +58,12 @@ export default class Root extends Component {
     };
   }
 
-  handleGlobalClick(event) {
-    if (!event.currentTarget.href) return;
+  handleGlobalClick(event: JQuery.Event<HTMLAnchorElement>) {
+    const target = event.currentTarget;
+    if (!target.href) return;
 
-    let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.which !== 1;
-    let href = event.currentTarget.getAttribute('href').replace(RELATIVE_LINK_REGEXP, '');
+    let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 1;
+    let href = (target.getAttribute('href') || '').replace(RELATIVE_LINK_REGEXP, '');
     if (!hasModifiers && href.startsWith(this.props.rootUrl)) {
       this.history.push(href.slice(this.props.rootUrl.length));
       event.preventDefault();
@@ -63,17 +92,3 @@ export default class Root extends Component {
     );
   }
 }
-
-Root.propTypes = {
-  rootUrl: PropTypes.string,
-  makeDispatchAction: PropTypes.func.isRequired,
-  stores: PropTypes.object.isRequired,
-  routes: PropTypes.array.isRequired,
-  onLocationChange: PropTypes.func
-};
-
-Root.defaultProps = {
-  rootUrl: '/',
-  onLocationChange: () => {}    // noop
-};
-

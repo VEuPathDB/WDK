@@ -229,9 +229,9 @@ function logShallowComparison<P extends AnyObject>(obj1: P, obj2: P, label: stri
 
 
 /** Create a React Element using preformatted HTML */
-export function safeHtml<P>(str: string, props: P, Component: React.ComponentClass<P>): JSX.Element;
-export function safeHtml<P>(str: string, props: P, Component: React.StatelessComponent<P>): JSX.Element;
-export function safeHtml<P>(str: string, props: P, Component: string): JSX.Element;
+export function safeHtml<P>(str: string, props?: P, Component?: React.ComponentClass<P>): JSX.Element;
+export function safeHtml<P>(str: string, props?: P, Component?: React.StatelessComponent<P>): JSX.Element;
+export function safeHtml<P>(str: string, props?: P, Component?: string): JSX.Element;
 export function safeHtml<P>(str = '', props?: P, Component: any = 'span'): JSX.Element {
   // Use innerHTML to auto close tags
   let container = document.createElement('div');
@@ -330,7 +330,7 @@ export function propsDiffer<P extends AnyObject>(oldProps: P, newProps: P, prope
 }
 
 interface HandlerSetObject {
-  [key: string]: Function;
+  [key: string]: (...args: any[]) => any;
 }
 
 /**

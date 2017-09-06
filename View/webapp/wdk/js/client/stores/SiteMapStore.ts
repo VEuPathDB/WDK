@@ -15,7 +15,7 @@ type Action = LoadingAction
             | ExpansionAction
             | SearchAction;
 
-type State = BaseState & {
+export type State = BaseState & {
   tree?: OntologyNode,
   isLoading: boolean,
   expandedList: string[],

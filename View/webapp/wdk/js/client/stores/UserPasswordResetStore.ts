@@ -5,7 +5,7 @@ import {
 } from '../actioncreators/UserActionCreators';
 
 // defines the structure of this store's data
-type State = BaseState & {
+export type State = BaseState & {
   emailText: string, // current value typed in box
   message?: string   // message to user if submission fails
 };
