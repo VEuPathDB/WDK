@@ -41,36 +41,36 @@ import org.json.JSONObject;
  */
 public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
-  private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
+  private static final Logger LOG = Logger.getLogger(ProcessQueryInstance.class);
 
-  private static WsfClientFactory _wsfClientFactory = ServiceResolver.resolve(WsfClientFactory.class);
+  private static WsfClientFactory WSF_CLIENT_FACTORY = ServiceResolver.resolve(WsfClientFactory.class);
 
-  private int signal;
+  private int _signal;
 
-  public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> values, boolean validate,
+  /**
+   * @param user user to execute query as
+   * @param query query to create instance for
+   * @param contextParamStableValues stable values of all params in the query's context
+   * @param validate whether to validate param values
+   * @param assignedWeight weight of the query
+   * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, values, validate, assignedWeight, context);
-    this._query = query;
+    super(user, query, contextParamStableValues, validate, assignedWeight, context);
+    _query = query;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#appendJSONContent(org.json.JSONObject )
-   */
   @Override
   protected void appendJSONContent(JSONObject jsInstance) throws JSONException {
-    jsInstance.put("signal", signal);
+    jsInstance.put("signal", _signal);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection , java.lang.String)
-   */
   @Override
   public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
-    logger.debug("inserting process query result to cache...");
+    LOG.debug("inserting process query result to cache...");
     List<Column> columns = Arrays.asList(_query.getColumns());
     Set<String> columnNames = _query.getColumnMap().keySet();
 
@@ -87,7 +87,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       int batchSize = _query.getCacheInsertBatchSize();
       ProcessQueryResponseListener listener = new ProcessQueryResponseListener(columns, psInsert, batchSize);
       invokeWsf(listener);
-      this._resultMessage = listener.getMessage();
+      _resultMessage = listener.getMessage();
       // currently, the attachments from the WSF are ignored.
 
       // finish up the last batch
@@ -99,7 +99,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     finally {
       SqlUtils.closeStatement(psInsert);
     }
-    logger.debug("Process query cache insertion finished, and took " +
+    LOG.debug("Process query cache insertion finished, and took " +
         ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     
     executePostCacheUpdateSql(tableName, instanceId);
@@ -140,17 +140,17 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     WsfClient client;
     try {
       if (_query.isLocal()) {
-        logger.debug("Using local service...");
-        client = _wsfClientFactory.newClient(listener);
+        LOG.debug("Using local service...");
+        client = WSF_CLIENT_FACTORY.newClient(listener);
       }
       else {
-        logger.debug("Using remote service at " + _query.getWebServiceUrl() + "...");
-        client = _wsfClientFactory.newClient(listener, new URI(_query.getWebServiceUrl()));
+        LOG.debug("Using remote service at " + _query.getWebServiceUrl() + "...");
+        client = WSF_CLIENT_FACTORY.newClient(listener, new URI(_query.getWebServiceUrl()));
       }
 
       // invoke the WSF, and set signal.
-      logger.debug("Invoking " + request.getPluginClass() + "...");
-      this.signal = client.invoke(request);
+      LOG.debug("Invoking " + request.getPluginClass() + "...");
+      _signal = client.invoke(request);
     }
     catch (ClientUserException ex) {
       throw new WdkUserException(ex);
@@ -159,7 +159,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       throw new WdkModelException(ex);
     }
     long end = System.currentTimeMillis();
-    logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
+    LOG.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
   }
 
   private String buildCacheInsertSql(String tableName, long instanceId, List<Column> columns,
@@ -198,36 +198,20 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     return sql.append(")").toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(org.gusdb. wdk.model.Column[],
-   * java.lang.Integer, java.lang.Integer)
-   */
   @Override
   protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
     throw new UnsupportedOperationException("Process queries are always cacheable, so ProcessQueryInstance.getUncachedResults() should never be called");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#getSql()
-   */
   @Override
   public String getSql() throws WdkModelException, WdkUserException {
     // always get sql that queries on the cached result
     return getCachedSql();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
-   */
   @Override
   public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
-    logger.debug("creating process query cache...");
+    LOG.debug("creating process query cache...");
     DBPlatform platform = _query.getWdkModel().getAppDb().getPlatform();
     Column[] columns = _query.getColumns();
 
@@ -287,11 +271,6 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     insertToCache(tableName, instanceId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#getResultSize()
-   */
   @Override
   public int getResultSize() throws WdkModelException, WdkUserException {
     if (!getIsCacheable()) {

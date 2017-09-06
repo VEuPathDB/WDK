@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.sql.ResultSet;
@@ -28,46 +25,39 @@ import org.json.JSONObject;
  * in the SqlQuery, and execute the sql in DBMS. It will wrap the result into a ResultList.
  * 
  * @author Jerric Gao
- * 
  */
 public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
-  private static Logger logger = Logger.getLogger(SqlQueryInstance.class);
+  private static final Logger LOG = Logger.getLogger(SqlQueryInstance.class);
 
   /**
-   * @param query
-   * @param values
-   * @context this does not appear to be used for SqlQueryInstances
+   * @param user user to execute query as
+   * @param query query to create instance for
+   * @param contextParamStableValues stable values of all params in the query's context
+   * @param validate whether to validate param values
+   * @param assignedWeight weight of the query
+   * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
+   * @throws WdkModelException
    * @throws WdkUserException
    */
-  protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values, boolean validate,
+  protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, values, validate, assignedWeight, context);
-    this._query = query;
+    super(user, query, contextParamStableValues, validate, assignedWeight, context);
+    _query = query;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject )
-   */
   @Override
   protected void appendJSONContent(JSONObject jsInstance) {
     // nothing to add to;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(java.lang. Integer, java.lang.Integer)
-   */
   @Override
   protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
     try {
       String sql = getUncachedSql();
       DatabaseInstance platform = _query.getWdkModel().getAppDb();
       DataSource dataSource = platform.getDataSource();
-      logger.debug("Performing the following SQL: " + sql);
+      LOG.debug("Performing the following SQL: " + sql);
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, _query.getFullName() + "__select-uncached",
           SqlUtils.DEFAULT_FETCH_SIZE, _query.isUseDBLink());
       return new SqlResultList(resultSet);
@@ -77,11 +67,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection , java.lang.String)
-   */
   @Override
   public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
@@ -134,7 +119,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       Param param = params.get(paramName);
       String value = internalValues.get(paramName);
       if (value == null) {
-        logger.warn("value doesn't exist for param " + param.getFullName() + " in query " +
+        LOG.warn("value doesn't exist for param " + param.getFullName() + " in query " +
             _query.getFullName());
         value = "";
       }
@@ -169,11 +154,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     return buffer.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#getSql()
-   */
   @Override
   public String getSql() throws WdkModelException, WdkUserException {
     if (getIsCacheable())
@@ -182,14 +162,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       return getUncachedSql();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
-   */
   @Override
   public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
-    logger.debug("creating cache table for query " + _query.getFullName());
+    LOG.debug("creating cache table for query " + _query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
@@ -208,11 +183,11 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
           _query.isUseDBLink());
     }
     catch (SQLException e) {
-      logger.error("Failed to run sql:\n" + buffer);
+      LOG.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to create cache.", e);
     }
     
     executePostCacheUpdateSql(tableName, instanceId);
-    logger.debug("created!!  cache table for query " + _query.getFullName());
+    LOG.debug("created!!  cache table for query " + _query.getFullName());
   }
 }
