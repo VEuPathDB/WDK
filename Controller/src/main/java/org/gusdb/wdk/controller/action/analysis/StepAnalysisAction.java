@@ -76,26 +76,31 @@ public class StepAnalysisAction extends GenericPageAction {
     }
   }
   
+  @SuppressWarnings("unused")
   private ActionResult getNewAnalysisResponse(HttpMethod method, StepAnalysisContext context) {
     // TODO Auto-generated method stub
     return null;
   }
   
+  @SuppressWarnings("unused")
   private ActionResult getStepAnalysisResponse(HttpMethod method, StepAnalysisContext context) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @SuppressWarnings("unused")
   private ActionResult getFormResponse(HttpMethod method, StepAnalysisContext context) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @SuppressWarnings("unused")
   private ActionResult getParamsResponse(HttpMethod method, StepAnalysisContext context) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @SuppressWarnings("unused")
   private ActionResult getResultResponse(HttpMethod method, StepAnalysisContext context) {
     // TODO Auto-generated method stub
     return null;
