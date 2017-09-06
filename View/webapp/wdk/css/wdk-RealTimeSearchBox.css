@@ -9,9 +9,9 @@
 }
 
 input[type="search"].wdk-RealTimeSearchBoxInput {
-  width: calc(100% - 1.5em);
+  width: calc(100% - 2em);
   vertical-align: middle;
-  padding: 6px 20px 6px 6px;
+  padding: 6px 2em 6px 6px;
 }
 
 .wdk-RealTimeSearchBoxLabel {
@@ -31,7 +31,7 @@ input.wdk-RealTimeSearchBoxInput:-moz-placeholder { color:#888; }
 .wdk-RealTimeSearchBoxSearchIcon,
 button.wdk-RealTimeSearchBoxCancelBtn {
   position: absolute;
-  right: 0px;
+  right: 2px;
   font-size: 1.4em;
   color: #888;
 }
@@ -48,8 +48,10 @@ button.wdk-RealTimeSearchBoxCancelBtn {
 button.wdk-RealTimeSearchBoxCancelBtn {
   border: 0;
   background: transparent !important;
-  outline: none !important;
-  padding: 4px;
+  outline-offset: -4px;
+  padding: 0;
+  height: 100%;
+  width: 2em;
 }
 
 .wdk-RealTimeSearchBoxInfoIcon {
