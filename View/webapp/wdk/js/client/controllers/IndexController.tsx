@@ -1,3 +1,4 @@
+import * as React from 'react';
 import WdkViewController from './WdkViewController';
 import { wrappable } from '../utils/componentUtils';
 import Link from '../components/Link';
@@ -10,7 +11,7 @@ import Link from '../components/Link';
  *
  * It's current purpose is to demonstrate how one can create links to other
  * routes. In this case we use Link, which is provided by the react-router
- * library. The `to` property is the *name* of a route, as defined in
+ * library. The `to` property is the *path* of a route, as defined in
  * ../routes.js. Additional parameters and query arguments can be provided to
  * the Link component as props (params and query, resp). The reason to use Link
  * as opposed to the more common <a> is that Link will generate the correct

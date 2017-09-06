@@ -7,10 +7,10 @@ import GlobalDataStore from './GlobalDataStore';
 import {GlobalData} from "./GlobalDataStore";
 
 export interface BaseState {
-  globalData: GlobalData;
+  globalData: Partial<GlobalData>;
 }
 
-export default class WdkStore<State extends BaseState> extends ReduceStore<State, Action> {
+export default class WdkStore<State extends BaseState = BaseState> extends ReduceStore<State, Action> {
 
   /** The name of the channel on which this store listens to actions. */
   channel: string;
@@ -22,9 +22,9 @@ export default class WdkStore<State extends BaseState> extends ReduceStore<State
   /*--------------- Methods that should probably be overridden ---------------*/
 
   getInitialState(): State {
-    return <State>{
+    return {
       globalData: {}
-    };
+    } as State;
   }
 
   /**

@@ -11,6 +11,7 @@ import WdkServiceJsonReporterForm from '../components/WdkServiceJsonReporterForm
 import {CategoryOntology} from "../utils/CategoryUtils";
 import {UserPreferences, Step} from "../utils/WdkUser";
 import {RecordClass, Question, Reporter} from "../utils/WdkModel";
+import { ServiceError } from "../utils/WdkService";
 
 export type State = BaseState & {
   step: Step,
@@ -22,7 +23,7 @@ export type State = BaseState & {
   selectedReporter: string,
   formState: any,
   formUiState: any,
-  error?: Error
+  error?: ServiceError
 }
 
 type Action = ErrorAction

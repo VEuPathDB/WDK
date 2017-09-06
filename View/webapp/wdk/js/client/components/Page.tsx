@@ -7,7 +7,7 @@ import Header from './Header';
 import Footer from './Footer';
 
 type Props = {
-  children: React.ReactChild;
+  children: React.ReactChild | null;
 };
 
 function Page(props: Props) {

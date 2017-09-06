@@ -1,22 +1,25 @@
+import * as React from 'react';
 import { wrappable, safeHtml } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 
 class QuestionListController extends WdkViewController {
 
-  isRenderDataLoaded(state) {
-    return state.globalData.questions != null;
+  isRenderDataLoaded() {
+    return this.state.globalData.questions != null;
   }
 
   getTitle() {
     return "Question List";
   }
 
-  renderView(state) {
+  renderView() {
+    if (this.state.globalData.questions == null) return null;
+
     return (
       <div>
         <h2>Available Questions</h2>
         <ol>
-          {state.globalData.questions.map(question => (
+          {this.state.globalData.questions.map(question => (
             <li key={question.name} style={{margin:'10px 0'}}>
               <span style={{fontSize:'1.3em'}}>{question.displayName}</span> ({question.urlSegment})
               { /* <Link to={`/answer/${question.name}`}>answer page</Link> */ }

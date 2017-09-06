@@ -1,6 +1,5 @@
 import React from 'react';
 import { escape } from 'lodash';
-import { withRouter } from 'react-router';
 import { History } from 'history';
 import { wrappable } from '../utils/componentUtils';
 import { UserDataset } from '../utils/WdkModel';
@@ -57,4 +56,4 @@ const UserDatasetList = (props: Props) => (
   </div>
 )
 
-export default wrappable(withRouter(UserDatasetList));
+export default wrappable(UserDatasetList);

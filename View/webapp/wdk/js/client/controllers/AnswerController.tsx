@@ -1,6 +1,8 @@
-import WdkViewController from './WdkViewController';
+import * as React from 'react';
+import AbstractViewController from './AbstractViewController';
 import { wrappable } from '../utils/componentUtils';
 import {isEqual} from 'lodash';
+import { parse } from 'querystring';
 import {
   loadAnswer,
   updateFilter,
@@ -10,63 +12,75 @@ import {
 } from '../actioncreators/AnswerViewActionCreators';
 import Answer from '../components/Answer';
 import Loading from '../components/Loading';
+import { State, default as AnswerViewStore } from "../stores/AnswerViewStore";
 
-class AnswerController extends WdkViewController {
+const ActionCreators = {
+  loadAnswer,
+  updateFilter,
+  moveColumn,
+  changeAttributes,
+  sort
+};
 
-  getStoreName() {
-    return "AnswerViewStore";
+// FIXME Remove this when Answer is converted to Typescript
+const CastAnswer: any = Answer;
+
+class AnswerController extends AbstractViewController<State, AnswerViewStore, typeof ActionCreators> {
+
+  getStateFromStore() {
+    return this.store.getState();
+  }
+
+  getStoreClass() {
+    return AnswerViewStore;
   }
 
   getActionCreators() {
-    return {
-      loadAnswer,
-      updateFilter,
-      moveColumn,
-      changeAttributes,
-      sort
-    };
+    return ActionCreators
   }
 
-  loadData(actionCreators, state, props) {
+  loadData() {
     // incoming values from the router
-    let { question, recordClass: recordClassName } = props.match.params;
+    let { question, recordClass: recordClassName } = this.props.match.params;
     let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
-    let parameters = props.location.query;
+    let parameters = parse(this.props.location.search.slice(1));
 
     // decide whether new answer needs to be loaded (may not need to be loaded
     //   if user goes someplace else and hits 'back' to here- store already correct)
-    if (state.question == null ||
-        state.question.urlSegment !== questionName ||
-        !isEqual(state.parameters, parameters)) {
+    if (
+      this.state.question == null ||
+      this.state.question.urlSegment !== questionName ||
+      !isEqual(this.state.parameters, parameters)
+    ) {
 
       // (re)initialize the page
       let pagination = { numRecords: 1000, offset: 0 };
       let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
       let displayInfo = { pagination, sorting, customName };
       let opts = { displayInfo, parameters };
-      actionCreators.loadAnswer(questionName, recordClassName, opts);
+      this.eventHandlers.loadAnswer(questionName, recordClassName, opts);
     }
   }
 
-  isRenderDataLoaded(state) {
-    return state.records != null;
+  isRenderDataLoaded() {
+    return this.state.records != null;
   }
 
-  isRenderDataLoadError(state) {
-    return state.error != null;
+  isRenderDataLoadError() {
+    return this.state.error != null;
   }
 
-  getTitle(state) {
-    return state.error ? 'Error loading results'
-         : state.records ? state.displayInfo.customName || state.question.displayName
+  getTitle() {
+    return this.state.error ? 'Error loading results'
+         : this.state.records ? this.state.displayInfo.customName || this.state.question.displayName
          : 'Loading...';
   }
 
-  renderLoading(state) {
-    return state.isLoading && <Loading/>;
+  renderLoading() {
+    return this.state.isLoading && <Loading/>;
   }
 
-  renderAnswer(state, eventHandlers) {
+  renderAnswer() {
     let {
       meta,
       records,
@@ -78,14 +92,14 @@ class AnswerController extends WdkViewController {
       filterTables = [],
       question,
       recordClass
-    } = state;
+    } = this.state;
 
     if (filterAttributes.length === 0 && filterTables.length === 0) {
       filterAttributes = recordClass.attributes.map(a => a.name);
       filterTables = recordClass.tables.map(t => t.name);
     }
     return (
-      <Answer
+      <CastAnswer
         meta={meta}
         records={records}
         question={question}
@@ -97,19 +111,19 @@ class AnswerController extends WdkViewController {
         filterAttributes={filterAttributes}
         filterTables={filterTables}
         format="table"
-        onSort={eventHandlers.sort}
-        onMoveColumn={eventHandlers.moveColumn}
-        onChangeColumns={eventHandlers.changeAttributes}
-        onFilter={eventHandlers.updateFilter}
+        onSort={this.eventHandlers.sort}
+        onMoveColumn={this.eventHandlers.moveColumn}
+        onChangeColumns={this.eventHandlers.changeAttributes}
+        onFilter={this.eventHandlers.updateFilter}
       />
     );
   }
 
-  renderView(state, eventHandlers) {
+  renderView() {
     return (
       <div>
-        {this.renderLoading(state)}
-        {this.renderAnswer(state, eventHandlers)}
+        {this.renderLoading()}
+        {this.renderAnswer()}
       </div>
     );
   }

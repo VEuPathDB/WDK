@@ -1,12 +1,20 @@
+import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import WdkViewController from './WdkViewController';
+import AbstractViewController from './AbstractViewController';
 import UserProfile from '../components/UserProfile';
 import { updateProfileForm, submitProfileForm } from '../actioncreators/UserActionCreators';
+import UserProfileStore, { State } from "../stores/UserProfileStore";
 
-class UserProfileController extends WdkViewController {
+const ActionCreators = { updateProfileForm, submitProfileForm };
 
-  getStoreName() {
-    return "UserProfileStore";
+class UserProfileController extends AbstractViewController<State, UserProfileStore, typeof ActionCreators> {
+
+  getStoreClass() {
+    return UserProfileStore;
+  }
+
+  getStateFromStore() {
+    return this.store.getState();
   }
 
   getActionCreators() {
@@ -23,8 +31,8 @@ class UserProfileController extends WdkViewController {
     return "User Account";
   }
 
-  renderView(state, eventHandlers) {
-    return ( <UserProfile {...state} userEvents={eventHandlers}/> );
+  renderView() {
+    return ( <UserProfile {...this.state} userEvents={this.eventHandlers}/> );
   }
 }
 

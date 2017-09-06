@@ -1,7 +1,7 @@
 import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
-import {ActionCreator, DispatchAction} from "../ActionCreator";
+import {ActionCreator, ActionThunk} from "../ActionCreator";
 import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
@@ -130,7 +130,7 @@ export type FavoritesStatusErrorAction = {
  * the passed path.  Optional external param lets caller specify if path is
  * internal or external, defaulting to false (internal).
  */
-export let conditionallyTransition: ActionCreator<never> = (test: UserPredicate, path: string, external: boolean = false) => {
+export function conditionallyTransition(test: UserPredicate, path: string, external: boolean = false): ActionThunk<never> {
   return function run(dispatch, { wdkService }) {
     wdkService.getCurrentUser().then(user => {
       if (test(user)) {

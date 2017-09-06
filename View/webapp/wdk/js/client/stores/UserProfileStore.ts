@@ -31,21 +31,21 @@ export default class UserProfileStore extends WdkStore<State> {
   }
 
   handleAction(state: State, action: Action): State {
+    const prevUser = this.getState().globalData.user;
+    const nextUser = state.globalData.user;
+    const prevPrefs = this.getState().globalData.preferences;
+    const nextPrefs = state.globalData.preferences;
 
     // Special case since this store is maintaining an unsaved, edited version
     // of the user and her preferences, not the 'gold copy' saved version.  Need
     // to override handling of user and preference load actions to update the
     // unsaved copies to be clones of the 'gold copy' versions.
-    if (this.globalDataStore.hasChanged()) {
-      let previousUser = this.getState().globalData.user;
-      let nextUser = state.globalData.user;
-      if (previousUser != nextUser) {
+    if (prevUser != null && nextUser != null) {
+      if (prevUser != nextUser) {
         return this.replaceUserFormData(state, { ...state.userFormData, ...nextUser, confirmEmail: nextUser.email });
       }
-      let previousPrefs = this.getState().globalData.preferences;
-      let nextPrefs = state.globalData.preferences;
-      if (previousPrefs != nextPrefs) {
-        return this.replaceUserFormData(state, { ...state.userFormData, ...previousUser, preferences: nextPrefs });
+      if (prevPrefs != null && nextPrefs != null && prevPrefs != nextPrefs) {
+        return this.replaceUserFormData(state, { ...state.userFormData, ...prevUser, preferences: nextPrefs });
       }
     }
 

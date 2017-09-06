@@ -4,7 +4,7 @@ import { UserDataset } from '../utils/WdkModel';
 
 type Action = ListLoadingAction | ListReceivedAction | ListErrorReceivedAction;
 
-interface State extends BaseState {
+export interface State extends BaseState {
   userDatasetsLoading: boolean;
   userDatasets: UserDataset[];
   loadError: Error | null;

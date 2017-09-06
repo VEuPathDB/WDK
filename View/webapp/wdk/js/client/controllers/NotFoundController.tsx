@@ -1,3 +1,4 @@
+import * as React from 'react';
 import WdkViewController from './WdkViewController';
 import { wrappable } from '../utils/componentUtils';
 import NotFound from '../components/NotFound';

@@ -30,6 +30,7 @@ export interface Reporter {
 }
 
 export interface Question extends ModelEntity {
+  summary: string;
   description: string;
   shortDisplayName: string;
   recordClassName: string;

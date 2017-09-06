@@ -17,6 +17,7 @@ import { ActionCreator, DispatchAction } from '../ActionCreator';
 import { Action } from '../dispatcher/Dispatcher';
 import WdkService from '../utils/WdkService';
 import { CategoryTreeNode } from "../utils/CategoryUtils";
+import { ServiceError } from "../utils/WdkService";
 
 type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | BasketStatusReceivedAction;
 type FavoriteAction = FavoritesStatusLoadingAction | FavoritesStatusReceivedAction | FavoritesStatusErrorAction;
@@ -51,7 +52,7 @@ export type RecordLoadingAction = {
 export type RecordErrorAction = {
   type: 'record-view/error-received',
   id: string
-  payload: { error: Error },
+  payload: { error: ServiceError },
 }
 
 export type SectionVisibilityAction = {

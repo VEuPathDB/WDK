@@ -28,7 +28,7 @@ type Action = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction
 |SearchTermAction|SortColumnAction
 |AddRowAction|AddReceivedAction|AddErrorAction;
 
-interface State extends BaseState {
+export interface State extends BaseState {
   favoritesLoading: boolean;
   list: Favorite[];
   filteredList: Favorite[];
@@ -211,6 +211,7 @@ export default class FavoritesListStore extends WdkStore<State> {
   }
 
   _getType(favorite:Favorite, state:State) {
+    if (state.globalData.recordClasses == null) return 'Unknown';
     let recordClass = state.globalData.recordClasses.find((recordClass) => recordClass.name === favorite.recordClassName);
     return recordClass == null ? 'Unknown' : recordClass.displayName;
   }

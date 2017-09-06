@@ -67,13 +67,23 @@ function WdkServiceJsonReporterForm<T, U>(props: Props<T, U>) {
 
 namespace WdkServiceJsonReporterForm {
   export function getInitialState(downloadFormStoreState: State) {
+    let attribs: string[], tables: string[];
+
     let { scope, question, recordClass, globalData: { ontology, preferences } } = downloadFormStoreState;
+
+    if (preferences == null || ontology == null) {
+      console.warn('DownloadFormStore.State.globalData.{ontology, preference} is null. Using empty attribute and tables.');
+      attribs = tables = [];
+    }
+
     // select all attribs and tables for record page, else column user prefs and no tables
-    let attribs = (scope === 'results' ?
-      addPk(getAttributeSelections(preferences, question), recordClass) :
-      addPk(getAllLeafIds(getAttributeTree(ontology, recordClass.name, question)), recordClass));
-    let tables = (scope === 'results' ? [] :
-      getAllLeafIds(getTableTree(ontology, recordClass.name)));
+    else {
+      attribs = (scope === 'results' ?
+        addPk(getAttributeSelections(preferences, question), recordClass) :
+        addPk(getAllLeafIds(getAttributeTree(ontology, recordClass.name, question)), recordClass));
+      tables = (scope === 'results' ? [] :
+        getAllLeafIds(getTableTree(ontology, recordClass.name)));
+    }
     return {
       formState: {
         attributes: attribs,

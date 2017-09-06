@@ -12,7 +12,8 @@
     "jsx": "react",
     "strictNullChecks": true,
     "lib": [ "dom", "es2015", "es2016" ],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "experimentalDecorators": true
   },
   "include": [
     "./webapp"
