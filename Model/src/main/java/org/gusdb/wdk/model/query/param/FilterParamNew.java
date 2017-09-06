@@ -105,6 +105,8 @@ public class FilterParamNew extends AbstractDependentParam {
   
   private String backgroundQueryRef;
   private Query backgroundQuery;
+
+  private String filterDataType;
   
   @Override
   public Set<String> getContainedQueryFullNames() {
@@ -150,6 +152,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     this.trimMetadataTerms = param.trimMetadataTerms;
     this.useSummaryMetadataQueryForInternalValue = param.useSummaryMetadataQueryForInternalValue;
+    this.filterDataType = param.filterDataType;
   }
 
   @Override
@@ -263,6 +266,14 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public boolean getTrimMetadataTerms() {
     return trimMetadataTerms;
+  }
+
+  public void setFilterDataType(String filterDataType) {
+    this.filterDataType = filterDataType;
+  }
+
+  public String getFilterDataType() {
+    return filterDataType;
   }
 
   public void setUseSummaryMetadataQueryForInternalValue(boolean useIt) {
