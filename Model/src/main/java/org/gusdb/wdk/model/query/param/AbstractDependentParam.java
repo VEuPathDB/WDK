@@ -238,6 +238,7 @@ public abstract class AbstractDependentParam extends Param {
    */
   public void fillContextParamValues(User user, Map<String, String> contextParamValues,
       Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
+
     //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
 
     // make sure the values for depended params are fetched first.
@@ -256,13 +257,14 @@ public abstract class AbstractDependentParam extends Param {
       instance = createDependentParamInstance(user, contextParamValues);
       instances.put(_name, instance);
     }
-  
+
     String stableValue = contextParamValues.get(_name);
     String value = instance.getValidStableValue(user, stableValue, contextParamValues);
 
-    if (value != null)
-    contextParamValues.put(_name, value);
-    //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+    if (value != null) {
+      contextParamValues.put(_name, value);
+      //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+    }
   }
 
 
