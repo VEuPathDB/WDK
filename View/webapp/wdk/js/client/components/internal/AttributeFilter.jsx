@@ -1896,13 +1896,10 @@ EmptyField.propTypes = FieldFilter.propTypes;
 /**
  * Determine if a filter should be created, or if the values represent the default state.
  *
- * The following cases will return true:
- *
- *     - { includeUnknown: false }
- *     - { value: ... }
- *
- * @param {string} field Field term id
+ * @param {Field} field Field term id
  * @param {any} value Filter value
+ * @param {boolean} includeUnknown
+ * @param {SummaryCount[]} fieldSummary
  */
 function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
 
@@ -1918,7 +1915,11 @@ function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
       .map(entry => field.type === 'number' ? Number(entry.value) : entry.value);
     const summaryMin = min(values);
     const summaryMax = max(values);
-    return value.min !== summaryMin || value.max !== summaryMax;
+    return (
+      (value.min == null && value.max == null) ||
+      (value.min != null && value.min > summaryMin) ||
+      (value.max != null && value.max < summaryMax)
+    );
   }
 
   return value.length !== fieldSummary.filter(item => item.value != null).length;
