@@ -29,9 +29,6 @@ public class FilterParamNewInstance implements DependentParamInstance {
   // context values used to create this cache
   private Map<String, String> _dependedParamValues;
 
-  // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
-  private String _defaultValue;
-
   public FilterParamNewInstance(Map<String, String> dependedParamValues, FilterParamNew param) {
     _dependedParamValues = dependedParamValues;
     _param = param;
@@ -47,5 +44,5 @@ public class FilterParamNewInstance implements DependentParamInstance {
     }
     return stableValue;
   }
-	
+
 }

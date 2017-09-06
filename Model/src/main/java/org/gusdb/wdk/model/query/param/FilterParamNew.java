@@ -36,35 +36,33 @@ import org.json.JSONObject;
 
 
 /**
+ * The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an
+ * IN clause.  The SQL returns a list of internal values, similar to flatVocabParam. 
+ * 
+ * It is configured by two queries: ontologyQuery and metadataQuery.  The former returns a tree of categories
+ * and information describing them.  The latter maps internal values to entries in the ontology (such as age)
+ * and provides a value for the ontology entry (such as 18).
+ * 
+ * Both these queries can be dependent.
+ * 
+ * The input from the user is in the form of a set of filters.  each filter specifies an ontology entry
+ * and one or more values for it.  The param returns all internal values from the metadata query that match
+ * all supplied filters (i.e. the filtering is done on the backend).
+ * 
+ * the filter param also provides summary information to the client about the distribution of
+ * values for a requested ontology entry.
+ * 
+ * The values returned are:
+ * 
+ *   raw value: a JSON string of applied filters
+ * 
+ *   stable value: same as raw value
+ * 
+ *   signature: a checksum of the JSON string, but values are sorted
+ * 
+ *   internal: SQL to return a set of internal values from the metadata query
+ * 
  * @author steve
- * 
- *         The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an
- *         IN clause.  The SQL returns a list of internal values, similar to flatVocabParam. 
- *         
- *         It is configured by two queries: ontologyQuery and metadataQuery.  The former returns a tree of categories
- *         and information describing them.  The latter maps internal values to entries in the ontology (such as age)
- *         and provides a value for the ontology entry (such as 18).
- *         
- *         Both these queries can be dependent.
- *               
- *         The input from the user is in the form of a set of filters.  each filter specifies an ontology entry
- *         and one or more values for it.  The param returns all internal values from the metadata query that match all
- *         supplied filters.  (Ie, the filtering is done on the backend).
- *         
- *         the filter param also provides summary information to the client about the distribution of
- *         values for a requested ontology entry.
- *         
- * 
- *         The values returned are:
- *         
- *           raw value: a JSON string of applied filters.
- * 
- *           stable value: same as raw value.
- * 
- *           signature: a checksum of the JSON string, but values are sorted
- * 
- *           internal: SQL to return a set of internal values from the metadata query
- * 
  */
 public class FilterParamNew extends AbstractDependentParam {
 
@@ -154,11 +152,6 @@ public class FilterParamNew extends AbstractDependentParam {
     this.useSummaryMetadataQueryForInternalValue = param.useSummaryMetadataQueryForInternalValue;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new FilterParamNew(this);
@@ -206,7 +199,6 @@ public class FilterParamNew extends AbstractDependentParam {
   public void setSummaryMetadataQuery(SqlQuery summaryMetadataQuery) {
     this.summaryMetadataQuery = summaryMetadataQuery;
   }
-
 
   /**
    * @return the onotology Query Name
@@ -416,12 +408,12 @@ public class FilterParamNew extends AbstractDependentParam {
     
     return fpsc;
   }
-  
+
   String transformIdSql(String idSql) {
     if (summaryMetadataQuery == null) return idSql;
     return summaryMetadataQuery.getSql().replace(FILTERED_IDS_MACRO, idSql);
   }
-  
+
   private long runCountSql(String sql) {
     return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts")
         .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue();
@@ -524,7 +516,7 @@ public class FilterParamNew extends AbstractDependentParam {
   private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
           throws WdkModelException, WdkUserException {
- 
+
     String sql = "SELECT mq.* FROM (" + metaDataSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
     // run the composed sql, and get the metadata back
@@ -591,11 +583,10 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     return jsParam;
   }
-  
+
   /**
    * remove invalid filters from stableValue.  if stableValue empty, use default.
    */
-
   protected String getValidStableValue(String stableValue) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
@@ -691,28 +682,26 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   @Override
-  public String getSanityDefault(User user, Map<String, String> contextParamValues,
-      SelectMode sanitySelectMode) {
+  public String getSanityDefault(User user, Map<String, String> contextParamValues, SelectMode sanitySelectMode) {
     // TODO phase 2 
     return null;
   }
-  
+
   @Override
   public List<Query> getQueries() {
-	List<Query> queries = new ArrayList<Query>();
-	if(backgroundQuery != null) {
-	  queries.add(backgroundQuery);
-	}
-	if(metadataQuery != null) {
-	  queries.add(metadataQuery);
-	}
-	if(summaryMetadataQuery != null) {
-	  queries.add(summaryMetadataQuery);
-	}
-	if(ontologyQuery != null) {
-	  queries.add(ontologyQuery);
-	}
-	return queries;  
+    List<Query> queries = new ArrayList<Query>();
+    if(backgroundQuery != null) {
+      queries.add(backgroundQuery);
+    }
+    if(metadataQuery != null) {
+      queries.add(metadataQuery);
+    }
+    if(summaryMetadataQuery != null) {
+      queries.add(summaryMetadataQuery);
+    }
+    if(ontologyQuery != null) {
+      queries.add(ontologyQuery);
+    }
+    return queries;
   }
-
 }
