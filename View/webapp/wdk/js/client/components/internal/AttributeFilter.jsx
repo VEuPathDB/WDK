@@ -1350,7 +1350,7 @@ class HistogramField extends React.Component {
 
   constructor(props) {
     super(props);
-    this.updateFilter = debounce(this.updateFilter.bind(this), 50);
+    this.updateFilterValueFromSelection = debounce(this.updateFilterValueFromSelection.bind(this), 50);
     this.handleMinInputBlur = this.handleMinInputBlur.bind(this);
     this.handleMinInputKeyPress = this.handleMinInputKeyPress.bind(this);
     this.handleMinInputChange = this.handleMinInputChange.bind(this)
@@ -1368,7 +1368,10 @@ class HistogramField extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.cacheDistributionOperations(nextProps);
+    if (this.props.distribution !== nextProps.distribution) {
+      this.cacheDistributionOperations(nextProps);
+    }
+
     if (this.props.filter !== nextProps.filter) {
       this.setState({
         minInputValue: get(nextProps.filter, 'value.min', this.distributionRange.min),
@@ -1397,17 +1400,11 @@ class HistogramField extends React.Component {
   }
 
   handleMinInputBlur() {
-    this.updateMinFilterValueFromState();
+    this.updateFilterValueFromState();
   }
 
   handleMinInputKeyPress(event) {
-    if (event.key === 'Enter') this.updateMinFilterValueFromState();
-  }
-
-  updateMinFilterValueFromState() {
-    const min = this.formatRangeValue(this.state.minInputValue);
-    const max = get(this.props, 'filter.value.max', null);
-    this.emitChange({ min, max });
+    if (event.key === 'Enter') this.updateFilterValueFromState();
   }
 
   handleMaxInputChange(event) {
@@ -1415,21 +1412,31 @@ class HistogramField extends React.Component {
   }
 
   handleMaxInputBlur() {
-    this.updateMaxFilterValueFromState();
+    this.updateFilterValueFromState();
   }
 
   handleMaxInputKeyPress(event) {
-    if (event.key === 'Enter') this.updateMaxFilterValueFromState();
+    if (event.key === 'Enter') this.updateFilterValueFromState();
   }
 
-  updateMaxFilterValueFromState() {
+  updateFilterValueFromState() {
+    const min = this.formatRangeValue(this.state.minInputValue);
     const max = this.formatRangeValue(this.state.maxInputValue);
-    const min = get(this.props, 'filter.value.min', null);
-    this.emitChange({ min, max });
+    this.updateFilterValue({ min, max });
+  }
+
+  updateFilterValueFromSelection(range) {
+    const min = this.formatRangeValue(range.min);
+    const max = this.formatRangeValue(range.max);
+    this.updateFilterValue({ min, max });
+  }
+
+  updateFilterValue(range) {
+    // only emit change if range differs from filter
+    if (this.rangeIsDifferent(range)) this.emitChange(range);
   }
 
   /**
-   *
    * @param {React.ChangeEvent.<HTMLInputElement>} event
    */
   handleUnknownCheckboxChange(event) {
@@ -1438,18 +1445,20 @@ class HistogramField extends React.Component {
     this.emitChange(get(this.props, 'filter.value'), includeUnknown);
   }
 
-  updateFilter(range) {
-    const min = this.formatRangeValue(range.min);
-    const max = this.formatRangeValue(range.max);
-    this.emitChange({ min, max });
+  rangeIsDifferent({ min, max }) {
+    return this.props.filter == null
+      ? min > this.distributionRange.min || max < this.distributionRange.max
+      : min !== this.props.filter.min || max !== this.props.filter.max;
   }
 
-  emitChange(filterValue, includeUnknown = this.state.includeUnknown) {
-    filterValue = (
-      filterValue &&
-      filterValue.min <= this.distributionRange.min &&
-      filterValue.max >= this.distributionRange.max
-    ) ? undefined : filterValue;
+  emitChange(range, includeUnknown = this.state.includeUnknown) {
+    // Use range if strict subset, otherwise use undefined, which indicates
+    // that the user wants everything known.
+    const filterValue = (
+      range &&
+      range.min <= this.distributionRange.min &&
+      range.max >= this.distributionRange.max
+    ) ? undefined : range;
 
     this.props.onChange(this.props.field, filterValue, includeUnknown);
 
@@ -1522,7 +1531,7 @@ class HistogramField extends React.Component {
 
         <Histogram
           distribution={this.convertedDistribution}
-          onSelected={this.updateFilter}
+          onSelected={this.updateFilterValueFromSelection}
           selectedMin={selectedMin}
           selectedMax={selectedMax}
           chartType={field.type}
@@ -1537,6 +1546,7 @@ class HistogramField extends React.Component {
 }
 
 HistogramField.propTypes = {
+  distribution: PropTypes.array.isRequired,
   toFilterValue: PropTypes.func.isRequired,
   toHistogramValue: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
