@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
+import { isPromise } from './utils/PromiseUtils';
 import { getTransitioner } from './utils/PageTransitioner';
 import Root from './controllers/Root';
 import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
@@ -241,13 +242,4 @@ function logActions(dispatcher, stores) {
     console.info("state", mapValues(stores, store => store.getState()));
     console.groupEnd(action.type);
   });
-}
-
-/**
- * Detect if `maybePromise` is a Promise.
- * @param {any} maybePromise
- * @returns {boolean}
- */
-function isPromise(maybePromise) {
-  return maybePromise != null && typeof maybePromise.then === 'function';
 }

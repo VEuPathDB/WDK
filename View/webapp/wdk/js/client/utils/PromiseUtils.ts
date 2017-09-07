@@ -1,11 +1,20 @@
-/**
- * Utilities for working with Promises.
- */
+// Utilities for working with Promises.
+
+interface PromiseFactory<T> {
+  (...args: any[]): Promise<T>
+}
 
 // A Promise that never leaves the pending state.
 export const pendingPromise = { then() { } };
 
-type PromiseFactory<T> = (...args: any[]) => Promise<T>;
+/**
+ * Detect if `maybePromise` is a Promise.
+ * @param {any} maybePromise
+ * @returns {boolean}
+ */
+export function isPromise(maybePromise: any) {
+  return maybePromise != null && typeof maybePromise.then === 'function';
+}
 
 /**
  * Given a function that returns a Promise, this will return a new
