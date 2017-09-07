@@ -661,7 +661,7 @@
         <attribute name="defaultColumns" />
       </optional>
       <optional>
-        <attribute name="filterDataType"/>
+        <attribute name="filterDataTypeDisplayName"/>
       </optional>
       <optional>
         <attribute name="trimMetadataTerms">
@@ -688,7 +688,7 @@
         <attribute name="summaryMetadataQueryRef"/>
       </optional>
       <optional>
-        <attribute name="filterDataType"/>
+        <attribute name="filterDataTypeDisplayName"/>
       </optional>
       <optional>
         <attribute name="trimMetadataTerms">

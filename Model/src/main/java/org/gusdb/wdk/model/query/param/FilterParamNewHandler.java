@@ -24,6 +24,8 @@ import org.json.JSONObject;
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
+  protected FilterParamNew _param;
+
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
 
@@ -362,7 +364,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     JSONArray jsFilters = getFilters(jsValue);
 
     if (jsFilters.length() == 0)
-      return "All " + _param._prompt;
+      return "All " + _param.getFilterDataTypeDisplayName() != null ?
+          _param.getFilterDataTypeDisplayName() : _param.getPrompt();
 
     try {
       Map<String, OntologyItem> ontologyMap = ((FilterParamNew) this._param).getOntology(user,
