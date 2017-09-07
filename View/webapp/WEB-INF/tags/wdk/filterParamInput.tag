@@ -42,7 +42,7 @@ Provides form input element for a given FilterParam.
     name="${pNam}"
     data-is-allow-empty="${qp.isAllowEmpty}"
     data-title="${qp.prompt}"
-    data-filter-data-type="${qp.filterDataType}"
+    data-filter-data-type="${qp.filterDataTypeDisplayName}"
     data-type="filter-param"
     data-default-columns="${qp.defaultColumns}"
     data-trim-metadata-terms="${qp.trimMetadataTerms}"
