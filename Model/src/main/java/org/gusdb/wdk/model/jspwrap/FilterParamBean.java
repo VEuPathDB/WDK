@@ -103,7 +103,7 @@ public class FilterParamBean extends EnumParamBean {
     return filterParam.getTrimMetadataTerms();
   }
 
-  public String getFilterDataType() {
-    return filterParam.getFilterDataType();
+  public String getFilterDataTypeDisplayName() {
+    return filterParam.getFilterDataTypeDisplayName();
   }
 }
