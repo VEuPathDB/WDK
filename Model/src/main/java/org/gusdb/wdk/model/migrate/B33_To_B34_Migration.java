@@ -17,12 +17,11 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
  * 
  * Create:
  * 1. Creates a new sequence in primary accountDb schema from old primary userDb sequence
- * 2. (if replication) Creates a new sequence in secondary accountDb schema from old secondary userDb sequence
- * 3. Create accounts and account_properties tables in primary accountDb schema from primary userDb users table
+ * 2. Create accounts and account_properties tables in primary accountDb schema from primary userDb users table
  * if (users_backup doesn't exist) {
- *   4. Copy primary userDb users table to users_backup
- *   5. Trim columns from primary userDb users table (except user_id, is_guest, registration_time)
- *   6. Rename registration_time column to first_access
+ *   3. Copy primary userDb users table to users_backup
+ *   4. Trim columns from primary userDb users table (except user_id, is_guest, registration_time)
+ *   5. Rename registration_time column to first_access
  * }
  * 
  * Drop:
@@ -251,7 +250,7 @@ public class B33_To_B34_Migration {
           if (!userSchemaTableExists(accountDb.getDataSource(), BACKUP_USERS_TABLE)) {
             runSqls(PRIMARY_USERDB_CONNECTION_URL, PRIMARY_SQLS_TO_RUN_USER_DB, dbUser, dbPassword);
             // copy users with comments to new comment_users table but only if comments exist in this user DB
-            if (userSchemaTableExists(accountDb.getDataSource(), COMMENT_USERS_TABLE)) {
+            if (!userSchemaTableExists(accountDb.getDataSource(), COMMENT_USERS_TABLE)) {
               runSqls(PRIMARY_USERDB_CONNECTION_URL, COMMENT_SQLS_ON_USERDB, dbUser, dbPassword);
             }
           }
