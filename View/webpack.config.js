@@ -1,6 +1,8 @@
 var baseConfig = require('./base.webpack.config');
 
-// shims for global style scripts
+// Shims for global style scripts
+// These will expose global varables on the `window` object.
+// For instance, `window.$`
 var scripts = [
   { alias: 'lib/jquery',                                path : __dirname + '/webapp/wdk/lib/jquery.js' },
   { alias: 'lib/jquery-migrate',                        path : __dirname + '/webapp/wdk/lib/jquery-migrate-1.2.1.min.js' },
@@ -21,11 +23,13 @@ var scripts = [
   { alias: 'lib/zynga-scroller/Scroller',               path : __dirname + '/webapp/wdk/lib/zynga-scroller/Scroller.js' }
 ];
 
+// Create webpack alias configuration object
 var alias = scripts.reduce(function(alias, script) {
   alias[script.alias + '$'] = script.path;
   return alias;
 }, {});
 
+// Create webpack script-loader configuration object
 var scriptLoaders = scripts.map(function(script) {
   return {
     test: script.path,
