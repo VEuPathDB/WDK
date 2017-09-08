@@ -24,8 +24,6 @@ import org.json.JSONObject;
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
-  protected FilterParamNew _param;
-
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
 
@@ -115,7 +113,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
     try {
       JSONObject jsValue = new JSONObject(stableValue);
-      return toInternalValue(user, jsValue, contextParamValues, (FilterParamNew)this._param);
+      return toInternalValue(user, jsValue, contextParamValues, (FilterParamNew)_param);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -305,7 +303,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
   
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
-    FilterParamNew filterParam  = (FilterParamNew) _param;
+    FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
     java.util.Collections.sort(dependedParamsList);
@@ -363,13 +361,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = getFilters(jsValue);
 
-    if (jsFilters.length() == 0)
-      return "All " + _param.getFilterDataTypeDisplayName() != null ?
-          _param.getFilterDataTypeDisplayName() : _param.getPrompt();
+    if (jsFilters.length() == 0) {
+      String displayName = ((FilterParamNew)_param).getFilterDataTypeDisplayName();
+      return displayName != null ? displayName : _param.getPrompt();
+    }
 
     try {
-      Map<String, OntologyItem> ontologyMap = ((FilterParamNew) this._param).getOntology(user,
-          contextParamValues);
+      Map<String, OntologyItem> ontologyMap = ((FilterParamNew)_param).getOntology(user, contextParamValues);
 
       String display = "";
       for (int i = 0; i < jsFilters.length(); i++) {
