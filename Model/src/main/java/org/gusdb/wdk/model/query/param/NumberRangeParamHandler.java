@@ -134,7 +134,7 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return toRawValue(user, stableValue, contextParamValues);
+    return toRawValue(user, stableValue, contextParamValues).replace("{", "").replace("}", "").replace("\"", "");
   }
 
 }
