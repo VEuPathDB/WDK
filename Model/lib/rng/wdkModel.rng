@@ -685,7 +685,9 @@
         <attribute name="backgroundQueryRef"/>
       </optional>
       <optional>
-        <attribute name="summaryMetadataQueryRef"/>
+        <element name="idTransformSql">
+          <text/>
+        </element>
       </optional>
       <optional>
         <attribute name="filterDataTypeDisplayName"/>
@@ -696,7 +698,7 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="useSummaryMetadataQueryForInternalValue">
+        <attribute name="useIdTransformSqlForInternalValue">
           <data type="boolean" />
         </attribute>
       </optional>

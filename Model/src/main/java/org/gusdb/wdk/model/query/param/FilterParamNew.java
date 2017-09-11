@@ -23,6 +23,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -75,6 +76,8 @@ public class FilterParamNew extends AbstractDependentParam {
   public static class FilterParamSummaryCounts {
     public long unfilteredCount = 0;
     public long filteredCount = 0;
+    public long untransformedUnfilteredCount = 0;
+    public long untransformedFilteredCount = 0;
   }
 
   // ontology query columns
@@ -96,9 +99,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private String metadataQueryRef;
   private Query metadataQuery;
-  
-  private String summaryMetadataQueryRef;  // the summary can optionally use a dedicated metadata query ref, eg to report a diff record type
-  private SqlQuery summaryMetadataQuery;
+
+  private WdkModelText _idTransformSql;
 
   private String ontologyQueryRef;
   private Query ontologyQuery;
@@ -112,13 +114,12 @@ public class FilterParamNew extends AbstractDependentParam {
   public Set<String> getContainedQueryFullNames() {
     Set<String> names = new HashSet<String>();
     names.add(metadataQueryRef);
-    names.add(summaryMetadataQueryRef);
     names.add(ontologyQueryRef);
     names.add(backgroundQueryRef);
     return names;
   }
   
-  private boolean useSummaryMetadataQueryForInternalValue = false;
+  private boolean _useIdTransformSqlForInternalValue = false;
   
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
@@ -138,9 +139,7 @@ public class FilterParamNew extends AbstractDependentParam {
     if (param.metadataQuery != null)
       this.metadataQuery = param.metadataQuery.clone();
     
-    this.summaryMetadataQueryRef = param.summaryMetadataQueryRef;
-    if (param.summaryMetadataQuery != null)
-      this.summaryMetadataQuery = param.summaryMetadataQuery;
+    this._idTransformSql = param._idTransformSql;
     
     this.ontologyQueryRef = param.ontologyQueryRef;
     if (param.ontologyQuery != null)
@@ -151,7 +150,7 @@ public class FilterParamNew extends AbstractDependentParam {
       this.backgroundQuery = param.backgroundQuery.clone();
     
     this.trimMetadataTerms = param.trimMetadataTerms;
-    this.useSummaryMetadataQueryForInternalValue = param.useSummaryMetadataQueryForInternalValue;
+    this._useIdTransformSqlForInternalValue = param._useIdTransformSqlForInternalValue;
     this.filterDataTypeDisplayName = param.filterDataTypeDisplayName;
   }
 
@@ -186,21 +185,12 @@ public class FilterParamNew extends AbstractDependentParam {
     this.metadataQuery = metadataQuery;
   }
   
-
-  public String getSummaryMetadataQueryRef() {
-    return summaryMetadataQueryRef;
+  public WdkModelText getIdTransformSql() {
+    return _idTransformSql;
   }
 
-  public void setSummaryMetadataQueryRef(String summaryMetadataQueryRef) {
-    this.summaryMetadataQueryRef = summaryMetadataQueryRef;
-  }
-
-  public Query getSummaryMetadataQuery() {
-    return summaryMetadataQuery;
-  }
-
-  public void setSummaryMetadataQuery(SqlQuery summaryMetadataQuery) {
-    this.summaryMetadataQuery = summaryMetadataQuery;
+  public void setIdTransformSql(WdkModelText idTransformSql) {
+	this._idTransformSql = idTransformSql;
   }
 
   /**
@@ -276,12 +266,12 @@ public class FilterParamNew extends AbstractDependentParam {
     return filterDataTypeDisplayName;
   }
 
-  public void setUseSummaryMetadataQueryForInternalValue(boolean useIt) {
-    this.useSummaryMetadataQueryForInternalValue = useIt;
+  public void setUseIdTransformSqlForInternalValue(boolean useIt) {
+    this._useIdTransformSqlForInternalValue = useIt;
   }
 
-  public boolean getUseSummaryMetadataQueryForInternalValue() {
-    return useSummaryMetadataQueryForInternalValue;
+  public boolean getUseIdTransformSqlForInternalValue() {
+    return _useIdTransformSqlForInternalValue;
   }
 
   /**
@@ -341,18 +331,12 @@ public class FilterParamNew extends AbstractDependentParam {
               getFullName() + " must include column: " + col);
     }
 
-    // resolve optional summary metadata query
-    if (summaryMetadataQueryRef != null) {
-
-      Object obj = model.resolveReference(summaryMetadataQueryRef);
-      if (obj instanceof SqlQuery) {
-        summaryMetadataQuery = (SqlQuery) obj;
-      } else throw new WdkModelException("The summary metadata query " + summaryMetadataQueryRef + " in filterParam " +
-          getFullName() + " must point to an <sqlParam>");
-
-      if (!summaryMetadataQuery.getSql().contains(FILTERED_IDS_MACRO))
-          throw new WdkModelException("The summary metadata query " + summaryMetadataQueryRef + " in filterParam " +
-              getFullName() + "must have SQL that contains the macro " + FILTERED_IDS_MACRO);
+    // validate optional id transform sql
+    if (_idTransformSql != null) {
+      if(!_idTransformSql.getText().contains(FILTERED_IDS_MACRO)) {
+        throw new WdkModelException("The id transform sql, " + _idTransformSql.getText() + ", in filterParam " +
+                  getFullName() + " must have SQL that contains the macro " + FILTERED_IDS_MACRO);
+      }
     }
   }
 
@@ -402,16 +386,28 @@ public class FilterParamNew extends AbstractDependentParam {
     String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + bgdSql + ") md" 
           + " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + bgdSql + ") where rownum = 1)";
     
-    // get count
-    String sql = "select count(*) from (" + transformIdSql(distinctInternalsSql) + ")";
+    // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
+    
+    // get untransformed unfiltered count
+    String sql = "select count(*) from (" + distinctInternalsSql + ")";
+    fpsc.untransformedUnfilteredCount = runCountSql(sql);
+    
+    // get transformed unfiltered count
+    sql = "select count(*) from (" + transformIdSql(distinctInternalsSql) + ")";
+    
     fpsc.unfilteredCount = runCountSql(sql);
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
     String filteredInternalsSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues, this, metadataQuery);
 
-    // get count
+    // get untransformed filtered count
+    sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
+    
+    fpsc.untransformedFilteredCount = runCountSql(sql);
+    
+    // get transformed count
     sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql) + ")";
 
     LOG.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& filtered sql " + getName() + " " + sql + " " + contextParamValues);
@@ -421,8 +417,8 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   String transformIdSql(String idSql) {
-    if (summaryMetadataQuery == null) return idSql;
-    return summaryMetadataQuery.getSql().replace(FILTERED_IDS_MACRO, idSql);
+	if (_idTransformSql == null) return idSql;
+	return _idTransformSql.getText().replace(FILTERED_IDS_MACRO, idSql);
   }
 
   private long runCountSql(String sql) {
@@ -458,11 +454,11 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // read into a map of internal -> value(s) 
     Map<String, List<T>> unfiltered = getMetaData(user, contextParamValues, ontologyItem, paramInstance, metadataSqlPerOntologyId, ontologyItemClass);
-
+    
     // get histogram of those, stored in JSON 
     Map<T,FilterParamSummaryCounts> summaryCounts = new HashMap<>();
     populateSummaryCounts(unfiltered, summaryCounts, false);  // stuff in to 0th position in array
-
+    
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
     String internalSql = FilterParamNewHandler.getFilteredValue(user, appliedFilters, contextParamValues,  this, getMetadataQuery());
@@ -475,7 +471,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // add the filtered set into the histogram
     populateSummaryCounts(filtered, summaryCounts, true); // stuff in to 1st position in array
-    
+
     return summaryCounts;
   }
 
@@ -496,10 +492,8 @@ public class FilterParamNew extends AbstractDependentParam {
           counts = new FilterParamSummaryCounts();
           summary.put(value, counts);
         }
-        if (filtered)
-          counts.filteredCount++;
-        else
-          counts.unfilteredCount++;
+        if (filtered) counts.filteredCount++;
+        else counts.unfilteredCount++;
       }
     }
   }
@@ -706,9 +700,6 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     if(metadataQuery != null) {
       queries.add(metadataQuery);
-    }
-    if(summaryMetadataQuery != null) {
-      queries.add(summaryMetadataQuery);
     }
     if(ontologyQuery != null) {
       queries.add(ontologyQuery);

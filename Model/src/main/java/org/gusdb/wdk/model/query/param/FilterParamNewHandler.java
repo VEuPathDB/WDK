@@ -125,7 +125,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     try {
       String fv = getFilteredValue(user, jsValue, contextParamValues, param, param.getMetadataQuery());
-      return param.getUseSummaryMetadataQueryForInternalValue()? param.transformIdSql(fv): fv;
+      return param.getUseIdTransformSqlForInternalValue()? param.transformIdSql(fv): fv;
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
