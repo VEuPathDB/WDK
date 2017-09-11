@@ -1,4 +1,4 @@
-import { ActionThunk } from '../ActionCreator';
+import {ActionCreator} from '../ActionCreator';
 import {pick} from 'lodash';
 import {AttributeField, RecordClass, Question, Answer, TableField} from '../utils/WdkModel'
 
@@ -116,11 +116,11 @@ let hasUrlSegment = (urlSegment: string) => (e: RecordClass | Question) =>
  * @param {Array<string>} opts.displayInfo.attributes Array of attribute names to include.
  * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
  */
-export function loadAnswer(
+export const loadAnswer: ActionCreator<LoadingAction | ErrorAction | AddedAction> = (
   questionUrlSegment: string,
   recordClassUrlSegment: string,
   opts: AnswerOptions
-): ActionThunk<LoadingAction | ErrorAction | AddedAction> {
+) => {
   return function run(dispatch, { wdkService }) {
     let { parameters = {} as Parameters, filters = [], displayInfo } = opts;
 

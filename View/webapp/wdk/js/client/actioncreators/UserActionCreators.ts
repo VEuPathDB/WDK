@@ -1,7 +1,7 @@
 import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
-import {ActionThunk} from "../ActionCreator";
+import {ActionCreator, ActionThunk} from "../ActionCreator";
 import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';
@@ -67,7 +67,7 @@ export type ResetPasswordSubmissionStatusAction = {
   type: 'user/reset-password-submission-status',
   payload : {
     success: boolean,
-    message?: string
+    message: string
   }
 }
 
@@ -118,7 +118,7 @@ export type FavoritesStatusLoadingAction = {
 }
 export type FavoritesStatusReceivedAction = {
   type: 'user/favorites-status-received',
-  payload: { record: RecordInstance, id?: number }
+  payload: { record: RecordInstance, id: number }
 }
 export type FavoritesStatusErrorAction = {
   type: 'user/favorites-status-error',
@@ -146,15 +146,15 @@ export function conditionallyTransition(test: UserPredicate, path: string, exter
  * Merge supplied key-value pair with user preferences and update
  * on the server.
  */
-export function updateUserPreference(scope: PreferenceScope, key: string, value: string): ActionThunk<PreferenceUpdateAction> {
+export let updateUserPreference: ActionCreator<PreferenceUpdateAction> = (scope: PreferenceScope, key: string, value: string) => {
   return function run(dispatch, { wdkService }) {
     let updatePromise = wdkService.updateCurrentUserPreference(scope, key, value);
     return dispatch(sendPrefUpdateOnCompletion(updatePromise,
-        'user/preference-update', { [scope]: { [key]: value } } as UserPreferences) as Promise<PreferenceUpdateAction>);
+        'user/preference-update', { [scope]: { [key]: value } }) as Promise<PreferenceUpdateAction>);
   };
 };
 
-export function updateUserPreferences(newPreferences: UserPreferences): ActionThunk<PreferencesUpdateAction> {
+export let updateUserPreferences: ActionCreator<PreferencesUpdateAction> = (newPreferences: UserPreferences) => {
   return function run(dispatch, { wdkService }) {
     let updatePromise = wdkService.updateCurrentUserPreferences(newPreferences);
     return dispatch(sendPrefUpdateOnCompletion(updatePromise,
@@ -162,27 +162,26 @@ export function updateUserPreferences(newPreferences: UserPreferences): ActionTh
   };
 };
 
-function sendPrefUpdateOnCompletion(
-  promise: Promise<void>,
-  actionName: PreferenceUpdateAction['type']|PreferencesUpdateAction['type'],
-  payload: UserPreferences
-): Promise<PreferenceUpdateAction|PreferencesUpdateAction> {
+let sendPrefUpdateOnCompletion: ActionCreator<PreferenceUpdateAction|PreferencesUpdateAction> =
+    (promise: Promise<void>, actionName: string, payload: UserPreferences) => {
+  return function run(dispatch, { wdkService }) {
     let prefUpdater = function() {
-      return broadcast({
+      return dispatch(broadcast({
         type: actionName,
-        payload: payload
-      }) as PreferenceUpdateAction|PreferencesUpdateAction;
+        payload: payload as UserPreferences
+      }) as PreferenceUpdateAction|PreferencesUpdateAction);
     };
     return promise.then(
       () => {
-        return prefUpdater();
+        prefUpdater();
       },
       (error) => {
         console.error(error.response);
         // update stores anyway; not a huge deal if preference doesn't make it to server
-        return prefUpdater();
+        prefUpdater();
       }
     );
+  };
 };
 
 function createProfileFormStatusAction(status: string, errorMessage?: string) {
@@ -204,8 +203,8 @@ function createFormStatusAction(actionType: string, status: string, errorMessage
 }
 
 /** Save user profile to DB */
-type SubmitProfileFormType = ActionThunk<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction>;
-export function submitProfileForm(user: UserProfileFormData): SubmitProfileFormType {
+type SubmitProfileFormType = ActionCreator<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction>;
+export let submitProfileForm: SubmitProfileFormType = (user: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
     let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "confirmEmail", "preferences"]);
@@ -234,8 +233,8 @@ export function submitProfileForm(user: UserProfileFormData): SubmitProfileFormT
 };
 
 /** Register user */
-type SubmitRegistrationFormType = ActionThunk<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
-export function submitRegistrationForm (formData: UserProfileFormData): SubmitRegistrationFormType {
+type SubmitRegistrationFormType = ActionCreator<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
+export let submitRegistrationForm: SubmitRegistrationFormType = (formData: UserProfileFormData) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createProfileFormStatusAction('pending'));
     let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
@@ -258,7 +257,7 @@ export function submitRegistrationForm (formData: UserProfileFormData): SubmitRe
 };
 
 /** Update user profile present in the form (unsaved changes) */
-export function updateProfileForm(user: User): ProfileFormUpdateAction {
+export let updateProfileForm: ActionCreator<ProfileFormUpdateAction> = (user: User) => {
   return {
     type: 'user/profile-form-update',
     payload: {user}
@@ -266,7 +265,7 @@ export function updateProfileForm(user: User): ProfileFormUpdateAction {
 };
 
 /** Save new password to DB */
-export function savePassword(oldPassword: string, newPassword: string): ActionThunk<PasswordFormSubmissionStatusAction> {
+export let savePassword: ActionCreator<PasswordFormSubmissionStatusAction> = (oldPassword: string, newPassword: string) => {
   return function run(dispatch, { wdkService }) {
     dispatch(createPasswordFormStatusAction('pending'));
     wdkService.updateCurrentUserPassword(oldPassword, newPassword)
@@ -281,21 +280,21 @@ export function savePassword(oldPassword: string, newPassword: string): ActionTh
 };
 
 /** Update change password form data (unsaved changes) */
-export function updateChangePasswordForm(formData: PasswordStoreState['passwordForm']): PasswordFormUpdateAction {
+export let updateChangePasswordForm: ActionCreator<PasswordFormUpdateAction> = (formData: PasswordStoreState['passwordForm']) => {
   return {
     type: 'user/password-form-update',
     payload: formData
   }
 };
 
-export function updatePasswordResetEmail(emailText: string): ResetPasswordUpdateEmailAction {
+export let updatePasswordResetEmail: ActionCreator<ResetPasswordUpdateEmailAction> = (emailText: string) => {
   return {
     type: 'user/reset-password-email-update',
     payload: emailText
   };
 };
 
-function createResetPasswordStatusAction(message?: string): ResetPasswordSubmissionStatusAction {
+let createResetPasswordStatusAction: ActionCreator<ResetPasswordSubmissionStatusAction> = (message: string) => {
   return {
     type: 'user/reset-password-submission-status',
     payload: {
@@ -305,7 +304,7 @@ function createResetPasswordStatusAction(message?: string): ResetPasswordSubmiss
   }
 };
 
-export function submitPasswordReset(email: string): ActionThunk<ResetPasswordSubmissionStatusAction> {
+export let submitPasswordReset: ActionCreator<ResetPasswordSubmissionStatusAction> = (email: string) => {
   return function run(dispatch, { wdkService, transitioner }) {
     dispatch(createResetPasswordStatusAction("Submitting..."));
     wdkService.resetUserPassword(email).then(
@@ -328,7 +327,7 @@ export function submitPasswordReset(email: string): ActionThunk<ResetPasswordSub
 /**
  * Show a warning that user must be logged in for feature
  */
-export function showLoginWarning(attemptedAction: string, destination?: string): ActionThunk<never> {
+export let showLoginWarning: ActionCreator<never> = (attemptedAction: string, destination?: string) => {
   return function(dispatch) {
     confirm(
       'Login Required',
@@ -342,7 +341,7 @@ export function showLoginWarning(attemptedAction: string, destination?: string):
 /**
  * Show the login form based on config.
  */
-export function showLoginForm(destination = window.location.href): ActionThunk<never> {
+export let showLoginForm: ActionCreator<never> = (destination = window.location.href) => {
   return function(dispatch, {wdkService}) {
     wdkService.getConfig().then(config => {
       AuthUtil.login({
@@ -356,7 +355,7 @@ export function showLoginForm(destination = window.location.href): ActionThunk<n
   };
 };
 
-export function showLogoutWarning(): ActionThunk<never> {
+export let showLogoutWarning: ActionCreator<never> = () => {
   return function(dispatch) {
     confirm(
       'Are you sure you want to logout?',
@@ -367,7 +366,7 @@ export function showLogoutWarning(): ActionThunk<never> {
   }
 };
 
-function logout(): ActionThunk<never> {
+let logout: ActionCreator<never> = () => {
   return function run(dispatch, { wdkService }) {
     wdkService.getConfig().then(config => {
       AuthUtil.logout({
@@ -390,12 +389,12 @@ type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | Basket
 /**
  * @param {Record} record
  */
-export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketAction> {
+export let loadBasketStatus: ActionCreator<BasketAction> = (record: RecordInstance) => {
   //if (user.isGuest) return basketAction(record, false);
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.getBasketStatus(record).then(response => response.status)
+      wdkService.getBasketStatus(record)
     ));
   };
 };
@@ -405,12 +404,12 @@ export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketActi
  * @param {Record} record
  * @param {Boolean} status
  */
-export function updateBasketStatus(user: User, record: RecordInstance, status: boolean): ActionThunk<BasketAction|never> {
+export let updateBasketStatus: ActionCreator<BasketAction|never> = (user: User, record: RecordInstance, status: boolean) => {
   if (user.isGuest) return showLoginWarning('use baskets');
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.updateBasketStatus(record, status).then(response => response.status)
+      wdkService.updateBasketStatus(record, status)
     ));
   };
 };
@@ -419,7 +418,7 @@ export function updateBasketStatus(user: User, record: RecordInstance, status: b
  * @param {Record} record
  * @param {Promise<boolean>} basketStatusPromise
  */
-let setBasketStatus = (record: RecordInstance, basketStatusPromise: Promise<boolean>): ActionThunk<BasketAction> => {
+let setBasketStatus: ActionCreator<BasketAction> = (record: RecordInstance, basketStatusPromise: Promise<boolean>) => {
   return function run(dispatch) {
     dispatch({
       type: 'user/basket-status-loading',
@@ -452,7 +451,7 @@ type FavoriteAction = FavoritesStatusErrorAction | FavoritesStatusLoadingAction 
 /**
  * @param {Record} record
  */
-export function loadFavoritesStatus(record: RecordInstance): ActionThunk<FavoriteAction> {
+export let loadFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance) => {
   //if (user.isGuest) return favoritesAction(record, false);
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
@@ -462,7 +461,7 @@ export function loadFavoritesStatus(record: RecordInstance): ActionThunk<Favorit
   };
 };
 
-export function removeFavorite(record: RecordInstance, favoriteId: number): ActionThunk<FavoriteAction> {
+export let removeFavorite: ActionCreator<FavoriteAction> = (record: RecordInstance, favoriteId: number) => {
   return function run(dispatch, { wdkService }) {
     return dispatch(setFavoritesStatus(
       record,
@@ -471,7 +470,7 @@ export function removeFavorite(record: RecordInstance, favoriteId: number): Acti
   };
 };
 
-export function addFavorite(user: User, record: RecordInstance): ActionThunk<FavoriteAction|never> {
+export let addFavorite: ActionCreator<FavoriteAction|never> = (user: User, record: RecordInstance) => {
   if (user.isGuest) {
     return showLoginWarning('use favorites');
   }
@@ -487,7 +486,7 @@ export function addFavorite(user: User, record: RecordInstance): ActionThunk<Fav
  * @param {Record} record
  * @param {Promise<Boolean>} statusPromise
  */
-function setFavoritesStatus(record: RecordInstance, statusPromise: Promise<number|undefined>): ActionThunk<FavoriteAction> {
+let setFavoritesStatus: ActionCreator<FavoriteAction> = (record: RecordInstance, statusPromise: Promise<number>) => {
   return function run(dispatch) {
     dispatch({
       type: 'user/favorites-status-loading',
