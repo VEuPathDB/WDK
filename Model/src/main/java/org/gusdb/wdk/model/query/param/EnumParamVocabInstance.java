@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class EnumParamVocabInstance implements DependentParamInstance {
 
-  private static Logger logger = Logger.getLogger(FilterParamNewInstance.class);
+  private static Logger logger = Logger.getLogger(EnumParamVocabInstance.class);
 
   // param this cache was created by
   // context values used to create this cache
