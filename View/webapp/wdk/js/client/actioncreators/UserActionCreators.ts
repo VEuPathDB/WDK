@@ -394,7 +394,7 @@ export let loadBasketStatus: ActionCreator<BasketAction> = (record: RecordInstan
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.getBasketStatus(record)
+      wdkService.getBasketStatus(record).then(response => response.status)
     ));
   };
 };
@@ -409,7 +409,7 @@ export let updateBasketStatus: ActionCreator<BasketAction|never> = (user: User, 
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.updateBasketStatus(record, status)
+      wdkService.updateBasketStatus(record, status).then(response => response.status)
     ));
   };
 };
