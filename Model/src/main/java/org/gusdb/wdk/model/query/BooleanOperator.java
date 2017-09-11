@@ -22,12 +22,17 @@ public enum BooleanOperator {
   UNION("UNION"),
   INTERSECT("INTERSECT"),
   LEFT_MINUS("MINUS"),
-  RIGHT_MINUS("RMINUS");
+  RIGHT_MINUS("RMINUS"),
+  LEFT_ONLY("LONLY"),
+  RIGHT_ONLY("RONLY");
 
   private static Set<String> unions = new LinkedHashSet<String>();
   private static Set<String> intersets = new LinkedHashSet<String>();
   private static Set<String> leftMinuses = new LinkedHashSet<String>();
   private static Set<String> rightMinuses = new LinkedHashSet<String>();
+  private static Set<String> leftOnlys = new LinkedHashSet<String>();
+  private static Set<String> rightOnlys = new LinkedHashSet<String>();
+  
 
   /**
    * normalize the syntax of boolean operators.
@@ -45,6 +50,10 @@ public enum BooleanOperator {
       initialize(leftMinuses, "minus", "lminus", "not", "lnot", "-", "except");
     if (rightMinuses.size() == 0)
       initialize(rightMinuses, "rminus", "rnot", "|-", "rexcept");
+    if(leftOnlys.size() == 0)
+      initialize(leftOnlys, "lonly");
+    if(rightOnlys.size() == 0)
+      initialize(rightOnlys, "ronly");
 
     name = name.trim().toLowerCase();
 
@@ -56,6 +65,10 @@ public enum BooleanOperator {
       return LEFT_MINUS;
     else if (rightMinuses.contains(name))
       return RIGHT_MINUS;
+    else if (leftOnlys.contains(name))
+      return LEFT_ONLY;
+    else if (rightOnlys.contains(name))
+      return RIGHT_ONLY;
     else
       throw new WdkModelException("Invalid boolean operator: '" + name + "'");
   }

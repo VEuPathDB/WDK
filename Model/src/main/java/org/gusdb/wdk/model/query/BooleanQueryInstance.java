@@ -71,6 +71,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
       // group by as the last clause.
       sql = getIntersectSql(leftSql, rightSql,
           BooleanOperator.UNION.getOperator(platform));
+    } else if (op == BooleanOperator.RIGHT_ONLY) {
+      sql = getOnlySql(2, rightSql);
+    } else if (op == BooleanOperator.LEFT_ONLY) {
+      sql = getOnlySql(1, leftSql);
     } else {
       // swap sqls if it is right_minus
       if (op == BooleanOperator.RIGHT_MINUS) {
@@ -163,6 +167,23 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     sql.append(") t GROUP BY " + pkColumnsString);
     sql.append(" HAVING count(*) > 1");
     return sql.toString();
+  }
+  
+  protected String getOnlySql(int only, String onlySql) {
+    // just sum the weight from original sql
+	StringBuffer sql = new StringBuffer();
+	sql.append("SELECT ");
+
+	String[] pkColumns = getPkColumns();
+
+	for (String column : pkColumns) {
+	  sql.append(column + ", ");
+	}
+	String weightColumn = Utilities.COLUMN_WEIGHT;
+	sql.append(weightColumn);
+	sql.append(" FROM (");
+	sql.append("(SELECT " + only + " AS wdk_t, x.* FROM (" + onlySql + ") x)) t ");
+	return sql.toString();
   }
 
   private String getOtherOperationSql(String leftSql, String rightSql,

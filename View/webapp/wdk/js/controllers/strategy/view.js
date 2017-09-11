@@ -785,29 +785,79 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       var oform = "<form class='clear' enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
-      params_table = "<div class='filter operators'>" +
-          "<span class='form_subtitle' style='padding-right:20px'>" +
-          "<b>Revise Operation</b></span><div id='operations'>" +
-          "<table style='margin-left:auto; margin-right:auto;'>" +
-          "<tr><td class='opcheck' valign='middle'><input type='radio' " +
-          "name='boolean' value='INTERSECT' /></td><td class='operation " +
-          "INTERSECT'></td><td valign='middle'>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'>" +
-          "<input type='radio' name='boolean' value='UNION'></td>" +
-          "<td class='operation UNION'></td><td>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>UNION</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'>" +
-          "<input type='radio' name='boolean' value='MINUS'></td>" +
-          "<td class='operation MINUS'></td><td>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>MINUS</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' " +
-          "name='boolean' value='RMINUS'></td><td class='operation RMINUS'>" +
-          "</td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "</td></tr></table></div></div>";
+      var intersect_html = 
+    	  "<td class='opcheck' valign='middle'>" +
+    	    "<input type='radio' " + "name='boolean' value='INTERSECT' />" +
+    	  "</td>" +
+    	  "<td class='operation INTERSECT'></td>" +
+    	  "<td valign='middle'>" +
+    	  "  &nbsp;" + (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + 
+    	  "</td>";
+      var union_html = 
+    	  "<td class='opcheck'>" +
+          "  <input type='radio' name='boolean' value='UNION'>" +
+          "</td>" +
+          "<td class='operation UNION'></td>" +
+          "<td>" +
+          "  &nbsp;" + (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) +
+          "</td>";
+      var left_minus_html =
+    	  "<td class='opcheck'>" +
+          "  <input type='radio' name='boolean' value='MINUS'>" +
+          "</td>" +
+          "<td class='operation MINUS'></td>" +
+          "<td>" +
+          "  &nbsp;" + (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) +
+          "</td>";
+      var right_minus_html =
+    	  "<td class='opcheck'>" +
+    	  "  <input type='radio' name='boolean' value='RMINUS'>" +
+    	  "</td>" +
+    	  "<td class='operation RMINUS'></td>" +
+    	  "<td>" +
+    	  "  &nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
+    	  "</td>";
+      var left_only_html =
+    	  "<td class='opcheck'>" +
+          "  <input type='radio' name='boolean' value='LONLY'>" +
+          "</td>" +
+          "<td class='operation LONLY'></td>" +
+          "<td>" +
+          "  &nbsp;" + (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>ONLY</b>" +
+          "</td>";
+      var right_only_html =
+    	  "<td class='opcheck'>" +
+          "  <input type='radio' name='boolean' value='RONLY'>" +
+          "</td>" +
+          "<td class='operation RONLY'></td>" +
+          "<td>" +
+          "  &nbsp;" + (modelstep.frontId) + "&nbsp;<b>ONLY</b>" +
+          "</td>";
+    
+      params_table =
+    	  "<div class='filter operators'>" +
+          "  <span class='form_subtitle' style='padding-right:20px'>" +
+          "    <b>Revise Operation</b>" +
+          "  </span>" +
+          "  <div id='operations'>" +
+          "    <table style='margin-left:auto; margin-right:auto;'>" +
+          "      <tr>" +
+                   intersect_html +
+          "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
+                   left_minus_html +
+          "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
+                   left_only_html +
+          "      </tr>" +
+          "      <tr>" +
+                   union_html +
+          "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
+                   right_minus_html +
+          "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
+                   right_only_html +
+          "      </tr>" +
+          "    </table>" +
+          "  </div>" + 
+          "</div>";
       var button = "<div style='text-align:center'>" +
           "<input type='submit' value='Revise' /></div>";
       params_table = oform + stage_input + params_table + button + cform;
