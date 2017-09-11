@@ -16,7 +16,7 @@ import RecordUI from '../components/RecordUI';
 import RecordViewStore, { State } from "../stores/RecordViewStore";
 
 const ActionCreators = {
-  UserActionCreators,
+  ...UserActionCreators,
   loadRecordData,
   updateSectionVisibility,
   updateNavigationQuery,
@@ -108,22 +108,22 @@ class RecordController extends AbstractViewController<State, RecordViewStore, ty
       headerActions.push({
         label: inBasket ? 'Remove from basket' : 'Add to basket',
         iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
-        onClick(event: Event) {
+        onClick: (event: Event) => {
           event.preventDefault();
-          this.eventHandlers.updateBasketStatus(user, record, !inBasket);
+          this.eventHandlers.updateBasketStatus(user!, record, !inBasket);
         }
       });
     }
     headerActions.push({
       label: favoriteId ? 'Remove from favorites' : 'Add to favorites',
       iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
-      onClick(event: Event) {
+      onClick: (event: Event) => {
         event.preventDefault();
         if (favoriteId) {
           this.eventHandlers.removeFavorite(record, favoriteId);
         }
         else {
-          this.eventHandlers.addFavorite(user, record);
+          this.eventHandlers.addFavorite(user!, record);
         }
       }
     },
