@@ -1,13 +1,5 @@
 import { isPlainObject } from 'lodash';
 import {Action} from "../dispatcher/Dispatcher";
-export let StaticDataProps = {
-  CONFIG: "config",
-  ONTOLOGY: "ontology",
-  QUESTIONS: "questions",
-  RECORDCLASSES: "recordClasses",
-  USER: "user",
-  PREFERENCES: "preferences"
-};
 
 /**
  * Adds an isBroadcast property to the passed action with value true.  Only
