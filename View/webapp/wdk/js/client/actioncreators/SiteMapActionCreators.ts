@@ -4,7 +4,7 @@ import {
   OntologyNode
 } from '../utils/OntologyUtils';
 
-import { ActionThunk } from '../ActionCreator';
+import { ActionCreator } from '../ActionCreator';
 
 export type LoadingAction = {
   type: 'sitemap/loading'
@@ -34,7 +34,7 @@ export type ErrorAction = {
   }
 }
 
-export function loadCurrentSiteMap(): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
+export const loadCurrentSiteMap: ActionCreator<LoadingAction|ErrorAction|InitializeAction> = () => {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: 'sitemap/loading' });
 
@@ -53,7 +53,7 @@ export function loadCurrentSiteMap(): ActionThunk<LoadingAction | ErrorAction | 
     return ontologyPromise.then((ontology) => {
       dispatch({
         type: 'sitemap/initialize',
-        payload: { tree: getTree(ontology, isQualifying) }
+          payload: { tree: getTree(ontology, isQualifying) }
       });
     }).catch(error => {
       console.error(error);

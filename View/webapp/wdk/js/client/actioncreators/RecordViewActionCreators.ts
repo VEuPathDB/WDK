@@ -13,7 +13,7 @@ import {
   FavoritesStatusLoadingAction
 } from './UserActionCreators';
 import { PrimaryKey, RecordInstance, RecordClass } from '../utils/WdkModel';
-import { ActionThunk, DispatchAction } from '../ActionCreator';
+import { ActionCreator, DispatchAction } from '../ActionCreator';
 import { Action } from '../dispatcher/Dispatcher';
 import WdkService from '../utils/WdkService';
 import { CategoryTreeNode } from "../utils/CategoryUtils";
@@ -107,7 +107,7 @@ type LoadRecordAction = RecordLoadingAction
 type UserAction = BasketAction | FavoriteAction
 
 /** Fetch page data from services */
-export function loadRecordData(recordClass: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction | UserAction> {
+export const loadRecordData: ActionCreator<LoadRecordAction | UserAction> = (recordClass: string, primaryKeyValues: string[]) => {
   return function run(dispatch) {
     const activeRecordAction$ = dispatch(setActiveRecord(recordClass, primaryKeyValues)) as Promise<Action>;
     activeRecordAction$.then((action: RecordReceivedAction) => {
@@ -134,7 +134,7 @@ const dispatchWithId = <T extends Action & { id: string }>(
  * @param {string} recordClassName
  * @param {Array<string>} primaryKeyValues
  */
-function setActiveRecord(recordClassName: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction> {
+const setActiveRecord: ActionCreator<LoadRecordAction> = (recordClassName: string, primaryKeyValues: string[]) => {
   return (realDispatch, { wdkService }) => {
     const dispatch = dispatchWithId(realDispatch);
     dispatch({

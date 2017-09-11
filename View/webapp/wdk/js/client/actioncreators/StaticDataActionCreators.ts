@@ -1,17 +1,10 @@
-import { broadcast } from '../utils/StaticDataUtils';
+import { StaticDataProps, broadcast } from '../utils/StaticDataUtils';
 import WdkService from "../utils/WdkService";
-import {ActionThunk, DispatchAction} from "../ActionCreator";
+import {ActionCreator, DispatchAction} from "../ActionCreator";
 import {ServiceConfig} from "../utils/WdkService";
 import {CategoryOntology} from "../utils/CategoryUtils";
 import {Question, RecordClass} from "../utils/WdkModel";
 import {User, UserPreferences} from "../utils/WdkUser";
-
-const CONFIG = "config";
-const ONTOLOGY = "ontology";
-const QUESTIONS = "questions";
-const RECORDCLASSES = "recordClasses";
-const USER = "user";
-const PREFERENCES = "preferences";
 
 export type StaticData = {
   config: ServiceConfig;
@@ -38,12 +31,12 @@ type StaticDataActions<K extends keyof StaticData> = {
 
 
 // actions triggered by individual static data loads
-export type ConfigAction = StaticDataActions<typeof CONFIG>
-export type OntologyAction = StaticDataActions<typeof ONTOLOGY>
-export type QuestionsAction = StaticDataActions<typeof QUESTIONS>
-export type RecordClassesAction = StaticDataActions<typeof RECORDCLASSES>
-export type UserAction = StaticDataActions<typeof USER>
-export type PreferencesAction = StaticDataActions<typeof PREFERENCES>
+export type ConfigAction = StaticDataActions<'config'>
+export type OntologyAction = StaticDataActions<'ontology'>
+export type QuestionsAction = StaticDataActions<'questions'>
+export type RecordClassesAction = StaticDataActions<'recordClasses'>
+export type UserAction = StaticDataActions<'user'>
+export type PreferencesAction = StaticDataActions<'preferences'>
 
 // action triggered when all static data loaded
 export type AllDataAction = {
@@ -78,32 +71,32 @@ type StaticDataConfigMap = {
 
 export let staticDataConfigMap: StaticDataConfigMap = {
   config: {
-    elementName: CONFIG, serviceCall: 'getConfig', actionType: 'static/config-loaded'
+    elementName: 'config', serviceCall: 'getConfig', actionType: 'static/config-loaded'
   },
   ontology: {
-    elementName: ONTOLOGY, serviceCall: 'getOntology', actionType: 'static/categories-loaded'
+    elementName: 'ontology', serviceCall: 'getOntology', actionType: 'static/categories-loaded'
   },
   questions: {
-    elementName: QUESTIONS, serviceCall: 'getQuestions', actionType: 'static/questions-loaded'
+    elementName: 'questions', serviceCall: 'getQuestions', actionType: 'static/questions-loaded'
   },
   recordClasses: {
-    elementName: RECORDCLASSES, serviceCall: 'getRecordClasses', actionType: 'static/recordClasses-loaded'
+    elementName: 'recordClasses', serviceCall: 'getRecordClasses', actionType: 'static/recordClasses-loaded'
   },
   user: {
-    elementName: USER, serviceCall: 'getCurrentUser', actionType: 'static/user-loaded'
+    elementName: 'user', serviceCall: 'getCurrentUser', actionType: 'static/user-loaded'
   },
   preferences: {
-    elementName: PREFERENCES, serviceCall: 'getCurrentUserPreferences', actionType: 'static/preferences-loaded'
+    elementName: 'preferences', serviceCall: 'getCurrentUserPreferences', actionType: 'static/preferences-loaded'
   }
 };
 
 // these entry points are not used directly by WDK, which loads all at once using loadAllStaticData()
-export function loadConfig() { return getLoader(CONFIG); }
-export function loadOntology() { return getLoader(ONTOLOGY); }
-export function loadQuestions() { return getLoader(QUESTIONS); }
-export function loadRecordClasses() { return getLoader(RECORDCLASSES); }
-export function loadUser() { return getLoader(USER); }
-export function loadPreferences() { return getLoader(PREFERENCES); }
+export function loadConfig() { return getLoader(StaticDataProps.CONFIG); }
+export function loadOntology() { return getLoader(StaticDataProps.ONTOLOGY); }
+export function loadQuestions() { return getLoader(StaticDataProps.QUESTIONS); }
+export function loadRecordClasses() { return getLoader(StaticDataProps.RECORDCLASSES); }
+export function loadUser() { return getLoader(StaticDataProps.USER); }
+export function loadPreferences() { return getLoader(StaticDataProps.PREFERENCES); }
 
 function handleLoadError(error: Error): LoadErrorAction {
   console.error(error);
@@ -129,14 +122,14 @@ function getPromise(
   });
 }
 
-function getLoader(dataItemName: StaticDataKey): ActionThunk<StaticDataAction> {
+let getLoader: ActionCreator<StaticDataAction> = (dataItemName: StaticDataKey) => {
   return function run(dispatch, { wdkService }) {
     return getPromise(dataItemName, dispatch, wdkService)
       .catch((error: Error) => handleLoadError(error));
   };
 };
 
-export function loadAllStaticData(): ActionThunk<AllDataAction> {
+export let loadAllStaticData: ActionCreator<AllDataAction> = () => {
   let dataItemKeys = Object.keys(staticDataConfigMap);
   return function run(dispatch, { wdkService }) {
     let promiseArray = dataItemKeys.map(key => getPromise(key as StaticDataKey, dispatch as any, wdkService));

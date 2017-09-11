@@ -6,25 +6,26 @@
  */
 
 import { Location } from 'history';
-import { ActionThunk } from '../ActionCreator';
+import { ActionCreator } from '../ActionCreator';
 
 export type LocationAction = {
   type: 'router/location-updated',
   payload: { location: Location }
 }
 
-export function updateLocation(location: Location): LocationAction {
-  return { type: 'router/location-updated', payload: { location } }
-}
+export const updateLocation: ActionCreator<LocationAction> = (location: Location) => ({
+  type: 'router/location-updated',
+  payload: { location }
+});
 
-export function transitionToInternalPage(path: string): ActionThunk<never> {
+export const transitionToInternalPage: ActionCreator<never> = (path: string) => {
   return function run(dispatch, { transitioner }) {
     transitioner.transitionToInternalPage(path);
   };
-}
+};
 
-export function transitionToExternalPage(path: string): ActionThunk<never> {
+export const transitionToExternalPage: ActionCreator<never> = (path: string) => {
   return function run(dispatch, { transitioner }) {
     transitioner.transitionToExternalPage(path);
   };
-}
+};
