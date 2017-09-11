@@ -149,10 +149,10 @@ public class QuestionFormatter {
   public static JSONObject getFilterParamSummaryJson(FilterParamSummaryCounts counts) {
     JSONObject json = new JSONObject();
     json.put("filtered", counts.filteredCount);
+    json.put("nativeFiltered", counts.untransformedFilteredCount);
     json.put("unfiltered", counts.unfilteredCount);
-    
+    json.put("nativeUnfiltered", counts.untransformedUnfilteredCount); 
     return json;
-  
   }
 
   public static Object getInternalValueJson(String internalValue) {
