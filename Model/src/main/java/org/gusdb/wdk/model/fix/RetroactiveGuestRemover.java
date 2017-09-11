@@ -97,7 +97,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
    */
   public static Calendar findOldestGuestUserRegistry(DataSource dataSource, String userSchema) throws WdkModelException {
     final Calendar calendar = Calendar.getInstance();
-	String sql = "SELECT min(register_time) AS oldest_date FROM " + userSchema + "users WHERE is_guest = 1";
+	String sql = "SELECT min(first_access) AS oldest_date FROM " + userSchema + "users WHERE is_guest = 1";
     try {
       new SQLRunner(dataSource, sql).executeQuery(new ResultSetHandler() {
         @Override
@@ -216,7 +216,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
     }
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
+        userSchema + "users " + " WHERE is_guest = 1 AND first_access < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
