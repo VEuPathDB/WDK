@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -282,9 +282,7 @@ public abstract class AbstractDependentParam extends Param {
     if (dependedParams == null || dependedParams.isEmpty())
       return dependedParamValuesJson;
     // get depended param names in advance since getDependedParams() is expensive
-    List<String> dependedParamNames = Functions.mapToList(
-        dependedParams, new Function<Param, String>() {
-          @Override public String apply(Param obj) { return obj.getName(); }});
+    List<String> dependedParamNames = mapToList(dependedParams, obj -> obj.getName());
     for (String paramName : dependedParamValues.keySet()) {
       if (dependedParamNames.contains(paramName)) {
         dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
