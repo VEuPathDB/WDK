@@ -154,4 +154,17 @@ public class Keys {
   public static final String DISPLAY = "display";
   public static final String NOTE = "note";
   public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
+  
+  //additional strategy-specific keys
+  public static final String AUTHOR = "author";
+  public static final String LATEST_STEP_ID = "latestStepId";
+  public static final String ORGANIZATION = "organization";
+  public static final String RECORD_CLASS_NAME_PLURAL = "recordClassNamePlural";
+  public static final String SIGNATURE = "signature";
+  public static final String LAST_MODIFIED = "lastModified";
+  public static final String IS_SAVED = "isSaved";
+  public static final String IS_VALID = "isValid";
+  public static final String IS_DELETED = "isDeleted";
+  
+  
 }
