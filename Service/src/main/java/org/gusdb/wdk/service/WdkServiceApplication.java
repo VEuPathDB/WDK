@@ -18,6 +18,7 @@ import org.gusdb.wdk.service.service.ApiService;
 import org.gusdb.wdk.service.service.OAuthService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.ProjectService;
+import org.gusdb.wdk.service.service.PublicStrategyService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
@@ -70,6 +71,7 @@ public class WdkServiceApplication extends Application {
     .add(BasketService.class)
     .add(UserCreationService.class)
     .add(FavoritesService.class)
+    .add(PublicStrategyService.class)
 
     // test
     .add(SampleService.class)
