@@ -660,6 +660,9 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   }
 
   /**
+   * NOTE: this method is only called from actionland/beans and does not need to be compatible with
+   * FilterParamNew (which is only valid in the service)
+   * 
    * for reviseStep action, validate all the values, and if it's invalid, substitute it with default. if the
    * value doesn't exist in the map, I will add default into it.
    * 
