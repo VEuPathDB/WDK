@@ -1,8 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
+import static org.gusdb.fgputil.functional.Functions.rSwallow;
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
 import java.util.List;
 
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
@@ -10,14 +12,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StrategyFormatter {
-  public static JSONArray getStrategiesJson(List<Strategy> strategies) throws WdkModelException {
-	return Functions.reduce(strategies.iterator(),
-			Functions.rSwallow((strategy, strategiesJson) -> strategiesJson.put(getStrategyJson(strategy))),
-			new JSONArray());
+
+  public static JSONArray getStrategiesJson(List<Strategy> strategies) {
+    return reduce(strategies.iterator(), rSwallow((strategy, strategiesJson) ->
+        strategiesJson.put(getStrategyJson(strategy))), new JSONArray());
   }
 
   public static JSONObject getStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
-	return new JSONObject() 
+    return new JSONObject() 
         .put(Keys.STRATEGY_ID, strategy.getStrategyId())
         .put(Keys.DESCRIPTION, strategy.getDescription())
         .put(Keys.NAME, strategy.getName())
