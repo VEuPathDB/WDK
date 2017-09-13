@@ -27,6 +27,8 @@ import org.gusdb.wdk.model.WdkModelException;
  * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
  * Starting build 27 we select not only guest users but also last_active null users
  * starting build 29 gus4 we remove last_active null condition given that thee are few and they might want to just use our galaxy
+ * starting build 35 we have the option of removing those guest users having a first access that falls within a given period starting
+ * from the oldest first access found in the database.
  * @author Jerric
  *
  */
@@ -108,7 +110,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
             }
           }
           catch(SQLException sre) {
-            throw new SQLRunnerException("Unable to oldest guest user registry.");
+            throw new SQLRunnerException("Unable to obtain oldest guest first access.");
           }
         }  
       }); 
@@ -189,11 +191,11 @@ public class RetroactiveGuestRemover extends BaseCLI {
       LOG.info("********** " + guestSql + " **********");
    
       LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
-      removeGuests(userDb, userSchema, guestSql);
+      //removeGuests(userDb, userSchema, guestSql);
   
       LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
       // though we cannot use the cutoff date here...
-      removeGBrowseGuests(userDb.getDataSource());
+      //removeGBrowseGuests(userDb.getDataSource());
       
     }
   }
