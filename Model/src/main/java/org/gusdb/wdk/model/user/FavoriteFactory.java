@@ -69,7 +69,8 @@ public class FavoriteFactory {
       "SELECT * FROM " + USER_SCHEMA_MACRO + TABLE_FAVORITES +
       " WHERE " + COLUMN_USER_ID + " = ?" +
       "   AND " + COLUMN_PROJECT_ID + " = ?" +
-      "   AND " + COLUMN_IS_DELETED + " = " + IS_DELETED_CONDITIONAL_VALUE_MACRO;
+      "   AND " + COLUMN_IS_DELETED + " = " + IS_DELETED_CONDITIONAL_VALUE_MACRO +
+      " ORDER BY " + COLUMN_RECORD_GROUP;
 
   private static final String SELECT_FAVORITE_BY_ID_SQL =
       "SELECT * FROM " + USER_SCHEMA_MACRO + TABLE_FAVORITES +
