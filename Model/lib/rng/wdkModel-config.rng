@@ -79,6 +79,7 @@
                 <element name="appDb">
                     <ref name="DBBaseContent" />
                     <attribute name="userDbLink" />
+                    <attribute name="acctDbLink" />
                     <optional>
                         <attribute name="maxPkColumnWidth">
                             <data type="unsignedShort" />
