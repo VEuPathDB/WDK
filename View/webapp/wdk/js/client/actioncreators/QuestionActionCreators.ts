@@ -1,4 +1,4 @@
-import { ActionCreator } from '../ActionCreator';
+import { ActionThunk } from '../ActionCreator';
 import { Question, QuestionParameter, ParameterValues, ParameterValue, OntologyTermSummary } from '../utils/WdkModel';
 
 export const ACTIVE_QUESTION_UPDATED = 'question/active-question-updated';
@@ -67,78 +67,84 @@ export type Action = {
 }
 
 // TODO Initialize paramState. How will param initializer be resolved?
-export const loadQuestion: ActionCreator<Action> = (urlSegment: string) => (dispatch, { wdkService }) => {
-  dispatch({ type: ACTIVE_QUESTION_UPDATED, payload: { id: urlSegment } });
-  wdkService.getQuestionAndParameters(urlSegment).then(
-    question => {
-      dispatch({
-        type: QUESTION_LOADED,
-        payload: { id: urlSegment, question, paramValues: makeDefaultParamValues(question.parameters) }
-      });
-    },
-    error => {
-      dispatch({
-        type: error.status === 404 ? QUESTION_NOT_FOUND : QUESTION_ERROR,
-        payload: { id: urlSegment }
-      });
-    }
-  )
+export function loadQuestion(urlSegment: string): ActionThunk<Action> {
+  return (dispatch, { wdkService }) => {
+    dispatch({ type: ACTIVE_QUESTION_UPDATED, payload: { id: urlSegment } });
+    wdkService.getQuestionAndParameters(urlSegment).then(
+      question => {
+        dispatch({
+          type: QUESTION_LOADED,
+          payload: { id: urlSegment, question, paramValues: makeDefaultParamValues(question.parameters) }
+        });
+      },
+      error => {
+        dispatch({
+          type: error.status === 404 ? QUESTION_NOT_FOUND : QUESTION_ERROR,
+          payload: { id: urlSegment }
+        });
+      }
+    )
+  }
 }
 
-export const updateParamValue: ActionCreator<Action> = (
+export function updateParamValue(
   urlSegment: string,
   paramName: string,
   paramValue: ParameterValue,
   paramValues: ParameterValues
-) => (dispatch, { wdkService }) => {
-  dispatch({ type: PARAM_UPDATED, payload: { id: urlSegment, paramName, paramValue } });
-  wdkService.getQuestionParamValues(urlSegment, paramName, paramValue, paramValues).then(
-    paramValues => {
-      dispatch({
-        type: PARAMS_UPDATED,
-        payload: { id: urlSegment, paramValues }
-      });
-    },
-    error => {
-      dispatch({
-        type: PARAM_ERROR,
-        payload: { id: urlSegment, error: error.message, paramName }
-      });
-    }
-  );
+): ActionThunk<Action> {
+  return (dispatch, { wdkService }) => {
+    dispatch({ type: PARAM_UPDATED, payload: { id: urlSegment, paramName, paramValue } });
+    wdkService.getQuestionParamValues(urlSegment, paramName, paramValue, paramValues).then(
+      paramValues => {
+        dispatch({
+          type: PARAMS_UPDATED,
+          payload: { id: urlSegment, paramValues }
+        });
+      },
+      error => {
+        dispatch({
+          type: PARAM_ERROR,
+          payload: { id: urlSegment, error: error.message, paramName }
+        });
+      }
+    );
+  }
 }
 
-export const loadOnotologyTermSummary: ActionCreator<Action> = (
+export function loadOnotologyTermSummary(
   urlSegment: string,
   paramName: string,
   paramValue: any,
   ontologyId: string,
   paramValues: ParameterValues
-) => (dispatch, { wdkService }) => {
-  wdkService.getOntologyTermSummary(urlSegment, paramName, paramValue, ontologyId, paramValues).then(
-    ontologyTermSummary => {
-      dispatch({
-        type: ONTOLOGY_TERM_SUMMARY_LOADED,
-        payload: {
-          id: urlSegment,
-          paramName,
-          ontologyId,
-          ontologyTermSummary
-        }
-      })
-    },
-    error => {
-      dispatch({
-        type: ONTOLOGY_TERM_SUMMARY_ERROR,
-        payload: {
-          id: urlSegment,
-          paramName,
-          ontologyId,
-          error: error.message
-        }
-      })
-    }
-  );
+): ActionThunk<Action> {
+  return (dispatch, { wdkService }) => {
+    wdkService.getOntologyTermSummary(urlSegment, paramName, paramValue, ontologyId, paramValues).then(
+      ontologyTermSummary => {
+        dispatch({
+          type: ONTOLOGY_TERM_SUMMARY_LOADED,
+          payload: {
+            id: urlSegment,
+            paramName,
+            ontologyId,
+            ontologyTermSummary
+          }
+        })
+      },
+      error => {
+        dispatch({
+          type: ONTOLOGY_TERM_SUMMARY_ERROR,
+          payload: {
+            id: urlSegment,
+            paramName,
+            ontologyId,
+            error: error.message
+          }
+        })
+      }
+    );
+  }
 }
 
 
