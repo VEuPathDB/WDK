@@ -78,6 +78,7 @@ site_vars file: {{ site_vars }}
             connectionUrl="{{ modelconfig_appDb_connectionUrl }}"
             platform="{{ modelconfig_appDb_platform }}"
             userDbLink="{{ modelconfig_appDb_userDbLink }}"
+            acctDbLink="{{ modelconfig_appDb_acctDbLink }}"
             {% if modelconfig_appDb_maxActive is defined -%}
             maxActive="{{ modelconfig_appDb_maxActive }}"
             {% endif -%}
