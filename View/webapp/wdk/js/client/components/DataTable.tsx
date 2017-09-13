@@ -224,10 +224,11 @@ class DataTable extends PureComponent<Props> {
         });
       },
       createdRow: (row: HTMLTableRowElement) => {
-        $(row)
-          .addClass('wdk-DataTableRow' +
-            (childRow != null ? ' wdk-DataTableRow__expandable' : ''))
-          .attr('tabindex', '0');
+        row.classList.add('wdk-DataTableRow');
+        if (childRow) {
+          row.classList.add('wdk-DataTableRow__expandable');
+          row.tabIndex = 0;
+        }
       }
     });
 
