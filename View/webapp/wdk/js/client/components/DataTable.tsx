@@ -1,18 +1,17 @@
 import $ from 'jquery';
-import { eq } from 'lodash';
+import { eq, uniqueId } from 'lodash';
 import React, {Component, PureComponent, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
 import { containsAncestorNode } from '../utils/DomUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
-const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
 const expandColumn = {
   data: undefined,
   className: 'wdk-DataTableCell wdk-DataTableCell__childRowToggle',
   orderable: false,
-  title: expandButton,
-  defaultContent: expandButton
+  title: '<button class="wdk-DataTableCellExpand"></button>',
+  defaultContent: '<div class="wdk-DataTableCellExpand"></div>'
 };
 
 type ColumnDef = {
@@ -111,7 +110,7 @@ class DataTable extends PureComponent<Props> {
     }
   };
 
-  _childRowContainers: Map<Node, HTMLElement>;
+  _childRowContainers: Map<HTMLTableRowElement, HTMLElement>;
 
   _isRedrawing: boolean;
 
@@ -225,9 +224,10 @@ class DataTable extends PureComponent<Props> {
         });
       },
       createdRow: (row: HTMLTableRowElement) => {
-        $(row).addClass('wdk-DataTableRow' + (
-          childRow != null ? ' wdk-DataTableRow__expandable' : ''
-        ));
+        $(row)
+          .addClass('wdk-DataTableRow' +
+            (childRow != null ? ' wdk-DataTableRow__expandable' : ''))
+          .attr('tabindex', '0');
       }
     });
 
@@ -243,7 +243,13 @@ class DataTable extends PureComponent<Props> {
     .width(width || '')
     .appendTo(this.node)
     // click handler for expand single row
-    .on('click', '.wdk-DataTableRow__expandable', event => {
+    .on('click keydown', '.wdk-DataTableRow__expandable', event => {
+
+      // ignore keydown events if the key is not Enter
+      if (event.type === 'keydown' && event.key !== 'Enter') {
+        return;
+      }
+
       let tr = event.currentTarget;
 
       // ignore event if a link, button, or input element is clicked
@@ -268,16 +274,16 @@ class DataTable extends PureComponent<Props> {
 
       let row = this._dataTable.row(tr);
       if (row.child.isShown()) {
-        this._hideChildRow(row.node());
+        this._hideChildRow(row.node() as HTMLTableRowElement);
       }
       else {
-        this._renderChildRow(row.node());
+        this._renderChildRow(row.node() as HTMLTableRowElement);
       }
       this._updateChildRowClassNames();
       this._callExpandedRowsCallback();
     })
     // click handler for expand all rows
-    .on('click', 'th .wdk-DataTableCellExpand', () => {
+    .on('click', 'th .wdk-DataTableCellExpand', event => {
       // if all are shown, then hide all, otherwise show any that are hidden
       let allShown = areAllChildRowsShown(this._dataTable);
       let update = allShown ? this._hideChildRow : this._renderChildRow;
@@ -324,7 +330,7 @@ class DataTable extends PureComponent<Props> {
 
     this._dataTable.rows().every((index) => {
       let row = this._dataTable.row(index);
-      let tr = row.node();
+      let tr = row.node() as HTMLTableRowElement;
       let data = row.data() as Row;
       if (expandedRows.includes(getRowId(data))) {
         this._renderChildRow(tr);
@@ -352,7 +358,7 @@ class DataTable extends PureComponent<Props> {
   }
 
   /** Append child row container node to table row and show it */
-  _renderChildRow(tableRowNode: Node, openRow = true) {
+  _renderChildRow(tableRowNode: HTMLTableRowElement, openRow = true) {
     let { childRow } = this.props;
     if (childRow == null) return;
     let row = this._dataTable.row(tableRowNode);
@@ -367,13 +373,15 @@ class DataTable extends PureComponent<Props> {
     }
     if (openRow) {
       row.child.show();
+      tableRowNode.setAttribute('aria-expanded', 'true');
     }
   }
 
   /** Hide child row */
-  _hideChildRow(tableRowNode: Node) {
+  _hideChildRow(tableRowNode: HTMLTableRowElement) {
     let row = this._dataTable.row(tableRowNode);
     row.child.hide();
+      tableRowNode.setAttribute('aria-expanded', 'false');
   }
 
   _callExpandedRowsCallback() {
@@ -392,9 +400,12 @@ class DataTable extends PureComponent<Props> {
   }
 
   /** Get child row container from cache, or create and add to cache first */
-  _getChildRowContainer(tableRowNode: Node) {
+  _getChildRowContainer(tableRowNode: HTMLTableRowElement) {
     if (!this._childRowContainers.has(tableRowNode)) {
-      this._childRowContainers.set(tableRowNode, document.createElement('div'));
+      const container = document.createElement('div');
+      container.id = uniqueId('DataTableChildRow');
+      tableRowNode.setAttribute('aria-controls', container.id);
+      this._childRowContainers.set(tableRowNode, container);
     }
     return this._childRowContainers.get(tableRowNode) as HTMLElement;
   }
