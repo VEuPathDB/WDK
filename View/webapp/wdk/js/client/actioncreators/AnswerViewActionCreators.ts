@@ -1,12 +1,12 @@
-import {ActionCreator} from '../ActionCreator';
+import { ActionThunk } from '../ActionCreator';
 import {pick} from 'lodash';
 import {AttributeField, RecordClass, Question, Answer, TableField} from '../utils/WdkModel'
 
 export type DisplayInfo = {
   customName: string;
   pagination: { offset: number, numRecords: number};
-  attributes: string[] | '__ALL_ATTRIBUTES__';
-  tables: string[] | '__ALL_TABLES__';
+  attributes?: string[] | '__ALL_ATTRIBUTES__';
+  tables?: string[] | '__ALL_TABLES__';
   sorting: Sorting[];
 }
 
@@ -20,9 +20,9 @@ export type Sorting = {
 }
 
 export type AnswerOptions = {
-  parameters: Parameters;
-  filters: {name: string, value: any}[]
-  viewFilters: {name: string, value: any[]}
+  parameters?: Parameters;
+  filters?: {name: string, value: any}[]
+  viewFilters?: {name: string, value: any[]}
   displayInfo: DisplayInfo
 }
 
@@ -116,11 +116,11 @@ let hasUrlSegment = (urlSegment: string) => (e: RecordClass | Question) =>
  * @param {Array<string>} opts.displayInfo.attributes Array of attribute names to include.
  * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
  */
-export const loadAnswer: ActionCreator<LoadingAction | ErrorAction | AddedAction> = (
+export function loadAnswer(
   questionUrlSegment: string,
   recordClassUrlSegment: string,
   opts: AnswerOptions
-) => {
+): ActionThunk<LoadingAction | ErrorAction | AddedAction> {
   return function run(dispatch, { wdkService }) {
     let { parameters = {} as Parameters, filters = [], displayInfo } = opts;
 

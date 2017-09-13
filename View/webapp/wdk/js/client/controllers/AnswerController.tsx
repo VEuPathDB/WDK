@@ -8,7 +8,8 @@ import {
   updateFilter,
   moveColumn,
   changeAttributes,
-  sort
+  sort,
+  Sorting
 } from '../actioncreators/AnswerViewActionCreators';
 import Answer from '../components/Answer';
 import Loading from '../components/Loading';
@@ -55,7 +56,7 @@ class AnswerController extends AbstractViewController<State, AnswerViewStore, ty
 
       // (re)initialize the page
       let pagination = { numRecords: 1000, offset: 0 };
-      let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
+      let sorting = [{ attributeName: 'primary_key', direction: 'ASC' } as Sorting];
       let displayInfo = { pagination, sorting, customName };
       let opts = { displayInfo, parameters };
       this.eventHandlers.loadAnswer(questionName, recordClassName, opts);

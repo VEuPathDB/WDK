@@ -1,6 +1,6 @@
 import { submitAsForm } from '../utils/FormSubmitter';
 import { getStepBundlePromise, getSingleRecordStepBundlePromise } from '../utils/stepUtils';
-import { ActionCreator } from '../ActionCreator';
+import { ActionThunk } from '../ActionCreator';
 import { Step } from '../utils/WdkUser';
 import {Question, RecordClass} from "../utils/WdkModel";
 
@@ -68,7 +68,7 @@ export function updateFormUiState(newUiState: any): UiUpdateAction {
   };
 }
 
-export const loadPageDataFromStepId: ActionCreator<LoadingAction | ErrorAction | InitializeAction> = (stepId: number) => {
+export function loadPageDataFromStepId(stepId: number): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: 'downloadForm/loading' });
     return getStepBundlePromise(stepId, wdkService).then(
@@ -88,7 +88,10 @@ export const loadPageDataFromStepId: ActionCreator<LoadingAction | ErrorAction |
   }
 }
 
-export const loadPageDataFromRecord: ActionCreator<LoadingAction | ErrorAction | InitializeAction> = (recordClassUrlSegment: string, primaryKeyString: string) => {
+export function loadPageDataFromRecord(
+  recordClassUrlSegment: string,
+  primaryKeyString: string
+): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: 'downloadForm/loading' });
 
@@ -130,7 +133,12 @@ export const loadPageDataFromRecord: ActionCreator<LoadingAction | ErrorAction |
 
 // FIXME figure out what to do about "ActionCreators" that don't dispatch actions
 // In this case, we just want access to wdkService.
-export const submitForm: ActionCreator<never> = (step: Step, selectedReporter: string, formState: any, target = '_blank') => {
+export function submitForm(
+  step: Step,
+  selectedReporter: string,
+  formState: any,
+  target = '_blank'
+): ActionThunk<never> {
   return function run(dispatch, { wdkService }) {
     // a submission must trigger a form download, meaning we must POST the form
     let submissionJson = {
