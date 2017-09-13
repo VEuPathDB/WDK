@@ -5,6 +5,7 @@
     "test": "nyc ava",
     "report": "nyc report --reporter=html && open coverage/index.html",
     "build": "webpack",
+    "check-ts": "tsc --noEmit --pretty",
     "examples": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
