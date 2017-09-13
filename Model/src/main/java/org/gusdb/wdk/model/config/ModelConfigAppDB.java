@@ -18,6 +18,7 @@ package org.gusdb.wdk.model.config;
 public class ModelConfigAppDB extends ModelConfigDB {
 
   private String userDbLink;
+  private String acctDbLink;
   private short maxPkColumnWidth = 150;
 
   /**
@@ -35,6 +36,23 @@ public class ModelConfigAppDB extends ModelConfigDB {
     if (userDbLink.length() > 0 && !userDbLink.startsWith("@"))
       userDbLink = "@" + userDbLink;
     this.userDbLink = userDbLink;
+  }
+
+  /**
+   * @return the acctDbLink
+   */
+  public String getAcctDbLink() {
+    return acctDbLink;
+  }
+
+  /**
+   * @param acctDbLink
+   *          the acctDbLink to set
+   */
+  public void setAcctDbLink(String acctDbLink) {
+    if (acctDbLink.length() > 0 && !acctDbLink.startsWith("@"))
+      acctDbLink = "@" + acctDbLink;
+    this.acctDbLink = acctDbLink;
   }
 
   /**
