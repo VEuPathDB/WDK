@@ -28,6 +28,14 @@
   padding: 6px 8px;
 }
 
+.wdk-DataTable .wdk-DataTableRow__expandable {
+  cursor: pointer;
+}
+
+.wdk-DataTable .wdk-DataTableRow__expandable:hover td {
+  background: #f3f3f3;
+}
+
 .wdk-DataTable .wdk-DataTableCell__childRowToggle {
   vertical-align: middle;
   width: 3em;

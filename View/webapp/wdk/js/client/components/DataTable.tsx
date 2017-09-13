@@ -3,6 +3,7 @@ import { eq } from 'lodash';
 import React, {Component, PureComponent, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
+import { containsAncestorNode } from '../utils/DomUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
 
 const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
@@ -222,6 +223,11 @@ class DataTable extends PureComponent<Props> {
         .forEach((column, index) => {
           if (column.help != null) $ths.eq(index + offset).attr('title', column.help);
         });
+      },
+      createdRow: (row: HTMLTableRowElement) => {
+        $(row).addClass('wdk-DataTableRow' + (
+          childRow != null ? ' wdk-DataTableRow__expandable' : ''
+        ));
       }
     });
 
@@ -237,8 +243,29 @@ class DataTable extends PureComponent<Props> {
     .width(width || '')
     .appendTo(this.node)
     // click handler for expand single row
-    .on('click', 'td .wdk-DataTableCellExpand', (e) => {
-      let tr = $(e.target).closest('tr');
+    .on('click', '.wdk-DataTableRow__expandable', event => {
+      let tr = event.currentTarget;
+
+      // ignore event if a link, button, or input element is clicked
+      if (containsAncestorNode(
+        event.target,
+        node => $(node).is('a,:button,:input'),
+        tr)) {
+        return;
+      }
+
+      // ignore event if text has been selected
+      const selection = window.getSelection();
+      const selectionText = selection.toString();
+      if (
+        selectionText &&
+        containsAncestorNode(
+          selection.anchorNode,
+          currNode => currNode.parentNode === tr
+        )) {
+        return;
+      }
+
       let row = this._dataTable.row(tr);
       if (row.child.isShown()) {
         this._hideChildRow(row.node());
