@@ -43,13 +43,7 @@ export function initialize(options) {
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
   let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
-  let storeMap = configureStores(dispatcher, storeWrappers);
-  let stores = Array.from(storeMap.entries())
-    .reduce(function(stores, [ Class, instance ]) {
-      return Object.assign(stores, {
-        [Class.name]: instance
-      })
-    }, {});
+  let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
   let dispatchAction = makeDispatchAction('global');
@@ -73,7 +67,7 @@ export function initialize(options) {
           Root, {
             rootUrl,
             makeDispatchAction,
-            stores: storeMap,
+            stores,
             routes: wrapRoutes(wdkRoutes),
             onLocationChange: handleLocationChange
           });
