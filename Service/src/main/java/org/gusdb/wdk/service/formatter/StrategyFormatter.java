@@ -14,8 +14,9 @@ import org.json.JSONObject;
 public class StrategyFormatter {
 
   public static JSONArray getStrategiesJson(List<Strategy> strategies) {
-    return reduce(strategies.iterator(), rSwallow((strategy, strategiesJson) ->
-        strategiesJson.put(getStrategyJson(strategy))), new JSONArray());
+    return reduce(strategies.iterator(), rSwallow(
+        (strategy, strategiesJson) -> strategiesJson.put(getStrategyJson(strategy))
+    ), new JSONArray());
   }
 
   public static JSONObject getStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
