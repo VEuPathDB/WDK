@@ -191,11 +191,11 @@ public class RetroactiveGuestRemover extends BaseCLI {
       LOG.info("********** " + guestSql + " **********");
    
       LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
-      //removeGuests(userDb, userSchema, guestSql);
+      removeGuests(userDb, userSchema, guestSql);
   
       LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
       // though we cannot use the cutoff date here...
-      //removeGBrowseGuests(userDb.getDataSource());
+      removeGBrowseGuests(userDb.getDataSource());
       
     }
   }
