@@ -103,10 +103,6 @@
   <div class="Workspace">&nbsp;<span class="smaller-font"><i>(if this section is empty after the page is fully loaded, please open the strategy panel and click on a step to view its results in this section.)</i></span>
   </div>
 
-  <%-- preload background images --%>
-  <div class="operation"      style="height: 0px"></div>
-  <div class="operation SPAN" style="height: 0px"></div>
-
 </div>
 
 <!-- ALL tab -->
