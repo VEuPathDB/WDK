@@ -31,6 +31,10 @@ exports.merge = function merge(additionConfig) {
       resolve: {
         extensions: [ ".js", ".jsx", ".ts", ".tsx" ]
       },
+      output: {
+        path: __dirname + '/dist',
+        filename: '[name].bundle.js',
+      },
       module: {
         rules: [
 
