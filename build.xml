@@ -230,10 +230,14 @@
           executable="node_modules/.bin/webpack"
           failonerror="true"
           failifexecutionfails="true">
-          <arg line="--output-path ${webappTargetDir} ${webpack.env}"/>
+          <arg line="${webpack.env}"/>
     </exec>
 
-  </target>  
+    <copy todir="${webappTargetDir}">
+      <fileset dir="${projectsDir}/WDK/View/dist" />
+    </copy>
+
+  </target>
 
   <target name="installYarnBin" unless="hasYarnBin">
     <!-- unpack yarn tgz into targetDirectory -->
