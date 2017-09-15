@@ -1660,12 +1660,12 @@ class MembershipField extends React.Component {
       <div className="membership-filter">
 
         <div className="membership-wrapper">
+          <div className="toggle-links">
+            <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
+            {' | '}
+            <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
+          </div>
           <div className="membership-table-panel">
-            <div className="toggle-links">
-              <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
-              {' | '}
-              <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
-            </div>
             <table>
               <thead>
                 <tr>
