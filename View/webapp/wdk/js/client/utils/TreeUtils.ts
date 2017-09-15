@@ -26,7 +26,7 @@ function shallowEqual <T>(array1: T[], array2: T[]) {
 }
 
 /** top-down tree node iterator */
-function* preorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
+export function* preorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
   yield root;
   let children = getChildren(root);
   let length = children.length;
@@ -36,7 +36,7 @@ function* preorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
 }
 
 /** bottom-up tree node iterator */
-function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
+export function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
   let children = getChildren(root);
   let length = children.length;
   for (let i = 0; i < length; i++) {
