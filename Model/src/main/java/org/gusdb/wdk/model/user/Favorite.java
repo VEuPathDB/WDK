@@ -42,7 +42,7 @@ public class Favorite extends FavoriteIdentity implements NoteAndGroup {
             " and PK " + pkValue.getValuesAsString(), e);
       }
       // unwilling or unable to generate display from ID attribute
-      return FormatUtil.join(pkValue.getValues().values(), "/");
+      return FormatUtil.join(pkValue.getValues().values(), ", ");
     }
 
     /**
