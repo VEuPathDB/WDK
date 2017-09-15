@@ -61,8 +61,10 @@ public class OntologyItemFetcher extends NoUpdateItemFetcher<String, Map<String,
         resultList.close();
       }
       return metadata;
+    } catch (WdkUserException ex) {
+      throw new UnfetchableItemException(new WdkModelException(ex));
     }
-    catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException  ex) {
       throw new UnfetchableItemException(ex);
     }
   }
