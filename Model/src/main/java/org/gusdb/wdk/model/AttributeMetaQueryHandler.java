@@ -65,8 +65,8 @@ public class AttributeMetaQueryHandler {
   private static class DynamicallyDefinedAttributeFetcher extends NoUpdateItemFetcher<String, List<Map<String,Object>>> {
 
     private static final List<FieldSetter> FIELDS = reduce(
-        mapToList(CLIENT_CLASSES, clazz -> getRngFields(clazz)).iterator(),
-        (next, previous) -> previous.addAll(next),
+        mapToList(CLIENT_CLASSES, clazz -> getRngFields(clazz)),
+        (previous, next) -> previous.addAll(next),
         new ListBuilder<FieldSetter>()).toList();
 
     private final WdkModel _wdkModel;

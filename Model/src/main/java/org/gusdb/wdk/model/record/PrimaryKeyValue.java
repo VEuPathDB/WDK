@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -51,12 +54,7 @@ public class PrimaryKeyValue {
   }
 
   public String getValuesAsString() {
-    StringBuilder s = new StringBuilder();
-    for (String pkName : _pkValues.keySet()) {
-      s.append(pkName).append(" = ");
-      s.append(_pkValues.get(pkName)).append(", ");
-    }
-    return s.toString();
+    return join(mapToList(_pkValues.entrySet(), entry -> entry.getKey() + " = " + entry.getValue()), ", ");
   }
 
   public static boolean rawValuesDiffer(Map<String, Object> map1, Map<String, Object> map2) {

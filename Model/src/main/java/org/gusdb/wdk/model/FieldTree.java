@@ -29,12 +29,8 @@ public class FieldTree {
   public static final Function<SelectableItem,String> QUOTED_NAME_MAPPER = new Function<SelectableItem,String>() {
     @Override public String apply(SelectableItem obj) { return "'" + obj.getName() + "'"; }};
 
-  private static final Reducer<SelectableItem,Boolean> ALL_SELECTED = new Reducer<SelectableItem,Boolean>() {
-    @Override
-    public Boolean reduce(SelectableItem obj, Boolean incomingValue) {
-      return incomingValue && obj.isSelected();
-    }
-  };
+  private static final Reducer<SelectableItem,Boolean> ALL_SELECTED =
+      (incomingValue, obj) -> incomingValue && obj.isSelected();
 
   private TreeNode<SelectableItem> _root;
 

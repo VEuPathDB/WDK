@@ -14,8 +14,8 @@ import org.json.JSONObject;
 public class StrategyFormatter {
 
   public static JSONArray getStrategiesJson(List<Strategy> strategies) {
-    return reduce(strategies.iterator(), rSwallow(
-        (strategy, strategiesJson) -> strategiesJson.put(getStrategyJson(strategy))
+    return reduce(strategies, rSwallow(
+        (strategiesJson, strategy) -> strategiesJson.put(getStrategyJson(strategy))
     ), new JSONArray());
   }
 
