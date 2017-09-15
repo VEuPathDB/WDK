@@ -1,9 +1,11 @@
 import {Component} from 'react';
+import { findDOMNode } from 'react-dom';
 import {debounce, get, throttle} from 'lodash';
 import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
 import {postorderSeq} from '../utils/TreeUtils';
 import {getId} from '../utils/CategoryUtils';
+import { addScrollAnchor } from '../utils/DomUtils';
 import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
@@ -20,12 +22,14 @@ class RecordUI extends Component {
     this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
     this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
     this.monitorActiveSection = debounce(this.monitorActiveSection.bind(this), 100);
+
+    this.recordMainSectionNode = null;
   }
 
   componentDidMount() {
     // this.monitorActiveSection();
-    window.addEventListener('resize', this._scrollToActiveSection, { passive: true });
     this._scrollToActiveSection();
+    this.removeScrollAnchor = addScrollAnchor(this.recordMainSectionNode);
   }
 
   componentDidUpdate(prevProps) {
@@ -38,7 +42,7 @@ class RecordUI extends Component {
 
   componentWillUnmount() {
     this.unmonitorActiveSection();
-    window.removeEventListener('resize', this._scrollToActiveSection, { passive: true });
+    this.removeScrollAnchor();
     this._updateActiveSection.cancel();
     this._scrollToActiveSection.cancel();
     this.monitorActiveSection.cancel();
@@ -130,6 +134,7 @@ class RecordUI extends Component {
               onClick={this.props.updateAllFieldVisibility.bind(null, false)}>Collapse All</button>
           </div>
           <RecordMainSection
+            ref={c => this.recordMainSectionNode = findDOMNode(c)}
             record={this.props.record}
             recordClass={this.props.recordClass}
             categories={this.props.categoryTree.children}
