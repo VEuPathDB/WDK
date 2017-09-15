@@ -85,12 +85,13 @@
 }
 .filter-param .chart-title.x-axis {
   text-align: center;
+  padding-bottom: 1em;
 }
 .filter-param .chart-title.y-axis {
   width: 200px;
   position: absolute;
   left: 0;
-  bottom: 3em;
+  bottom: 4em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
