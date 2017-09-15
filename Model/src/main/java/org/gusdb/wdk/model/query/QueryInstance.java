@@ -259,7 +259,7 @@ public abstract class QueryInstance<T extends Query> {
       String prompt = paramName;
       try {
         if (!params.containsKey(paramName)) {
-          LOG.warn("The parameter '" + paramName + "' doesn't exist in query " + _query.getFullName());
+          // LOG.warn("The parameter '" + paramName + "' doesn't exist in query " + _query.getFullName());
           continue;
         }
 
