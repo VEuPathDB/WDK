@@ -37,8 +37,8 @@ export default wrappable(class QuestionController extends AbstractViewController
   }
 
   getTitle() {
-    return this.state.question ? `Search for ${this.props.match.params.recordClass} by ${this.state.question.displayName}`
-      : 'Loading';
+    return !this.state.question ? 'Loading' :
+        `Search for ${this.props.match.params.recordClass} by ${this.state.question.displayName}`;
   }
 
   renderView() {
