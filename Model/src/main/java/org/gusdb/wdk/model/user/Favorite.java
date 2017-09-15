@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
@@ -31,7 +32,7 @@ public class Favorite extends FavoriteIdentity implements NoteAndGroup {
       try {
         if (!recordClass.idAttributeHasNonPkMacros()) {
           // can use PK values to generate ID display
-          StaticRecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValue.getRawValues(), true);
+          StaticRecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValue.getRawValues(), false);
           // can only do the following cheaply if ID attribute only requires to PK values (not other attribs)
           return record.getIdAttributeValue().getDisplay();
         }
@@ -41,7 +42,7 @@ public class Favorite extends FavoriteIdentity implements NoteAndGroup {
             " and PK " + pkValue.getValuesAsString(), e);
       }
       // unwilling or unable to generate display from ID attribute
-      return pkValue.getValuesAsString();
+      return FormatUtil.join(pkValue.getValues().values(), "/");
     }
 
     /**
