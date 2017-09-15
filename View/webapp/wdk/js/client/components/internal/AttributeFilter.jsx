@@ -170,7 +170,7 @@ function FieldListNode({ node, onFieldSelect, isActive }) {
           e.preventDefault();
           onFieldSelect(node.field);
         }}>
-        <Icon fa={node.field.isRange ? 'bar-chart-o' : 'list'}/> {node.field.display}
+        <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
       </a>
     );
 }
