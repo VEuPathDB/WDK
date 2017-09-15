@@ -74,7 +74,8 @@ public abstract class QueryInstance<T extends Query> {
    * @param user user to execute query as
    * @param query query to create instance for
    * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values
+   * @param validate whether to validate param values.  If set to true, then, for any missing param values in the context, use default.  Set to false only 
+   * known to have a complete and correct set of contextParamStableValues
    * @param assignedWeight weight of the query
    * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
@@ -91,7 +92,7 @@ public abstract class QueryInstance<T extends Query> {
     _context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
     _context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
 
-    setValues(contextParamStableValues, validate);
+    setContextParamStableValues(contextParamStableValues, validate);
   }
 
   public Query getQuery() {
@@ -113,7 +114,7 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
-  private void setValues(Map<String, String> contextParamStableValues, boolean validate) throws WdkModelException,
+  private void setContextParamStableValues(Map<String, String> contextParamStableValues, boolean validate) throws WdkModelException,
       WdkUserException {
     LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
     for (String paramName : contextParamStableValues.keySet()) {
@@ -128,7 +129,7 @@ public abstract class QueryInstance<T extends Query> {
     }
 
     if (validate)
-      validateValues(_user, contextParamStableValues);
+      validateContextValuesAndFillEmptyWithDefaults(_user, contextParamStableValues);
 
     // passed, assign the value
     _contextParamStableValues = contextParamStableValues;
@@ -245,7 +246,7 @@ public abstract class QueryInstance<T extends Query> {
     return resultFactory.getCachedSql(this);
   }
 
-  private void validateValues(User user, Map<String, String> values) throws WdkUserException,
+  private void validateContextValuesAndFillEmptyWithDefaults(User user, Map<String, String> values) throws WdkUserException,
       WdkModelException {
     Map<String, Param> params = _query.getParamMap();
     Map<String, String> errors = null;
