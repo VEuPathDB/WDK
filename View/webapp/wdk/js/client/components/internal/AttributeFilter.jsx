@@ -25,6 +25,7 @@ import {
 import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
+import Icon from '../IconAlt';
 import Loading from '../Loading';
 import Tooltip from '../Tooltip';
 import Dialog from '../Dialog';
@@ -169,7 +170,7 @@ function FieldListNode({ node, onFieldSelect, isActive }) {
           e.preventDefault();
           onFieldSelect(node.field);
         }}>
-        {node.field.display}
+        <Icon fa={node.field.isRange ? 'bar-chart-o' : 'list'}/> {node.field.display}
       </a>
     );
 }
@@ -1268,7 +1269,7 @@ var Histogram = (function() {
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
           <div>
-            Scale x-axis from {xaxisMinSelector} to {xaxisMaxSelector} <button
+            Display {xaxisLabel} between {xaxisMinSelector} and {xaxisMaxSelector} <button
               type="button"
               onClick={() => this.setXAxisScale(valuesMin, valuesMax)}
             >reset</button>
@@ -1496,7 +1497,7 @@ class HistogramField extends React.Component {
         </div>
 
         <div>
-          {'Between '}
+          {'Select ' + field.display + ' between '}
           <input
             type="text"
             size="6"
