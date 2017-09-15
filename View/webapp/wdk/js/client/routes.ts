@@ -15,15 +15,12 @@ import SiteMapController from './controllers/SiteMapController';
 import UserDatasetListController from './controllers/UserDatasetListController';
 import UserDatasetItemController from './controllers/UserDatasetItemController';
 import FavoritesController from './controllers/FavoritesController';
-
-// TODO Uncomment when question page is moved
-// import QuestionController from './controllers/QuestionController';
+import QuestionController from './controllers/QuestionController';
 
 export default <RouteSpec[]> [
   { path: '/', component: IndexController },
-  // TODO Uncomment when question page is moved to new arch
-  // { path:'search/:recordClass/:question', component: QuestionController },
   { path: '/search/:recordClass/:question/result', component: AnswerController },
+  { path: '/search/:recordClass/:question', component: QuestionController },
   { path: '/record/:recordClass/download/:primaryKey+', component: DownloadFormController },
   { path: '/record/:recordClass/:primaryKey+', component: RecordController },
   { path: '/step/:stepId/download', component: DownloadFormController },
