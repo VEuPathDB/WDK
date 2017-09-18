@@ -26,11 +26,7 @@ public class FilterParamNewInstance implements DependentParamInstance {
   // param this cache was created by
   private FilterParamNew _param;
 
-  // context values used to create this cache
-  private Map<String, String> _dependedParamValues;
-
-  public FilterParamNewInstance(Map<String, String> dependedParamValues, FilterParamNew param) {
-    _dependedParamValues = dependedParamValues;
+  public FilterParamNewInstance(FilterParamNew param) {
     _param = param;
   }
 
@@ -38,11 +34,10 @@ public class FilterParamNewInstance implements DependentParamInstance {
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     // TODO phase 2 - use metadata and ontologyMap to correct stableValue
-    Map<String, OntologyItem> ontologyMap = _param.getOntology(user, contextParamValues);
+    //Map<String, OntologyItem> ontologyMap = _param.getOntology(user, contextParamValues);
     if(stableValue == null) {
       return _param.getDefault();
     }
     return stableValue;
   }
-
 }

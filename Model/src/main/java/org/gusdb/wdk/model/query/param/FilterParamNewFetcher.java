@@ -54,7 +54,7 @@ public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterPar
       String paramName = paramNames.next();
       dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
-    return new FilterParamNewInstance(dependedParamValues, _param);
+    return new FilterParamNewInstance(_param);
   }
 
 }
