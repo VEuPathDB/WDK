@@ -49,6 +49,8 @@ public class ListDatasetParser extends AbstractDatasetParser {
     return records;
   }
 
+  // TODO Decide on long-term API for dataset uploads (currently only allow IDs and 
+  @SuppressWarnings("unused")
   private String getRowDivider(String rawValue) {
     // use the user specified one, if any
     String rowDivider = properties.get(PROP_ROW_DIVIDER);
