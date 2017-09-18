@@ -256,7 +256,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }
 
-    var fields = new Map(Seq.from(filterData.metadataSpec)
+    var fields = new Map(Seq.from(filterData.metadataSpec || [])
       .filter(field => field.term != null)
       .map(field =>
         [field.term, Object.assign({ display: field.term }, field)]));
