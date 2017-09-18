@@ -61,7 +61,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
     delayMs: 250
   };
 
-  debounceOnSearchTermSet = debounce(this.props.onSearchTermChange!, this.props.delayMs);
+  emitSearchTermChange = debounce((searchTerm: string) => this.props.onSearchTermChange!(searchTerm));
 
   input: HTMLInputElement | null;
 
@@ -78,13 +78,14 @@ export default class RealTimeSearchBox extends Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.onSearchTermChange !== this.props.onSearchTermChange)
-      this.debounceOnSearchTermSet = debounce(nextProps.onSearchTermChange!, nextProps.delayMs);
-
     if (nextProps.searchTerm !== this.state.searchTerm) {
-      this.debounceOnSearchTermSet(nextProps.searchTerm!);
+      this.emitSearchTermChange(nextProps.searchTerm!);
       this.setState({ searchTerm: nextProps.searchTerm! });
     }
+  }
+
+  componentWillUnmount() {
+    this.emitSearchTermChange.cancel();
   }
 
   /**
@@ -94,7 +95,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
   handleSearchTermChange(e: React.ChangeEvent<HTMLInputElement>) {
     let searchTerm = e.currentTarget.value;
     this.setState({ searchTerm });
-    this.debounceOnSearchTermSet(searchTerm);
+    this.emitSearchTermChange(searchTerm);
   }
 
   /**
