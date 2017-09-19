@@ -13,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -66,9 +65,7 @@ public class DatasetService extends UserService {
       DatasetParser parser = new AbstractDatasetParser() {
         @Override
         public List<String[]> parse(String content) throws WdkDatasetException {
-          return Functions.mapToList(ids, new Function<String, String[]>() {
-            @Override public String[] apply(String str) { return new String[]{ str }; }
-          });
+          return Functions.mapToList(ids, str -> new String[]{ str });
         }
         @Override
         public String getName() {
