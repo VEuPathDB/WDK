@@ -20,7 +20,8 @@ import {
   partition,
   reduce,
   sortBy,
-  throttle
+  throttle,
+  uniq
 } from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -199,6 +200,21 @@ class FieldList extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.selectedField === nextProps.selectedField) return;
+
+    const selectedField = nextProps.fields.get(nextProps.selectedField);
+    if (
+      selectedField.parent != null &&
+      !this.state.expandedNodes.includes(selectedField.parent)
+    ) {
+      this.setState({
+        expandedNodes: uniq(this.state.expandedNodes.concat(
+          this._getPathToField(selectedField)))
+      });
+    }
+  }
+
   handleFieldSelect(field) {
     this.props.onFieldSelect(field.term);
     const expandedNodes = Seq.from(this.state.expandedNodes)
@@ -220,7 +236,8 @@ class FieldList extends React.Component {
 
   _getPathToField(field, path = []) {
     if (field == null || field.parent == null) return path;
-    return this._getPathToField(this.props.fields.get(field.parent), path.concat(field.parent))
+    return this._getPathToField(this.props.fields.get(field.parent),
+      path.concat(field.parent))
   }
 
   render() {
