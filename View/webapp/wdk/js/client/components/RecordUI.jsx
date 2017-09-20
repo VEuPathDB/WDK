@@ -1,6 +1,6 @@
 import {Component} from 'react';
 import { findDOMNode } from 'react-dom';
-import {debounce, get, throttle} from 'lodash';
+import {debounce, get} from 'lodash';
 import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
 import {postorderSeq} from '../utils/TreeUtils';
@@ -20,22 +20,22 @@ class RecordUI extends Component {
     super(props);
     // bind event handlers
     this._updateActiveSection = debounce(this._updateActiveSection.bind(this), 100);
-    this._scrollToActiveSection = throttle(this._scrollToActiveSection.bind(this), 250);
     this.monitorActiveSection = debounce(this.monitorActiveSection.bind(this), 100);
 
     this.recordMainSectionNode = null;
   }
 
   componentDidMount() {
-    // this.monitorActiveSection();
     this._scrollToActiveSection();
-    this.removeScrollAnchor = addScrollAnchor(this.recordMainSectionNode);
+    this.removeScrollAnchor = addScrollAnchor(
+      this.recordMainSectionNode,
+      document.getElementById(location.hash.slice(1))
+    );
   }
 
   componentDidUpdate(prevProps) {
-    let navVisibilityChanged = prevProps.navigationVisible !== this.props.navigationVisible;
     let recordChanged = prevProps.record !== this.props.record;
-    if (navVisibilityChanged || recordChanged) {
+    if (recordChanged) {
       this._scrollToActiveSection();
     }
   }
@@ -44,7 +44,6 @@ class RecordUI extends Component {
     this.unmonitorActiveSection();
     this.removeScrollAnchor();
     this._updateActiveSection.cancel();
-    this._scrollToActiveSection.cancel();
     this.monitorActiveSection.cancel();
   }
 
@@ -65,6 +64,7 @@ class RecordUI extends Component {
       return rect.top <= 50 && rect.bottom > 50;
     });
     let activeSection = get(activeElement, 'id');
+    console.log(Date.now(), 'updated activeSection', activeSection);
     let newUrl = location.pathname + location.search + (activeSection ? '#' + activeSection : '');
     history.replaceState(null, null, newUrl);
   }
@@ -74,6 +74,7 @@ class RecordUI extends Component {
     let domNode = document.getElementById(location.hash.slice(1));
     if (domNode != null) {
       domNode.scrollIntoView(true);
+      console.log(Date.now(), 'scrolled to active section', domNode, domNode.getBoundingClientRect().top);
     }
     this.monitorActiveSection();
   }
