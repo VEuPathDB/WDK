@@ -8,7 +8,7 @@ import org.junit.Test;
 public class RngAnnotationTest {
 
   @Test
-  public void testRngAnnotations() throws Exception {
+  public void testRngAnnotations() {
     dumpRngFields(Column.class);
     dumpRngFields(QueryColumnAttributeField.class);
   }
