@@ -1,3 +1,4 @@
+import { parse } from 'querystring';
 import WdkViewController from './WdkViewController';
 import { wrappable } from '../utils/componentUtils';
 import {isEqual} from 'lodash';
@@ -31,7 +32,7 @@ class AnswerController extends WdkViewController {
     // incoming values from the router
     let { question, recordClass: recordClassName } = props.match.params;
     let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
-    let parameters = props.location.query;
+    let parameters = parse(props.location.search.slice(1));
 
     // decide whether new answer needs to be loaded (may not need to be loaded
     //   if user goes someplace else and hits 'back' to here- store already correct)

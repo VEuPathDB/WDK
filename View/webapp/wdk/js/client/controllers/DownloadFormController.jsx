@@ -1,3 +1,4 @@
+import { parse } from 'querystring';
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import * as DownloadFormActionCreators from '../actioncreators/DownloadFormActionCreators';
@@ -42,7 +43,7 @@ class DownloadFormController extends WdkViewController {
     // build props object to pass to form component
     let formProps = Object.assign({}, state, state.globalData, eventHandlers, {
       // passing summary view in case reporters handle view links differently
-      summaryView: this.props.location.query && this.props.location.query.summaryView
+      summaryView: parse(this.props.location.search.slice(1)).summaryView
     });
     return ( <DownloadFormContainer {...formProps}/> );
   }
