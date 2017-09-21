@@ -42,7 +42,6 @@ public class ProfileService extends UserService {
 
   private static final String PASSWORD_RESET_ENDPOINT = "password-reset";
 
-  private static final String NOT_LOGGED_IN = "The user is not logged in.";
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
   private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
 
@@ -72,7 +71,7 @@ public class ProfileService extends UserService {
   public Response setUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
     try {
-      User user = getNonGuestUser();
+      User user = getPrivateRegisteredUser();
       UserProfileRequest request = UserProfileRequest.createFromJson(
           new JSONObject(body), getPropertiesConfig(), true);
       NewCookie loginCookie = processEmail(user, request.getEmail());
@@ -101,7 +100,7 @@ public class ProfileService extends UserService {
   public Response updateUserProfile(String body) 
       throws ConflictException, DataValidationException, WdkModelException {
     try {
-      User user = getNonGuestUser();
+      User user = getPrivateRegisteredUser();
       UserProfileRequest request = UserProfileRequest.createFromJson(
           new JSONObject(body), getPropertiesConfig(), false);
       NewCookie loginCookie = processEmail(user, request.getEmail());
@@ -120,15 +119,6 @@ public class ProfileService extends UserService {
     }
   }
 
-  private User getNonGuestUser() throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
-    return user;
-  }
-
   private Response getProfileUpdateResponse(NewCookie loginCookie) {
     return loginCookie == null ?
         Response.noContent().build() :
@@ -144,9 +134,8 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response changeUserPassword(String body)
       throws WdkModelException, DataValidationException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    User user = getPrivateRegisteredUser();
     try {
-      User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       PasswordChangeRequest request = PasswordChangeRequest.createFromJson(json);
       UserFactory userMgr = getWdkModel().getUserFactory();

@@ -20,6 +20,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
@@ -53,9 +54,10 @@ public class StepService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createStep(String body) throws WdkModelException, DataValidationException {
     try {
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
-      StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), getSessionUser());
-      Step step = WdkStepFactory.createStep(stepRequest, getSessionUser(), getWdkModel().getStepFactory());
+      StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
+      Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
@@ -130,8 +132,9 @@ public class StepService extends UserService {
 
   private Step getStepForCurrentUser(String stepId) {
     try {
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
       Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
-      if (step.getUser().getUserId() != getSessionUserId()) {
+      if (step.getUser().getUserId() != user.getUserId()) {
         throw new ForbiddenException(WdkService.PERMISSION_DENIED);
       }
       return step;
