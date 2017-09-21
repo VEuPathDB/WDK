@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.WdkDatasetException;
-import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -50,7 +50,7 @@ public class DatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response addDatasetFromJson(String body) throws WdkModelException {
     try {
-      UserBundle userBundle = getUserBundle(Access.PRIVATE);
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject input = new JSONObject(body);
       JSONArray jsonIds = input.getJSONArray("ids");
       if (jsonIds.length() == 0)
@@ -73,7 +73,7 @@ public class DatasetService extends UserService {
         }
       };
       Dataset dataset = getWdkModel().getDatasetFactory().createOrGetDataset(
-          userBundle.getTargetUser(), parser, FormatUtil.join(ids.toArray(), " "), "");
+          user, parser, FormatUtil.join(ids.toArray(), " "), "");
       JSONObject datasetMetadata = new JSONObject();
       datasetMetadata.put(Keys.ID, dataset.getDatasetId());
       return Response.ok(datasetMetadata.toString()).build();
@@ -91,9 +91,7 @@ public class DatasetService extends UserService {
       //@FormParam("file") InputStream fileInputStream,
       //@FormParam("file") FormDataContentDisposition contentDispositionHeader)
   {
-    // TODO implement; currently just making sure this resource is only accessed by the owner
-    @SuppressWarnings("unused")
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    getUserBundle(Access.PRIVATE); // makes sure only current user can access this endpoint
     return Response.ok("{ }").build();
 
   }

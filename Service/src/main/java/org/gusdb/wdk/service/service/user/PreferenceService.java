@@ -13,7 +13,6 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
-import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.UserPreferenceValidator;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
@@ -33,8 +32,8 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs() throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    return Response.ok(UserFormatter.getPreferencesJson(userBundle.getTargetUser().getPreferences()).toString()).build();
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    return Response.ok(UserFormatter.getPreferencesJson(user.getPreferences()).toString()).build();
   }
 
   /**
@@ -49,9 +48,8 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response putUserPrefs(String body) throws DataValidationException, WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
     try {
-      User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       if (!request.getGlobalPreferenceDeletes().isEmpty() || !request.getProjectPreferenceDeletes().isEmpty()) {
@@ -100,9 +98,8 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response patchUserPrefs(String body) throws WdkModelException, DataValidationException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
     try {
-      User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       UserPreferences prefs = user.getPreferences();

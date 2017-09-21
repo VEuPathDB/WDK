@@ -6,11 +6,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.service.WdkService;
 
 @Path("/user/{id}")
 public abstract class UserService extends WdkService {
+
+  private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
 
   // subclasses must read the following path param to gain access to requested user
   protected static final String USER_ID_PATH_PARAM = "id";
@@ -49,5 +52,14 @@ public abstract class UserService extends WdkService {
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     }
     return userBundle;
+  }
+
+  protected User getPrivateRegisteredUser() throws WdkModelException {
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    User user = userBundle.getTargetUser();
+    if (user.isGuest()) {
+      throw new ForbiddenException(NOT_LOGGED_IN);
+    }
+    return user;
   }
 }

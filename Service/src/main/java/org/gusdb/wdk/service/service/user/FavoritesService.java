@@ -6,7 +6,6 @@ import java.util.List;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -38,9 +37,22 @@ import org.gusdb.wdk.service.request.user.FavoritesRequest.FavoriteEdit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Provides the following service endpoints (all behind /user/{id}):
+ * 
+ * GET    /favorites              returns list of all favorites for the user
+ * POST   /favorites              creates a new favorite (or returns existing if present or even deleted)
+ * PATCH  /favorites              allows deletion and undeletion of multiple favorites in one request
+ * DELETE /favorites              deletes all a user's favorites
+ * GET    /favorites/{favoriteId} gets a favorite by ID
+ * PUT    /favorites/{favoriteId} updates a favorite by ID
+ * DELETE /favorites/{favoriteId} deletes a favorite by ID
+ * POST   /favorites/query        queries favorite status (presence) of multiple records at one time
+ * 
+ * @author crisl
+ */
 public class FavoritesService extends UserService {
 
-  private static final String NOT_LOGGED_IN = "The user is not logged in.";
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
 
   @SuppressWarnings("unused")
@@ -235,13 +247,5 @@ public class FavoritesService extends UserService {
       output.put(fav == null ? JSONObject.NULL : fav.getFavoriteId());
     }
     return Response.ok(output.toString()).build();
-  }
-
-  private User getPrivateRegisteredUser() throws WdkModelException {
-    User user = getUserBundle(Access.PRIVATE).getTargetUser();
-    if (user.isGuest()) {
-      throw new ForbiddenException(NOT_LOGGED_IN);
-    }
-    return user;
   }
 }
