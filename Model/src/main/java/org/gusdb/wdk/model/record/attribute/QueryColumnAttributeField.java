@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.query.Query;
  * 
  * @author jerric
  */
-public class QueryColumnAttributeField extends ColumnAttributeField implements Cloneable {
+public class QueryColumnAttributeField extends ColumnAttributeField {
 
   private Column _column;
 

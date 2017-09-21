@@ -199,7 +199,7 @@ public class TableRowUpdater<T extends TableRow> {
     _wdkModel = wdkModel;
   }
 
-  private ExitStatus run() throws Exception {
+  private ExitStatus run() {
     ThreadCollection<T> threads = new ThreadCollection<>();
     List<Future<Stats>> results = new ArrayList<>();
     Stats aggregate = new Stats();

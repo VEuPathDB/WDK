@@ -111,7 +111,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     return selects;
   }
   
-  private void reportBroken(WdkModel wdkModel, Map<String,String> sqlFroms) throws Exception {
+  private void reportBroken(WdkModel wdkModel, Map<String,String> sqlFroms) {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     for (String queryName : sqlFroms.keySet()) {
       String sql = "select count(*) " + sqlFroms.get(queryName);

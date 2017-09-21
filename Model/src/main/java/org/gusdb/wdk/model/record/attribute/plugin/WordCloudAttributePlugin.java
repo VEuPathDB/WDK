@@ -20,8 +20,7 @@ import org.gusdb.wdk.model.user.Step;
  * @author jerric
  * 
  */
-public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
-    AttributePlugin {
+public class WordCloudAttributePlugin extends AbstractAttributePlugin {
 
   private static final String PROP_SPLIT_PATTERN = "split-pattern";
   // private static final String PROP_MIN_WEIGHT = "min-weight";

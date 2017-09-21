@@ -19,8 +19,8 @@ import org.gusdb.wdk.model.user.Step;
  * @author jerric
  * 
  */
-public class HistogramAttributePlugin extends AbstractAttributePlugin implements
-    AttributePlugin {
+public class HistogramAttributePlugin extends AbstractAttributePlugin {
+
   public static final String PROP_TYPE = "type";
 
   public static final String TYPE_CATEGORY = "category";
