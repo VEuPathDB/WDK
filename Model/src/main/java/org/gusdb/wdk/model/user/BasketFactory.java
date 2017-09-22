@@ -220,7 +220,7 @@ public class BasketFactory {
     }
   }
 
-  public void clearBasket(User user, RecordClass recordClass) throws SQLException {
+  public void clearBasket(User user, RecordClass recordClass) throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -240,6 +240,9 @@ public class BasketFactory {
 
       // check the remote table to solve out-dated db-link issue with Oracle
       checkRemoteTable();
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to clear basket " + recordClass.getFullName() + " for user " + user.getUserId());
     }
     finally {
       SqlUtils.closeStatement(psDelete);

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -561,7 +560,7 @@ public class UserBean {
     factory.removeFromBasket(_user, step.step);
   }
 
-  public void clearBasket(RecordClassBean recordClass) throws SQLException {
+  public void clearBasket(RecordClassBean recordClass) throws WdkModelException {
     BasketFactory factory = _user.getWdkModel().getBasketFactory();
     factory.clearBasket(_user, recordClass.recordClass);
   }
