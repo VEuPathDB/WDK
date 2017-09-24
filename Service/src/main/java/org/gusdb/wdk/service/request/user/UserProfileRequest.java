@@ -192,6 +192,7 @@ public class UserProfileRequest {
 
   private static void validateUnrecognized(List<String> unrecognizedProperties) {
     // ignore unrecognized properties, but log warning- this is a potential error on the client
+    // NOTE: converting this to an exception will break ClinEpi, which appends additional props onto user JSON
     if (!unrecognizedProperties.isEmpty()) {
       String unrecognized = FormatUtil.join(unrecognizedProperties.toArray(), ",");
       LOG.warn("This user service request contains the following unrecognized profile property names: " + unrecognized);

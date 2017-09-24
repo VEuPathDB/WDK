@@ -54,8 +54,13 @@ public class ProfileService extends UserService {
   public Response getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
     List<UserPropertyName> propDefs = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
-    return Response.ok(UserFormatter.getUserJson(userBundle.getTargetUser(),
+    return Response.ok(formatUser(userBundle.getTargetUser(),
         userBundle.isSessionUser(), getFlag(includePreferences), propDefs).toString()).build();
+  }
+
+  // factored to allow easy appending of user profile props by subclasses
+  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) {
+    return UserFormatter.getUserJson(user, isSessionUser, includePrefs, propNames);
   }
 
   /**
