@@ -1577,7 +1577,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public RecordClass getRecordClassByUrlSegment(String urlSegment) {
     try {
       String recordClassFullName = _recordClassUrlSegmentMap.get(urlSegment);
-      return (recordClassFullName == null ? null : getRecordClass(recordClassFullName));
+      // if segment mapped to recordclass full name, use result; otherwise treat segment as rc name itself
+      return getRecordClass(recordClassFullName != null ? recordClassFullName : urlSegment);
     }
     catch (WdkModelException e) {
       return null;
