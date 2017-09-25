@@ -30,11 +30,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FavoritesRequest {
+public class FavoriteRequests {
 
-  private static Logger LOG = Logger.getLogger(FavoritesRequest.class);
+  private static Logger LOG = Logger.getLogger(FavoriteRequests.class);
 
-  private FavoritesRequest() {}
+  private FavoriteRequests() {}
 
   private static class NoteAndGroupImpl extends TwoTuple<String,String> implements NoteAndGroup {
     public NoteAndGroupImpl(String note, String group) {
