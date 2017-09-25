@@ -31,9 +31,9 @@ import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.FavoritesFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.user.FavoritesRequest;
-import org.gusdb.wdk.service.request.user.FavoritesRequest.FavoriteActions;
-import org.gusdb.wdk.service.request.user.FavoritesRequest.FavoriteEdit;
+import org.gusdb.wdk.service.request.user.FavoriteRequests;
+import org.gusdb.wdk.service.request.user.FavoriteRequests.FavoriteActions;
+import org.gusdb.wdk.service.request.user.FavoriteRequests.FavoriteEdit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -118,7 +118,7 @@ public class FavoritesService extends UserService {
     User user = getPrivateRegisteredUser();
     JSONObject json = new JSONObject(body);
     try {
-      NoteAndGroup noteAndGroup = FavoritesRequest.createNoteAndGroupFromJson(json);
+      NoteAndGroup noteAndGroup = FavoriteRequests.createNoteAndGroupFromJson(json);
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
       factory.editFavorite(user, favoriteId, noteAndGroup.getNote(), noteAndGroup.getGroup());
       return Response.noContent().build();
@@ -157,7 +157,7 @@ public class FavoritesService extends UserService {
     User user = getPrivateRegisteredUser();
     FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
-    FavoriteActions actions = FavoritesRequest.getFavoriteActionsJson(json);
+    FavoriteActions actions = FavoriteRequests.getFavoriteActionsJson(json);
     int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
     int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
@@ -193,7 +193,7 @@ public class FavoritesService extends UserService {
     User user = getPrivateRegisteredUser();
     JSONObject json = new JSONObject(body);
     try {
-      FavoriteEdit newFavorite = FavoritesRequest.createFromJson(json, getWdkModel());
+      FavoriteEdit newFavorite = FavoriteRequests.createFromJson(json, getWdkModel());
       FavoriteIdentity favSpec = newFavorite.getIdentity();
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
       Favorite favorite = null;
@@ -235,14 +235,14 @@ public class FavoritesService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response queryFavoriteStatus(String body) throws WdkModelException, RequestMisformatException, DataValidationException {
-    User user = getPrivateRegisteredUser();
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
     WdkModel model = getWdkModel();
     JSONArray output = new JSONArray();
     for (JsonType favorite : JsonIterators.arrayIterable(new JSONArray(body))) {
       if (!favorite.getType().equals(JsonType.ValueType.OBJECT)) {
         throw new RequestMisformatException("All input array elements must be objects.");
       }
-      FavoriteIdentity favId = FavoritesRequest.createFromJson(favorite.getJSONObject(), model).getIdentity();
+      FavoriteIdentity favId = FavoriteRequests.createFromJson(favorite.getJSONObject(), model).getIdentity();
       Favorite fav = model.getFavoriteFactory().getFavorite(user, favId.getRecordClass(), favId.getPrimaryKey().getRawValues());
       output.put(fav == null ? JSONObject.NULL : fav.getFavoriteId());
     }
