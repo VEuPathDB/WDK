@@ -30,14 +30,13 @@ public class FilterParamNewInstance implements DependentParamInstance {
     _param = param;
   }
 
+  /**
+   * only needed by actions, which FilterParamNew does not support.   
+   */
   @Override
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    // TODO phase 2 - use metadata and ontologyMap to correct stableValue
-    //Map<String, OntologyItem> ontologyMap = _param.getOntology(user, contextParamValues);
-    if(stableValue == null) {
-      return _param.getDefault();
-    }
+    if (stableValue == null) return _param.getDefault();
     return stableValue;
   }
 }
