@@ -1,6 +1,9 @@
 package org.gusdb.wdk.service.request.user;
 
+import static org.gusdb.fgputil.FormatUtil.join;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +23,8 @@ import org.json.JSONObject;
  *
  */
 public class UserPreferencesRequest {
+
+  private static final List<String> VALID_SCOPES = Arrays.asList(Keys.GLOBAL, Keys.PROJECT);
 
   private Map<String,String> _globalPrefs = new HashMap<>();
   private List<String> _globalPrefsToDelete = new ArrayList<>();
@@ -53,9 +58,9 @@ public class UserPreferencesRequest {
 
   private static void validateRequestJson(JSONObject json) throws RequestMisformatException {
     for (String key : (Set<String>)json.keySet()) {
-      if (!Keys.GLOBAL.equals(key) && !Keys.PROJECT.equals(key)) {
+      if (!VALID_SCOPES.contains(key)) {
         throw new RequestMisformatException("Preference service request JSON can contain " +
-            "only the following properties: [ '" + Keys.PROJECT + "', '" + Keys.GLOBAL + "'].");
+            "only the following properties: [ '" + join(VALID_SCOPES, "', '") + "'].");
       }
     }
   }
