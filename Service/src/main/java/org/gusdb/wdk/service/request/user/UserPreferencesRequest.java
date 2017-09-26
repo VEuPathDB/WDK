@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -39,6 +40,7 @@ public class UserPreferencesRequest {
   public static UserPreferencesRequest createFromJson(JSONObject json) throws RequestMisformatException {
     try {
       UserPreferencesRequest request = new UserPreferencesRequest();
+      validateRequestJson(json);
       loadPreferenceChanges(json, Keys.GLOBAL, request._globalPrefs, request._globalPrefsToDelete);
       loadPreferenceChanges(json, Keys.PROJECT, request._projectPrefs, request._projectPrefsToDelete);
       return request;
@@ -46,6 +48,15 @@ public class UserPreferencesRequest {
     catch (JSONException e) {
       String detailMessage = e.getMessage() != null ? e.getMessage() : "No additional information.";
       throw new RequestMisformatException(detailMessage, e);
+    }
+  }
+
+  private static void validateRequestJson(JSONObject json) throws RequestMisformatException {
+    for (String key : (Set<String>)json.keySet()) {
+      if (!Keys.GLOBAL.equals(key) && !Keys.PROJECT.equals(key)) {
+        throw new RequestMisformatException("Preference request JSON can contain only " +
+            Keys.PROJECT + " and/or " + Keys.GLOBAL + " properties.");
+      }
     }
   }
 
