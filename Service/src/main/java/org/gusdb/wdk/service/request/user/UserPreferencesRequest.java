@@ -54,8 +54,8 @@ public class UserPreferencesRequest {
   private static void validateRequestJson(JSONObject json) throws RequestMisformatException {
     for (String key : (Set<String>)json.keySet()) {
       if (!Keys.GLOBAL.equals(key) && !Keys.PROJECT.equals(key)) {
-        throw new RequestMisformatException("Preference request JSON can contain only " +
-            Keys.PROJECT + " and/or " + Keys.GLOBAL + " properties.");
+        throw new RequestMisformatException("Preference service request JSON can contain " +
+            "only the following properties: [ '" + Keys.PROJECT + "', '" + Keys.GLOBAL + "'].");
       }
     }
   }
