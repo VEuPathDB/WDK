@@ -309,7 +309,7 @@ public class QuestionService extends WdkService {
 
   private <T> JSONArray getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
       FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
-          throws WdkModelException, WdkUserException {
+          throws WdkModelException {
     Map<T,FilterParamSummaryCounts> counts = param.getOntologyTermSummary(
         user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
     return QuestionFormatter.getOntologyTermSummaryJson(counts);
