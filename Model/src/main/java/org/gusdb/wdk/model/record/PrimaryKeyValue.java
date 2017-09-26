@@ -3,7 +3,10 @@ package org.gusdb.wdk.model.record;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -74,8 +77,11 @@ public class PrimaryKeyValue {
 
   @Override
   public int hashCode() {
+    List<String> orderedKeys = new ArrayList<String>(_pkValues.keySet());
+    Collections.sort(orderedKeys);
     int hashCode = 0;
-    for (Object pkValue : _pkValues.values()) {
+    for (String pkKey : orderedKeys) {
+      Object pkValue = _pkValues.get(pkKey);
       if (pkValue != null) {
         hashCode ^= pkValue.toString().hashCode();
       }
