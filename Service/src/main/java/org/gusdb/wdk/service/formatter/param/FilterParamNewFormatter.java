@@ -34,7 +34,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return pJson;
   }
 
-  public JSONArray getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException, WdkUserException {
+  public JSONArray getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
     Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, dependedParamValues);
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
@@ -53,6 +53,5 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     }
     return ontologyJson; 
   }
-
 
 }

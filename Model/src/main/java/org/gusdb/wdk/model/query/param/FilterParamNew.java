@@ -10,9 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -63,8 +63,6 @@ import org.json.JSONObject;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
-
-  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
