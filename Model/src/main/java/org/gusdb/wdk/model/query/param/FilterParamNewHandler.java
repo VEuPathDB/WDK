@@ -42,27 +42,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     super(handler, param);
   }
 
-  /**
-   * the raw value is a JSON string, and same as the stable value.
-   *
-{
-   "filters": [
-    {
-      "value": {
-        "min": 1.82,
-        "max": 2.19,
-        "includeUnknowns": true    (optional)
-      },
-      "field": "age"
-    },
-    {
-      "value": [
-        "female"
-      ],
-      "field": "biological sex"
-    }
-  ]
-}
+  /*
    *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
@@ -170,65 +150,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
-    return EncryptionUtil.encrypt(toSignatureString(stableValue) + dependedParamsSignature(user, contextParamValues));
+  public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    FilterParamNew param = (FilterParamNew)_param;
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
+    return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
 
-  // convert stable value to a compact string, suitable for use in a signature
-  // do not change this method, or risk invalidating existing signatures.
-  // also useful to do syntax validation of stableValue JSON
-  private String toSignatureString(String stableValue) throws WdkModelException {
-    try {
-      JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsFilters = getFilters(jsValue);
-      List<String> filterSigsList = new ArrayList<String>();
-      for (int i = 0; i < jsFilters.length(); i++) {
-        JSONObject jsFilter = jsFilters.getJSONObject(i);
-        String filterSig = getFilterSignature(jsFilter);
-        filterSigsList.add(filterSig);
-      }
-      Collections.sort(filterSigsList);
-      // wrap with brackets since a signature string cannot be empty (Utilities.encrypt will throw)
-      return "[" + filterSigsList.stream().collect(Collectors.joining(",")) + "]";
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-  }
-  
-  private static JSONArray getFilters(JSONObject jsValue) {
-    return jsValue.has(FILTERS_KEY) ? jsValue.getJSONArray(FILTERS_KEY) : new JSONArray();
-  }
-
-  // write out an individual filter as a compact string, suitable for use in a signature
-  // do not change this method, or risk invalidating existing signatures.
-  private String getFilterSignature(JSONObject jsFilter) throws WdkModelException {
-    List<String> parts = new ArrayList<>();
-    try {
-      //parts.add(jsFilter.getInt(FILTERS_KEY) + ":");
-
-      // don't know if we have an array or object, so try both.
-      if (jsFilter.has(FILTERS_VALUE)) {
-        try {
-          // this might throw, which probably means we have an array.
-          JSONObject value = jsFilter.getJSONObject(FILTERS_VALUE);
-          parts.add(FILTERS_MIN + ":" + value.get(FILTERS_MIN));
-          parts.add(FILTERS_MAX + ":" + value.get(FILTERS_MIN));
-        } catch (JSONException ex) {
-          JSONArray value = jsFilter.getJSONArray(FILTERS_VALUE);
-          for (int i=0; i < value.length(); i++ ) {
-            Object v = value.get(i);
-            parts.add(v == null ? null : v.toString());
-          }
-        }
-      }
-      return parts.toString();
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException("Parameter " + _param.getPrompt() + " has invalid filter param JSON", ex);
-    }
-  }
-  
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
@@ -258,16 +185,19 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
-    String stableValue = inputStableValue;
-    if (stableValue == null || stableValue.length() == 0) {
+    String stableValueString = inputStableValue;
+    if (stableValueString == null || stableValueString.length() == 0) {
       // use empty value if needed
       if (!_param.isAllowEmpty()) {
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
       }
-      stableValue = _param.getDefault();
+      stableValueString = _param.getDefault();
     }
-    toSignatureString(stableValue);  // this method validates the syntax
-    return stableValue;
+    FilterParamNew filterParam = (FilterParamNew) _param;
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, filterParam);
+    String err = stableValue.validateSyntax();
+    if (err != null) throw new WdkModelException(err);
+    return stableValueString;
   }
 
   @Override
