@@ -4,41 +4,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
-
 
 /**
- *
-{
- "filters": [
-  {
-    "value": {
-      "min": 1.82,
-      "max": 2.19,
-    },
-    "field": "age"
-    "includeUnknowns": true    (optional)
-
-  },
-  {
-    "value": [
-      "female"
-    ],
-    "field": "biological sex"
-    "includeUnknowns": true    (optional)
-  }
-]
-}
+ * {
+ *   "filters": [
+ *     {
+ *       "value": {
+ *         "min": 1.82,
+ *         "max": 2.19,
+ *       },
+ *       "field": "age"
+ *       "includeUnknowns": true    (optional)
+ *     },
+ *     {
+ *       "value": [
+ *         "female"
+ *       ],
+ *       "field": "biological sex"
+ *       "includeUnknowns": true    (optional)
+ *     }
+ *   ]
+ * }
  */
 public class FilterParamNewStableValue {
+
   private static final Logger LOG = Logger.getLogger(FilterParamNewStableValue.class);
-  
+
   public static final String FILTERS_KEY = "filters";
   public static final String FILTERS_FIELD = "field";
   public static final String FILTERS_VALUE = "value";
@@ -47,97 +46,103 @@ public class FilterParamNewStableValue {
   public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
   public static final String FILTERS_IS_RANGE = "isRange";
   public static final String FILTERS_TYPE = "type";
-  
+
   private FilterParamNew _param;
   private JSONObject _stableValueJson;
   private List<Filter> _filters = null;
-  
+
   public FilterParamNewStableValue(String stableValueString, FilterParamNew param) throws WdkModelException {
     _param = param;
     try {
-       _stableValueJson = new JSONObject(stableValueString);
-    } catch (JSONException e) {
+      _stableValueJson = new JSONObject(stableValueString);
+    }
+    catch (JSONException e) {
       throw new WdkModelException(e);
     }
-   }
-  
-  public FilterParamNewStableValue(JSONObject stableValueJson, FilterParamNew param) throws WdkModelException {
+  }
+
+  public FilterParamNewStableValue(JSONObject stableValueJson, FilterParamNew param) {
     _param = param;
     _stableValueJson = stableValueJson;
-   }
-
-  
-  public List<Filter> getFilters() throws WdkModelException {
-     initWithThrow();
-     return Collections.unmodifiableList(_filters);
   }
-  
+
+  public List<Filter> getFilters() throws WdkModelException {
+    initWithThrow();
+    return Collections.unmodifiableList(_filters);
+  }
+
   /**
    * validate the syntax and, for semantics, compare the field names and values against ontology and metadata
-   * @return err message if any.  null if valid
+   * 
+   * @return err message if any. null if valid
    */
   public String validateSyntaxAndSemantics() {
     String errmsg = validateSyntax();
-    if (errmsg != null) return errmsg;
+    if (errmsg != null)
+      return errmsg;
     return null;
   }
-  
+
   /**
-   * validate the syntax.  does not validate semantics (ie, compare against ontology).
-   * @return err message if any.  null if valid
+   * validate the syntax. does not validate semantics (ie, compare against ontology).
+   * 
+   * @return err message if any. null if valid
    */
   public String validateSyntax() {
     return init();
   }
-  
+
   public String toSignatureString() throws WdkModelException {
     initWithThrow();
     List<String> filterSigs = new ArrayList<String>();
-    for (Filter filter : getFilters()) filterSigs.add(filter.getSignature());
+    for (Filter filter : getFilters())
+      filterSigs.add(filter.getSignature());
     Collections.sort(filterSigs);
     return "[" + FormatUtil.join(filterSigs, ",") + "]";
   }
-    
+
   private void initWithThrow() throws WdkModelException {
     String errmsg = init();
-    if (errmsg != null) throw new WdkModelException(errmsg);
+    if (errmsg != null)
+      throw new WdkModelException(errmsg);
   }
-  
+
   /**
-   * 
    * @return error message if any; null if valid
-   * @throws WdkModelException
    */
   private String init() {
-    
+
     if (_filters == null) {
       _filters = new ArrayList<Filter>();
       try {
-        
+
         JSONArray jsFilters = _stableValueJson.getJSONArray(FILTERS_KEY);
         if (jsFilters == null)
           return "Stable value for parameter " + _param.getFullName() + " missing the array: " + FILTERS_KEY;
 
         for (int i = 0; i < jsFilters.length(); i++) {
-          
+
           JSONObject jsFilter = jsFilters.getJSONObject(i);
-          
+
           if (!jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && !jsFilter.has(FILTERS_VALUE))
-            return "A value filter must have at minimum one of" +
-                " the following properties: '" + FILTERS_INCLUDE_UNKNOWN + "', '" +
-                FILTERS_VALUE + "'.";
+            return "A value filter must have at minimum one of" + " the following properties: '" +
+                FILTERS_INCLUDE_UNKNOWN + "', '" + FILTERS_VALUE + "'.";
 
           String field = jsFilter.getString(FILTERS_FIELD);
           if (field == null)
-            return "Stable value for parameter " + _param.getFullName() + " does not specify an ontology term";
-          
+            return "Stable value for parameter " + _param.getFullName() +
+                " does not specify an ontology term";
+
           boolean isRange = inferIsRange(jsFilter);
           OntologyItemType type;
-          if (isRange) type = inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE));
-          else type = inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE));
- 
+          if (isRange)
+            type = inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE));
+          else
+            type = inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE));
+
           Filter filter = null;
-          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN)? false : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
+          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false
+              : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
 
           try {
             switch (type) {
@@ -146,24 +151,22 @@ public class FilterParamNewStableValue {
                 break;
               case NUMBER:
                 if (isRange)
-                  filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns,
-                      field);
+                  filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
                 else
-                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns,
-                      field);
+                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
                 break;
               case STRING:
-                filter = new StringMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns,
-                    field);
+                filter = new StringMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
                 break;
               default:
-                break;
+                throw new WdkModelException("Unsupported filter type: " + type.name());
             }
-          } catch (WdkModelException e) {
-	    e.printStackTrace();
+          }
+          catch (WdkModelException e) {
+            LOG.error("Could not create filter from JSON value.", e);
             return e.getMessage();
           }
-          
+
           _filters.add(filter);
         }
 
@@ -174,55 +177,58 @@ public class FilterParamNewStableValue {
     }
     return null;
   }
-  
+
   // temporary hack
   private boolean inferIsRange(JSONObject jsFilter) {
     boolean isRange = true;
     try {
-      if (!jsFilter.isNull(FILTERS_VALUE)) jsFilter.getJSONObject(FILTERS_VALUE);
-    } catch (JSONException e) {
+      if (!jsFilter.isNull(FILTERS_VALUE))
+        jsFilter.getJSONObject(FILTERS_VALUE);
+    }
+    catch (JSONException e) {
       isRange = false;
     }
     return isRange;
   }
-  
+
   // temporary hack
   private OntologyItemType inferRangeType(JSONObject jsValue) {
     OntologyItemType type = OntologyItemType.NUMBER;
     try {
-      if (!jsValue.isNull(FILTERS_MIN)) jsValue.getDouble(FILTERS_MIN);
-      if (!jsValue.isNull(FILTERS_MAX)) jsValue.getDouble(FILTERS_MAX);
-    } catch (JSONException e) {
+      if (!jsValue.isNull(FILTERS_MIN))
+        jsValue.getDouble(FILTERS_MIN);
+      if (!jsValue.isNull(FILTERS_MAX))
+        jsValue.getDouble(FILTERS_MAX);
+    }
+    catch (JSONException e) {
       type = OntologyItemType.DATE;
     }
     return type;
   }
-  
+
   // temporary hack
   private OntologyItemType inferMemberType(JSONArray jsValue) {
     OntologyItemType type = OntologyItemType.NUMBER;
     try {
-      if (!jsValue.isNull(0)) jsValue.getDouble(0);
-    } catch (JSONException e) {
+      if (!jsValue.isNull(0))
+        jsValue.getDouble(0);
+    }
+    catch (JSONException e) {
       type = OntologyItemType.STRING;
     }
     return type;
   }
 
   /**
-   * @param user
-   * @param stableValue
-   * @param contextParamValues
-   * @param param
-   * @return
-   * @throws WdkModelException
+   * @param user  
+   * @param contextParamValues 
    */
   public String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
 
     initWithThrow();
 
     if (_filters.size() == 0) {
-      String displayName = ((FilterParamNew) _param).getFilterDataTypeDisplayName();
+      String displayName = _param.getFilterDataTypeDisplayName();
       return displayName != null ? displayName : _param.getPrompt();
     }
 
@@ -233,26 +239,29 @@ public class FilterParamNewStableValue {
     }
     return FormatUtil.join(filterDisplays, System.lineSeparator());
   }
-  
-  ////////////////////   inner classes to represent different types of filter  //////////////////////////
-  
+
+  //////////////////// inner classes to represent different types of filter //////////////////////////
+
   public abstract class Filter {
-    
+
     String field = null; // the stable value did not include a value field
     Boolean includeUnknowns = null;
     boolean valueIsNull;
-    
-    public Filter(boolean valueIsNull, Boolean includeUnknowns, String field) throws WdkModelException {
+
+    public Filter(boolean valueIsNull, Boolean includeUnknowns, String field) {
       this.valueIsNull = valueIsNull;
       this.includeUnknowns = includeUnknowns;
       this.field = field;
     }
-    
+
     abstract String getDisplayValue();
+
     abstract Boolean getIncludeUnknowns();
+
     protected abstract String getAndClause(String columnName, String metadataTableName) throws WdkModelException;
+
     abstract String getSignature();
-    
+
     // include in where clause a filter by ontology_id
     public String getFilterAsAndClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
 
@@ -262,186 +271,248 @@ public class FilterParamNewStableValue {
 
       String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
-      String unknownClause =  includeUnknowns? metadataTableName + "." + columnName + " is NULL OR " : "";
+      String unknownClause = includeUnknowns ? metadataTableName + "." + columnName + " is NULL OR " : "";
 
-      String innerAndClause = valueIsNull ? metadataTableName + "." + columnName + " is not NULL"
-          :  getAndClause(columnName, metadataTableName);
+      String innerAndClause = valueIsNull ?
+          metadataTableName + "." + columnName + " is not NULL" :
+          getAndClause(columnName, metadataTableName);
 
       // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
       return whereClause + " AND (" + unknownClause + innerAndClause + ")";
     }
   }
-  
+
   private abstract class RangeFilter extends Filter {
 
     /**
      * 
-     * @param jsValue  the FILTERS_VALUE portion of the stable value
+     * @param jsValue
+     *          the FILTERS_VALUE portion of the stable value
      * @param includeUnknowns
      * @param field
-     * @throws WdkModelException
      */
-    public RangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
+    public RangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) {
       super(jsValue == null, includeUnknowns, field);
 
       /*
-      if (jsValue != null && jsValue.isNull(FILTERS_MAX) && jsValue.isNull(FILTERS_MIN))
-        throw new WdkModelException("Stable value for parameter " + _param.getFullName() + " " + FILTERS_FIELD + " " +
-            field + "has no " + FILTERS_MIN + " or " + FILTERS_MAX);
-      */
+       * if (jsValue != null && jsValue.isNull(FILTERS_MAX) && jsValue.isNull(FILTERS_MIN)) throw new
+       * WdkModelException("Stable value for parameter " + _param.getFullName() + " " + FILTERS_FIELD + " " +
+       * field + "has no " + FILTERS_MIN + " or " + FILTERS_MAX);
+       */
     }
-        
+
+    @Override
     public String getDisplayValue() {
       String min = getMinString();
       String max = getMaxString();
-      return min == null ? "less than " + max
-          : min == null ? "greater than " + min : "between " + min + " and " + max;
+      return min == null ?
+          (max == null ? "any values" : "less than " + max) :
+          (max == null ? "greater than " + min : "between " + min + " and " + max);
     }
 
-    public Boolean getIncludeUnknowns() {return includeUnknowns;}
-    
+    @Override
+    public Boolean getIncludeUnknowns() {
+      return includeUnknowns;
+    }
+
+    @Override
     protected String getAndClause(String columnName, String metadataTableName) throws WdkModelException {
+
       String minStr = getMinStringSql();
       String maxStr = getMaxStringSql();
- 
-      String clauseStart = metadataTableName + "." + columnName;
-      if (minStr == null) return clauseStart + " <= " + maxStr;
-      if (maxStr == null) return clauseStart + " >= " + minStr;
-      return clauseStart + " >= " + minStr + " AND " + metadataTableName + "." + columnName + " <= " + maxStr;
+      String rowValue = metadataTableName + "." + columnName;
+
+      return "" +
+        (minStr == null ? "" : (" AND " + rowValue + " >= " + minStr)) +
+        (maxStr == null ? "" : (" AND " + rowValue + " <= " + maxStr));
     }
-    
-    String getSignature() { return "" + getMinString() + "," + getMaxString() + "," + includeUnknowns; }
-    
+
+    @Override
+    String getSignature() {
+      return "" + getMinString() + "," + getMaxString() + "," + includeUnknowns;
+    }
+
     abstract String getMaxString();
+
     abstract String getMinString();
+
     abstract String getMaxStringSql();
+
     abstract String getMinStringSql();
   }
 
   private class DateRangeFilter extends RangeFilter {
-    String min = null;
-    String max = null;
+
+    private String min = null;
+    private String max = null;
 
     DateRangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsValue, includeUnknowns, field);
       try {
-	if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getString(FILTERS_MIN);
-	if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getString(FILTERS_MAX);
+        if (!jsValue.isNull(FILTERS_MIN))
+          min = jsValue.getString(FILTERS_MIN);
+        if (!jsValue.isNull(FILTERS_MAX))
+          max = jsValue.getString(FILTERS_MAX);
       }
       catch (JSONException j) {
         throw new WdkModelException(j);
       }
     }
-    
-    String getMinString() { return min; }
-    String getMaxString() { return max; }
-    String getMinStringSql() { return min == null? null : "date '" + min + "'"; }
-    String getMaxStringSql() { return max == null? null : "date '" + max + "'"; }
+
+    @Override
+    String getMinString() {
+      return min;
+    }
+
+    @Override
+    String getMaxString() {
+      return max;
+    }
+
+    @Override
+    String getMinStringSql() {
+      return min == null ? null : "date '" + min + "'";
+    }
+
+    @Override
+    String getMaxStringSql() {
+      return max == null ? null : "date '" + max + "'";
+    }
   }
-  
+
   private class NumberRangeFilter extends RangeFilter {
-    Double min = null;
-    Double max = null;
-    
+
+    private Double min = null;
+    private Double max = null;
+
     NumberRangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsValue, includeUnknowns, field);
       try {
-	if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getDouble(FILTERS_MIN);
-	if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getDouble(FILTERS_MAX);
+        if (!jsValue.isNull(FILTERS_MIN))
+          min = jsValue.getDouble(FILTERS_MIN);
+        if (!jsValue.isNull(FILTERS_MAX))
+          max = jsValue.getDouble(FILTERS_MAX);
 
       }
       catch (JSONException j) {
         throw new WdkModelException(j);
       }
     }
-    
-    String getMinString() { return min == null? null : min.toString(); }
-    String getMaxString() { return max == null? null : max.toString(); }
-    String getMinStringSql() { return min == null? null : min.toString(); }
-    String getMaxStringSql() { return max == null? null : max.toString(); }
+
+    @Override
+    String getMinString() {
+      return min == null ? null : min.toString();
+    }
+
+    @Override
+    String getMaxString() {
+      return max == null ? null : max.toString();
+    }
+
+    @Override
+    String getMinStringSql() {
+      return min == null ? null : min.toString();
+    }
+
+    @Override
+    String getMaxStringSql() {
+      return max == null ? null : max.toString();
+    }
   }
 
-  
   private abstract class MembersFilter extends Filter {
 
-    public MembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field)
-        throws WdkModelException {
+    public MembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
 
       super(jsArray == null, includeUnknowns, field);
-;
+
       if (jsArray != null) {
         try {
-	  setMembers(jsArray);
+          setMembers(jsArray);
         }
         catch (JSONException j) {
           throw new WdkModelException(j);
         }
-      }     
+      }
     }
-    
-    public Boolean getIncludeUnknowns() {return includeUnknowns;}
-    
-    abstract void setMembers(JSONArray jsArray) throws JSONException;    
-   }
-  
-  private class NumberMembersFilter extends MembersFilter {
-    List<Double> members;
 
-    public NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field)
-        throws WdkModelException {
+    @Override
+    public Boolean getIncludeUnknowns() {
+      return includeUnknowns;
+    }
+
+    abstract void setMembers(JSONArray jsArray) throws JSONException;
+  }
+
+  private class NumberMembersFilter extends MembersFilter {
+
+    private List<Double> members;
+
+    public NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsArray, includeUnknowns, field);
     }
 
+    @Override
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
-      for (int i = 0; i < jsArray.length(); i++) jsArray.getDouble(i);
+      for (int i = 0; i < jsArray.length(); i++)
+        jsArray.getDouble(i);
     }
-    
+
+    @Override
     public String getDisplayValue() {
       Collections.sort(members);
-      return  FormatUtil.join(members, ",");
+      return FormatUtil.join(members, ",");
     }
-    
+
+    @Override
     protected String getAndClause(String columnName, String metadataTableName) {
-      if (members.size() == 0) return "1 != 1";
+      if (members.size() == 0)
+        return "1 != 1";
       return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(members, ", ") + ") ";
     }
-    
+
+    @Override
     String getSignature() {
       List<Double> list = new ArrayList<Double>(members);
       Collections.sort(list);
-      return  FormatUtil.join(list, ",") + " --" + includeUnknowns;
+      return FormatUtil.join(list, ",") + " --" + includeUnknowns;
     }
   }
-  
+
   private class StringMembersFilter extends MembersFilter {
-    List<String> members;
+
+    private List<String> members;
 
     public StringMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field)
         throws WdkModelException {
       super(jsArray, includeUnknowns, field);
     }
 
+    @Override
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<String>();
-      for (int i = 0; i < jsArray.length(); i++) members.add(jsArray.getString(i));
+      for (int i = 0; i < jsArray.length(); i++)
+        members.add(jsArray.getString(i));
     }
-    
+
+    @Override
     public String getDisplayValue() {
-      return  FormatUtil.join(members, ",");
+      return FormatUtil.join(members, ",");
     }
-    
+
+    @Override
     protected String getAndClause(String columnName, String metadataTableName) {
-      if (members.size() == 0) return "1 != 1";
+      if (members.size() == 0)
+        return "1 != 1";
       return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(members, "', '") + "') ";
     }
-    
+
+    @Override
     String getSignature() {
       List<String> list = new ArrayList<String>(members);
       Collections.sort(list);
-      return  FormatUtil.join(list, ",") + " --" + includeUnknowns;
+      return FormatUtil.join(list, ",") + " --" + includeUnknowns;
     }
-
   }
-
 }
