@@ -37,17 +37,6 @@ var scriptLoaders = scripts.map(function(script) {
   };
 });
 
-var lessLoaders = [
-  {
-    test: /\.less$/,
-    use: [
-      { loader: 'style-loader' },
-      { loader: 'css-loader', options: { sourceMap: true } },
-      { loader: 'less-loader', options: { sourceMap: true } },
-    ]
-  }
-];
-
 // expose module exports as global vars
 var exposeModules = [
   { module: 'lodash', expose: '_' },
@@ -72,12 +61,12 @@ module.exports = baseConfig.merge({
     'wdk-client': [
       'whatwg-fetch',
       './webapp/wdk/css/wdk.css',
-      './webapp/wdk/less/index.less',
+      './webapp/wdk/sass/index.scss',
       './webapp/wdk/js/client/index.js'
     ],
     'wdk': [
       './webapp/wdk/css/wdk.css',
-      './webapp/wdk/less/index.less',
+      './webapp/wdk/sass/index.scss',
       './webapp/wdk/js/index.js'
     ]
   },
@@ -91,7 +80,7 @@ module.exports = baseConfig.merge({
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: [].concat(scriptLoaders, exposeLoaders, lessLoaders),
+    rules: [].concat(scriptLoaders, exposeLoaders),
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({
