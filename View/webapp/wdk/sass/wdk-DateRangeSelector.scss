@@ -1,0 +1,17 @@
+.wdk-DateRangeSelector {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding: 10px;
+  border: 1px solid #888;
+
+  label {
+    padding: 5px;
+    display: inline-block;
+    font-size: 0.9em;
+    line-height: 0.9em;
+    font-weight: bold;
+    opacity: 0.5;
+  }
+}
