@@ -78,8 +78,7 @@ public class FilterParamNewStableValue {
    */
   public String validateSyntaxAndSemantics() {
     String errmsg = validateSyntax();
-    if (errmsg != null)
-      return errmsg;
+    if (errmsg != null) return errmsg;
     return null;
   }
 
@@ -95,16 +94,16 @@ public class FilterParamNewStableValue {
   public String toSignatureString() throws WdkModelException {
     initWithThrow();
     List<String> filterSigs = new ArrayList<String>();
-    for (Filter filter : getFilters())
+    for (Filter filter : getFilters()) {
       filterSigs.add(filter.getSignature());
+    }
     Collections.sort(filterSigs);
     return "[" + FormatUtil.join(filterSigs, ",") + "]";
   }
 
   private void initWithThrow() throws WdkModelException {
     String errmsg = init();
-    if (errmsg != null)
-      throw new WdkModelException(errmsg);
+    if (errmsg != null) throw new WdkModelException(errmsg);
   }
 
   /**
@@ -117,32 +116,31 @@ public class FilterParamNewStableValue {
       try {
 
         JSONArray jsFilters = _stableValueJson.getJSONArray(FILTERS_KEY);
-        if (jsFilters == null)
+        if (jsFilters == null) {
           return "Stable value for parameter " + _param.getFullName() + " missing the array: " + FILTERS_KEY;
+        }
 
         for (int i = 0; i < jsFilters.length(); i++) {
 
           JSONObject jsFilter = jsFilters.getJSONObject(i);
 
-          if (!jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && !jsFilter.has(FILTERS_VALUE))
+          if (!jsFilter.has(FILTERS_INCLUDE_UNKNOWN) && !jsFilter.has(FILTERS_VALUE)) {
             return "A value filter must have at minimum one of" + " the following properties: '" +
                 FILTERS_INCLUDE_UNKNOWN + "', '" + FILTERS_VALUE + "'.";
+          }
 
           String field = jsFilter.getString(FILTERS_FIELD);
-          if (field == null)
-            return "Stable value for parameter " + _param.getFullName() +
-                " does not specify an ontology term";
+          if (field == null) {
+            return "Stable value for parameter " + _param.getFullName() + " does not specify an ontology term";
+          }
 
           boolean isRange = inferIsRange(jsFilter);
-          OntologyItemType type;
-          if (isRange)
-            type = inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE));
-          else
-            type = inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE));
+          OntologyItemType type = (isRange ?
+              inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE)) :
+              inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE)));
 
           Filter filter = null;
-          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false
-              : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
+          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
 
           try {
             switch (type) {
@@ -150,10 +148,9 @@ public class FilterParamNewStableValue {
                 filter = new DateRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
                 break;
               case NUMBER:
-                if (isRange)
-                  filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
-                else
-                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
+                filter = (isRange ?
+                    new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field) :
+                    new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field));
                 break;
               case STRING:
                 filter = new StringMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
@@ -182,8 +179,7 @@ public class FilterParamNewStableValue {
   private boolean inferIsRange(JSONObject jsFilter) {
     boolean isRange = true;
     try {
-      if (!jsFilter.isNull(FILTERS_VALUE))
-        jsFilter.getJSONObject(FILTERS_VALUE);
+      if (!jsFilter.isNull(FILTERS_VALUE)) jsFilter.getJSONObject(FILTERS_VALUE);
     }
     catch (JSONException e) {
       isRange = false;
@@ -195,10 +191,9 @@ public class FilterParamNewStableValue {
   private OntologyItemType inferRangeType(JSONObject jsValue) {
     OntologyItemType type = OntologyItemType.NUMBER;
     try {
-      if (!jsValue.isNull(FILTERS_MIN))
-        jsValue.getDouble(FILTERS_MIN);
-      if (!jsValue.isNull(FILTERS_MAX))
-        jsValue.getDouble(FILTERS_MAX);
+      // use JSONException to expose date type (i.e. not number type)
+      if (!jsValue.isNull(FILTERS_MIN)) jsValue.getDouble(FILTERS_MIN);
+      if (!jsValue.isNull(FILTERS_MAX)) jsValue.getDouble(FILTERS_MAX);
     }
     catch (JSONException e) {
       type = OntologyItemType.DATE;
@@ -210,8 +205,7 @@ public class FilterParamNewStableValue {
   private OntologyItemType inferMemberType(JSONArray jsValue) {
     OntologyItemType type = OntologyItemType.NUMBER;
     try {
-      if (!jsValue.isNull(0))
-        jsValue.getDouble(0);
+      if (!jsValue.isNull(0)) jsValue.getDouble(0);
     }
     catch (JSONException e) {
       type = OntologyItemType.STRING;
@@ -234,8 +228,7 @@ public class FilterParamNewStableValue {
 
     List<String> filterDisplays = new ArrayList<String>();
     for (Filter filter : _filters) {
-      filterDisplays.add(
-          filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
+      filterDisplays.add(filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
     }
     return FormatUtil.join(filterDisplays, System.lineSeparator());
   }
@@ -349,10 +342,8 @@ public class FilterParamNewStableValue {
     DateRangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsValue, includeUnknowns, field);
       try {
-        if (!jsValue.isNull(FILTERS_MIN))
-          min = jsValue.getString(FILTERS_MIN);
-        if (!jsValue.isNull(FILTERS_MAX))
-          max = jsValue.getString(FILTERS_MAX);
+        if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getString(FILTERS_MIN);
+        if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getString(FILTERS_MAX);
       }
       catch (JSONException j) {
         throw new WdkModelException(j);
@@ -388,10 +379,8 @@ public class FilterParamNewStableValue {
     NumberRangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsValue, includeUnknowns, field);
       try {
-        if (!jsValue.isNull(FILTERS_MIN))
-          min = jsValue.getDouble(FILTERS_MIN);
-        if (!jsValue.isNull(FILTERS_MAX))
-          max = jsValue.getDouble(FILTERS_MAX);
+        if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getDouble(FILTERS_MIN);
+        if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getDouble(FILTERS_MAX);
 
       }
       catch (JSONException j) {
@@ -455,8 +444,9 @@ public class FilterParamNewStableValue {
     @Override
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
-      for (int i = 0; i < jsArray.length(); i++)
+      for (int i = 0; i < jsArray.length(); i++) {
         jsArray.getDouble(i);
+      }
     }
 
     @Override
@@ -467,8 +457,7 @@ public class FilterParamNewStableValue {
 
     @Override
     protected String getAndClause(String columnName, String metadataTableName) {
-      if (members.size() == 0)
-        return "1 != 1";
+      if (members.size() == 0) return "1 != 1";
       return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(members, ", ") + ") ";
     }
 
@@ -492,8 +481,9 @@ public class FilterParamNewStableValue {
     @Override
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<String>();
-      for (int i = 0; i < jsArray.length(); i++)
+      for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getString(i));
+      }
     }
 
     @Override
@@ -503,8 +493,7 @@ public class FilterParamNewStableValue {
 
     @Override
     protected String getAndClause(String columnName, String metadataTableName) {
-      if (members.size() == 0)
-        return "1 != 1";
+      if (members.size() == 0) return "1 != 1";
       return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(members, "', '") + "') ";
     }
 
