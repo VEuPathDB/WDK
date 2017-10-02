@@ -46,7 +46,7 @@ public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterPar
   @Override
   public FilterParamNewInstance fetchItem(String cacheKey) throws UnfetchableItemException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    LOG.info("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
+    LOG.info("Fetching filter param new instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
