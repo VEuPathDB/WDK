@@ -2,12 +2,18 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -76,11 +82,71 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-  public String validateSyntaxAndSemantics() {
+   public String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues) throws WdkModelException {
+
+    
+    // validate syntax
+    List<String> errors = new ArrayList<String>();
     String errmsg = validateSyntax();
+
+    if (errmsg != null) errors.add(errmsg);
+    
+    // validate fields against ontology; collect fields that are not isRange
+    Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
+    Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();
+    for (Filter filter : _filters) {
+      String field = filter.getField();
+      if (!ontology.containsKey(field)) {
+        errors.add("'" + field + "'" + " is not a recognized category");
+        continue;
+      }
+      if (!ontology.get(field).getIsRange()) memberFilters.add((MembersFilter)filter);
+    }
+    
+    // run metadata query to find distinct values for each member field
+    if (memberFilters.size() != 0) {
+      Map<String, Map<String, Boolean>> metadataMembers = getDistinctMetaDataMembers(user, contextParamValues,
+          memberFilters);
+
+      // iterate through our member filters, validating the values of each
+      for (MembersFilter mf : memberFilters) {
+        String err = mf.validateValues(metadataMembers.get(mf.getField()));
+        if (err != null)
+          errors.add(err);
+      }
+    }
+
     if (errmsg != null) return errmsg;
     return null;
   }
+   
+   /**
+    * return map of ontology field name to member values (as strings).
+    * @param user
+    * @param contextParamValues
+    * @param memberFilters the set of MembersFilters used in this stable value
+    * @return a map from field name -> a map of valid member values -> a don't care value.  (We convert number values to strings)
+    * @throws WdkModelException
+    */
+   private Map<String, Map<String, Boolean>> getDistinctMetaDataMembers(User user,
+       Map<String, String> contextParamValues, Set<MembersFilter> memberFilters) throws WdkModelException {
+     
+     Query metadataQuery = _param.getMetadataQuery();
+     String metadataSql;
+     try {
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
+           new HashMap<String, String>());
+       metadataSql = instance.getSql();
+     }
+     catch (WdkUserException e) {
+       throw new WdkModelException(e);
+     }
+
+     String metadataTableName = "md";
+     String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
+     return null;
+   }
+
 
   /**
    * validate the syntax. does not validate semantics (ie, compare against ontology).
@@ -245,6 +311,10 @@ public class FilterParamNewStableValue {
       this.valueIsNull = valueIsNull;
       this.includeUnknowns = includeUnknowns;
       this.field = field;
+    }
+
+    public String getField() {
+      return field;
     }
 
     abstract String getDisplayValue();
@@ -430,7 +500,20 @@ public class FilterParamNewStableValue {
       return includeUnknowns;
     }
 
-    abstract void setMembers(JSONArray jsArray) throws JSONException;
+    /**
+     * @return String with list of error values; null if no errors
+     */
+    public String validateValues(Map<String, Boolean> validValuesMap) {
+      List<String> errList = new ArrayList<String>();
+      for (String value : getMembersAsStrings()) if (!validValuesMap.containsKey(value)) errList.add(value);
+      if (errList.size() != 0) return FormatUtil.join(errList, ", ");
+      return null;
+    }
+
+   abstract void setMembers(JSONArray jsArray) throws JSONException;
+   
+   abstract List<String> getMembersAsStrings();
+
   }
 
   private class NumberMembersFilter extends MembersFilter {
@@ -466,6 +549,12 @@ public class FilterParamNewStableValue {
       List<Double> list = new ArrayList<Double>(members);
       Collections.sort(list);
       return FormatUtil.join(list, ",") + " --" + includeUnknowns;
+    }
+    
+    List<String> getMembersAsStrings() {
+      List<String> list = new ArrayList<String>();
+      for (Double mem : members) list.add(mem.toString());
+      return list;
     }
   }
 
@@ -503,5 +592,10 @@ public class FilterParamNewStableValue {
       Collections.sort(list);
       return FormatUtil.join(list, ",") + " --" + includeUnknowns;
     }
+    
+    List<String> getMembersAsStrings() {
+      return members;
+    }
+
   }
 }

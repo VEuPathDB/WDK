@@ -687,7 +687,9 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    String err = stableValue.validateSyntaxAndSemantics();
+    String err = stableValue.validateSyntax();
+//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
+
     if (err != null) throw new WdkModelException(err);
   }
 
@@ -700,15 +702,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private FilterParamNewInstance createFilterParamNewInstance(Map<String, String> dependedParamValues)
       throws WdkModelException {
-    try {
-      FilterParamNewFetcher fetcher = new FilterParamNewFetcher(this);
-      return CacheMgr.get().getFilterParamNewCache().getItem(fetcher.getCacheKey(dependedParamValues),
-          fetcher);
-    }
-    catch (UnfetchableItemException e) {
-      throw new WdkModelException(e);
-    }
-
+    return new FilterParamNewInstance(this);
   }
 
   @Override
