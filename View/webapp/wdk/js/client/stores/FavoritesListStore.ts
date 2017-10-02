@@ -4,6 +4,8 @@ import { SortDirection } from 'react-virtualized';
 import { ListLoadingAction,
   ListReceivedAction,
   ListErrorReceivedAction,
+  FavoriteSelectedAction,
+  FavoriteDeselectedAction,
   EditCellAction,
   ChangeCellAction,
   CancelCellEditAction,
@@ -22,6 +24,7 @@ import { ListLoadingAction,
 import { Favorite } from '../utils/WdkModel';
 
 type Action = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction
+|FavoriteSelectedAction|FavoriteDeselectedAction
 |EditCellAction|ChangeCellAction|CancelCellEditAction
 |SaveCellDataAction|SaveReceivedAction|SaveErrorReceivedAction
 |DeleteRowAction|DeleteReceivedAction|DeleteErrorReceivedAction
@@ -42,6 +45,7 @@ export interface State extends BaseState {
   searchText: string;
   sortBy: string;
   sortDirection: string;
+  selectedFavorites: number[];
   key: string;
 }
 
@@ -63,6 +67,7 @@ export default class FavoritesListStore extends WdkStore<State> {
       searchText: '',
       sortBy: 'display',
       sortDirection: SortDirection.ASC,
+      selectedFavorites: [],
     }, super.getInitialState());
   }
 
@@ -77,12 +82,43 @@ export default class FavoritesListStore extends WdkStore<State> {
 
       // Once the favorites list is received, it is placed in the list and filteredList variables.  The fiteredList
       // is the list that will be presented to the user.
-      case 'favorites/list-received': return {
+      case 'favorites/list-received': {
+        const { list } = action.payload;
+        const favoritesLoading = false;
+        const listIds = list.map((fav: Favorite) => fav.id);
+        const selectedFavorites = state.selectedFavorites.filter(id => {
+          return listIds.indexOf(id) >= 0;
+        });
+        return {
           ...state,
-          favoritesLoading: false,
-          list: action.payload.list,
-          filteredList: action.payload.list
+          list,
+          favoritesLoading,
+          selectedFavorites,
+          filteredList: list
         };
+      }
+
+      case 'favorites/favorite-selected': {
+        const { id } = action.payload;
+        const selectedFavorites = state.selectedFavorites.includes(id)
+          ? state.selectedFavorites
+          : [...state.selectedFavorites, id];
+        return {
+          ...state,
+          selectedFavorites
+        };
+      }
+
+      case 'favorites/favorite-deselected': {
+        const { id } = action.payload;
+        const selectedFavorites = state.selectedFavorites.includes(id)
+          ? state.selectedFavorites.filter(fav => fav !== id)
+          : state.selectedFavorites;
+        return {
+          ...state,
+          selectedFavorites
+        };
+      }
 
       // If the user visits this page without being logged in, the 403 status code is returned.  The user needs
       // something more meaningful than a generic error message in that case.

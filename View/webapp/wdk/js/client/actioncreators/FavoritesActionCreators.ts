@@ -13,6 +13,20 @@ export type ListReceivedAction = {
   }
 }
 
+export type FavoriteSelectedAction = {
+  type: 'favorites/favorite-selected',
+  payload: {
+    id: Favorite['id']
+  }
+};
+
+export type FavoriteDeselectedAction = {
+  type: 'favorites/favorite-deselected',
+  payload: {
+    id: Favorite['id']
+  }
+};
+
 export type ListErrorReceivedAction = {
   type: 'favorites/list-error',
   payload: {
@@ -120,6 +134,14 @@ export function loadFavoritesList(): ActionThunk<ListAction>{
         }
       )
   }
+}
+
+export function selectFavorite(id: Favorite['id']): FavoriteSelectedAction {
+  return { type: 'favorites/favorite-selected', payload: { id } };
+}
+
+export function deselectFavorite(id: Favorite['id']): FavoriteDeselectedAction {
+  return { type: 'favorites/favorite-deselected', payload: { id }};
 }
 
 export function editCell(data: EditCellAction['payload']): EditCellAction {

@@ -3526,7 +3526,7 @@ merge-source-map@^1.0.2:
 
 "mesa@https://github.com/austinbillings/mesa.git":
   version "1.0.1"
-  resolved "https://github.com/austinbillings/mesa.git#c69e34927b7148b111e6230099e175c13208ff8d"
+  resolved "https://github.com/austinbillings/mesa.git#81c0b1875af2d3c796129333c8e0dc6ba16dd1ef"
   dependencies:
     prop-types ">=15.0.0"
     react ">=15.0.0"
