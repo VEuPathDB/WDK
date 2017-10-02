@@ -23,7 +23,6 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 exports.merge = function merge(additionConfig) {
   return function (env) {
     env = env || { development: true };
-    console.log('webpack env', env);
     var isDevelopment = !env.production;
     if (!isDevelopment) console.log('optimizing web assets');
     return webpackMerge([{
@@ -31,6 +30,7 @@ exports.merge = function merge(additionConfig) {
       resolve: {
         extensions: [ ".js", ".jsx", ".ts", ".tsx" ]
       },
+
       output: {
         path: __dirname + '/dist',
         filename: '[name].bundle.js',
@@ -55,6 +55,15 @@ exports.merge = function merge(additionConfig) {
             use: [
               { loader: 'babel-loader', options: { cacheDirectory: true } }
             ]
+          },
+
+          {
+    				test: /\.scss$/,
+    				use: [
+              { loader: 'style-loader' },
+    					{ loader: 'css-loader' },
+              { loader: 'sass-loader' }
+    				]
           },
 
           {
