@@ -355,8 +355,10 @@ public class FilterParam extends FlatVocabParam {
     return metadata;
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
+  @Override
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
+    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
     JSONObject jsParam = super.getJsonValues(cache);
     try { // add additional info into the json
       appendJsonFilterValue(jsParam, user, contextParamValues);
