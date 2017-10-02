@@ -54,7 +54,7 @@ class FavoritesList extends Component {
       selectedRows: [],
       uiState: {
         sort: {
-          column: null,
+          columnKey: null,
           direction: 'asc'
         }
       }
@@ -237,19 +237,14 @@ class FavoritesList extends Component {
 
   // Table event handlers =====================================================
 
-  onRowSelect ({ displayName }) {
-    let { selectedRows } = this.state;
-    if (selectedRows.includes(displayName)) return;
-    selectedRows.push(displayName);
-    this.setState({ selectedRows });
+  onRowSelect ({ id }) {
+    const { selectFavorite } = this.props.favoritesEvents;
+    selectFavorite(id);
   }
 
-  onRowDeselect ({ displayName }) {
-    let { selectedRows } = this.state;
-    let index = selectedRows.indexOf(displayName);
-    if (index < 0) return;
-    selectedRows.splice(index, 1);
-    this.setState({ selectedRows })
+  onRowDeselect ({ id }) {
+    const { deselectFavorite } = this.props.favoritesEvents;
+    deselectFavorite(id);
   }
 
   onSortChange ({ key }, direction) {
@@ -284,15 +279,14 @@ class FavoritesList extends Component {
   }
 
   getTableOptions () {
-    const { searchBoxPlaceholder } = this.props;
-    const { selectedRows } = this.state;
+    const { searchBoxPlaceholder, selectedFavorites } = this.props;
 
     return {
       title: 'Favorites',
       editableColumns: false,
       searchPlaceholder: searchBoxPlaceholder,
-      isRowSelected ({ displayName }) {
-        return selectedRows.includes(displayName);
+      isRowSelected ({ id }) {
+        return selectedFavorites.includes(id);
       }
     };
   }
@@ -305,7 +299,7 @@ class FavoritesList extends Component {
         name: 'ID',
         renderCell: renderIdCell,
         width: '130px',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'recordClassName',
@@ -318,13 +312,15 @@ class FavoritesList extends Component {
         key: 'description',
         name: 'Notes',
         renderCell: renderNoteCell,
-        width: '450px'
+        width: '450px',
+        helpText: 'Use this column to add notes. Click the pencil icon to edit the cell\'s contents.'
       },
       {
         key: 'group',
         name: 'Project',
         renderCell: renderGroupCell,
-        width: '250px'
+        width: '250px',
+        helpText: 'Organize you favorites by group names. IDs with the same group name will be sorted together once the page is refreshed. Click the pencil icon to edit the cell\'s contents.'
       }
     ];
   }
@@ -346,11 +342,8 @@ class FavoritesList extends Component {
       onSort: onSortChange
     };
 
-
     const emptinessCulprit = (list.length && !filteredList.length ? 'search' : null);
     uiState = Object.assign({}, uiState, { emptinessCulprit });
-
-    console.log('using uiState', uiState);
 
     const mesaProps = { rows: filteredList, columns, options, actions, uiState, eventHandlers };
 
@@ -359,7 +352,10 @@ class FavoritesList extends Component {
 
     return (
       <div className="wdk-Favorites">
-        {!banners.length ? null : <BannerList onClose={this.handleBannerClose} banners={banners} />}
+        {!banners.length
+          ? null
+          : <BannerList onClose={this.handleBannerClose} banners={banners} />
+        }
 
         <h1>Favorites</h1>
 
@@ -448,9 +444,7 @@ class FavoritesList extends Component {
    */
   handleRowDelete (rowData) {
     this.props.favoritesEvents.deleteRow(rowData);
-    let { displayName } = rowData;
-    let { selectedRows } = this.state;
-    if (selectedRows.includes(displayName)) this.onRowDeselect(rowData);
+    this.onRowDeselect(rowData);
   }
 
   handleUndoDelete (row) {

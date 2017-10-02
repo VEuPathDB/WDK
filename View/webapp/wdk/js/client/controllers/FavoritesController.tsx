@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import AbstractViewController from './AbstractViewController';
-import { loadFavoritesList, editCell, saveCellData, changeCell, cancelCellEdit, deleteRow, searchTerm, sortColumn, addRow } from '../actioncreators/FavoritesActionCreators';
+import * as ActionCreators from '../actioncreators/FavoritesActionCreators';
 import FavoritesList from '../components/FavoritesList';
 import FavoritesListStore, { State as StoreState } from "../stores/FavoritesListStore";
 
@@ -12,24 +12,13 @@ type State = Pick<StoreState,
   'existingFavorite' |
   'editCoordinates' |
   'editValue' |
+  'selectedFavorites' |
   'searchText' |
   'filteredList' |
   'sortBy' |
   'sortDirection' |
   'deletedFavorite'
 > & Pick<StoreState['globalData'], 'user' | 'recordClasses'>;
-
-const ActionCreators = {
-  loadFavoritesList,
-  editCell,
-  changeCell,
-  saveCellData,
-  cancelCellEdit,
-  deleteRow,
-  searchTerm,
-  sortColumn,
-  addRow
-}
 
 class FavoritesListController extends AbstractViewController<State, FavoritesListStore, typeof ActionCreators> {
 
@@ -50,7 +39,8 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       filteredList,
       sortBy,
       sortDirection,
-      deletedFavorite
+      deletedFavorite,
+      selectedFavorites
     } = this.store.getState();
 
     return {
@@ -66,7 +56,8 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       filteredList,
       sortBy,
       sortDirection,
-      deletedFavorite
+      deletedFavorite,
+      selectedFavorites
     };
   }
 
@@ -91,7 +82,6 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
   }
 
   renderView() {
-    console.log(this.state.filteredList);
     return (
       <FavoritesList
         {...this.state}
