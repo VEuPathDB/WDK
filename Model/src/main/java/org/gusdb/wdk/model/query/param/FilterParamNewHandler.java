@@ -1,11 +1,9 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
@@ -14,9 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 
 /**

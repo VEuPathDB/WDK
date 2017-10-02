@@ -453,7 +453,7 @@ public class FilterParamNew extends AbstractDependentParam {
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
 
-    FilterParamNewInstance paramInstance = createFilterParamNewInstance(contextParamValues);
+    FilterParamNewInstance paramInstance = createFilterParamNewInstance();
 
     /* GET UNFILTERED COUNTS */
     // use background query if provided, else use metadata query
@@ -700,15 +700,14 @@ public class FilterParamNew extends AbstractDependentParam {
 
   }
 
-  private FilterParamNewInstance createFilterParamNewInstance(Map<String, String> dependedParamValues)
-      throws WdkModelException {
+  private FilterParamNewInstance createFilterParamNewInstance() {
     return new FilterParamNewInstance(this);
   }
 
   @Override
   protected DependentParamInstance createDependentParamInstance(User user,
       Map<String, String> dependedParamValues) throws WdkModelException {
-    return createFilterParamNewInstance(dependedParamValues);
+    return createFilterParamNewInstance();
   }
 
   @Override

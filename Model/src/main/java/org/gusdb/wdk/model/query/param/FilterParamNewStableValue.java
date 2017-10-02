@@ -550,7 +550,8 @@ public class FilterParamNewStableValue {
       Collections.sort(list);
       return FormatUtil.join(list, ",") + " --" + includeUnknowns;
     }
-    
+
+    @Override
     List<String> getMembersAsStrings() {
       List<String> list = new ArrayList<String>();
       for (Double mem : members) list.add(mem.toString());
@@ -592,7 +593,8 @@ public class FilterParamNewStableValue {
       Collections.sort(list);
       return FormatUtil.join(list, ",") + " --" + includeUnknowns;
     }
-    
+
+    @Override
     List<String> getMembersAsStrings() {
       return members;
     }
