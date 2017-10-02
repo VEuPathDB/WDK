@@ -97,7 +97,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String err = stableValue.validateSyntaxAndSemantics();
+      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
       if (err != null) throw new WdkModelException(err);
       String fv = getFilteredValue(user, stableValue, contextParamValues, fpn, fpn.getMetadataQuery());
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(fv): fv;
@@ -116,7 +116,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       String metadataSql;
       try {
         QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-
         metadataSql = instance.getSql();
       } catch (WdkUserException e) {
         throw new WdkModelException(e);
