@@ -225,7 +225,7 @@ public abstract class StandardReporter extends AbstractReporter {
 
       // write to the stream
       if (includeEmptyTables || tableData.getFirst() > 0) {
-        writer.println(tableData.getSecond());
+        writer.print(tableData.getSecond());
         writer.flush();
       }
     }
@@ -233,6 +233,17 @@ public abstract class StandardReporter extends AbstractReporter {
     // commit batch of all tables for each record instance
     if (tableCache != null) {
       tableCache.flushBatch();
+    }
+  }
+
+  @Override
+  public ContentDisposition getContentDisposition() {
+    switch (_standardConfig.getAttachmentType()) {
+      case "text": // "Text File"
+        return ContentDisposition.ATTACHMENT;
+      case "plain": // "Show in Browser"
+      default:
+        return ContentDisposition.INLINE;
     }
   }
 }

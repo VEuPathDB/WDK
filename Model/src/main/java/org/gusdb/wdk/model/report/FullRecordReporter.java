@@ -39,12 +39,7 @@ public class FullRecordReporter extends StandardReporter {
 
   private static Logger LOG = Logger.getLogger(FullRecordReporter.class);
 
-  private static final Function<TableValue, TwoTuple<Integer,String>> tableFormatter =
-      new Function<TableValue, TwoTuple<Integer,String>>() {
-    @Override public TwoTuple<Integer, String> apply(TableValue tableValue) {
-      return formatTable(tableValue);
-    }
-  };
+  private static final Function<TableValue, TwoTuple<Integer,String>> TABLE_FORMATTER = tableValue -> formatTable(tableValue);
 
   private TableCache _tableCache = null;
 
@@ -119,7 +114,7 @@ public class FullRecordReporter extends StandardReporter {
         formatAttributes(record, selectedAttributes, writer);
 
         // print out tables (may get table formatting from cache)
-        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, tableFormatter);
+        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, TABLE_FORMATTER);
 
         writer.println();
         writer.println("------------------------------------------------------------");
