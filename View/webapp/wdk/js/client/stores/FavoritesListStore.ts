@@ -1,6 +1,5 @@
 import WdkStore, { BaseState } from './WdkStore';
 import { isEqual } from 'lodash';
-import { SortDirection } from 'react-virtualized';
 import { ListLoadingAction,
   ListReceivedAction,
   ListErrorReceivedAction,
@@ -43,7 +42,7 @@ export interface State extends BaseState {
   deleteError: Error | null;
   deletedFavorite: Favorite | null;
   searchText: string;
-  sortBy: string;
+  sortByKey: string;
   sortDirection: string;
   selectedFavorites: number[];
   key: string;
@@ -65,8 +64,8 @@ export default class FavoritesListStore extends WdkStore<State> {
       deleteError: null,
       deletedFavorite: null,
       searchText: '',
-      sortBy: 'display',
-      sortDirection: SortDirection.ASC,
+      sortByKey: 'display',
+      sortDirection: 'asc',
       selectedFavorites: [],
     }, super.getInitialState());
   }
@@ -213,7 +212,7 @@ export default class FavoritesListStore extends WdkStore<State> {
       case 'favorites/sort-column':
       return {
         ...state,
-        sortBy: action.payload.sortBy,
+        sortByKey: action.payload.sortByKey,
         sortDirection: action.payload.sortDirection
       };
 

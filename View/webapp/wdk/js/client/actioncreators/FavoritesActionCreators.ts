@@ -93,7 +93,7 @@ export type SearchTermAction = {
 export type SortColumnAction = {
   type: 'favorites/sort-column'
   payload: {
-    sortBy: string
+    sortByKey: string
     sortDirection: string
   }
 }
@@ -184,12 +184,12 @@ export function deleteRow(deletedFavorite: Favorite): ActionThunk<DeleteAction> 
   };
 }
 
-export function searchTerm(value: string): SearchTermAction {
-  return { type: 'favorites/search-term', payload: value };
+export function searchTerm(term: string): SearchTermAction {
+  return { type: 'favorites/search-term', payload: term };
 }
 
-export function sortColumn(sortBy: string, sortDirection: string): SortColumnAction {
-  return { type: 'favorites/sort-column', payload: { "sortBy": sortBy, "sortDirection": sortDirection } };
+export function sortColumn(sortByKey: string, sortDirection: string): SortColumnAction {
+  return { type: 'favorites/sort-column', payload: { sortByKey, sortDirection } };
 }
 
 export function addRow(addedFavorite: Favorite): ActionThunk<AddAction> {

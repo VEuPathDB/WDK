@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { escape, orderBy } from 'lodash';
 import { withRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
-import { Mesa, Utils as MesaUtils } from 'mesa';
+import { MesaController as Mesa, StringUtils as MesaUtils } from 'mesa';
 
 import 'mesa/dist/css/mesa.css';
 
@@ -51,13 +51,7 @@ class FavoritesList extends Component {
 
     this.state = {
       banners: [],
-      selectedRows: [],
-      uiState: {
-        sort: {
-          columnKey: null,
-          direction: 'asc'
-        }
-      }
+      selectedRows: []
     };
   }
 
@@ -248,9 +242,8 @@ class FavoritesList extends Component {
   }
 
   onSortChange ({ key }, direction) {
-    const sort = { columnKey: key, direction };
-    const uiState = { sort };
-    this.setState({ uiState });
+    const { sortColumn } = this.props.favoritesEvents;
+    sortColumn(key, direction);
   }
 
   // Table config generators =================================================
@@ -326,11 +319,11 @@ class FavoritesList extends Component {
   }
 
   render () {
-    let { banners, uiState } = this.state;
+    let { banners } = this.state;
     let { recordClasses, list, filteredList, searchText, searchBoxPlaceholder, searchBoxHelp, user } = this.props;
     let { renderIdCell, renderTypeCell, renderNoteCell, renderGroupCell, onRowSelect, onRowDeselect, onSortChange } = this;
 
-    let { sort } = uiState;
+    let sort = { columnKey: this.props.sortByKey, direction: this.props.sortDirection };
     filteredList = (sort.columnKey ? MesaUtils.textSort(filteredList, sort.columnKey, sort.direction === 'asc') : filteredList);
 
     const columns = this.getTableColumns();
@@ -343,7 +336,7 @@ class FavoritesList extends Component {
     };
 
     const emptinessCulprit = (list.length && !filteredList.length ? 'search' : null);
-    uiState = Object.assign({}, uiState, { emptinessCulprit });
+    const uiState = { emptinessCulprit, sort };
 
     const mesaProps = { rows: filteredList, columns, options, actions, uiState, eventHandlers };
 
