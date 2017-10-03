@@ -384,10 +384,10 @@ public class FilterParamNewStableValue {
       String minStr = getMinStringSql();
       String maxStr = getMaxStringSql();
       String rowValue = metadataTableName + "." + columnName;
-
-      return "" +
-        (minStr == null ? "" : (" AND " + rowValue + " >= " + minStr)) +
-        (maxStr == null ? "" : (" AND " + rowValue + " <= " + maxStr));
+      ArrayList<String> clauses = new ArrayList<>();
+      if (minStr != null) clauses.add(rowValue + " >= " + minStr);
+      if (maxStr != null) clauses.add(rowValue + " <= " + maxStr);
+      return "(" + FormatUtil.join(clauses, " AND ") + ")";
     }
 
     @Override
