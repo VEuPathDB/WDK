@@ -125,7 +125,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
       List<String> filterSqls = new ArrayList<String>();
       for (FilterParamNewStableValue.Filter filter : filters) 
-        filterSqls.add(filterSelectSql + filter.getFilterAsAndClause(metadataTableName, ontology));
+        filterSqls.add(filterSelectSql + filter.getFilterAsWhereClause(metadataTableName, ontology));
 
       return FormatUtil.join(filterSqls, " INTERSECT ");
     }

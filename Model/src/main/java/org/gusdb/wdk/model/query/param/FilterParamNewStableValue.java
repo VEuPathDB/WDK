@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
@@ -130,7 +131,7 @@ public class FilterParamNewStableValue {
     */
    private Map<String, Map<String, Boolean>> getDistinctMetaDataMembers(User user,
        Map<String, String> contextParamValues, Set<MembersFilter> memberFilters) throws WdkModelException {
-     
+
      Query metadataQuery = _param.getMetadataQuery();
      String metadataSql;
      try {
@@ -142,11 +143,11 @@ public class FilterParamNewStableValue {
        throw new WdkModelException(e);
      }
 
+     // TODO: Finish this code (Steve)
      String metadataTableName = "md";
      String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
      return null;
    }
-
 
   /**
    * validate the syntax. does not validate semantics (ie, compare against ontology).
@@ -321,12 +322,12 @@ public class FilterParamNewStableValue {
 
     abstract Boolean getIncludeUnknowns();
 
-    protected abstract String getAndClause(String columnName, String metadataTableName) throws WdkModelException;
+    protected abstract String getValueSqlClause(String columnName, String metadataTableName) throws WdkModelException;
 
     abstract String getSignature();
 
     // include in where clause a filter by ontology_id
-    public String getFilterAsAndClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
+    public String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
 
       OntologyItem ontologyItem = ontology.get(field);
       OntologyItemType type = ontologyItem.getType();
@@ -334,11 +335,11 @@ public class FilterParamNewStableValue {
 
       String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
 
-      String unknownClause = includeUnknowns ? metadataTableName + "." + columnName + " is NULL OR " : "";
+      String unknownClause = includeUnknowns ? metadataTableName + "." + columnName + " is NULL OR " : " 1=0 OR ";
 
       String innerAndClause = valueIsNull ?
           metadataTableName + "." + columnName + " is not NULL" :
-          getAndClause(columnName, metadataTableName);
+          getValueSqlClause(columnName, metadataTableName);
 
       // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
       return whereClause + " AND (" + unknownClause + innerAndClause + ")";
@@ -379,15 +380,18 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    protected String getAndClause(String columnName, String metadataTableName) throws WdkModelException {
+    protected String getValueSqlClause(String columnName, String metadataTableName) throws WdkModelException {
 
       String minStr = getMinStringSql();
       String maxStr = getMaxStringSql();
       String rowValue = metadataTableName + "." + columnName;
-      ArrayList<String> clauses = new ArrayList<>();
-      if (minStr != null) clauses.add(rowValue + " >= " + minStr);
-      if (maxStr != null) clauses.add(rowValue + " <= " + maxStr);
-      return "(" + FormatUtil.join(clauses, " AND ") + ")";
+      List<String> conditions = new ListBuilder<String>()
+        .addIf(minStr != null, rowValue + " >= " + minStr)
+        .addIf(maxStr != null, rowValue + " <= " + maxStr)
+        .toList();
+      return (minStr == null && maxStr == null ?
+          " 1=1 " : // return "true" because we want to retain all values (i.e. no filter on existing range)
+          " ( " + FormatUtil.join(conditions, " AND ") + " ) ");
     }
 
     @Override
@@ -451,7 +455,6 @@ public class FilterParamNewStableValue {
       try {
         if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getDouble(FILTERS_MIN);
         if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getDouble(FILTERS_MAX);
-
       }
       catch (JSONException j) {
         throw new WdkModelException(j);
@@ -539,7 +542,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    protected String getAndClause(String columnName, String metadataTableName) {
+    protected String getValueSqlClause(String columnName, String metadataTableName) {
       if (members.size() == 0) return "1 != 1";
       return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(members, ", ") + ") ";
     }
@@ -582,7 +585,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    protected String getAndClause(String columnName, String metadataTableName) {
+    protected String getValueSqlClause(String columnName, String metadataTableName) {
       if (members.size() == 0) return "1 != 1";
       return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(members, "', '") + "') ";
     }
