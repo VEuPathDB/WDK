@@ -15,7 +15,7 @@ type State = Pick<StoreState,
   'selectedFavorites' |
   'searchText' |
   'filteredList' |
-  'sortBy' |
+  'sortByKey' |
   'sortDirection' |
   'deletedFavorite'
 > & Pick<StoreState['globalData'], 'user' | 'recordClasses'>;
@@ -37,7 +37,7 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       editValue,
       searchText,
       filteredList,
-      sortBy,
+      sortByKey,
       sortDirection,
       deletedFavorite,
       selectedFavorites
@@ -54,7 +54,7 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       editValue,
       searchText,
       filteredList,
-      sortBy,
+      sortByKey,
       sortDirection,
       deletedFavorite,
       selectedFavorites
