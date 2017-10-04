@@ -25,12 +25,8 @@ public class CConstants {
     public static final String WDK_DOWNLOAD_CONFIG_PAGE = "ReporterConfig.jsp";
     public static final String WDK_LOGIN_PAGE = "Login.jsp";
     public static final String WDK_MODEL_ERROR_PAGE = "Error.jsp";
-    public static final String WDK_PASSWORD_PAGE = "Password.jsp";
-    public static final String WDK_PROFILE_PAGE = "Profile.jsp";
     public static final String WDK_QUESTION_PAGE = "Question.jsp";
     public static final String WDK_RECORD_PAGE = "Record.jsp";
-    public static final String WDK_REGISTER_PAGE = "Register.jsp";
-    public static final String WDK_RESET_PASSWORD_PAGE = "Resetpwd.jsp";
     public static final String WDK_RESULTS_PAGE = "results.jsp";
     public static final String WDK_STEP_HISTORY_PAGE = "stepHistory.jsp";
     public static final String WDK_STRATEGY_PAGE = "Workspace.jsp";

@@ -249,7 +249,7 @@ public class ProcessLoginAction extends WdkAction {
     }
     else if (referrer.indexOf("showLogin.do") != -1 ||
              referrer.indexOf("processLogin.do") != -1) {
-      return "showProfile.do";
+      return "app/user/profile";
     }
 
     // otherwise, return referring page
