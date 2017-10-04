@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -22,7 +21,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -365,13 +363,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   protected List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException {
     try {
-      final List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step").executeQuery(
-          new Object[] { stepId }, new ResultSetHandler() { @Override
-            public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getLong(1));
-            }
-          });
+      List<Long> ids = new ArrayList<>();
+      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step")
+        .executeQuery(new Object[] { stepId }, rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
       return ids;
     }
     catch (SQLRunnerException e) {
@@ -382,13 +376,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   protected List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
     try {
-      final List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash").executeQuery(
-          new Object[] { contextHash }, new ResultSetHandler() { @Override
-            public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getLong(1));
-            }
-          });
+      List<Long> ids = new ArrayList<>();
+      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash")
+        .executeQuery(new Object[] { contextHash }, rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
       return ids;
     }
     catch (SQLRunnerException e) {
@@ -400,12 +390,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   protected List<Long> getAllAnalysisIds() throws WdkModelException {
     try {
       final List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids").executeQuery(
-          new ResultSetHandler() { @Override
-            public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) ids.add(rs.getLong(1));
-            }
-          });
+      new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids")
+        .executeQuery(rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
       return ids;
     }
     catch (SQLRunnerException e) {
@@ -427,30 +413,28 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       // read data about analysis instances from user DB
       String valuesForIn = FormatUtil.join(analysisIds.toArray(), ", ");
       String sql = GET_ANALYSES_BY_IDS_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
-      new SQLRunner(_userDs, sql, "select-step-analysis-by-id").executeQuery(new ResultSetHandler() {
-        @Override public void handleResult(ResultSet rs) throws SQLException {
-          while (rs.next()) {
-            try {
-              // read result row into an AnalysisInfo object
-              Reader contextReader = rs.getCharacterStream(8);
-              AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3),
-                  StepAnalysisState.valueOf(rs.getInt(4)), rs.getBoolean(5), rs.getString(6), rs.getString(7),
-                  contextReader == null ? null : IoUtil.readAllChars(contextReader));
+      new SQLRunner(_userDs, sql, "select-step-analysis-by-id").executeQuery(rs -> {
+        while (rs.next()) {
+          try {
+            // read result row into an AnalysisInfo object
+            Reader contextReader = rs.getCharacterStream(8);
+            AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3),
+                StepAnalysisState.valueOf(rs.getInt(4)), rs.getBoolean(5), rs.getString(6), rs.getString(7),
+                contextReader == null ? null : IoUtil.readAllChars(contextReader));
 
-              // add to result map
-              result.put(info.analysisId, new AnalysisInfoPlusStatus(info));
+            // add to result map
+            result.put(info.analysisId, new AnalysisInfoPlusStatus(info));
 
-              // add analysisId to list we'll later use to populate statuses
-              List<Long> idListForContext = hashToIdsMap.get(info.contextHash);
-              if (idListForContext == null) {
-                idListForContext = new ArrayList<>();
-                hashToIdsMap.put(info.contextHash, idListForContext);
-              }
-              idListForContext.add(info.analysisId);
+            // add analysisId to list we'll later use to populate statuses
+            List<Long> idListForContext = hashToIdsMap.get(info.contextHash);
+            if (idListForContext == null) {
+              idListForContext = new ArrayList<>();
+              hashToIdsMap.put(info.contextHash, idListForContext);
             }
-            catch (IllegalArgumentException | IOException ioe) {
-              throw new SQLException("Unable to read context value.", ioe);
-            }
+            idListForContext.add(info.analysisId);
+          }
+          catch (IllegalArgumentException | IOException ioe) {
+            throw new SQLException("Unable to read context value.", ioe);
           }
         }
       });
@@ -460,14 +444,12 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       // read data about status from app DB (results cache table) and add to result
       valuesForIn = "'" + FormatUtil.join(hashToIdsMap.keySet().toArray(), "','") + "'";
       sql = GET_STATUSES_BY_HASHES_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
-      new SQLRunner(_appDs, sql, "select-step-analysis-by-ids").executeQuery(new ResultSetHandler() {
-        @Override public void handleResult(ResultSet rs) throws SQLException {
-          while (rs.next()) {
-            String hash = rs.getString(1);
-            ExecutionStatus status = parseStatus(rs.getString(2), hash);
-            for (long analysisId : hashToIdsMap.get(hash)) {
-              result.get(analysisId).status = status;
-            }
+      new SQLRunner(_appDs, sql, "select-step-analysis-by-ids").executeQuery(rs -> {
+        while (rs.next()) {
+          String hash = rs.getString(1);
+          ExecutionStatus status = parseStatus(rs.getString(2), hash);
+          for (long analysisId : hashToIdsMap.get(hash)) {
+            result.get(analysisId).status = status;
           }
         }
       });
@@ -604,27 +586,26 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     try {
       final AnalysisResult[] resultContainer = new AnalysisResult[1];
       new SQLRunner(_appDs, GET_RESULTS_BY_HASH_SQL, "select-step-analysis-run").executeQuery(
-          new Object[]{ contextHash }, new ResultSetHandler() {
-            @Override public void handleResult(ResultSet rs) throws SQLException {
-              try {
-                if (rs.next()) {
-                  // parse values retrieved from database
-                  ExecutionStatus status = parseStatus(rs.getString(1), contextHash);
-                  Date startDate = new Date(rs.getTimestamp(2).getTime());
-                  Date updateDate = new Date(rs.getTimestamp(3).getTime());
-                  String log = IoUtil.readAllChars(rs.getCharacterStream(4));
-                  String charData = IoUtil.readAllChars(rs.getCharacterStream(5));
-                  byte[] binData = IoUtil.readAllBytes(rs.getBinaryStream(6));
+        new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
+          try {
+            if (rs.next()) {
+              // parse values retrieved from database
+              ExecutionStatus status = parseStatus(rs.getString(1), contextHash);
+              Date startDate = new Date(rs.getTimestamp(2).getTime());
+              Date updateDate = new Date(rs.getTimestamp(3).getTime());
+              String log = IoUtil.readAllChars(rs.getCharacterStream(4));
+              String charData = IoUtil.readAllChars(rs.getCharacterStream(5));
+              byte[] binData = IoUtil.readAllBytes(rs.getBinaryStream(6));
 
-                  // construct result object, place in container and return
-                  resultContainer[0] = new AnalysisResult(status, startDate, updateDate, charData, binData, log);
-                }
-              }
-              catch (IOException e) {
-                throw new SQLException("Unable to read data from DB over stream field", e);
-              }
+              // construct result object, place in container and return
+              resultContainer[0] = new AnalysisResult(status, startDate, updateDate, charData, binData, log);
             }
-          });
+          }
+          catch (IOException e) {
+            throw new SQLException("Unable to read data from DB over stream field", e);
+          }
+        }
+      );
       // return object retrieved, or null if not found
       return resultContainer[0];
     }
@@ -637,19 +618,16 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   public List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException {
     try {
       final List<ExecutionInfo> results = new ArrayList<>();
-      new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL, "select-all-step-analysis-runs").executeQuery(
-          new ResultSetHandler() {
-            @Override public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) {
-                // parse values retrieved from database
-                String contextHash = rs.getString(1);
-                ExecutionStatus status = parseStatus(rs.getString(2), contextHash);
-                Date startDate = new Date(rs.getTimestamp(3).getTime());
-                Date updateDate = new Date(rs.getTimestamp(4).getTime());
-                results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
-              }
-            }
-          });
+      new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL, "select-all-step-analysis-runs").executeQuery(rs -> {
+        while (rs.next()) {
+          // parse values retrieved from database
+          String contextHash = rs.getString(1);
+          ExecutionStatus status = parseStatus(rs.getString(2), contextHash);
+          Date startDate = new Date(rs.getTimestamp(3).getTime());
+          Date updateDate = new Date(rs.getTimestamp(4).getTime());
+          results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
+        }
+      });
       return results;
     }
     catch (SQLRunnerException e) {
@@ -675,19 +653,17 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   public String getAnalysisLog(String contextHash) throws WdkModelException {
     try {
       final String[] resultContainer = new String[1];
-      new SQLRunner(_appDs, GET_EXECUTION_LOG_SQL, "get-step-analysis-log-clob").executeQuery(
-          new Object[]{ contextHash }, new ResultSetHandler() {
-            @Override public void handleResult(ResultSet rs) throws SQLException {
-              if (rs.next()) {
-                try {
-                  resultContainer[0] = IoUtil.readAllChars(rs.getCharacterStream(1));
-                }
-                catch (IOException e) {
-                  throw new SQLException("Unable to read data from DB over stream field", e);
-                }
-              }
+      new SQLRunner(_appDs, GET_EXECUTION_LOG_SQL, "get-step-analysis-log-clob")
+        .executeQuery(new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
+          if (rs.next()) {
+            try {
+              resultContainer[0] = IoUtil.readAllChars(rs.getCharacterStream(1));
             }
-          });
+            catch (IOException e) {
+              throw new SQLException("Unable to read data from DB over stream field", e);
+            }
+          }
+        });
       return resultContainer[0];
     }
     catch (SQLRunnerException e) {
