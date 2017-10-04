@@ -630,12 +630,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     for (String paramName : stableValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
-        // instead of throwing an error, wdk will silently ignore it
-        // throw new WdkModelException("Invalid param name '" +
-        // paramName
-        // + "' in query " + getFullName());
-        LOG.warn("Param " + paramName + " does not exist in query " + getFullName());
-        continue;
+         continue;
       }
       String stableValue = stableValues.get(paramName);
       String signature = param.getSignature(user, stableValue, stableValues);
