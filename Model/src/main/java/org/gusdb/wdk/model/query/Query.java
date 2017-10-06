@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
@@ -100,10 +99,9 @@ import org.json.JSONObject;
  */
 public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
-  private static final Logger LOG = Logger.getLogger(Query.class);
-
   private String name;
   protected boolean isCacheable = false;
+
   /**
    * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
    */
@@ -130,7 +128,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private Question contextQuestion;
 
   private Map<String, Boolean> sortingMap;
-  
+
   // optionally override what is in the query set.  null means don't override
   private List<PostCacheUpdateSql> postCacheUpdateSqls = null;
 
