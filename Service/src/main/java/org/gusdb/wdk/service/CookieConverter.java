@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service;
 
+import javax.servlet.http.Cookie;
 import javax.ws.rs.core.NewCookie;
 
 /**
@@ -9,7 +10,7 @@ import javax.ws.rs.core.NewCookie;
  */
 public class CookieConverter {
 
-  public static NewCookie toJaxRsCookie(javax.servlet.http.Cookie cookie) {
+  public static NewCookie toJaxRsCookie(Cookie cookie) {
     return new NewCookie(
         cookie.getName(),
         cookie.getValue(),
