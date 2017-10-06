@@ -7,14 +7,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,9 +90,8 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   public String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues) throws WdkModelException {
+   public String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues, DataSource dataSource) throws WdkModelException {
 
-    
     // validate syntax
     List<String> errors = new ArrayList<String>();
     String errmsg = validateSyntax();
@@ -106,8 +112,8 @@ public class FilterParamNewStableValue {
     
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
-      Map<String, Map<String, Boolean>> metadataMembers = getDistinctMetaDataMembers(user, contextParamValues,
-          memberFilters);
+      Map<String, Set<String>> metadataMembers = getDistinctMetaDataMembers(user, contextParamValues,
+          memberFilters, ontology, dataSource);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
@@ -121,33 +127,64 @@ public class FilterParamNewStableValue {
     return null;
   }
    
-   /**
-    * return map of ontology field name to member values (as strings).
-    * @param user
-    * @param contextParamValues
-    * @param memberFilters the set of MembersFilters used in this stable value
-    * @return a map from field name -> a map of valid member values -> a don't care value.  (We convert number values to strings)
-    * @throws WdkModelException
-    */
-   private Map<String, Map<String, Boolean>> getDistinctMetaDataMembers(User user,
-       Map<String, String> contextParamValues, Set<MembersFilter> memberFilters) throws WdkModelException {
+  /**
+   * return map of ontology field name to member values (as strings).
+   * 
+   * @param user
+   * @param contextParamValues
+   * @param memberFilters
+   *          the set of MembersFilters used in this stable value
+   * @return a map from field name -> a set of valid member values. (We convert number values to strings)
+   * @throws WdkModelException
+   */
+  private Map<String, Set<String>> getDistinctMetaDataMembers(User user,
+      Map<String, String> contextParamValues, Set<MembersFilter> memberFilters,
+      Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
-     Query metadataQuery = _param.getMetadataQuery();
-     String metadataSql;
-     try {
-       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
-           new HashMap<String, String>());
-       metadataSql = instance.getSql();
-     }
-     catch (WdkUserException e) {
-       throw new WdkModelException(e);
-     }
+    // get metadataQuery SQL
+    Query metadataQuery = _param.getMetadataQuery();
+    String metadataSql;
+    try {
+      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
+          new HashMap<String, String>());
+      metadataSql = instance.getSql();
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
 
-     // TODO: Finish this code (Steve)
-     String metadataTableName = "md";
-     String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
-     return null;
-   }
+    // find ontology terms used in our set of member filters
+    String relevantOntologyTerms = memberFilters.stream().map(MembersFilter::getField).collect(
+        Collectors.joining(", "));
+
+    // format SQL to select distinct term_name, value pairs
+    String selectValuesStmt = OntologyItemType.getTypedValueColumnNames().stream().collect(
+        Collectors.joining(", "));
+
+    String filterSelectSql = "SELECT distinct " + FilterParamNew.COLUMN_ONTOLOGY_ID + ", " +
+        selectValuesStmt + "FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
+        "ontology_term_name IN (" + relevantOntologyTerms + ")";
+
+    // run sql, and stuff results into map of term -> values
+    Map<String, Set<String>> distinctMetadataMembers = new HashMap<String, Set<String>>();
+    try {
+      new SQLRunner(dataSource, filterSelectSql, _param.getFullName() + "__distinct_members").executeQuery(
+          rs -> {
+            while (rs.next()) {
+              String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
+              OntologyItem ontologyItem = ontology.get(field);
+              String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
+                  ontologyItem.getClass()).toString();
+              if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
+              distinctMetadataMembers.get(field).add(valueString);
+            }
+          });
+      return distinctMetadataMembers;
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException((Exception) e.getCause());
+    }
+  }
 
   /**
    * validate the syntax. does not validate semantics (ie, compare against ontology).
@@ -506,9 +543,9 @@ public class FilterParamNewStableValue {
     /**
      * @return String with list of error values; null if no errors
      */
-    public String validateValues(Map<String, Boolean> validValuesMap) {
+    public String validateValues(Set<String> validValuesMap) {
       List<String> errList = new ArrayList<String>();
-      for (String value : getMembersAsStrings()) if (!validValuesMap.containsKey(value)) errList.add(value);
+      for (String value : getMembersAsStrings()) if (!validValuesMap.contains(value)) errList.add(value);
       if (errList.size() != 0) return FormatUtil.join(errList, ", ");
       return null;
     }
