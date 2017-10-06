@@ -301,7 +301,8 @@ public class FilterParamNew extends AbstractDependentParam {
               getFullName() + " must include column: " + col);
     }
 
-    String[] metadataCols = ArrayUtil.append(OntologyItemType.getTypedValueColumnNames(), COLUMN_INTERNAL);
+    List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
+    metadataCols.add(COLUMN_INTERNAL);
 
     // resolve background query
     if (backgroundQueryRef != null) {
@@ -446,8 +447,9 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param appliedFilters
    * @param <T>
    *          The type of the values
-   * @return
+   * @return a map from a value for this ontology term to the counts for that value.
    * @throws WdkModelException
+   * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user,
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
@@ -549,8 +551,9 @@ public class FilterParamNew extends AbstractDependentParam {
    *          initialized when a cache is created.)
    * @param metaDataSql
    *          - sql that provides the meta data. has a single bind variable for ontology id
-   * @return
+   * @return map from internal_id to that id's values.
    * @throws WdkModelException
+   * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
@@ -688,7 +691,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
     String err = stableValue.validateSyntax();
-//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
+//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
   }

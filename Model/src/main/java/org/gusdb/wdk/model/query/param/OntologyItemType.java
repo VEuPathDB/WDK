@@ -64,9 +64,9 @@ public enum OntologyItemType {
     return filter(asList(values()), value -> !value.equals(BRANCH));
   }
 
-  public static String[] getTypedValueColumnNames() {
+  public static List<String> getTypedValueColumnNames() {
     List<OntologyItemType> values = normalValues();
-    return mapToList(values, type -> type._metadataQueryColumn).toArray(new String[values.size()]);
+    return mapToList(values, type -> type._metadataQueryColumn);
   }
 
   @SuppressWarnings("unchecked")

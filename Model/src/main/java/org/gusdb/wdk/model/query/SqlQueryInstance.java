@@ -181,6 +181,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__create-cache",
           _query.isUseDBLink());
+      SqlUtils.executeUpdate(dataSource, "", _query.getFullName() + "__analyze");
     }
     catch (SQLException e) {
       LOG.error("Failed to run sql:\n" + buffer);
