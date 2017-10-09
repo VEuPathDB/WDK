@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.gusdb.wdk.model.UIConfig;
 import org.gusdb.wdk.model.WdkCookie;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.CookieConverter;
@@ -29,7 +30,7 @@ import org.gusdb.wdk.session.LoginCookieFactory;
 public class SessionService extends WdkService {
 
   @GET
-  @Path("oauth/login")
+  @Path("login")
   public Response processOauthLogin(String body) {
     return null;
   }
@@ -50,7 +51,8 @@ public class SessionService extends WdkService {
     }
     session = getSession(true);
 	User user = new GuestUser(getWdkModel());
-	session.setAttribute(WDK_USER, user);
+	UserBean userBean = new UserBean(user);
+	session.setAttribute(WDK_USER, userBean);
 	Set<NewCookie> logoutCookies = new HashSet<>();
 	logoutCookies.add(CookieConverter.toJaxRsCookie(LoginCookieFactory.createLogoutCookie()));    
 	UIConfig uiConfig = getWdkModel().getUiConfig();
