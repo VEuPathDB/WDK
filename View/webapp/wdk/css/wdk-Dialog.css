@@ -13,7 +13,12 @@
   font-size: 1.2em;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  background: #ccc;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  background: #eee;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.wdk-Dialog .ui-dialog-titlebar-close {
+  background: transparent;
+  border: none;
 }
