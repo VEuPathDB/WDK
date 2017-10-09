@@ -100,31 +100,36 @@ class RecordUI extends Component {
           recordClass={this.props.recordClass}
           headerActions={this.props.headerActions}
         />
-        <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
-          <button type="button" className="wdk-RecordSidebarToggle"
-            onClick={() => {
-              if (!this.props.navigationVisible) window.scrollTo(0, window.scrollY);
-              this.props.updateNavigationVisibility(!this.props.navigationVisible);
-            }}
-          >
-            {this.props.navigationVisible ? '' : 'Show Contents '}
-            <i className={sidebarIconClass}
-              title={this.props.navigationVisible ? 'Close sidebar' : 'Open sidebar'}/>
-          </button>
-          <RecordNavigationSection
-            record={this.props.record}
-            recordClass={this.props.recordClass}
-            categoryTree={this.props.categoryTree}
-            collapsedSections={this.props.collapsedSections}
-            activeSection={this.props.activeSection}
-            navigationQuery={this.props.navigationQuery}
-            navigationExpanded={this.props.navigationExpanded}
-            navigationCategoriesExpanded={this.props.navigationCategoriesExpanded}
-            onSectionToggle={this.props.updateSectionVisibility}
-            onNavigationVisibilityChange={this.props.updateNavigationVisibility}
-            onNavigationCategoryExpansionChange={this.props.updateNavigationCategoryExpansion}
-            onNavigationQueryChange={this.props.updateNavigationQuery}
-          />
+        <Sticky>
+          {({isFixed}) => (
+            <div className={'wdk-RecordSidebar' + (
+              isFixed ? ' wdk-RecordSidebar__fixed' : '')}>
+              <button type="button" className="wdk-RecordSidebarToggle"
+                onClick={() => {
+                  if (!this.props.navigationVisible) window.scrollTo(0, window.scrollY);
+                  this.props.updateNavigationVisibility(!this.props.navigationVisible);
+                }}
+              >
+                {this.props.navigationVisible ? '' : 'Show Contents '}
+                <i className={sidebarIconClass}
+                  title={this.props.navigationVisible ? 'Close sidebar' : 'Open sidebar'}/>
+              </button>
+              <RecordNavigationSection
+                record={this.props.record}
+                recordClass={this.props.recordClass}
+                categoryTree={this.props.categoryTree}
+                collapsedSections={this.props.collapsedSections}
+                activeSection={this.props.activeSection}
+                navigationQuery={this.props.navigationQuery}
+                navigationExpanded={this.props.navigationExpanded}
+                navigationCategoriesExpanded={this.props.navigationCategoriesExpanded}
+                onSectionToggle={this.props.updateSectionVisibility}
+                onNavigationVisibilityChange={this.props.updateNavigationVisibility}
+                onNavigationCategoryExpansionChange={this.props.updateNavigationCategoryExpansion}
+                onNavigationQueryChange={this.props.updateNavigationQuery}
+              />
+            </div>
+          )}
         </Sticky>
         <div className="wdk-RecordMain">
           <div className="wdk-RecordMainSectionFieldToggles">
