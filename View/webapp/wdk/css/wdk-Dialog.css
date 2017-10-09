@@ -4,6 +4,10 @@
   box-shadow: 0 0 20px rgba(0,0,0,.4);
 }
 
+.wdk-Dialog:focus {
+  outline: none;
+}
+
 .wdk-Dialog .ui-dialog-titlebar {
   border: none;
   font-size: 1.2em;
