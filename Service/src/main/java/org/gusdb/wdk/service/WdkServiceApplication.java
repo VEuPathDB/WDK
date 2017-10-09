@@ -22,6 +22,7 @@ import org.gusdb.wdk.service.service.PublicStrategyService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
+import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
 import org.gusdb.wdk.service.service.user.*;
 
@@ -72,6 +73,7 @@ public class WdkServiceApplication extends Application {
     .add(UserCreationService.class)
     .add(FavoritesService.class)
     .add(PublicStrategyService.class)
+    .add(SessionService.class)
 
     // test
     .add(SampleService.class)
