@@ -176,6 +176,10 @@ export class Seq<T> {
     return rest(this);
   }
 
+  isEmpty() {
+    return !this.some(() => true);
+  }
+
   forEach(fn: (t:T) => void) {
     for (let iter = this[Symbol.iterator]();;) {
       let { done, value } = iter.next();
