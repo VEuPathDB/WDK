@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -29,7 +28,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.param.FilterParamNewStableValue.MembersFilter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -601,17 +599,17 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   /**
-   * return map of ontology field name to member values (as strings).
+   * return map of ontology field name to values (as strings), for the provided list of ontology terms
    * 
    * @param user
    * @param contextParamValues
-   * @param memberFilters
-   *          the set of MembersFilters used in this stable value
-   * @return a map from field name -> a set of valid member values. (We convert number values to strings)
+   * @param ontologyTerms
+   *          a list of ontology term to include in result.  
+   * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
-  public Map<String, Set<String>> getDistinctMetaDataMembers(User user,
-      Map<String, String> contextParamValues, Set<MembersFilter> memberFilters,
+  public Map<String, Set<String>> getDistinctMetaDataValues(User user,
+      Map<String, String> contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
     // get metadataQuery SQL
@@ -627,7 +625,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     // find ontology terms used in our set of member filters
-    String relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(
+    String relevantOntologyTerms = ontologyTerms.stream().collect(
         Collectors.joining(", "));
 
     // format SQL to select distinct term_name, value pairs
