@@ -503,7 +503,7 @@ public class FilterParamNewStableValue {
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
       for (int i = 0; i < jsArray.length(); i++) {
-        jsArray.getDouble(i);
+        members.add(jsArray.getDouble(i));
       }
     }
 
