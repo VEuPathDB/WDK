@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,14 +13,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -112,8 +104,9 @@ public class FilterParamNewStableValue {
     
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
-      Map<String, Set<String>> metadataMembers = _param.getDistinctMetaDataMembers(user, contextParamValues,
-          memberFilters, ontology, dataSource);
+      Set<String> relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(Collectors.toSet());
+      Map<String, Set<String>> metadataMembers = _param.getDistinctMetaDataValues(user, contextParamValues,
+          relevantOntologyTerms, ontology, dataSource);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
@@ -510,7 +503,7 @@ public class FilterParamNewStableValue {
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
       for (int i = 0; i < jsArray.length(); i++) {
-        jsArray.getDouble(i);
+        members.add(jsArray.getDouble(i));
       }
     }
 

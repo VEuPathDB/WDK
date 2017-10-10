@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -29,12 +28,13 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.param.FilterParamNewStableValue.MembersFilter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an IN clause.
@@ -66,6 +66,7 @@ import org.json.JSONObject;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
@@ -601,17 +602,17 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   /**
-   * return map of ontology field name to member values (as strings).
+   * return map of ontology field name to values (as strings), for the provided list of ontology terms
    * 
    * @param user
    * @param contextParamValues
-   * @param memberFilters
-   *          the set of MembersFilters used in this stable value
-   * @return a map from field name -> a set of valid member values. (We convert number values to strings)
+   * @param ontologyTerms
+   *          a list of ontology term to include in result.  
+   * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
-  public Map<String, Set<String>> getDistinctMetaDataMembers(User user,
-      Map<String, String> contextParamValues, Set<MembersFilter> memberFilters,
+  public Map<String, Set<String>> getDistinctMetaDataValues(User user,
+      Map<String, String> contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
     // get metadataQuery SQL
@@ -627,16 +628,16 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     // find ontology terms used in our set of member filters
-    String relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(
-        Collectors.joining(", "));
+    String relevantOntologyTerms = "'" + ontologyTerms.stream().collect(
+        Collectors.joining("', '")) + "'";
 
     // format SQL to select distinct term_name, value pairs
     String selectValuesStmt = OntologyItemType.getTypedValueColumnNames().stream().collect(
-        Collectors.joining(", "));
+        Collectors.joining(", "));
 
     String filterSelectSql = "SELECT distinct " + FilterParamNew.COLUMN_ONTOLOGY_ID + ", " +
-        selectValuesStmt + "FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
-        "ontology_term_name IN (" + relevantOntologyTerms + ")";
+        selectValuesStmt + " FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
+        " IN (" + relevantOntologyTerms + ")";
 
     // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> distinctMetadataMembers = new HashMap<String, Set<String>>();
@@ -647,7 +648,7 @@ public class FilterParamNew extends AbstractDependentParam {
               String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
               OntologyItem ontologyItem = ontology.get(field);
               String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
-                  ontologyItem.getClass()).toString();
+		 ontologyItem.getType().getJavaClass()).toString();
               if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
               distinctMetadataMembers.get(field).add(valueString);
             }
@@ -753,8 +754,8 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    String err = stableValue.validateSyntax();
-//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    //String err = stableValue.validateSyntax();
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
   }

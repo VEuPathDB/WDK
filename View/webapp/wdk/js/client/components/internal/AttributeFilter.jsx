@@ -1611,6 +1611,12 @@ class MembershipField extends React.Component {
     this.getKnownValues = memoize(this.getKnownValues);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.distribution !== nextProps.distribution) {
+      this.getKnownValues.cache.clear();
+    }
+  }
+
   toFilterValue(value) {
     return this.props.field.type === 'string' ? String(value)
       : this.props.field.type === 'number' ? Number(value)
