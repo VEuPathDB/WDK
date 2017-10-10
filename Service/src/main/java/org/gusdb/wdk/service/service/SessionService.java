@@ -9,9 +9,12 @@ import java.util.Set;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -25,9 +28,13 @@ import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.CookieConverter;
 import org.gusdb.wdk.session.LoginCookieFactory;
+import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
+import org.json.JSONObject;
 
 @Path("/")
 public class SessionService extends WdkService {
+	
+  private static final String COOKIE_KEY = "wdkLoginCookieValue";
 
   @GET
   @Path("login")
@@ -75,10 +82,40 @@ public class SessionService extends WdkService {
     return builder.build();
   }
   
+  /**
+  * Web service action that takes parts of a WDK login cookie and verifies
+  * that they indeed represent a valid cookie for an existing WDK user.
+  * Returns user's display name and email address for use by caller if valid.
+  * 
+  * A JSON object like the following is returned with the information.  If the
+  * cookie is invalid, the isValid property is set to false and the userData
+  * property is undefined.
+  * 
+  * {
+  *   "isValid": true,
+  *   "userData": {
+  *     "id" : 7145453,
+  *     "displayName" : "Ryan Doherty",
+  *     "email" : "rdoherty@pcbi.upenn.edu"
+  *   }
+  * }
+  * 
+  */
   @GET
   @Path("login/verification")
-  public Response processLoginVerification(String body) {
-    return null;
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response processLoginVerification(@QueryParam(COOKIE_KEY) String cookieValue) throws WdkModelException {
+    String recreatedCookie = cookieValue == null ? "" : cookieValue;
+    LoginCookieParts cookieParts = LoginCookieFactory.parseCookieValue(recreatedCookie);
+    LoginCookieFactory auth = new LoginCookieFactory(getWdkModel().getSecretKey());
+    User user = getWdkModel().getUserFactory().getUserByEmail(cookieParts.getUsername());
+    JSONObject loginVerificationJson = new JSONObject()
+    		.put("isValid", auth.isValidCookie(cookieParts))
+    		.put("userData", new JSONObject()
+    			    .put("id", user.getUserId())
+    				.put("displayName", user.getDisplayName())
+    				.put("email", cookieParts.getUsername()));
+	return Response.ok(loginVerificationJson.toString()).build();
   }
   
 }
