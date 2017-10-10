@@ -24,7 +24,7 @@ class BannerList extends React.Component {
       />
     ));
 
-    return (
+    return !banners.length ? null : (
       <div className="wdk-BannerList">
         <CSSTransitionGroup
           transitionName="banner-list"

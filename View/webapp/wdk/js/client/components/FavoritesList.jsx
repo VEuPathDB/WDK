@@ -29,6 +29,7 @@ class FavoritesList extends Component {
     this.renderGroupCell = this.renderGroupCell.bind(this);
     this.renderTypeCell = this.renderTypeCell.bind(this);
     this.renderNoteCell = this.renderNoteCell.bind(this);
+    this.renderCountSummary = this.renderCountSummary.bind(this);
 
     this.handleEditClick = this.handleEditClick.bind(this);
     this.handleCellChange = this.handleCellChange.bind(this);
@@ -38,6 +39,7 @@ class FavoritesList extends Component {
     this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
 
     this.getRecordClassByName = this.getRecordClassByName.bind(this);
+    this.countFavoritesByType = this.countFavoritesByType.bind(this);
 
     this.handleUndoDelete = this.handleUndoDelete.bind(this);
     this.handleBannerClose = this.handleBannerClose.bind(this);
@@ -109,6 +111,20 @@ class FavoritesList extends Component {
   handleSearchTermChange(value) {
     const { favoritesEvents } = this.props;
     favoritesEvents.searchTerm(value);
+  }
+
+  countFavoritesByType () {
+     const { recordClasses, filteredList } = this.props;
+     const counts = filteredList.reduce((roster, { recordClassName }) => {
+       let type = this.getRecordClassByName(recordClassName);
+       type = !type
+        ? 'Unknown'
+        : type.displayNamePlural;
+       if (roster[type]) roster[type] = roster[type] + 1;
+       else roster[type] = 1;
+       return roster;
+     }, {});
+     return counts;
   }
 
   //  RENDERERS ===============================================================
@@ -229,6 +245,20 @@ class FavoritesList extends Component {
     )
   }
 
+  renderCountSummary () {
+    const counts = this.countFavoritesByType();
+    const types = Object.keys(counts);
+    const last = types.length - 1;
+    let output = '';
+    types.forEach((type, idx) => {
+      output = output.concat(`${idx === last && idx !== 0 ? 'and ' : ''}${counts[type]} ${type}${idx === last ? '.' : ', '}`);
+    });
+
+    return (
+      <p>{output}</p>
+    );
+  }
+
   // Table event handlers =====================================================
 
   onRowSelect ({ id }) {
@@ -275,8 +305,7 @@ class FavoritesList extends Component {
     const { searchBoxPlaceholder, selectedFavorites } = this.props;
 
     return {
-      title: 'Favorites',
-      editableColumns: false,
+      // useStickyHeader: true,
       searchPlaceholder: searchBoxPlaceholder,
       isRowSelected ({ id }) {
         return selectedFavorites.includes(id);
@@ -306,6 +335,7 @@ class FavoritesList extends Component {
         name: 'Notes',
         renderCell: renderNoteCell,
         width: '450px',
+        sortable: true,
         helpText: 'Use this column to add notes. Click the pencil icon to edit the cell\'s contents.'
       },
       {
@@ -313,6 +343,7 @@ class FavoritesList extends Component {
         name: 'Project',
         renderCell: renderGroupCell,
         width: '250px',
+        sortable: true,
         helpText: 'Organize you favorites by group names. IDs with the same group name will be sorted together once the page is refreshed. Click the pencil icon to edit the cell\'s contents.'
       }
     ];
@@ -339,29 +370,26 @@ class FavoritesList extends Component {
     const uiState = { emptinessCulprit, sort };
 
     const mesaProps = { rows: filteredList, columns, options, actions, uiState, eventHandlers };
+    const CountSummary = this.renderCountSummary;
 
     if (!recordClasses) return null;
     if (user.isGuest) return (<div className="empty-message">You must login first to use favorites</div>);
 
     return (
       <div className="wdk-Favorites">
-        {!banners.length
-          ? null
-          : <BannerList onClose={this.handleBannerClose} banners={banners} />
-        }
-
-        <h1>Favorites</h1>
-
-        <RealTimeSearchBox
-          className="favorites-search-field"
-          autoFocus={false}
-          searchTerm={searchText}
-          onSearchTermChange={this.handleSearchTermChange}
-          placeholderText={searchBoxPlaceholder}
-          helpText={searchBoxHelp}
-        />
-
-        <Mesa {...mesaProps} />
+        <h1 className="page-title">Favorites</h1>
+        <CountSummary />
+        <BannerList onClose={this.handleBannerClose} banners={banners} />
+        <Mesa {...mesaProps}>
+          <RealTimeSearchBox
+            className="favorites-search-field"
+            autoFocus={false}
+            searchTerm={searchText}
+            onSearchTermChange={this.handleSearchTermChange}
+            placeholderText={searchBoxPlaceholder}
+            helpText={searchBoxHelp}
+          />
+        </Mesa>
       </div>
     );
   }
