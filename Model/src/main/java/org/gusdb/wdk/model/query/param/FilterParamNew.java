@@ -33,6 +33,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 /**
  * The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an IN clause.
@@ -64,6 +66,7 @@ import org.json.JSONObject;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
@@ -625,16 +628,16 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     // find ontology terms used in our set of member filters
-    String relevantOntologyTerms = ontologyTerms.stream().collect(
-        Collectors.joining(", "));
+    String relevantOntologyTerms = "'" + ontologyTerms.stream().collect(
+        Collectors.joining("', '")) + "'";
 
     // format SQL to select distinct term_name, value pairs
     String selectValuesStmt = OntologyItemType.getTypedValueColumnNames().stream().collect(
-        Collectors.joining(", "));
+        Collectors.joining(", "));
 
     String filterSelectSql = "SELECT distinct " + FilterParamNew.COLUMN_ONTOLOGY_ID + ", " +
-        selectValuesStmt + "FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
-        "ontology_term_name IN (" + relevantOntologyTerms + ")";
+        selectValuesStmt + " FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
+        " IN (" + relevantOntologyTerms + ")";
 
     // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> distinctMetadataMembers = new HashMap<String, Set<String>>();
@@ -645,7 +648,7 @@ public class FilterParamNew extends AbstractDependentParam {
               String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
               OntologyItem ontologyItem = ontology.get(field);
               String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
-                  ontologyItem.getClass()).toString();
+		 ontologyItem.getType().getJavaClass()).toString();
               if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
               distinctMetadataMembers.get(field).add(valueString);
             }
@@ -751,8 +754,8 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    String err = stableValue.validateSyntax();
-//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    //String err = stableValue.validateSyntax();
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
   }
