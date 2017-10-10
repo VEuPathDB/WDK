@@ -20,7 +20,7 @@ import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONObject;
 
 /**
- * Things this service accomplishes:
+ * Use cases this service supports:
  * 
  * - Get list of baskets/RCs with record counts (1)
  * - Add/Remove one record in basket (2)
@@ -28,7 +28,10 @@ import org.json.JSONObject;
  * - Clear an entire basket (3)
  * - Check whether set of records are in a basket (4)
  * - Get single basket as a step result (i.e. answer) (5)
- * - TODO Save basket to a step/strategy (RRD: should be done by step/strategy service)
+ * 
+ * Unsupported (supported by other resources):
+ * 
+ * - Create a new step/strategy that returns the IDs in a basket
  * 
  * Thus, this service provides the following service endpoints (all behind /user/{id}):
  * 
@@ -36,9 +39,11 @@ import org.json.JSONObject;
  * 2. PATCH  /basket/{recordClassOrUrlSegment}        add or delete multiple records from this basket
  * 3. DELETE /basket/{recordClassOrUrlSegment}        clears all records from a basket
  * 4. POST   /basket/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
- * 5. POST   /basket/{recordClassOrUrlSegment}/answer same API as answer service without answerSpec (since already defined)
+ * 5. POST   /basket/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
  * 
- * TODO disallow answer service access to basket questions
+ * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
+ *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
+ * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer
  */
 public class BasketService extends UserService {
 
@@ -55,11 +60,11 @@ public class BasketService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getBaskets() throws WdkModelException {
     return Response.ok(
-        reduce(
-            getWdkModel().getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
-            (json, entry) -> json.put(entry.getKey().getFullName(), entry.getValue()),
-            new JSONObject()
-        ).toString()
+      reduce(
+        getWdkModel().getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
+        (json, entry) -> json.put(entry.getKey().getFullName(), entry.getValue()),
+        new JSONObject()
+      ).toString()
     ).build();
   }
 
