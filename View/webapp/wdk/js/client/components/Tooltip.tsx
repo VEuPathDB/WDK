@@ -43,15 +43,20 @@ type Props = {
 
 class Tooltip extends React.PureComponent<Props> {
 
-  api: QTip2.Api;
+  api?: QTip2.Api;
 
   contentContainer: HTMLDivElement;
 
   componentDidMount() {
-    this._setupTooltip();
+    this._setupTooltip(this.props);
   }
 
   componentWillReceiveProps(nextProps: Props) {
+    if (this.api == null) {
+      this._setupTooltip(nextProps);
+      return;
+    }
+
     if (this.props.content !== nextProps.content) {
       this._setContent(nextProps.content);
     }
@@ -84,7 +89,7 @@ class Tooltip extends React.PureComponent<Props> {
     this._destroyTooltip();
   }
 
-  _setupTooltip() {
+  _setupTooltip(props: Props) {
     let {
       content,
       open,
@@ -94,7 +99,7 @@ class Tooltip extends React.PureComponent<Props> {
       position = defaultOptions.position,
       solo = true,
       showTip = true
-    } = this.props;
+    } = props;
 
     if (content == null) { return; }
 
