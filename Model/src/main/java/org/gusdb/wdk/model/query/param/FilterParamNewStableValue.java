@@ -112,7 +112,7 @@ public class FilterParamNewStableValue {
     
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
-      Map<String, Set<String>> metadataMembers = getDistinctMetaDataMembers(user, contextParamValues,
+      Map<String, Set<String>> metadataMembers = _param.getDistinctMetaDataMembers(user, contextParamValues,
           memberFilters, ontology, dataSource);
 
       // iterate through our member filters, validating the values of each
@@ -127,64 +127,6 @@ public class FilterParamNewStableValue {
     return null;
   }
    
-  /**
-   * return map of ontology field name to member values (as strings).
-   * 
-   * @param user
-   * @param contextParamValues
-   * @param memberFilters
-   *          the set of MembersFilters used in this stable value
-   * @return a map from field name -> a set of valid member values. (We convert number values to strings)
-   * @throws WdkModelException
-   */
-  private Map<String, Set<String>> getDistinctMetaDataMembers(User user,
-      Map<String, String> contextParamValues, Set<MembersFilter> memberFilters,
-      Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
-
-    // get metadataQuery SQL
-    Query metadataQuery = _param.getMetadataQuery();
-    String metadataSql;
-    try {
-      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      metadataSql = instance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
-
-    // find ontology terms used in our set of member filters
-    String relevantOntologyTerms = memberFilters.stream().map(MembersFilter::getField).collect(
-        Collectors.joining(", "));
-
-    // format SQL to select distinct term_name, value pairs
-    String selectValuesStmt = OntologyItemType.getTypedValueColumnNames().stream().collect(
-        Collectors.joining(", "));
-
-    String filterSelectSql = "SELECT distinct " + FilterParamNew.COLUMN_ONTOLOGY_ID + ", " +
-        selectValuesStmt + "FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
-        "ontology_term_name IN (" + relevantOntologyTerms + ")";
-
-    // run sql, and stuff results into map of term -> values
-    Map<String, Set<String>> distinctMetadataMembers = new HashMap<String, Set<String>>();
-    try {
-      new SQLRunner(dataSource, filterSelectSql, _param.getFullName() + "__distinct_members").executeQuery(
-          rs -> {
-            while (rs.next()) {
-              String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
-              OntologyItem ontologyItem = ontology.get(field);
-              String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
-                  ontologyItem.getClass()).toString();
-              if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
-              distinctMetadataMembers.get(field).add(valueString);
-            }
-          });
-      return distinctMetadataMembers;
-    }
-    catch (SQLRunnerException e) {
-      throw new WdkModelException((Exception) e.getCause());
-    }
-  }
 
   /**
    * validate the syntax. does not validate semantics (ie, compare against ontology).
@@ -383,7 +325,7 @@ public class FilterParamNewStableValue {
     }
   }
 
-  private abstract class RangeFilter extends Filter {
+  abstract class RangeFilter extends Filter {
 
     /**
      * 
@@ -519,7 +461,7 @@ public class FilterParamNewStableValue {
     }
   }
 
-  private abstract class MembersFilter extends Filter {
+  abstract class MembersFilter extends Filter {
 
     public MembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
 
