@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -18,6 +19,7 @@ import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
@@ -27,6 +29,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.FilterParamNewStableValue.MembersFilter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -301,7 +304,8 @@ public class FilterParamNew extends AbstractDependentParam {
               getFullName() + " must include column: " + col);
     }
 
-    String[] metadataCols = ArrayUtil.append(OntologyItemType.getTypedValueColumnNames(), COLUMN_INTERNAL);
+    List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
+    metadataCols.add(COLUMN_INTERNAL);
 
     // resolve background query
     if (backgroundQueryRef != null) {
@@ -446,8 +450,9 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param appliedFilters
    * @param <T>
    *          The type of the values
-   * @return
+   * @return a map from a value for this ontology term to the counts for that value.
    * @throws WdkModelException
+   * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user,
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
@@ -549,8 +554,9 @@ public class FilterParamNew extends AbstractDependentParam {
    *          initialized when a cache is created.)
    * @param metaDataSql
    *          - sql that provides the meta data. has a single bind variable for ontology id
-   * @return
+   * @return map from internal_id to that id's values.
    * @throws WdkModelException
+   * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
@@ -593,6 +599,66 @@ public class FilterParamNew extends AbstractDependentParam {
 
     return metadata;
   }
+  
+  /**
+   * return map of ontology field name to member values (as strings).
+   * 
+   * @param user
+   * @param contextParamValues
+   * @param memberFilters
+   *          the set of MembersFilters used in this stable value
+   * @return a map from field name -> a set of valid member values. (We convert number values to strings)
+   * @throws WdkModelException
+   */
+  public Map<String, Set<String>> getDistinctMetaDataMembers(User user,
+      Map<String, String> contextParamValues, Set<MembersFilter> memberFilters,
+      Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
+
+    // get metadataQuery SQL
+    Query metadataQuery = getMetadataQuery();
+    String metadataSql;
+    try {
+      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
+          new HashMap<String, String>());
+      metadataSql = instance.getSql();
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
+
+    // find ontology terms used in our set of member filters
+    String relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(
+        Collectors.joining(", "));
+
+    // format SQL to select distinct term_name, value pairs
+    String selectValuesStmt = OntologyItemType.getTypedValueColumnNames().stream().collect(
+        Collectors.joining(", "));
+
+    String filterSelectSql = "SELECT distinct " + FilterParamNew.COLUMN_ONTOLOGY_ID + ", " +
+        selectValuesStmt + "FROM (" + metadataSql + ") md where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
+        "ontology_term_name IN (" + relevantOntologyTerms + ")";
+
+    // run sql, and stuff results into map of term -> values
+    Map<String, Set<String>> distinctMetadataMembers = new HashMap<String, Set<String>>();
+    try {
+      new SQLRunner(dataSource, filterSelectSql, getFullName() + "__distinct_members").executeQuery(
+          rs -> {
+            while (rs.next()) {
+              String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
+              OntologyItem ontologyItem = ontology.get(field);
+              String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
+                  ontologyItem.getClass()).toString();
+              if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
+              distinctMetadataMembers.get(field).add(valueString);
+            }
+          });
+      return distinctMetadataMembers;
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException((Exception) e.getCause());
+    }
+  }
+
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
@@ -688,7 +754,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
     String err = stableValue.validateSyntax();
-//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
+//   String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
   }

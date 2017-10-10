@@ -12,7 +12,6 @@ class Sticky extends React.Component {
 
   componentDidMount() {
     this.node = ReactDOM.findDOMNode(this);
-    this.contentNode = ReactDOM.findDOMNode(this.refs.content);
     window.addEventListener('scroll', this.updateIsFixed, { passive: true });
     window.addEventListener('wheel', this.updateIsFixed, { passive: true });
     window.addEventListener('resize', this.updateIsFixed, { passive: true });
@@ -30,7 +29,8 @@ class Sticky extends React.Component {
     // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
     let rect = this.node.getBoundingClientRect();
     if (rect.top < 0 && this.state.isFixed === false) {
-      let contentRect = this.contentNode.getBoundingClientRect();
+      let contentNode = this.node.children[0];
+      let contentRect = contentNode.getBoundingClientRect();
       this.setState({
         isFixed: true,
         height: rect.height,
@@ -47,17 +47,10 @@ class Sticky extends React.Component {
   }
 
   render() {
-    let { isFixed, height } = this.state;
-    let { className, fixedClassName } = this.props;
-    if (isFixed) {
-      className = className + ' ' + fixedClassName;
-    }
     return (
       // This node is used to track scroll position
-      <div style={{ height }}>
-        <div ref="content" className={className}>
-          {this.props.children}
-        </div>
+      <div style={{ height: this.state.height }}>
+        {this.props.children(this.state)}
       </div>
     );
   }
@@ -65,13 +58,7 @@ class Sticky extends React.Component {
 }
 
 Sticky.propTypes = {
-  className: PropTypes.string,
-  fixedClassName: PropTypes.string
-};
-
-Sticky.defaultProps = {
-  className: 'wdk-Sticky',
-  fixedClassName: 'wdk-Sticky-fixed'
+  children: PropTypes.func.isRequired
 };
 
 export default Sticky;

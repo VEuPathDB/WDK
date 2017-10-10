@@ -57,7 +57,8 @@ export function login(config: Config, destination: string): void {
 }
 
 export function logout(config: Config): void {
-  let logoutUrl = URL.resolve(location.origin, config.webappUrl + '/processLogout.do');
+  //let logoutUrl = URL.resolve(location.origin, config.webappUrl + '/processLogout.do');
+  let logoutUrl = URL.resolve(location.origin, config.webappUrl + '/service/logout');
   if (config.method === 'OAUTH2') {
     let { oauthUrl } = config;
     let googleSpecific = (oauthUrl.indexOf("google") != -1);

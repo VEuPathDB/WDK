@@ -25,10 +25,10 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
         // save summary view preference
         var summaryViewName = ui.newTab.attr('id');
         var questionName = $element.attr('question');
-        $.get('savePreference.do', {
-          ['summary_view_' + questionName]: summaryViewName
-        })
-        .error(console.error.bind(console));
+        var wdkService = window.Wdk.WdkService.getInstance(wdk.webappUrl() + "service");
+        wdkService.updateCurrentUserPreference("project","summary_view_" + questionName, summaryViewName)
+          .then(function() {})
+          .catch(function(error) { console.error.bind(console) });
       },
       load: function(event, ui) {
         addFeatureTooltipOnce($element);

@@ -93,7 +93,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
+      // TODO: commented out temporarily
+//      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
+      String err = stableValue.validateSyntax();
       if (err != null) throw new WdkModelException(err);
       String fv = getFilteredValue(user, stableValue, contextParamValues, fpn, fpn.getMetadataQuery());
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(fv): fv;
@@ -110,12 +112,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     try {
       String metadataSql;
-      try {
-        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-        metadataSql = instance.getSql();
-      } catch (WdkUserException e) {
-        throw new WdkModelException(e);
-      }
+      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+      metadataSql = instance.getSql();
+
       Map<String, OntologyItem> ontology = param.getOntology(user, contextParamValues);
       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
       String metadataTableName = "md";
@@ -129,7 +128,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
       return FormatUtil.join(filterSqls, " INTERSECT ");
     }
-    catch (JSONException  ex) {
+    catch (JSONException | WdkUserException ex) {
       throw new WdkModelException(ex);
     }
   }

@@ -177,8 +177,8 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     
     buffer.append(" f.* FROM (").append(sql).append(") f");
 
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
-      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__create-cache",
           _query.isUseDBLink());
     }
@@ -187,6 +187,16 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       throw new WdkModelException("Unable to create cache.", e);
     }
     
+    /*
+    try {
+      // TODO: upgrade dbms platform to have a method for analyzing stats
+      SqlUtils.executeUpdate(dataSource, "", _query.getFullName() + "__analyze");
+    }
+    catch (SQLException e) {
+      LOG.error("Failed to run sql:\n" + buffer);
+      throw new WdkModelException("Unable to analyze statistics.", e);
+    }
+    */
     executePostCacheUpdateSql(tableName, instanceId);
     LOG.debug("created!!  cache table for query " + _query.getFullName());
   }

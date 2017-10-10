@@ -31,6 +31,8 @@ public abstract class WdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
+  
+  public static final String WDK_USER = "wdkUser";
 
   /**
    * Composes a proper Not Found exception message using the supplied resource.
@@ -76,9 +78,13 @@ public abstract class WdkService {
   protected HttpSession getSession() {
     return _request.getSession();
   }
+  
+  protected HttpSession getSession(boolean newSession) {
+    return _request.getSession(newSession);
+  }
 
   protected UserBean getSessionUserBean() {
-    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute("wdkUser"));
+    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute(WDK_USER));
   }
 
   protected long getSessionUserId() {

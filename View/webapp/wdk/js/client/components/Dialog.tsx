@@ -1,5 +1,5 @@
 import React, {Component, Children, ReactChild} from 'react';
-import {render, unmountComponentAtNode, findDOMNode} from 'react-dom';
+import {unstable_renderSubtreeIntoContainer, unmountComponentAtNode, findDOMNode} from 'react-dom';
 import $ from 'jquery';
 import { wrappable } from '../utils/componentUtils';
 
@@ -7,6 +7,7 @@ type Props = {
   open?: boolean;
   modal?: boolean;
   title?: string;
+  autoFocus?: boolean;
   onOpen?: Function;
   onClose?: Function;
   children?: React.ReactChild;
@@ -94,6 +95,7 @@ class Dialog extends Component<Props> {
   static defaultProps = {
     open: false,
     modal: true,
+    autoFocus: false,
     title: '',
     width: "auto",
     height: "auto",
@@ -108,7 +110,8 @@ class Dialog extends Component<Props> {
    * Render the child component then open or close dialog
    */
   handlePropsChanged() {
-    render(
+    unstable_renderSubtreeIntoContainer(
+      this,
       <div onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => this.handleKeyDown(e)}>
         {this.props.children}
       </div>,
@@ -143,11 +146,12 @@ class Dialog extends Component<Props> {
       modal: this.props.modal,
       close: () => {
         if (this.props.onClose) this.props.onClose();
-        document.body.style.overflow = '';
+        if (this.props.modal) document.body.style.overflow = '';
       },
       open: () => {
         if (this.props.onOpen) this.props.onOpen();
-        document.body.style.overflow = 'hidden';
+        if (this.props.modal) document.body.style.overflow = 'hidden';
+        if (!this.props.autoFocus) (document.activeElement as HTMLElement).blur();
       },
       title: this.props.title,
       autoOpen: false,
