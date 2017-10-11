@@ -615,11 +615,12 @@ public class FilterParamNew extends AbstractDependentParam {
       Map<String, String> contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
-    // get metadataQuery SQL
-    Query metadataQuery = getMetadataQuery();
+    // get bgd Query SQL
+    Query bgdQuery = backgroundQuery == null ? metadataQuery : backgroundQuery;
+
     String metadataSql;
     try {
-      QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0,
+      QueryInstance<?> instance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
       metadataSql = instance.getSql();
     }
