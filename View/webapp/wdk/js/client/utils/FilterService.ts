@@ -13,8 +13,11 @@ const CHANGE_EVENT = 'change';
 interface BaseField {
   type: string;
   term: string;
+  display: string;
   parent?: string;
   leaf?: 'true';
+  isRange?: boolean;
+  filter?: 'range'|'membership';
 }
 
 export interface StringField extends BaseField {
