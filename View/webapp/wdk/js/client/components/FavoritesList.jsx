@@ -320,21 +320,21 @@ class FavoritesList extends Component {
         key: 'displayName',
         name: 'ID',
         renderCell: renderIdCell,
-        width: '130px',
+        width: '15%',
         sortable: true,
       },
       {
         key: 'recordClassName',
         name: 'Type',
         renderCell: renderTypeCell,
-        width: '200px',
+        width: '25%',
         sortable: true
       },
       {
         key: 'description',
         name: 'Notes',
         renderCell: renderNoteCell,
-        width: '450px',
+        width: '40%',
         sortable: true,
         helpText: 'Use this column to add notes. Click the pencil icon to edit the cell\'s contents.'
       },
@@ -342,7 +342,7 @@ class FavoritesList extends Component {
         key: 'group',
         name: 'Project',
         renderCell: renderGroupCell,
-        width: '250px',
+        width: '20%',
         sortable: true,
         helpText: 'Organize you favorites by group names. IDs with the same group name will be sorted together once the page is refreshed. Click the pencil icon to edit the cell\'s contents.'
       }
