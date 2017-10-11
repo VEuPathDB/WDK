@@ -4,7 +4,8 @@ import { wrappable } from '../utils/componentUtils';
 const iconClassNames = {
   warning: 'fa fa-warning',
   info: 'fa fa-info',
-  help: 'fa fa-question-circle'
+  help: 'fa fa-question-circle',
+  close: 'fa fa-close',
 }
 
 type Props = {
