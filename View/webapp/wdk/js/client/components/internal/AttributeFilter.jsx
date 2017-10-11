@@ -2,7 +2,11 @@ import $ from 'jquery';
 import natsort from 'natural-sort';
 import { Seq } from '../../utils/IterableUtils';
 import { lazy } from '../../utils/componentUtils';
-import { getTree } from '../../utils/FilterServiceUtils';
+import {
+  getFilterValueDisplay,
+  getTree,
+  isRange
+} from '../../utils/FilterServiceUtils';
 import {
   clamp,
   debounce,
@@ -18,6 +22,7 @@ import {
   padStart,
   partial,
   partition,
+  pick,
   reduce,
   sortBy,
   throttle,
@@ -107,7 +112,8 @@ class FilterList extends React.Component {
             var className = selectedField === filter.field ? 'selected' : '';
             var handleSelectClick = partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
-            var display = getFilterDisplay(fields.get(filter.field), filter.value, filter.includeUnknown);
+            var field = fields.get(filter.field);
+            var display = getFilterValueDisplay(field, filter);
 
             return (
               <li key={filter.field} className={className}>
@@ -115,7 +121,7 @@ class FilterList extends React.Component {
                   <a className="select"
                     onClick={handleSelectClick}
                     href={'#' + filter.field}
-                    title={display}>{display}</a>
+                    title={display}>{field.display}</a>
                   {/* Use String.fromCharCode to avoid conflicts with
                       character ecoding. Other methods detailed at
                       http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
@@ -986,7 +992,9 @@ function InvalidFilterList(props) {
       <p>Some of the options you previously selected are no longer available:</p>
       <ul>
         {map(filters, filter => (
-          <li className="invalid">{getFilterDisplay(filter.field, filter.value, filter.includeUnknown)}</li>
+          <li className="invalid">
+            {JSON.stringify(pick(filter, 'field', 'value', 'includeUnknown'))}
+          </li>
         ))}
       </ul>
     </div>
@@ -1973,50 +1981,6 @@ function getFieldDetailComponent(field) {
     : null;
 }
 
-/**
- * Creates a display string describing a filter.
- *
- * @param {Field} field
- * @param {any} value
- * @param {boolean} includeUnknown
- */
-function getFilterDisplay(field, value, includeUnknown) {
-  if (typeof field === 'string') {
-    return field + 'is ' + JSON.stringify({ value, includeUnknown });
-  }
-
-  if (isRange(field)) {
-    if (value != null && value.min == null && value.max == null && includeUnknown == false) {
-      return 'No ' + field.display + ' value selected';
-    }
-
-    const displayValue = value == null && !includeUnknown? 'known'
-                       : value.min == null && value.max == null ? ''
-                       : value.min == null ? `less than ${value.max}`
-                       : value.max == null ? `greater than ${value.min}`
-                       : `between ${value.min} and ${value.max}`;
-    return field.display + ' is ' + displayValue +
-      (includeUnknown ? ( displayValue ? ', or is unknown' : 'unknown') : '');
-  }
-
-  else {
-    if (value != null && value.length === 0 && includeUnknown === false) {
-      return 'No ' + field.display + ' selected'
-    }
-    return field.display + ' is ' +
-      (value == null ? 'known' : value.join(', ')) +
-      (includeUnknown ? (value && value.length === 0 ? 'unknown' : ', or unknown') : '');
-  }
-}
-
-/**
- * Determine if a field should use a range filter display
- *
- * @param {Field} field
- */
-function isRange(field) {
-  return field && (field.isRange || field.filter === 'range');
-}
 
 /**
  * Creates a function that can be used to update a component instance's state.

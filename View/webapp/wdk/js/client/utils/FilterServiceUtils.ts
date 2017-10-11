@@ -10,7 +10,11 @@ import {
   values
 } from 'lodash';
 import { Seq } from './IterableUtils';
-import {MemberFilter, RangeFilter} from "./FilterService";
+import {
+  Field,
+  MemberFilter,
+  RangeFilter
+} from "./FilterService";
 
 type Metadata = {
   [key: string]: string[];
@@ -150,12 +154,6 @@ export function combinePredicates<T>(predicates: Predicate<T>[]) {
   };
 }
 
-type Field = {
-  parent?: string;
-  term: string;
-  display?: string;
-}
-
 type FieldNode = {
   field: Field;
   children: FieldNode[];
@@ -172,6 +170,7 @@ export const getTree = memoize((ontologyEntries: Iterable<Field>): FieldNode => 
 
   return {
     field: {
+      type: 'string',
       term: 'root',
       display: 'Root'
     },
@@ -197,4 +196,50 @@ function mapBy<T, S>(iter: Iterable<T>, keyAccessor: (item: T) => S) {
       map.set(key, itemArray);
       return map;
     }, new Map);
+}
+
+
+// Formatting and display
+
+/**
+ * Creates a display string describing a filter.
+ *
+ * @param {Field} field
+ * @param {any} value
+ * @param {boolean} includeUnknown
+ */
+export function getFilterValueDisplay(field: Field, filter: MemberFilter | RangeFilter): string {
+  if (isRange(field)) {
+    let { value, includeUnknown } = filter as RangeFilter;
+    if (value != null && value.min == null && value.max == null && includeUnknown == false) {
+      return 'No ' + field.display + ' value selected';
+    }
+
+    const displayValue = value == null && !includeUnknown? 'known'
+                       : value!.min == null && value!.max == null ? ''
+                       : value!.min == null ? `less than ${value!.max}`
+                       : value!.max == null ? `greater than ${value!.min}`
+                       : `between ${value!.min} and ${value!.max}`;
+    return field.display + ' is ' + displayValue +
+      (includeUnknown ? ( displayValue ? ', or is unspecified' : 'unspecified') : '');
+  }
+
+  else {
+    let { value, includeUnknown } = filter as MemberFilter;
+    if (value != null && value.length === 0 && includeUnknown === false) {
+      return 'No ' + field.display + ' selected'
+    }
+    return field.display + ' is ' +
+      (value == null ? 'known' : value.join(', ')) +
+      (includeUnknown ? (value && value.length === 0 ? 'unspecified' : ', or is unspecified') : '');
+  }
+}
+
+/**
+ * Determine if a field should use a range filter display
+ *
+ * @param {Field} field
+ */
+export function isRange(field?: Field) {
+  return field && (field.isRange || field.filter === 'range');
 }

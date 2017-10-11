@@ -393,13 +393,6 @@
   background-color: #ececec;
   font-weight: bold;
 }
-.filter-param .filter-items li .select {
-  display: inline-block;
-  max-width: 15em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .filter-param .filter-items .remove {
   display: inline-block;
   vertical-align: text-bottom;
