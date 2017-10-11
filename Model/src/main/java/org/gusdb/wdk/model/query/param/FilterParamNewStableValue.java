@@ -116,7 +116,7 @@ public class FilterParamNewStableValue {
       }
     }
 
-    if (errmsg != null) return errmsg;
+    if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '"));
     return null;
   }
    
