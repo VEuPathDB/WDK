@@ -145,7 +145,6 @@ class UserDatasetItem extends Component<Props, State> {
           open={edit === 'details'}
           modal={true}
           onClose={this.handleDialogClose}
-          width={700}
           className={makeClassName('EditDialog')}
         >
           <UserDatasetDetailForm details={userDataset.meta} onSubmit={this.handleDetailFormSubmit}/>
@@ -156,7 +155,6 @@ class UserDatasetItem extends Component<Props, State> {
           open={edit === 'shares'}
           modal={true}
           onClose={this.handleDialogClose}
-          width={500}
           className={makeClassName('EditDialog')}
         >
           <UserDatasetSharing shares={userDataset.sharedWith}/>

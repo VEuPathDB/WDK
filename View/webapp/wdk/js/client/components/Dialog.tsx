@@ -1,189 +1,84 @@
-import React, {Component, Children, ReactChild} from 'react';
-import {unstable_renderSubtreeIntoContainer, unmountComponentAtNode, findDOMNode} from 'react-dom';
-import $ from 'jquery';
+import React, {Component, Children, ReactChild, ReactNode} from 'react';
+import Popup from './Popup';
+import Icon from './Icon';
+import Resizable from './Resizable';
 import { wrappable } from '../utils/componentUtils';
 
+type Action = {
+  element: ReactNode
+}
+
 type Props = {
-  open?: boolean;
+  open: boolean;
+  children: ReactChild;
   modal?: boolean;
-  title?: string;
-  autoFocus?: boolean;
-  onOpen?: Function;
-  onClose?: Function;
-  children?: React.ReactChild;
-  width?: number | string;
-  height?: number | string;
+  title?: ReactNode;
+  buttons?: ReactNode[];
   draggable?: boolean;
   resizable?: boolean;
   className?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
 };
 
-/**
- * A reusable jQueryUI Dialog component (http://jqueryui.com/dialog/).
- * Adapted from http://jsbin.com/vepidi/1/edit?html,js,output
- *
- *
- * Explanation:
- *
- * This component encapsulates some tricky logic needed to allow jQueryUI's
- * DOM manipulation to co-exist with React's render lifecycle. The basic idea
- * is that this component will manually render its child component (see the
- * handlePropsChanged() method defined below). This essentially creates a new
- * render tree which is a sibling of the current tree, and  whose root is the
- * child component passed to this component.
- *
- * The naive approach, which would be to add this to your component:
- *
- *     componentDidMount() {
- *         $(this.getDOMNode()).dialog(opts);
- *     }
- *
- * will cause React to bail since the DOM is changed without its knowledge.
- * This breaks the DOM diffing React requires to maintain its virtual DOM.
- *
- *
- * Example that opens a dialog when a button is clicked:
- *
- *     var MyComponent = React.createClass({
- *
- *         handleShowDialogClick() {
- *           this.setState({
- *             dialogOpen: true
- *           });
- *         },
- *
- *         handleDialogClose() {
- *           this.setState({
- *             dialogOpen: false
- *           });
- *         },
- *
- *         handleFormSubmit(e) {
- *           e.preventDefault();
- *           this.setState({
- *             dialogOpen: false
- *           });
- *           Actions.updateName(this.state.name);
- *         },
- *
- *         handleNameChange(e) {
- *           this.setState({
- *             name: e.getDOMNode().value
- *           });
- *         },
- *
- *         render() {
- *           return (
- *             <div>
- *               <button onClick={this.handleShowDialogClick}>Open dialog</button>
- *
- *               <Dialog open={this.state.dialogOpen} onClose={this.handleDialogClose} title="Enter Your Name">
- *                 <form onSubmit={this.handleFormSubmit}>
- *                   <input onChange={this.handleNameChange} value={this.state.name}/>
- *                   <input type="submit"/>
- *                 </form>
- *               </Dialog>
- *
- *             </div>
- *           );
- *         }
- *     });
- *
- */
-class Dialog extends Component<Props> {
+type State = {
+  contentSize: {
+    height?: number,
+    width?: number
+  }
+}
 
-  static defaultProps = {
-    open: false,
-    modal: true,
-    autoFocus: false,
-    title: '',
-    width: "auto",
-    height: "auto",
-    draggable: false,
-    resizable: false,
-    className: ''
-  };
+class Dialog extends Component<Props, State> {
 
-  node: HTMLElement;
+  headerNode: Element | null;
 
-  /**
-   * Render the child component then open or close dialog
-   */
-  handlePropsChanged() {
-    unstable_renderSubtreeIntoContainer(
-      this,
-      <div onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => this.handleKeyDown(e)}>
-        {this.props.children}
-      </div>,
-      this.node
+  constructor(props: Props) {
+    super(props);
+    this.setHeaderNodeRef = this.setHeaderNodeRef.bind(this);
+    this.state = { contentSize: {} };
+  }
+
+  setHeaderNodeRef(node: Element | null) {
+    this.headerNode = node;
+  }
+
+  handleResize(size: { height: number, width: number }) {
+    this.setState({
+      contentSize: {
+        height: this.headerNode ? size.height - this.headerNode.clientHeight : undefined,
+        width: size.width
+      }
+    });
+  }
+
+  render () {
+    let {
+      onClose = () => {},
+      buttons = [(
+        <button type="button" onClick={() => onClose()}>
+          <Icon type="close"/>
+        </button>
+      )]
+    } = this.props;
+    return (
+      <Popup
+        className="wdk-DialogPopupWrapper"
+        open={this.props.open}
+        dragHandleSelector={() => this.headerNode as Element}
+      >
+        <Resizable onResize={size => this.handleResize(size)}>
+          <div className={'wdk-Dialog' + (this.props.modal ? ' wdk-Dialog__modal' : '')} >
+            <div ref={this.setHeaderNodeRef} className="wdk-DialogHeader" >
+              <div className="wdk-DialogTitle">{this.props.title}</div>
+              {buttons}
+            </div>
+            <div className="wdk-DialogContent" style={this.state.contentSize}>
+              {this.props.children}
+            </div>
+          </div>
+        </Resizable>
+      </Popup>
     );
-    if (this.props.open) {
-      $(this.node).dialog('open');
-    }
-    else {
-      $(this.node).dialog('close');
-    }
-  }
-
-  handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
-    if (e.key === 'Escape') {
-      $(this.node).dialog('close');
-    }
-  }
-
-  componentDidUpdate() {
-    this.handlePropsChanged();
-  }
-
-  /**
-   * At this point, the DOM node has been created, so we can call the jQueryUI
-   * dialog plugin, and cache a reference to the instance (this.dialog). Then,
-   * we will call handlePropsChanged() to finish off the rendering.
-   */
-  componentDidMount() {
-    this.node = findDOMNode(this);
-    var options = {
-      modal: this.props.modal,
-      close: () => {
-        if (this.props.onClose) this.props.onClose();
-        if (this.props.modal) document.body.style.overflow = '';
-      },
-      open: () => {
-        if (this.props.onOpen) this.props.onOpen();
-        if (this.props.modal) document.body.style.overflow = 'hidden';
-        if (!this.props.autoFocus) (document.activeElement as HTMLElement).blur();
-      },
-      title: this.props.title,
-      autoOpen: false,
-      width: this.props.width,
-      height: this.props.height,
-      draggable: this.props.draggable,
-      resizable: this.props.resizable,
-      dialogClass: 'wdk-Dialog ' + this.props.className,
-      position: { my: 'top', at: 'top+100', of: window, collision: 'fit' },
-      closeOnEscape: false
-    };
-    $(this.node).dialog(options as any); // cast options to `any` since we are using an older version of jQueryUI
-    this.handlePropsChanged();
-  }
-
-  /**
-   * Destroy the dialog instance. This will also unmount the child component,
-   * which will cause its componentWillUnmount hook to be called.
-   */
-  componentWillUnmount() {
-    $(this.node).dialog('destroy');
-    unmountComponentAtNode(this.node);
-  }
-
-  /**
-   * We only render a single div. Notably, the child component is not rendered
-   * here. It is rendered in the handlePropsChanged() method, which is how we
-   * can handle DOM manipulation outside of the React lifecycle (which is what
-   * we are doing with the jQueryUI plugin).
-   */
-  render() {
-    return <div/>;
   }
 
 }

@@ -3,8 +3,8 @@ import { wrappable } from '../utils/componentUtils';
 import Dialog from './Dialog';
 
 type Props = {
-  onCancel: React.EventHandler<React.MouseEvent<HTMLButtonElement>>;
-  onSubmit: React.EventHandler<React.FormEvent<HTMLFormElement>>;
+  onCancel: () => void;
+  onSubmit: () => void;
   open: boolean;
   action: string;
   redirectUrl: string;
