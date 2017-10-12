@@ -367,3 +367,28 @@ export function bindEventHandlers(handlerSetObject: HandlerSetObject, objectToBi
   }
   return newHandlers;
 }
+
+/**
+ * Create a helper for generating classNames that follow a BEM-inspired naming
+ * convention.
+ *
+ * @example
+ * ```
+ * let makeClassName = makeClassNameHelper('wdk-Page');
+ * makeClassName(); //=> 'wdk-Page'
+ * makeClassName('Title'); //=> 'wdk-PageTitle'
+ * makeClassName('Title', 'muted'); //=> 'wdk-PageTitle wdk-PageTitle__muted'
+ * makeClassName('Title', 'muted', 'blue'); //=> 'wdk-PageTitle wdk-PageTitle__muted wdk-PageTitle__blue'
+ * ```
+ */
+export function makeClassNameHelper(baseClassName: string) {
+  return function makeClassName(suffix = '', ...modifiers: any[]) {
+    let className = baseClassName + suffix;
+    let modifiedClassNames = modifiers
+      .filter(modifier => typeof modifier === 'string' && modifier !== '')
+      .map(modifier => ' ' + className + '__' + modifier)
+      .join('');
+
+    return className + modifiedClassNames;
+  }
+}
