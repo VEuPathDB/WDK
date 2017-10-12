@@ -116,6 +116,7 @@ class FavoritesList extends Component {
 
   renderEmptyState () {
     const { searchText } = this.props;
+    const isSearching = searchText && searchText.length;
     const wrapperStyle = {
       display: 'flex',
       flexDirection: 'column',
@@ -127,15 +128,15 @@ class FavoritesList extends Component {
     const iconStyle = {
       fontSize: '80px'
     };
+    const message = isSearching
+      ? <span>Whoops! No favorites matching your search term, <i>"{searchText}"</i>, could be found. <br />Please try a different search term or add additional favorites.</span>
+      : 'Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page. If you have favorites, you may have filtered them all out with too restrictive a search criterion.'
 
     return (
       <div className="EmptyState" style={wrapperStyle}>
         <div style={{ maxWidth: '450px' }}>
-          <Icon style={iconStyle} fa={searchText && searchText.length ? 'search' : 'star-o'} />
-          <p>
-            Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page.
-            If you have favorites, you may have filtered them all out with too restrictive a search criterion.
-          </p>
+          <Icon fa={searchText && searchText.length ? 'search' : 'star-o'} />
+          <p>{message}</p>
         </div>
       </div>
     )

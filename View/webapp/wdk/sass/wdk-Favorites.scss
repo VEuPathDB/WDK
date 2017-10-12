@@ -6,6 +6,7 @@
   max-width: 100%;
   display: block;
   margin: 0 auto;
+  margin-bottom: 30px;
 
   .wdk-RealTimeSearchBoxInfoIcon {
     color: $blue;
@@ -28,6 +29,13 @@
 
   .wdk-BannerList {
     padding: 0;
+  }
+
+  .EmptyState .fa {
+    font-size: 80px;
+    color: rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 15px auto;
   }
 
   .Favorites-CountList {
