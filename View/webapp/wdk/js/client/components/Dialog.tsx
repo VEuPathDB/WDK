@@ -20,21 +20,13 @@ type Props = {
   onClose?: () => void;
 };
 
-type State = {
-  contentSize: {
-    height?: number,
-    width?: number
-  }
-}
-
-class Dialog extends Component<Props, State> {
+class Dialog extends Component<Props> {
 
   headerNode: Element | null;
 
   constructor(props: Props) {
     super(props);
     this.setHeaderNodeRef = this.setHeaderNodeRef.bind(this);
-    this.state = { contentSize: {} };
   }
 
   makeClassName(suffix = '', ...modifiers: any[]) {
@@ -46,15 +38,6 @@ class Dialog extends Component<Props, State> {
 
   setHeaderNodeRef(node: Element | null) {
     this.headerNode = node;
-  }
-
-  handleResize(size: { height: number, width: number }) {
-    this.setState({
-      contentSize: {
-        height: this.headerNode ? size.height - this.headerNode.clientHeight : undefined,
-        width: size.width
-      }
-    });
   }
 
   render () {
@@ -73,7 +56,7 @@ class Dialog extends Component<Props, State> {
           <div className={this.makeClassName('Title')}>{this.props.title}</div>
           {buttons}
         </div>
-        <div className={this.makeClassName('Content')} style={this.state.contentSize}>
+        <div className={this.makeClassName('Content')}>
           {this.props.children}
         </div>
       </div>
@@ -81,7 +64,7 @@ class Dialog extends Component<Props, State> {
 
     if (this.props.resizable) {
       content = (
-        <Resizable onResize={size => this.handleResize(size)}>
+        <Resizable>
           {content}
         </Resizable>
       );
