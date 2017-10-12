@@ -7,7 +7,6 @@ import javax.servlet.http.Cookie;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.OAuthClient;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
@@ -24,6 +23,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.session.LoginCookieFactory;
+import org.gusdb.wdk.session.OAuthClient;
 import org.gusdb.wdk.session.OAuthUtil;
 
 /**

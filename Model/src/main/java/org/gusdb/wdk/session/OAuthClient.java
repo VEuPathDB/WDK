@@ -1,4 +1,4 @@
-package org.gusdb.wdk.controller;
+package org.gusdb.wdk.session;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import io.jsonwebtoken.Claims;
@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.wdk.session.WdkTrustManager;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.OAuthConfig;

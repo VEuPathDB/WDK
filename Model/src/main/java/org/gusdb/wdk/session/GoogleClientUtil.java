@@ -1,4 +1,4 @@
-package org.gusdb.wdk.controller;
+package org.gusdb.wdk.session;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
