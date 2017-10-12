@@ -3,8 +3,8 @@ package org.gusdb.wdk.model.record.attribute;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,9 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -111,7 +111,7 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   public static Set<String> parseFieldNames(String text) {
     Matcher matcher = MACRO_PATTERN.matcher(text);
-    Set<String> fieldNames = new HashSet<>();
+    Set<String> fieldNames = new LinkedHashSet<>();
     while (matcher.find()) {
       fieldNames.add(matcher.group(1));
     }
