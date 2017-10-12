@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,9 +53,9 @@ public class TextAttributeField extends DerivedAttributeField {
   @Override
   public Collection<AttributeField> getDependencies() throws WdkModelException {
     // combine text and display values to look for attribute macros
-    Map<String, AttributeField> dependents = new HashMap<>();
-    if (_text != null) dependents.putAll(parseFields(_text));
+    Map<String, AttributeField> dependents = new LinkedHashMap<>();
     if (_display!= null) dependents.putAll(parseFields(_display));
+    if (_text != null) dependents.putAll(parseFields(_text));
     return dependents.values();
   }
 }
