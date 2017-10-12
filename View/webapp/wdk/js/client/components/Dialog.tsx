@@ -2,11 +2,10 @@ import React, {Component, Children, ReactChild, ReactNode} from 'react';
 import Popup from './Popup';
 import Icon from './Icon';
 import Resizable from './Resizable';
-import { wrappable } from '../utils/componentUtils';
+import { wrappable, makeClassNameHelper } from '../utils/componentUtils';
 
-type Action = {
-  element: ReactNode
-}
+let c = makeClassNameHelper('wdk-Dialog');
+let c2 = makeClassNameHelper(' ');
 
 type Props = {
   open: boolean;
@@ -38,6 +37,13 @@ class Dialog extends Component<Props, State> {
     this.state = { contentSize: {} };
   }
 
+  makeClassName(suffix = '', ...modifiers: any[]) {
+    let { className } = this.props;
+    return c(suffix, ...modifiers) + (
+      className ? c2(className + suffix, ...modifiers) : ''
+    );
+  }
+
   setHeaderNodeRef(node: Element | null) {
     this.headerNode = node;
   }
@@ -60,23 +66,34 @@ class Dialog extends Component<Props, State> {
         </button>
       )]
     } = this.props;
+
+    let content = (
+      <div className={this.makeClassName('', this.props.modal && 'modal')} >
+        <div ref={this.setHeaderNodeRef} className={this.makeClassName('Header')} >
+          <div className={this.makeClassName('Title')}>{this.props.title}</div>
+          {buttons}
+        </div>
+        <div className={this.makeClassName('Content')} style={this.state.contentSize}>
+          {this.props.children}
+        </div>
+      </div>
+    );
+
+    if (this.props.resizable) {
+      content = (
+        <Resizable onResize={size => this.handleResize(size)}>
+          {content}
+        </Resizable>
+      );
+    }
+
     return (
       <Popup
-        className="wdk-DialogPopupWrapper"
+        className={this.makeClassName('PopupWrapper')}
         open={this.props.open}
         dragHandleSelector={() => this.headerNode as Element}
       >
-        <Resizable onResize={size => this.handleResize(size)}>
-          <div className={'wdk-Dialog' + (this.props.modal ? ' wdk-Dialog__modal' : '')} >
-            <div ref={this.setHeaderNodeRef} className="wdk-DialogHeader" >
-              <div className="wdk-DialogTitle">{this.props.title}</div>
-              {buttons}
-            </div>
-            <div className="wdk-DialogContent" style={this.state.contentSize}>
-              {this.props.children}
-            </div>
-          </div>
-        </Resizable>
+        {content}
       </Popup>
     );
   }
