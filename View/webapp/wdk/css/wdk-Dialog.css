@@ -8,6 +8,8 @@
   background: white;
   box-sizing: content-box;
   width: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .wdk-Dialog__modal:before {
@@ -60,4 +62,5 @@
   border-bottom-right-radius: 4px;
   box-sizing: border-box;
   overflow: auto;
+  flex: 2;
 }
