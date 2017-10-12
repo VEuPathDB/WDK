@@ -30,6 +30,7 @@ class FavoritesList extends Component {
     this.renderTypeCell = this.renderTypeCell.bind(this);
     this.renderNoteCell = this.renderNoteCell.bind(this);
     this.renderCountSummary = this.renderCountSummary.bind(this);
+    this.renderEmptyState = this.renderEmptyState.bind(this);
 
     this.handleEditClick = this.handleEditClick.bind(this);
     this.handleCellChange = this.handleCellChange.bind(this);
@@ -113,6 +114,33 @@ class FavoritesList extends Component {
     favoritesEvents.searchTerm(value);
   }
 
+  renderEmptyState () {
+    const { searchText } = this.props;
+    const wrapperStyle = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      justifyContent: 'center'
+    };
+
+    const iconStyle = {
+      fontSize: '80px'
+    };
+
+    return (
+      <div className="EmptyState" style={wrapperStyle}>
+        <div style={{ maxWidth: '450px' }}>
+          <Icon style={iconStyle} fa={searchText && searchText.length ? 'search' : 'star-o'} />
+          <p>
+            Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page.
+            If you have favorites, you may have filtered them all out with too restrictive a search criterion.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   countFavoritesByType () {
      const { recordClasses, filteredList } = this.props;
      const counts = filteredList.reduce((roster, { recordClassName }) => {
@@ -129,7 +157,7 @@ class FavoritesList extends Component {
 
   //  RENDERERS ===============================================================
 
-  renderEmptyState () {
+  __renderEmptyState_OLD () {
     return (
       <div className="no-rows empty-message">
         Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page.
@@ -249,13 +277,13 @@ class FavoritesList extends Component {
     const counts = this.countFavoritesByType();
     const types = Object.keys(counts);
     const last = types.length - 1;
-    let output = '';
+    let output = [];
     types.forEach((type, idx) => {
-      output = output.concat(`${idx === last && idx !== 0 ? 'and ' : ''}${counts[type]} ${type}${idx === last ? '.' : ', '}`);
+      output.push(<span className="Favorites-GroupCount" key={idx}>{type}: {counts[type]}</span>);
     });
 
     return (
-      <p>{output}</p>
+      <div className="Favorites-CountList">{output}</div>
     );
   }
 
@@ -306,7 +334,10 @@ class FavoritesList extends Component {
 
     return {
       // useStickyHeader: true,
+      renderEmptyState: this.renderEmptyState,
       searchPlaceholder: searchBoxPlaceholder,
+      selectedNoun: 'Favorite',
+      selectedPluralNoun: 'Favorites',
       isRowSelected ({ id }) {
         return selectedFavorites.includes(id);
       }

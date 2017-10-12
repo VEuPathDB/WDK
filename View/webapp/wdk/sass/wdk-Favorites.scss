@@ -27,7 +27,19 @@
   }
 
   .wdk-BannerList {
-    padding: 0; //20px 0 0;
+    padding: 0;
+  }
+
+  .Favorites-CountList {
+    margin: 20px 0;
+    display: block;
+  }
+
+  .Favorites-GroupCount {
+    padding: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    margin: 0;
+    margin-right: 10px;
   }
 
   .wdk-RealTimeSearchBoxInput {
@@ -36,6 +48,18 @@
 
   .Mesa {
     margin-bottom: 50px;
+    .Toolbar {
+      .wdk-RealTimeSearchBox {
+        button {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  .ActionToolbar {
+    margin-top: -20px;
   }
 
   .editor-cell {
