@@ -356,6 +356,8 @@ public class FilterParamNew extends AbstractDependentParam {
   public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
 
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
+
     OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyQuery, contextParamValues, user);
     Map<String, OntologyItem> map = null;
     try {
@@ -379,6 +381,8 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues,
       JSONObject appliedFilters) throws WdkModelException {
+
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     // use background query if provided, else use metadata query
@@ -458,6 +462,8 @@ public class FilterParamNew extends AbstractDependentParam {
   public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user,
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
+
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     FilterParamNewInstance paramInstance = createFilterParamNewInstance();
 
@@ -601,6 +607,17 @@ public class FilterParamNew extends AbstractDependentParam {
     return metadata;
   }
   
+  public Map<String, Set<String>> getDistinctMetaDataValues(User user,
+      Map<String, String> contextParamValues) throws WdkModelException {
+    
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
+
+    Set<String> memberTerms = new HashSet<String>();
+    Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
+    for (OntologyItem ontologyItem : ontology.values()) if (!ontologyItem.getIsRange()) memberTerms.add(ontologyItem.getOntologyId());
+    return getDistinctMetaDataValues(user, contextParamValues, memberTerms, ontology, _wdkModel.getAppDb().getDataSource());
+  }
+  
   /**
    * return map of ontology field name to values (as strings), for the provided list of ontology terms
    * 
@@ -611,7 +628,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
-  public Map<String, Set<String>> getDistinctMetaDataValues(User user,
+   Map<String, Set<String>> getDistinctMetaDataValues(User user,
       Map<String, String> contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
@@ -648,8 +665,10 @@ public class FilterParamNew extends AbstractDependentParam {
             while (rs.next()) {
               String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
               OntologyItem ontologyItem = ontology.get(field);
-              String valueString = OntologyItemType.resolveTypedValue(rs, ontologyItem,
-		 ontologyItem.getType().getJavaClass()).toString();
+              OntologyItemType type = ontologyItem.getType();
+	      Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem,
+		 type.getJavaClass());
+	      String valueString = value == null? "NULL" : value.toString();
               if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
               distinctMetadataMembers.get(field).add(valueString);
             }
@@ -664,6 +683,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
+
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     JSONObject jsParam = new JSONObject();
 
