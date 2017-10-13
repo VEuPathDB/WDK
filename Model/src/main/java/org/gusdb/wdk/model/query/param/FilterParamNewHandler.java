@@ -90,12 +90,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toInternalValue(User user, String stableValueString, Map<String, String> contextParamValues)
       throws WdkModelException {
+
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
+      contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      // TODO: commented out temporarily
-//      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
-      String err = stableValue.validateSyntax();
+      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
+      //      String err = stableValue.validateSyntax();
       if (err != null) throw new WdkModelException(err);
       String fv = getFilteredValue(user, stableValue, contextParamValues, fpn, fpn.getMetadataQuery());
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(fv): fv;
@@ -146,6 +147,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew param = (FilterParamNew)_param;
+    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
+
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
     return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
@@ -210,6 +213,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     FilterParamNew param = (FilterParamNew)_param;
+    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
     return stableValue.getDisplayValue(user, contextParamValues);
   } 

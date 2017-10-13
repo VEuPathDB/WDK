@@ -96,7 +96,7 @@ public class FilterParamNewStableValue {
     for (Filter filter : _filters) {
       String field = filter.getField();
       if (!ontology.containsKey(field)) {
-        errors.add("'" + field + "'" + " is not a recognized category");
+        errors.add("'" + field + "'" + " is not a recognized ontology term");
         continue;
       }
       if (!ontology.get(field).getIsRange()) memberFilters.add((MembersFilter)filter);

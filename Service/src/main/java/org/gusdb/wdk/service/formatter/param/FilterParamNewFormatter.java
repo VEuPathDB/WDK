@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter.param;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,6 +31,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     JSONObject pJson = super.getJson();
     pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
     pJson.put("ontology", getOntologyJson(user, dependedParamValues));
+    pJson.put("values", getValuesJson(user, dependedParamValues));
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
     return pJson;
   }
@@ -52,6 +54,20 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       ontologyJson.put(itemJson);
     }
     return ontologyJson; 
+  }
+
+  public JSONObject getValuesJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
+ 
+    Map<String, Set<String>>  valuesMap = filterParam.getDistinctMetaDataValues(user, dependedParamValues);
+ 
+    JSONObject valuesMapJson = new JSONObject();
+    for (String term : valuesMap.keySet()) {
+      JSONArray valuesArrayJson = new JSONArray();
+      Set<String> values = valuesMap.get(term);
+      for (String value : values) valuesArrayJson.put(value);
+      valuesMapJson.put(term, valuesArrayJson);
+    }
+    return valuesMapJson; 
   }
 
 }
