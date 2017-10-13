@@ -240,9 +240,6 @@
   margin: .4em 0;
   height: 1em;
 }
-.filter-param .membership-filter .member td {
-  vertical-align: middle;
-}
 .filter-param .membership-filter input[name="value"] {
   margin-right: .4em;
 }
@@ -250,6 +247,7 @@
   background-color: #f6f6f6;
 }
 .filter-param .membership-filter .member td {
+  vertical-align: middle;
   padding: .2em .4em;
   text-align: right;
 }
@@ -259,6 +257,12 @@
 }
 .filter-param .membership-filter .member td:nth-child(2) {
   width: 30%;
+  text-align: left;
+}
+.filter-param .membership-filter .member td:nth-child(4) {
+  text-align: left;
+}
+.filter-param .membership-filter .member td:nth-child(6) {
   text-align: left;
 }
 .filter-param .membership-filter .member td:last-child {
@@ -279,6 +283,9 @@
   text-overflow: ellipsis;
   overflow-x: hidden;
   vertical-align: top;
+}
+.filter-param .membership-filter .percentage {
+  font-size: .8em;
 }
 /* Don't recall if/why this was needed - dmf
 .membership-filter .frequency {

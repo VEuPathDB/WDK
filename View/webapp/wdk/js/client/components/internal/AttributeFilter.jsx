@@ -1020,24 +1020,7 @@ var Histogram = (function() {
     constructor(props) {
       super(props);
       this.handleResize = throttle(this.handleResize.bind(this), 100);
-      // Set default yAxis max based on distribution
-      var yaxisMax = this.computeYAxisMax();
-      var values = this.props.distribution
-        .map(entry => entry.value)
-        .filter(value => value != null);
-      var xaxisMin = Math.min(...values);
-      var xaxisMax = Math.max(...values);
-      this.state = { yaxisMax, xaxisMin, xaxisMax };
-    }
-
-    computeYAxisMax() {
-      var counts = this.props.distribution.map(entry => entry.count);
-      // Reverse sort, then pull out first and second highest values
-      var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
-      // If max is more than twice the size of nextMax, assume it is
-      // an outlier and use nextMax as the max
-      var yaxisMax = max >= nextMax * 2 ? nextMax : max;
-      return yaxisMax + yaxisMax * 0.1;
+      this.setStateFromProps(props);
     }
 
     componentDidMount() {
@@ -1053,8 +1036,10 @@ var Histogram = (function() {
       this.drawPlotSelection();
     }
 
-    componentWillUnmount() {
-      $(window).off('resize', this.handleResize);
+    componentWillReceiveProps(nextProps) {
+      if (this.props.distribution !== nextProps.distribution) {
+        this.setStateFromProps(nextProps);
+      }
     }
 
     /**
@@ -1066,9 +1051,37 @@ var Histogram = (function() {
         this.createPlot();
         this.drawPlotSelection();
       }
-      if (prevProps.selectedMin !== this.props.selectedMin || prevProps.selectedMax !== this.props.selectedMax) {
+      if (
+        prevProps.selectedMin !== this.props.selectedMin ||
+        prevProps.selectedMax !== this.props.selectedMax
+      ) {
         this.drawPlotSelection();
       }
+    }
+
+    componentWillUnmount() {
+      $(window).off('resize', this.handleResize);
+    }
+
+    setStateFromProps(props) {
+      // Set default yAxis max based on distribution
+      var yaxisMax = this.computeYAxisMax(props);
+      var values = props.distribution
+        .map(entry => entry.value)
+        .filter(value => value != null);
+      var xaxisMin = Math.min(...values);
+      var xaxisMax = Math.max(...values);
+      this.state = { yaxisMax, xaxisMin, xaxisMax };
+    }
+
+    computeYAxisMax(props) {
+      var counts = props.distribution.map(entry => entry.count);
+      // Reverse sort, then pull out first and second highest values
+      var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
+      // If max is more than twice the size of nextMax, assume it is
+      // an outlier and use nextMax as the max
+      var yaxisMax = max >= nextMax * 2 ? nextMax : max;
+      return yaxisMax + yaxisMax * 0.1;
     }
 
     handleResize() {
@@ -1394,11 +1407,12 @@ class HistogramField extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.distribution !== nextProps.distribution) {
-      this.cacheDistributionOperations(nextProps);
-    }
+    let distributionChanged = this.props.distribution !== nextProps.distribution;
+    let filterChanged = this.props.filter !== nextProps.filter;
 
-    if (this.props.filter !== nextProps.filter) {
+    if (distributionChanged) this.cacheDistributionOperations(nextProps);
+
+    if (distributionChanged || filterChanged) {
       this.setState({
         minInputValue: get(nextProps.filter, 'value.min', this.distributionRange.min),
         maxInputValue: get(nextProps.filter, 'value.max', this.distributionRange.max)
@@ -1702,8 +1716,8 @@ class MembershipField extends React.Component {
               <thead>
                 <tr>
                   <th colSpan="2">{this.props.field.display}</th>
-                  <th>Matching {this.props.displayName}</th>
-                  <th>All {this.props.displayName}</th>
+                  <th colSpan="2">Matching {this.props.displayName}</th>
+                  <th colSpan="2">All {this.props.displayName}</th>
                   <th>Distribution</th>
                 </tr>
               </thead>
@@ -1725,8 +1739,10 @@ class MembershipField extends React.Component {
                     <tr key={value} className={trClassNames} onClick={() => this.handleItemClick(value, !isChecked)} title={tooltip}>
                       <td><input value={value} type="checkbox" checked={isChecked} onChange={() => this.handleItemClick(value, !isChecked)}/></td>
                       <td><span className="value">{display}</span></td>
-                      <td><span className="frequency">{item.filteredCount}</span></td>
-                      <td><span className="frequency">{item.count}</span></td>
+                      <td><span className="frequency">{item.filteredCount.toLocaleString()}</span></td>
+                      <td><span className="percentage">{Math.round(filteredPercentage)}%</span></td>
+                      <td><span className="frequency">{item.count.toLocaleString()}</span></td>
+                      <td><span className="percentage">{Math.round(percentage)}%</span></td>
                       <td><div className="bar">
                         <div className="fill" style={{ width: percentage + '%' }}/>
                         <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
