@@ -180,31 +180,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return
    */
   public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> contextParamValues) {
-    if (contextParamValues == null)
-      contextParamValues = new LinkedHashMap<>();
-    
-    if (isDependentParam()) {
-      try {
-        // for each depended param, ensure it has a value in contextParamValues
-        for (Param dependedParam : getDependedParams()) {
 
-          String dependedParamVal = contextParamValues.get(dependedParam.getName());
-          if (dependedParamVal == null) {
-            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
-                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
-                : dependedParam.getDefault();
-            if (dependedParamVal == null)
-              throw new NoDependedValueException(
-                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
-                      getName() + " without setting depended value.");
-	    contextParamValues.put(dependedParam.getName(), dependedParamVal);
-          }
-        }
-      }
-      catch (Exception ex) {
-        throw new NoDependedValueException(ex);
-      }
-    }
+    // make sure context is populated with values we need (our depended params)
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
     
     // now create the vocab instance, using that context
     try {
