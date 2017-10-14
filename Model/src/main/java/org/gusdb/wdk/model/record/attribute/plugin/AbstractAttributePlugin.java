@@ -20,8 +20,8 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
-import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
+import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.user.Step;
@@ -214,7 +214,12 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
   private String formatColumn(Step step, AttributeField attribute,
       Map<String, String> queries) throws WdkModelException {
-    // if column attribute can be formatted directly.
+
+    // if column attribute can be formatted directly (ColumnAttributeField subclasses)
+    if (attribute instanceof PkColumnAttributeField) {
+      // PK attributes and columns must have the same name
+      return "idq." + attribute.getName();
+    }
     if (attribute instanceof QueryColumnAttributeField) {
       Column column = ((QueryColumnAttributeField) attribute).getColumn();
       String queryName = column.getQuery().getFullName();
@@ -230,9 +235,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     String content;
     if (attribute instanceof LinkAttributeField) {
       content = ((LinkAttributeField) attribute).getDisplayText();
-    } else if (attribute instanceof IdAttributeField) {
-      content = ((IdAttributeField) attribute).getText();
-    } else if (attribute instanceof TextAttributeField) {
+    } else if (attribute instanceof TextAttributeField) { // includes IdAttributeField
       content = ((TextAttributeField) attribute).getText();
     } else {
       throw new WdkModelException("Attribute type not supported: "
