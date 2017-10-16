@@ -447,16 +447,17 @@ export default class WdkService {
   }
 
   deleteFavorites (ids: Array<number>) {
-    return this.setBulkDeleteStatus("delete", ids);
+    return this.runBulkFavoritesAction('delete', ids);
   }
 
   undeleteFavorites (ids: Array<number>) {
-    return this.setBulkDeleteStatus("undelete", ids);
+    return this.runBulkFavoritesAction('undelete', ids);
   }
 
-  setBulkDeleteStatus (operation: string, ids: Array<number>) {
+  runBulkFavoritesAction (operation: string, ids: Array<number>) {
     let url = '/user/current/favorites';
-    let data = { [operation]: ids };
+    let base = { delete: [], undelete: [] };
+    let data = Object.assign({}, base, { [operation]: ids });
     return this._fetchJson<void>('patch', url, JSON.stringify(data));
   }
 

@@ -12,13 +12,17 @@ import { ListLoadingAction,
   SaveReceivedAction,
   SaveErrorReceivedAction,
   DeleteRowAction,
+  DeleteRowsAction,
   DeleteReceivedAction,
+  DeleteMultiReceivedAction,
   DeleteErrorReceivedAction,
+  UndeletedRowsReceivedAction,
   SearchTermAction,
   SortColumnAction,
   AddRowAction,
   AddReceivedAction,
-  AddErrorAction
+  AddErrorAction,
+  FilterByTypeAction
 } from '../actioncreators/FavoritesActionCreators';
 import { Favorite } from '../utils/WdkModel';
 
@@ -26,9 +30,10 @@ type Action = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction
 |FavoriteSelectedAction|FavoriteDeselectedAction
 |EditCellAction|ChangeCellAction|CancelCellEditAction
 |SaveCellDataAction|SaveReceivedAction|SaveErrorReceivedAction
-|DeleteRowAction|DeleteReceivedAction|DeleteErrorReceivedAction
+|DeleteRowAction|DeleteRowsAction|DeleteReceivedAction|DeleteMultiReceivedAction|DeleteErrorReceivedAction
 |SearchTermAction|SortColumnAction
-|AddRowAction|AddReceivedAction|AddErrorAction;
+|AddRowAction|AddReceivedAction|AddErrorAction|UndeletedRowsReceivedAction
+|FilterByTypeAction;
 
 export interface State extends BaseState {
   favoritesLoading: boolean;
@@ -46,6 +51,7 @@ export interface State extends BaseState {
   sortDirection: string;
   selectedFavorites: number[];
   key: string;
+  filterByType: string;
 }
 
 export default class FavoritesListStore extends WdkStore<State> {
@@ -67,6 +73,7 @@ export default class FavoritesListStore extends WdkStore<State> {
       sortByKey: 'display',
       sortDirection: 'asc',
       selectedFavorites: [],
+      filterByType: null
     }, super.getInitialState());
   }
 
@@ -164,9 +171,9 @@ export default class FavoritesListStore extends WdkStore<State> {
       // version of that list depends on whether the changes have altered its ability to meet the existing search criteria.
       case 'favorites/save-received':
         let updatedList = state.list.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite);
-        let updatedFilteredList = this._meetsSearchCriteria(action.payload.updatedFavorite, state.searchText, state) ?
-        state.filteredList.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite)
-        : state.filteredList.filter((favorite) => !isEqual(favorite.id, action.payload.updatedFavorite.id));
+        let updatedFilteredList = this._meetsSearchCriteria(action.payload.updatedFavorite, state.searchText, state)
+          ? state.filteredList.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite)
+          : state.filteredList.filter((favorite) => !isEqual(favorite.id, action.payload.updatedFavorite.id));
         return {
           ...state,
           list: updatedList,
@@ -191,6 +198,19 @@ export default class FavoritesListStore extends WdkStore<State> {
           editCoordinates: {}
         };
 
+      case 'favorites/delete-multi-received':
+        const { deletedFavorites } = action.payload;
+        const deletedIds = deletedFavorites.map(favorite => favorite.id);
+        updatedList = state.list.filter((favorite) => !deletedIds.includes(favorite.id));
+        updatedFilteredList = state.filteredList.filter((favorite) => !deletedIds.includes(favorite.id));
+        return {
+          ...state,
+          list: updatedList,
+          filteredList: updatedFilteredList,
+          editCoordinates: {}
+        };
+
+
       case 'favorites/delete-error':
         return {
           ...state,
@@ -198,24 +218,39 @@ export default class FavoritesListStore extends WdkStore<State> {
         };
 
       case 'favorites/search-term': {
-        let filteredList = action.payload.length ?
-        state.list.filter((favorite) => this._meetsSearchCriteria(favorite, action.payload, state))
-        : state.list;
+        let filteredList = action.payload.length
+          ? state.list.filter((favorite) => this._meetsSearchCriteria(favorite, action.payload, state))
+          : state.list;
         return {
           ...state,
-          searchText: action.payload,
-          filteredList: filteredList,
-          editCoordinates: {}
+          filteredList,
+          editCoordinates: {},
+          searchText: action.payload
         };
       }
 
       case 'favorites/sort-column':
-      return {
-        ...state,
-        sortByKey: action.payload.sortByKey,
-        sortDirection: action.payload.sortDirection
-      };
+        return {
+          ...state,
+          sortByKey: action.payload.sortByKey,
+          sortDirection: action.payload.sortDirection
+        };
 
+      case 'favorites/filter-by-type': {
+        let { list } = state;
+        let filterByType = action.payload;
+        let filteredList = [...list].filter((favorite) => {
+          return !filterByType
+            ? true
+            : favorite.recordClassName === filterByType;
+        });
+        return {
+          ...state,
+          filteredList,
+          filterByType,
+          searchText: ''
+        };
+      }
       // Probably should not be mutating
       case 'favorites/add-received': {
         let { list, searchText, filteredList } = state;
@@ -227,7 +262,21 @@ export default class FavoritesListStore extends WdkStore<State> {
           list: list.concat([addedFavorite]),
           filteredList: !meetsCriteria ? filteredList : filteredList.concat(addedFavorite),
           deletedFavorite: null
-        };
+        }
+      }
+
+      case 'favorites/undeleted-rows-received': {
+        let { list, searchText, filteredList } = state;
+        let { undeletedFavorites } = action.payload;
+        let isShown = (fav: Favorite) => this._meetsSearchCriteria(fav, searchText, state);
+        list = list.concat([...undeletedFavorites]);
+        filteredList = filteredList.concat(undeletedFavorites.filter(fav => isShown(fav)));
+        return {
+          ...state,
+          list,
+          filteredList,
+          selectedFavorites: []
+        }
       }
 
       default:

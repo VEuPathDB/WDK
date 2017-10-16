@@ -1,6 +1,6 @@
-import {ActionThunk} from "../ActionCreator";
-import {Favorite, RecordInstance} from "../utils/WdkModel";
-import {ServiceError} from "../utils/WdkService";
+import { ActionThunk } from "../ActionCreator";
+import { Favorite, RecordInstance } from "../utils/WdkModel";
+import { ServiceError } from "../utils/WdkService";
 
 export type ListLoadingAction = {
   type: 'favorites/list-loading'
@@ -69,13 +69,22 @@ export type CancelCellEditAction = {
   type: 'favorites/cancel-cell-edit'
 }
 
+export type DeleteRowsAction = {
+  type: 'favorites/delete-rows'
+}
+
 export type DeleteRowAction = {
   type: 'favorites/delete-row'
 }
 
 export type DeleteReceivedAction = {
   type: 'favorites/delete-received'
-  payload: { deletedFavorite : Favorite}
+  payload: { deletedFavorite : Favorite }
+}
+
+export type DeleteMultiReceivedAction = {
+  type: 'favorites/delete-multi-received'
+  payload: { deletedFavorites : Favorite[] }
 }
 
 export type DeleteErrorReceivedAction = {
@@ -98,6 +107,10 @@ export type SortColumnAction = {
   }
 }
 
+export type UndeleteRowsAction = {
+  type: 'favorites/undelete-rows'
+}
+
 export type AddRowAction = {
   type: 'favorites/add-row'
 }
@@ -109,6 +122,13 @@ export type AddReceivedAction = {
   }
 }
 
+export type UndeletedRowsReceivedAction = {
+  type: 'favorites/undeleted-rows-received'
+  payload: {
+    undeletedFavorites: Favorite[]
+  }
+}
+
 export type AddErrorAction = {
   type: 'favorites/add-error'
   payload: {
@@ -116,10 +136,15 @@ export type AddErrorAction = {
   }
 }
 
+export type FilterByTypeAction = {
+  type: 'favorites/filter-by-type'
+  payload: string
+}
+
 type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
 type SaveAction = SaveCellDataAction|SaveReceivedAction|SaveErrorReceivedAction;
-type DeleteAction = DeleteRowAction|DeleteReceivedAction|DeleteErrorReceivedAction;
-type AddAction = AddRowAction|AddReceivedAction|AddErrorAction;
+type DeleteAction = DeleteRowAction|DeleteRowsAction|DeleteReceivedAction|DeleteMultiReceivedAction|DeleteErrorReceivedAction;
+type AddAction = AddRowAction|AddReceivedAction|AddErrorAction|UndeleteRowsAction|UndeletedRowsReceivedAction;
 
 export function loadFavoritesList(): ActionThunk<ListAction>{
   return function run(dispatch, { wdkService }) {
@@ -170,6 +195,21 @@ export function cancelCellEdit(): CancelCellEditAction {
   return { type: 'favorites/cancel-cell-edit' };
 }
 
+export function deleteRows (deletedFavorites: Favorite[]): ActionThunk<DeleteAction> {
+  return (dispatch, { wdkService }) => {
+    dispatch({ type: 'favorites/delete-rows' });
+    const ids = deletedFavorites.map(favorite => favorite.id);
+    wdkService.deleteFavorites(ids).then(
+      () => {
+        dispatch({ type: 'favorites/delete-multi-received', payload: { deletedFavorites } })
+      },
+      (error: ServiceError) => {
+        dispatch({ type: 'favorites/delete-error', payload: { error }})
+      }
+    );
+  }
+}
+
 export function deleteRow(deletedFavorite: Favorite): ActionThunk<DeleteAction> {
   return (dispatch, { wdkService }) => {
     dispatch({ type: 'favorites/delete-row' });
@@ -190,6 +230,25 @@ export function searchTerm(term: string): SearchTermAction {
 
 export function sortColumn(sortByKey: string, sortDirection: string): SortColumnAction {
   return { type: 'favorites/sort-column', payload: { sortByKey, sortDirection } };
+}
+
+export function filterByType(recordType: string): FilterByTypeAction {
+  return { type: 'favorites/filter-by-type', payload: recordType };
+}
+
+export function undeleteRows(undeletedFavorites: Favorite[]): ActionThunk<AddAction> {
+  return (dispatch, { wdkService }) => {
+    dispatch({ type: 'favorites/undelete-rows' });
+    const ids = undeletedFavorites.map((favorite) => favorite.id);
+    wdkService.undeleteFavorites(ids).then(
+      () => {
+        dispatch({ type: 'favorites/undeleted-rows-received', payload: { undeletedFavorites } });
+      },
+      (error: ServiceError) => {
+        dispatch({ type: 'favorites/add-error', payload: { error } });
+      }
+    );
+  };
 }
 
 export function addRow(addedFavorite: Favorite): ActionThunk<AddAction> {
