@@ -38,11 +38,13 @@ class FavoritesList extends Component {
     this.handleCellCancel = this.handleCellCancel.bind(this);
     this.handleRowDelete = this.handleRowDelete.bind(this);
     this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
+    this.handleTypeFilterClick = this.handleTypeFilterClick.bind(this);
 
     this.getRecordClassByName = this.getRecordClassByName.bind(this);
     this.countFavoritesByType = this.countFavoritesByType.bind(this);
 
     this.handleUndoDelete = this.handleUndoDelete.bind(this);
+    this.handleBulkUndoDelete = this.handleBulkUndoDelete.bind(this);
     this.handleBannerClose = this.handleBannerClose.bind(this);
     this.onRowSelect = this.onRowSelect.bind(this);
     this.onRowDeselect = this.onRowDeselect.bind(this);
@@ -72,10 +74,11 @@ class FavoritesList extends Component {
     };
 
     const undoDelete = () => {
-      console.log('undoing delete for...', selection);
-      selection.forEach(_row => this.handleUndoDelete(_row));
+      this.handleBulkUndoDelete(selection);
+
       let bannerList = [...this.state.banners];
       let idx = bannerList.findIndex(banner => banner.id === bannerId);
+
       if (idx >= 0) {
         bannerList.splice(idx, 1);
         this.setState({ banners: bannerList });
@@ -128,6 +131,7 @@ class FavoritesList extends Component {
     const iconStyle = {
       fontSize: '80px'
     };
+
     const message = isSearching
       ? <span>Whoops! No favorites matching your search term, <i>"{searchText}"</i>, could be found. <br />Please try a different search term or add additional favorites.</span>
       : 'Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page. If you have favorites, you may have filtered them all out with too restrictive a search criterion.'
@@ -143,29 +147,16 @@ class FavoritesList extends Component {
   }
 
   countFavoritesByType () {
-     const { recordClasses, filteredList } = this.props;
-     const counts = filteredList.reduce((roster, { recordClassName }) => {
-       let type = this.getRecordClassByName(recordClassName);
-       type = !type
-        ? 'Unknown'
-        : type.displayNamePlural;
-       if (roster[type]) roster[type] = roster[type] + 1;
-       else roster[type] = 1;
-       return roster;
-     }, {});
-     return counts;
+   const { recordClasses, list } = this.props;
+   const counts = list.reduce((tally, { recordClassName }) => {
+     if (tally[recordClassName]) tally[recordClassName] = tally[recordClassName] + 1;
+     else tally[recordClassName] = 1;
+     return tally;
+   }, {});
+   return counts;
   }
 
   //  RENDERERS ===============================================================
-
-  __renderEmptyState_OLD () {
-    return (
-      <div className="no-rows empty-message">
-        Your favorites page is currently empty. To add items to your favorites simply click on the favorites icon in a record page.
-        If you have favorites, you may have filtered them all out with too restrictive a search criterion.
-      </div>
-    );
-  }
 
   renderIdCell ({ key, value, row, column }) {
     let { recordClassName, primaryKey, displayName } = row;
@@ -192,8 +183,9 @@ class FavoritesList extends Component {
           value={editValue}
           onKeyPress={(e) => this.handleEnterKey(e, column.key)}
           onChange={(newValue) => this.handleCellChange(newValue)}
+          autoComplete={true}
           maxLength='50'
-          size='20'
+          size='5'
         />
         <Icon
           fa="check-circle action-icon save-icon"
@@ -276,11 +268,20 @@ class FavoritesList extends Component {
 
   renderCountSummary () {
     const counts = this.countFavoritesByType();
-    const types = Object.keys(counts);
-    const last = types.length - 1;
-    let output = [];
-    types.forEach((type, idx) => {
-      output.push(<span className="Favorites-GroupCount" key={idx}>{type}: {counts[type]}</span>);
+    const recordClasses = Object.keys(counts);
+    const output = recordClasses.map((recordClass, idx) => {
+      let type = this.getRecordClassByName(recordClass);
+      let name = type ? type.displayNamePlural : 'Unknown';
+      let { filterByType } = this.props;
+      let className = 'Favorites-GroupCount ' + (filterByType && filterByType === recordClass ? 'active' : 'inactive');
+      return (
+        <span
+          onClick={() => this.handleTypeFilterClick(recordClass)}
+          className={className}
+          key={idx}>
+          {name}: {counts[recordClass]}
+        </span>
+      );
     });
 
     return (
@@ -308,6 +309,7 @@ class FavoritesList extends Component {
   // Table config generators =================================================
 
   getTableActions () {
+    const { deleteRows } = this.props.favoritesEvents;
     return [
       {
         selectionRequired: true,
@@ -319,9 +321,10 @@ class FavoritesList extends Component {
           );
         },
         handler: (rowData) => {
-          this.handleRowDelete(rowData);
+          // this.handleRowDelete(rowData);
         },
         callback: (selection) => {
+          deleteRows(selection);
           this.createDeletedBanner(selection);
           let selectedFavorites = [];
           this.setState({ selectedFavorites });
@@ -334,7 +337,8 @@ class FavoritesList extends Component {
     const { searchBoxPlaceholder, selectedFavorites } = this.props;
 
     return {
-      // useStickyHeader: true,
+      useStickyHeader: true,
+      tableBodyMaxHeight: 'calc(100vh - 80px)',
       renderEmptyState: this.renderEmptyState,
       searchPlaceholder: searchBoxPlaceholder,
       selectedNoun: 'Favorite',
@@ -426,6 +430,12 @@ class FavoritesList extends Component {
     );
   }
 
+  handleTypeFilterClick (recordType) {
+    const { filterByType, favoritesEvents } = this.props;
+    const active = recordType === filterByType;
+    favoritesEvents.filterByType(active ? null : recordType);
+  }
+
   /**
    * Calls appropriate handler when any edit link is pressed.  Because the switch between the cell contents and the
    * in-line edit form can alter row height, the CellMeasurer cache is cleared.
@@ -502,6 +512,10 @@ class FavoritesList extends Component {
 
   handleUndoDelete (row) {
     this.props.favoritesEvents.addRow(row);
+  }
+
+  handleBulkUndoDelete (rows) {
+    this.props.favoritesEvents.undeleteRows(rows);
   }
 
   getDataKeyTooltip (dataKey) {

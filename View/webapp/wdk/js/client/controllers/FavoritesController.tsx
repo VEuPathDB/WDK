@@ -40,7 +40,8 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       sortByKey,
       sortDirection,
       deletedFavorite,
-      selectedFavorites
+      selectedFavorites,
+      filterByType
     } = this.store.getState();
 
     return {
@@ -57,7 +58,8 @@ class FavoritesListController extends AbstractViewController<State, FavoritesLis
       sortByKey,
       sortDirection,
       deletedFavorite,
-      selectedFavorites
+      selectedFavorites,
+      filterByType
     };
   }
 

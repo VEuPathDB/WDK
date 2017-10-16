@@ -171,7 +171,7 @@ export default class FavoritesListStore extends WdkStore<State> {
       // version of that list depends on whether the changes have altered its ability to meet the existing search criteria.
       case 'favorites/save-received':
         let updatedList = state.list.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite);
-        let updatedFilteredList = this._meetsSearchCriteria(action.payload.updatedFavorite, state.searchText, state)
+        let updatedFilteredList = this.meetsFilterAndSearchCriteria(action.payload.updatedFavorite, state)
           ? state.filteredList.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite)
           : state.filteredList.filter((favorite) => !isEqual(favorite.id, action.payload.updatedFavorite.id));
         return {
@@ -218,14 +218,16 @@ export default class FavoritesListStore extends WdkStore<State> {
         };
 
       case 'favorites/search-term': {
-        let filteredList = action.payload.length
-          ? state.list.filter((favorite) => this._meetsSearchCriteria(favorite, action.payload, state))
-          : state.list;
+        let { list } = state;
+        let searchText = action.payload;
+        let stateWithTerm = Object.assign({}, state, { searchText });
+        let filteredList = searchText.length
+          ? list.filter(favorite => this.meetsFilterAndSearchCriteria(favorite, stateWithTerm))
+          : list;
         return {
-          ...state,
+          ...stateWithTerm,
           filteredList,
-          editCoordinates: {},
-          searchText: action.payload
+          editCoordinates: {}
         };
       }
 
@@ -239,23 +241,18 @@ export default class FavoritesListStore extends WdkStore<State> {
       case 'favorites/filter-by-type': {
         let { list } = state;
         let filterByType = action.payload;
-        let filteredList = [...list].filter((favorite) => {
-          return !filterByType
-            ? true
-            : favorite.recordClassName === filterByType;
-        });
+        let stateWithFilter = Object.assign({}, state, { filterByType });
+        let filteredList = list.filter(favorite => this.meetsFilterAndSearchCriteria(favorite, stateWithFilter));
         return {
-          ...state,
-          filteredList,
-          filterByType,
-          searchText: ''
+          ...stateWithFilter,
+          filteredList
         };
       }
       // Probably should not be mutating
       case 'favorites/add-received': {
-        let { list, searchText, filteredList } = state;
+        let { list, filteredList } = state;
         let { addedFavorite } = action.payload;
-        let meetsCriteria = this._meetsSearchCriteria(addedFavorite, searchText, state);
+        let meetsCriteria = this.meetsFilterAndSearchCriteria(addedFavorite, state);
 
         return {
           ...state,
@@ -266,9 +263,9 @@ export default class FavoritesListStore extends WdkStore<State> {
       }
 
       case 'favorites/undeleted-rows-received': {
-        let { list, searchText, filteredList } = state;
+        let { list, filteredList } = state;
         let { undeletedFavorites } = action.payload;
-        let isShown = (fav: Favorite) => this._meetsSearchCriteria(fav, searchText, state);
+        let isShown = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, state);
         list = list.concat([...undeletedFavorites]);
         filteredList = filteredList.concat(undeletedFavorites.filter(fav => isShown(fav)));
         return {
@@ -284,9 +281,10 @@ export default class FavoritesListStore extends WdkStore<State> {
     }
   }
 
-  _meetsSearchCriteria(favorite:Favorite, searchText:string, state:State) {
-    searchText = searchText.toLowerCase();
-    return (
+  meetsFilterAndSearchCriteria (favorite:Favorite, state:State) {
+    const searchText = state.searchText.toLowerCase();
+    const { filterByType } = state;
+    return (!filterByType || favorite.recordClassName === filterByType) && (!searchText ||
       (favorite.displayName.toLowerCase().indexOf(searchText) > -1) ||
       (this._getType(favorite, state).toLowerCase().indexOf(searchText) > -1) ||
       (favorite.description != null && favorite.description.toLowerCase().indexOf(searchText) > -1) ||
@@ -294,7 +292,7 @@ export default class FavoritesListStore extends WdkStore<State> {
     );
   }
 
-  _getType(favorite:Favorite, state:State) {
+  _getType (favorite:Favorite, state:State) {
     if (state.globalData.recordClasses == null) return 'Unknown';
     let recordClass = state.globalData.recordClasses.find((recordClass) => recordClass.name === favorite.recordClassName);
     return recordClass == null ? 'Unknown' : recordClass.displayName;
