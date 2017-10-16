@@ -48,6 +48,10 @@
     border: 1px solid rgba(0, 0, 0, 0.15);
     margin: 0;
     margin-right: 10px;
+    &.active {
+      border-color: $blue;
+      color: $blue;
+    }
   }
 
   .wdk-RealTimeSearchBoxInput {
