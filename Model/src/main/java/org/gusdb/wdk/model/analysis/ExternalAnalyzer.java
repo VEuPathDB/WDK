@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.analysis;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,6 +66,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String ATTRIBUTES_FILE_NAME = "attributes" + FILE_NAME_SUFFIX;
   protected static final String HEADER_MAPPING_FILE_NAME = "header.mapping";
   protected static final String MODEL_PROPS_FILE_NAME = "model.prop";
+  protected static final String MODEL_XML_PROPS_FILE_NAME = "modelXml.prop";
 
   protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
@@ -132,7 +135,9 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
-      dumpModelProps(getWdkModel(), storageDir);
+      WdkModel wdkModel = getWdkModel();
+      dumpModelProps(wdkModel, storageDir);
+      dumpModelXmlProps(wdkModel, storageDir);
     }
 
     // decide if header should be added to table and attribute tab files
@@ -211,6 +216,23 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     }
     catch (IOException e) {
       throw new WdkModelException("Unable to dump WDK Model properties to file.", e);
+    }
+  }
+
+  private void dumpModelXmlProps(WdkModel wdkModel, String storageDir) throws WdkModelException {
+    File propsOutFile = Paths.get(storageDir, MODEL_PROPS_FILE_NAME).toFile();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(propsOutFile))) {
+      out.write("gusHome=" + wdkModel.getGusHome() + NL);
+      out.write("project=" + wdkModel.getProjectId() + NL);
+      out.write("version=" + wdkModel.getVersion() + NL);
+      out.write("buildNumber=" + wdkModel.getBuildNumber() + NL);
+      out.write("releaseDate=" + wdkModel.getReleaseDate() + NL);
+      out.write("startupTime=" + wdkModel.getStartupTime() + NL);
+      out.write("displayName=" + wdkModel.getDisplayName() + NL);
+      out.write("introduction=" + wdkModel.getIntroduction() + NL);
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to dump WDK Model XML properties to file.", e);
     }
   }
 
