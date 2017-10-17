@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { escape, orderBy } from 'lodash';
 import { withRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
-import { MesaController as Mesa, StringUtils as MesaUtils } from 'mesa';
+import { MesaController as Mesa, Utils as MesaUtils, ModalBoundary } from 'mesa';
 
 import 'mesa/dist/css/mesa.css';
 
@@ -412,21 +412,23 @@ class FavoritesList extends Component {
     if (user.isGuest) return (<div className="empty-message">You must login first to use favorites</div>);
 
     return (
-      <div className="wdk-Favorites">
-        <h1 className="page-title">Favorites</h1>
-        <CountSummary />
-        <BannerList onClose={this.handleBannerClose} banners={banners} />
-        <Mesa {...mesaProps}>
-          <RealTimeSearchBox
-            className="favorites-search-field"
-            autoFocus={false}
-            searchTerm={searchText}
-            onSearchTermChange={this.handleSearchTermChange}
-            placeholderText={searchBoxPlaceholder}
-            helpText={searchBoxHelp}
-          />
-        </Mesa>
-      </div>
+      <ModalBoundary>
+        <div className="wdk-Favorites">
+          <h1 className="page-title">Favorites</h1>
+          <CountSummary />
+          <BannerList onClose={this.handleBannerClose} banners={banners} />
+          <Mesa {...mesaProps}>
+            <RealTimeSearchBox
+              className="favorites-search-field"
+              autoFocus={false}
+              searchTerm={searchText}
+              onSearchTermChange={this.handleSearchTermChange}
+              placeholderText={searchBoxPlaceholder}
+              helpText={searchBoxHelp}
+            />
+          </Mesa>
+        </div>
+      </ModalBoundary>
     );
   }
 
