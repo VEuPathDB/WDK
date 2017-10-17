@@ -44,14 +44,14 @@ public class FilterParamNewStableValue {
 
   private static final Logger LOG = Logger.getLogger(FilterParamNewStableValue.class);
 
-  public static final String FILTERS_KEY = "filters";
-  public static final String FILTERS_FIELD = "field";
-  public static final String FILTERS_VALUE = "value";
-  public static final String FILTERS_MIN = "min";
-  public static final String FILTERS_MAX = "max";
-  public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
-  public static final String FILTERS_IS_RANGE = "isRange";
-  public static final String FILTERS_TYPE = "type";
+  static final String FILTERS_KEY = "filters";
+  static final String FILTERS_FIELD = "field";
+  static final String FILTERS_VALUE = "value";
+  static final String FILTERS_MIN = "min";
+  static final String FILTERS_MAX = "max";
+  static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
+  static final String FILTERS_IS_RANGE = "isRange";
+  static final String FILTERS_TYPE = "type";
 
   private FilterParamNew _param;
   private JSONObject _stableValueJson;
@@ -72,7 +72,7 @@ public class FilterParamNewStableValue {
     _stableValueJson = stableValueJson;
   }
 
-  public List<Filter> getFilters() throws WdkModelException {
+  List<Filter> getFilters() throws WdkModelException {
     initWithThrow();
     return Collections.unmodifiableList(_filters);
   }
@@ -82,7 +82,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   public String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues, DataSource dataSource) throws WdkModelException {
+   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
     List<String> errors = new ArrayList<String>();
@@ -126,11 +126,11 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-  public String validateSyntax() {
+  String validateSyntax() {
     return init();
   }
 
-  public String toSignatureString() throws WdkModelException {
+  String toSignatureString() throws WdkModelException {
     initWithThrow();
     List<String> filterSigs = new ArrayList<String>();
     for (Filter filter : getFilters()) {
@@ -256,7 +256,7 @@ public class FilterParamNewStableValue {
    * @param user  
    * @param contextParamValues 
    */
-  public String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
+  String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
 
     initWithThrow();
 
@@ -274,7 +274,7 @@ public class FilterParamNewStableValue {
 
   //////////////////// inner classes to represent different types of filter //////////////////////////
 
-  public abstract class Filter {
+  abstract class Filter {
 
     String field = null; // the stable value did not include a value field
     Boolean includeUnknowns = null;
@@ -299,7 +299,7 @@ public class FilterParamNewStableValue {
     abstract String getSignature();
 
     // include in where clause a filter by ontology_id
-    public String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
+    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
 
       OntologyItem ontologyItem = ontology.get(field);
       OntologyItemType type = ontologyItem.getType();
@@ -327,7 +327,7 @@ public class FilterParamNewStableValue {
      * @param includeUnknowns
      * @param field
      */
-    public RangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) {
+    RangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) {
       super(jsValue == null, includeUnknowns, field);
 
       /*
@@ -338,7 +338,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    public String getDisplayValue() {
+    String getDisplayValue() {
       String min = getMinString();
       String max = getMaxString();
       return min == null ?
@@ -347,7 +347,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    public Boolean getIncludeUnknowns() {
+    Boolean getIncludeUnknowns() {
       return includeUnknowns;
     }
 
@@ -456,7 +456,7 @@ public class FilterParamNewStableValue {
 
   abstract class MembersFilter extends Filter {
 
-    public MembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
+    MembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
 
       super(jsArray == null, includeUnknowns, field);
 
@@ -471,14 +471,14 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    public Boolean getIncludeUnknowns() {
+    Boolean getIncludeUnknowns() {
       return includeUnknowns;
     }
 
     /**
      * @return String with list of error values; null if no errors
      */
-    public String validateValues(Set<String> validValuesMap) {
+    String validateValues(Set<String> validValuesMap) {
       List<String> errList = new ArrayList<String>();
       for (String value : getMembersAsStrings()) if (!validValuesMap.contains(value)) errList.add(value);
       if (errList.size() != 0) return FormatUtil.join(errList, ", ");
@@ -495,7 +495,7 @@ public class FilterParamNewStableValue {
 
     private List<Double> members;
 
-    public NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
+    NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsArray, includeUnknowns, field);
     }
 
@@ -508,7 +508,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    public String getDisplayValue() {
+    String getDisplayValue() {
       Collections.sort(members);
       return FormatUtil.join(members, ",");
     }
@@ -538,7 +538,7 @@ public class FilterParamNewStableValue {
 
     private List<String> members;
 
-    public StringMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field)
+    StringMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field)
         throws WdkModelException {
       super(jsArray, includeUnknowns, field);
     }
@@ -552,7 +552,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    public String getDisplayValue() {
+    String getDisplayValue() {
       return FormatUtil.join(members, ",");
     }
 
