@@ -221,7 +221,7 @@ export default class FavoritesListStore extends WdkStore<State> {
         let { list } = state;
         let searchText = action.payload;
         let stateWithTerm = Object.assign({}, state, { searchText });
-        let filteredList = searchText.length
+        let filteredList = searchText.length || state.filterByType
           ? list.filter(favorite => this.meetsFilterAndSearchCriteria(favorite, stateWithTerm))
           : list;
         return {
