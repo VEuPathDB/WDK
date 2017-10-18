@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -187,16 +188,18 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       throw new WdkModelException("Unable to create cache.", e);
     }
     
-    /*
+    String schema = _wdkModel.getAppDb().getConfig().getLogin();
+    
     try {
-      // TODO: upgrade dbms platform to have a method for analyzing stats
-      SqlUtils.executeUpdate(dataSource, "", _query.getFullName() + "__analyze");
+      long start = System.currentTimeMillis();
+      platform.computeStatistics(dataSource, schema, tableName);
+      QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
     }
     catch (SQLException e) {
       LOG.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to analyze statistics.", e);
     }
-    */
+
     executePostCacheUpdateSql(tableName, instanceId);
     LOG.debug("created!!  cache table for query " + _query.getFullName());
   }
