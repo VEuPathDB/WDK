@@ -14,6 +14,7 @@ import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -184,8 +185,10 @@ public class ResultFactory {
     String schema = database.getDefaultSchema();
     String cacheTable = getCacheTableName(instanceId);
     instance.createCache(cacheTable, instanceId);
-    platform.disableStatistics(dataSource, schema, cacheTable);
     createCacheTableIndex(cacheTable, instance.getQuery());
+    long start = System.currentTimeMillis();
+    platform.computeThenLockStatistics(dataSource, schema, cacheTable);
+    QueryLogger.logEndStatementExecution("whatever the platform uses for computing stats", cacheTable + "__gather_table_stats", start);
     return instanceId;
   }
   
