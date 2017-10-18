@@ -187,19 +187,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       LOG.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to create cache.", e);
     }
-    
-    String schema = _wdkModel.getAppDb().getConfig().getLogin();
-    
-    try {
-      long start = System.currentTimeMillis();
-      platform.computeStatistics(dataSource, schema, tableName);
-      QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
-    }
-    catch (SQLException e) {
-      LOG.error("Failed to run sql:\n" + buffer);
-      throw new WdkModelException("Unable to analyze statistics.", e);
-    }
-
+        
     executePostCacheUpdateSql(tableName, instanceId);
     LOG.debug("created!!  cache table for query " + _query.getFullName());
   }
