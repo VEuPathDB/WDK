@@ -620,19 +620,24 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     if (projectId.length() == 0 || projectId.indexOf('\'') >= 0)
       throw new WdkModelException("The projectId/modelName cannot be " +
           "empty, and cannot have single quote in it: " + projectId);
+
     _projectId = projectId;
     _modelConfig = modelConfig;
+
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
-    if (udsConfig != null) userDatasetStore = udsConfig.getUserDatasetStore();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
+
+    if (udsConfig != null) {
+      userDatasetStore = udsConfig.getUserDatasetStore();
+    }
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
