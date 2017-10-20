@@ -34,7 +34,7 @@ public class ProjectFormatter {
 
   public static final String WELCOME_MESSAGE = "Welcome to the WDK 3.0 Web Service";
 
-  public static JSONObject getWdkProjectInfo(WdkModel wdkModel) {
+  public static JSONObject getWdkProjectInfo(WdkModel wdkModel, String serviceEndpoint) {
 
     ModelConfig config = wdkModel.getModelConfig();
 
@@ -63,7 +63,9 @@ public class ProjectFormatter {
       .put(Keys.RELEASE_DATE, wdkModel.getReleaseDate())
       .put(Keys.STARTUP_TIME, wdkModel.getStartupTime())
       .put(Keys.WEBAPP_URL, config.getWebAppUrl())
-      .put(Keys.WEBSERVICE_URL, config.getWebServiceUrl())
+      // No need for client to know WSF URL for now; hide to avoid confusion with WDK service
+      //.put(Keys.WEBSERVICE_URL, config.getWebServiceUrl())
+      .put(Keys.WDKSERVICE_URL, config.getWebAppUrl() + serviceEndpoint)
       .put(Keys.ASSETS_URL, config.getAssetsUrl())
       .put(Keys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
       .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())

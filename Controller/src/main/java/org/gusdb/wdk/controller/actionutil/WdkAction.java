@@ -118,7 +118,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _request = request;
       _response = response;
       _servlet = servlet;
-      _wdkModel = (WdkModelBean)_servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
+      _wdkModel = ActionUtility.getWdkModel(servlet);
       _responseType = DEFAULT_RESPONSE_TYPE;
       _strutsActionForm = form;
       
@@ -301,8 +301,8 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
   private void assignAttributesToRequest(ActionResult result) throws WdkModelException {
     // assign the current request URL for access by the resulting page
     _request.setAttribute(CConstants.WDK_REFERRER_URL_KEY, getRequestData().getReferrer());
-    _request.setAttribute(CConstants.WDK_USER_KEY, getCurrentUser());
-    _request.setAttribute(CConstants.WDK_MODEL_KEY, getWdkModel());
+    _request.setAttribute(Utilities.WDK_USER_KEY, getCurrentUser());
+    _request.setAttribute(Utilities.WDK_MODEL_KEY, getWdkModel());
     for (String attribKey : result) {
       _request.setAttribute(attribKey, result.getRequestAttribute(attribKey));
     }
@@ -396,7 +396,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    * @throws WdkModelException if guest user is needed but unable to create guest user
    */
   protected UserBean getCurrentUser() throws WdkModelException {
-    UserBean user = (UserBean)getSessionAttribute(CConstants.WDK_USER_KEY);
+    UserBean user = ActionUtility.getUser(_request);
     // if guest is null, means the session is timed out; create the guest again
     if (user == null) {
       user = _wdkModel.getUserFactory().getGuestUser();
@@ -421,7 +421,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    * @param user new user for this session
    */
   protected void setCurrentUser(UserBean user) {
-    setSessionAttribute(CConstants.WDK_USER_KEY, user);
+    setSessionAttribute(Utilities.WDK_USER_KEY, user);
   }
   
   /**

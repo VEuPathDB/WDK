@@ -1,17 +1,13 @@
 package org.gusdb.wdk.controller;
 
-import org.gusdb.wdk.model.Utilities;
-
 public class CConstants {
-    
+
     private CConstants() { }
-    
+
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
-    public static final String WDK_MODEL_KEY = Utilities.MODEL_KEY;
     public static final String WDK_WIZARD_KEY = "wdkWizard";
     public static final String GUS_HOME_KEY = "GUS_HOME";
-    public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
     public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
     public static final String WDK_PAGES_DIR = "jsp";
@@ -63,8 +59,7 @@ public class CConstants {
     public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
     public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     public static final String WDK_XMLANSWER_KEY = "wdkXmlAnswer";
-    public static final String WDK_SUMMARY_ATTRS_KEY = "wdkSummaryAttributesByQuestion"; 
-    public static final String WDK_LOGIN_URL_KEY = "wdkLoginUrl";
+    public static final String WDK_SUMMARY_ATTRS_KEY = "wdkSummaryAttributesByQuestion";
     public static final String WDK_PAGE_SIZE_KEY = "pageSize";
     public static final String WDK_ALT_PAGE_SIZE_KEY = "altPageSize";
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
@@ -91,7 +86,6 @@ public class CConstants {
     public static final String WDK_REMOTE_LOGIN_KEY = "remoteKey";
 
     // the constants for user authentication/authorization
-    public static final String WDK_USER_KEY = "wdkUser";
     public static final String WDK_EMAIL_KEY = "email";
     public static final String WDK_PASSWORD_KEY = "password";
     public static final String WDK_ERROR_TEXT_KEY = "errorText";
@@ -187,27 +181,6 @@ public class CConstants {
     public static final String WDK_TAB_STATE_COOKIE = "wdk_tab_state";
     public static final String WDK_STRATEGY_PANEL_VISIBILITY_COOKIE = "show-strat-panel";
 
-    //name of webapp init params, from web.xml, used in ApplicationInitListener.java
-    protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
-    protected static final String WDK_MODELXML_PARAM = "wdkModelXml_param";
-    protected static final String WDK_MODELSCHEMA_PARAM = "wdkModelSchema_param";
-    protected static final String WDK_MODELPROPS_PARAM = "wdkModelProps_param";
-    protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
-    protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
-    protected static final String WDK_ALWAYSGOTOSUMMARY_PARAM = "wdkAlwaysGoToSummary_param";
-    protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
-    protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
-    protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
-    
-    //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
-    protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-model/config/toyModel-config.xml";
-    protected static final String DEFAULT_WDKMODELXML = "/WEB-INF/wdk-model/config/toyModel.xml";
-    protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-model/lib/rng/wdkModel.rng";
-    protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-model/config/toyModel.props";
-    protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
-    protected static final String DEFAULT_XMLSCHEMA = "/WEB-INF/wdk-model/lib/rng/xmlAnswer.rng";
-    protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
-    
     public static final int MIN_PAGE_SIZE = 5;
     public static final String WDK_EXCEPTION = "exception";
 }

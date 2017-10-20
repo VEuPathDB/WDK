@@ -61,7 +61,7 @@ public class UserDatasetService extends UserService {
   }
 
   @GET
-  @Path("user-dataset")
+  @Path("user-datasets")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     expandDatasets = getFlag(expandDatasets, false);
@@ -92,7 +92,7 @@ public class UserDatasetService extends UserService {
   }
 
   @GET
-  @Path("user-dataset/{datasetId}")
+  @Path("user-datasets/{datasetId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
@@ -116,7 +116,7 @@ public class UserDatasetService extends UserService {
   }
 
   @PUT
-  @Path("user-dataset/{datasetId}/meta")
+  @Path("user-datasets/{datasetId}/meta")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
@@ -147,7 +147,7 @@ public class UserDatasetService extends UserService {
    *	}
    */	
   @PATCH
-  @Path("user-dataset/share")
+  @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException {
     JSONObject jsonObj = new JSONObject(body);
@@ -204,7 +204,7 @@ public class UserDatasetService extends UserService {
   }
 
   @DELETE
-  @Path("user-dataset/{datasetId}")
+  @Path("user-datasets/{datasetId}")
   public Response deleteById(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();

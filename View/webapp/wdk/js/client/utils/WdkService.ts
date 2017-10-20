@@ -182,7 +182,7 @@ export default class WdkService {
    * @return {Promise<Array<Object>>}
    */
   getQuestions() {
-    return this._getFromCache('questions', () => this._fetchJson<Question[]>('get', '/question?expandQuestions=true'));
+    return this._getFromCache('questions', () => this._fetchJson<Question[]>('get', '/questions?expandQuestions=true'));
   }
 
   /**
@@ -202,13 +202,13 @@ export default class WdkService {
   }
 
   getQuestionAndParameters(identifier: string) {
-    return this._fetchJson<Question>('get', `/question/${identifier}?expandParams=true`);
+    return this._fetchJson<Question>('get', `/questions/${identifier}?expandParams=true`);
   }
 
   getQuestionParamValues(identifier: string, paramName: string, paramValue: ParameterValue, paramValues: ParameterValues) {
     return this._fetchJson<ParameterValues>(
       'post',
-      `/question/${identifier}/refreshedDependentParams`,
+      `/questions/${identifier}/refreshed-dependent-params`,
       JSON.stringify({
         changedParam: { name: paramName, value: paramValue },
         contextParamValues: paramValues
@@ -219,7 +219,7 @@ export default class WdkService {
   getOntologyTermSummary(identifier: string, paramName: string, filters: any, ontologyId: string, paramValues: ParameterValues) {
     return this._fetchJson<OntologyTermSummary>(
       'post',
-      `/question/${identifier}/${paramName}/ontologyTermSummary`,
+      `/questions/${identifier}/${paramName}/ontology-term-summary`,
       JSON.stringify({
         ontologyId,
         filters,
@@ -231,7 +231,7 @@ export default class WdkService {
   getFilterParamSummaryCounts(identifier: string, paramName: string, filters: any, paramValues: ParameterValues) {
     return this._fetchJson<{filtered: number, unfiltered: number}>(
       'post',
-      `/question/${identifier}/${paramName}/summaryCounts`,
+      `/questions/${identifier}/${paramName}/summary-counts`,
       JSON.stringify({
         filters,
         contextParamValues: paramValues
@@ -243,7 +243,7 @@ export default class WdkService {
    * Get all RecordClasses defined in WDK Model.
    */
   getRecordClasses() {
-    let url = '/record?expandRecordClasses=true&expandAttributes=true&expandTables=true&expandTableAttributes=true';
+    let url = '/records?expandRecordClasses=true&expandAttributes=true&expandTables=true&expandTableAttributes=true';
     return this._getFromCache('recordClasses', () => this._fetchJson<RecordClass[]>('get', url)
       .then(recordClasses => {
         // create indexes by name property for attributes and tables
@@ -285,7 +285,7 @@ export default class WdkService {
   getRecord(recordClassName: string, primaryKey: PrimaryKey, options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
-    let url = '/record/' + recordClassName + '/instance';
+    let url = '/records/' + recordClassName + '/instance';
 
     let { attributes = [], tables = [] } = options;
     let cacheEntry = this._recordCache.get(key);
@@ -353,10 +353,10 @@ export default class WdkService {
    * Get basket summary for all record classes
    */
   getBasketCounts() {
-    return this._fetchJson<{ [recordClassName: string]: number }>('get', '/user/current/basket');
+    return this._fetchJson<{ [recordClassName: string]: number }>('get', '/users/current/baskets');
   }
 
-  // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
+  // FIXME Replace with service call, e.g. POST /users/current/baskets/gene/query with {recordId}
   getBasketStatus(record: RecordInstance) {
     let action = 'check';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
@@ -369,7 +369,7 @@ export default class WdkService {
     }));
   }
 
-  // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
+  // FIXME Replace with service call, e.g. PATCH /users/current/baskets/gene { add: [ {recordId} ] }
   updateBasketStatus(record: RecordInstance, status: boolean) {
     let action = status ? 'add' : 'remove';
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
@@ -394,7 +394,7 @@ export default class WdkService {
         recordClassName: record.recordClassName,
         primaryKey: record.id
       }];
-      let url = '/user/current/favorites/query';
+      let url = '/users/current/favorites/query';
       return this._fetchJson<Array<number>>('post', url, JSON.stringify(data))
           .then(data => data.length == 0 ? undefined : data[0]);
     }
@@ -410,7 +410,7 @@ export default class WdkService {
       recordClassName: record.recordClassName,
       primaryKey: record.id
     }
-    let url = '/user/current/favorites';
+    let url = '/users/current/favorites';
     return this._fetchJson<Favorite>('post', url, JSON.stringify(favorite))
       .then(data => data.id);
   }
@@ -422,7 +422,7 @@ export default class WdkService {
    * @param id id of favorite to delete
    */
   deleteFavorite (id: number) {
-    let url = '/user/current/favorites/' + id;
+    let url = '/users/current/favorites/' + id;
     return this._fetchJson<void>('delete', url)
       .then(() => undefined);
   }
@@ -431,7 +431,7 @@ export default class WdkService {
    * Returns an array of the current user's favorites
    */
   getCurrentFavorites () {
-    return this._fetchJson<Favorite[]>('get', '/user/current/favorites');
+    return this._fetchJson<Favorite[]>('get', '/users/current/favorites');
   }
 
   /**
@@ -440,7 +440,7 @@ export default class WdkService {
    * @param favorite
    */
   saveFavorite (favorite: Favorite) {
-    let url = '/user/current/favorites/' + favorite.id;
+    let url = '/users/current/favorites/' + favorite.id;
     favorite.group = favorite.group ? favorite.group : '';
     favorite.description = favorite.description ? favorite.description : '';
     return this._fetchJson<void>('put', url, JSON.stringify(favorite));
@@ -455,7 +455,7 @@ export default class WdkService {
   }
 
   runBulkFavoritesAction (operation: string, ids: Array<number>) {
-    let url = '/user/current/favorites';
+    let url = '/users/current/favorites';
     let base = { delete: [], undelete: [] };
     let data = Object.assign({}, base, { [operation]: ids });
     return this._fetchJson<void>('patch', url, JSON.stringify(data));
@@ -463,43 +463,43 @@ export default class WdkService {
 
   getCurrentUser() {
     if (this._currentUserPromise == null) {
-      this._currentUserPromise = this._fetchJson<User>('get', '/user/current');
+      this._currentUserPromise = this._fetchJson<User>('get', '/users/current');
     }
     return this._currentUserPromise;
   }
 
   createNewUser(userWithPrefs: UserWithPrefs) {
-    return this._fetchJson<User>('post', '/user', JSON.stringify(userWithPrefs));
+    return this._fetchJson<User>('post', '/users', JSON.stringify(userWithPrefs));
   }
 
   updateCurrentUser(user: User) {
-    let url = '/user/current';
+    let url = '/users/current';
     let data = JSON.stringify(user);
     return this._currentUserPromise = this._fetchJson<void>('put', url, data).then(() => user);
   }
 
   updateCurrentUserPassword(oldPassword: string, newPassword: string) {
-    let url = '/user/current/password';
+    let url = '/users/current/password';
     let data = JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword });
     return this._fetchJson<void>('put', url, data);
   }
 
   resetUserPassword(email: string) {
-    let url = '/user/password-reset';
+    let url = '/user-password-reset';
     let data = JSON.stringify({ email });
     return this._fetchJson<void>('post', url, data);
   }
 
   getCurrentUserPreferences() {
     if (!this._preferences) {
-      this._preferences = this._fetchJson<UserPreferences>('get', '/user/current/preference');
+      this._preferences = this._fetchJson<UserPreferences>('get', '/users/current/preferences');
     }
     return this._preferences;
   }
 
   updateCurrentUserPreference(scope: PreferenceScope, key: string, value: string) {
     let entries = { [scope]: { [key]: value }};
-    let url = '/user/current/preference';
+    let url = '/users/current/preferences';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('patch', url, data).then(() => {
       // merge with cached preferences only if patch succeeds
@@ -510,7 +510,7 @@ export default class WdkService {
   }
 
   updateCurrentUserPreferences(entries: UserPreferences) {
-    let url = '/user/current/preference';
+    let url = '/users/current/preferences';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('put', url, data).then(() => {
       // merge with cached preferences only if patch succeeds
@@ -521,30 +521,30 @@ export default class WdkService {
   }
 
   getCurrentUserDatasets() {
-    return this._fetchJson<UserDataset[]>('get', '/user/current/user-dataset?expandDetails=true');
+    return this._fetchJson<UserDataset[]>('get', '/users/current/user-datasets?expandDetails=true');
   }
 
   getUserDataset(id: number) {
-    return this._fetchJson<UserDataset>('get', `/user/current/user-dataset/${id}`)
+    return this._fetchJson<UserDataset>('get', `/users/current/user-datasets/${id}`)
   }
 
   updateUserDataset(id: number, meta: UserDatasetMeta) {
-    return this._fetchJson<void>('put', `/user/current/user-dataset/${id}/meta`, JSON.stringify(meta));
+    return this._fetchJson<void>('put', `/users/current/user-datasets/${id}/meta`, JSON.stringify(meta));
   }
 
   getOauthStateToken() {
-    return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/stateToken');
+    return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/state-token');
   }
 
   findStep(stepId: number, userId: string = "current") {
-    return this._fetchJson<Step>('get', '/user/' + userId + '/step/' + stepId);
+    return this._fetchJson<Step>('get', '/users/' + userId + '/steps/' + stepId);
   }
 
   getOntology(name = '__wdk_categories__') {
     let recordClasses$ = this.getRecordClasses().then(rs => keyBy(rs, 'name'));
     let questions$ = this.getQuestions().then(qs => keyBy(qs, 'name'));
-    let ontology$ = this._getFromCache('ontology/' + name, () => {
-      let rawOntology$ = this._fetchJson<Ontology<CategoryTreeNode>>('get', `/ontology/${name}`);
+    let ontology$ = this._getFromCache('ontologies/' + name, () => {
+      let rawOntology$ = this._fetchJson<Ontology<CategoryTreeNode>>('get', `/ontologies/${name}`);
       return Promise.all([ recordClasses$, questions$, rawOntology$ ])
       .then(([ recordClasses, questions, rawOntology ]) => {
         return sortOntology(recordClasses, questions,

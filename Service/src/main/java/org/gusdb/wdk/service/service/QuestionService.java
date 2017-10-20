@@ -48,7 +48,7 @@ import org.json.JSONObject;
  * 
  * @author rdoherty
  */
-@Path("/question")
+@Path("/questions")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
   
@@ -139,6 +139,7 @@ public class QuestionService extends WdkService {
    * Get information about a question, given a complete set of param values.  (This endpoint is 
    * typically used for a revise operation.)  Throw a WdkUserException if any parameter value
    * is missing or invalid.  (The exception only describes the first invalid parameter, not all such.)
+   * 
    * @param questionName
    * @param expandParams
    * @param body
@@ -207,7 +208,7 @@ public class QuestionService extends WdkService {
    * @throws WdkModelException
    */
   @POST
-  @Path("/{questionName}/refreshedDependentParams")
+  @Path("/{questionName}/refreshed-dependent-params")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionChange(@PathParam("questionName") String questionName, String body)
@@ -282,7 +283,7 @@ public class QuestionService extends WdkService {
    * @throws DataValidationException 
    */
   @POST
-  @Path("/{questionName}/{paramName}/ontologyTermSummary")
+  @Path("/{questionName}/{paramName}/ontology-term-summary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
@@ -333,7 +334,7 @@ public class QuestionService extends WdkService {
    * @throws WdkModelException
    */
   @POST
-  @Path("/{questionName}/{paramName}/summaryCounts")
+  @Path("/{questionName}/{paramName}/summary-counts")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamSummaryCounts(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
@@ -375,7 +376,7 @@ public class QuestionService extends WdkService {
    * { internalValue: "la de dah" }
    */
   @POST
-  @Path("/{questionName}/{paramName}/internalValue")
+  @Path("/{questionName}/{paramName}/internal-value")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getParamInternalValue(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
@@ -399,7 +400,5 @@ public class QuestionService extends WdkService {
       throw new BadRequestException(e);
     }
   }
-
-
 
 }

@@ -6,6 +6,7 @@ import static org.gusdb.wdk.service.formatter.Keys.UNDELETE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +61,9 @@ public class FavoriteRequests {
 
     public FavoriteActions(Map<String,List<Long>> favoriteActionMap) {
       _favoriteActionMap = favoriteActionMap;
+      // add empty ID lists if not supplied in request
+      if (!_favoriteActionMap.containsKey(DELETE)) _favoriteActionMap.put(DELETE, Collections.EMPTY_LIST);
+      if (!_favoriteActionMap.containsKey(UNDELETE)) _favoriteActionMap.put(UNDELETE, Collections.EMPTY_LIST);
       // clear out IDs that appear in both "delete" and "undelete"
       cleanData(_favoriteActionMap.get(DELETE), _favoriteActionMap.get(UNDELETE));
     }
@@ -96,7 +100,7 @@ public class FavoriteRequests {
    * @param json input object
    * @return parsed actions to perform on IDs
    */
-  public static FavoriteActions getFavoriteActionsJson(JSONObject json) {
+  public static FavoriteActions parseFavoriteActionsJson(JSONObject json) {
     List<Object> unrecognizedActions = new ArrayList<>();
     Map<String, List<Long>> favoriteActionMap = new HashMap<>();
     for (String actionType : JSONObject.getNames(json)) {
@@ -115,7 +119,7 @@ public class FavoriteRequests {
     }
     if(!unrecognizedActions.isEmpty()) {
       String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ",");
-      LOG.warn("This user service request contains the following unrecognized actions: " + unrecognized);
+      LOG.warn("Favorites service will ignore the following unrecognized actions: " + unrecognized);
     }
     return new FavoriteActions(favoriteActionMap);
   }

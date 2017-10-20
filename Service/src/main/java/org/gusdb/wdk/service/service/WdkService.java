@@ -20,6 +20,7 @@ import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
 import org.gusdb.wdk.errors.ValueMaps.SessionAttributeValueMap;
 import org.gusdb.wdk.events.ErrorEvent;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -31,8 +32,6 @@ public abstract class WdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
-  
-  public static final String WDK_USER = "wdkUser";
 
   /**
    * Composes a proper Not Found exception message using the supplied resource.
@@ -52,6 +51,7 @@ public abstract class WdkService {
   private ServletContext _servletContext;
   private WdkModelBean _wdkModelBean;
   private UserBean _user;
+  private String _serviceEndpoint;
 
   // public setter for unit tests
   public void testSetup(WdkModel wdkModel, User user) {
@@ -71,6 +71,10 @@ public abstract class WdkService {
     return _uriInfo;
   }
 
+  protected String getServiceEndpoint() {
+    return _serviceEndpoint;
+  }
+
   protected Cookie[] getCookies() {
     return _request.getCookies();
   }
@@ -84,7 +88,7 @@ public abstract class WdkService {
   }
 
   protected UserBean getSessionUserBean() {
-    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute(WDK_USER));
+    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute(Utilities.WDK_USER_KEY));
   }
 
   protected long getSessionUserId() {
@@ -109,7 +113,8 @@ public abstract class WdkService {
   @Context
   protected void setServletContext(ServletContext context) {
     _servletContext = context;
-    _wdkModelBean = ((WdkModelBean)context.getAttribute("wdkModel"));
+    _wdkModelBean = (WdkModelBean)context.getAttribute(Utilities.WDK_MODEL_KEY);
+    _serviceEndpoint = context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
   /**

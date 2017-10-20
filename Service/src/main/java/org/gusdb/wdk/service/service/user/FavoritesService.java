@@ -153,11 +153,11 @@ public class FavoritesService extends UserService {
   @PATCH
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, RequestMisformatException {
+  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException {
     User user = getPrivateRegisteredUser();
     FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
-    FavoriteActions actions = FavoriteRequests.getFavoriteActionsJson(json);
+    FavoriteActions actions = FavoriteRequests.parseFavoriteActionsJson(json);
     int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
     int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();

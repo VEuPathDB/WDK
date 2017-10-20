@@ -33,7 +33,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -66,7 +65,6 @@ import org.apache.log4j.Logger;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
-  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
@@ -666,9 +664,8 @@ public class FilterParamNew extends AbstractDependentParam {
               String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
               OntologyItem ontologyItem = ontology.get(field);
               OntologyItemType type = ontologyItem.getType();
-	      Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem,
-		 type.getJavaClass());
-	      String valueString = value == null? "NULL" : value.toString();
+              Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem, type.getJavaClass());
+              String valueString = value == null? "NULL" : value.toString();
               if (!distinctMetadataMembers.containsKey(field)) distinctMetadataMembers.put(field, new HashSet<String>());
               distinctMetadataMembers.get(field).add(valueString);
             }
@@ -676,7 +673,7 @@ public class FilterParamNew extends AbstractDependentParam {
       return distinctMetadataMembers;
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException((Exception) e.getCause());
+      throw new WdkModelException(e.getCause());
     }
   }
 

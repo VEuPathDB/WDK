@@ -29,7 +29,7 @@ public class PreferenceService extends UserService {
   }
 
   @GET
-  @Path("preference")
+  @Path("preferences")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs() throws WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
@@ -45,7 +45,7 @@ public class PreferenceService extends UserService {
    * @throws WdkModelException, DataValidationException
    */
   @PUT
-  @Path("preference")
+  @Path("preferences")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response putUserPrefs(String body) throws DataValidationException, WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
@@ -95,7 +95,7 @@ public class PreferenceService extends UserService {
    * @throws WdkModelException, DataValidationException
    */
   @PATCH
-  @Path("preference")
+  @Path("preferences")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response patchUserPrefs(String body) throws WdkModelException, DataValidationException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();

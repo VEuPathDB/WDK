@@ -14,6 +14,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONObject;
@@ -34,14 +36,11 @@ public class ShowApplicationAction extends ShowSummaryAction {
 
         try {
             // get user, or create one, if not exist
-            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
+          WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+          UserBean wdkUser = ActionUtility.getUser(request);
             if (wdkUser == null) {
                 wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
-                        wdkUser);
+                request.getSession().setAttribute(Utilities.WDK_USER_KEY, wdkUser);
             }
 
             String newStratKey = CConstants.WDK_NEW_STRATEGY_KEY;

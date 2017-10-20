@@ -45,7 +45,7 @@ public class DatasetService extends UserService {
    * @return HTTP response for this request
    */
   @POST
-  @Path("dataset")
+  @Path("datasets")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response addDatasetFromJson(String body) throws WdkModelException {
@@ -84,7 +84,7 @@ public class DatasetService extends UserService {
   }
 
   @POST
-  @Path("dataset")
+  @Path("datasets")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces(MediaType.APPLICATION_JSON)
   public Response addDatasetFromFile() throws WdkModelException

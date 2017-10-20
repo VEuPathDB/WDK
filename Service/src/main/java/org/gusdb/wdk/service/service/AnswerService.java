@@ -109,21 +109,19 @@ public class AnswerService extends WdkService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @POST
-  @Path("filter/{filterName}")
+  @Path("filter-summary/{filterName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
-   	JSONObject requestJson = new JSONObject(body);
+    JSONObject requestJson = new JSONObject(body);
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
     AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser());
     AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
   }
-  
-
 
   /**
    * Returns configured reporter based on passed answer value and formatting JSON

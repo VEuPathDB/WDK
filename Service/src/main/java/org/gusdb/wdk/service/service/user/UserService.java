@@ -10,7 +10,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.service.WdkService;
 
-@Path("/user/{id}")
+@Path("/users/{id}")
 public abstract class UserService extends WdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";

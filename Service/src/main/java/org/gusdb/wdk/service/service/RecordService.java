@@ -40,7 +40,7 @@ import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/record")
+@Path("/records")
 public class RecordService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(RecordService.class);
@@ -78,7 +78,7 @@ public class RecordService extends WdkService {
   }
 
   @GET
-  @Path("{recordClassName}/attribute")
+  @Path("{recordClassName}/attributes")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAttributesInfo(
       @PathParam("recordClassName") String recordClassName,
@@ -91,7 +91,7 @@ public class RecordService extends WdkService {
   }
 
   @GET
-  @Path("{recordClassName}/table")
+  @Path("{recordClassName}/tables")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTablesInfo(
       @PathParam("recordClassName") String recordClassName,
@@ -105,7 +105,7 @@ public class RecordService extends WdkService {
   }
 
   @GET
-  @Path("{recordClassName}/table/{tableName}")
+  @Path("{recordClassName}/tables/{tableName}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTableInfo(
       @PathParam("recordClassName") String recordClassName,
@@ -115,7 +115,7 @@ public class RecordService extends WdkService {
   }
 
   @GET
-  @Path("{recordClassName}/table/{tableName}/attribute")
+  @Path("{recordClassName}/tables/{tableName}/attributes")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTableAttributesInfo(
       @PathParam("recordClassName") String recordClassName,
@@ -125,7 +125,7 @@ public class RecordService extends WdkService {
   }
   
   @GET
-  @Path("{recordClassName}/answerFormat")
+  @Path("{recordClassName}/answer-format")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswerFormats(@PathParam("recordClassName") String recordClassName) {
     return Response.ok(

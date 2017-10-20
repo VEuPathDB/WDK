@@ -10,6 +10,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
 
@@ -21,28 +22,26 @@ import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
 
 public class ShowXmlDataListAction extends Action {
 
-    @Override
-    public ActionForward execute(ActionMapping mapping,
-				 ActionForm form,
-				 HttpServletRequest request,
-				 HttpServletResponse response) throws Exception {
+  @Override
+  public ActionForward execute(ActionMapping mapping, ActionForm form,
+      HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	XmlQuestionSetBean[] wdkXmlQuestionSets = wdkModel.getXmlQuestionSets();
-	request.setAttribute(CConstants.WDK_XMLQUESTIONSETS_KEY, wdkXmlQuestionSets);
+    WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+    XmlQuestionSetBean[] wdkXmlQuestionSets = wdkModel.getXmlQuestionSets();
+    request.setAttribute(CConstants.WDK_XMLQUESTIONSETS_KEY, wdkXmlQuestionSets);
 
-	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR;
+    String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+        + File.separator + CConstants.WDK_PAGES_DIR;
 
-	String defaultViewFile = customViewDir
-	    + File.separator + CConstants.WDK_XMLDATALIST_PAGE;
+    String defaultViewFile = customViewDir
+        + File.separator + CConstants.WDK_XMLDATALIST_PAGE;
 
-	System.out.println(defaultViewFile);
+    System.out.println(defaultViewFile);
 
-	ActionForward forward = new ActionForward(defaultViewFile);
+    ActionForward forward = new ActionForward(defaultViewFile);
 
-	return forward;
+    return forward;
 
-    }
+  }
 
 }

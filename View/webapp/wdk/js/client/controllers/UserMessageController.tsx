@@ -4,18 +4,42 @@ import NotFound from '../components/NotFound';
 import WdkViewController from './WdkViewController';
 import { conditionallyTransition } from '../actioncreators/UserActionCreators';
 
+type PageContent = {
+  tabTitle: string,
+  pageTitle: string,
+  pageContent: React.ReactNode
+}
+
 const ActionCreators = { conditionallyTransition };
 
 class UserMessageController extends WdkViewController<typeof ActionCreators> {
 
-  getMessagePageContent() {
+  getMessagePageContent() : PageContent {
     switch (this.props.match.params.messageKey) {
       case 'password-reset-successful':
         return {
           tabTitle: "Password Reset",
           pageTitle: "Success!",
-          pageContent: (<span>You will receive an email shortly containing a
-            new, temporary password.</span>)
+          pageContent: (
+            <span>You will receive an email shortly containing a new, temporary password.</span>
+          )
+        };
+      case 'login-error':
+        let contactUrl = this.state.globalData.config!.webAppUrl + "contact.do";
+        let prevPageUrl = this.getQueryParams().requestUrl;
+        return {
+          tabTitle: "Login Problem",
+          pageTitle: "Unable to log in",
+          pageContent: (
+            <div>
+              <p>
+                An error has occurred and you could not be logged into this site.
+                If this problem persists, please <a href={contactUrl}>contact us</a>.
+              </p>
+              {prevPageUrl == null ? '' :
+                <p>To return to your previous page, <a href={prevPageUrl}>click here</a>.</p> }
+            </div>
+          )
         };
       default:
         return {
@@ -33,8 +57,12 @@ class UserMessageController extends WdkViewController<typeof ActionCreators> {
     }
   }
 
+  isRenderDataLoaded(): boolean {
+    return this.state.globalData.config != null;
+  }
+
   getActionCreators() {
-    return { conditionallyTransition };
+    return ActionCreators;
   }
 
   getTitle() {

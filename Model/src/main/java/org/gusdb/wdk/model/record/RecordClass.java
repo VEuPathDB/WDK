@@ -742,9 +742,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       Map<String, AttributeField> attributeFields = getAttributeFieldMap();
       for (String fieldName : defaultSummaryAttributeNames) {
         AttributeField field = attributeFields.get(fieldName);
-        if (field == null)
-          throw new WdkModelException("Summary attribute field [" + fieldName + "] defined in question [" +
-              getFullName() + "] is invalid.");
+        String fieldDefStr = "Summary attribute field [" + fieldName + "] defined in RecordClass [" + getFullName() + "]";
+        if (field == null) throw new WdkModelException(fieldDefStr + " is invalid.");
+        if (field.isInternal()) throw new WdkModelException(fieldDefStr + " is internal.");
         defaultSummaryAttributeFields.put(fieldName, field);
       }
     }
@@ -1046,26 +1046,39 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     reporterList = null;
 
+    // make sure there is a primary key
+    if (primaryKeyDefinition == null) {
+      throw new WdkModelException("The primaryKey of recordClass " + getFullName() +
+          " is not set.  Please define a <primaryKey> tag in the recordClass.");
+    }
+
+    // exclude primary key
+    primaryKeyDefinition.excludeResources(projectId);
+
     // exclude attributes
     List<AttributeField> newFieldList = new ArrayList<AttributeField>();
     for (AttributeField field : attributeFieldList) {
       if (field.include(projectId)) {
         field.excludeResources(projectId);
         String fieldName = field.getName();
+        // make sure only one ID attribute field exists
         if (field instanceof IdAttributeField) {
           if (this.idAttributeField != null)
-            throw new WdkModelException("primary key field is " + "duplicated in recordClass " +
-                getFullName());
+            throw new WdkModelException("More than one ID attribute field present in recordClass " + getFullName());
           this.idAttributeField = (IdAttributeField) field;
         }
-        else { // other attribute fields
-          if (attributeFieldsMap.containsKey(fieldName))
-            throw new WdkModelException("The attribute " + fieldName + " is duplicated in recordClass " +
-                getFullName());
-          if (tableFieldsMap.containsKey(fieldName))
-            throw new WdkModelException("The attribute " + fieldName +
-                " has the same name as a table in the recordClass " + getFullName());
-
+        // make sure PK column fields and only PK column fields match PK columns
+        if (field instanceof PkColumnAttributeField && !primaryKeyDefinition.hasColumn(fieldName)) {
+          throw new WdkModelException("PkColumnAttributes can only be defined with the name of a PK column.");
+        }
+        if (!(field instanceof PkColumnAttributeField) && primaryKeyDefinition.hasColumn(fieldName)) {
+          throw new WdkModelException("Only PkColumnAttributes can be defined with the name of a PK column.");
+        }
+        if (attributeFieldsMap.containsKey(fieldName)) {
+          throw new WdkModelException("The attribute " + fieldName + " is duplicated in recordClass " + getFullName());
+        }
+        if (tableFieldsMap.containsKey(fieldName)) {
+          throw new WdkModelException("The attribute " + fieldName + " has the same name as a table in the recordClass " + getFullName());
         }
         attributeFieldsMap.put(fieldName, field);
         newFieldList.add(field);
@@ -1073,18 +1086,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     attributeFieldList = newFieldList;
 
-    // make sure there is a primary key and ID attribute
-    if (primaryKeyDefinition == null) {
-      throw new WdkModelException("The primaryKey of recordClass " + getFullName() +
-          " is not set.  Please define a <primaryKey> tag in the recordClass.");
-    }
+    // make sure there is an ID attribute
     if (idAttributeField == null) {
       throw new WdkModelException("The idAttribute of recordClass " + getFullName() +
           " is not set. Please define a <idAttribute> tag in the recordClass.");
     }
-
-    // exclude primary key
-    primaryKeyDefinition.excludeResources(projectId);
 
     // exclude table fields
     for (TableField field : tableFieldList) {

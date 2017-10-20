@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +8,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -24,8 +22,7 @@ public class DeleteAllStepsAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
+      UserBean wdkUser = ActionUtility.getUser(request);
         if (wdkUser != null) {
             // check if only need to delete invalid histories only
             String strInvalid = request.getParameter("invalid");
