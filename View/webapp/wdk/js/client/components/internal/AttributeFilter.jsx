@@ -1,5 +1,5 @@
+import natsort from 'natural-sort'; //eslint-disable-line
 import $ from 'jquery';
-import natsort from 'natural-sort';
 import { Seq } from '../../utils/IterableUtils';
 import { lazy } from '../../utils/componentUtils';
 import {
@@ -37,8 +37,9 @@ import Tooltip from '../Tooltip';
 import Dialog from '../Dialog';
 import CheckboxTree from '../CheckboxTree';
 import DateSelector from '../DateSelector';
+import { MesaController as Mesa, ModalBoundary } from 'mesa';
+import 'mesa/dist/css/mesa.css';
 
-const natSortComparator = natsort();
 const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 const UNKNOWN_DISPLAY = 'unknown';
 const UNKNOWN_VALUE = '@@unknown@@';
@@ -291,7 +292,9 @@ function FieldFilter(props) {
     field: props.field,
     distribution: props.distribution,
     filter: props.filter,
-    onChange: props.onChange
+    fieldState: props.fieldState,
+    onChange: props.onChange,
+    onSort: props.onMemberSort
   };
   let className = 'field-detail';
   if (props.useFullWidth) className += ' ' + className + '__fullWidth';
@@ -304,11 +307,13 @@ function FieldFilter(props) {
           {props.distribution && <FilterLegend {...fieldDetailProps} />}
           <h3>
             {props.field.display + ' '}
-            <Tooltip content={FieldDetail.getTooltipContent(fieldDetailProps)}>
-              <i className="fa fa-question-circle" style={{ color: 'blue', fontSize: '1rem' }}/>
-            </Tooltip>
+            {props.field.description && (
+              <Tooltip content={props.field.description}>
+                <i className="fa fa-question-circle" style={{ color: 'blue', fontSize: '1rem' }}/>
+              </Tooltip>
+            )}
           </h3>
-          <div className="description">{props.field.description}</div>
+          <div>{FieldDetail.getHelpContent(fieldDetailProps)}</div>
           {!props.distribution ? <Loading/> : <FieldDetail {...fieldDetailProps} />}
         </div>
       )}
@@ -319,9 +324,11 @@ function FieldFilter(props) {
 FieldFilter.propTypes = {
   displayName: PropTypes.string,
   field: PropTypes.object,
+  fieldState: PropTypes.object,
   filter: PropTypes.object,
   distribution: PropTypes.array,
   onChange: PropTypes.func,
+  onMemberSort: PropTypes.func,
   useFullWidth: PropTypes.bool,
   addTopPadding: PropTypes.bool
 };
@@ -334,23 +341,37 @@ FieldFilter.defaultProps = {
  * Legend used for all filters
  */
 function FilterLegend(props) {
-  const totalCounts = Seq.from(props.distribution)
-    // FIXME Always filter nulls when they are moved to different section for non-range fields
-    .filter(entry => !props.field.isRange || entry.value != null)
-    .reduce(concatCounts, { count: 0, filteredCount: 0 });
-
   return (
     <div className="filter-param-legend">
       <div>
         <div className="bar"><div className="fill"></div></div>
-        <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.field.display}"</div>
+        <div className="label">All {props.displayName} having "{props.field.display}"</div>
       </div>
       <div>
         <div className="bar"><div className="fill filtered"></div></div>
-        <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> &ndash; Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
+        <div className="label">Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
       </div>
     </div>
-  )
+  );
+
+  // TODO Either remove the commented code below, or replace using provided total counts
+  // const totalCounts = Seq.from(props.distribution)
+  //   // FIXME Always filter nulls when they are moved to different section for non-range fields
+  //   .filter(entry => !props.field.isRange || entry.value != null)
+  //   .reduce(concatCounts, { count: 0, filteredCount: 0 });
+
+  // return (
+  //   <div className="filter-param-legend">
+  //     <div>
+  //       <div className="bar"><div className="fill"></div></div>
+  //       <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.field.display}"</div>
+  //     </div>
+  //     <div>
+  //       <div className="bar"><div className="fill filtered"></div></div>
+  //       <div className="label"><strong>{totalCounts.filteredCount} {props.displayName}</strong> &ndash; Matching {props.displayName} when <em>other</em> criteria have been applied.</div>
+  //     </div>
+  //   </div>
+  // )
 }
 
 FilterLegend.propTypes = FieldFilter.propTypes;
@@ -361,7 +382,7 @@ var FilteredData = (function() {
   /**
    * Table of filtered data when filtering on the client side.
    */
-  class FilteredData extends React.Component {
+  class LazyFilteredData extends React.Component {
 
     constructor(props) {
       super(props)
@@ -563,7 +584,7 @@ var FilteredData = (function() {
     }
   }
 
-  FilteredData.propTypes = {
+  LazyFilteredData.propTypes = {
     tabWidth: PropTypes.number,
     totalSize: PropTypes.number.isRequired,
     filteredData: PropTypes.array,
@@ -576,10 +597,10 @@ var FilteredData = (function() {
     onIgnored: PropTypes.func,
     onSort: PropTypes.func,
     sortTerm: PropTypes.string,
-    sortDirection: PropTypes.string
+    sortDirection: PropTypes.string,
   };
 
-  return lazy(render => require(['./Table'], render))(FilteredData)
+  return lazy(render => require(['./Table'], render))(LazyFilteredData)
 })();
 
 
@@ -860,6 +881,7 @@ export class ServerSideAttributeFilter extends React.Component {
     this.handleSelectFieldClick = this.handleSelectFieldClick.bind(this);
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
+    this.handleMemberSort = this.handleMemberSort.bind(this);
   }
 
   handleSelectFieldClick(field, event) {
@@ -885,6 +907,10 @@ export class ServerSideAttributeFilter extends React.Component {
     );
   }
 
+  handleMemberSort(field, state) {
+    this.props.onMemberSort(field, state);
+  }
+
   render() {
     var {
       autoFocus,
@@ -896,6 +922,7 @@ export class ServerSideAttributeFilter extends React.Component {
       filters,
       invalidFilters,
       activeField,
+      activeFieldState,
       activeFieldSummary
     } = this.props;
 
@@ -935,9 +962,11 @@ export class ServerSideAttributeFilter extends React.Component {
           <FieldFilter
             displayName={displayName}
             field={fields.get(activeField)}
+            fieldState={activeFieldState}
             filter={selectedFilter}
             distribution={activeFieldSummary}
             onChange={this.handleFieldFilterChange}
+            onMemberSort={this.handleMemberSort}
             useFullWidth={hideFieldPanel}
           />
         </div>
@@ -949,10 +978,12 @@ export class ServerSideAttributeFilter extends React.Component {
 
 ServerSideAttributeFilter.propTypes = {
 
+  // options
   displayName: PropTypes.string,
   autoFocus: PropTypes.bool,
   hideFilterPanel: PropTypes.bool,
   hideFieldPanel: PropTypes.bool,
+  renderSelectionInfo: PropTypes.func,
 
   // state
   fields: PropTypes.instanceOf(Map).isRequired,
@@ -960,8 +991,8 @@ ServerSideAttributeFilter.propTypes = {
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,
   activeField: PropTypes.string,
+  activeFieldState: PropTypes.object,
   activeFieldSummary: PropTypes.array,
-  renderSelectionInfo: PropTypes.func,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
@@ -969,7 +1000,8 @@ ServerSideAttributeFilter.propTypes = {
 
   // event handlers
   onActiveFieldChange: PropTypes.func.isRequired,
-  onFiltersChange: PropTypes.func.isRequired
+  onFiltersChange: PropTypes.func.isRequired,
+  onMemberSort: PropTypes.func.isRequired
 
 };
 
@@ -1015,7 +1047,7 @@ var distributionEntryPropType = PropTypes.shape({
 var Histogram = (function() {
 
   /** Common histogram component */
-  class Histogram extends React.Component {
+  class LazyHistogram extends React.Component {
 
     constructor(props) {
       super(props);
@@ -1331,7 +1363,7 @@ var Histogram = (function() {
 
   }
 
-  Histogram.propTypes = {
+  LazyHistogram.propTypes = {
     distribution: PropTypes.arrayOf(distributionEntryPropType).isRequired,
     selectedMin: PropTypes.number,
     selectedMax: PropTypes.number,
@@ -1345,7 +1377,7 @@ var Histogram = (function() {
     onUnselected: PropTypes.func
   };
 
-  Histogram.defaultProps = {
+  LazyHistogram.defaultProps = {
     xaxisLabel: 'X-Axis',
     yaxisLabel: 'Y-Axis',
     selectedMin: null,
@@ -1364,7 +1396,7 @@ var Histogram = (function() {
         'lib/jquery-flot-time'
       ],
       render)
-  })(Histogram);
+  })(LazyHistogram);
 })();
 
 /**
@@ -1376,15 +1408,26 @@ var Histogram = (function() {
  */
 class HistogramField extends React.Component {
 
-  static getTooltipContent(props) {
-    return (`
-        The graph below shows the distribution of ${props.field.display}
-        values. The red bar indicates the number of ${props.displayName}
-        that have the ${props.field.display} value and your other selection
-        criteria.
-
-        The slider to the left of the graph can be used to scale the Y-axis.
-      `);
+  static getHelpContent(props) {
+    return (
+      <div>
+        Select a range of {props.field.display} values with the graph below.
+      </div>
+    );
+   /*
+   return (
+      <div>
+        <div>
+          The graph below shows the distribution of {props.field.display} values.
+          The red bar indicates the number of {props.displayName} that have the
+          {props.field.display} value and your other selection criteria.
+        </div>
+        <div>
+          The slider to the left of the graph can be used to scale the Y-axis.
+        </div>
+      </div>
+    )
+    */
   }
 
   constructor(props) {
@@ -1603,25 +1646,16 @@ HistogramField.propTypes = {
  * Membership field component
  */
 class MembershipField extends React.Component {
-  static getTooltipContent(props) {
+  static getHelpContent(props) {
     var displayName = props.displayName;
     var fieldDisplay = props.field.display;
     return (
-      `<p>This table shows the distribution of ${displayName} with
-        respect to ${fieldDisplay}.</p>
-
-        <p>The <i>Matching</i> column indicates the number of
-        ${displayName} that match the critera chosen for other
-        qualities and that have the given ${fieldDisplay}
-        value.</p>
-
-        <p>The <i>All</i> column indicates the number of
-        ${displayName} with the given ${fieldDisplay}
-        value.</p>
-
-        <p>You may add or remove ${displayName} with specific ${fieldDisplay}
-        values from your overall selection by checking or unchecking the
-        corresponding checkboxes.</p>`);
+      <div>
+        You may add or remove {displayName} with specific {fieldDisplay} values
+        from your overall selection by checking or unchecking the corresponding
+        checkboxes.
+      </div>
+    );
   }
 
   constructor(props) {
@@ -1677,14 +1711,17 @@ class MembershipField extends React.Component {
     this.emitChange(this.getValuesForFilter(), addUnknown);
   }
 
-  handleSelectAll(event) {
-    event.preventDefault();
+  handleSelectAll() {
     this.emitChange(undefined, true);
   }
 
-  handleRemoveAll(event) {
-    event.preventDefault();
+  handleRemoveAll() {
     this.emitChange([], false);
+  }
+
+  handleSort(nextSort) {
+    let sort = Object.assign({}, this.props.fieldState.sort, nextSort);
+    this.props.onSort(this.props.field, sort);
   }
 
   emitChange(value, includeUnknown) {
@@ -1694,67 +1731,113 @@ class MembershipField extends React.Component {
   render() {
     var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
 
-    // sort Unkonwn to end of list
-    var sortedDistribution = sortDistribution(this.props.distribution);
-
     // get filter, or create one for display purposes only
     var filterValue = get(this.props, 'filter.value', this.getKnownValues());
     var filterValueSet = new Set(filterValue);
     var includeUnknown = get(this.props, 'filter.includeUnknown', true);
+    var useSort = (
+      this.props.fieldState &&
+      this.props.fieldState.sort &&
+      typeof this.props.onSort === 'function'
+    );
 
     return (
-      <div className="membership-filter">
+      <ModalBoundary>
+        <div className="membership-filter">
+          { useSort ? (
+            <div className="membership-actions">
+              <div className="membership-action membership-action__group-selected">
+                <div className="membership-group-selected-label">Set selected values to top</div>
+                <button
+                  type="button"
+                  className={'membership-group-selected-button membership-group-selected-button__' + (this.props.fieldState.sort.groupBySelected ? 'on' : 'off')}
+                  onClick={() => {
+                    this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
+                      groupBySelected: !this.props.fieldState.sort.groupBySelected
+                    }));
+                  }}
+                >
+                  {this.props.fieldState.sort.groupBySelected ? 'On' : 'Off'}
+                </button>
+              </div>
+            </div>
+          ) : null }
 
-        <div className="membership-wrapper">
-          <div className="toggle-links">
-            <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
-            {' | '}
-            <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
-          </div>
-          <div className="membership-table-panel">
-            <table>
-              <thead>
-                <tr>
-                  <th colSpan="2">{this.props.field.display}</th>
-                  <th colSpan="2">Matching {this.props.displayName}</th>
-                  <th colSpan="2">All {this.props.displayName}</th>
-                  <th>Distribution</th>
-                </tr>
-              </thead>
-              <tbody>
-                {map(sortedDistribution, item => {
-                  // compute frequency, percentage, filteredPercentage
-                  var percentage = (item.count / total) * 100;
-                  var disabled = item.filteredCount === 0;
-                  var filteredPercentage = (item.filteredCount / total) * 100;
-                  var value = item.value == null ? UNKNOWN_VALUE : this.toFilterValue(item.value);
-                  var display = item.value == null ? UNKNOWN_DISPLAY : String(item.value);
-                  var isChecked = (value == UNKNOWN_VALUE && includeUnknown) || filterValueSet.has(value);
-                  var tooltip = disabled ? `This option does not match any of the other criteria you have selected.` : ``;
-                  var trClassNames = 'member' +
-                    (isChecked & !disabled ? ' member__selected' : '') +
-                    (disabled ? ' member__disabled' : '');
-
-                  return (
-                    <tr key={value} className={trClassNames} onClick={() => this.handleItemClick(value, !isChecked)} title={tooltip}>
-                      <td><input value={value} type="checkbox" checked={isChecked} onChange={() => this.handleItemClick(value, !isChecked)}/></td>
-                      <td><span className="value">{display}</span></td>
-                      <td><span className="frequency">{item.filteredCount.toLocaleString()}</span></td>
-                      <td><span className="percentage">{Math.round(filteredPercentage)}%</span></td>
-                      <td><span className="frequency">{item.count.toLocaleString()}</span></td>
-                      <td><span className="percentage">{Math.round(percentage)}%</span></td>
-                      <td><div className="bar">
-                        <div className="fill" style={{ width: percentage + '%' }}/>
-                        <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
-                      </div></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <Mesa
+            options={{
+              isRowSelected: (row) => {
+                var value = row.value == null ? UNKNOWN_VALUE : this.toFilterValue(row.value);
+                return (value == UNKNOWN_VALUE && includeUnknown) || filterValueSet.has(value);
+              },
+              deriveRowClassName: (row) => {
+                return 'member' + (row.filteredCount === 0 ? ' member__disabled' : '');
+              },
+                useStickyHeader: true,
+                tableBodyMaxHeight: '80vh'
+            }}
+            uiState={this.props.fieldState}
+            actions={[]}
+            eventHandlers={{
+              onRowSelect: (item) => this.handleItemClick(item.value, true),
+              onRowDeselect: (item) => this.handleItemClick(item.value, false),
+              onMultipleRowSelect: () => this.handleSelectAll(),
+              onMultipleRowDeselect: () => this.handleRemoveAll(),
+              onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
+            }}
+            rows={this.props.distribution}
+            columns={[
+              {
+                key: 'value',
+                name: this.props.field.display,
+                sortable: useSort,
+                width: '30%',
+                renderCell: ({ value }) =>
+                  <div>{value == null ? UNKNOWN_DISPLAY : String(value)}</div>
+              },
+              {
+                key: 'count',
+                name: `All ${this.props.displayName}`,
+                sortable: useSort,
+                width: '15%',
+                helpText: (
+                  <div>
+                    The number of <em>{this.props.displayName}</em> with the given <em>{this.props.field.display}</em> value.
+                  </div>
+                ),
+                renderCell: ({ value }) => (
+                  <div>{value.toLocaleString()}</div>
+                )
+              },
+              {
+                key: 'filteredCount',
+                name: `Matching ${this.props.displayName}`,
+                sortable: useSort,
+                width: '15%',
+                helpText: (
+                  <div>
+                    The number of <em>{this.props.displayName}</em> that match the critera chosen for other qualities and that have the given <em>{this.props.field.display}</em> value.
+                  </div>
+                ),
+                renderCell: ({ value }) => (
+                  <div>{value.toLocaleString()}</div>
+                )
+              },
+              {
+                key: 'distribution',
+                name: 'Distribution',
+                width: '35%',
+                renderCell: ({ row }) => (
+                  <div className="bar">
+                    <div className="fill" style={{ width: (row.count / total * 100) + '%' }}/>
+                    <div className="fill filtered" style={{ width: (row.filteredCount / total * 100) + '%' }}/>
+                  </div>
+                )
+              }
+            ]}
+          >
+          </Mesa>
         </div>
-      </div>
+      </ModalBoundary>
     );
   }
 }
@@ -1767,8 +1850,8 @@ MembershipField.propTypes = FieldFilter.propTypes
  */
 class NumberField extends React.Component {
 
-  static getTooltipContent(props) {
-    return HistogramField.getTooltipContent(props);
+  static getHelpContent(props) {
+    return HistogramField.getHelpContent(props);
   }
 
   constructor(props) {
@@ -1846,8 +1929,8 @@ NumberField.propTypes = FieldFilter.propTypes;
  */
 class DateField extends React.Component {
 
-  static getTooltipContent(props) {
-    return HistogramField.getTooltipContent(props);
+  static getHelpContent(props) {
+    return HistogramField.getHelpContent(props);
   }
 
   constructor(props) {
@@ -2027,23 +2110,6 @@ function setStateFromArgs(instance, ...argsNames) {
 }
 
 /**
- * Comparator function using a natural comparison algorithm.
- */
-function distributionComparator(entryA, entryB) {
-  return natSortComparator(
-    entryA.value == null ? '' : entryA.value,
-    entryB.value == null ? '' : entryB.value
-  );
-}
-
-/**
- * Sort distribution by value
- */
-function sortDistribution(distribution) {
-  return distribution.slice().sort(distributionComparator);
-}
-
-/**
  * Returns an strftime style format string.
  * @param {string} dateString
  */
@@ -2077,6 +2143,8 @@ function formatDate(format, date) {
  * Creates a count object where `count` and `filteredCount` are the sum of
  * `countsA` and `countsB` properties.
  */
+// FIXME Remove eslint rule when counts and percentages are figured out
+// eslint-disable-next-line no-unused-vars, require-jsdoc
 function concatCounts(countsA, countsB) {
   return {
     count: countsA.count + countsB.count,
