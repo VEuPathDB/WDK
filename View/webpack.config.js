@@ -46,7 +46,8 @@ var exposeModules = [
   { module: 'react-addons-perf', expose: 'ReactPerf' },
   { module: 'prop-types', expose: 'ReactPropTypes' },
   { module: 'flux', expose: 'Flux' },
-  { module: 'flux/utils', expose: 'FluxUtils' }
+  { module: 'flux/utils', expose: 'FluxUtils' },
+  { module: 'natural-sort', expose: 'NaturalSort' }
 ];
 
 var exposeLoaders = exposeModules.map(function(entry) {
