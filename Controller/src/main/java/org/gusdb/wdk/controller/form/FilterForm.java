@@ -172,9 +172,7 @@ public class FilterForm extends QuestionForm {
       String qSetName = _qFullName.substring(0, dotI);
       String qName = _qFullName.substring(dotI + 1, _qFullName.length());
 
-      WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-          CConstants.WDK_MODEL_KEY);
-
+      WdkModelBean wdkModel = ActionUtility.getWdkModel(getServlet());
       QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
           qSetName);
       if (wdkQuestionSet == null) return null;

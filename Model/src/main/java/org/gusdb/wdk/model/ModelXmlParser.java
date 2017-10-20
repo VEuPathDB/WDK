@@ -106,6 +106,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
+import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
@@ -976,6 +977,11 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(prefixIdAttr + "/display", "setText", 0);
     configureAttributePlugins(digester, "primaryKeyAttribute");
 
+    // pk column attributes
+    configureNode(digester, "*/pkColumnAttribute", PkColumnAttributeField.class, "addAttributeField");
+    configureAttributePlugins(digester, "pkColumnAttribute");
+
+    // column attributes
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
     configureAttributePlugins(digester, "columnAttribute");
@@ -990,10 +996,8 @@ public class ModelXmlParser extends XmlParser {
 
     // text attribute
     configureNode(digester, "*/textAttribute", TextAttributeField.class, "addAttributeField");
-
     configureNode(digester, "*/textAttribute/text", WdkModelText.class, "addText");
     digester.addCallMethod("*/textAttribute/text", "setText", 0);
-
     configureNode(digester, "*/textAttribute/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod("*/textAttribute/display", "setText", 0);
     configureAttributePlugins(digester, "textAttribute");

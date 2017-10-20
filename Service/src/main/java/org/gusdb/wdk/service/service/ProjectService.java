@@ -16,7 +16,7 @@ public class ProjectService extends WdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getServiceApi() {
-    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel()).toString()).build();
+    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel(), getServiceEndpoint()).toString()).build();
   }
 
   @GET
@@ -30,7 +30,7 @@ public class ProjectService extends WdkService {
   }
 
   @GET
-  @Path("cpuTest")
+  @Path("cpu-test")
   @Produces(MediaType.TEXT_PLAIN)
   public Response doCpuTest(@QueryParam("numTrials") Long numTrials) {
     if (numTrials == null || numTrials < 1) numTrials = 1L;

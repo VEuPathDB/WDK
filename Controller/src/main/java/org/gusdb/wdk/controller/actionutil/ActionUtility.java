@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkInitializer;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -27,7 +26,7 @@ public class ActionUtility {
     public static UserBean getUser(HttpServletRequest request) {
         try {
             HttpSession session = request.getSession();
-            UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
+            UserBean wdkUser = (UserBean) session.getAttribute(Utilities.WDK_USER_KEY);
             if (wdkUser == null) {
               throw new IllegalStateException("No user present on session. This should never happen.");
             }

@@ -11,8 +11,10 @@
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 <c:set var="webAppUrl" value = "${scheme}://${serverName}/${request_uri}/" />
+<c:set var="wdkServiceUrl" value="${webAppUrl}${initParam.wdkServiceEndpoint}"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="config" value="${wdkModel.model.modelConfig}"/>
+
 
 <c:set var="isGuest">
   <c:choose>
@@ -31,6 +33,7 @@
     version: '${fn:replace(buildNumber, "'", "\\'")}',
     assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
     webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
+    wdkServiceUrl: '${wdkServiceUrl}',
     guestUser: ${isGuest},
     exportBaseUrl: '${fn:replace(exportBaseUrl, "'", "\\'")}'
   };

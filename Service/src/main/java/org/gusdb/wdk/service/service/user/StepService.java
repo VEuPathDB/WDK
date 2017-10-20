@@ -49,7 +49,7 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path("step")
+  @Path("steps")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createStep(String body) throws WdkModelException, DataValidationException {
@@ -66,14 +66,14 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path("step/{stepId}")
+  @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
     return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId)).toString()).build();
   }
 
   @PATCH
-  @Path("step/{stepId}")
+  @Path("steps/{stepId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateStep(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {

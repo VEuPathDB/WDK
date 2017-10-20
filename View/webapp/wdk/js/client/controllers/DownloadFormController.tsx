@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import { parse } from 'querystring';
 import AbstractViewController from './AbstractViewController';
 import * as DownloadFormActionCreators from '../actioncreators/DownloadFormActionCreators';
 import DownloadFormContainer from '../components/DownloadFormContainer';
@@ -55,7 +54,7 @@ class DownloadFormController extends AbstractViewController<State, DownloadFormS
     // build props object to pass to form component
     let formProps = Object.assign({}, this.state, this.state.globalData, this.eventHandlers, {
       // passing summary view in case reporters handle view links differently
-      summaryView: parse(this.props.location.search.slice(1))
+      summaryView: this.getQueryParams().summaryView
     });
     return ( <DownloadFormContainer {...formProps}/> );
   }

@@ -1228,7 +1228,7 @@
         <choice>
           <ref name="primaryKey" />
           <ref name="idAttribute" />
-          <!--<ref name="pkColumnAttribute" />-->
+          <ref name="pkColumnAttribute" />
           <ref name="textAttribute" />
           <ref name="linkAttribute" />
           <ref name="table" />
@@ -1605,7 +1605,7 @@
     </element>
   </define>
 
-  <!-- pkColumnAttribute must be defined outside an attributeQueryRef using macros representing other attributes -->
+  <!-- pkColumnAttribute must be defined outside an attributeQueryRef and its name must match a PK column.  -->
   <!--   These are optional; if omitted, WDK will auto-generate them for the PK columns, but with internal=true -->
   <define name="pkColumnAttribute">
     <element name="pkColumnAttribute">
@@ -1625,8 +1625,6 @@
     </element>
   </define>
 
-  <!--  textAttribute must be defined outside an attributeQueryRef using macros representing other attributes -->
-  <!--  both textAttribute and columnAttribute can be used as columns in a question (summaryAttributes) -->
   <define name="textAttribute">
     <element name="textAttribute">
       <ref name="AttributeFieldContent" />

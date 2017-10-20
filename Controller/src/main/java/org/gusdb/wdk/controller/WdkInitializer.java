@@ -32,15 +32,14 @@ public class WdkInitializer {
       WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
 
       LOG.info("Initialized model object.  Setting on servlet context.");
-      servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModelBean);
+      servletContext.setAttribute(Utilities.WDK_MODEL_KEY, wdkModelBean);
 
       // Set assetsUrl attribute. It will be null if not defined in the model
       servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY,
           wdkModel.getModelConfig().getAssetsUrl());
 
       // assign select init parameters as context attributes
-      assignInitParamToAttribute(servletContext, CConstants.WDK_ALWAYSGOTOSUMMARY_KEY);
-      assignInitParamToAttribute(servletContext, CConstants.WDK_LOGIN_URL_KEY);
+      assignInitParamToAttribute(servletContext, Utilities.WDK_SERVICE_ENDPOINT_KEY);
 
       // load wizard
       LOG.info("Loading wizard configuration.");
@@ -86,7 +85,7 @@ public class WdkInitializer {
   }
 
   public static WdkModel getWdkModel(ServletContext servletContext) {
-    Object modelBean = servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+    Object modelBean = servletContext.getAttribute(Utilities.WDK_MODEL_KEY);
     return modelBean == null ? null : ((WdkModelBean)modelBean).getModel();
   }
 

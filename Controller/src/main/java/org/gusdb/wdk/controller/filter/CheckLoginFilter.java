@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
@@ -48,7 +48,7 @@ public class CheckLoginFilter implements Filter {
       throws IOException, ServletException {
 
     // load model, user
-    WdkModelBean wdkModel = (WdkModelBean) _context.getAttribute(CConstants.WDK_MODEL_KEY);
+    WdkModelBean wdkModel = (WdkModelBean) _context.getAttribute(Utilities.WDK_MODEL_KEY);
     UserFactoryBean userFactory = wdkModel.getUserFactory();
 
     HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -58,7 +58,7 @@ public class CheckLoginFilter implements Filter {
     synchronized(session) {
       try {
         // get the current user in session and determine type
-        UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
+        UserBean wdkUser = (UserBean) session.getAttribute(Utilities.WDK_USER_KEY);
         boolean userPresent = (wdkUser != null);
         boolean isGuestUser = (userPresent ? wdkUser.isGuest() : false);
 
@@ -136,7 +136,7 @@ public class CheckLoginFilter implements Filter {
         if (cookieToSend != null)
           response.addCookie(cookieToSend);
         if (userToSet != null)
-          session.setAttribute(CConstants.WDK_USER_KEY, userToSet);
+          session.setAttribute(Utilities.WDK_USER_KEY, userToSet);
       }
       catch (Exception ex) {
         LOG.error("Caught exception while checking login cookie: " + ex);

@@ -122,6 +122,7 @@ public class Keys {
   public static final String STARTUP_TIME = "startupTime";
   public static final String WEBAPP_URL = "webAppUrl";
   public static final String WEBSERVICE_URL = "webServiceUrl";
+  public static final String WDKSERVICE_URL = "wdkServiceUrl";
   public static final String ASSETS_URL = "assetsUrl";
   public static final String CHANGE_PASSWORD_URL = "changePasswordUrl";
   public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";

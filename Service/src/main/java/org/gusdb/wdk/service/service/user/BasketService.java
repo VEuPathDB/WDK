@@ -35,11 +35,11 @@ import org.json.JSONObject;
  * 
  * Thus, this service provides the following service endpoints (all behind /user/{id}):
  * 
- * 1. GET    /basket                                  returns list of baskets (record classes) and record count in each basket
- * 2. PATCH  /basket/{recordClassOrUrlSegment}        add or delete multiple records from this basket
- * 3. DELETE /basket/{recordClassOrUrlSegment}        clears all records from a basket
- * 4. POST   /basket/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
- * 5. POST   /basket/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
+ * 1. GET    /baskets                                  returns list of baskets (record classes) and record count in each basket
+ * 2. PATCH  /baskets/{recordClassOrUrlSegment}        add or delete multiple records from this basket
+ * 3. DELETE /baskets/{recordClassOrUrlSegment}        clears all records from a basket
+ * 4. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
+ * 5. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
  * 
  * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
  *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
@@ -48,7 +48,7 @@ import org.json.JSONObject;
 public class BasketService extends UserService {
 
   private static final String BASKET_NAME_PARAM = "basketName";
-  private static final String BASE_BASKET_PATH = "basket";
+  private static final String BASE_BASKET_PATH = "baskets";
   private static final String NAMED_BASKET_PATH = BASE_BASKET_PATH + "/{" + BASKET_NAME_PARAM + "}";
 
   public BasketService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
+import { parse } from 'querystring';
 import { ActionCreator } from '../ActionCreator';
 import { wrapActions } from '../utils/componentUtils';
 import WdkStore, { BaseState } from '../stores/WdkStore';
@@ -51,7 +52,6 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
     dispatchAction: DispatchAction;
     eventHandlers: ActionCreators
   };
-
 
   /*-------------- Abstract methods to implement to receive store data --------------*/
 
@@ -143,13 +143,15 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
     return false;
   }
 
-
   /*------------- Methods that should probably not be overridden -------------*/
 
   getChildContext() {
     return this.childContext;
   }
 
+  getQueryParams() {
+    return parse(this.props.location.search.slice(1));
+  }
 
   /**
    * Registers with this controller's store if it has one and sets initial state

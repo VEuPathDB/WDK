@@ -22,7 +22,7 @@ export function login(config: Config, destination: string): void {
   let { webappUrl } = config;
   if (config.method === 'OAUTH2') {
     let { oauthClientId, oauthUrl, webappUrl, serviceUrl } = config;
-    let oauthTokenUrl = URL.resolve(location.origin, serviceUrl + '/oauth/stateToken');
+    let oauthTokenUrl = URL.resolve(location.origin, serviceUrl + '/oauth/state-token');
     let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
 
     $.getJSON(oauthTokenUrl).then((response: StateTokenResponse) => {

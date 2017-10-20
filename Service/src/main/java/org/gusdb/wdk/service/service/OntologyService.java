@@ -25,7 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/ontology")
+@Path("/ontologies")
 @Produces(MediaType.APPLICATION_JSON)
 public class OntologyService extends WdkService {
 

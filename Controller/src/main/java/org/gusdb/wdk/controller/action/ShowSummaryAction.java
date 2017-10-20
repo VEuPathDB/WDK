@@ -358,8 +358,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             throws WdkModelException, WdkUserException {
         logger.debug("start summary paging...");
 
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
+        UserBean wdkUser = ActionUtility.getUser(request);
         int start = ResultTablePaging.getPageStart(request.getParameterMap());
         int pageSize = ResultTablePaging.getPageSize(request.getParameterMap(), question, wdkUser);
         int end = start + pageSize - 1;

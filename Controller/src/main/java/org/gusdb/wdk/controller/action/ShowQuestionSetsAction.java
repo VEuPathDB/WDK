@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
@@ -52,11 +53,9 @@ public class ShowQuestionSetsAction extends Action {
 
     protected void sessionStart(HttpServletRequest request)
             throws WdkModelException {
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
+      WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
-        request.getSession().setAttribute(CConstants.WDK_SUMMARY_ATTRS_KEY,
-                sumAttrsByQuestion);
+        request.getSession().setAttribute(CConstants.WDK_SUMMARY_ATTRS_KEY, sumAttrsByQuestion);
     }
 
     private static Map<String, Map<String, Map<String, AttributeFieldBean>>> getSummaryAttributesByQuestionMap(

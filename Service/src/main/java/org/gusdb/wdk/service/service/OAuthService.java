@@ -27,7 +27,7 @@ public class OAuthService extends WdkService {
    * @throws WdkModelException if unable to read WDK secret key from file
    */
   @GET
-  @Path("stateToken")
+  @Path("state-token")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOauthStateToken() throws WdkModelException {
     String newToken = OAuthUtil.generateStateToken(getWdkModel());

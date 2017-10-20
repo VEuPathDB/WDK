@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 
 /**
- * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
+ * An object representation of the {@code model-config.xml} file. It holds all the configuration information
  * for the WDK system.
  * 
  * @author Jerric
