@@ -7,6 +7,11 @@
   font-style: initial;
   margin: 4px;
 }
+/* Prevent checkbox cell of table from having scrollbar */
+.filter-param .MesaComponent th.SelectionCell,
+.filter-param .MesaComponent td.SelectionCell {
+  width: 45px;
+}
 .filter-param .muted {
   color: #9f9f9f;
 }
@@ -201,16 +206,43 @@
   width: 9%;
 }
 
-/* fixed header */
-.filter-param .membership-wrapper {
-  padding-top: 1.2em;
-  position: relative;
+.filter-param .membership-actions {
+  display: flex;
+  /*flex-direction: row-reverse;*/
+  padding: 1em 0;
 }
-.filter-param .membership-filter th div {
-  position: absolute;
-  top: 0;
+.filter-param .membership-action__group-selected {
+  display: flex;
+  align-items: center;
 }
-
+.filter-param .membership-group-selected-button {
+  border-radius: 4px;
+  padding: .5em;
+  width: 3em;
+}
+.filter-param .membership-group-selected-button:focus {
+  outline-offset: -3px;
+}
+.filter-param .membership-group-selected-button__on {
+  background: #3d78d8;
+  color: white;
+  border-color: white;
+}
+.filter-param .membership-group-selected-button__on:hover {
+  background: #4289d9;
+}
+.filter-param .membership-group-selected-button__off {
+  background: #f3f3f3;
+  color: black;
+  border-color: #bbb;
+}
+.filter-param .membership-group-selected-button__off:hover {
+  background: white;
+}
+.filter-param .membership-group-selected-label {
+  margin-right: .5em;
+  font-weight: bold;
+}
 .filter-param .membership-table-panel {
   max-height: 500px;
   overflow-y: auto;
@@ -224,17 +256,9 @@
   width: 100%;
 }
 
-.filter-param .membership-filter th {
-  border: none;
-  border-bottom: 1px solid;
-  text-align: right;
-}
-.filter-param .membership-filter th:last-child {
-  padding-left: 1em;
-}
-.filter-param .membership-filter th:first-child,
-.filter-param .membership-filter th:last-child {
-  text-align: left;
+.filter-param .membership-filter th:nth-child(3),
+.filter-param .membership-filter th:nth-child(4) {
+  text-align: center;
 }
 .filter-param .membership-filter .member {
   margin: .4em 0;
@@ -242,34 +266,6 @@
 }
 .filter-param .membership-filter input[name="value"] {
   margin-right: .4em;
-}
-.filter-param .membership-filter .member:hover td {
-  background-color: #f6f6f6;
-}
-.filter-param .membership-filter .member td {
-  vertical-align: middle;
-  padding: .2em .4em;
-  text-align: right;
-}
-.filter-param .membership-filter .member td:first-child {
-  width: 2em;
-  text-align: left;
-}
-.filter-param .membership-filter .member td:nth-child(2) {
-  width: 30%;
-  text-align: left;
-}
-.filter-param .membership-filter .member td:nth-child(4) {
-  text-align: left;
-}
-.filter-param .membership-filter .member td:nth-child(6) {
-  text-align: left;
-}
-.filter-param .membership-filter .member td:last-child {
-  width: 50%;
-  padding-right: 0;
-  padding-left: 1em;
-  text-align: left;
 }
 .filter-param .membership-filter label {
   width: 100%;
@@ -287,6 +283,18 @@
 .filter-param .membership-filter .percentage {
   font-size: .8em;
 }
+.filter-param .membership-filter .counts {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+}
+.filter-param .membership-filter .counts-value,
+.filter-param .membership-filter .counts-percentage {
+  margin: 0 .5em;
+}
+.filter-param .membership-filter .counts-percentage {
+  font-size: .8em;
+}
 /* Don't recall if/why this was needed - dmf
 .membership-filter .frequency {
   width: 3em;
@@ -302,7 +310,6 @@
   background-color: #aaaaaa;
   height: 1em;
   position: absolute;
-  top: -.5em;
   min-width: 1px;
 }
 .filter-param .fill.filtered {
@@ -320,8 +327,6 @@
 }
 .filter-param .filter-param-legend .bar {
   display: inline-block;
-  top: 7px;
-  vertical-align: text-top;
   margin: 0;
   margin-left: 1em;
 }
@@ -331,6 +336,7 @@
 }
 .filter-param .filter-param-legend .bar {
   width: 10px;
+  height: 10px;
 }
 .filter-param .filter-param-legend .bar .fill {
   width: 10px;
