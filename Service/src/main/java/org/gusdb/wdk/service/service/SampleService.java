@@ -17,8 +17,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
@@ -30,10 +32,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/sample")
-public class SampleService extends WdkService {
+public class SampleService {
 
   private static final Logger LOG = Logger.getLogger(SampleService.class);
-
+  
   private static AtomicLong ID_SEQUENCE;
   private static Map<Long, JsonType> STATE = new LinkedHashMap<>();
 
@@ -41,6 +43,9 @@ public class SampleService extends WdkService {
   static {
     resetData();
   }
+
+  @Context
+  private UriInfo _uriInfo;
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -55,7 +60,7 @@ public class SampleService extends WdkService {
       }
       long nextId = ID_SEQUENCE.getAndIncrement();
       STATE.put(nextId, input);
-      String newUri = getUriInfo().getAbsolutePath() + "/" + nextId;
+      String newUri = _uriInfo.getAbsolutePath() + "/" + nextId;
       JSONObject output = new JSONObject();
       output.put("id", nextId);
       return Response.created(URI.create(newUri)).entity(output.toString()).build();
