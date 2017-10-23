@@ -1665,11 +1665,15 @@ class MembershipField extends React.Component {
     this.handleRemoveAll = this.handleRemoveAll.bind(this);
     this.toFilterValue = this.toFilterValue.bind(this);
     this.getKnownValues = memoize(this.getKnownValues);
+    this.isItemSelected = memoize(this.isItemSelected);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.distribution !== nextProps.distribution) {
       this.getKnownValues.cache.clear();
+    }
+    if (this.props.filter !== nextProps.filter) {
+      this.isItemSelected.cache.clear();
     }
   }
 
@@ -1690,7 +1694,17 @@ class MembershipField extends React.Component {
     return get(this.props, 'filter.value');
   }
 
-  handleItemClick(value, addItem) {
+  isItemSelected(value) {
+    let { filter } = this.props;
+    return (
+      filter == null ||
+      (filter.includeUnknown && value == null) ||
+      (filter.value && filter.value.includes(value))
+    );
+  }
+
+  handleItemClick(item, addItem = !this.isItemSelected(item.value)) {
+    let { value } = item;
     if (value == UNKNOWN_VALUE) {
       this.handleUnknownChange(addItem);
     }
@@ -1730,11 +1744,6 @@ class MembershipField extends React.Component {
 
   render() {
     var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
-
-    // get filter, or create one for display purposes only
-    var filterValue = get(this.props, 'filter.value', this.getKnownValues());
-    var filterValueSet = new Set(filterValue);
-    var includeUnknown = get(this.props, 'filter.includeUnknown', true);
     var useSort = (
       this.props.fieldState &&
       this.props.fieldState.sort &&
@@ -1765,21 +1774,17 @@ class MembershipField extends React.Component {
 
           <Mesa
             options={{
-              isRowSelected: (row) => {
-                var value = row.value == null ? UNKNOWN_VALUE : this.toFilterValue(row.value);
-                return (value == UNKNOWN_VALUE && includeUnknown) || filterValueSet.has(value);
-              },
-              deriveRowClassName: (row) => {
-                return 'member' + (row.filteredCount === 0 ? ' member__disabled' : '');
-              },
-                useStickyHeader: true,
-                tableBodyMaxHeight: '80vh'
+              isRowSelected: (item) => this.isItemSelected(item.value),
+              deriveRowClassName: (item) => 'member' + (item.filteredCount === 0 ? ' member__disabled' : ''),
+              onRowClick: (item) => this.handleItemClick(item),
+              useStickyHeader: true,
+              tableBodyMaxHeight: '80vh'
             }}
             uiState={this.props.fieldState}
             actions={[]}
             eventHandlers={{
-              onRowSelect: (item) => this.handleItemClick(item.value, true),
-              onRowDeselect: (item) => this.handleItemClick(item.value, false),
+              onRowSelect: (item) => this.handleItemClick(item, true),
+              onRowDeselect: (item) => this.handleItemClick(item, false),
               onMultipleRowSelect: () => this.handleSelectAll(),
               onMultipleRowDeselect: () => this.handleRemoveAll(),
               onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
@@ -1790,7 +1795,7 @@ class MembershipField extends React.Component {
                 key: 'value',
                 name: this.props.field.display,
                 sortable: useSort,
-                width: '30%',
+                width: 'calc(35% - 1.5em)',
                 renderCell: ({ value }) =>
                   <div>{value == null ? UNKNOWN_DISPLAY : String(value)}</div>
               },
