@@ -7,11 +7,6 @@
   font-style: initial;
   margin: 4px;
 }
-/* Prevent checkbox cell of table from having scrollbar */
-.filter-param .MesaComponent th.SelectionCell,
-.filter-param .MesaComponent td.SelectionCell {
-  width: 45px;
-}
 .filter-param .muted {
   color: #9f9f9f;
 }
@@ -194,6 +189,23 @@
   min-height: 20em;
   padding: .5em 0;
   clear: both;
+}
+/* Prevent checkbox cell of table from having scrollbar */
+.filter-param .membership-filter .MesaComponent th.SelectionCell,
+.filter-param .membership-filter .MesaComponent td.SelectionCell {
+  width: 1.5em;
+}
+.filter-param .membership-filter .MesaComponent th,
+.filter-param .membership-filter .MesaComponent td {
+  background: white;
+  padding: 4px;
+  border: none;
+}
+.filter-param .membership-filter .MesaComponent tr:hover td {
+  background: #fafafa;
+}
+.filter-param .membership-filter .HeadingRow {
+  border-bottom: 1px solid;
 }
 .filter-param .membership-filter .text,
 .filter-param .membership-filter .distribution {
