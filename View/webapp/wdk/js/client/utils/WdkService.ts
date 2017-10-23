@@ -13,6 +13,7 @@ import {
   Answer,
   AnswerSpec,
   AnswerFormatting,
+  NewStepSpec,
   PrimaryKey,
   Question,
   ParameterValue,
@@ -70,7 +71,8 @@ export interface ServiceConfig {
   releaseDate: string;
   startupTime: number;
   webAppUrl: string;
-  webServiceUrl: string;
+  wdkServiceUrl: string;
+  //webServiceUrl: string; // no longer sent from server; represents WSF service
 }
 
 type BasketStatusResponse = {
@@ -129,7 +131,7 @@ export default class WdkService {
   /**
    * @param {string} serviceUrl Base url for Wdk REST Service.
    */
-  private constructor(public serviceUrl: string) {
+  private constructor(private serviceUrl: string) {
     this.getOntology = memoize(this.getOntology.bind(this));
   }
 
@@ -149,7 +151,7 @@ export default class WdkService {
    *    for POST requests that are semantically treated as GET requests.
    * @return {Promise<Resource>}
    */
-  sendRequest<Resource>(options: RequestOptions) {
+  private sendRequest<Resource>(options: RequestOptions) {
     let { method, path, params, body, useCache, cacheId } = options;
     method = method.toUpperCase();
     let url = path + (params == null ? '' : '?' + queryParams(params));
@@ -172,7 +174,15 @@ export default class WdkService {
     return this._getFromCache('config', () => this._fetchJson<ServiceConfig>('get', '/'))
   }
 
-  getAnswerServiceUrl() {
+  getLoginServiceEndpoint() {
+    return this.serviceUrl + '/login';
+  }
+
+  getLogoutServiceEndpoint() {
+    return this.serviceUrl + '/logout';
+  }
+
+  getAnswerServiceEndpoint() {
     return this.serviceUrl + '/answer';
   }
 
@@ -201,8 +211,21 @@ export default class WdkService {
     });
   }
 
+  /** 
+   * Fetch question with default param values/vocabularies (may get from cache if already present)
+   */
   getQuestionAndParameters(identifier: string) {
-    return this._fetchJson<Question>('get', `/questions/${identifier}?expandParams=true`);
+    let url = `/questions/${identifier}?expandParams=true`;
+    return this._getFromCache(url, () => this._fetchJson<Question>('get', url));
+  }
+
+  
+  /**
+   * Fetch question information (e.g. vocabularies) given the passed param values; never cached
+   */
+  getQuestionGivenParameters(identifier: string, paramValues: ParameterValues) {
+    return this._fetchJson<Question>('post',`/questions/${identifier}`,
+      JSON.stringify({ contextParamValues: paramValues }));
   }
 
   getQuestionParamValues(identifier: string, paramName: string, paramValue: ParameterValue, paramValues: ParameterValues) {
@@ -454,7 +477,7 @@ export default class WdkService {
     return this.runBulkFavoritesAction('undelete', ids);
   }
 
-  runBulkFavoritesAction (operation: string, ids: Array<number>) {
+  private runBulkFavoritesAction (operation: string, ids: Array<number>) {
     let url = '/users/current/favorites';
     let base = { delete: [], undelete: [] };
     let data = Object.assign({}, base, { [operation]: ids });
@@ -537,7 +560,11 @@ export default class WdkService {
   }
 
   findStep(stepId: number, userId: string = "current") {
-    return this._fetchJson<Step>('get', '/users/' + userId + '/steps/' + stepId);
+    return this._fetchJson<Step>('get', `/users/${userId}/steps/${stepId}`);
+  }
+
+  createStep(newStepSpec: NewStepSpec, userId: string = "current") {
+    return this._fetchJson<Step>('post', `/users/${userId}/steps`, JSON.stringify(newStepSpec));
   }
 
   getOntology(name = '__wdk_categories__') {
@@ -557,7 +584,7 @@ export default class WdkService {
       });
   }
 
-  _fetchJson<T>(method: string, url: string, body?: string) {
+  private _fetchJson<T>(method: string, url: string, body?: string) {
     return fetch(this.serviceUrl + url, {
       method: method.toUpperCase(),
       body: body,
@@ -600,7 +627,7 @@ export default class WdkService {
    * Checks cache for item associated to key. If item is not in cache, then
    * call onCacheMiss callback and set the resolved value in the cache.
    */
-  _getFromCache<T>(key: string, onCacheMiss: () => Promise<T>) {
+  private _getFromCache<T>(key: string, onCacheMiss: () => Promise<T>) {
     if (!this._cache.has(key)) {
       let cacheValue$ = this._checkStoreVersion()
       .then(() => this._store.getItem<T>(key))
@@ -619,7 +646,7 @@ export default class WdkService {
     return <Promise<T>>this._cache.get(key);
   }
 
-  _checkStoreVersion() {
+  private _checkStoreVersion() {
     if (this._initialCheck == null) {
       let serviceConfig$ = this._fetchJson<ServiceConfig>('get', '/');
       let storeConfig$ = this._store.getItem<ServiceConfig>('config');

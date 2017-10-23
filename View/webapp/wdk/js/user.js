@@ -8,11 +8,11 @@ import { confirm } from './client/utils/Platform';
 wdk.namespace("window.wdk.user", function(ns, $) {
   "use strict";
 
-  let { auth, guestUser, webappUrl, wdkUser } = wdkConfig;
+  let { auth, guestUser, webappUrl, wdkServiceUrl, wdkUser } = wdkConfig;
 
   let authUtilConfig = {
     webappUrl,
-    serviceUrl: webappUrl + '/service',
+    serviceUrl: wdkServiceUrl,
     method: auth.method,
     oauthUrl: auth.oauthUrl,
     oauthClientId: auth.oauthClientId

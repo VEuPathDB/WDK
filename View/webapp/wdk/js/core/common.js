@@ -214,6 +214,14 @@ wdk.namespace("window.wdk", function(ns, $) {
     return root + path;
   }
 
+  /**
+   * Returns the "default" WDK service instance (i.e. the one at the same server
+   * this client is being served from).  In the near term future, this is the
+   * only service any sites will need to access.
+   */
+  function getWdkService() {
+    return Wdk.WdkService.getInstance(wdkConfig.wdkServiceUrl);
+  }
 
   // TODO: mixin
   function registerToggle($el) {
@@ -668,6 +676,7 @@ wdk.namespace("window.wdk", function(ns, $) {
     chooseAll: chooseAll,
     webappUrl: webappUrl,
     assetsUrl: assetsUrl,
+    getWdkService: getWdkService,
     checkFields: checkFields,
     uncheckFields: uncheckFields,
     setUpNavDropDowns: setUpNavDropDowns

@@ -5,8 +5,9 @@ import { createElement } from 'react';
 import { render } from 'react-dom';
 import { alert } from './Platform';
 import LoginForm from '../components/LoginForm';
+import WdkService from './WdkService';
 
-type Config = {
+export type Config = {
   webappUrl: string;
   serviceUrl: string;
   method: 'OAUTH2' | 'USERDB';
@@ -19,13 +20,13 @@ type StateTokenResponse = {
 };
 
 export function login(config: Config, destination: string): void {
-  let { webappUrl } = config;
+  let { webappUrl, serviceUrl } = config;
   if (config.method === 'OAUTH2') {
     let { oauthClientId, oauthUrl, webappUrl, serviceUrl } = config;
-    let oauthTokenUrl = URL.resolve(location.origin, serviceUrl + '/oauth/state-token');
-    let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
-
-    $.getJSON(oauthTokenUrl).then((response: StateTokenResponse) => {
+    let wdkService = WdkService.getInstance(serviceUrl);
+    wdkService.getOauthStateToken().then((response: StateTokenResponse) => {
+      let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
+      //let redirectUrlBase = wdkService.getLoginServiceEndpoint();
       let googleSpecific = (oauthUrl.indexOf("google") != -1);
       let redirectUrl: string, authEndpoint: string;
       if (googleSpecific) {
@@ -46,25 +47,24 @@ export function login(config: Config, destination: string): void {
         "redirect_uri=" + encodeURIComponent(redirectUrl);
 
       window.location.assign(finalOauthUrl);
-    }).fail(error => {
+    }).catch(error => {
       alert("Unable to fetch your WDK state token.", "Please check your internet connection.");
       throw error;
     });
   }
   else {
-    renderLoginForm(destination, webappUrl, true);
+    renderLoginForm(destination, webappUrl, serviceUrl, true);
   }
 }
 
 export function logout(config: Config): void {
-  //let logoutUrl = URL.resolve(location.origin, config.webappUrl + '/processLogout.do');
-  let logoutUrl = URL.resolve(location.origin, config.webappUrl + '/service/logout');
+  let { method, oauthUrl, serviceUrl } = config;
+  let logoutUrl = WdkService.getInstance(serviceUrl).getLogoutServiceEndpoint();
   if (config.method === 'OAUTH2') {
-    let { oauthUrl } = config;
     let googleSpecific = (oauthUrl.indexOf("google") != -1);
     // don't log user out of google, only the eupath oauth server
     let nextPage = (googleSpecific ? logoutUrl :
-                    oauthUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl));
+      oauthUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl));
     window.location.assign(nextPage);
   }
   else {
@@ -76,15 +76,17 @@ let getLoginContainer = memoize(function() {
   return <HTMLElement>document.body.appendChild(document.createElement('div'));
 });
 
-function renderLoginForm(destination: string, webappUrl: string, open: boolean) {
+function renderLoginForm(destination: string, webappUrl: string, serviceUrl: string, open: boolean) {
+  let loginUrl = webappUrl + '/processLogin.do';
+  //let loginUrl = WdkService.getInstance(serviceUrl).getLogoutServiceEndpoint();
   render(createElement('div', {}, createElement(LoginForm, {
     onCancel: () => {
-      renderLoginForm(destination, webappUrl, false);
+      renderLoginForm(destination, webappUrl, serviceUrl, false);
     },
     onSubmit: () => {
     },
     open: open,
-    action: webappUrl + '/processLogin.do',
+    action: loginUrl,
     redirectUrl: destination,
     passwordResetUrl: webappUrl + '/app/user/forgot-password',
     registerUrl: webappUrl + '/app/user/registration'
