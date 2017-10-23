@@ -151,7 +151,7 @@ export function submitForm(
     };
     submitAsForm({
       method: 'post',
-      action: wdkService.getAnswerServiceUrl(),
+      action: wdkService.getAnswerServiceEndpoint(),
       target: target,
       inputs: {
         data: JSON.stringify(submissionJson)

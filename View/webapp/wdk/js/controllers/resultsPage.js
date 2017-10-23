@@ -25,8 +25,7 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
         // save summary view preference
         var summaryViewName = ui.newTab.attr('id');
         var questionName = $element.attr('question');
-        var wdkService = window.Wdk.WdkService.getInstance(wdk.webappUrl() + "service");
-        wdkService.updateCurrentUserPreference("project","summary_view_" + questionName, summaryViewName)
+        wdk.getWdkService().updateCurrentUserPreference("project","summary_view_" + questionName, summaryViewName)
           .then(function() {})
           .catch(function(error) { console.error.bind(console) });
       },

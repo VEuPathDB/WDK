@@ -8,6 +8,7 @@ import * as AuthUtil from '../utils/AuthUtil';
 import { State as PasswordStoreState } from '../stores/UserPasswordChangeStore';
 import { State as ProfileStoreState, UserProfileFormData } from '../stores/UserProfileStore';
 import { transitionToInternalPage, transitionToExternalPage } from './RouterActionCreators';
+import { ServiceConfig } from '../utils/WdkService';
 
 // actions to update true user and preferences
 export type UserUpdateAction = {
@@ -340,21 +341,33 @@ export function showLoginWarning(attemptedAction: string, destination?: string):
 };
 
 /**
- * Show the login form based on config.
+ * Show the login form based on config
  */
 export function showLoginForm(destination = window.location.href): ActionThunk<never> {
   return function(dispatch, {wdkService}) {
     wdkService.getConfig().then(config => {
-      AuthUtil.login({
-        webappUrl: config.webAppUrl,
-        serviceUrl: wdkService.serviceUrl,
-        method: config.authentication.method,
-        oauthUrl: config.authentication.oauthUrl,
-        oauthClientId: config.authentication.oauthClientId
-      }, destination);
+      AuthUtil.login(trimConfig(config), destination);
     });
   };
 };
+
+function logout(): ActionThunk<never> {
+  return function run(dispatch, { wdkService }) {
+    wdkService.getConfig().then(config => {
+      AuthUtil.logout(trimConfig(config));
+    });
+  };
+};
+
+function trimConfig(config: ServiceConfig): AuthUtil.Config {
+  return {
+    webappUrl: config.webAppUrl,
+    serviceUrl: config.wdkServiceUrl,
+    method: config.authentication.method,
+    oauthUrl: config.authentication.oauthUrl,
+    oauthClientId: config.authentication.oauthClientId
+  };
+}
 
 export function showLogoutWarning(): ActionThunk<never> {
   return function(dispatch) {
@@ -363,20 +376,6 @@ export function showLogoutWarning(): ActionThunk<never> {
       'Note: You must log out of other EuPathDB sites separately'
     ).then(confirmed => {
       if (confirmed) dispatch(logout());
-    });
-  }
-};
-
-function logout(): ActionThunk<never> {
-  return function run(dispatch, { wdkService }) {
-    wdkService.getConfig().then(config => {
-      AuthUtil.logout({
-        webappUrl: config.webAppUrl,
-        serviceUrl: wdkService.serviceUrl,
-        method: config.authentication.method,
-        oauthUrl: config.authentication.oauthUrl,
-        oauthClientId: config.authentication.oauthClientId
-      });
     });
   }
 };

@@ -126,6 +126,13 @@ export interface AnswerFormatting {
   formatConfig: {}
 }
 
+export interface NewStepSpec {
+  answerSpec: AnswerSpec,
+  custonName?: string,
+  isCollapsible?: boolean,
+  collapsedName?: string
+}
+
 export type UserDatasetMeta = {
   description: string;
   name: string;

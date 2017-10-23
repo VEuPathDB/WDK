@@ -6,15 +6,15 @@
 <c:set var="siteName" value="${applicationScope.wdkModel.name}" />
 <c:set var="scheme" value="${pageContext.request.scheme}" />
 <c:set var="serverName" value="${pageContext.request.serverName}" />
+<c:set var="serverPort" value="${pageContext.request.serverPort}" />
 <c:set var="request_uri" value="${requestScope['javax.servlet.forward.request_uri']}" />
 <c:set var="request_uri" value="${fn:substringAfter(request_uri, '/')}" />
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
-<c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
-<c:set var="webAppUrl" value = "${scheme}://${serverName}/${request_uri}/" />
+<c:set var="webAppUrl" value = "${scheme}://${serverName}:${serverPort}/${request_uri}" />
+<c:set var="exportBaseUrl" value = "${webAppUrl}/im.do?s=" />
 <c:set var="wdkServiceUrl" value="${webAppUrl}${initParam.wdkServiceEndpoint}"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="config" value="${wdkModel.model.modelConfig}"/>
-
 
 <c:set var="isGuest">
   <c:choose>
