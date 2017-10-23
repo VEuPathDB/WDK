@@ -18,7 +18,6 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.runtime.GusHome;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
