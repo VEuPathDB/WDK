@@ -32,7 +32,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
     super(command, "Handle a list of user dataset events.");
   }
 
-  
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     UserDatasetEventListHandler handler = new UserDatasetEventListHandler(cmdName);
@@ -47,33 +46,17 @@ public class UserDatasetEventListHandler extends BaseCLI {
     }
   }
   
-  protected ModelConfig getModelConfig(String projectId) {
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-    ModelConfigParser parser = new ModelConfigParser(gusHome);
-    try {
-      return parser.parseConfig(projectId);
-    }
-
-    catch(WdkModelException | SAXException | IOException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-  }
-
   @Override
   protected void execute() throws Exception {
-    UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler();
-    String projectId = (String) getOptionValue(ARG_PROJECT);
-    handler.setProjectId(projectId);
-    ModelConfig modelConfig = getModelConfig(projectId);
+	String projectId = (String) getOptionValue(ARG_PROJECT);
+    UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler(projectId);
     File eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
     JSONArray eventJsonArray = null;
     try (FileInputStream fileInputStream = new FileInputStream(eventFile)) {
       eventJsonArray = new JSONArray(fileInputStream.toString());
     }
-    Path tmpDir =  Paths.get(handler.getWdkTempDirName());
     handler.handleEventList(UserDatasetEventArrayHandler.parseEventsArray(eventJsonArray),
-      modelConfig.getUserDatasetStoreConfig().getTypeHandlers(), tmpDir);
+    handler.getModelConfig().getUserDatasetStoreConfig().getTypeHandlers());
   }
 
   @Override

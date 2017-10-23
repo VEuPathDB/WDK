@@ -3,11 +3,17 @@ package org.gusdb.wdk.model.user.dataset.irods;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -36,6 +42,15 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   private static IRODSAccount account;
   private static IRODSAccessObjectFactory accessObjectFactory;
   private static final String IRODS_ID_ATTRIBUTE = "irods_id";
+  private static String _homeDir;
+  private Path _usersRootDir;
+  private String _wdkTempDirName;
+  private static final Logger LOG = Logger.getLogger(IrodsUserDatasetStoreAdaptor.class);
+  
+  public IrodsUserDatasetStoreAdaptor(String wdkTempDirName, Path usersRootDir) {
+	_wdkTempDirName = wdkTempDirName;
+	_usersRootDir = usersRootDir;
+  }
   
   /**
    * This method sets the IRODSFileSystem object instance variable if it is not already populated.
@@ -61,8 +76,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   private static IRODSAccount initializeAccount(String host, int port, String user, String password, String zone, String resource) {
     if(account == null) {
-      String homeDir = "/" + zone + "/home/" + user;
-      account = new IRODSAccount(host,port,user,password,homeDir,zone,resource);
+      _homeDir = "/" + zone + "/home/" + user;
+      account = new IRODSAccount(host,port,user,password,_homeDir,zone,resource);
     }
     return account;
   }
@@ -181,13 +196,13 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	}
   }
   
- 
   /**
    * @see
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#moveFileAtomic(Path,Path)
    */
   @Override
   public void moveFileAtomic(Path from, Path to) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String fromPathName = from.toString();
     String toPathName = to.toString();
     IRODSFile sourceFile = null;
@@ -207,6 +222,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(sourceFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","moveFileAtomic-irods: " + fromPathName,start);
     }
   }
 
@@ -216,6 +232,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public List<Path> getPathsInDir(Path dir) throws WdkModelException {
+	long start = System.currentTimeMillis();
 	String pathName = dir.toString();
     IRODSFile irodsObject = null;
     List<Path> paths = new ArrayList<>(); 
@@ -233,6 +250,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsObject);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getPathsInDir-irods: " + pathName,start);
     }
   }
 
@@ -241,28 +259,67 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#readFileContents(Path)
    */
   @Override
+//  public String readFileContents(Path file) throws WdkModelException {
+//	Timer timer = Timer.start();
+//	String pathName = file.toString();
+//    IRODSFile irodsFile = null;
+//    StringBuilder output = null;
+//    try {
+//      IRODSFileFactory fileFactory = getIrodsFileFactory();
+//      irodsFile = getIrodsFile(fileFactory, pathName);
+//      try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, fileFactory))) { 
+//        String s = "";
+//        output = new StringBuilder();
+//        while((s = buffer.readLine()) != null) { 
+//          output.append(s);
+//        }
+//        LOG.info("CWL - readFile (streaming) complete -\t" + timer.getElapsedString());
+//        return output.toString();
+//      }  
+//    }
+//    catch(IOException ioe) {
+//      throw new WdkModelException(ioe);
+//    }
+//    finally {
+//      closeFile(irodsFile);
+//    }  
+//  }
+//  
   public String readFileContents(Path file) throws WdkModelException {
-	String pathName = file.toString();
-    IRODSFile irodsFile = null;
-    StringBuilder output = null;
+	long start = System.currentTimeMillis();
+    String irodsFileName = file.getFileName().toString();
+    Path localPath = null;
+    Path temporaryPath = null;
     try {
-      IRODSFileFactory fileFactory = getIrodsFileFactory();
-      irodsFile = getIrodsFile(fileFactory, pathName);
-      try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, fileFactory))) { 
-        String s = "";
-        output = new StringBuilder();
-        while((s = buffer.readLine()) != null) { 
-          output.append(s);
-        }
-        return output.toString();
-      }  
+      temporaryPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
+      localPath = Paths.get(temporaryPath.toString(), irodsFileName);
+      DataTransferOperations dataXferOps = getDataTransferOperations();
+      dataXferOps.getOperation(file.toString(), localPath.toString(), "", null, null);
+      StringBuilder output = new StringBuilder();
+      try (BufferedReader reader = Files.newBufferedReader(localPath, Charset.defaultCharset())) {
+        String line = null;
+        while ((line = reader.readLine()) != null) output.append(line);
+      }
+      catch (IOException ex) {
+        throw new WdkModelException(ex);
+      }
+      return output.toString();
     }
-    catch(IOException ioe) {
-      throw new WdkModelException(ioe);
+    catch(JargonException | IOException e) {
+        throw new WdkModelException(e);
     }
     finally {
-      closeFile(irodsFile);
-    }  
+      if(localPath != null) {
+        try {
+          Files.delete(localPath);
+          Files.delete(temporaryPath);
+        }
+        catch (IOException e) {
+          throw new WdkModelException(e);
+        }
+      }
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","readFile-irods: " + file.toString(),start);
+    }
   }
 
   /**
@@ -271,6 +328,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public boolean isDirectory(Path path) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = path.toString();
     IRODSFile irodsObject = null;
     try {   
@@ -280,6 +338,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsObject);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","isDirectory-irods: " + pathName,start);
     }
   }
   
@@ -290,6 +349,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public void writeFile(Path path, String contents, boolean errorIfTargetExists) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = path.toString();
     String tempPathName = path.getParent().toString() + "/temp." + Long.toString(System.currentTimeMillis());
     IRODSFile irodsTempFile = null;
@@ -329,6 +389,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","writeFile-irods: " + pathName,start);
     }
   }
 
@@ -337,7 +398,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#createDirectory(Path)
    */
   @Override
-  public void createDirectory(Path dir) throws WdkModelException { 
+  public void createDirectory(Path dir) throws WdkModelException {
+	long start = System.currentTimeMillis();
 	String pathName = dir.toString();
 	IRODSFile irodsObject = null;
 	try {
@@ -350,6 +412,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	}
 	finally {
 	  closeFile(irodsObject);
+	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","createDirectory-irods: " + pathName,start);
 	}
   }
 
@@ -359,6 +422,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException { 
+	long start = System.currentTimeMillis();
 	String pathName = fileOrDir.toString();
 	IRODSFile irodsObject = null;
 	try {
@@ -372,7 +436,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       irodsObject.deleteWithForceOption();
 	}
 	finally {
-	  closeFile(irodsObject);	
+	  closeFile(irodsObject);
+	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","deleteFileOrDirectory-irods: " + pathName,start);
 	}
   }
 
@@ -382,6 +447,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public Long getModificationTime(Path fileOrDir) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = fileOrDir.toString();
     IRODSFile irodsFile = null;
     try {
@@ -391,6 +457,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getModificationTime-irods: " + pathName,start);
     }
   }
 
@@ -400,6 +467,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public String readSingleLineFile(Path file) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = file.toString();
     IRODSFile irodsFile = null;
     try {
@@ -416,6 +484,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","readSingleLineFile-irods: " + pathName,start);
     }
   }
 
@@ -427,6 +496,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public boolean fileExists(Path path) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = path.toString();
     IRODSFile irodsFile = null;
     try {
@@ -436,6 +506,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsFile);	
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","fileExists-irods: " + pathName,start);
     }
   }
   
@@ -445,6 +516,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public void writeEmptyFile(Path file) throws WdkModelException {
+	long start = System.currentTimeMillis();
     String pathName = file.toString();
     IRODSFile irodsFile = null;
     try {
@@ -459,6 +531,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
     finally {
       closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","writeEmptyFile-irods: " + pathName,start);
     }  
   }
 
@@ -471,6 +544,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    */
   @Override
   public String findUserDatasetStoreId(Path userRootDir) throws WdkModelException {
+	long start = System.currentTimeMillis();
     if(userRootDir == null) {
       throw new WdkModelException("No user root directory provided.");
     }
@@ -485,6 +559,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
           id = item.getAvuValue();
         }
       }
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","findUserDatasetStoreId-irods: " + id,start);
       return id;
 	}
 	catch (JargonException | JargonQueryException je) {

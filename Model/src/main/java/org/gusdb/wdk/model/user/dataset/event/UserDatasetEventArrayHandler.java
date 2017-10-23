@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,8 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -50,6 +53,13 @@ public class UserDatasetEventArrayHandler {
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventArrayHandler.class);
 
+  public UserDatasetEventArrayHandler(String projectId) throws WdkModelException {
+	this.projectId = projectId;
+	modelConfig = getModelConfig();
+	wdkTempDirName = getWdkTempDirName();
+	userDatasetStore = getUserDatasetStore();
+  }
+  
   /**
    * A list of user dataset events is processed.  Only events that have not been handled
    * to date are processed.  The nature of the processing is defined by the user dataset
@@ -61,9 +71,10 @@ public class UserDatasetEventArrayHandler {
    * @throws WdkModelException
    */
   public void handleEventList(List<UserDatasetEvent> eventList,
-      Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path tmpDir)
+      Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers)
           throws WdkModelException {
 
+	Path tmpDir = Paths.get(getWdkTempDirName());
     try (DatabaseInstance appDb = new DatabaseInstance(getModelConfig().getAppDB(), WdkModel.DB_INSTANCE_APP, true)) {
 
       DataSource appDbDataSource = appDb.getDataSource();
@@ -134,10 +145,10 @@ public class UserDatasetEventArrayHandler {
     return handler.getRetrievedValue();
   }
 
-  private UserDatasetStore getUserDatasetStore() throws WdkModelException {
+  public UserDatasetStore getUserDatasetStore() throws WdkModelException {
     if (userDatasetStore == null) {
       ModelConfigUserDatasetStore udsConfig= getModelConfig().getUserDatasetStoreConfig();
-      userDatasetStore = udsConfig.getUserDatasetStore();
+      userDatasetStore = udsConfig.getUserDatasetStore(wdkTempDirName);
     }
     return userDatasetStore;
   }
@@ -171,12 +182,14 @@ public class UserDatasetEventArrayHandler {
     return wdkTempDirName;
   }
   
-  private ModelConfig getModelConfig() throws  WdkModelException {
+  public ModelConfig getModelConfig() throws  WdkModelException {
     if (modelConfig == null) {
       try {
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+    	String gusHome = GusHome.getGusHome();
+        //String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         ModelConfigParser parser = new ModelConfigParser(gusHome);
         modelConfig = parser.parseConfig(getProjectId());
+        QueryLogger.initialize(modelConfig.getQueryMonitor());
       }
       catch (SAXException | IOException e) {
         throw new WdkModelException(e);
