@@ -20,9 +20,9 @@ public interface UserDatasetStore {
    * properties in model XML.
    * @param configuration
    */
-  void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers) throws WdkModelException;
+  void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException;
   
-  UserDatasetSession getSession(Path usersRootDir);
+  UserDatasetSession getSession(Path usersRootDir) throws WdkModelException;
   
   Path getUsersRootDir();
   
@@ -34,5 +34,7 @@ public interface UserDatasetStore {
   UserDatasetTypeHandler getTypeHandler(UserDatasetType type);
   
   String getId();
+  
+  String getWdkTempDirName();
 
 }

@@ -2,13 +2,14 @@ package org.gusdb.wdk.model.user.dataset.irods;
 
 import java.nio.file.Path;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetSession;
 
 public class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
-  public IrodsUserDatasetSession(Path usersRootDir) {
-    super(new IrodsUserDatasetStoreAdaptor(), usersRootDir);
+  public IrodsUserDatasetSession(Path usersRootDir, String wdkTempDirName) throws WdkModelException {
+    super(new IrodsUserDatasetStoreAdaptor(wdkTempDirName, usersRootDir), usersRootDir);
   }
 
   @Override

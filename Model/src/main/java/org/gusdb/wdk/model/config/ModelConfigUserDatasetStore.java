@@ -54,7 +54,7 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
   /*
    * Returns an initialized user dataset store.
    */
-  public UserDatasetStore getUserDatasetStore() throws WdkModelException {
+  public UserDatasetStore getUserDatasetStore(String wdkTempDirName) throws WdkModelException {
 
     // if a store has already been created and configured, return that one
     if (userDatasetStore != null) {
@@ -91,7 +91,7 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
     }
     propertyList = null;
     
-    userDatasetStore.initialize(properties, getTypeHandlers());
+    userDatasetStore.initialize(properties, getTypeHandlers(), wdkTempDirName);
 
     return userDatasetStore;
   }
