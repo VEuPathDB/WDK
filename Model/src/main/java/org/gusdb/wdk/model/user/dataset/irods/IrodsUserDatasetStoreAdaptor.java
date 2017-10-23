@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;

@@ -2,18 +2,10 @@ package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.json.JSONArray;
-import org.xml.sax.SAXException;
 
 /**
  * A wrapper around the UserDatasetEventArrayHandler library to allow it to be
