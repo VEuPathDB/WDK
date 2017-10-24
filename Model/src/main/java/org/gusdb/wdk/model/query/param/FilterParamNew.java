@@ -348,7 +348,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * We cache this because typically ontologies are sensitive only to the grossest dependent param (eg,
    * dataset), so will be reused across users.
    * 
-   * @return <propertyName, <infoKey, infoValue>>, or null if metadataQuery is not specified
+   * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
   public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
