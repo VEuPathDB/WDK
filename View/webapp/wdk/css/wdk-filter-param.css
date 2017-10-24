@@ -1,5 +1,4 @@
 .filter-param h3 {
-  padding: 1em 0;
   font-size: 1.2em;
   font-weight: bold;
 }
@@ -187,7 +186,6 @@
 .filter-param .membership-filter,
 .filter-param .range-filter {
   min-height: 20em;
-  padding: .5em 0;
   clear: both;
 }
 /* Prevent checkbox cell of table from having scrollbar */
