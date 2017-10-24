@@ -188,10 +188,13 @@
   min-height: 20em;
   clear: both;
 }
+.filter-param .membership-filter .MesaComponent .DataTable {
+  max-width: 100%;
+}
 /* Prevent checkbox cell of table from having scrollbar */
 .filter-param .membership-filter .MesaComponent th.SelectionCell,
 .filter-param .membership-filter .MesaComponent td.SelectionCell {
-  width: 1.5em;
+  width: 20px;
   padding: 4px;
 }
 .filter-param .membership-filter .HeadingRow {
@@ -207,7 +210,6 @@
   background: transparent;
   padding: 4px;
   border: none;
-  vertical-align: middle;
 }
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
@@ -217,16 +219,25 @@
   border-right: none;
   border-radius: 0;
 }
-.filter-param .membership-filter .MesaComponent th:nth-child(3),
-.filter-param .membership-filter .MesaComponent th:nth-child(4),
+.filter-param .membership-filter .MesaComponent th:nth-child(3) .HeadingCell-Content,
+.filter-param .membership-filter .MesaComponent th:nth-child(4) .HeadingCell-Content {
+  justify-content: flex-end;
+}
+.filter-param .membership-filter .MesaComponent th:nth-child(3) .HeadingCell-Content-Label,
+.filter-param .membership-filter .MesaComponent th:nth-child(4) .HeadingCell-Content-Label {
+  margin-left: auto;
+  text-align: right;
+}
 .filter-param .membership-filter .MesaComponent td:nth-child(3),
 .filter-param .membership-filter .MesaComponent td:nth-child(4) {
   text-align: right;
+  padding-right: 2em;
 }
 .filter-param .membership-filter .MesaComponent tr:hover td {
   background: #fafafa;
 }
 .filter-param .membership-filter .bar {
+  top: 2px;
   padding-left: .5em;
 }
 .filter-param .membership-filter .text,

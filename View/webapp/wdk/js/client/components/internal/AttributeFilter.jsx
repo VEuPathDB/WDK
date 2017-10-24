@@ -1810,9 +1810,14 @@ class MembershipField extends React.Component {
               },
               {
                 key: 'count',
-                name: `All ${this.props.displayName}`,
+                name: (
+                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                    <div>All</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                  </div>
+                ),
                 sortable: useSort,
-                width: '15%',
+                width: '140px',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> with the given <em>{this.props.field.display}</em> value.
@@ -1824,9 +1829,14 @@ class MembershipField extends React.Component {
               },
               {
                 key: 'filteredCount',
-                name: `Matching ${this.props.displayName}`,
+                name: (
+                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                    <div>Matching</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                  </div>
+                ),
                 sortable: useSort,
-                width: '15%',
+                width: '140px',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the critera chosen for other qualities and that have the given <em>{this.props.field.display}</em> value.
