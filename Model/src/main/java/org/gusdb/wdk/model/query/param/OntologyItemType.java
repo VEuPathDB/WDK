@@ -80,8 +80,8 @@ public enum OntologyItemType {
     Object value = null;
     switch(ontologyItem.getType()) {
       case BRANCH:
-        throw new IllegalStateException("Cannot resolve value for branch ontology node. " +
-            "Request made for node '" + ontologyItem.getOntologyId() + "'.");
+        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" + ontologyItem.getOntologyId() + "'." + 
+      " That term is either a branch in the ontology, or is a leaf but with a null type");
       case NUMBER:
         value = resultSet.getDouble(OntologyItemType.NUMBER.getMetadataQueryColumn()); break;
       case STRING:
