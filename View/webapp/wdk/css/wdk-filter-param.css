@@ -207,6 +207,7 @@
   background: transparent;
   padding: 4px;
   border: none;
+  vertical-align: middle;
 }
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
@@ -214,6 +215,7 @@
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
   border-right: none;
+  border-radius: 0;
 }
 .filter-param .membership-filter .MesaComponent th:nth-child(3),
 .filter-param .membership-filter .MesaComponent th:nth-child(4),
@@ -281,9 +283,6 @@
   box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.12);
   margin-top: 2px;
 }
-.filter-param .bar {
-  width: 99%;
-}
 .filter-param table {
   width: 100%;
 }
@@ -330,7 +329,8 @@
 }
 */
 .filter-param .bar {
-  background-color: #f6f6f6;
+  height: 1em;
+  width: 99%;
   position: relative;
 }
 .filter-param .bar .fill {
