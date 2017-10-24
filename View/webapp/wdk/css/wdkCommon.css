@@ -1181,7 +1181,7 @@ tr.headerRow th {
 }
 
 .histogram #graph .plot { width:700px; height:400px; margin:0px auto 40px auto; }
-.histogram .plot .flot-x-axis .flot-tick-label { margin:5px 0px 0px 0px; }
+.histogram .plot .flot-x-axis .flot-tick-label { margin:5px 0px 0px 0px; white-space: nowrap; background: white; font-size: 1.1em; padding: 0 1px; }
 .histogram #data .data { display:none; }
 .histogram .control-panel { margin: 5px; padding:7px 5px 5px 7px; background:#EEE; }
 .histogram .bin-slider { display:inline-block; width:500px; }

@@ -51,13 +51,12 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     }).DataTable();
 
     // register bin size control
-    var binControl = histogram.find("#graph .bin-control");
-    var binSizeInput = binControl.find(".bin-size");
-    var binSizeDisplay = binControl.find(".bin-size-display");
-    resetBinSizeDisplay(binSizeDisplay, binSizeInput.val());
+    // XXX What's going on here? Maybe Ryan knows?
     var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
     var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
-    binControl.find(".bin-slider").slider({
+    var binControl = histogram.find("#graph .bin-control");
+    var binSizeInput = binControl.find(".bin-size");
+    var binSlider = binControl.find(".bin-slider").slider({
       value: binSizeInput.val(),
       min: sliderMin,
       max: sliderMax,
@@ -67,20 +66,28 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
         drawPlot(histogram);
       },
       slide: function( event, ui ) {
-        resetBinSizeDisplay(binSizeDisplay, ui.value);
+        binSizeInput.val(ui.value);
       }
     });
+
+    binSizeInput
+      .attr('min', sliderMin)
+      .attr('max', sliderMax)
+      .on('change', function(event) {
+        binSlider.slider('value', event.target.value);
+        drawPlot(histogram);
+      })
+      .on('keydown', function(event) {
+        if (event.which === 13) {
+          $(event.target).change();
+          event.stopPropagation();
+        }
+      });
 
     // refresh display when value radio changed
     histogram.find("#graph .value-control input").click(function() {
       drawPlot(histogram);
     });
-  }
-
-  
-  function resetBinSizeDisplay(jqElem, value) {
-    var displayedSize = (type == "float" ? parseFloat(value).toFixed(2) : value);
-    jqElem.html(displayedSize);
   }
 
   
@@ -98,7 +105,9 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     var labels = plotDetails[1];
     
     // get plot options
-    var header = histogram.find("#data thead tr");
+    // use .first() because dataTable plugin creates two tables for the
+    // scrollable body
+    var header = histogram.find("#data thead tr").first();
     var binLabel = header.children(".bin").text();
     var sizeLabel = header.children(".count").text();
     var options = getOptions(histogram, binSize, binLabel, sizeLabel, labels);
