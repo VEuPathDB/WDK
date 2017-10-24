@@ -99,7 +99,7 @@ public class UserDatasetShareRequest {
           String usersJson = null;
           try {
             usersJson = usersJsonArray.toString();
-            CollectionType setType = mapper.getTypeFactory().constructCollectionType(Set.class, Integer.class);
+            CollectionType setType = mapper.getTypeFactory().constructCollectionType(Set.class, Long.class);
             Set<Long> users = mapper.readValue(usersJson, setType);
             innerMap.put(dataset, users);  
           }
