@@ -231,7 +231,7 @@ export function wrapComponents(componentWrappers) {
 function logActions(dispatcher, storeMap) {
   let stores = Array.from(storeMap.entries())
     .reduce(function(stores, [key, store]) {
-      return Object.assign(stores, {[key]: store});
+      return Object.assign(stores, {[key.name]: store});
     }, {});
   dispatcher.register(action => {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
