@@ -612,7 +612,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     Set<String> memberTerms = new HashSet<String>();
     Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
-    for (OntologyItem ontologyItem : ontology.values()) if (!ontologyItem.getIsRange()) memberTerms.add(ontologyItem.getOntologyId());
+    for (OntologyItem ontologyItem : ontology.values()) if (ontologyItem.getType() != OntologyItemType.BRANCH && !ontologyItem.getIsRange()) memberTerms.add(ontologyItem.getOntologyId());
     return getDistinctMetaDataValues(user, contextParamValues, memberTerms, ontology, _wdkModel.getAppDb().getDataSource());
   }
   
