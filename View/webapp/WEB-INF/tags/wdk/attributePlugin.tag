@@ -27,7 +27,7 @@
     <c:set var="plugin" value="${item.value}" />
     <div>
       <input type="image" id="${divId}" class="jqbutton" data-assets-src="wdk/images/plugin.png"
-             plugin="${plugin.name}" plugintitle="${plugin.display}"
+             plugin="${plugin.name}" plugintitle="${plugin.display} for ${attribute.displayName}"
              title="Analyze/Graph the contents of this column by ${fn:toLowerCase(plugin.display)}"
              onclick="wdk.resultsPage.invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')" />
     </div>
