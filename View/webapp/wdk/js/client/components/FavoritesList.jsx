@@ -380,7 +380,7 @@ class FavoritesList extends Component {
         renderCell: renderGroupCell,
         width: '20%',
         sortable: true,
-        helpText: 'Organize you favorites by group names. IDs with the same group name will be sorted together once the page is refreshed. Click the pencil icon to edit the cell\'s contents.'
+        helpText: 'Organize your favorites by group names. IDs with the same group name will be sorted together once the page is refreshed. Click the pencil icon to edit the cell\'s contents.'
       }
     ];
   }
