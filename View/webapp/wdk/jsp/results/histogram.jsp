@@ -17,7 +17,7 @@
 <div id="${attribute.name}-${plugin.name}" class="histogram"
      data-controller="wdk.result.histogram.init"
      data-type="${type}" data-min="${min}" data-max="${max}">
-  <h2 align="center">${plugin.display}</h2>
+     <!-- <h2 align="center">${plugin.display}</h2> -->
 
   <ul>
     <li><a href="#graph">Graph</a></li>
@@ -28,15 +28,19 @@
     <div class="plot"> </div>
 
     <div class="bin-control control-panel">
-      <span>Set bin size (<span class="bin-size-display"></span>):</span>
-      <input class="bin-size" type="hidden" value="${binSize}" />
+      <span>Set bin size: </span>
+      <input class="bin-size" type="number" value="${binSize}" />
       <div class="bin-slider"></div>
     </div>
 
     <div class="value-control control-panel">
       Choose column display:
-      <input name="display" class="normal" type="radio" value="Normal" checked="checked" />Normal
-      <input name="display" class="logarithm" type="radio" value="Logarithm" />Logarithm
+      <label>
+        <input name="display" class="normal" type="radio" value="Normal" checked="checked" /> Normal
+      </label>
+      <label>
+        <input name="display" class="logarithm" type="radio" value="Logarithm" /> Logarithm
+      </label>
     </div>
   </div>
   
