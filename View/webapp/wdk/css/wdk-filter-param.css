@@ -194,6 +194,11 @@
 .filter-param .membership-filter .MesaComponent th.SelectionCell,
 .filter-param .membership-filter .MesaComponent td.SelectionCell {
   width: 1.5em;
+  padding: 4px;
+}
+.filter-param .membership-filter .HeadingRow {
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
 }
 .filter-param .membership-filter .MesaComponent th,
 .filter-param .membership-filter .MesaComponent td {
@@ -201,11 +206,24 @@
   padding: 4px;
   border: none;
 }
+.filter-param .membership-filter .MesaComponent th {
+  border-right: 1px solid #ccc;
+}
+.filter-param .membership-filter .MesaComponent th:first-child,
+.filter-param .membership-filter .MesaComponent th:last-child {
+  border-right: none;
+}
+.filter-param .membership-filter .MesaComponent th:nth-child(3),
+.filter-param .membership-filter .MesaComponent th:nth-child(4),
+.filter-param .membership-filter .MesaComponent td:nth-child(3),
+.filter-param .membership-filter .MesaComponent td:nth-child(4) {
+  text-align: right;
+}
 .filter-param .membership-filter .MesaComponent tr:hover td {
   background: #fafafa;
 }
-.filter-param .membership-filter .HeadingRow {
-  border-bottom: 1px solid;
+.filter-param .membership-filter .bar {
+  padding-left: .5em;
 }
 .filter-param .membership-filter .text,
 .filter-param .membership-filter .distribution {
@@ -220,8 +238,8 @@
 
 .filter-param .membership-actions {
   display: flex;
-  /*flex-direction: row-reverse;*/
-  padding: 1em 0;
+  flex-direction: row-reverse;
+  padding: .2em;
 }
 .filter-param .membership-action__group-selected {
   display: flex;
@@ -268,10 +286,6 @@
   width: 100%;
 }
 
-.filter-param .membership-filter th:nth-child(3),
-.filter-param .membership-filter th:nth-child(4) {
-  text-align: center;
-}
 .filter-param .membership-filter .member {
   margin: .4em 0;
   height: 1em;
@@ -330,6 +344,7 @@
 .filter-param .filter-param-legend {
   float: right;
   padding: 0;
+  margin: .5em 0;
   color: #666666;
   border: 1px solid #dadada;
   border-radius: 4px;

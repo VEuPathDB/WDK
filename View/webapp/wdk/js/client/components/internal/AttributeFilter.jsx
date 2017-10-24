@@ -302,9 +302,10 @@ function FieldFilter(props) {
 
   return (
     <div className={className}>
-      {!props.field ? <EmptyField displayName={props.displayName}/> : (
+      {!props.field ? (
+        <EmptyField displayName={props.displayName}/>
+      ) : (
         <div>
-          {props.distribution && <FilterLegend {...fieldDetailProps} />}
           <h3>
             {props.field.display + ' '}
             {props.field.description && (
@@ -313,8 +314,11 @@ function FieldFilter(props) {
               </Tooltip>
             )}
           </h3>
-          <div>{FieldDetail.getHelpContent(fieldDetailProps)}</div>
-          {!props.distribution ? <Loading/> : <FieldDetail {...fieldDetailProps} />}
+          {!props.distribution ? (
+            <Loading />
+          ) : (
+            <FieldDetail {...fieldDetailProps} />
+          )}
         </div>
       )}
     </div>
@@ -1622,6 +1626,9 @@ class HistogramField extends React.Component {
           xaxisLabel={field.display}
           yaxisLabel={displayName}
         />
+
+        <FilterLegend {...this.props} />
+
       </div>
     );
   }
@@ -1750,24 +1757,24 @@ class MembershipField extends React.Component {
       typeof this.props.onSort === 'function'
     );
 
+    // FIXME Put legend in tooltip
     return (
       <ModalBoundary>
         <div className="membership-filter">
           { useSort ? (
             <div className="membership-actions">
               <div className="membership-action membership-action__group-selected">
-                <div className="membership-group-selected-label">Set selected values to top</div>
-                <button
-                  type="button"
-                  className={'membership-group-selected-button membership-group-selected-button__' + (this.props.fieldState.sort.groupBySelected ? 'on' : 'off')}
-                  onClick={() => {
-                    this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
-                      groupBySelected: !this.props.fieldState.sort.groupBySelected
-                    }));
-                  }}
-                >
-                  {this.props.fieldState.sort.groupBySelected ? 'On' : 'Off'}
-                </button>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={this.props.fieldState.sort.groupBySelected}
+                    onClick={() => {
+                      this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
+                        groupBySelected: !this.props.fieldState.sort.groupBySelected
+                      }));
+                    }}
+                  /> Keep selected values at top
+                </label>
               </div>
             </div>
           ) : null }
@@ -1775,7 +1782,9 @@ class MembershipField extends React.Component {
           <Mesa
             options={{
               isRowSelected: (item) => this.isItemSelected(item.value),
-              deriveRowClassName: (item) => 'member' + (item.filteredCount === 0 ? ' member__disabled' : ''),
+              deriveRowClassName: (item) => 'member' +
+                (item.filteredCount === 0 ? ' member__disabled' : '') +
+                (this.isItemSelected(item.value) ? ' member__selected' : ''),
               onRowClick: (item) => this.handleItemClick(item),
               useStickyHeader: true,
               tableBodyMaxHeight: '80vh'
@@ -1831,6 +1840,7 @@ class MembershipField extends React.Component {
                 key: 'distribution',
                 name: 'Distribution',
                 width: '35%',
+                helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
                   <div className="bar">
                     <div className="fill" style={{ width: (row.count / total * 100) + '%' }}/>
