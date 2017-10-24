@@ -198,9 +198,13 @@
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
 }
+.filter-param .membership-filter .DataRow,
+.filter-param .membership-filter .HeadingRow{
+  background: white;
+}
 .filter-param .membership-filter .MesaComponent th,
 .filter-param .membership-filter .MesaComponent td {
-  background: white;
+  background: transparent;
   padding: 4px;
   border: none;
 }

@@ -1804,7 +1804,7 @@ class MembershipField extends React.Component {
                 key: 'value',
                 name: this.props.field.display,
                 sortable: useSort,
-                width: 'calc(35% - 1.5em)',
+                width: '35%',
                 renderCell: ({ value }) =>
                   <div>{value == null ? UNKNOWN_DISPLAY : String(value)}</div>
               },
