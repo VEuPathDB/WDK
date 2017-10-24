@@ -186,9 +186,11 @@ public class ResultFactory {
     String cacheTable = getCacheTableName(instanceId);
     instance.createCache(cacheTable, instanceId);
     createCacheTableIndex(cacheTable, instance.getQuery());
+    /*
     long start = System.currentTimeMillis();
     platform.computeThenLockStatistics(dataSource, schema, cacheTable);
     QueryLogger.logEndStatementExecution("whatever the platform uses for computing stats", cacheTable + "__gather_table_stats", start);
+    */
     return instanceId;
   }
   
