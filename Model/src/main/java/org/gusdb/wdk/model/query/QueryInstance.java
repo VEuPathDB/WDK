@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +90,7 @@ public abstract class QueryInstance<T extends Query> {
     _query = query;
     _wdkModel = query.getWdkModel();
     _assignedWeight = assignedWeight;
-    _context = context;
+    _context = new HashMap<>(context);
 
     _context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
     _context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
