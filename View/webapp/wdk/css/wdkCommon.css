@@ -650,6 +650,9 @@ ul.menubar {
 .param-group .group-detail {
   /* it caused problem on template site */
   /* height: 100%; */ /* IE7 fix */
+  display: table;
+  width: 100%;
+  max-width: 1250px;
 }
 
 .param-group .group-detail.hidden {
@@ -661,10 +664,9 @@ div.param-group div#grp-descr{
 }
 
 .param-item {
-  clear: both;
   padding-top: 0;  /* 5px; */
   padding-bottom: 1em; /* 5px; */
-  position: relative;
+  display: table-row;
 }
 
 .param-item p {
@@ -674,23 +676,42 @@ div.param-group div#grp-descr{
 }
 
 .param-item > label {
-  float: left;
-  width: 35%;  /*  320px; */   /* 300px; */
-  /* clear: both; */
+  display: table-cell;
+  padding: 4px;
+  width: 35%;
   text-align: right;
-  padding-top: 4px;
+  vertical-align: top;
+}
+
+.param-item-label-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.param-item-label-text {
+  font-weight: bold;
+  padding-right: 4px;
+}
+
+.param-item-label-text-help {
+  height: 12px;
+  width: 13px;
 }
 
 .param-control {
-  min-height: 1em;
-  margin-left: 36%;    /*330px;*/ /*310px; */
+  display: table-cell;
+  padding: 4px;
+  vertical-align: middle;
 }
 
 .move-left .param-item > label {
-  width: 20em;
+  width: 20%;
+  min-width: 10em;
 }
 .move-left .param-control {
-  margin-left: 21em;
+  width: 80%;
+  min-width: 935px;
   max-width: 1140px;
 }
 

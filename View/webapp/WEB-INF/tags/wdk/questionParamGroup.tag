@@ -51,8 +51,10 @@
           </c:if>
 
             <label>
-              <span style="font-weight:bold">${qP.prompt}</span>
-              <imp:image class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
+              <div class="param-item-label-wrapper">
+                <span class="param-item-label-text">${qP.prompt}</span>
+                <imp:image class="param-item-label-help help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
+              </div>
             </label>
               <c:choose>
                   <c:when test="${paramType eq 'FilterParam'}">
