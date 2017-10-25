@@ -3,6 +3,8 @@ package org.gusdb.wdk.service.factory;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -34,7 +36,7 @@ public class AnswerValueFactory {
       return answerValue;
     }
     catch (WdkUserException e) {
-      throw new DataValidationException(e.formatErrors(),e);
+      throw new DataValidationException(FormatUtil.prettyPrint(e.getParamErrors(), Style.MULTI_LINE), e);
     }
   }
 
