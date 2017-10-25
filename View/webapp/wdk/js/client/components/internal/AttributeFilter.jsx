@@ -1802,9 +1802,10 @@ class MembershipField extends React.Component {
             columns={[
               {
                 key: 'value',
+                inline: true,
                 name: this.props.field.display,
                 sortable: useSort,
-                width: '35%',
+                width: '50%',
                 renderCell: ({ value }) =>
                   <div>{value == null ? UNKNOWN_DISPLAY : String(value)}</div>
               },
@@ -1813,11 +1814,11 @@ class MembershipField extends React.Component {
                 name: (
                   <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     <div>All</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
                   </div>
                 ),
                 sortable: useSort,
-                width: '140px',
+                width: '10em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> with the given <em>{this.props.field.display}</em> value.
@@ -1832,11 +1833,11 @@ class MembershipField extends React.Component {
                 name: (
                   <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     <div>Matching</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
                   </div>
                 ),
                 sortable: useSort,
-                width: '140px',
+                width: '10em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the critera chosen for other qualities and that have the given <em>{this.props.field.display}</em> value.
@@ -1849,7 +1850,7 @@ class MembershipField extends React.Component {
               {
                 key: 'distribution',
                 name: 'Distribution',
-                width: '35%',
+                width: '50%',
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
                   <div className="bar">

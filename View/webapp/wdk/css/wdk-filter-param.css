@@ -190,6 +190,7 @@
 }
 .filter-param .membership-filter .MesaComponent .DataTable {
   max-width: 100%;
+  font-size: 1em;
 }
 /* Prevent checkbox cell of table from having scrollbar */
 .filter-param .membership-filter .MesaComponent th.SelectionCell,
