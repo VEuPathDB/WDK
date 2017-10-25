@@ -205,7 +205,7 @@ public class FilterParamNewStableValue {
 
           _filters.add(filter);
         }
-
+        Collections.sort(_filters);
       }
       catch (JSONException e) {
         return "Invalid stable value. Can't parse JSON. " + e.getMessage();
@@ -274,7 +274,7 @@ public class FilterParamNewStableValue {
 
   //////////////////// inner classes to represent different types of filter //////////////////////////
 
-  abstract class Filter {
+  abstract class Filter implements Comparable<Filter> {
 
     String field = null; // the stable value did not include a value field
     Boolean includeUnknowns = null;
@@ -315,6 +315,10 @@ public class FilterParamNewStableValue {
 
       // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
       return whereClause + " AND (" + unknownClause + innerAndClause + ")";
+    }
+    
+    public int compareTo(Filter f) {
+      return field.compareTo(f.getField());
     }
   }
 
@@ -415,6 +419,7 @@ public class FilterParamNewStableValue {
     String getMaxStringSql() {
       return max == null ? null : "date '" + max + "'";
     }
+
   }
 
   private class NumberRangeFilter extends RangeFilter {
@@ -452,6 +457,7 @@ public class FilterParamNewStableValue {
     String getMaxStringSql() {
       return max == null ? null : max.toString();
     }
+
   }
 
   abstract class MembersFilter extends Filter {
@@ -505,6 +511,7 @@ public class FilterParamNewStableValue {
       for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getDouble(i));
       }
+      Collections.sort(members);  // sort for stability.  required for caching.
     }
 
     @Override
@@ -532,6 +539,7 @@ public class FilterParamNewStableValue {
       for (Double mem : members) list.add(mem.toString());
       return list;
     }
+
   }
 
   private class StringMembersFilter extends MembersFilter {
@@ -549,6 +557,7 @@ public class FilterParamNewStableValue {
       for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getString(i));
       }
+      Collections.sort(members);
     }
 
     @Override
