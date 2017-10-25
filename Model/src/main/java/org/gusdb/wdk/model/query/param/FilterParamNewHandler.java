@@ -7,19 +7,26 @@ import java.util.Map;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
-
+import org.apache.log4j.Logger;
 
 /**
  * @author jerric
  *
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
+  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
+
 
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
@@ -95,18 +102,19 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
-      //      String err = stableValue.validateSyntax();
+      //  String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
+            String err = stableValue.validateSyntax();
       if (err != null) throw new WdkModelException(err);
-      String fv = getFilteredValue(user, stableValue, contextParamValues, fpn, fpn.getMetadataQuery());
-      return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(fv): fv;
+      String fvSql = getFilteredValue(user, stableValue, contextParamValues, fpn, fpn.getMetadataQuery());
+      return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(fvSql): fvSql;
+      
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
   }
-
-
+   
+  
   // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
   static String getFilteredValue(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, FilterParamNew param, Query metadataQuery)
       throws WdkModelException {
@@ -121,18 +129,59 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
 
-      if (filters.size() == 0) return filterSelectSql;
+      if (filters.size() == 0) return getCachedFilteredSql(user, filterSelectSql, param.getWdkModel());
 
       List<String> filterSqls = new ArrayList<String>();
       for (FilterParamNewStableValue.Filter filter : filters) 
         filterSqls.add(filterSelectSql + filter.getFilterAsWhereClause(metadataTableName, ontology));
 
-      return FormatUtil.join(filterSqls, " INTERSECT ");
+      String filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
+       String cachedSql = getCachedFilteredSql(user, filteredSql, param.getWdkModel());
+       return cachedSql;
     }
     catch (JSONException | WdkUserException ex) {
       throw new WdkModelException(ex);
     }
   }
+  
+  static private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
+
+    try {
+      // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself, and
+      // transform flag
+      SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel, "FilterParamNewInternalValue");
+      Map<String, String> paramValues = new HashMap<String, String>();
+      paramValues.put("sql", filteredSql);
+      SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0,
+          new HashMap<String, String>());
+      return "select internal from (" + instance.getSql().replaceAll("ORDER BY wdk_row_id ASC", "") + ")"; // because isCacheable=true, we get the cached sql
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
+
+  }
+
+  static private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel, String queryName) throws WdkModelException {
+    SqlQuery sqlQuery = new SqlQuery();
+    sqlQuery.setName("InternalValue");
+    sqlQuery.setSql("$$sql$$");  // the sql will be provided by the sql param
+    Column column = new Column();
+    column.setName("internal");
+    sqlQuery.addColumn(column);
+    sqlQuery.setDoNotTest(true);
+    sqlQuery.setIsCacheable(true);
+    StringParam sqlParam = new StringParam();
+    sqlParam.setName("sql");
+    sqlParam.setNoTranslation(true);  // avoid quotes
+    sqlQuery.addParam(sqlParam);
+    sqlQuery.resolveReferences(wdkModel);
+    QuerySet querySet= new QuerySet();
+    querySet.setName("FilterParamNew");
+    sqlQuery.setQuerySet(querySet);
+    return sqlQuery;
+  }
+
 
 
   /**
