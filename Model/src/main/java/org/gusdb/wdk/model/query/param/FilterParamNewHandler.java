@@ -1,10 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
@@ -152,7 +148,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
       SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
       Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
-      SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.EMPTY_MAP);
+      SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, new LinkedHashMap<>());
       return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
     }
     catch (WdkUserException e) {
