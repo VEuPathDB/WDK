@@ -26,7 +26,6 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.MDCUtil;
-import org.gusdb.wdk.model.ParameterErrors;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -179,18 +178,20 @@ public class ProcessRESTAction extends Action {
     }
     catch (Exception ex) {
       LOG.error("Error while processing (old) webservice result (outputType=" + outputType + ")", ex);
-      if (ex instanceof ParameterErrors && outputType != null &&
-          ((ParameterErrors)ex).getParamErrors() != null &&
-          !((ParameterErrors)ex).getParamErrors().isEmpty()) {
-        reportError(response, ((ParameterErrors)ex).getParamErrors(), "Input Parameter Error", "010", outputType);
+      if (ex instanceof WdkUserException && outputType != null) {
+        WdkUserException uex = (WdkUserException)ex;
+        Map<String,String> paramErrors = uex.getParamErrors();
+        if (paramErrors != null && !paramErrors.isEmpty()) {
+          reportError(response, paramErrors, "Input Parameter Error", "010", outputType);
+        }
+        else {
+          Map<String, String> exMap = new MapBuilder<String, String>("1", ex.getMessage()).toMap();
+          reportError(response, exMap, "User Error", "020", outputType);
+        }
       }
       else if (ex instanceof WdkModelException && outputType != null) {
         Map<String, String> exMap = new MapBuilder<String, String>("1", ex.getMessage()).toMap();
         reportError(response, exMap, "Output Parameter Error", "011", outputType);
-      }
-      else if (ex instanceof WdkUserException && outputType != null) {
-        Map<String, String> exMap = new MapBuilder<String, String>("1", ex.getMessage()).toMap();
-        reportError(response, exMap, "User Error", "020", outputType);
       }
       else {
         Map<String, String> exMap = new MapBuilder<String, String>("0", ex.getMessage()).toMap();

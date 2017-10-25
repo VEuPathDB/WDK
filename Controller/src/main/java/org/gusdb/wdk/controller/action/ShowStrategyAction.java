@@ -193,8 +193,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
 
-        if (ex instanceof WdkModelException) {
-            WdkModelException wmex = (WdkModelException) ex;
+        if (ex instanceof WdkUserException) {
+            WdkUserException wmex = (WdkUserException) ex;
             Map<String, String> paramexs = wmex.getParamErrors();
             if (paramexs != null) {
                 JSONObject jsParams = new JSONObject();

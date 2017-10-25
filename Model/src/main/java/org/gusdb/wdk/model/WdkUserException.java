@@ -2,6 +2,9 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
+
 /**
  * This exception is thrown when a user's action causes a failure of a function,
  * such as giving an invalid parameter, access the system with a hand coded url,
@@ -10,7 +13,7 @@ import java.util.Map;
  * @author Jerric
  * @modified Jan 6, 2006
  */
-public class WdkUserException extends WdkException implements ParameterErrors {
+public class WdkUserException extends WdkException {
 
   private static final long serialVersionUID = 442861349675564533L;
 
@@ -57,27 +60,14 @@ public class WdkUserException extends WdkException implements ParameterErrors {
    * @return Map where keys are Params and values are an tuple of (value,
    *         errMsg), one for each error param value
    */
-  @Override
   public Map<String, String> getParamErrors() {
     return paramErrors;
   }
 
-  /**
-   * @return A default formatting of contained errors
-   */
   @Override
-  public String formatErrors() {
-
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer(super.formatErrors());
-    buf.append(newline);
-    if (paramErrors != null) {
-      for (String paramPrompt : paramErrors.keySet()) {
-        String details = paramErrors.get(paramPrompt);
-        buf.append(paramPrompt + ": " + details + newline);
-      }
-    }
-    return buf.toString();
+  public String toString() {
+    return super.toString() + (paramErrors == null ? "" :
+      FormatUtil.NL + FormatUtil.prettyPrint(paramErrors, Style.MULTI_LINE));
   }
 
 }
