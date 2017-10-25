@@ -10,7 +10,7 @@
         <h3>Results Pending...</h3>
         <p>
           The results of this analysis are not yet available.<br/>
-          We will check again in <span class="countdown">5</span> seconds.
+          We will check again in <span class="countdown">3</span> seconds.
         </p>
       </div>
     </body>
