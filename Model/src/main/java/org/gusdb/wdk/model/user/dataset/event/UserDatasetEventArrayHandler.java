@@ -82,7 +82,8 @@ public class UserDatasetEventArrayHandler {
 
       for (UserDatasetEvent event : eventList) {
 
-        if (lastHandledEventId != null && event.getEventId() <= lastHandledEventId) continue;
+        if ((lastHandledEventId != null && event.getEventId() <= lastHandledEventId)
+        		|| !event.getProjectsFilter().contains(getProjectId())) continue;
         
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
