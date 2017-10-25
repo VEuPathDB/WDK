@@ -206,7 +206,13 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   @Override
   public String getSql() throws WdkModelException, WdkUserException {
     // always get sql that queries on the cached result
-    return getCachedSql();
+    return getCachedSql(true);
+  }
+
+  @Override
+  public String getSqlUnsorted() throws WdkModelException, WdkUserException {
+    // always get sql that queries on the cached result
+    return getCachedSql(false);
   }
 
   @Override

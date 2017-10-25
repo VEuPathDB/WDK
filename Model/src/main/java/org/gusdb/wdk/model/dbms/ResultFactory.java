@@ -14,7 +14,6 @@ import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -58,7 +57,7 @@ public class ResultFactory {
     return cacheFactory;
   }
 
-  public String getCachedSql(QueryInstance<?> queryInstance)
+  public String getCachedSql(QueryInstance<?> queryInstance, boolean performSorting)
       throws WdkModelException, WdkUserException {
 
     InstanceInfo instanceInfo =  getInstanceInfo(queryInstance);
@@ -86,31 +85,33 @@ public class ResultFactory {
     sql.append(" FROM ").append(getCacheTableName(instanceId));
     //    sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
     //sql.append(" = ").append(instanceId);
-    
-    // append sorting columns to the sql
-    Map<String, Boolean> sortingMap = query.getSortingMap();
-    boolean firstSortingColumn = true;
-    for (String column : sortingMap.keySet()) {
-      if (firstSortingColumn) {
-        sql.append(" ORDER BY ");
-        firstSortingColumn = false;
-      } else {
-        sql.append(", ");
+
+    if (performSorting) {
+      // append sorting columns to the sql
+      Map<String, Boolean> sortingMap = query.getSortingMap();
+      boolean firstSortingColumn = true;
+      for (String column : sortingMap.keySet()) {
+        if (firstSortingColumn) {
+          sql.append(" ORDER BY ");
+          firstSortingColumn = false;
+        } else {
+          sql.append(", ");
+        }
+        String order = sortingMap.get(column) ? " ASC " : " DESC ";
+        sql.append(column).append(order);
       }
-      String order = sortingMap.get(column) ? " ASC " : " DESC ";
-      sql.append(column).append(order);
+
+      // append row id as the last sorting column
+      sql.append((sortingMap.size() > 0) ? ", " : " ORDER BY ");
+      sql.append(CacheFactory.COLUMN_ROW_ID + " ASC ");
     }
-    
-    // append row id as the last sorting column
-    sql.append((sortingMap.size() > 0) ? ", " : " ORDER BY ");
-    sql.append(CacheFactory.COLUMN_ROW_ID + " ASC ");
-    
+
     return sql.toString();
   }
 
-  public ResultList getCachedResults(QueryInstance<?> queryInstance)
+  public ResultList getCachedResults(QueryInstance<?> queryInstance, boolean performSorting)
       throws WdkModelException, WdkUserException {
-    String sql = getCachedSql(queryInstance);
+    String sql = getCachedSql(queryInstance, performSorting);
     logger.debug("Performing the following SQL against WDK Cache: " + sql);
 
     // get the resultList
@@ -182,7 +183,7 @@ public class ResultFactory {
     
     DataSource dataSource = database.getDataSource();
     long instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
-    String schema = database.getDefaultSchema();
+    //String schema = database.getDefaultSchema();
     String cacheTable = getCacheTableName(instanceId);
     instance.createCache(cacheTable, instanceId);
     createCacheTableIndex(cacheTable, instance.getQuery());
@@ -193,7 +194,7 @@ public class ResultFactory {
     */
     return instanceId;
   }
-  
+
   private void createCacheTableIndex(String cacheTable, Query query) throws WdkModelException {
 
     String[] indexColumns = query.getIndexColumns();
@@ -208,12 +209,12 @@ public class ResultFactory {
       sqlId.append(")");
 
       try {
-	DataSource dataSource = database.getDataSource();
-	SqlUtils.executeUpdate(dataSource, sqlId.toString(),
-			       cacheTable + "__create-cache-index01");
+        DataSource dataSource = database.getDataSource();
+        SqlUtils.executeUpdate(dataSource, sqlId.toString(),
+            cacheTable + "__create-cache-index01");
       }
       catch (SQLException e) {
-	throw new WdkModelException("Could not create cache table index.", e);
+        throw new WdkModelException("Could not create cache table index.", e);
       }
     }
   }
