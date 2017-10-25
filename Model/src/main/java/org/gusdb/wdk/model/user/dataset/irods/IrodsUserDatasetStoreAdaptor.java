@@ -3,15 +3,12 @@ package org.gusdb.wdk.model.user.dataset.irods;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
@@ -258,68 +255,68 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#readFileContents(Path)
    */
   @Override
-//  public String readFileContents(Path file) throws WdkModelException {
-//	Timer timer = Timer.start();
-//	String pathName = file.toString();
-//    IRODSFile irodsFile = null;
-//    StringBuilder output = null;
-//    try {
-//      IRODSFileFactory fileFactory = getIrodsFileFactory();
-//      irodsFile = getIrodsFile(fileFactory, pathName);
-//      try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, fileFactory))) { 
-//        String s = "";
-//        output = new StringBuilder();
-//        while((s = buffer.readLine()) != null) { 
-//          output.append(s);
-//        }
-//        LOG.info("CWL - readFile (streaming) complete -\t" + timer.getElapsedString());
-//        return output.toString();
-//      }  
-//    }
-//    catch(IOException ioe) {
-//      throw new WdkModelException(ioe);
-//    }
-//    finally {
-//      closeFile(irodsFile);
-//    }  
-//  }
-//  
   public String readFileContents(Path file) throws WdkModelException {
-	long start = System.currentTimeMillis();
-    String irodsFileName = file.getFileName().toString();
-    Path localPath = null;
-    Path temporaryPath = null;
+    long start = System.currentTimeMillis();
+	String pathName = file.toString();
+    IRODSFile irodsFile = null;
+    StringBuilder output = null;
     try {
-      temporaryPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
-      localPath = Paths.get(temporaryPath.toString(), irodsFileName);
-      DataTransferOperations dataXferOps = getDataTransferOperations();
-      dataXferOps.getOperation(file.toString(), localPath.toString(), "", null, null);
-      StringBuilder output = new StringBuilder();
-      try (BufferedReader reader = Files.newBufferedReader(localPath, Charset.defaultCharset())) {
-        String line = null;
-        while ((line = reader.readLine()) != null) output.append(line);
-      }
-      catch (IOException ex) {
-        throw new WdkModelException(ex);
-      }
-      return output.toString();
+      IRODSFileFactory fileFactory = getIrodsFileFactory();
+      irodsFile = getIrodsFile(fileFactory, pathName);
+      try(BufferedReader buffer = new BufferedReader(new IRODSFileReader(irodsFile, fileFactory))) { 
+        String s = "";
+        output = new StringBuilder();
+        while((s = buffer.readLine()) != null) { 
+          output.append(s);
+        }
+        return output.toString();
+      }  
     }
-    catch(JargonException | IOException e) {
-        throw new WdkModelException(e);
+    catch(IOException ioe) {
+      throw new WdkModelException(ioe);
     }
     finally {
-      if(localPath != null) {
-        try {
-          Files.delete(localPath);
-          Files.delete(temporaryPath);
-        }
-        catch (IOException e) {
-          throw new WdkModelException(e);
-        }
-      }
-      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","readFile-irods: " + file.toString(),start);
-    }
+      closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","readFile-irods (orig): " + file.toString(),start);
+    }  
   }
+  
+//  public String readFileContents(Path file) throws WdkModelException {
+//	long start = System.currentTimeMillis();
+//    String irodsFileName = file.getFileName().toString();
+//    Path localPath = null;
+//    Path temporaryPath = null;
+//    try {
+//      temporaryPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
+//      localPath = Paths.get(temporaryPath.toString(), irodsFileName);
+//      DataTransferOperations dataXferOps = getDataTransferOperations();
+//      dataXferOps.getOperation(file.toString(), localPath.toString(), "", null, null);
+//      StringBuilder output = new StringBuilder();
+//      try (BufferedReader reader = Files.newBufferedReader(localPath, Charset.defaultCharset())) {
+//        String line = null;
+//        while ((line = reader.readLine()) != null) output.append(line);
+//      }
+//      catch (IOException ex) {
+//        throw new WdkModelException(ex);
+//      }
+//      return output.toString();
+//    }
+//    catch(JargonException | IOException e) {
+//        throw new WdkModelException(e);
+//    }
+//    finally {
+//      if(localPath != null) {
+//        try {
+//          Files.delete(localPath);
+//          Files.delete(temporaryPath);
+//        }
+//        catch (IOException e) {
+//          throw new WdkModelException(e);
+//        }
+//      }
+//      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","readFile-irods: " + file.toString(),start);
+//    }
+//  }
 
   /**
    * @see
