@@ -53,6 +53,8 @@ public abstract class QueryInstance<T extends Query> {
 
   public abstract String getSql() throws WdkModelException, WdkUserException;
 
+  public abstract String getSqlUnsorted() throws WdkModelException, WdkUserException;
+
   protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
   protected abstract ResultList getUncachedResults() throws WdkModelException, WdkUserException;
@@ -207,13 +209,15 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public ResultList getResults() throws WdkModelException, WdkUserException {
-    //logger.debug("retrieving results of query [" + query.getFullName() + "]");
+    return getResults(true);
+  }
 
-    ResultList resultList = (getIsCacheable()) ? getCachedResults() : getUncachedResults();
+  public ResultList getResultsUnsorted() throws WdkModelException, WdkUserException {
+    return getResults(false);
+  }
 
-    //logger.debug("results of query [" + query.getFullName() + "] retrieved.");
-
-    return resultList;
+  private ResultList getResults(boolean performSorting) throws WdkModelException, WdkUserException {
+    return (getIsCacheable()) ? getCachedResults(performSorting) : getUncachedResults();
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
@@ -236,14 +240,14 @@ public abstract class QueryInstance<T extends Query> {
     return _contextParamStableValues;
   }
 
-  private ResultList getCachedResults() throws WdkModelException, WdkUserException {
+  private ResultList getCachedResults(boolean performSorting) throws WdkModelException, WdkUserException {
     ResultFactory factory = _wdkModel.getResultFactory();
-    return factory.getCachedResults(this);
+    return factory.getCachedResults(this, performSorting);
   }
 
-  protected String getCachedSql() throws WdkModelException, WdkUserException {
+  protected String getCachedSql(boolean performSorting) throws WdkModelException, WdkUserException {
     ResultFactory resultFactory = _wdkModel.getResultFactory();
-    return resultFactory.getCachedSql(this);
+    return resultFactory.getCachedSql(this, performSorting);
   }
 
   private void validateContextValuesAndFillEmptyWithDefaults(User user, Map<String, String> values) throws WdkUserException,

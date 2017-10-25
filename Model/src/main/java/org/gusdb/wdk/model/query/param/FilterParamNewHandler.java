@@ -1,12 +1,14 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -25,8 +27,9 @@ import org.apache.log4j.Logger;
  *
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
-  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
 
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
 
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
@@ -143,26 +146,21 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throw new WdkModelException(ex);
     }
   }
-  
-  static private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
 
+  static private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
     try {
-      // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself, and
-      // transform flag
-      SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel, "FilterParamNewInternalValue");
-      Map<String, String> paramValues = new HashMap<String, String>();
-      paramValues.put("sql", filteredSql);
-      SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0,
-          new HashMap<String, String>());
-      return "select internal from (" + instance.getSql().replaceAll("ORDER BY wdk_row_id ASC", "") + ")"; // because isCacheable=true, we get the cached sql
+      // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
+      SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
+      Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
+      SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.EMPTY_MAP);
+      return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
-
   }
 
-  static private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel, String queryName) throws WdkModelException {
+  static private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
     SqlQuery sqlQuery = new SqlQuery();
     sqlQuery.setName("InternalValue");
     sqlQuery.setSql("$$sql$$");  // the sql will be provided by the sql param
@@ -181,8 +179,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     sqlQuery.setQuerySet(querySet);
     return sqlQuery;
   }
-
-
 
   /**
    * the signature is a checksum of sorted stable value.

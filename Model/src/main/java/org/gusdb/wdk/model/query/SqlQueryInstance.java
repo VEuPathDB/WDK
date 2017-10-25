@@ -156,10 +156,16 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   @Override
   public String getSql() throws WdkModelException, WdkUserException {
-    if (getIsCacheable())
-      return getCachedSql();
-    else
-      return getUncachedSql();
+    return getSql(true);
+  }
+
+  @Override
+  public String getSqlUnsorted() throws WdkModelException, WdkUserException {
+    return getSql(false);
+  }
+
+  private String getSql(boolean performSorting) throws WdkModelException, WdkUserException {
+    return getIsCacheable() ? getCachedSql(performSorting) : getUncachedSql();
   }
 
   @Override
