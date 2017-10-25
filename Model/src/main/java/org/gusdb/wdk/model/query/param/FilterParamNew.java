@@ -773,8 +773,8 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    //String err = stableValue.validateSyntax();
-    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    String err = stableValue.validateSyntax();
+    //String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
   }
