@@ -31,7 +31,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     JSONObject pJson = super.getJson();
     pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
     pJson.put("ontology", getOntologyJson(user, dependedParamValues));
-    pJson.put("values", getValuesJson(user, dependedParamValues));
+    //    pJson.put("values", getValuesJson(user, dependedParamValues));
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
     return pJson;
   }
