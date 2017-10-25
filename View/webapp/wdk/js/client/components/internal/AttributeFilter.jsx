@@ -41,8 +41,8 @@ import { MesaController as Mesa, ModalBoundary } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
 const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
-const UNKNOWN_DISPLAY = 'unknown';
-const UNKNOWN_VALUE = '@@unknown@@';
+const UNKNOWN_ELEMENT = <em>Not specified</em>;
+// const UNKNOWN_VALUE = '@@unknown@@';
 
 /**
  * @typedef {string[]} StringFilterValue
@@ -1703,16 +1703,18 @@ class MembershipField extends React.Component {
 
   isItemSelected(value) {
     let { filter } = this.props;
-    return (
-      filter == null ||
-      (filter.includeUnknown && value == null) ||
-      (filter.value && filter.value.includes(value))
-    );
+
+    // no filter, so everything is selected
+    return filter == null ? true
+      // value is null (ie, unknown) and includeUnknown selected
+      : value == null ? filter.includeUnknown
+      // filter.value is null (ie, all known values), or filter.value includes value
+      : filter.value == null || filter.value.includes(value);
   }
 
   handleItemClick(item, addItem = !this.isItemSelected(item.value)) {
     let { value } = item;
-    if (value == UNKNOWN_VALUE) {
+    if (value == null) {
       this.handleUnknownChange(addItem);
     }
     else {
@@ -1807,7 +1809,7 @@ class MembershipField extends React.Component {
                 sortable: useSort,
                 width: '50%',
                 renderCell: ({ value }) =>
-                  <div>{value == null ? UNKNOWN_DISPLAY : String(value)}</div>
+                  <div>{value == null ? UNKNOWN_ELEMENT : String(value)}</div>
               },
               {
                 key: 'count',
