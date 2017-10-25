@@ -43,7 +43,7 @@ import org.json.JSONObject;
  * 
  * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
  *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
- * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer
+ * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer)
  */
 public class BasketService extends UserService {
 
