@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -28,11 +31,16 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 
 /**
@@ -65,6 +73,10 @@ import org.json.JSONObject;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
+  @SuppressWarnings("unused") 
+ private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
+
+
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
@@ -419,8 +431,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredInternalsSql = FilterParamNewHandler.getFilteredValue(user, stableValue,
-        contextParamValues, this, metadataQuery);
+    String filteredInternalsSql = getFilteredValue(user, stableValue, contextParamValues, metadataQuery);
 
     // get untransformed filtered count
     sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
@@ -495,8 +506,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String internalSql = FilterParamNewHandler.getFilteredValue(user, stableValue, contextParamValues,
-        this, getMetadataQuery());
+    String internalSql = getFilteredValue(user, stableValue, contextParamValues, getMetadataQuery());
 
     // use that set of ids to limit our ontology id's metadata
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql +
@@ -677,6 +687,40 @@ public class FilterParamNew extends AbstractDependentParam {
     }
   }
 
+   
+   // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
+   String getFilteredValue(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery)
+       throws WdkModelException {
+
+     try {
+       String metadataSql;
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+       metadataSql = instance.getSql();
+
+       Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
+       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
+       String metadataTableName = "md";
+       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
+
+       String filteredSql;
+       
+       if (filters.size() == 0) {
+	 filteredSql = filterSelectSql;
+       } else {
+        List<String> filterSqls = new ArrayList<String>();
+        for (FilterParamNewStableValue.Filter filter : filters)
+          filterSqls.add(filterSelectSql + filter.getFilterAsWhereClause(metadataTableName, ontology));
+
+        filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
+       }
+  
+       return filteredSql;
+     }
+     catch (JSONException | WdkUserException ex) {
+       throw new WdkModelException(ex);
+     }
+   }
+   
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
