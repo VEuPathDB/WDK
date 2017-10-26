@@ -317,6 +317,7 @@ public class FilterParamNewStableValue {
       return whereClause + " AND (" + unknownClause + innerAndClause + ")";
     }
     
+    @Override
     public int compareTo(Filter f) {
       return field.compareTo(f.getField());
     }
