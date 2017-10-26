@@ -2,7 +2,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +14,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
@@ -96,10 +96,7 @@ public class GetVocabAction extends Action {
     String values = FormatUtil.urlDecodeUtf8(request.getParameter("dependedValue"));
     if (values != null && values.length() > 0) {
       JSONObject jsValues = new JSONObject(values);
-      Iterator<String> keys = jsValues.keys();
-      while (keys.hasNext()) {
-        String pName = keys.next();
-
+      for (String pName : JsonUtil.getKeys(jsValues)) {
         JSONArray jsArray = jsValues.getJSONArray(pName);
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < jsArray.length(); i++) {

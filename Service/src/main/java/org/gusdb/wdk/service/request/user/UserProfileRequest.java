@@ -11,6 +11,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -129,7 +130,7 @@ public class UserProfileRequest {
     List<String> unrecognizedProps = new ArrayList<>();
     List<String> oversizedProps = new ArrayList<>();
     Map<String, String> parsedProps = new HashMap<>();
-    for (String key : JSONObject.getNames(propsJson)) {
+    for (String key : JsonUtil.getKeys(propsJson)) {
       if (configuredProps.containsKey(key)) {
         String value = propsJson.getString(key).trim();
         if (FormatUtil.getUtf8EncodedBytes(value).length > UserProfile.MAX_PROPERTY_VALUE_SIZE) {
