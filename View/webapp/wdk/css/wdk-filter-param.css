@@ -195,8 +195,10 @@
 /* Prevent checkbox cell of table from having scrollbar */
 .filter-param .membership-filter .MesaComponent th.SelectionCell,
 .filter-param .membership-filter .MesaComponent td.SelectionCell {
-  width: 20px;
+  width: 22px;
   padding: 4px;
+  text-align: center;
+  overflow: visible;
 }
 .filter-param .membership-filter .HeadingRow {
   border-bottom: 1px solid #ccc;
