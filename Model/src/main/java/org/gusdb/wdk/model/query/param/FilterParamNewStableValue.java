@@ -260,16 +260,20 @@ public class FilterParamNewStableValue {
 
     initWithThrow();
 
+    String displayValue;
     if (_filters.size() == 0) {
-      String displayName = _param.getFilterDataTypeDisplayName();
-      return displayName != null ? displayName : _param.getPrompt();
+      displayValue = "unspecified";
     }
+    else {
 
-    List<String> filterDisplays = new ArrayList<String>();
-    for (Filter filter : _filters) {
-      filterDisplays.add(filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
+      List<String> filterDisplays = new ArrayList<String>();
+      for (Filter filter : _filters) {
+        filterDisplays.add(
+            filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
+      }
+      displayValue = FormatUtil.join(filterDisplays, System.lineSeparator());
     }
-    return FormatUtil.join(filterDisplays, System.lineSeparator());
+    return displayValue;
   }
 
   //////////////////// inner classes to represent different types of filter //////////////////////////
