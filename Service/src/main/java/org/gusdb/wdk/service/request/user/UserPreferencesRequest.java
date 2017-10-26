@@ -5,12 +5,10 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.gusdb.fgputil.iterator.IteratorUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
@@ -57,7 +55,7 @@ public class UserPreferencesRequest {
   }
 
   private static void validateRequestJson(JSONObject json) throws RequestMisformatException {
-    for (String key : (Set<String>)json.keySet()) {
+    for (String key : JsonUtil.getKeys(json)) {
       if (!VALID_SCOPES.contains(key)) {
         throw new RequestMisformatException("Preference service request JSON can contain " +
             "only the following properties: [ '" + join(VALID_SCOPES, "', '") + "'].");
@@ -69,7 +67,7 @@ public class UserPreferencesRequest {
       Map<String,String> prefChanges, List<String> prefDeletes) {
     if (parent.has(objectKey)) {
       JSONObject prefs = parent.getJSONObject(objectKey);
-      for (String key : IteratorUtil.toIterable((Iterator<String>)prefs.keys())) {
+      for (String key : JsonUtil.getKeys(prefs)) {
         if (prefs.isNull(key)) {
           prefDeletes.add(key);
         }

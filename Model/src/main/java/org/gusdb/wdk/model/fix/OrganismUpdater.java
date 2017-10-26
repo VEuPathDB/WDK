@@ -146,10 +146,7 @@ public class OrganismUpdater {
 
   private boolean changeParams(JSONObject jsParams) throws JSONException {
     boolean updated = false;
-    String[] names = JSONObject.getNames(jsParams);
-    if ( names == null) return updated;
-
-    for (String name : names) {
+    for (String name : JsonUtil.getKeys(jsParams)) {
       for (int i = 0; i < lenParamOrg; i++) {
         if (name.equals(PARAM_ORGANISM[i])) {
           String organisms = jsParams.getString(name);

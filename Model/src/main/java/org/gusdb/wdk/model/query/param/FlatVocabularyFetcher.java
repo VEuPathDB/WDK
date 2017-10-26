@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,10 +60,8 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
-    while (paramNames.hasNext()) {
-      String paramName = paramNames.next();
+    for (String paramName : JsonUtil.getKeys(dependedParamValuesJson)) {
       dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
     return fetchItem(dependedParamValues);

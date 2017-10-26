@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ontology.Ontology;
@@ -68,7 +69,7 @@ public class OntologyService extends WdkService {
     try {
       JSONObject criteriaJson = new JSONObject(body);
       Map<String,String> criteria = new HashMap<String,String>();
-      for (String key : JSONObject.getNames(criteriaJson)) {
+      for (String key : JsonUtil.getKeys(criteriaJson)) {
         criteria.put(key, criteriaJson.getString(key));
       }
       JSONArray pathsList = OntologyFormatter.pathsToJson(

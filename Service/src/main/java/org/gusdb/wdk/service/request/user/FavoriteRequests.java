@@ -17,6 +17,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -103,7 +104,7 @@ public class FavoriteRequests {
   public static FavoriteActions parseFavoriteActionsJson(JSONObject json) {
     List<Object> unrecognizedActions = new ArrayList<>();
     Map<String, List<Long>> favoriteActionMap = new HashMap<>();
-    for (String actionType : JSONObject.getNames(json)) {
+    for (String actionType : JsonUtil.getKeys(json)) {
       if (FavoriteActions.ACTION_TYPES.contains(actionType)) {
         List<Long> favoriteIds = new ArrayList<>();
         JSONArray jsonArray = json.getJSONArray(actionType);

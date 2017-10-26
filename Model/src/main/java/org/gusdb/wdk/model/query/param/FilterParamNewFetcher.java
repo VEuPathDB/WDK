@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -48,10 +47,8 @@ public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterPar
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     LOG.info("Fetching filter param new instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
-    while (paramNames.hasNext()) {
-      String paramName = paramNames.next();
+    for (String paramName : JsonUtil.getKeys(dependedParamValuesJson)) {
       dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
     return new FilterParamNewInstance(_param);

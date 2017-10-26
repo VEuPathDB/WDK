@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,9 +160,7 @@ public class StepAnalysisContext {
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
       LOG.debug("Retrieved the following params JSON from the DB: " + formObj);
 
-      Iterator<String> iter2 = formObj.keys();
-      while (iter2.hasNext()) {
-        String key = iter2.next();
+      for (String key : JsonUtil.getKeys(formObj)) {
         JSONArray array = formObj.getJSONArray(key);
         String[] values = new String[array.length()];
         for (int i=0; i < array.length(); i++) {
