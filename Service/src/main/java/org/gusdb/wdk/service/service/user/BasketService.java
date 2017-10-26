@@ -75,6 +75,7 @@ public class BasketService extends UserService {
   public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, String body) throws WdkModelException {
     User user = getPrivateRegisteredUser();
     RecordClass rc = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+    
     // TODO finish
     return Response.ok().build();
   }
