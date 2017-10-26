@@ -5,7 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -65,9 +68,16 @@ public class RecordRequest {
     return pkMap;
   }
 
+  public static PrimaryKeyValue parsePrimaryKeyNew(JSONObject jsonObject, RecordClass expectedRecordClass) throws WdkModelException {
+    Map<String,String> pkValues = JsonUtil.parseProperties(jsonObject);
+    String[] columnRefs = expectedRecordClass.getPrimaryKeyDefinition().getColumnRefs();
+    // TODO: validate columns match json properties
+    return new PrimaryKeyValue(expectedRecordClass.getPrimaryKeyDefinition(), pkValues);
+  }
+
   private static List<String> parseAttributeNames(JSONArray attributeNames,
       RecordClass recordClass) throws WdkUserException {
-    // parse   and validate
+    // parse and validate
     Map<String, AttributeField> allowedAttributes = recordClass.getAttributeFieldMap();
 
     List<String> namesList = new ArrayList<String>();

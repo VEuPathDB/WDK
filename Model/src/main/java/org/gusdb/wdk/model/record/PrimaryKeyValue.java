@@ -15,15 +15,15 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public class PrimaryKeyValue {
 
-  private final Map<String, Object> _pkValues;
+  private final Map<String, ? extends Object> _pkValues;
 
-  public PrimaryKeyValue(PrimaryKeyDefinition pkDef, Map<String, Object> pkValues) throws WdkModelException {
+  public PrimaryKeyValue(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues) throws WdkModelException {
     _pkValues = pkValues;
     // make sure incoming values match columns in definition
     validateValues(pkDef, pkValues);
   }
 
-  private void validateValues(PrimaryKeyDefinition pkDef, Map<String, Object> pkValues) throws WdkModelException {
+  private void validateValues(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues) throws WdkModelException {
     String errorMessage = null;
     if (pkDef.getColumnRefs().length != pkValues.size()) {
       errorMessage = "More PK values passed than expected.";
@@ -60,7 +60,7 @@ public class PrimaryKeyValue {
     return join(mapToList(_pkValues.entrySet(), entry -> entry.getKey() + " = " + entry.getValue()), ", ");
   }
 
-  public static boolean rawValuesDiffer(Map<String, Object> map1, Map<String, Object> map2) {
+  public static boolean rawValuesDiffer(Map<String, ? extends Object> map1, Map<String, ? extends Object> map2) {
     if (map1.size() != map2.size()) return true;
     for (String key : map1.keySet()) {
       if (!map2.containsKey(key)) return true;
