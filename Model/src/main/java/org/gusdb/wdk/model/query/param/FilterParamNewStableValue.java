@@ -173,10 +173,15 @@ public class FilterParamNewStableValue {
             return "Stable value for parameter " + _param.getFullName() + " does not specify an ontology term";
           }
 
-          boolean isRange = inferIsRange(jsFilter);
-          OntologyItemType type = (isRange ?
+	  // defaults if no value provided.  doesn't really matter
+	  boolean isRange = false;
+	  OntologyItemType type = OntologyItemType.DATE;
+	  if (jsFilter.has(FILTERS_VALUE)) {
+           isRange = inferIsRange(jsFilter);
+           type = (isRange ?
               inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE)) :
               inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE)));
+	    }
 
           Filter filter = null;
           Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
@@ -184,7 +189,9 @@ public class FilterParamNewStableValue {
           try {
             switch (type) {
               case DATE:
-                filter = new DateRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
+		JSONObject value = null;
+		if (jsFilter.has(FILTERS_VALUE)) value = jsFilter.getJSONObject(FILTERS_VALUE);
+                filter = new DateRangeFilter(value, includeUnknowns, field);
                 break;
               case NUMBER:
                 filter = (isRange ?
@@ -397,8 +404,8 @@ public class FilterParamNewStableValue {
     DateRangeFilter(JSONObject jsValue, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsValue, includeUnknowns, field);
       try {
-        if (!jsValue.isNull(FILTERS_MIN)) min = jsValue.getString(FILTERS_MIN);
-        if (!jsValue.isNull(FILTERS_MAX)) max = jsValue.getString(FILTERS_MAX);
+        if (jsValue != null && !jsValue.isNull(FILTERS_MIN)) min = jsValue.getString(FILTERS_MIN);
+        if (jsValue != null && !jsValue.isNull(FILTERS_MAX)) max = jsValue.getString(FILTERS_MAX);
       }
       catch (JSONException j) {
         throw new WdkModelException(j);
