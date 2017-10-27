@@ -68,10 +68,9 @@ import org.apache.log4j.Logger;
  * @author steve
  */
 public class FilterParamNew extends AbstractDependentParam {
-  @SuppressWarnings("unused") 
- private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
-
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
 
@@ -103,32 +102,23 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private static final int FETCH_SIZE = 1000;
 
-  private String metadataQueryRef;
-  private Query metadataQuery;
+  private String _metadataQueryRef;
+  private Query _metadataQuery;
 
   private WdkModelText _idTransformSql;
 
-  private String ontologyQueryRef;
-  private Query ontologyQuery;
+  private String _ontologyQueryRef;
+  private Query _ontologyQuery;
 
-  private String backgroundQueryRef;
-  private Query backgroundQuery;
+  private String _backgroundQueryRef;
+  private Query _backgroundQuery;
 
-  private String filterDataTypeDisplayName;
-
-  @Override
-  public Set<String> getContainedQueryFullNames() {
-    Set<String> names = new HashSet<String>();
-    names.add(metadataQueryRef);
-    names.add(ontologyQueryRef);
-    names.add(backgroundQueryRef);
-    return names;
-  }
+  private String _filterDataTypeDisplayName;
 
   private boolean _useIdTransformSqlForInternalValue = false;
 
   // remove non-terminal nodes with a single child
-  private boolean trimMetadataTerms = true;
+  private boolean _trimMetadataTerms = true;
 
   public FilterParamNew() {
     // register handlers
@@ -141,23 +131,32 @@ public class FilterParamNew extends AbstractDependentParam {
   public FilterParamNew(FilterParamNew param) {
     super(param);
 
-    this.metadataQueryRef = param.metadataQueryRef;
-    if (param.metadataQuery != null)
-      this.metadataQuery = param.metadataQuery.clone();
+    _metadataQueryRef = param._metadataQueryRef;
+    if (param._metadataQuery != null)
+      _metadataQuery = param._metadataQuery.clone();
 
-    this._idTransformSql = param._idTransformSql;
+    _idTransformSql = param._idTransformSql;
 
-    this.ontologyQueryRef = param.ontologyQueryRef;
-    if (param.ontologyQuery != null)
-      this.ontologyQuery = param.ontologyQuery.clone();
+    _ontologyQueryRef = param._ontologyQueryRef;
+    if (param._ontologyQuery != null)
+      _ontologyQuery = param._ontologyQuery.clone();
 
-    this.backgroundQueryRef = param.backgroundQueryRef;
-    if (param.backgroundQuery != null)
-      this.backgroundQuery = param.backgroundQuery.clone();
+    _backgroundQueryRef = param._backgroundQueryRef;
+    if (param._backgroundQuery != null)
+      _backgroundQuery = param._backgroundQuery.clone();
 
-    this.trimMetadataTerms = param.trimMetadataTerms;
-    this._useIdTransformSqlForInternalValue = param._useIdTransformSqlForInternalValue;
-    this.filterDataTypeDisplayName = param.filterDataTypeDisplayName;
+    _trimMetadataTerms = param._trimMetadataTerms;
+    _useIdTransformSqlForInternalValue = param._useIdTransformSqlForInternalValue;
+    _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
+  }
+
+  @Override
+  public Set<String> getContainedQueryFullNames() {
+    Set<String> names = new HashSet<String>();
+    names.add(_metadataQueryRef);
+    names.add(_ontologyQueryRef);
+    names.add(_backgroundQueryRef);
+    return names;
   }
 
   @Override
@@ -169,7 +168,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return the metadata query ref
    */
   public String getMetadataQueryRef() {
-    return metadataQueryRef;
+    return _metadataQueryRef;
   }
 
   /**
@@ -177,18 +176,18 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the metadata query ref to set
    */
   public void setMetadataQueryRef(String metadataQueryRef) {
-    this.metadataQueryRef = metadataQueryRef;
+    _metadataQueryRef = metadataQueryRef;
   }
 
   /**
    * @return the metadataQuery
    */
   public Query getMetadataQuery() {
-    return metadataQuery;
+    return _metadataQuery;
   }
 
   public void setMetadataQuery(Query metadataQuery) {
-    this.metadataQuery = metadataQuery;
+    _metadataQuery = metadataQuery;
   }
 
   public WdkModelText getIdTransformSql() {
@@ -196,14 +195,14 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   public void setIdTransformSql(WdkModelText idTransformSql) {
-    this._idTransformSql = idTransformSql;
+    _idTransformSql = idTransformSql;
   }
 
   /**
    * @return the onotology Query Name
    */
   public String getOntologyQueryRef() {
-    return ontologyQueryRef;
+    return _ontologyQueryRef;
   }
 
   /**
@@ -211,14 +210,14 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the ontologyName to set
    */
   public void setOntologyQueryRef(String ontologyQueryRef) {
-    this.ontologyQueryRef = ontologyQueryRef;
+    _ontologyQueryRef = ontologyQueryRef;
   }
 
   /**
    * @return the ontologyQuery
    */
   public Query getOntologyQuery() {
-    return ontologyQuery;
+    return _ontologyQuery;
   }
 
   /**
@@ -226,14 +225,14 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the ontologyQuery to set
    */
   public void setOntologyQuery(Query ontologyQuery) {
-    this.ontologyQuery = ontologyQuery;
+    _ontologyQuery = ontologyQuery;
   }
 
   /**
    * @return the onotology Query Name
    */
   public String getBackgroundQueryRef() {
-    return backgroundQueryRef;
+    return _backgroundQueryRef;
   }
 
   /**
@@ -241,14 +240,14 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the backgroundName to set
    */
   public void setBackgroundQueryRef(String backgroundQueryRef) {
-    this.backgroundQueryRef = backgroundQueryRef;
+    _backgroundQueryRef = backgroundQueryRef;
   }
 
   /**
    * @return the backgroundQuery
    */
   public Query getBackgroundQuery() {
-    return backgroundQuery;
+    return _backgroundQuery;
   }
 
   /**
@@ -256,26 +255,26 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the backgroundQuery to set
    */
   public void setBackgroundQuery(Query backgroundQuery) {
-    this.backgroundQuery = backgroundQuery;
+    _backgroundQuery = backgroundQuery;
   }
 
   /**
    * @return the trimMetadataTerms
    */
   public boolean getTrimMetadataTerms() {
-    return trimMetadataTerms;
+    return _trimMetadataTerms;
   }
 
   public void setFilterDataTypeDisplayName(String filterDataTypeDisplayName) {
-    this.filterDataTypeDisplayName = filterDataTypeDisplayName;
+    _filterDataTypeDisplayName = filterDataTypeDisplayName;
   }
 
   public String getFilterDataTypeDisplayName() {
-    return filterDataTypeDisplayName;
+    return _filterDataTypeDisplayName;
   }
 
   public void setUseIdTransformSqlForInternalValue(boolean useIt) {
-    this._useIdTransformSqlForInternalValue = useIt;
+    _useIdTransformSqlForInternalValue = useIt;
   }
 
   public boolean getUseIdTransformSqlForInternalValue() {
@@ -287,7 +286,7 @@ public class FilterParamNew extends AbstractDependentParam {
    *          the metadataQuery to set
    */
   public void setTrimMetadataTerms(boolean trimMetadataTerms) {
-    this.trimMetadataTerms = trimMetadataTerms;
+    _trimMetadataTerms = trimMetadataTerms;
   }
 
   @Override
@@ -295,18 +294,18 @@ public class FilterParamNew extends AbstractDependentParam {
     super.resolveReferences(model);
 
     // resolve ontology query
-    if (ontologyQueryRef != null) {
+    if (_ontologyQueryRef != null) {
 
       // validate dependent params
-      this.ontologyQuery = resolveDependentQuery(model, ontologyQueryRef, "ontology query");
+      _ontologyQuery = resolveDependentQuery(model, _ontologyQueryRef, "ontology query");
 
       // validate columns
-      Map<String, Column> columns = ontologyQuery.getColumnMap();
+      Map<String, Column> columns = _ontologyQuery.getColumnMap();
       String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME,
           COLUMN_DESCRIPTION, COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION };
       for (String col : cols)
         if (!columns.containsKey(col))
-          throw new WdkModelException("The ontologyQuery " + ontologyQueryRef + " in filterParam " +
+          throw new WdkModelException("The ontologyQuery " + _ontologyQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
 
@@ -314,30 +313,30 @@ public class FilterParamNew extends AbstractDependentParam {
     metadataCols.add(COLUMN_INTERNAL);
 
     // resolve background query
-    if (backgroundQueryRef != null) {
+    if (_backgroundQueryRef != null) {
 
       // validate dependent params
-      this.backgroundQuery = resolveDependentQuery(model, backgroundQueryRef, "background query");
+      _backgroundQuery = resolveDependentQuery(model, _backgroundQueryRef, "background query");
 
       // validate columns
-      Map<String, Column> columns = backgroundQuery.getColumnMap();
+      Map<String, Column> columns = _backgroundQuery.getColumnMap();
       for (String col : metadataCols)
         if (!columns.containsKey(col))
-          throw new WdkModelException("The backgroundQuery " + backgroundQueryRef + " in filterParam " +
+          throw new WdkModelException("The backgroundQuery " + _backgroundQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
 
     // resolve metadata query
-    if (metadataQueryRef != null) {
+    if (_metadataQueryRef != null) {
 
       // validate dependent params
-      this.metadataQuery = resolveDependentQuery(model, metadataQueryRef, "metadata query");
+      _metadataQuery = resolveDependentQuery(model, _metadataQueryRef, "metadata query");
 
       // validate columns.
-      Map<String, Column> columns = metadataQuery.getColumnMap();
+      Map<String, Column> columns = _metadataQuery.getColumnMap();
       for (String col : metadataCols)
         if (!columns.containsKey(col))
-          throw new WdkModelException("The metadata query " + metadataQueryRef + " in filterParam " +
+          throw new WdkModelException("The metadata query " + _metadataQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
 
@@ -363,7 +362,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     contextParamValues = ensureRequiredContext(user, contextParamValues);
 
-    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyQuery, contextParamValues, user);
+    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(_ontologyQuery, contextParamValues, user);
     Map<String, OntologyItem> map = null;
     try {
       map = CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
@@ -393,7 +392,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // use background query if provided, else use metadata query
 
     // get base background query
-    Query bgdQuery = backgroundQuery == null ? metadataQuery : backgroundQuery;
+    Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
       QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
@@ -426,7 +425,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredInternalsSql = getFilteredValue(user, stableValue, contextParamValues, metadataQuery);
+    String filteredInternalsSql = getFilteredValue(user, stableValue, contextParamValues, _metadataQuery);
 
     // get untransformed filtered count
     sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
@@ -475,7 +474,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // use background query if provided, else use metadata query
 
     // get base bgd query
-    Query bgdQuery = backgroundQuery == null ? metadataQuery : backgroundQuery;
+    Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
       QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
@@ -636,7 +635,7 @@ public class FilterParamNew extends AbstractDependentParam {
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
     // get bgd Query SQL
-    Query bgdQuery = backgroundQuery == null ? metadataQuery : backgroundQuery;
+    Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
 
     String metadataSql;
     try {
@@ -787,10 +786,10 @@ public class FilterParamNew extends AbstractDependentParam {
     super.setContextQuestion(question);
 
     // also set context question in the metadata & ontology queries
-    if (metadataQuery != null)
-      metadataQuery.setContextQuestion(question);
-    if (ontologyQuery != null)
-      ontologyQuery.setContextQuestion(question);
+    if (_metadataQuery != null)
+      _metadataQuery.setContextQuestion(question);
+    if (_ontologyQuery != null)
+      _ontologyQuery.setContextQuestion(question);
   }
 
   /**
@@ -844,14 +843,14 @@ public class FilterParamNew extends AbstractDependentParam {
   @Override
   public List<Query> getQueries() {
     List<Query> queries = new ArrayList<Query>();
-    if (backgroundQuery != null) {
-      queries.add(backgroundQuery);
+    if (_backgroundQuery != null) {
+      queries.add(_backgroundQuery);
     }
-    if (metadataQuery != null) {
-      queries.add(metadataQuery);
+    if (_metadataQuery != null) {
+      queries.add(_metadataQuery);
     }
-    if (ontologyQuery != null) {
-      queries.add(ontologyQuery);
+    if (_ontologyQuery != null) {
+      queries.add(_ontologyQuery);
     }
     return queries;
   }
