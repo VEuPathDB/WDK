@@ -44,7 +44,7 @@ class Dialog extends Component<Props> {
     let {
       onClose = () => {},
       buttons = [(
-        <button type="button" onClick={() => onClose()}>
+        <button key="close" type="button" onClick={() => onClose()}>
           <Icon type="close"/>
         </button>
       )]
