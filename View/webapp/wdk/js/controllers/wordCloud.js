@@ -104,8 +104,9 @@ wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
     layout.html("");
 
     var tags = [];
-    var maxCount = Number.MIN_VALUE;
+    var totalCount = 0;
     var minCount = Number.MAX_VALUE;
+    var maxCount = Number.MIN_VALUE;
     var rank = 0;
     wordCloud.find("#tags span").each(function() {
       rank++;
@@ -113,12 +114,17 @@ wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
       if (rank > to) return;
 
       var count = parseInt($(this).attr("count"), 10);
-      if (count > maxCount) maxCount = count;
       if (count < minCount) minCount = count;
+      if (count > maxCount) maxCount = count;
+      totalCount += count;
       tags.push($(this).clone());
     });
+
     // compute the font size
-    computeSize(tags, minCount, maxCount);
+    computeSize(tags, totalCount, 6, 100);
+
+    // uncomment below to compute font size scaled to maxCount
+    // computeSize(tags, maxCount, 6, 50);
 
     // sort word alphabetically if needed
     if (sortBy == "word") tags.sort(sortTags);
@@ -128,14 +134,10 @@ wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
     });
   }
 
-  function computeSize(tags, minCount, maxCount) {
-    // words are sorted by occurence.
-    var MAX_FONT = 50.0;
-    var MIN_FONT = 6.0;
-    var scale = (MAX_FONT - MIN_FONT) / (maxCount - minCount);
+  function computeSize(tags, denominator, minFont, maxFont) {
     $.each(tags, function (index, tag) {
       var count = parseInt($(tag).attr("count"), 10);
-      var fontSize = (count - minCount) * scale + MIN_FONT;
+      var fontSize = Math.max((count / denominator) * maxFont, minFont);
       $(tag).css("font-size", fontSize + "pt");
     });
   }
