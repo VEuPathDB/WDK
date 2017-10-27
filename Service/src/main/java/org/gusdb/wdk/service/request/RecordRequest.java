@@ -5,13 +5,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,7 +23,7 @@ public class RecordRequest {
  /**
    * Input Format:
    * {
-   *  "primaryKey": [ "12345", "myProject" ],
+   *  "primaryKey": [ { name: String, value: String } ],
    *  "tables": [ String, String ],
    *  "attributes": [ String, String ]
    * }
@@ -31,13 +32,16 @@ public class RecordRequest {
    * @param json request json in the format above
    * @return object representing request
    * @throws RequestMisformatException
+ * @throws DataValidationException 
+ * @throws WdkModelException 
    */
-  public static RecordRequest createFromJson(RecordClass recordClass, JSONObject json) throws RequestMisformatException {
+  public static RecordRequest createFromJson(RecordClass recordClass, JSONObject json)
+      throws RequestMisformatException, WdkModelException, DataValidationException {
     try {
-      RecordRequest request = new RecordRequest(recordClass);
+      PrimaryKeyValue primaryKey = parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass);
+      RecordRequest request = new RecordRequest(recordClass, primaryKey);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
-      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -45,71 +49,69 @@ public class RecordRequest {
     }
   }
 
-  private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
-      RecordClass recordClass) throws WdkUserException {
+  public static PrimaryKeyValue parsePrimaryKey(JSONArray primaryKeyJson,
+      RecordClass recordClass) throws DataValidationException, WdkModelException {
 
     String[] columnRefs = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     int providedLength = primaryKeyJson.length();
     int expectedLength = columnRefs.length;
 
     if (providedLength != expectedLength) {
-      throw new WdkUserException("The provided primary key does not have the expected number of parts:\n" +
+      throw new DataValidationException("The provided primary key does not have the expected number of parts:\n" +
           "[ provided: " + providedLength + "; expected: " + expectedLength + " ]");
     }
 
-    Map<String,Object> pkMap = new LinkedHashMap<String,Object>();
+    // validate up front and throw DataValidationException to avoid WdkModelException later
+    Map<String,String> pkMap = new LinkedHashMap<>();
     for (int i = 0; i < providedLength; i++) {
       JSONObject part = primaryKeyJson.getJSONObject(i);
+      // input order must match PK column order
       String keyName = part.getString("name");
       String keyValue = part.getString("value");
+      if (!keyName.equals(columnRefs[i])) {
+        throw new DataValidationException("Primary key value array names are incorrect or misordered. " +
+            "Required columns are [ " + FormatUtil.join(columnRefs, ", ") + "].");
+      }
       pkMap.put(keyName, keyValue);
     }
 
-    return pkMap;
+    return new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), pkMap);
   }
 
-  public static PrimaryKeyValue parsePrimaryKeyNew(JSONObject jsonObject, RecordClass expectedRecordClass) throws WdkModelException {
-    Map<String,String> pkValues = JsonUtil.parseProperties(jsonObject);
-    String[] columnRefs = expectedRecordClass.getPrimaryKeyDefinition().getColumnRefs();
-    // TODO: validate columns match json properties
-    return new PrimaryKeyValue(expectedRecordClass.getPrimaryKeyDefinition(), pkValues);
-  }
-
-  private static List<String> parseAttributeNames(JSONArray attributeNames,
-      RecordClass recordClass) throws WdkUserException {
-    // parse and validate
+  private static List<String> parseAttributeNames(JSONArray attributeNames, RecordClass recordClass)
+      throws WdkUserException {
     Map<String, AttributeField> allowedAttributes = recordClass.getAttributeFieldMap();
-
     List<String> namesList = new ArrayList<String>();
     for (int i = 0; i < attributeNames.length(); i++) {
       String name = attributeNames.getString(i);
-      if (!allowedAttributes.containsKey(name)) throw new WdkUserException("Attribute name '" + name + "' is not in record class '" + recordClass.getFullName() + "'.");
+      if (!allowedAttributes.containsKey(name)) throw new WdkUserException(
+          "Attribute name '" + name + "' is not in record class '" + recordClass.getFullName() + "'.");
       namesList.add(name);
     }
     return namesList;
   }
 
-  private static List<String> parseTableNames(JSONArray tableNames,
-      RecordClass recordClass) throws WdkUserException {
-    // parse   and validate
+  private static List<String> parseTableNames(JSONArray tableNames, RecordClass recordClass)
+      throws WdkUserException {
     Map<String, TableField> allowedTables = recordClass.getTableFieldMap();
-
     List<String> namesList = new ArrayList<String>();
     for (int i = 0; i < tableNames.length(); i++) {
       String name = tableNames.getString(i);
-      if (!allowedTables.containsKey(name)) throw new WdkUserException("Table name '" + name + "' is not in record class '" + recordClass.getFullName() + "'.");
+      if (!allowedTables.containsKey(name)) throw new WdkUserException(
+          "Table name '" + name + "' is not in record class '" + recordClass.getFullName() + "'.");
       namesList.add(name);
     }
     return namesList;
   }
 
   private final RecordClass _recordClass;
+  private final PrimaryKeyValue _primaryKey;
   private List<String> _attrNames = new ArrayList<String>();
   private List<String> _tableNames = new ArrayList<String>();
-  private Map<String,Object> _primaryKey = new LinkedHashMap<String,Object>();
 
-  private RecordRequest(RecordClass recordClass) {
+  private RecordRequest(RecordClass recordClass, PrimaryKeyValue primaryKey) {
     _recordClass = recordClass;
+    _primaryKey = primaryKey;
   }
 
   public RecordClass getRecordClass() {
@@ -119,7 +121,7 @@ public class RecordRequest {
   public List<String> getAttributeNames() {
     return _attrNames;
   }
-  
+
   private void setAttributeNames(List<String> attrNames) {
     _attrNames = attrNames;
   }
@@ -127,15 +129,12 @@ public class RecordRequest {
   public List<String> getTableNames() {
     return _tableNames;
   }
+
   private void setTableNames(List<String> tableNames) {
     _tableNames = tableNames;
   }
-  
-  public Map<String, Object> getPrimaryKeyValues() {
-    return _primaryKey;
-  }
 
-  private void setPrimaryKey(Map<String, Object> primaryKey) {
-    _primaryKey = primaryKey;
+  public PrimaryKeyValue getPrimaryKey() {
+    return _primaryKey;
   }
 }

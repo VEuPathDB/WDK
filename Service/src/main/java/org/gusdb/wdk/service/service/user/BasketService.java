@@ -14,9 +14,15 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.request.user.BasketRequests;
+import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
 import org.gusdb.wdk.service.service.RecordService;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -36,7 +42,7 @@ import org.json.JSONObject;
  * Thus, this service provides the following service endpoints (all behind /user/{id}):
  * 
  * 1. GET    /baskets                                  returns list of baskets (record classes) and record count in each basket
- * 2. PATCH  /baskets/{recordClassOrUrlSegment}        add or delete multiple records from this basket
+ * 2. PATCH  /baskets/{recordClassOrUrlSegment}        add or remove multiple records from a basket
  * 3. DELETE /baskets/{recordClassOrUrlSegment}        clears all records from a basket
  * 4. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
  * 5. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
@@ -72,12 +78,20 @@ public class BasketService extends UserService {
   @Path(NAMED_BASKET_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, String body) throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    RecordClass rc = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-    
-    // TODO finish
-    return Response.ok().build();
+  public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
+      throws WdkModelException, DataValidationException, RequestMisformatException {
+    try {
+      User user = getPrivateRegisteredUser();
+      RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+      BasketActions actions = BasketRequests.parseBasketActionsJson(new JSONObject(body), recordClass);
+      BasketFactory factory = getWdkModel().getBasketFactory();
+      factory.addPksToBasket(user, recordClass, actions.getRecordsToAdd());
+      factory.removePksFromBasket(user, recordClass, actions.getRecordsToRemove());
+      return Response.noContent().build();
+    }
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
+    }
   }
 
   @DELETE

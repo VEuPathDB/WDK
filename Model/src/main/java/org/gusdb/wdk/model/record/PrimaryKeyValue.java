@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.record;
 
+import static java.util.Arrays.asList;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
@@ -15,9 +16,11 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public class PrimaryKeyValue {
 
+  private final PrimaryKeyDefinition _pkDef;
   private final Map<String, ? extends Object> _pkValues;
 
   public PrimaryKeyValue(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues) throws WdkModelException {
+    _pkDef = pkDef;
     _pkValues = pkValues;
     // make sure incoming values match columns in definition
     validateValues(pkDef, pkValues);
@@ -92,5 +95,13 @@ public class PrimaryKeyValue {
   @Override
   public String toString() {
     return FormatUtil.join(getValues().values().toArray(), "/");
+  }
+
+  public static List<String[]> toStringArrays(List<PrimaryKeyValue> recordPks) {
+    return mapToList(recordPks, pkValue ->
+        mapToList(asList(pkValue._pkDef.getColumnRefs()),
+            colName -> pkValue.getValues().get(colName)
+        ).toArray(new String[pkValue._pkDef.getColumnRefs().length])
+    );
   }
 }

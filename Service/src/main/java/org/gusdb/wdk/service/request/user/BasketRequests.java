@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.request.user;
 
-import static org.gusdb.wdk.service.formatter.Keys.DELETE;
-import static org.gusdb.wdk.service.formatter.Keys.UNDELETE;
+import static org.gusdb.wdk.service.formatter.Keys.ADD;
+import static org.gusdb.wdk.service.formatter.Keys.REMOVE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.service.request.RecordRequest;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,34 +27,34 @@ public class BasketRequests {
 
   public static class BasketActions {
 
-    private static final List<String> ACTION_TYPES = Arrays.asList(DELETE, UNDELETE);
+    private static final List<String> ACTION_TYPES = Arrays.asList(ADD, REMOVE);
 
     private Map<String,List<PrimaryKeyValue>> _basketActionMap;
 
     public BasketActions(Map<String,List<PrimaryKeyValue>> basketActionMap) {
       _basketActionMap = basketActionMap;
       // clear out IDs that appear in both "delete" and "undelete"
-      cleanData(_basketActionMap.get(DELETE), _basketActionMap.get(UNDELETE));
+      cleanData(_basketActionMap.get(ADD), _basketActionMap.get(REMOVE));
     }
 
-    private void cleanData(List<PrimaryKeyValue> toDelete, List<PrimaryKeyValue> toUndelete) {
-      for (int j, i = 0; i < toDelete.size(); i++) {
-        PrimaryKeyValue id = toDelete.get(i);
-        if ((j = toUndelete.indexOf(id)) != -1) {
+    private void cleanData(List<PrimaryKeyValue> toAdd, List<PrimaryKeyValue> toRemove) {
+      for (int j, i = 0; i < toRemove.size(); i++) {
+        PrimaryKeyValue id = toRemove.get(i);
+        if ((j = toAdd.indexOf(id)) != -1) {
           // found ID in both lists; remove from both
-          toUndelete.remove(j);
-          toDelete.remove(i);
+          toAdd.remove(j);
+          toRemove.remove(i);
           i--; // recheck at the current index
         }
       }
     }
 
-    public List<PrimaryKeyValue> getRecordsToDelete() {
-      return _basketActionMap.get(DELETE);
+    public List<PrimaryKeyValue> getRecordsToAdd() {
+      return _basketActionMap.get(ADD);
     }
 
-    public List<PrimaryKeyValue> getRecordsToUndelete() {
-      return _basketActionMap.get(UNDELETE);
+    public List<PrimaryKeyValue> getRecordsToRemove() {
+      return _basketActionMap.get(REMOVE);
     }
   }
 
@@ -61,17 +62,19 @@ public class BasketRequests {
    * Creates set of actions, each associated with a list of basket records
    * Input Format:
    * {
-   *   delete: [Long, Long, ...],
-   *   undelete: [Long, Long, ...]
+   *   create: [PrimaryKey, PrimaryKey, ...],
+   *   delete: [PrimaryKey, PrimaryKey, ...]
    * }
+   * Where PrimaryKey is [ { name: String, value: String } ].
    * 
    * @param json input object
    * @return parsed actions to perform on IDs
    * @throws JSONException 
    * @throws WdkModelException 
+   * @throws DataValidationException 
    */
   public static BasketActions parseBasketActionsJson(JSONObject json, RecordClass expectedRecordClass)
-      throws WdkModelException, JSONException {
+      throws WdkModelException, JSONException, DataValidationException {
     List<Object> unrecognizedActions = new ArrayList<>();
     Map<String, List<PrimaryKeyValue>> basketActionMap = new HashMap<>();
     for (String actionType : JsonUtil.getKeys(json)) {
@@ -79,7 +82,7 @@ public class BasketRequests {
         List<PrimaryKeyValue> basketPks = new ArrayList<>();
         JSONArray jsonArray = json.getJSONArray(actionType);
         for (int i = 0; i < jsonArray.length(); i++) {
-          PrimaryKeyValue pk = RecordRequest.parsePrimaryKeyNew(jsonArray.getJSONObject(i), expectedRecordClass);
+          PrimaryKeyValue pk = RecordRequest.parsePrimaryKey(jsonArray.getJSONArray(i), expectedRecordClass);
           basketPks.add(pk);
         }
         basketActionMap.put(actionType, basketPks);
