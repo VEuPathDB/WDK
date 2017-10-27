@@ -79,8 +79,8 @@ export default class RealTimeSearchBox extends Component<Props, State> {
 
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.searchTerm !== this.state.searchTerm) {
-      this.emitSearchTermChange(nextProps.searchTerm!);
-      this.setState({ searchTerm: nextProps.searchTerm! });
+      this.setState({ searchTerm: nextProps.searchTerm! },
+        () => this.emitSearchTermChange(nextProps.searchTerm!));
     }
   }
 
