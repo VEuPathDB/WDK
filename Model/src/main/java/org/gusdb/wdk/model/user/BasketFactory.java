@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +13,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
@@ -307,8 +310,15 @@ public class BasketFactory {
     return counts;
   }
 
-  public int getBasketCounts(User user, List<String[]> records, RecordClass recordClass)
-      throws WdkModelException {
+  public int getBasketCounts(User user, List<String[]> records, RecordClass recordClass) throws WdkModelException {
+    return reduce(queryBasketStatus(user, records, recordClass), (count, next) -> count + (next ? 1 : 0), 0);
+  }
+
+  public List<Boolean> queryBasketStatus(User user, RecordClass recordClass, List<PrimaryKeyValue> pksToQuery) throws WdkModelException {
+    return queryBasketStatus(user, PrimaryKeyValue.toStringArrays(pksToQuery), recordClass);
+  }
+
+  private List<Boolean> queryBasketStatus(User user, List<String[]> records, RecordClass recordClass) throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -320,37 +330,38 @@ public class BasketFactory {
     }
     DataSource dataSource = _wdkModel.getUserDb().getDataSource();
     PreparedStatement psCount = null;
+    List<Boolean> basketStatuses = new ArrayList<>();
     try {
       psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
-      int basketCount = 0;
       for (String[] row : records) {
         // fill or truncate the pk columns
         String[] pkValue = new String[pkColumns.length];
         int length = Math.min(row.length, pkValue.length);
         System.arraycopy(row, 0, pkValue, 0, length);
 
-        // check if the record already exists.
+        // check if the record exists in this basket
         setParams(psCount, userId, projectId, rcName, pkValue);
-        boolean hasRecord = false;
         ResultSet resultSet = null;
         try {
           long start = System.currentTimeMillis();
           resultSet = psCount.executeQuery();
           QueryLogger.logEndStatementExecution(sqlCount, "wdk-basket-factory-count", start);
-          if (resultSet.next()) {
-            int rsCount = resultSet.getInt(1);
-            hasRecord = (rsCount > 0);
+          if (!resultSet.next()) {
+            throw new WdkModelException("Basket count query for a single record did not return result.");
           }
+          int rsCount = resultSet.getInt(1);
+          if (rsCount > 1) {
+            throw new WdkModelException(">1 record in " + rcName + " basket with IDs " + FormatUtil.join(pkValue, ", "));
+          }
+          basketStatuses.add(rsCount == 1);
         }
         finally {
-          if (resultSet != null)
+          if (resultSet != null) {
             SqlUtils.closeResultSetOnly(resultSet);
-        }
-        if (hasRecord) {
-          basketCount++;
+          }
         }
       }
-      return basketCount;
+      return basketStatuses;
     }
     catch (SQLException e) {
       throw new WdkModelException("Could not get basket counts for user " + user.getUserId(), e);

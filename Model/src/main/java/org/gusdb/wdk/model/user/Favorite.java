@@ -6,11 +6,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordIdentity;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
-import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
 import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 
-public class Favorite extends FavoriteIdentity implements NoteAndGroup {
+public class Favorite extends RecordIdentity implements NoteAndGroup {
 
     private static final Logger LOG = Logger.getLogger(Favorite.class);
 

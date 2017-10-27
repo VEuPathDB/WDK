@@ -124,25 +124,6 @@ public class FavoriteFactory {
     public String getGroup();
   }
 
-  public static class FavoriteIdentity {
-
-    private final RecordClass _recordClass;
-    private final PrimaryKeyValue _pkValue;
-
-    public FavoriteIdentity(RecordClass recordClass, PrimaryKeyValue pkValue) {
-      _recordClass = recordClass;
-      _pkValue = pkValue;
-    }
-
-    public RecordClass getRecordClass() {
-      return _recordClass;
-    }
-
-    public PrimaryKeyValue getPrimaryKey() {
-      return _pkValue;
-    }
-  }
-
   private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
   private final String _userSchema;
