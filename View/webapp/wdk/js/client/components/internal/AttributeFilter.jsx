@@ -228,7 +228,7 @@ class FieldList extends React.Component {
       .concat(this._getPathToField(field))
       .uniq()
       .toArray();
-    this.setState({ searchTerm: '', expandedNodes });
+    this.setState({ expandedNodes });
   }
 
   nodeComponent({node}) {
