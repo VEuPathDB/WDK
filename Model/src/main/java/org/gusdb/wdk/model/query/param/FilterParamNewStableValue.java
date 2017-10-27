@@ -168,6 +168,31 @@ public class FilterParamNewStableValue {
                 FILTERS_INCLUDE_UNKNOWN + "', '" + FILTERS_VALUE + "'.";
           }
 
+	  /*  TODO uncomment this soon as incoming stable values properly include type and isRange
+          String errPrefix = "Stable value for parameter " + _param.getFullName();
+
+          String field = jsFilter.getString(FILTERS_FIELD);
+          if (field == null) {
+            return errPrefix + " does not specify an ontology term";
+          }
+                    
+          if (!jsFilter.has(FILTERS_IS_RANGE)) {
+            return errPrefix + " does not specify isRange";
+          }
+          boolean isRange = jsFilter.getBoolean(FILTERS_IS_RANGE);
+
+          if (!jsFilter.has(FILTERS_TYPE)) {
+            return errPrefix + " does not specify type";
+          }
+          OntologyItemType type;
+          try {
+            type=  OntologyItemType.getType(jsFilter.getString(FILTERS_TYPE)); 
+          } catch (WdkModelException e) {
+            return errPrefix + " has an invalid type: " + jsFilter.getString(FILTERS_TYPE);
+          }
+
+	   */
+
           String field = jsFilter.getString(FILTERS_FIELD);
           if (field == null) {
             return "Stable value for parameter " + _param.getFullName() + " does not specify an ontology term";
