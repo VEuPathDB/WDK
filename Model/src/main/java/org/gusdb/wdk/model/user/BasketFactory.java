@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -71,6 +72,11 @@ public class BasketFactory {
     RecordClass recordClass = answerValue.getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
     addToBasket(user, recordClass, pkValues);
+  }
+
+  public void addPksToBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToAdd)
+      throws WdkModelException {
+    addToBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToAdd));
   }
 
   /**
@@ -169,6 +175,11 @@ public class BasketFactory {
     RecordClass recordClass = answerValue.getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
     removeFromBasket(user, recordClass, pkValues);
+  }
+
+  public void removePksFromBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToDelete)
+      throws WdkModelException {
+    removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
 
   public void removeFromBasket(User user, RecordClass recordClass, List<String[]> pkValues)
@@ -658,4 +669,5 @@ public class BasketFactory {
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-remote-basket-dummy");
   }
+
 }

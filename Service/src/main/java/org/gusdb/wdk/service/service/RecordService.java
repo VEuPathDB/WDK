@@ -35,6 +35,7 @@ import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
 import org.gusdb.wdk.service.request.RecordRequest;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
 import org.json.JSONException;
@@ -139,7 +140,8 @@ public class RecordService extends WdkService {
   @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException {
+  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body)
+      throws WdkModelException, DataValidationException {
     RecordInstance recordInstance = null;
     try {
       // get and parse request information
@@ -149,7 +151,7 @@ public class RecordService extends WdkService {
       
       // check to see if PKs specified map to multiple records
       try {
-        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKeyValues());
+        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey().getRawValues());
         if (ids.size() > 1) {
           // more than one record found; return multi-choice status and give user IDs from which to choose
           String idOptionText = join(mapToList(ids, pkValueMap -> join(mapToList(pkValueMap.entrySet(),
@@ -166,7 +168,7 @@ public class RecordService extends WdkService {
       }
 
       // PKs represent only one record; fetch, format, and return
-      recordInstance = new DynamicRecordInstance(getSessionUser(), request.getRecordClass(), request.getPrimaryKeyValues());
+      recordInstance = new DynamicRecordInstance(getSessionUser(), request.getRecordClass(), request.getPrimaryKey().getRawValues());
       TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
           recordInstance, request.getAttributeNames(), request.getTableNames());
       triggerErrorEvents(recordJsonResult.getSecond());

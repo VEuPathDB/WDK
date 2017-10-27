@@ -23,7 +23,7 @@ import org.json.JSONObject;
  * Formats WDK RecordInstance objects.  RecordInstance JSON will have the following form:
  * 
  * {
- *   id: Object (map of PK attribute names -> PK attribute values),
+ *   id: Array<Object> (each has name (name of PK column) and value (PK column value) properties,
  *   attributes: { [name: String]: [value: Any] },
  *   tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
  * }
@@ -48,9 +48,10 @@ public class RecordFormatter {
   }
 
   private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
+    Map<String,String> pkValues = record.getPrimaryKey().getValues();
     JSONArray pkJson = new JSONArray();
-    for (Map.Entry<String, String> entry : record.getPrimaryKey().getValues().entrySet()) {
-      pkJson.put(new JSONObject().put(Keys.NAME, entry.getKey()).put(Keys.VALUE, entry.getValue()));
+    for (String column : record.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+      pkJson.put(new JSONObject().put(Keys.NAME, column).put(Keys.VALUE, pkValues.get(column)));
     }
     return pkJson;
   }
