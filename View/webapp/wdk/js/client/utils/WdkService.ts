@@ -306,19 +306,19 @@ export default class WdkService {
    * XXX Use _getFromCache with key of "recordInstance" so the most recent record is saved??
    */
   getRecord(recordClassName: string, primaryKey: PrimaryKey, options: {attributes?: string[]; tables?: string[];} = {}) {
-    let key = makeRecordKey(recordClassName, primaryKey);
+    let cacheKey = recordClassName + ':' + stringify(primaryKey);
     let method = 'post';
     let url = '/records/' + recordClassName + '/instance';
 
     let { attributes = [], tables = [] } = options;
-    let cacheEntry = this._recordCache.get(key);
+    let cacheEntry = this._recordCache.get(cacheKey);
 
     // if we don't have the record, fetch whatever is requested
     if (cacheEntry == null) {
       let request = { attributes, tables, primaryKey };
       let response = this._fetchJson<RecordInstance>(method, url, stringify(request));
       cacheEntry = { request, response };
-      this._recordCache.set(key, cacheEntry);
+      this._recordCache.set(cacheKey, cacheEntry);
     }
 
     // Get the request and response from `_recordCache` and replace them with
@@ -327,7 +327,7 @@ export default class WdkService {
     // the progress of the response it is replaced with.
     else {
       let { request, response } = cacheEntry;
-      // determine which tables and attributes we need to retreive
+      // determine which tables and attributes we need to retrieve
       let reqAttributes = difference(attributes, request.attributes);
       let reqTables = difference(tables, request.tables);
 
@@ -355,7 +355,7 @@ export default class WdkService {
           });
         });
         cacheEntry = { request: finalRequest, response: finalResponse };
-        this._recordCache.set(key, cacheEntry);
+        this._recordCache.set(cacheKey, cacheEntry);
       }
     }
 
@@ -671,10 +671,6 @@ export default class WdkService {
     return this._initialCheck;
   }
 
-}
-
-function makeRecordKey(recordClassName: string, primaryKey: PrimaryKey) {
-  return recordClassName + ':' + stringify(primaryKey);
 }
 
 /**
