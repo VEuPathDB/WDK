@@ -22,9 +22,9 @@ import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.RecordIdentity;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
 import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -194,11 +194,11 @@ public class FavoritesService extends UserService {
     JSONObject json = new JSONObject(body);
     try {
       FavoriteEdit newFavorite = FavoriteRequests.createFromJson(json, getWdkModel());
-      FavoriteIdentity favSpec = newFavorite.getIdentity();
+      RecordIdentity identity = newFavorite.getIdentity();
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
       Favorite favorite = null;
-      if ((favorite = factory.getFavorite(user, favSpec.getRecordClass(), favSpec.getPrimaryKey().getRawValues())) == null) {
-        favorite = factory.addToFavorites(user, favSpec.getRecordClass(), favSpec.getPrimaryKey().getRawValues());
+      if ((favorite = factory.getFavorite(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues())) == null) {
+        favorite = factory.addToFavorites(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues());
       }
       return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
     }
@@ -212,8 +212,8 @@ public class FavoritesService extends UserService {
    * {
    *   recordClass: String,
    *   id: [
-   *     {name : record_id1_name, value : record_id1_value},
-   *     {name : record_id2_name: value " record_id2_value},
+   *     { name: record_id1_name, value: record_id1_value },
+   *     { name: record_id2_name, value: record_id2_value },
    *     ...
    *   ]
    * }
@@ -242,7 +242,7 @@ public class FavoritesService extends UserService {
       if (!favorite.getType().equals(JsonType.ValueType.OBJECT)) {
         throw new RequestMisformatException("All input array elements must be objects.");
       }
-      FavoriteIdentity favId = FavoriteRequests.createFromJson(favorite.getJSONObject(), model).getIdentity();
+      RecordIdentity favId = FavoriteRequests.createFromJson(favorite.getJSONObject(), model).getIdentity();
       Favorite fav = model.getFavoriteFactory().getFavorite(user, favId.getRecordClass(), favId.getPrimaryKey().getRawValues());
       output.put(fav == null ? JSONObject.NULL : fav.getFavoriteId());
     }

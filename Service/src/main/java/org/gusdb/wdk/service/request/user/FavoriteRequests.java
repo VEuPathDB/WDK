@@ -8,24 +8,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonIterators;
-import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.FavoriteFactory.FavoriteIdentity;
+import org.gusdb.wdk.model.record.RecordIdentity;
 import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
 import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -46,11 +43,11 @@ public class FavoriteRequests {
     @Override public String getGroup() { return getSecond(); }
   }
 
-  public static class FavoriteEdit extends TwoTuple<FavoriteIdentity,NoteAndGroup> {
-    public FavoriteEdit(FavoriteIdentity identity, NoteAndGroup noteAndGroup) {
+  public static class FavoriteEdit extends TwoTuple<RecordIdentity,NoteAndGroup> {
+    public FavoriteEdit(RecordIdentity identity, NoteAndGroup noteAndGroup) {
       super(identity, noteAndGroup);
     }
-    public FavoriteIdentity getIdentity() { return getFirst(); }
+    public RecordIdentity getIdentity() { return getFirst(); }
     public NoteAndGroup getNoteAndGroup() { return getSecond(); }
   }
 
@@ -149,24 +146,12 @@ public class FavoriteRequests {
     try {
       String recordClassName = json.getString(Keys.RECORD_CLASS_NAME);
       RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
-      List<String> pkColumns = Arrays.asList(recordClass.getPrimaryKeyDefinition().getColumnRefs());
       JSONArray pkArray = json.getJSONArray(Keys.PRIMARY_KEY);
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (JsonType nextItem : JsonIterators.arrayIterable(pkArray)) {
-        if (!nextItem.getType().equals(ValueType.OBJECT)) {
-          throw new RequestMisformatException("Primary key array must be comprised of objects with properties 'name' and 'value'");
-        }
-        JSONObject pkField = nextItem.getJSONObject();
-        String name = pkField.getString(Keys.NAME);
-        if (!pkColumns.contains(name)) {
-          throw new DataValidationException("Request contains an unknown primary key id " + name);
-        }
-        pkValues.put(name, pkField.getString(Keys.VALUE));
-      }
+      PrimaryKeyValue primaryKey = RecordRequest.parsePrimaryKey(pkArray, recordClass);
       String note = getStringOrDefault(json, Keys.DESCRIPTION, null);
       String group = getStringOrDefault(json, Keys.GROUP, null);
       return new FavoriteEdit(
-          new FavoriteIdentity(recordClass, new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), pkValues)),
+          new RecordIdentity(recordClass, primaryKey),
           new NoteAndGroupImpl(note, group));
     }
     catch (WdkModelException | JSONException e) {
