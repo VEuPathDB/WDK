@@ -162,32 +162,6 @@ FilterList.defaultProps = {
   }
 };
 
-/**
- * Renders a Field node.
- */
-function FieldListNode({ node, onFieldSelect, isActive }) {
-  return node.children.length > 0
-    ? (
-      <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
-    ) : (
-      <a
-        className={'wdk-AttributeFilterFieldItem' +
-          (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
-        href={'#' + node.field.term}
-        onClick={e => {
-          e.preventDefault();
-          onFieldSelect(node.field);
-        }}>
-        <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
-      </a>
-    );
-}
-
-FieldListNode.propTypes = {
-  node: PropTypes.object.isRequired,
-  onFieldSelect: PropTypes.func.isRequired,
-  isActive: PropTypes.bool.isRequired
-}
 
 /**
  * Tree of Fields, used to set the active field.
@@ -232,13 +206,23 @@ class FieldList extends React.Component {
   }
 
   nodeComponent({node}) {
-    return (
-      <FieldListNode
-        node={node}
-        onFieldSelect={this.handleFieldSelect}
-        isActive={this.props.selectedField === node.field.term}
-      />
-    );
+    let isActive = this.props.selectedField === node.field.term;
+    return node.children.length > 0
+      ? (
+        <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
+      ) : (
+        <a
+          className={'wdk-AttributeFilterFieldItem' +
+            (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
+          href={'#' + node.field.term}
+          onClick={e => {
+            e.preventDefault();
+            this.handleFieldSelect(node.field);
+            this.selectedFieldDOMNode = e.target;
+          }}>
+          <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
+        </a>
+      );
   }
 
   _getPathToField(field, path = []) {
@@ -253,6 +237,7 @@ class FieldList extends React.Component {
     return (
       <div className="field-list">
         <CheckboxTree
+          ref={c => this.treeDomNode = findDOMNode(c)}
           autoFocusSearchBox={autoFocus}
           tree={getTree(fields.values())}
           expandedList={this.state.expandedNodes}
@@ -264,7 +249,14 @@ class FieldList extends React.Component {
           isSearchable={true}
           searchBoxPlaceholder="Find a quality"
           searchTerm={this.state.searchTerm}
-          onSearchTermChange={searchTerm => this.setState({searchTerm})}
+          onSearchTermChange={searchTerm => this.setState({searchTerm}, () => {
+            if (searchTerm == '' && this.selectedFieldDOMNode != null) {
+              let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
+              if (scrollList != null) {
+                scrollList.scrollTo(0, this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2));
+              }
+            }
+          })}
           searchPredicate={(node, searchTerms) =>
             searchTerms.every(searchTerm =>
               node.field.display.toLowerCase().includes(searchTerm.toLowerCase()))}
