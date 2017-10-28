@@ -168,7 +168,6 @@ public class FilterParamNewStableValue {
                 FILTERS_INCLUDE_UNKNOWN + "', '" + FILTERS_VALUE + "'.";
           }
 
-	  /*  TODO uncomment this soon as incoming stable values properly include type and isRange
           String errPrefix = "Stable value for parameter " + _param.getFullName();
 
           String field = jsFilter.getString(FILTERS_FIELD);
@@ -176,6 +175,7 @@ public class FilterParamNewStableValue {
             return errPrefix + " does not specify an ontology term";
           }
                     
+	  /*  TODO uncomment this soon, once incoming stable values properly include type and isRange
           if (!jsFilter.has(FILTERS_IS_RANGE)) {
             return errPrefix + " does not specify isRange";
           }
@@ -193,38 +193,41 @@ public class FilterParamNewStableValue {
 
 	   */
 
-          String field = jsFilter.getString(FILTERS_FIELD);
-          if (field == null) {
-            return "Stable value for parameter " + _param.getFullName() + " does not specify an ontology term";
+          // TODO: remove this when block above is uncommmented.  
+          // TODO: also remove the methods that do the inferring
+          // infer type and isRange.  defaults if no value provided doen't really matter
+          boolean isRange = false;
+          OntologyItemType type = OntologyItemType.DATE;
+          if (jsFilter.has(FILTERS_VALUE)) {
+            isRange = inferIsRange(jsFilter);
+            type = (isRange ? inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE))
+                : inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE)));
           }
 
-	  // defaults if no value provided.  doesn't really matter
-	  boolean isRange = false;
-	  OntologyItemType type = OntologyItemType.DATE;
-	  if (jsFilter.has(FILTERS_VALUE)) {
-           isRange = inferIsRange(jsFilter);
-           type = (isRange ?
-              inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE)) :
-              inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE)));
-	    }
-
           Filter filter = null;
-          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
+          Boolean includeUnknowns = jsFilter.isNull(FILTERS_INCLUDE_UNKNOWN) ? false
+              : jsFilter.getBoolean(FILTERS_INCLUDE_UNKNOWN);
 
+          JSONObject valueObj = null;
+          JSONArray valueArr = null;
           try {
             switch (type) {
               case DATE:
-		JSONObject value = null;
-		if (jsFilter.has(FILTERS_VALUE)) value = jsFilter.getJSONObject(FILTERS_VALUE);
-                filter = new DateRangeFilter(value, includeUnknowns, field);
+                if (jsFilter.has(FILTERS_VALUE)) valueObj = jsFilter.getJSONObject(FILTERS_VALUE);
+                filter = new DateRangeFilter(valueObj, includeUnknowns, field);
                 break;
               case NUMBER:
-                filter = (isRange ?
-                    new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field) :
-                    new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field));
+                if (isRange) {
+                  if (jsFilter.has(FILTERS_VALUE)) valueObj = jsFilter.getJSONObject(FILTERS_VALUE);
+                  filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
+                } else {
+                  if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
+                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
+                }               
                 break;
               case STRING:
-                filter = new StringMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
+                if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
+                filter = new StringMembersFilter(valueArr, includeUnknowns, field);
                 break;
               default:
                 throw new WdkModelException("Unsupported filter type: " + type.name());
