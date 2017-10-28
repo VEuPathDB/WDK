@@ -40,7 +40,7 @@ import org.json.JSONObject;
  * - Add/Remove one record in basket (2)
  * - Add/Remove multiple records in basket (2)
  * - Clear an entire basket (3)
- * - Check whether set of records are in a bas ket (4)
+ * - Check whether set of records are in a basket (4)
  * - Get single basket as a step result (i.e. answer) (5)
  * 
  * Unsupported (supported by other resources):
