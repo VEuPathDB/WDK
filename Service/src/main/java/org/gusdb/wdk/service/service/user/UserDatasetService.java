@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.util.ArrayList;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -22,10 +23,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
@@ -55,7 +53,7 @@ public class UserDatasetService extends UserService {
 
   // TODO: this should be changed to PRIVATE after initial development testing
   private static final Access DATA_ACCESS = Access.PUBLIC;
-  
+
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
@@ -65,17 +63,15 @@ public class UserDatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     expandDatasets = getFlag(expandDatasets, false);
-    User user = getUserBundle(DATA_ACCESS).getTargetUser();
+    long userId = getUserBundle(DATA_ACCESS).getTargetUser().getUserId();
     UserFactory userFactory = getWdkModel().getUserFactory();
-    List<UserDatasetInfo> userDatasets = new ArrayList<>();
-    List<UserDatasetInfo> sharedDatasets = new ArrayList<>();
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {		
+    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(getUserId());
-      userDatasets = getDatasetInfo(dsSession.getUserDatasets(user.getUserId()).values(),
+      List<UserDatasetInfo> userDatasets = getDatasetInfo(dsSession.getUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory);
-      sharedDatasets = getDatasetInfo(dsSession.getExternalUserDatasets(user.getUserId()).values(),
+      List<UserDatasetInfo> sharedDatasets = getDatasetInfo(dsSession.getExternalUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory);
       responseJson = UserDatasetFormatter.getUserDatasetsJson(dsSession, userDatasets,
           sharedDatasets, expandDatasets).toString();
@@ -85,10 +81,8 @@ public class UserDatasetService extends UserService {
 
   private static List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
       final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession, final UserFactory userFactory) {
-    return Functions.mapToList(datasets, new Function<UserDataset,UserDatasetInfo>() {
-      @Override public UserDatasetInfo apply(UserDataset dataset) {
-        return new UserDatasetInfo(dataset, installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory);
-      }});
+    return mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
+        installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory));
   }
 
   @GET
@@ -98,7 +92,7 @@ public class UserDatasetService extends UserService {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       UserDataset userDataset =
           dsSession.getUserDatasetExists(getUserId(), datasetId) ?
           dsSession.getUserDataset(getUserId(), datasetId) :
@@ -122,7 +116,7 @@ public class UserDatasetService extends UserService {
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       if (!dsSession.getUserDatasetExists(getUserId(), datasetId)) throw new NotFoundException("user-dataset/" + datasetIdStr);
       JSONObject metaJson = new JSONObject(body);
       dsSession.updateMetaFromJson(getUserId(), datasetId, metaJson);
@@ -152,28 +146,28 @@ public class UserDatasetService extends UserService {
   public Response manageShares(String body) throws WdkModelException {
     JSONObject jsonObj = new JSONObject(body);
     UserDatasetStore dsStore = getUserDatasetStore();
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
       Map<String, Map<Long, Set<Long>>> userDatasetShareMap = request.getUserDatasetShareMap();
       Set<Long> installedDatasetIds = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(getUserId());
-      for(String key : userDatasetShareMap.keySet()) {
+      for (String key : userDatasetShareMap.keySet()) {
         // Find datasets to share  
-        if("add".equals(key)) {
+        if ("add".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
           // Ignore any provided dataset ids not owned by this user.
           targetDatasetIds.retainAll(installedDatasetIds);
-          for(Long targetDatasetId : targetDatasetIds) {
+          for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may be shared with different users, we share datasets one by one
             dsSession.shareUserDataset(getUserId(), targetDatasetId, targetUserIds);
           }
         }
         // Fine datasets to unshare
-        if("delete".equals(key)) {
+        if ("delete".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
           // Ignore any provided dataset ids not owned by this user.
           targetDatasetIds.retainAll(installedDatasetIds);
-          for(Long targetDatasetId : targetDatasetIds) {
+          for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may unshared with different users, we unshare datasets one by one.
             dsSession.unshareUserDataset(getUserId(), targetDatasetId, targetUserIds);
@@ -195,8 +189,8 @@ public class UserDatasetService extends UserService {
    */
   protected Set<Long> identifyTargetUsers(Set<Long> providedUserIds) throws WdkModelException {
     Set<Long> targetUserIds = new HashSet<>();
-    for(Long providedUserId : providedUserIds) {
-      if(validateTargetUserId(providedUserId)) {
+    for (Long providedUserId : providedUserIds) {
+      if (validateTargetUserId(providedUserId)) {
         targetUserIds.add(providedUserId);
       }
     }
@@ -208,7 +202,7 @@ public class UserDatasetService extends UserService {
   public Response deleteById(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       dsSession.deleteUserDataset(getUserId(), datasetId);
     }  
     return Response.noContent().build();

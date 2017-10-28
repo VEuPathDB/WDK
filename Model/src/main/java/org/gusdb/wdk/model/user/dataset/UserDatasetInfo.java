@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.user.dataset;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
@@ -28,7 +28,7 @@ public class UserDatasetInfo {
   private final List<UserDatasetShareUser> _shares;
   
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-		  UserDatasetSession session, final UserFactory userFactory) {
+      UserDatasetSession session, final UserFactory userFactory) {
     try {
       long ownerId = dataset.getOwnerId();
       final Map<Long,User> userCache = new HashMap<>();
@@ -37,11 +37,8 @@ public class UserDatasetInfo {
       _owner = getUser(userCache, ownerId, userFactory);
       _ownerQuota = session.getQuota(ownerId);
       _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames());
-      _shares = Functions.mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()),
-          new Function<UserDatasetShare,UserDatasetShareUser>() {
-            @Override public UserDatasetShareUser apply(UserDatasetShare share) {
-              return new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared());
-            }});
+      _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
+          new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Could not collect user dataset information for dataset ID " + dataset.getUserDatasetId(), e);
