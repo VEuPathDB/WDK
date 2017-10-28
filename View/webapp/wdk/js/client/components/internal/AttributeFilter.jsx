@@ -253,7 +253,7 @@ class FieldList extends React.Component {
             if (searchTerm == '' && this.selectedFieldDOMNode != null) {
               let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
               if (scrollList != null) {
-                scrollList.scrollTo(0, this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2));
+                scrollList.scrollTop = this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2);
               }
             }
           })}
