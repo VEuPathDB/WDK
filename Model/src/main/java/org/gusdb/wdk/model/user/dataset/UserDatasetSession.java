@@ -8,14 +8,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONObject;
 
 public interface UserDatasetSession extends AutoCloseable {
-	
+
   /**
    * For one user, provide a map from dataset ID to dataset.
    * @param userId
    * @return the map
    */
-  Map<Long, UserDataset>getUserDatasets(Long userId) throws WdkModelException;
-	  
+  Map<Long, UserDataset> getUserDatasets(Long userId) throws WdkModelException;
+
   /**
    * Get a user dataset.
    * @param userId
@@ -24,7 +24,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @throws WdkModelException
    */
   UserDataset getUserDataset(Long userId, Long datasetId) throws WdkModelException;
-	  
+
   /**
    * Get the users a dataset is shared with.
    * @param userId
@@ -34,7 +34,6 @@ public interface UserDatasetSession extends AutoCloseable {
    */
   public Set<UserDatasetShare> getSharedWith(Long userId, Long datasetId) throws WdkModelException;
 
-	  
   /**
    * Get the external user datasets shared with this user.
    * @param userId
@@ -43,7 +42,6 @@ public interface UserDatasetSession extends AutoCloseable {
    */
   Map<Long, UserDataset> getExternalUserDatasets(Long userId) throws WdkModelException;
 
-	  
   /**
    * Update user supplied meta data.  Client provides JSON to describe the new
    * meta info.  Implementors must ensure this update is atomic.
@@ -52,7 +50,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param metaJson
    */
   void updateMetaFromJson(Long userId, Long datasetId, JSONObject metaJson) throws WdkModelException;
-	  
+
   /**
    * Share the provided dataset with the recipient provided
    * @param ownerUserId - The id of the dataset owner
@@ -60,7 +58,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param recipientUserId - The user who will gain access to the dataset
    */
   void shareUserDataset(Long ownerUserId, Long datasetId, Long recipientUserId) throws WdkModelException;
-  
+
   /**
    * Share the provided dataset with the set of recipients provided
    * @param ownerUserId - The id of the dataset owner
@@ -68,7 +66,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param recipientUserIds - The users who will gain access to the dataset
    */
   void shareUserDataset(Long ownerUserId, Long datasetId, Set<Long>recipientUserIds) throws WdkModelException;
-	  
+
   /**
    * Unshare the provided dataset with the set of users provided
    * @param ownerUserId - The id of the dataset owner
@@ -77,7 +75,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @throws WdkModelException
    */
   void unshareUserDataset(Long ownerUserId, Long datasetId, Set<Long> recipeintUserIds) throws WdkModelException;
-	  
+
   /**
    * Unshare this dataset with the specified user
    * @param ownerUserId The owner of the user dataset
@@ -85,7 +83,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param recipientUserId The user who will lose the sharing
    */
   void unshareUserDataset(Long ownerUserId, Long datasetId, Long recipientUserId) throws WdkModelException;
-	  
+
   /**
    * Unshare this dataset with all users it was shared with - may be done with a prelude
    * to deleting it.
@@ -93,7 +91,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param datasetId - the dataset to unshare with everyone
    */
   void unshareWithAll(Long ownerUserId, Long datasetId) throws WdkModelException;
-	  
+
   /**
    * In the case where the user provided is the owner of the dataset provided, delete that
    * userDataset from the store.  Must unshare the dataset from other datasets that see it
@@ -103,7 +101,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param userDataset
    */
   void deleteUserDataset(Long userId, Long datasetId) throws WdkModelException;
-  
+
   /**
    * Delete the specified external dataset.  Must unshare the dataset from 
    * @param userId
@@ -111,7 +109,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param externalDatasetId
    */
   void deleteExternalUserDataset(Long ownerUserId, Long datasetId, Long recipientUserId) throws WdkModelException;
-	  
+
   /**
    * For a particular user, the last modification time of any of their datasets.
    * Useful for quick cache checks.  We use Date as a platform neutral representation.
@@ -119,14 +117,14 @@ public interface UserDatasetSession extends AutoCloseable {
    * @return
    */
   Long getModificationTime(Long userId) throws WdkModelException;
-	  
+
   /**
    * Get the size of this user's quota
    * @param userId
    * @return
    */
   Integer getQuota(Long userId) throws WdkModelException;
-	  
+
   /**
    * Check if a user has a userId directory in the store. 
    * @param userId
@@ -141,9 +139,8 @@ public interface UserDatasetSession extends AutoCloseable {
    * @return true if so.
    * @throws WdkModelException
    */
-
   boolean checkUserDatasetsDirExists(Long userId)  throws WdkModelException;
-	  
+
   UserDatasetFile getUserDatasetFile(Path path, Long userDatasetId);
 
   boolean getUserDatasetExists(Long userId, Long datasetId) throws WdkModelException;
@@ -152,7 +149,6 @@ public interface UserDatasetSession extends AutoCloseable {
   UserDataset getExternalUserDataset(Long userId, Long ownerUserId, Long userDatasetId)
       throws WdkModelException;
   */
-	  
   UserDatasetStoreAdaptor getUserDatasetStoreAdaptor();
 
   /**
