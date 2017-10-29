@@ -24,10 +24,13 @@ import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.request.RecordRequest;
+import org.gusdb.wdk.service.request.answer.AnswerSpec;
+import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
+import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -161,10 +164,13 @@ public class BasketService extends UserService {
   @Path(NAMED_BASKET_PATH + "/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body) throws WdkModelException {
+  public Response getBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
     User user = getPrivateRegisteredUser();
-    RecordClass rc = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-    // TODO finish
-    return Response.ok().build();
+    RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+    AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
+    JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
+    return AnswerService.getAnswerResponse(user, basketAnswerSpec, formatting);
   }
+
 }

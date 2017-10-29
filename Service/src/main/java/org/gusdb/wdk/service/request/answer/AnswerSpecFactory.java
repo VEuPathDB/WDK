@@ -29,6 +29,10 @@ public class AnswerSpecFactory {
 
   private static final Logger LOG = Logger.getLogger(AnswerSpec.class);
 
+  public static AnswerSpec createFromQuestion(Question question) {
+    return new AnswerSpec(question);
+  }
+
   public static AnswerSpec createFromStep(Step step) throws WdkModelException {
     Question question = step.getQuestion();
     AnswerSpec answerSpec = new AnswerSpec(question);

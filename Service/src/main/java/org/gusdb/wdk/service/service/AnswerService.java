@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
@@ -90,24 +91,44 @@ public class AnswerService extends WdkService {
       // read request body into JSON object
       JSONObject requestJson = new JSONObject(body);
 
-      // parse answer spec (question, params, etc.) and create base answer value
+      // parse answer spec (question, params, etc.) and formatting object
       JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
       AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser());
-      AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
+      JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
 
-      // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
-      Reporter reporter = getConfiguredReporter(answerValue,
-          JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null));
-
-      // build response from stream, apply delivery details, and return
-      ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
-      return applyDisposition(builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build();
-
+      return getAnswerResponse(getSessionUser(), answerSpec, formatting);
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
       throw new BadRequestException(e);
     }
+  }
+
+  /**
+   * Creates a streaming answer response as the passed user from the passed answer spec and formatting
+   * configuration.  To get the default (i.e. standard WDK service JSON) reporter with default configuration,
+   * pass null as formatting.
+   * 
+   * @param sessionUser user answer is to be generated as
+   * @param answerSpec answer spec determining result ID set
+   * @param formatting reporter configuration or null for default reporter/config
+   * @return streaming response representing the formatted answer
+   * @throws RequestMisformatException if reporter does not support the passed formatConfig object
+   * @throws DataValidationException if answerSpec or formatting are syntacticly valid but the data itself is invalid
+   * @throws WdkModelException if an application error occurs
+   */
+  public static Response getAnswerResponse(User sessionUser, AnswerSpec answerSpec, JSONObject formatting)
+      throws RequestMisformatException, WdkModelException, DataValidationException {
+
+    // create base answer value from answer spec
+    AnswerValue answerValue = new AnswerValueFactory(sessionUser).createFromAnswerSpec(answerSpec);
+ 
+    // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
+    Reporter reporter = getConfiguredReporter(answerValue, formatting);
+
+    // build response from stream, apply delivery details, and return
+    ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
+    return applyDisposition(builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build();
   }
 
   @POST
