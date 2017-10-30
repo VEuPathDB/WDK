@@ -1415,6 +1415,7 @@ div.step-analysis-form-pane h3.ui-accordion-header {
   background-position: top center;
   background-repeat: no-repeat;
   overflow: hidden;
+  background-size: cover;
 }
 .analysis-menu-tab-pane li.inactive {
   opacity: .5;
@@ -1765,7 +1766,7 @@ span.basket-warning {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      =in menubar: favorite tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#menu #favorite-menu { 
+#menu #favorite-menu {
     background-image: url("../images/favorite_color.gif");
     background-position: -1px 4px;
     background-repeat: no-repeat;
@@ -2057,4 +2058,3 @@ img#close-table { display: none; }
 
 
 /* THE END */
-
