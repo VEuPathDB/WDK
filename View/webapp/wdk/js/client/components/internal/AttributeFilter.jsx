@@ -23,7 +23,6 @@ import {
   partial,
   partition,
   pick,
-  reduce,
   sortBy,
   throttle,
   uniq
@@ -289,6 +288,8 @@ FieldList.propTypes = {
 function FieldFilter(props) {
   let FieldDetail = getFieldDetailComponent(props.field);
   let fieldDetailProps = {
+    filteredDataCount: props.filteredDataCount,
+    dataCount: props.dataCount,
     displayName: props.displayName,
     field: props.field,
     distribution: props.distribution,
@@ -328,6 +329,8 @@ function FieldFilter(props) {
 
 FieldFilter.propTypes = {
   displayName: PropTypes.string,
+  dataCount: PropTypes.number,
+  filteredDataCount: PropTypes.number,
   field: PropTypes.object,
   fieldState: PropTypes.object,
   filter: PropTypes.object,
@@ -809,6 +812,8 @@ export class AttributeFilter extends React.Component {
                   displayName={displayName}
                   field={this.props.fields.get(activeField)}
                   filter={selectedFilter}
+                  filteredDataCount={filteredNotIgnored.length}
+                  dataCount={dataCount}
                   distribution={activeFieldSummary}
                   onChange={this.handleFieldFilterChange}
                   addTopPadding
@@ -966,6 +971,8 @@ export class ServerSideAttributeFilter extends React.Component {
 
           <FieldFilter
             displayName={displayName}
+            filteredDataCount={filteredDataCount}
+            dataCount={dataCount}
             field={fields.get(activeField)}
             fieldState={activeFieldState}
             filter={selectedFilter}
@@ -1753,7 +1760,6 @@ class MembershipField extends React.Component {
   }
 
   render() {
-    var total = reduce(this.props.distribution, (acc, item) => acc + item.count, 0);
     var useSort = (
       this.props.fieldState &&
       this.props.fieldState.sort &&
@@ -1857,8 +1863,8 @@ class MembershipField extends React.Component {
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
                   <div className="bar">
-                    <div className="fill" style={{ width: (row.count / total * 100) + '%' }}/>
-                    <div className="fill filtered" style={{ width: (row.filteredCount / total * 100) + '%' }}/>
+                    <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
+                    <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
                   </div>
                 )
               }
