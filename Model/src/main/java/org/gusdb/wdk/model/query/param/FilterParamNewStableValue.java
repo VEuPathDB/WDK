@@ -175,7 +175,6 @@ public class FilterParamNewStableValue {
             return errPrefix + " does not specify an ontology term";
           }
                     
-	  /*  TODO uncomment this soon, once incoming stable values properly include type and isRange
           if (!jsFilter.has(FILTERS_IS_RANGE)) {
             return errPrefix + " does not specify isRange";
           }
@@ -186,22 +185,9 @@ public class FilterParamNewStableValue {
           }
           OntologyItemType type;
           try {
-            type=  OntologyItemType.getType(jsFilter.getString(FILTERS_TYPE)); 
+            type = OntologyItemType.getType(jsFilter.getString(FILTERS_TYPE)); 
           } catch (WdkModelException e) {
             return errPrefix + " has an invalid type: " + jsFilter.getString(FILTERS_TYPE);
-          }
-
-	   */
-
-          // TODO: remove this when block above is uncommmented.  
-          // TODO: also remove the methods that do the inferring
-          // infer type and isRange.  defaults if no value provided doen't really matter
-          boolean isRange = false;
-          OntologyItemType type = OntologyItemType.DATE;
-          if (jsFilter.has(FILTERS_VALUE)) {
-            isRange = inferIsRange(jsFilter);
-            type = (isRange ? inferRangeType(jsFilter.getJSONObject(FILTERS_VALUE))
-                : inferMemberType(jsFilter.getJSONArray(FILTERS_VALUE)));
           }
 
           Filter filter = null;
