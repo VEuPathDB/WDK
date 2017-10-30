@@ -87,22 +87,19 @@ export function initialize(options) {
 }
 
 /**
- * Creates a Map<StoreClas, Store>.
+ * Creates a Map<StoreClass, Store>.
  *
  * @param {Dispatcher} dispatcher
  * @param {Object} storeWrappers Named functions that return store override classes
  */
 function configureStores(dispatcher, storeWrappers) {
-  const storeClassMap = wrapStores(storeWrappers);
-  const globalDataStore = new (storeClassMap.get(Stores.GlobalDataStore))(dispatcher);
-  const storeInstanceMap = new Map();
-  storeClassMap.forEach(function(ProviderClass, Class) {
-    if (Class !== Stores.GlobalDataStore) {
-      storeInstanceMap.set(Class,
-        new ProviderClass(dispatcher, Class.name, globalDataStore));
-    }
-  })
-  return storeInstanceMap;
+  const storeProviderTupleByKey = wrapStores(storeWrappers);
+  const GlobalDataStore = storeProviderTupleByKey.GlobalDataStore[1];
+  const globalDataStore = new GlobalDataStore(dispatcher);
+  return new Map(Object.entries(storeProviderTupleByKey)
+    .filter(([key]) => key !== 'GlobalDataStore')
+    .map(([key, [Store, Provider]]) =>
+      [Store, new Provider(dispatcher, key, globalDataStore)]))
 }
 
 /**
@@ -113,11 +110,19 @@ function configureStores(dispatcher, storeWrappers) {
  * If a Store wrapper provides an unknown key, it will be created as a new
  * application store, and it will be passed WdkStore as a base implementation.
  *
+ * This function returns an object whose keys are a union of the keys from
+ * `Stores` and the keys from `storeWrappers`, and whose values are a 2-element
+ * array where the first element is the original Store, and whose second
+ * element is the wrapped Store. In the case of a new application Store, both
+ * elements will be the application Store.
+ *
  * @param {Object} storeWrappers
+ * @return {Record<key, StoreProviderTuple>}
  */
 function wrapStores(storeWrappers) {
-  /* @type Map<StoreClass, StoreClass> */
-  const storeClassMap = new Map(Object.values(Stores).map(S => [S, S]));
+  // init with noop wdk store tuple
+  const finalStoreProviders = mapValues(Stores, Store => [Store, Store]);
+
   Object.entries(storeWrappers).forEach(function([key, storeWrapper]) {
     const Store = Stores[key];
     if (Store == null) {
@@ -130,9 +135,11 @@ function wrapStores(storeWrappers) {
       return;
     }
     const Provider = storeWrapper(Store == null ? WdkStore : Store);
-    storeClassMap.set(Store == null ? Provider : Store, Provider);
-  })
-  return storeClassMap;
+
+    finalStoreProviders[key] = [ Store == null ? Provider : Store, Provider ];
+  });
+
+  return finalStoreProviders;
 }
 
 /**
@@ -229,9 +236,9 @@ export function wrapComponents(componentWrappers) {
  * @param {Object} stores
  */
 function logActions(dispatcher, storeMap) {
-  let stores = Array.from(storeMap.entries())
-    .reduce(function(stores, [key, store]) {
-      return Object.assign(stores, {[key.name]: store});
+  let stores = Array.from(storeMap.values())
+    .reduce(function(stores, store) {
+      return Object.assign(stores, {[store.channel]: store});
     }, {});
   dispatcher.register(action => {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
