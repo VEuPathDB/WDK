@@ -170,8 +170,7 @@ class FieldList extends React.Component {
 
   constructor(props) {
     super(props);
-    this.handleFieldSelect = this.handleFieldSelect.bind(this);
-    this.nodeComponent = this.nodeComponent.bind(this);
+    this.renderNode = this.renderNode.bind(this);
 
     this.state = {
       searchTerm: '',
@@ -205,7 +204,19 @@ class FieldList extends React.Component {
     this.setState({ expandedNodes });
   }
 
-  nodeComponent({node}) {
+  handleSearchTermChange(searchTerm) {
+    // update search term, then if it is empty, make sure selected field is visible
+    this.setState({searchTerm}, () => {
+      if (searchTerm == '' && this.selectedFieldDOMNode != null) {
+        let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
+        if (scrollList != null) {
+          scrollList.scrollTop = this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2);
+        }
+      }
+    });
+  }
+
+  renderNode({node}) {
     let isActive = this.props.selectedField === node.field.term;
     return node.children.length > 0
       ? (
@@ -223,6 +234,13 @@ class FieldList extends React.Component {
           <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
         </a>
       );
+  }
+
+  searchPredicate(node, searchTerms) {
+    // XXX Search description too?
+    return searchTerms.every(searchTerm =>
+      node.field.display.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   }
 
   _getPathToField(field, path = []) {
@@ -245,21 +263,12 @@ class FieldList extends React.Component {
           getNodeChildren={node => node.children}
           onExpansionChange={expandedNodes => this.setState({ expandedNodes })}
           isSelectable={false}
-          nodeComponent={this.nodeComponent}
+          nodeComponent={this.renderNode}
           isSearchable={true}
           searchBoxPlaceholder="Find a quality"
           searchTerm={this.state.searchTerm}
-          onSearchTermChange={searchTerm => this.setState({searchTerm}, () => {
-            if (searchTerm == '' && this.selectedFieldDOMNode != null) {
-              let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
-              if (scrollList != null) {
-                scrollList.scrollTop = this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2);
-              }
-            }
-          })}
-          searchPredicate={(node, searchTerms) =>
-            searchTerms.every(searchTerm =>
-              node.field.display.toLowerCase().includes(searchTerm.toLowerCase()))}
+          onSearchTermChange={searchTerm => this.handleSearchTermChange(searchTerm)}
+          searchPredicate={this.searchPredicate}
         />
       </div>
     );
@@ -708,7 +717,7 @@ export class AttributeFilter extends React.Component {
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
     this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
-      ? filters.concat({ field: field.term, value, includeUnknown })
+      ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
   }
@@ -898,7 +907,7 @@ export class ServerSideAttributeFilter extends React.Component {
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
     this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
-      ? filters.concat({ field: field.term, value, includeUnknown })
+      ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
   }
