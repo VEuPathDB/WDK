@@ -248,9 +248,9 @@
       dir="${targetDir}/lib/yarn"
       failonerror="true"
       failifexecutionfails="true">
-      <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz"/>
+      <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz --strip-components 1"/>
     </exec>
-    <symlink overwrite="true" link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/dist/bin/yarn"/>
+    <symlink overwrite="true" link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/bin/yarn"/>
   </target>
 
   <target name="yarnBinCheck">
