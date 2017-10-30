@@ -158,11 +158,11 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
    */
   constructor(props: ViewControllerProps<Store>) {
     super(props);
-    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName(), this.props.history);
-    this.eventHandlers = wrapActions(this.dispatchAction, this.getActionCreators()) as ActionCreators;
     const StoreClass = this.getStoreClass();
     this.store = this.props.stores.get(StoreClass);
     this.state = this.getStateFromStore();
+    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName(), this.props.history);
+    this.eventHandlers = wrapActions(this.dispatchAction, this.getActionCreators()) as ActionCreators;
     this.childContext = {
       store: this.store,
       makeDispatchAction: this.props.makeDispatchAction,
@@ -224,7 +224,7 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
    * You probably need a pretty good reason to do something different.
    */
   getChannelName(): string {
-    return this.getStoreClass().name;
+    return this.store.channel;
   }
 
   /**
