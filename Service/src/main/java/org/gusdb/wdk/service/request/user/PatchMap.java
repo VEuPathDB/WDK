@@ -15,6 +15,25 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Creates a map from action string to a list of IDs.  IDs can be of any type and are generated from
+ * JSON with the passed converter.  Input JSON must be of the form:
+ * {
+ *   "action1": [ id1, id2 ],
+ *   "action2": [ id3, id4 ]
+ * }
+ * 
+ * If actions are present in input JSON that do not exist in validActions, a DataValidationException
+ * is thrown.  If any IDs are not parsable by the value converter, a DataValidationException (or possibly
+ * WdkModelException) is thrown.
+ * 
+ * Once parsed, only strings in validActions can be requested;  Unrecognized strings will throw
+ * IllegalArgumentException.
+ * 
+ * @author rdoherty
+ *
+ * @param <T> type of IDs parsed by this PatchMap
+ */
 @SuppressWarnings("serial")
 public class PatchMap<T> extends HashMap<String,List<T>> {
 
@@ -24,7 +43,7 @@ public class PatchMap<T> extends HashMap<String,List<T>> {
     @Override
     public T apply(JsonType idJson) throws DataValidationException, WdkModelException;
   }
-  
+
   public PatchMap(JSONObject json, List<String> validActions, ValueConverter<T> valueConverter)
       throws DataValidationException, WdkModelException, JSONException {
     _validActions = validActions;
