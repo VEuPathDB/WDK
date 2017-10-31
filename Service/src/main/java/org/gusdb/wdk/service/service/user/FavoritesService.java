@@ -145,19 +145,21 @@ public class FavoritesService extends UserService {
   }
 
   /**
-   * Remove multiple favorites using a json array of favorite ids in the body of the request.
+   * Remove multiple favorites using a json array of favorite ids in the body of the request
+   * 
    * @param body - json array of favorite ids
-   * @return - no response for successful execution
+   * @return no response for successful execution
    * @throws WdkModelException
+   * @throws DataValidationException 
    */
   @PATCH
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException {
+  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
     User user = getPrivateRegisteredUser();
     FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
-    FavoriteActions actions = FavoriteRequests.parseFavoriteActionsJson(json);
+    FavoriteActions actions = new FavoriteActions(json);
     int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
     int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
