@@ -25,7 +25,7 @@ class UserMessageController extends WdkViewController<typeof ActionCreators> {
           )
         };
       case 'login-error':
-        let contactUrl = this.state.globalData.config!.webAppUrl + "contact.do";
+        let contactUrl = this.state.globalData.config!.webAppUrl + "/contact.do";
         let prevPageUrl = this.getQueryParams().requestUrl;
         return {
           tabTitle: "Login Problem",
