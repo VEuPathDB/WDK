@@ -78,14 +78,14 @@ public class EuPathCategoriesFactory {
   private final String WEBSERVICE = "webservice";
 
   private String[][] mbioRecordClassInfo = {
-    { "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass" }
+      { "Samples", "SampleRecordClasses.MicrobiomeSampleRecordClass" }
   };
 
   private String[][] clinepiRecordClassInfo = {
       { "Participants", "ParticipantRecordClasses.ParticipantRecordClass" },
       { "Dwellings", "DwellingRecordClasses.DwellingRecordClass" },
       { "Clinical Visits", "ClinicalVisitRecordClasses.ClinicalVisitRecordClass" }
-    };
+  };
 
   // record classes whose individuals all have both scope website and menu
   private String[][] otherRecordClassInfo = {
@@ -95,9 +95,11 @@ public class EuPathCategoriesFactory {
       { "Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass" },
       { "SNPs", "SnpRecordClasses.SnpRecordClass" },
       { "SNPs (from Array)", "SnpChipRecordClasses.SnpChipRecordClass" },
-      { "ESTs", "EstRecordClasses.EstRecordClass" }, { "ORFs", "OrfRecordClasses.OrfRecordClass" },
+      { "ESTs", "EstRecordClasses.EstRecordClass" },
+      { "ORFs", "OrfRecordClasses.OrfRecordClass" },
       { "Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass" },
-      { "Compounds", "CompoundRecordClasses.CompoundRecordClass" } };
+      { "Compounds", "CompoundRecordClasses.CompoundRecordClass" }
+  };
 
   private void getCategories() throws WdkModelException {
 
@@ -131,10 +133,14 @@ public class EuPathCategoriesFactory {
         "TranscriptRecordClasses.TransciptRecordClass", datasetCategories, datasetRootCategories);
 
     // non-gene questions
-    String[][] infos = otherRecordClassInfo;
-    if (model.getProjectId().equals("MicrobiomeDB")) infos = mbioRecordClassInfo;
-    if (model.getProjectId().equals("ClinEpiDB")) infos = clinepiRecordClassInfo;
-    
+    String[][] infos;
+    switch (model.getProjectId()) {
+      case "MicrobiomeDB": infos = mbioRecordClassInfo;    break;
+      case "ClinEpiDB":    infos = clinepiRecordClassInfo; break;
+      case "Gates":        infos = clinepiRecordClassInfo; break;
+      default:             infos = otherRecordClassInfo;
+    }
+
     for (String[] recordClassInfo : infos) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes(MENU, WEBSERVICE));
       if (prunedOntologyTree == null)
