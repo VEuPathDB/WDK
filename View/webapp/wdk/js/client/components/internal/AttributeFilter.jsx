@@ -169,6 +169,11 @@ class FieldList extends React.Component {
 
   constructor(props) {
     super(props);
+    this.handleCheckboxTreeRef = this.handleCheckboxTreeRef.bind(this);
+    this.getNodeId = this.getNodeId.bind(this);
+    this.getNodeChildren = this.getNodeChildren.bind(this);
+    this.handleExpansionChange = this.handleExpansionChange.bind(this);
+    this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
 
     this.state = {
@@ -194,6 +199,14 @@ class FieldList extends React.Component {
     }
   }
 
+  handleCheckboxTreeRef(component) {
+    this.treeDomNode = findDOMNode(component);
+  }
+
+  handleExpansionChange(expandedNodes) {
+    this.setState({ expandedNodes });
+  }
+
   handleFieldSelect(field) {
     this.props.onFieldSelect(field.term);
     const expandedNodes = Seq.from(this.state.expandedNodes)
@@ -215,15 +228,24 @@ class FieldList extends React.Component {
     });
   }
 
+  getNodeId(node) {
+    return node.field.term;
+  }
+
+  getNodeChildren(node) {
+    return node.children;
+  }
+
   renderNode({node}) {
     let isActive = this.props.selectedField === node.field.term;
+    let className = 'wdk-AttributeFilterFieldItem' +
+      (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')
     return node.children.length > 0
       ? (
         <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
       ) : (
         <a
-          className={'wdk-AttributeFilterFieldItem' +
-            (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
+          className={className}
           href={'#' + node.field.term}
           onClick={e => {
             e.preventDefault();
@@ -254,19 +276,19 @@ class FieldList extends React.Component {
     return (
       <div className="field-list">
         <CheckboxTree
-          ref={c => this.treeDomNode = findDOMNode(c)}
+          ref={this.handleCheckboxTreeRef}
           autoFocusSearchBox={autoFocus}
           tree={getTree(fields.values())}
           expandedList={this.state.expandedNodes}
-          getNodeId={node => node.field.term}
-          getNodeChildren={node => node.children}
-          onExpansionChange={expandedNodes => this.setState({ expandedNodes })}
+          getNodeId={this.getNodeId}
+          getNodeChildren={this.getNodeChildren}
+          onExpansionChange={this.handleExpansionChange}
           isSelectable={false}
           nodeComponent={this.renderNode}
           isSearchable={true}
           searchBoxPlaceholder="Find a quality"
           searchTerm={this.state.searchTerm}
-          onSearchTermChange={searchTerm => this.handleSearchTermChange(searchTerm)}
+          onSearchTermChange={this.handleSearchTermChange}
           searchPredicate={this.searchPredicate}
         />
       </div>
