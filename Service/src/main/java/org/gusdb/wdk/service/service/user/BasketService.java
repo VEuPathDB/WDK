@@ -28,7 +28,6 @@ import org.gusdb.wdk.service.request.answer.AnswerSpec;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.user.BasketRequests;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.RecordService;
@@ -94,7 +93,7 @@ public class BasketService extends UserService {
     try {
       User user = getPrivateRegisteredUser();
       RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-      BasketActions actions = BasketRequests.parseBasketActionsJson(new JSONObject(body), recordClass);
+      BasketActions actions = new BasketActions(new JSONObject(body), recordClass);
       BasketFactory factory = getWdkModel().getBasketFactory();
       factory.addPksToBasket(user, recordClass, actions.getRecordsToAdd());
       factory.removePksFromBasket(user, recordClass, actions.getRecordsToRemove());

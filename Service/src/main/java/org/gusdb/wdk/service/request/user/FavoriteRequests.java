@@ -4,17 +4,11 @@ import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 import static org.gusdb.wdk.service.formatter.Keys.DELETE;
 import static org.gusdb.wdk.service.formatter.Keys.UNDELETE;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
@@ -30,8 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class FavoriteRequests {
-
-  private static Logger LOG = Logger.getLogger(FavoriteRequests.class);
 
   private FavoriteRequests() {}
 
@@ -51,80 +43,36 @@ public class FavoriteRequests {
     public NoteAndGroup getNoteAndGroup() { return getSecond(); }
   }
 
-  public static class FavoriteActions {
+  @SuppressWarnings("serial")
+  public static class FavoriteActions extends PatchMap<Long> {
 
     private static final List<String> ACTION_TYPES = Arrays.asList(DELETE, UNDELETE);
 
-    private Map<String,List<Long>> _favoriteActionMap;
-
-    public FavoriteActions(Map<String,List<Long>> favoriteActionMap) {
-      _favoriteActionMap = favoriteActionMap;
-      // add empty ID lists if not supplied in request
-      if (!_favoriteActionMap.containsKey(DELETE)) _favoriteActionMap.put(DELETE, Collections.EMPTY_LIST);
-      if (!_favoriteActionMap.containsKey(UNDELETE)) _favoriteActionMap.put(UNDELETE, Collections.EMPTY_LIST);
-      // clear out IDs that appear in both "delete" and "undelete"
-      cleanData(_favoriteActionMap.get(DELETE), _favoriteActionMap.get(UNDELETE));
+    /**
+     * Creates set of actions, each associated with a list of favorite ids
+     * Input Format:
+     * {
+     *   delete: [Long, Long, ...],
+     *   undelete: [Long, Long, ...]
+     * }
+     * 
+     * @param json input object
+     * @return parsed actions to perform on IDs
+     * @throws DataValidationException
+     * @throws WdkModelException
+     */
+    public FavoriteActions(JSONObject json) throws DataValidationException, WdkModelException {
+      super(json, ACTION_TYPES, idJson -> idJson.getLong());
+      removeSharedIds(DELETE, UNDELETE);
     }
 
-    private void cleanData(List<Long> toDelete, List<Long> toUndelete) {
-      for (int j, i = 0; i < toDelete.size(); i++) {
-        Long id = toDelete.get(i);
-        if ((j = toUndelete.indexOf(id)) != -1) {
-          // found ID in both lists; remove from both
-          toUndelete.remove(j);
-          toDelete.remove(i);
-          i--; // recheck at the current index
-        }
-      }
-    }
+    public List<Long> getIdsToDelete() { return get(DELETE); }
+    public List<Long> getIdsToUndelete() { return get(UNDELETE); }
 
-    public List<Long> getIdsToDelete() {
-      return _favoriteActionMap.get(DELETE);
-    }
-
-    public List<Long> getIdsToUndelete() {
-      return _favoriteActionMap.get(UNDELETE);
-    }
-  }
-
-  /**
-   * Creates set of actions, each associated with a list of favorite ids
-   * Input Format:
-   * {
-   *   delete: [Long, Long, ...],
-   *   undelete: [Long, Long, ...]
-   * }
-   * 
-   * @param json input object
-   * @return parsed actions to perform on IDs
-   */
-  public static FavoriteActions parseFavoriteActionsJson(JSONObject json) {
-    List<Object> unrecognizedActions = new ArrayList<>();
-    Map<String, List<Long>> favoriteActionMap = new HashMap<>();
-    for (String actionType : JsonUtil.getKeys(json)) {
-      if (FavoriteActions.ACTION_TYPES.contains(actionType)) {
-        List<Long> favoriteIds = new ArrayList<>();
-        JSONArray jsonArray = json.getJSONArray(actionType);
-        for (int i = 0; i < jsonArray.length(); i++) {
-          Long favoriteId = jsonArray.getLong(i);	
-          favoriteIds.add(favoriteId);
-        }
-        favoriteActionMap.put(actionType, favoriteIds);
-      }
-      else {
-        unrecognizedActions.add(actionType);
-      }
-    }
-    if(!unrecognizedActions.isEmpty()) {
-      String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ",");
-      LOG.warn("Favorites service will ignore the following unrecognized actions: " + unrecognized);
-    }
-    return new FavoriteActions(favoriteActionMap);
   }
 
   /**
    * Input Format:
-   * 
    * {
    *  recordClassName: String,
    *  description: String (optional),
@@ -137,12 +85,13 @@ public class FavoriteRequests {
    * }
    * 
    * @param json
-   * @param model
+   * @param wdkModel
    * @return
    * @throws RequestMisformatException
    * @throws DataValidationException 
    */
-  public static FavoriteEdit createFromJson(JSONObject json, WdkModel wdkModel) throws RequestMisformatException, DataValidationException {
+  public static FavoriteEdit createFromJson(JSONObject json, WdkModel wdkModel)
+      throws RequestMisformatException, DataValidationException {
     try {
       String recordClassName = json.getString(Keys.RECORD_CLASS_NAME);
       RecordClass recordClass = wdkModel.getRecordClass(recordClassName);

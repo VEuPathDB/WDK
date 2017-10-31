@@ -292,7 +292,7 @@ public class BasketFactory {
         int size = rs.getInt("record_size");
 
         RecordClass recordClass = recordClasses.get(rcName);
-        if (recordClass != null) {
+        if (recordClass != null && size > 0) {
           counts.put(recordClass, size);
         }
         else {
