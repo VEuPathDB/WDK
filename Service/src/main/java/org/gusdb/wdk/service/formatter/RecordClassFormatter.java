@@ -61,6 +61,7 @@ public class RecordClassFormatter {
       .put(Keys.USE_BASKET, recordClass.isUseBasket())
       .put(Keys.DESCRIPTION, recordClass.getDescription())
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
+      .put(Keys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
       .put(Keys.PRIMARY_KEY_REFS, JsonUtil.toJsonStringArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
       .put(Keys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(

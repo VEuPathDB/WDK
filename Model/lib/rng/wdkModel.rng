@@ -1180,6 +1180,9 @@
         <attribute name="customBooleanQueryClassName" />
       </optional>
       <optional>
+        <attribute name="allRecordsQueryRef" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>

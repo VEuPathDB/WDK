@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
@@ -124,7 +125,7 @@ public class RecordService extends WdkService {
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
   }
-  
+
   @GET
   @Path("{recordClassName}/answer-format")
   @Produces(MediaType.APPLICATION_JSON)
@@ -134,6 +135,19 @@ public class RecordService extends WdkService {
             getRecordClassOrNotFound(recordClassName, getWdkModel()).getReporterMap().values(),
             FieldScope.ALL).toString()
     ).build();
+  }
+
+  @GET
+  @Path("{recordClassName}/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getRecordCount(@PathParam("recordClassName") String recordClassName) throws WdkModelException {
+    RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
+    if (!recordClass.hasAllRecordsQuery()) {
+      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + "/count"));
+    }
+    long count = recordClass.getAllRecordsCount(getSessionUser());
+    JSONObject json = new JSONObject().put(Keys.TOTAL_COUNT, count);
+    return Response.ok(json.toString()).build();
   }
 
   @POST
