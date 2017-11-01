@@ -75,11 +75,7 @@ export interface ServiceConfig {
   //webServiceUrl: string; // no longer sent from server; represents WSF service
 }
 
-type BasketStatusResponse = {
-  processed: number;
-  all: number;
-  records: Record<string, number>;
-}
+type BasketStatusResponse = Array<boolean>;
 
 type RequestOptions = {
   /** Request method */
@@ -379,30 +375,17 @@ export default class WdkService {
     return this._fetchJson<{ [recordClassName: string]: number }>('get', '/users/current/baskets');
   }
 
-  // FIXME Replace with service call, e.g. POST /users/current/baskets/gene/query with {recordId}
-  getBasketStatus(record: RecordInstance) {
-    let action = 'check';
-    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
-    let method = 'get';
-    let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson<BasketStatusResponse>(method, url).then(data => ({
-      status: data.processed > 0,
-      totalCount: data.all,
-      countsByRecordClass: data.records
-    }));
+  getBasketStatus(recordClassName: string, records: Array<RecordInstance>): Promise<BasketStatusResponse> {
+    let data = JSON.stringify(records.map(record => record.id));
+    let url = `/users/current/baskets/${recordClassName}/query`;
+    return this._fetchJson<BasketStatusResponse>('post', url, data);
   }
 
-  // FIXME Replace with service call, e.g. PATCH /users/current/baskets/gene { add: [ {recordId} ] }
-  updateBasketStatus(record: RecordInstance, status: boolean) {
+  updateBasketStatus(status: boolean, recordClassName: string, records: Array<RecordInstance>): Promise<never> {
     let action = status ? 'add' : 'remove';
-    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
-    let method = 'get';
-    let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson<BasketStatusResponse>(method, url).then(data => ({
-      status,
-      totalCount: data.all,
-      countsByRecordClass: data.records
-    }));
+    let data = JSON.stringify({ [action]: records.map(record => record.id) });
+    let url = `/users/current/baskets/${recordClassName}`;
+    return this._fetchJson<never>('patch', url, data);
   }
 
   /**
