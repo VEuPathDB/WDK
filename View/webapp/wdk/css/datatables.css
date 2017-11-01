@@ -1,8 +1,9 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- DataTables sorting 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ DataTables sorting
 */
 .dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
-    display: inline;
+    display: inline-block;
+    margin-bottom: 5px;
  /*   margin-left: 3px; */
  /*   padding-bottom: 3px; */
 }
@@ -48,5 +49,3 @@ table.dataTable tr.even { background-color: #FFFFFF; }
 .ui-widget {
     font-family: Arial,Helvetica,sans-serif;
 }
-
-
