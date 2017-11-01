@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,9 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
@@ -179,7 +183,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private RecordClassSet recordClassSet;
-  
+
+  private String allRecordsQueryRef;
+  private Query allRecordsQuery;
+
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
 
   private Map<String, Query> attributeQueries = new LinkedHashMap<String, Query>();
@@ -393,7 +400,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return recordClassName + "s";
   }
-  
+
+  public void setAllRecordsQueryRef(String queryRef) {
+    allRecordsQueryRef = queryRef;
+  }
+
+  public Query getAllRecordsQuery() {
+    return allRecordsQuery;
+  }
+
   public ResultSize getResultSizePlugin() {
     return resultSizePlugin;
   }
@@ -664,6 +679,31 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return tableField;
   }
 
+  public boolean hasAllRecordsQuery() {
+    return (allRecordsQuery != null);
+  }
+
+  public Long getAllRecordsCount(User user) throws WdkModelException {
+    try {
+      String baseSql = allRecordsQuery.makeInstance(user, new HashMap<>(), false, 0, new HashMap<>()).getSql();
+      String sql = "select count(*) from ( " + baseSql + " )";
+      SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),
+          sql, fullName + "-all-records-count").executeQuery(new SingleLongResultSetHandler());
+      if (result.getStatus().equals(SingleLongResultSetHandler.Status.NON_NULL_VALUE)) {
+        return result.getRetrievedValue();
+      }
+      throw new WdkModelException("Count query did not return single value.  SQL: " + sql);
+    }
+    catch (SQLRunnerException e) {
+      // unwrap exception and rewrap as WdkModelException
+      throw new WdkModelException(e.getCause());
+    }
+    catch (WdkUserException ue) {
+      // no user exception should be thrown here since query takes no params
+      throw new WdkModelException(ue);
+    }
+  }
+
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     if (_resolved)
@@ -694,6 +734,25 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
 
+    if (allRecordsQueryRef != null) {
+      allRecordsQuery = (Query) _wdkModel.resolveReference(allRecordsQueryRef);
+      String[] expectedColumns = primaryKeyDefinition.getColumnRefs();
+      Set<String> queryColumns = allRecordsQuery.getColumnMap().keySet();
+      String queryDefString = "allRecordsQuery '" + allRecordsQueryRef + "' configured for record class '" + fullName + "'";
+      String badColsMsg = queryDefString + " has columns that do not match the record class's PK columns";
+      if (expectedColumns.length != queryColumns.size()) {
+        throw new WdkModelException(badColsMsg);
+      }
+      for (String column : expectedColumns) {
+        if (!queryColumns.contains(column)) {
+          throw new WdkModelException(badColsMsg);
+        }
+      }
+      if (allRecordsQuery.getParams().length != 0) {
+        throw new WdkModelException(queryDefString + " cannot have parameters");
+      }
+    }
+
     if (resultSizeQueryRef != null) {
       resultSizeQueryRef.resolveReferences(model);
       displayName = resultSizeQueryRef.getRecordDisplayName();
@@ -703,13 +762,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
       resultSizePlugin = new SqlQueryResultSizePlugin(query);
     }
-    
+
     if (resultPropertyQueryRef != null) {
       resultPropertyQueryRef.resolveReferences(model);
         Query query = (Query) _wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
       resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
-    
+
     if (customBooleanQueryClassName != null) {
     String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
     try {

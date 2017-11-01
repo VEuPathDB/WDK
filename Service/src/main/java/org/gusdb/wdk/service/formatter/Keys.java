@@ -85,6 +85,9 @@ public class Keys {
   public static final String SORTING = "sorting";
   public static final String DIRECTION = "direction";
 
+  // record class specific keys
+  public static final String HAS_ALL_RECORDS_QUERY = "hasAllRecordsQuery";
+
   // question plugin keys
   public static final String DEFAULT_SUMMARY_VIEW = "defaultSummaryView";
   public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
