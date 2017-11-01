@@ -1919,6 +1919,10 @@ table.dataTable thead th div.DataTables_sort_wrapper {
   padding-right: 0;
 }
 
+.dataTables_scroll {
+  margin-top: 10px;
+}
+
 /*
  * since we force the scrollbar for webkit, we need this hack
  * to prevent the table from scrolling when it isn't necessary
