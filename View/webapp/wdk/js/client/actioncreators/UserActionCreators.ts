@@ -394,7 +394,7 @@ export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketActi
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.getBasketStatus(record).then(response => response.status)
+      wdkService.getBasketStatus(record.recordClassName, [record]).then(response => response[0])
     ));
   };
 };
@@ -409,7 +409,7 @@ export function updateBasketStatus(user: User, record: RecordInstance, status: b
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.updateBasketStatus(record, status).then(response => response.status)
+      wdkService.updateBasketStatus(status, record.recordClassName, [record]).then(response => status)
     ));
   };
 };
