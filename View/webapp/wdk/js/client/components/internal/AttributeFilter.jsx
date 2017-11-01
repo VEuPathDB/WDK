@@ -238,29 +238,33 @@ class FieldList extends React.Component {
 
   renderNode({node}) {
     let isActive = this.props.selectedField === node.field.term;
-    let className = 'wdk-AttributeFilterFieldItem' +
-      (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')
-    return node.children.length > 0
-      ? (
-        <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
-      ) : (
-        <a
-          className={className}
-          href={'#' + node.field.term}
-          onClick={e => {
-            e.preventDefault();
-            this.handleFieldSelect(node.field);
-            this.selectedFieldDOMNode = e.target;
-          }}>
-          <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
-        </a>
-      );
+    return (
+      <Tooltip content={node.field.description} >
+        {node.children.length > 0
+        ? (
+          <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
+        ) : (
+          <a
+            className={'wdk-AttributeFilterFieldItem' +
+              (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
+            href={'#' + node.field.term}
+            onClick={e => {
+              e.preventDefault();
+              this.handleFieldSelect(node.field);
+              this.selectedFieldDOMNode = e.target;
+            }}>
+            <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
+          </a>
+        )}
+      </Tooltip>
+    );
   }
 
   searchPredicate(node, searchTerms) {
     // XXX Search description too?
     return searchTerms.every(searchTerm =>
-      node.field.display.toLowerCase().includes(searchTerm.toLowerCase())
+      node.field.display.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (node.field.description && node.field.description.toLowerCase().includes(searchTerm.toLowerCase()))
     )
   }
 
@@ -286,7 +290,8 @@ class FieldList extends React.Component {
           isSelectable={false}
           nodeComponent={this.renderNode}
           isSearchable={true}
-          searchBoxPlaceholder="Find a quality"
+          searchBoxPlaceholder="Find a quality..."
+          searchBoxHelp="Find a quality by searching names and descriptions"
           searchTerm={this.state.searchTerm}
           onSearchTermChange={this.handleSearchTermChange}
           searchPredicate={this.searchPredicate}
@@ -1086,7 +1091,7 @@ var Histogram = (function() {
     constructor(props) {
       super(props);
       this.handleResize = throttle(this.handleResize.bind(this), 100);
-      this.setStateFromProps(props);
+      this.state = this.getStateFromProps(props);
     }
 
     componentDidMount() {
@@ -1104,7 +1109,7 @@ var Histogram = (function() {
 
     componentWillReceiveProps(nextProps) {
       if (this.props.distribution !== nextProps.distribution) {
-        this.setStateFromProps(nextProps);
+        this.setState(this.getStateFromProps(nextProps));
       }
     }
 
@@ -1129,7 +1134,7 @@ var Histogram = (function() {
       $(window).off('resize', this.handleResize);
     }
 
-    setStateFromProps(props) {
+    getStateFromProps(props) {
       // Set default yAxis max based on distribution
       var yaxisMax = this.computeYAxisMax(props);
       var values = props.distribution
@@ -1137,7 +1142,7 @@ var Histogram = (function() {
         .filter(value => value != null);
       var xaxisMin = Math.min(...values);
       var xaxisMax = Math.max(...values);
-      this.state = { yaxisMax, xaxisMin, xaxisMax };
+      return { yaxisMax, xaxisMin, xaxisMax };
     }
 
     computeYAxisMax(props) {
