@@ -11,7 +11,7 @@
           <div style="text-align:right">
             <span>
               [ <a href="#rename">Rename This Analysis</a> |
-                <a href="#copy">Copy These Parameter Values</a> ]
+                <a href="#copy">Duplicate</a> ]
             </span>
           </div>
           <h2 id="step-analysis-title" data-bind="displayName"><jsp:text/></h2>
