@@ -67,7 +67,7 @@ public class SessionService extends WdkService {
 
   private static final String HOME_URL = "home.do";
   private static final String ALREADY_LOGGED_IN_URL = "showApplicaton.do";
-  private static final String ERROR_URL = "/wdkCustomization/jsp/Error.jsp?message=";
+  private static final String ERROR_URL = "/app/user/message/login-error?requestUrl=";
 
   @GET
   @Path("login")
@@ -99,19 +99,21 @@ public class SessionService extends WdkService {
 
     // check for error or to see if user denied us access; they won't be able to log in
     if (error != null) {
-      errorMessage = error.equals("access_denied")
-          ? "You did not grant permission to access identifying information so we cannot log you in."
-          : "An error occurred [" + error +
-              "] on the authentication server and you cannot log in at this time.";
-      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(errorMessage)).build();
+      if(error.equals("access_denied")) {
+    	    LOG.error("You did not grant permission to access identifying information so we cannot log you in.");
+      }
+      else {
+    	    LOG.error("An error occurred [" + error + "] on the authentication server and you cannot log in at this time.");  
+      }
+      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl)).build();
     }
 
     // Is the state token present and does it match the session state token?
     String storedStateToken = (String) getSession().getAttribute(OAuthUtil.STATE_TOKEN_KEY);
     session.removeAttribute(OAuthUtil.STATE_TOKEN_KEY);
     if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
-      errorMessage = "Unable to log in state token missing, incorrect, or expired.  Please try again.";
-      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(errorMessage)).build();
+      LOG.error("Unable to log in state token missing, incorrect, or expired.");
+      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl)).build();
     }
 
     // Is there a matching user id for the auth code provided?
@@ -129,8 +131,7 @@ public class SessionService extends WdkService {
     }
     catch (Exception ex) {
       LOG.error("Could not log user in with authCode " + authCode, ex);
-      errorMessage = isEmpty(errorMessage) ? "Could not log user in with authCode " + authCode : errorMessage;
-      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(errorMessage)).build();
+      return setupResponseBuilder(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl)).build();
     }
 
     // Set up session attributes and login cookie
@@ -138,9 +139,7 @@ public class SessionService extends WdkService {
     Cookie loginCookie = auth.createLoginCookie(userBean.getEmail(), true);
     getSession().setAttribute(Utilities.WDK_USER_KEY, userBean);
     getSession().setAttribute(WDK_LOGIN_ERROR_KEY, "");
-    ResponseBuilder builder = setupResponseBuilder(redirectUrl);
-    builder.cookie(CookieConverter.toJaxRsCookie(loginCookie));
-    return builder.build();
+    return createSuccessResponse(redirectUrl, CookieConverter.toJaxRsCookie(loginCookie));
   }
 
   @POST
@@ -267,6 +266,19 @@ public class SessionService extends WdkService {
     }
   }
 
+  /**
+   * 
+   * @param redirectUrl
+   * @param cookies
+   * @return
+   * @throws WdkModelException
+   */
+  protected Response createSuccessResponse(String redirectUrl, NewCookie cookie) throws WdkModelException {
+	ResponseBuilder builder = setupResponseBuilder(redirectUrl);
+    builder.cookie(cookie);
+	return builder.build();
+  }
+  
   /**
    * Convenience method to set up a response builder with the redirect url provided.
    * 
