@@ -640,6 +640,11 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   public String initializeUserDatasetStoreId() throws WdkModelException {
     return adaptor.findUserDatasetStoreId(usersRootDir);
   }
+  
+  @Override
+  public List<Path> getRecentEvents(String eventsDirectory, Long lastHandledEventId) throws WdkModelException {
+    return null;
+  }
 
   /**
    * Locates the path to the external datasets directory for the given user.  If no such

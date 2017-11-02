@@ -126,7 +126,7 @@ public class UserDatasetEventArrayHandler {
    * @return
    * @throws WdkModelException if the log has a failed event (no complete date) from a previous run.
    */
-  private Long findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
+  public Long findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
 
     SingleLongResultSetHandler handler = new SingleLongResultSetHandler();
 
@@ -169,7 +169,7 @@ public class UserDatasetEventArrayHandler {
   */
 
   // TODO: get from model config
-  private String getUserDatasetSchemaName() {
+  public String getUserDatasetSchemaName() {
     return  "ApiDBUserDatasets.";
   }
 

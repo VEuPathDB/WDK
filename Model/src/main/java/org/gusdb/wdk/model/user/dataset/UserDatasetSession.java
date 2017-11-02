@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -161,6 +162,16 @@ public interface UserDatasetSession extends AutoCloseable {
    * @throws WdkModelException
    */
   String initializeUserDatasetStoreId() throws WdkModelException;
+  
+  /**
+   * This method grabs a subset of event paths from the events folder.  The subset is based upon
+   * the lastHandledEventId provided.
+   * @param eventDirectory - string representing the absolute path to the events directory
+   * @param lastHandledEventId - id of the last handled event (a timestamp in msec)
+   * @return - list of absolute paths for each event within the subset
+   * @throws WdkModelException
+   */
+  List<Path> getRecentEvents(String eventDirectory, Long lastHandledEventId) throws WdkModelException;
 
   /**
    * IRODS Sessions need to be closed to recover connections.  So
