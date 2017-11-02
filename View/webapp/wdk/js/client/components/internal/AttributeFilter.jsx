@@ -343,7 +343,7 @@ function FieldFilter(props) {
               </Tooltip>
             )}
           </h3>
-          {!props.distribution ? (
+          {(!props.distribution || !props.dataCount) ? (
             <Loading />
           ) : (
             <FieldDetail {...fieldDetailProps} />
@@ -1857,11 +1857,21 @@ class MembershipField extends React.Component {
                 width: '10em',
                 helpText: (
                   <div>
-                    The number of <em>{this.props.displayName}</em> with the given <em>{this.props.field.display}</em> value.
+                    The number of <em>{this.props.displayName}</em> with the
+                    given <em>{this.props.field.display}</em> value.<br/>
+                    (And the percentage of all {this.props.dataCount.toLocaleString()} {this.props.displayName}.)
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div>{value.toLocaleString()}</div>
+                  <div>
+                    <div style={{ display: 'inline-block', width: '50%' }}>
+                      {value.toLocaleString()}
+                    </div>
+                    <div title={`The percentage of all ${this.props.dataCount.toLocaleString()} ${this.props.displayName}`}
+                      style={{ display: 'inline-block', width: '50%', fontSize: 'smaller' }}>
+                      ({Math.round(value / this.props.dataCount * 100)}%)
+                    </div>
+                  </div>
                 )
               },
               {
@@ -1876,11 +1886,21 @@ class MembershipField extends React.Component {
                 width: '10em',
                 helpText: (
                   <div>
-                    The number of <em>{this.props.displayName}</em> that match the critera chosen for other qualities and that have the given <em>{this.props.field.display}</em> value.
+                    The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
+                    and that have the given <em>{this.props.field.display}</em> value.
+                    (And the percentage of all {this.props.dataCount.toLocaleString()} {this.props.displayName}.)
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div>{value.toLocaleString()}</div>
+                  <div>
+                    <div style={{ display: 'inline-block', width: '50%' }}>
+                      {value.toLocaleString()}
+                    </div>
+                    <div title={`The percentage of all ${this.props.dataCount.toLocaleString()} ${this.props.displayName}`}
+                      style={{ display: 'inline-block', width: '50%', fontSize: 'smaller' }}>
+                      ({Math.round(value / this.props.dataCount * 100)}%)
+                    </div>
+                  </div>
                 )
               },
               {
@@ -1889,9 +1909,15 @@ class MembershipField extends React.Component {
                 width: '50%',
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
-                  <div className="bar">
-                    <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
-                    <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
+                  <div style={{ position: 'relative' }}>
+                    <div className="bar">
+                      <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
+                      <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
+                    </div>
+                    <div title={`Matching ${row.value} / All ${row.value}`}
+                      style={{ position: 'absolute', top: 2, right: 0, textShadow: '0px 0px 4px white', fontSize: 'smaller' }}>
+                      ({Math.round(row.filteredCount / row.count * 100)}%)
+                    </div>
                   </div>
                 )
               }
