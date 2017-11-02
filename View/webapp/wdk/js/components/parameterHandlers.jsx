@@ -374,7 +374,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
           return currentSearchTerm;
         },
         delimRegex = /[,;\n\s]+/,
-        terms = new Set(vocab.values.map(value => value.term));
+        terms = new Set(vocab.values.map(value => value.term)),
+        isMultiple = $param.data('multiple');
 
     if (!keepPreviousValue) $input.val('');
 
@@ -382,8 +383,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       placeholder: 'Begin typing to see suggestions...',
       minimumInputLength: 3,
       allowClear: true,
-      closeOnSelect: false,
-      multiple: $param.data('multiple'),
+      multiple: isMultiple,
       id: 'term',
       matcher(term, text) {
         return term.split(';').some(termPart => text.toUpperCase().indexOf(termPart.trim().toUpperCase()) > -1)
@@ -397,7 +397,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // closeOnSelect doesn't work, so this is a fix
     $input.on('select2-selecting', function() {
       $input.one('select2-close', function() {
-        $input.select2('open');
+        if (isMultiple) $input.select2('open');
       })
     });
 
