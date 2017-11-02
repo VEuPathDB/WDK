@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.user.dataset.filesys;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetSession;
 
@@ -21,5 +24,10 @@ public class FilesysUserDatasetSession extends JsonUserDatasetSession {
   @Override
   public UserDatasetFile getUserDatasetFile(Path path, Long userDatasetId) {
     return new FilesysUserDatasetFile(path, userDatasetId);
+  }
+  
+  @Override
+  public List<Path> getRecentEvents(String eventDirectory, Long lastHandledEventId) throws WdkModelException {
+	return adaptor.getPathsInDir(Paths.get(eventDirectory));
   }
 }

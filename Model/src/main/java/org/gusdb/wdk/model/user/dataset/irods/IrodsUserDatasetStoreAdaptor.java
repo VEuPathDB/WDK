@@ -19,10 +19,14 @@ import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.IRODSGenQueryExecutor;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileReader;
 import org.irods.jargon.core.pub.io.IRODSFileWriter;
+import org.irods.jargon.core.query.IRODSGenQuery;
+import org.irods.jargon.core.query.IRODSQueryResultRow;
+import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.transfer.TransferControlBlock;
@@ -559,6 +563,32 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       return id;
 	}
 	catch (JargonException | JargonQueryException je) {
+	  throw new WdkModelException(je);
+	}
+  }
+  
+  /**
+   * Runs a simple IRODS query and returns the first column of results as a list of strings.  Only
+   * 1000 results maximum are returned.  Not all that flexible a method as it serves a single purpose
+   * currently.
+   * @param queryString - IRODS genQuery string
+   * @return - listing of first column of results
+   * @throws WdkModelException
+   */
+  public List<String> executeIrodsQuery(String queryString) throws WdkModelException {
+	long start = System.currentTimeMillis();
+	List<String> results = new ArrayList<>();  
+	try {
+	  IRODSGenQuery irodsQuery = IRODSGenQuery.instance(queryString, 1000);
+      IRODSGenQueryExecutor irodsGenQueryExecutor = accessObjectFactory.getIRODSGenQueryExecutor(account);
+    	  IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQueryAndCloseResult(irodsQuery,0);
+    	  for(IRODSQueryResultRow row : resultSet.getResults()) {
+        results.add(row.getColumn(0));
+    	  }
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","executeIrodsQuery-irods: " + queryString, start);
+    	  return results;
+	}
+	catch(JargonException | JargonQueryException je) {
 	  throw new WdkModelException(je);
 	}
   }
