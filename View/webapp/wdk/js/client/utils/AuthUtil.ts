@@ -25,8 +25,8 @@ export function login(config: Config, destination: string): void {
     let { oauthClientId, oauthUrl, webappUrl, serviceUrl } = config;
     let wdkService = WdkService.getInstance(serviceUrl);
     wdkService.getOauthStateToken().then((response: StateTokenResponse) => {
-      let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
-      //let redirectUrlBase = wdkService.getLoginServiceEndpoint();
+      //let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
+      let redirectUrlBase = wdkService.getLoginServiceEndpoint();
       let googleSpecific = (oauthUrl.indexOf("google") != -1);
       let redirectUrl: string, authEndpoint: string;
       if (googleSpecific) {
