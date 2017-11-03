@@ -1891,15 +1891,25 @@ class MembershipField extends React.Component {
                 width: '50%',
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
-                  <div style={{ position: 'relative' }}>
-                    <div className="bar">
-                      <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
-                      <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
-                    </div>
-                    <div title={`Matching ${row.value} / All ${row.value}`}
-                      style={{ position: 'absolute', top: 2, right: 0, textShadow: '0px 0px 4px white', fontSize: 'smaller' }}>
-                      ({Math.round(row.filteredCount / row.count * 100)}%)
-                    </div>
+                  <div className="bar">
+                    <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
+                    <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
+                  </div>
+                )
+              },
+              {
+                key: '%',
+                name: '',
+                width: '4em',
+                helpText: (
+                  <div>
+                    <em>Matching {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
+                    with the given <em>{this.props.field.display}</em> value.
+                  </div>
+                ),
+                renderCell: ({ row }) => (
+                  <div style={{ fontSize: 'smaller' }} title={`Matching ${row.value} / All ${row.value}`}>
+                    ({Math.round(row.filteredCount / row.count * 100)}%)
                   </div>
                 )
               }
