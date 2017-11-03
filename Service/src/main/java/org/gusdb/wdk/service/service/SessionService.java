@@ -95,7 +95,7 @@ public class SessionService extends WdkService {
 
     // Is the user already logged in?
     if (!wdkUserBean.isGuest()) {
-      redirectUrl = appUrl + ALREADY_LOGGED_IN_URL;
+      return setupResponseBuilder(appUrl + ALREADY_LOGGED_IN_URL).build();
     }
     try {
       // check for error or to see if user denied us access; they won't be able to log in
@@ -124,11 +124,11 @@ public class SessionService extends WdkService {
       }
       LoginCookieFactory auth = new LoginCookieFactory(wdkModelBean.getModel().getSecretKey());
       Cookie loginCookie = auth.createLoginCookie(userBean.getEmail(), true);
-      return createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie));
+      return createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie), true).build();
     }
     catch (Exception ex) {
       LOG.error("Unsuccessful login attempt:  " + ex.getMessage(), ex);
-      return createFailureResponse(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl));
+      return createFailureResponse(appUrl + ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl), true).build();
     }
   }
 
@@ -159,17 +159,19 @@ public class SessionService extends WdkService {
     
     // Is the user already logged in?
     if (!wdkUserBean.isGuest()) {
-      redirectUrl = appUrl + ALREADY_LOGGED_IN_URL;
+      return setupResponseBuilder(appUrl + ALREADY_LOGGED_IN_URL).build();
     }
     try {
       UserBean userBean = factory.login(wdkUserBean, request.getEmail(), request.getPassword());
       LoginCookieFactory auth = new LoginCookieFactory(wdkModelBean.getModel().getSecretKey());
       Cookie loginCookie = auth.createLoginCookie(userBean.getEmail(), true);
-	  return createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie));
+	  ResponseBuilder builder = createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie), false);
+	  return builder.build();
 	}
     catch (Exception ex) {
 	  LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
-	  return createFailureResponse(null);
+	  ResponseBuilder builder = createFailureResponse(redirectUrl, false);
+	  return builder.build();
 	}
   }
 
@@ -291,15 +293,19 @@ public class SessionService extends WdkService {
    * for another login.
    * @param redirectUrl
    * @param cookies
+   * @param performRedirect - boolean to indicate whether to redirect to the above redirectUrl
    * @return
    * @throws WdkModelException
    */
-  protected Response createSuccessResponse(String redirectUrl, UserBean userBean, NewCookie cookie) throws WdkModelException {
+  protected ResponseBuilder createSuccessResponse(String redirectUrl, UserBean userBean, NewCookie cookie, boolean performRedirect) throws WdkModelException {  
     getSession().setAttribute(Utilities.WDK_USER_KEY, userBean);
 	getSession().setAttribute(WDK_LOGIN_ERROR_KEY, "");
-	ResponseBuilder builder = setupResponseBuilder(redirectUrl);
+	ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
     builder.cookie(cookie);
-	return builder.build();
+    if(!performRedirect) {
+      builder.entity(new JSONObject().put("status", "success").put("message","").put("redirectUrl", redirectUrl).toString());
+    }  
+	return builder;
   }
 
   /**
@@ -309,9 +315,12 @@ public class SessionService extends WdkService {
    * @return - http response
    * @throws WdkModelException
    */
-  protected Response createFailureResponse(String redirectUrl) throws WdkModelException {	  
-    ResponseBuilder builder = redirectUrl != null ? setupResponseBuilder(redirectUrl) : Response.status(Status.UNAUTHORIZED);
-	return builder.build();
+  protected ResponseBuilder createFailureResponse(String redirectUrl, boolean performRedirect) throws WdkModelException {
+    ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
+    if(!performRedirect) {
+      builder.entity(new JSONObject().put("status", "failure").put("message","invalid login").put("redirectUrl", redirectUrl).toString());
+    }  
+	return builder;
   }
   
   /**
