@@ -318,7 +318,7 @@ public class SessionService extends WdkService {
   protected ResponseBuilder createFailureResponse(String redirectUrl, boolean performRedirect) throws WdkModelException {
     ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
     if(!performRedirect) {
-      builder.entity(new JSONObject().put("status", "failure").put("message","invalid login").put("redirectUrl", redirectUrl).toString());
+      builder.entity(new JSONObject().put("status", "failure").put("message","Invalid username or password").put("redirectUrl", redirectUrl).toString());
     }  
 	return builder;
   }
