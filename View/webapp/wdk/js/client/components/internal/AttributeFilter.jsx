@@ -1858,20 +1858,11 @@ class MembershipField extends React.Component {
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> with the
-                    given <em>{this.props.field.display}</em> value.<br/>
-                    (And the percentage of all {this.props.dataCount.toLocaleString()} {this.props.displayName}.)
+                    given <em>{this.props.field.display}</em> value.
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div>
-                    <div style={{ display: 'inline-block', width: '50%' }}>
-                      {value.toLocaleString()}
-                    </div>
-                    <div title={`The percentage of all ${this.props.dataCount.toLocaleString()} ${this.props.displayName}`}
-                      style={{ display: 'inline-block', width: '50%', fontSize: 'smaller' }}>
-                      ({Math.round(value / this.props.dataCount * 100)}%)
-                    </div>
-                  </div>
+                  <div> {value.toLocaleString()} </div>
                 )
               },
               {
@@ -1888,19 +1879,10 @@ class MembershipField extends React.Component {
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
                     and that have the given <em>{this.props.field.display}</em> value.
-                    (And the percentage of all {this.props.dataCount.toLocaleString()} {this.props.displayName}.)
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div>
-                    <div style={{ display: 'inline-block', width: '50%' }}>
-                      {value.toLocaleString()}
-                    </div>
-                    <div title={`The percentage of all ${this.props.dataCount.toLocaleString()} ${this.props.displayName}`}
-                      style={{ display: 'inline-block', width: '50%', fontSize: 'smaller' }}>
-                      ({Math.round(value / this.props.dataCount * 100)}%)
-                    </div>
-                  </div>
+                  <div> {value.toLocaleString()} </div>
                 )
               },
               {
