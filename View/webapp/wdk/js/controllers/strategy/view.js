@@ -1075,7 +1075,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           $(space).addClass("medium param");
           $(space).html("&nbsp;:&nbsp;");
           $(value).addClass("medium param value");
-          $(value).html(this.display);
+          $(value).html(this.display.replace(/\n/g, '<br/><br/>'));
           $(tr).append(prompt);
           $(tr).append(space);
           $(tr).append(value);
