@@ -61,7 +61,7 @@ public class SessionService extends WdkService {
 
   // input param constants
   private static final String COOKIE_KEY = "wdkLoginCookieValue";
-  
+
   // json output constants
   private static final String IS_VALID_KEY = "isValid";
   private static final String USER_DATA_KEY = "userData";
@@ -81,7 +81,7 @@ public class SessionService extends WdkService {
       @QueryParam(WDK_STATE_KEY) String stateToken,
       @QueryParam(WDK_CODE_KEY) String authCode,
       @QueryParam(WDK_REDIRECT_URL_KEY) String originalUrl)
-          throws WdkModelException {
+      throws WdkModelException {
     AuthenticationMethod authMethod = getWdkModel().getModelConfig().getAuthenticationMethodEnum();
     if (!AuthenticationMethod.OAUTH2.equals(authMethod)) {
       return Response.status(new MethodNotAllowedStatusType()).build();
@@ -100,27 +100,29 @@ public class SessionService extends WdkService {
     try {
       // check for error or to see if user denied us access; they won't be able to log in
       if (error != null) {
-        	String errorMessage = error.equals("access_denied") ?
-        	  "User did not grant permission to access identifying information so we cannot log user in." : error;  
+        String errorMessage = error.equals("access_denied") ?
+            "User did not grant permission to access identifying information so we cannot log user in." :
+            error;
         throw new WdkModelException(errorMessage);
       }
 
       String storedStateToken = (String) getSession().getAttribute(OAuthUtil.STATE_TOKEN_KEY);
       getSession().removeAttribute(OAuthUtil.STATE_TOKEN_KEY);
-      
+
       // Is the state token present and does it match the session state token?
       if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
-        throw new WdkModelException("Unable to log in state token missing, incorrect, or expired.");
+        throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 
       UserFactoryBean userFactoryBean = wdkModelBean.getUserFactory();
       OAuthClient client = new OAuthClient(modelConfig, userFactoryBean);
-      
+
       // Is there a matching user id for the auth code provided?
       long userId = client.getUserIdFromAuthCode(authCode);
       UserBean userBean = userFactoryBean.login(wdkUserBean, userId);
       if (userBean == null) {
-        throw new WdkModelException("Unable to find user with ID " + userId + ", returned by OAuth service with auth code " + authCode);
+        throw new WdkModelException("Unable to find user with ID " + userId +
+            ", returned by OAuth service with auth code " + authCode);
       }
       LoginCookieFactory auth = new LoginCookieFactory(wdkModelBean.getModel().getSecretKey());
       Cookie loginCookie = auth.createLoginCookie(userBean.getEmail(), true);
@@ -135,14 +137,15 @@ public class SessionService extends WdkService {
   @POST
   @Path("login")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response processDbLogin(@HeaderParam(WDK_REFERER_KEY) String referrer, String body) throws WdkModelException {
-	LoginRequest request = null;
-	try {
+  public Response processDbLogin(@HeaderParam(WDK_REFERER_KEY) String referrer, String body)
+      throws WdkModelException {
+    LoginRequest request = null;
+    try {
       request = LoginRequest.createFromJson(new JSONObject(body));
-	}
-	catch(RequestMisformatException e) {
+    }
+    catch (RequestMisformatException e) {
       throw new BadRequestException(e);
-	}
+    }
     AuthenticationMethod authMethod = getWdkModel().getModelConfig().getAuthenticationMethodEnum();
     if (!AuthenticationMethod.USER_DB.equals(authMethod)) {
       return Response.status(new MethodNotAllowedStatusType()).build();
@@ -150,13 +153,11 @@ public class SessionService extends WdkService {
     WdkModelBean wdkModelBean = new WdkModelBean(getWdkModel());
     String appUrl = getWdkModel().getModelConfig().getWebAppUrl();
     String originalUrl = request.getRedirectUrl();
-    String redirectUrl = !isEmpty(originalUrl) ?
-    	  originalUrl : !isEmpty(referrer) ?
-    	    referrer : appUrl + HOME_URL;
-    
+    String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl + HOME_URL;
+
     UserBean wdkUserBean = getSessionUserBean();
     UserFactoryBean factory = wdkModelBean.getUserFactory();
-    
+
     // Is the user already logged in?
     if (!wdkUserBean.isGuest()) {
       return setupResponseBuilder(appUrl + ALREADY_LOGGED_IN_URL).build();
@@ -165,14 +166,14 @@ public class SessionService extends WdkService {
       UserBean userBean = factory.login(wdkUserBean, request.getEmail(), request.getPassword());
       LoginCookieFactory auth = new LoginCookieFactory(wdkModelBean.getModel().getSecretKey());
       Cookie loginCookie = auth.createLoginCookie(userBean.getEmail(), true);
-	  ResponseBuilder builder = createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie), false);
-	  return builder.build();
-	}
+      ResponseBuilder builder = createSuccessResponse(redirectUrl, userBean, CookieConverter.toJaxRsCookie(loginCookie), false);
+      return builder.build();
+    }
     catch (Exception ex) {
-	  LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
-	  ResponseBuilder builder = createFailureResponse(redirectUrl, false);
-	  return builder.build();
-	}
+      LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
+      ResponseBuilder builder = createFailureResponse(redirectUrl, false);
+      return builder.build();
+    }
   }
 
   @GET
@@ -197,8 +198,7 @@ public class SessionService extends WdkService {
     }
     ResponseBuilder builder;
     try {
-      builder = Response.temporaryRedirect(
-          new URI(getWdkModel().getModelConfig().getWebAppUrl() + HOME_URL));
+      builder = Response.temporaryRedirect(new URI(getWdkModel().getModelConfig().getWebAppUrl() + HOME_URL));
     }
     catch (URISyntaxException e) {
       throw new WdkModelException("Home page not found.");
@@ -217,24 +217,29 @@ public class SessionService extends WdkService {
    * A JSON object like the following is returned with the information. If the cookie is invalid, the isValid
    * property is set to false and the userData property is undefined.
    * 
-   * { "isValid": true, "userData": { "id" : 7145453, "displayName" : "Ryan Doherty", "email" :
-   * "rdoherty@pcbi.upenn.edu" } }
-   * 
+   * {
+   *   "isValid": true,
+   *   "userData": {
+   *     "id": 7145453,
+   *     "displayName": "Ryan Doherty",
+   *     "email": "rdoherty@pcbi.upenn.edu"
+   *   }
+   * }
    */
   @GET
   @Path("login/verification")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response processLoginVerification(@QueryParam(COOKIE_KEY) String cookieValue)
-      throws WdkModelException {
-    return Response.ok(getJsonResult(getUsername(cookieValue))).build();
+  public Response processLoginVerification(@QueryParam(COOKIE_KEY) String cookieValue) throws WdkModelException {
+    return Response.ok(getVerificationJsonResult(getUsername(cookieValue))).build();
   }
 
   /**
    * Fetches the cookie value parameter, verifies its validity, and returns the username (email) contained
    * within the cookie value. If the cookie is invalid, null is returned
-   * @param params - request parameters
+   * 
+   * @param params request parameters
    * @return username, or an empty string
-   * @throws WdkModelException - if a system problem occurs
+   * @throws WdkModelException if a system problem occurs
    */
   private String getUsername(String cookieValue) throws WdkModelException {
     try {
@@ -253,12 +258,12 @@ public class SessionService extends WdkService {
    * Generates the appropriate JSON object given the username parsed from the cookie value (if any). Even if a
    * non-null username was retrieved, the cookie value may still be deemed invalid if the username does not
    * correspond to an existing user.
-   * @param username - username to generate JSON for (or null if no username was able to be parsed)
+   * 
+   * @param username username to generate JSON for (or null if no username was able to be parsed)
    * @return response JSON
-   * @throws WdkModelException
-   *           if a system problem occurs
+   * @throws WdkModelException if a system problem occurs
    */
-  protected String getJsonResult(String username) throws WdkModelException {
+  protected String getVerificationJsonResult(String username) throws WdkModelException {
     try {
       JSONObject result = new JSONObject();
       boolean isValid = (username != null);
@@ -288,46 +293,57 @@ public class SessionService extends WdkService {
   }
 
   /**
-   * Packages up a successful login response with a login cookie and a user object and redirects
-   * the user to the provided url.  May be overridden by subclass to throw in an additional redirect
-   * for another login.
+   * Packages up a successful login response with a login cookie and a user object and redirects the user to
+   * the provided url. May be overridden by subclass to throw in an additional redirect for another login.
+   * 
    * @param redirectUrl
    * @param cookies
-   * @param performRedirect - boolean to indicate whether to redirect to the above redirectUrl
+   * @param performRedirect boolean to indicate whether to redirect to the above redirectUrl
    * @return
    * @throws WdkModelException
    */
-  protected ResponseBuilder createSuccessResponse(String redirectUrl, UserBean userBean, NewCookie cookie, boolean performRedirect) throws WdkModelException {  
+  protected ResponseBuilder createSuccessResponse(String redirectUrl, UserBean userBean, NewCookie cookie,
+      boolean performRedirect) throws WdkModelException {
     getSession().setAttribute(Utilities.WDK_USER_KEY, userBean);
-	getSession().setAttribute(WDK_LOGIN_ERROR_KEY, "");
-	ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
+    getSession().setAttribute(WDK_LOGIN_ERROR_KEY, "");
+    ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
     builder.cookie(cookie);
-    if(!performRedirect) {
-      builder.entity(new JSONObject().put("status", "success").put("message","").put("redirectUrl", redirectUrl).toString());
-    }  
-	return builder;
+    if (!performRedirect) {
+      builder.entity(new JSONObject()
+          .put("status", "success")
+          .put("message", "")
+          .put("redirectUrl", redirectUrl)
+          .toString());
+    }
+    return builder;
   }
 
   /**
-   * Convenience method to set up a response builder in the case of a failed login attempt.  If a
-   * redirect url is provided, the user will be redirected.  Otherwise, a 403 is sent.
-   * @param redirectUrl - url to which to redirect the user
-   * @return - http response
+   * Convenience method to set up a response builder in the case of a failed login attempt. If a redirect url
+   * is provided, the user will be redirected. Otherwise, a 403 is sent.
+   * 
+   * @param redirectUrl url to which to redirect the user
+   * @return http response
    * @throws WdkModelException
    */
   protected ResponseBuilder createFailureResponse(String redirectUrl, boolean performRedirect) throws WdkModelException {
     ResponseBuilder builder = performRedirect ? setupResponseBuilder(redirectUrl) : Response.status(Status.OK);
-    if(!performRedirect) {
-      builder.entity(new JSONObject().put("status", "failure").put("message","Invalid username or password").put("redirectUrl", redirectUrl).toString());
-    }  
-	return builder;
+    if (!performRedirect) {
+      builder.entity(new JSONObject()
+          .put("status", "failure")
+          .put("message", "Invalid username or password")
+          .put("redirectUrl", redirectUrl)
+          .toString());
+    }
+    return builder;
   }
-  
+
   /**
    * Convenience method to set up a response builder with the redirect url provided.
-   * @param redirectUrl - url of page to which to redirect the user
-   * @return - partially set up response builder
-   * @throws WdkModelException - if the url cannot be found or is invalid.
+   * 
+   * @param redirectUrl url of page to which to redirect the user
+   * @return partially set up response builder
+   * @throws WdkModelException if the url cannot be found or is invalid.
    */
   protected ResponseBuilder setupResponseBuilder(String redirectUrl) throws WdkModelException {
     try {
@@ -340,10 +356,11 @@ public class SessionService extends WdkService {
 
   /**
    * Convenience method to safely test whether a string has content
-   * @param str - string to test
-   * @return - true if empty or null and false otherwise
+   * 
+   * @param str string to test
+   * @return true if empty or null and false otherwise
    */
-  protected static boolean isEmpty(String str) {
-    return str == null || str.trim().length() == 0;
+  private static boolean isEmpty(String str) {
+    return str == null || str.trim().isEmpty();
   }
 }
