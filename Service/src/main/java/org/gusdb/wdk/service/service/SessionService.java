@@ -139,9 +139,12 @@ public class SessionService extends WdkService {
     try {
       WdkModel wdkModel = getWdkModel();
       ModelConfig modelConfig = wdkModel.getModelConfig();
-      if (!AuthenticationMethod.USER_DB.equals(modelConfig.getAuthenticationMethodEnum())) {
-        return Response.status(new MethodNotAllowedStatusType()).build();
-      }
+
+      // RRD 11/17: Allow sites configured to use OAuth (e.g. live sites) to log in users with this endpoint;
+      //     Reason: logging in this way will be easier for programmatic service access that requires login
+      //if (!AuthenticationMethod.USER_DB.equals(modelConfig.getAuthenticationMethodEnum())) {
+      //  return Response.status(new MethodNotAllowedStatusType()).build();
+      //}
 
       LoginRequest request = LoginRequest.createFromJson(new JSONObject(body));
       String appUrl = modelConfig.getWebAppUrl();
