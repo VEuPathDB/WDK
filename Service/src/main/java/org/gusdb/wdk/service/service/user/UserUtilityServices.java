@@ -25,6 +25,7 @@ import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Path("/")
 public class UserUtilityServices extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(UserUtilityServices.class);
@@ -32,7 +33,7 @@ public class UserUtilityServices extends WdkService {
   private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
 
   @POST
-  @Path("/users")
+  @Path("users")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createNewUser(String body) throws DataValidationException, WdkModelException, WdkUserException {
@@ -55,7 +56,7 @@ public class UserUtilityServices extends WdkService {
   }
 
   @POST
-  @Path("/user-password-reset")
+  @Path("user-password-reset")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response resetUserPassword(String body)
       throws WdkModelException, DataValidationException {
