@@ -118,4 +118,8 @@ public class UserFactoryBean {
     public UserBean getUser() throws WdkModelException, WdkUserException {
         return (_signature == null) ? null : getUser(_signature);
     }
+
+    public UserFactory getUserFactory() {
+      return _userFactory;
+    }
 }

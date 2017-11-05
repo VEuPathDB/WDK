@@ -23,14 +23,14 @@ public class LoginRequest {
    * @throws RequestMisformatException
    */
   public static LoginRequest createFromJson(JSONObject json) throws RequestMisformatException {
-	LoginRequest loginRequest = new LoginRequest();  
+    LoginRequest loginRequest = new LoginRequest();  
     try {
       loginRequest.email = json.getString("email");
       loginRequest.password = json.getString("password");
       loginRequest.redirectUrl = json.getString("redirectUrl");
       return loginRequest;
-	}
-	catch (JSONException e) {
+    }
+    catch (JSONException e) {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
     }
   }
@@ -42,7 +42,7 @@ public class LoginRequest {
   public String getPassword() {
     return password;
   }
-  
+
   public String getRedirectUrl() {
     return redirectUrl;
   }

@@ -1,9 +1,6 @@
 package org.gusdb.wdk.session;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.impl.TextCodec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -26,14 +23,17 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.wdk.session.WdkTrustManager;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.OAuthConfig;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.TextCodec;
 
 public class OAuthClient {
 
@@ -44,10 +44,10 @@ public class OAuthClient {
   private final String _clientId;
   private final String _clientSecret;
   private final String _redirectUri;
-  private final UserFactoryBean _userFactory;
+  private final UserFactory _userFactory;
   private final TrustManager _trustManager;
 
-  public OAuthClient(OAuthConfig config, UserFactoryBean userFactory) throws WdkModelException {
+  public OAuthClient(OAuthConfig config, UserFactory userFactory) throws WdkModelException {
     _oauthServerBase = config.getOauthUrl();
     _googleSpecific = _oauthServerBase.contains("google");
     _clientId = config.getOauthClientId();
@@ -122,19 +122,17 @@ public class OAuthClient {
 
   private long getUserIdFromGoogleIdToken(String idToken) throws WdkModelException {
     String gmailAddress = GoogleClientUtil.getEmailFromTokenResponse(idToken, _clientId);
-    try {
-      UserBean user = _userFactory.getUserByEmail(gmailAddress);
+    User user = _userFactory.getUserByEmail(gmailAddress);
+    if (user != null) {
       return user.getUserId();
     }
-    catch (WdkUserException ue) {
-      try {
-        // user does not exist; automatically create user for this gmail user
-        UserBean user = _userFactory.createUser(gmailAddress, null, null, null, false);
-        return user.getUserId();
-      }
-      catch (WdkUserException ue2) {
-        throw new WdkModelException("Could not create WDK user from validated Gmail email", ue2);
-      }
+    try {
+      // user does not exist; automatically create user for this gmail user
+      user = _userFactory.createUser(gmailAddress, null, null, null, false);
+      return user.getUserId();
+    }
+    catch (WdkUserException ue2) {
+      throw new WdkModelException("Could not create WDK user from validated Gmail email", ue2);
     }
   }
 

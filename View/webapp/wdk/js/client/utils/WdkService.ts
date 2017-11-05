@@ -75,6 +75,12 @@ export interface ServiceConfig {
   //webServiceUrl: string; // no longer sent from server; represents WSF service
 }
 
+export type TryLoginResponse = {
+  success: boolean;
+  message: string;
+  redirectUrl: string;
+}
+
 type BasketStatusResponse = Array<boolean>;
 
 type RequestOptions = {
@@ -180,6 +186,11 @@ export default class WdkService {
 
   getAnswerServiceEndpoint() {
     return this.serviceUrl + '/answer';
+  }
+
+  tryLogin(email: string, password: string, redirectUrl: string) {
+    return this._fetchJson<TryLoginResponse>('post', '/login',
+      JSON.stringify({ email, password, redirectUrl }));
   }
 
   /**
