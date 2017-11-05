@@ -9,7 +9,9 @@ package org.gusdb.wdk.service.formatter;
 public class Keys {
 
   // response status keys
+  public static final String SUCCESS = "success";
   public static final String ERRORS = "errors";
+  public static final String MESSAGE = "message";
   public static final String TABLE_ERRORS = "tableErrors";
   public static final String NUMBER_PROCESSED = "numberProcessed";
 
@@ -139,6 +141,7 @@ public class Keys {
   public static final String OAUTH_URL = "oauthUrl";
   public static final String OAUTH_CLIENT_ID = "oauthClientId";
   public static final String OAUTH_STATE_TOKEN = "oauthStateToken";
+  public static final String REDIRECT_URL = "redirectUrl";
 
   // user-specific keys
   public static final String USER = "user";
@@ -155,13 +158,13 @@ public class Keys {
   public static final String MAX_VALUE = "max";
   public static final String STEP = "step";
     
-  //favorites-specific keys
+  // favorites-specific keys
   public static final String FAVORITE_ID = "favoriteId";
   public static final String DISPLAY = "display";
   public static final String NOTE = "note";
   public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
   
-  //additional strategy-specific keys
+  // additional strategy-specific keys
   public static final String AUTHOR = "author";
   public static final String LATEST_STEP_ID = "latestStepId";
   public static final String ORGANIZATION = "organization";

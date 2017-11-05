@@ -20,40 +20,13 @@ type StateTokenResponse = {
 };
 
 export function login(config: Config, destination: string): void {
-  let { webappUrl, serviceUrl } = config;
+  let { webappUrl, serviceUrl, oauthClientId, oauthUrl } = config;
+  let wdkService = WdkService.getInstance(serviceUrl);
   if (config.method === 'OAUTH2') {
-    let { oauthClientId, oauthUrl, webappUrl, serviceUrl } = config;
-    let wdkService = WdkService.getInstance(serviceUrl);
-    wdkService.getOauthStateToken().then((response: StateTokenResponse) => {
-      //let redirectUrlBase = URL.resolve(location.origin, webappUrl + '/processLogin.do');
-      let redirectUrlBase = wdkService.getLoginServiceEndpoint();
-      let googleSpecific = (oauthUrl.indexOf("google") != -1);
-      let redirectUrl: string, authEndpoint: string;
-      if (googleSpecific) {
-        // hacks to conform to google OAuth2 API
-        redirectUrl = redirectUrlBase;
-        authEndpoint = "auth";
-      }
-      else {
-        redirectUrl = redirectUrlBase + '?redirectUrl=' + encodeURIComponent(destination);
-        authEndpoint = "authorize";
-      }
-
-      let finalOauthUrl = oauthUrl + "/" + authEndpoint + "?" +
-        "response_type=code&" +
-        "scope=" + encodeURIComponent("openid email") + "&" +
-        "state=" + encodeURIComponent(response.oauthStateToken) + "&" +
-        "client_id=" + oauthClientId + "&" +
-        "redirect_uri=" + encodeURIComponent(redirectUrl);
-
-      window.location.assign(finalOauthUrl);
-    }).catch(error => {
-      alert("Unable to fetch your WDK state token.", "Please check your internet connection.");
-      throw error;
-    });
+    performOAuthLogin(destination, webappUrl, wdkService, oauthClientId, oauthUrl);
   }
-  else {
-    renderLoginForm(destination, webappUrl, serviceUrl, true);
+  else { // USER_DB
+    renderLoginForm(destination, webappUrl, wdkService, true);
   }
 }
 
@@ -72,22 +45,56 @@ export function logout(config: Config): void {
   }
 }
 
+function performOAuthLogin(destination: string, webappUrl: string,
+    wdkService: WdkService, oauthClientId: string, oauthUrl: string) {
+  wdkService.getOauthStateToken()
+    .then((response: StateTokenResponse) => {
+      let redirectUrlBase = wdkService.getLoginServiceEndpoint();
+      let googleSpecific = (oauthUrl.indexOf("google") != -1);
+      let [ redirectUrl, authEndpoint ] = googleSpecific ?
+        [ redirectUrlBase, "auth" ] : // hacks to conform to google OAuth2 API
+        [ redirectUrlBase + '?redirectUrl=' + encodeURIComponent(destination), "authorize" ];
+
+      let finalOauthUrl = oauthUrl + "/" + authEndpoint + "?" +
+        "response_type=code&" +
+        "scope=" + encodeURIComponent("openid email") + "&" +
+        "state=" + encodeURIComponent(response.oauthStateToken) + "&" +
+        "client_id=" + oauthClientId + "&" +
+        "redirect_uri=" + encodeURIComponent(redirectUrl);
+
+      window.location.assign(finalOauthUrl);
+    })
+    .catch(error => {
+      alert("Unable to fetch your WDK state token.", "Please check your internet connection.");
+      throw error;
+    });
+}
+
 let getLoginContainer = memoize(function() {
   return <HTMLElement>document.body.appendChild(document.createElement('div'));
 });
 
-function renderLoginForm(destination: string, webappUrl: string, serviceUrl: string, open: boolean) {
-  let loginUrl = webappUrl + '/processLogin.do';
-  //let loginUrl = WdkService.getInstance(serviceUrl).getLogoutServiceEndpoint();
+function renderLoginForm(destination: string, webappUrl: string, wdkService: WdkService, open: boolean, message?: string) {
   render(createElement('div', {}, createElement(LoginForm, {
     onCancel: () => {
-      renderLoginForm(destination, webappUrl, serviceUrl, false);
+      renderLoginForm(destination, webappUrl, wdkService, false);
     },
-    onSubmit: () => {
+    onSubmit: (email: string, password: string) => {
+      wdkService.tryLogin(email, password, destination)
+        .then(response => {
+          if (response.success) {
+            window.location.assign(response.redirectUrl);
+          }
+          else {
+            renderLoginForm(destination, webappUrl, wdkService, true, response.message);
+          }
+        })
+        .catch(error => {
+          alert("Error", "There was an error submitting your credentials.  Please try again later.");
+        });
     },
     open: open,
-    action: loginUrl,
-    redirectUrl: destination,
+    message: message,
     passwordResetUrl: webappUrl + '/app/user/forgot-password',
     registerUrl: webappUrl + '/app/user/registration'
   })), getLoginContainer());

@@ -163,7 +163,7 @@ public class ProcessLoginAction extends WdkAction {
         modelConfig.getWebAppUrl() + "/home.do");
 
     try {
-      OAuthClient client = new OAuthClient(modelConfig, factory);
+      OAuthClient client = new OAuthClient(modelConfig, factory.getUserFactory());
       long userId = client.getUserIdFromAuthCode(authCode);
 
       UserBean user = factory.login(guest, userId);
