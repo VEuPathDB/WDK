@@ -280,6 +280,7 @@ public class FilterParamNewStableValue {
   String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
 
     initWithThrow();
+    Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
 
     String displayValue;
     if (_filters.size() == 0) {
@@ -289,13 +290,15 @@ public class FilterParamNewStableValue {
 
       List<String> filterDisplays = new ArrayList<String>();
       for (Filter filter : _filters) {
+        OntologyItem ontoItem = ontology.get(filter.getField());
         filterDisplays.add(
-            filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
+            ontoItem.getDisplayName() + ": " + filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
       }
       displayValue = FormatUtil.join(filterDisplays, System.lineSeparator());
     }
     return displayValue;
   }
+
 
   //////////////////// inner classes to represent different types of filter //////////////////////////
 
