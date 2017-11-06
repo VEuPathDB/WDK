@@ -116,6 +116,10 @@ public class FilterParamNew extends AbstractDependentParam {
   private String _filterDataTypeDisplayName;
 
   private boolean _useIdTransformSqlForInternalValue = false;
+  
+  // the output count of this param can be used to predict the final search results count, if all downstream
+  // params (in dependency tree) have default values
+  private boolean _canUseCountToPredictSearchCount = false;
 
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
@@ -280,6 +284,15 @@ public class FilterParamNew extends AbstractDependentParam {
   public boolean getUseIdTransformSqlForInternalValue() {
     return _useIdTransformSqlForInternalValue;
   }
+  
+  public boolean getCanUseCountToPredictSearchCount() {
+    return _canUseCountToPredictSearchCount;
+  }
+  
+  public void setCanUseCountToPredictSearchCount(boolean canUse) {
+    _canUseCountToPredictSearchCount = canUse;
+  }
+
 
   /**
    * @param trimMetadataTerms
