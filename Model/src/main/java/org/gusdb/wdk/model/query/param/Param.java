@@ -87,6 +87,14 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected abstract void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
+  /**
+   * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by 
+   * StepBean (but no jsp or tags), and by the model cacher in fix package, which writes it to db, but never
+   * reads it
+   * @param jsParam
+   * @param extra
+   * @throws JSONException
+   */
   protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
 
   protected String _id;
