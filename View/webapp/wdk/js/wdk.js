@@ -16,5 +16,4 @@ import './user';
 import './plugins';
 import './components';
 import './controllers';
-
-export * from './client/index.js';
+export * from './clientAdapter';

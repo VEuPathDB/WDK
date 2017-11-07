@@ -1,5 +1,5 @@
 import * as React from 'react';
-import WdkViewController from './WdkViewController';
+import WdkPageController from './WdkPageController';
 import { wrappable } from '../utils/componentUtils';
 import Link from '../components/Link';
 
@@ -22,7 +22,7 @@ import Link from '../components/Link';
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-class IndexController extends WdkViewController {
+class IndexController extends WdkPageController {
   renderView() {
     return (
       <div>

@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import UserProfile from '../components/UserProfile';
 import { updateProfileForm, submitProfileForm } from '../actioncreators/UserActionCreators';
 import UserProfileStore, { State } from "../stores/UserProfileStore";
 
 const ActionCreators = { updateProfileForm, submitProfileForm };
 
-class UserProfileController extends AbstractViewController<State, UserProfileStore, typeof ActionCreators> {
+class UserProfileController extends AbstractPageController<State, UserProfileStore, typeof ActionCreators> {
 
   getStoreClass() {
     return UserProfileStore;

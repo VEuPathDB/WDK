@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import NotFound from '../components/NotFound';
-import WdkViewController from './WdkViewController';
+import WdkPageController from './WdkPageController';
 import { conditionallyTransition } from '../actioncreators/UserActionCreators';
 
 type PageContent = {
@@ -12,7 +12,7 @@ type PageContent = {
 
 const ActionCreators = { conditionallyTransition };
 
-class UserMessageController extends WdkViewController<typeof ActionCreators> {
+class UserMessageController extends WdkPageController<typeof ActionCreators> {
 
   getMessagePageContent() : PageContent {
     switch (this.props.match.params.messageKey) {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { get, isEqual, omit, pick } from 'lodash';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import { ViewControllerProps } from '../CommonTypes';
 import {wrappable} from '../utils/componentUtils';
 import {
@@ -29,7 +29,7 @@ const ActionCreators = {
 const CastRecordUI: any = RecordUI;
 
 /** View Controller for record page */
-class RecordController extends AbstractViewController<State, RecordViewStore, typeof ActionCreators> {
+class RecordController extends AbstractPageController<State, RecordViewStore, typeof ActionCreators> {
 
   getStoreClass() {
     return RecordViewStore;

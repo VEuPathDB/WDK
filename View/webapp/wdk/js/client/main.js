@@ -2,6 +2,7 @@
 import {identity, mapValues, values} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
+import {createBrowserHistory} from 'history';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
@@ -20,7 +21,7 @@ import wdkRoutes from './routes';
 /**
  * Initialize the application.
  *
- * @param {Object} options
+ * @param {object} options
  * @param {string} options.rootUrl Root URL used by the router. If the current
  *   page's url does not begin with this option's value, the application will
  *   not render automatically.
@@ -31,7 +32,7 @@ import wdkRoutes from './routes';
  * @param {string} options.endpoint Base URL for WdkService.
  * @param {Function} options.wrapRoutes A function that takes a WDK Routes React
  *   Element and returns a React Element.
- * @param {Object} options.storeWrappers Mapping from store name to replacement
+ * @param {object} options.storeWrappers Mapping from store name to replacement
  *   class
  * @param {Function} options.onLocationChange Callback function called whenever
  *   the location of the page changes. The function is called with a Location
@@ -39,10 +40,13 @@ import wdkRoutes from './routes';
  */
 export function initialize(options) {
   let { rootUrl, rootElement, endpoint, wrapRoutes = identity, storeWrappers, onLocationChange } = options;
+  let canUseRouter = location.pathname.startsWith(rootUrl);
   // define the elements of the Flux architecture
+
+  let history = canUseRouter && createBrowserHistory({ basename: rootUrl });
   let wdkService = WdkService.getInstance(endpoint);
   let dispatcher = new Dispatcher();
-  let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
+  let makeDispatchAction = getDispatchActionMaker(dispatcher, wdkService, history);
   let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
@@ -52,7 +56,7 @@ export function initialize(options) {
   // log all actions in dev environments
   if (__DEV__) logActions(dispatcher, stores);
 
-  if (location.pathname.startsWith(rootUrl)) {
+  if (canUseRouter) {
     // render the root element once page has completely loaded
     document.addEventListener('DOMContentLoaded', function() {
       let container = rootElement instanceof HTMLElement
@@ -68,6 +72,7 @@ export function initialize(options) {
             rootUrl,
             makeDispatchAction,
             stores,
+            history,
             routes: wrapRoutes(wdkRoutes),
             onLocationChange: handleLocationChange
           });
@@ -83,7 +88,7 @@ export function initialize(options) {
   }
 
   // return WDK application components
-  return { wdkService, dispatchAction, stores };
+  return { wdkService, dispatchAction, stores, makeDispatchAction };
 }
 
 /**
@@ -123,21 +128,23 @@ function wrapStores(storeWrappers) {
   // init with noop wdk store tuple
   const finalStoreProviders = mapValues(Stores, Store => [Store, Store]);
 
-  Object.entries(storeWrappers).forEach(function([key, storeWrapper]) {
-    const Store = Stores[key];
-    if (Store == null) {
-      console.log("Creating new application store: `%s`.", key);
-    }
-    const storeWrapperType = typeof storeWrapper;
-    if (storeWrapperType !== 'function') {
-      console.error("Expected Store wrapper for %s to be a `function`, " +
-        "but is `%s`. Skipping...", key, storeWrapperType);
-      return;
-    }
-    const Provider = storeWrapper(Store == null ? WdkStore : Store);
+  if (storeWrappers != null) {
+    Object.entries(storeWrappers).forEach(function([key, storeWrapper]) {
+      const Store = Stores[key];
+      if (Store == null) {
+        console.log("Creating new application store: `%s`.", key);
+      }
+      const storeWrapperType = typeof storeWrapper;
+      if (storeWrapperType !== 'function') {
+        console.error("Expected Store wrapper for %s to be a `function`, " +
+          "but is `%s`. Skipping...", key, storeWrapperType);
+        return;
+      }
+      const Provider = storeWrapper(Store == null ? WdkStore : Store);
 
-    finalStoreProviders[key] = [ Store == null ? Provider : Store, Provider ];
-  });
+      finalStoreProviders[key] = [ Store == null ? Provider : Store, Provider ];
+    });
+  }
 
   return finalStoreProviders;
 }
@@ -160,14 +167,14 @@ function wrapStores(storeWrappers) {
  * @param {Dispatcher} dispatcher
  * @param {Object?} serviceSubset
  */
-export function getDispatchActionMaker(dispatcher, serviceSubset) {
+export function getDispatchActionMaker(dispatcher, wdkService, history) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
-  return function makeDispatchAction(channel, history) {
+  let transitioner = getTransitioner(history);
+  let services = { wdkService, transitioner };
+  return function makeDispatchAction(channel) {
     if (channel === undefined) {
       console.warn("Call to makeDispatchAction() with no channel defined.");
     }
-    let transitioner = getTransitioner(history);
-    let services = Object.assign({}, serviceSubset, { transitioner });
     return function dispatchAction(action) {
       if (typeof action === 'function') {
         // Call the function with dispatchAction and services

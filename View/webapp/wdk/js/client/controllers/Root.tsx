@@ -2,7 +2,7 @@ import $ from 'jquery';
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { Router, Switch, Route, RouteComponentProps } from 'react-router';
-import {createBrowserHistory, History, Location} from 'history';
+import {History, Location} from 'history';
 import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "../CommonTypes";
 import WdkStore from "../stores/WdkStore";
 
@@ -12,6 +12,7 @@ type Props = {
   stores: Container<WdkStore>,
   routes: RouteSpec[],
   onLocationChange: (location: Location) => void;
+  history: History;
 };
 
 
@@ -35,17 +36,14 @@ export default class Root extends React.Component<Props> {
     onLocationChange: () => {}    // noop
   };
 
-  history: History;
-
   removeHistoryListener: () => void;
 
   constructor(props: Props) {
     super(props);
-    this.history = createBrowserHistory({ basename: this.props.rootUrl });
     this.renderRoute = this.renderRoute.bind(this);
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
-    this.removeHistoryListener = this.history.listen(location => this.props.onLocationChange(location));
-    this.props.onLocationChange(this.history.location);
+    this.removeHistoryListener = this.props.history.listen(location => this.props.onLocationChange(location));
+    this.props.onLocationChange(this.props.history.location);
   }
 
   renderRoute(RouteComponent: React.ComponentType<ViewControllerProps<WdkStore>>) {
@@ -65,7 +63,7 @@ export default class Root extends React.Component<Props> {
     let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 1;
     let href = (target.getAttribute('href') || '').replace(RELATIVE_LINK_REGEXP, '');
     if (!hasModifiers && href.startsWith(this.props.rootUrl)) {
-      this.history.push(href.slice(this.props.rootUrl.length));
+      this.props.history.push(href.slice(this.props.rootUrl.length));
       event.preventDefault();
     }
   }
@@ -82,7 +80,7 @@ export default class Root extends React.Component<Props> {
 
   render() {
     return (
-      <Router history={this.history}>
+      <Router history={this.props.history}>
         <Switch>
           {this.props.routes.map(route => (
             <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>

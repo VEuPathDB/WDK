@@ -1,13 +1,11 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { parse } from 'querystring';
 import { ActionCreator } from '../ActionCreator';
 import { wrapActions } from '../utils/componentUtils';
 import WdkStore, { BaseState } from '../stores/WdkStore';
 import { Action } from "../dispatcher/Dispatcher";
 import { ViewControllerProps, DispatchAction, MakeDispatchAction, StoreConstructor } from "../CommonTypes";
 
-import Page from '../components/Page';
 import NotFound from '../components/NotFound';
 import PermissionDenied from '../components/PermissionDenied';
 import LoadError from '../components/LoadError';
@@ -26,7 +24,11 @@ import Loading from '../components/Loading';
  *  - The state of the ViewController must be a transformation of the `Store`'s state.
  *
  */
-export default abstract class AbstractViewController<State extends {} = BaseState, Store extends WdkStore = WdkStore, ActionCreators extends Record<any, ActionCreator<Action>> = {}> extends React.PureComponent<ViewControllerProps<Store>, State> {
+export default abstract class AbstractViewController<
+  State extends {} = BaseState,
+  Store extends WdkStore = WdkStore,
+  ActionCreators extends Record<any, ActionCreator<Action>> = {}
+> extends React.PureComponent<ViewControllerProps<Store>, State> {
 
   store: Store;
 
@@ -70,14 +72,8 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
    */
   abstract getStateFromStore(): State;
 
-  /*--------------- Methods to override to display content ---------------*/
 
-  /**
-   * Returns the title of this page
-   */
-  getTitle(): string {
-    return "WDK";
-  }
+  /*--------------- Methods to override to display content ---------------*/
 
   /**
    * Renders the highest page component below the Page tag.
@@ -85,6 +81,7 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
   renderView(): JSX.Element | null {
     return ( <span>Page for View Controller: {this.constructor.name}</span> );
   }
+
 
   /*-------- Methods to override to call ACs and load initial data --------*/
 
@@ -149,10 +146,6 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
     return this.childContext;
   }
 
-  getQueryParams() {
-    return parse(this.props.location.search.slice(1));
-  }
-
   /**
    * Registers with this controller's store if it has one and sets initial state
    */
@@ -161,7 +154,7 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
     const StoreClass = this.getStoreClass();
     this.store = this.props.stores.get(StoreClass);
     this.state = this.getStateFromStore();
-    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName(), this.props.history);
+    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName());
     this.eventHandlers = wrapActions(this.dispatchAction, this.getActionCreators()) as ActionCreators;
     this.childContext = {
       store: this.store,
@@ -171,24 +164,6 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
     };
   }
 
-  setDocumentTitle(state: State): void {
-    if (this.isRenderDataLoadError()) {
-      document.title = "Error";
-    }
-    else if (this.isRenderDataNotFound()) {
-      document.title = "Page not found";
-    }
-    else if (this.isRenderDataPermissionDenied()) {
-      document.title = "Permission denied";
-    }
-    else if (!this.isRenderDataLoaded()) {
-      document.title = "Loading...";
-    }
-    else {
-      document.title = this.getTitle();
-    }
-  }
-
   componentDidMount(): void {
     if (this.store != null) {
       this.storeSubscription = this.store.addListener(() => {
@@ -196,16 +171,12 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
       });
     }
     this.loadData();
-    this.setDocumentTitle(this.state);
   }
 
   componentWillReceiveProps(nextProps: ViewControllerProps<Store>): void {
     this.loadData(nextProps);
   }
 
-  componentDidUpdate(): void {
-    this.setDocumentTitle(this.state);
-  }
 
   /**
    * Removes subscription to this controller's store
@@ -235,19 +206,19 @@ export default abstract class AbstractViewController<State extends {} = BaseStat
    */
   render() {
     if (this.isRenderDataLoadError()) {
-      return ( <Page><LoadError/></Page> );
+      return ( <LoadError/> );
     }
     else if (this.isRenderDataNotFound()) {
-      return ( <Page><NotFound/></Page> );
+      return ( <NotFound/> );
     }
     else if (this.isRenderDataPermissionDenied()) {
-      return ( <Page><PermissionDenied/></Page> );
+      return ( <PermissionDenied/> );
     }
     else if (!this.isRenderDataLoaded()) {
-      return ( <Page><Loading/></Page> );
+      return ( <Loading/> );
     }
     else {
-      return ( <Page>{this.renderView()}</Page> );
+      return this.renderView();
     }
   }
 }

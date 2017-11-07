@@ -39,15 +39,16 @@ var scriptLoaders = scripts.map(function(script) {
 
 // expose module exports as global vars
 var exposeModules = [
-  { module: 'lodash', expose: '_' },
-  { module: 'react', expose: 'React' },
-  { module: 'react-dom', expose: 'ReactDOM' },
-  { module: 'react-router/es', expose: 'ReactRouter' },
-  { module: 'react-addons-perf', expose: 'ReactPerf' },
-  { module: 'prop-types', expose: 'ReactPropTypes' },
-  { module: 'flux', expose: 'Flux' },
-  { module: 'flux/utils', expose: 'FluxUtils' },
-  { module: 'natural-sort', expose: 'NaturalSort' }
+  { module: 'flux',              expose : 'Flux' },
+  { module: 'flux/utils',        expose : 'FluxUtils' },
+  { module: 'history/es',        expose : 'HistoryJS' },
+  { module: 'lodash',            expose : '_' },
+  { module: 'natural-sort',      expose : 'NaturalSort' },
+  { module: 'prop-types',        expose : 'ReactPropTypes' },
+  { module: 'react',             expose : 'React' },
+  { module: 'react-addons-perf', expose : 'ReactPerf' },
+  { module: 'react-dom',         expose : 'ReactDOM' },
+  { module: 'react-router/es',   expose : 'ReactRouter' },
 ];
 
 var exposeLoaders = exposeModules.map(function(entry) {

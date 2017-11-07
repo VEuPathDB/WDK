@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import { loadUserDatasetList } from '../actioncreators/UserDatasetsActionCreators';
 import UserDatasetList from '../components/UserDatasetList';
 import UserDatasetListStore, { State as StoreState } from "../stores/UserDatasetListStore";
@@ -10,7 +10,7 @@ const ActionCreators = { loadUserDatasetList };
 type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
            & Pick<StoreState["globalData"], 'user'>;
 
-class UserDatasetListController extends AbstractViewController<State, UserDatasetListStore, typeof ActionCreators> {
+class UserDatasetListController extends AbstractPageController<State, UserDatasetListStore, typeof ActionCreators> {
 
   getStoreClass() {
     return UserDatasetListStore;
