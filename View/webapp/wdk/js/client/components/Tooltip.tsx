@@ -32,13 +32,17 @@ type Props = {
   classes?: string;
   showTip?: boolean;
   showEvent?: string;
+  showDelay?: number;
   hideEvent?: string;
+  hideDelay?: number;
   position?: {
     my?: string;
     at?: string;
   }
   solo?: boolean;
   children: React.ReactChild;
+  onShow?: (e: Event) => void;
+  onHide?: (e: Event) => void;
 }
 
 class Tooltip extends React.PureComponent<Props> {
@@ -94,7 +98,9 @@ class Tooltip extends React.PureComponent<Props> {
       content,
       open,
       showEvent,
+      showDelay = defaultOptions.show.delay,
       hideEvent,
+      hideDelay = defaultOptions.hide.delay,
       classes = 'qtip-tipsy',
       position = defaultOptions.position,
       solo = true,
@@ -113,9 +119,17 @@ class Tooltip extends React.PureComponent<Props> {
     this.api = $(ReactDOM.findDOMNode(this)).qtip({
       content: { text: $(this.contentContainer) },
       style: { classes, tip: { corner: showTip } },
-      show: { ...defaultOptions.show, solo, event: open == null ? showEvent : false },
-      hide: { ...defaultOptions.hide, event: open == null ? hideEvent : false },
-      position
+      show: { ...defaultOptions.show, solo, event: open == null ? showEvent : false, delay: showDelay },
+      hide: { ...defaultOptions.hide, event: open == null ? hideEvent : false, delay: hideDelay },
+      position,
+      events: {
+        show: event => {
+          if (props.onShow) props.onShow(event);
+        },
+        hide: event => {
+          if (props.onHide) props.onHide(event);
+        }
+      }
     }).qtip('api');
 
     this._setContent(content);
