@@ -685,6 +685,9 @@
         <attribute name="backgroundQueryRef"/>
       </optional>
       <optional>
+        <attribute name="ontologyValuesQueryRef"/>
+      </optional>
+      <optional>
         <element name="idTransformSql">
           <text/>
         </element>
