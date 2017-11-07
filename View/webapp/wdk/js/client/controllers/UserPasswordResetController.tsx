@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import UserPasswordReset from '../components/UserPasswordReset';
 import {
   updatePasswordResetEmail,
@@ -15,7 +15,7 @@ const ActionCreators = {
   conditionallyTransition
 }
 
-class UserPasswordResetController extends AbstractViewController<State, UserPasswordResetStore, typeof ActionCreators> {
+class UserPasswordResetController extends AbstractPageController<State, UserPasswordResetStore, typeof ActionCreators> {
 
   getStoreClass() {
     return UserPasswordResetStore;

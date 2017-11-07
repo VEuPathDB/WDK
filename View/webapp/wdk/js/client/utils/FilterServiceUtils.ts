@@ -240,6 +240,6 @@ export function getFilterValueDisplay(field: Field, filter: MemberFilter | Range
  *
  * @param {Field} field
  */
-export function isRange(field?: Field) {
-  return field && (field.isRange || field.filter === 'range');
+export function isRange(field: Field) {
+  return field.isRange || field.filter === 'range';
 }

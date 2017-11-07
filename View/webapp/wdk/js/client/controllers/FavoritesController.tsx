@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import * as ActionCreators from '../actioncreators/FavoritesActionCreators';
 import FavoritesList from '../components/FavoritesList';
 import FavoritesListStore, { State as StoreState } from "../stores/FavoritesListStore";
@@ -20,7 +20,7 @@ type State = Pick<StoreState,
   'deletedFavorite'
 > & Pick<StoreState['globalData'], 'user' | 'recordClasses'>;
 
-class FavoritesListController extends AbstractViewController<State, FavoritesListStore, typeof ActionCreators> {
+class FavoritesListController extends AbstractPageController<State, FavoritesListStore, typeof ActionCreators> {
 
   getStoreClass() {
     return FavoritesListStore;

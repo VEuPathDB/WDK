@@ -1,5 +1,5 @@
 import * as React from 'react';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import { wrappable } from '../utils/componentUtils';
 import {isEqual} from 'lodash';
 import { parse } from 'querystring';
@@ -26,7 +26,7 @@ const ActionCreators = {
 // FIXME Remove this when Answer is converted to Typescript
 const CastAnswer: any = Answer;
 
-class AnswerController extends AbstractViewController<State, AnswerViewStore, typeof ActionCreators> {
+class AnswerController extends AbstractPageController<State, AnswerViewStore, typeof ActionCreators> {
 
   getStateFromStore() {
     return this.store.getState();

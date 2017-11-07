@@ -98,3 +98,42 @@ export class Mutex {
   }
 
 }
+
+interface Deferred<T> extends Promise<T> {
+  resolve(value: any): void;
+  reject(value: any): void;
+  asPromise(): Promise<T>;
+}
+
+/**
+ * A Deffered is a way to expose the internals of a Promise's state management
+ * functionality (e.g., resolve and reject functions). This makes it possible
+ * to resolve or reject a Promise externally.
+ *
+ * You convert a deferred to a plain Promise using the `asPromise` method. This
+ * is useful to hide the internals to a consumer:
+ * ```
+ * var deferred = createDeferred();
+ * // ...
+ * return deferred.asPromise();
+ * ```
+ */
+export function createDeferred<T>(): Deferred<T> {
+  let resolve: (value: any) => void;
+  let reject: (value: any) => void;
+  let promise = new Promise<T>(function(_resolve, _reject) {
+    resolve = _resolve;
+    reject = _reject;
+  });
+  return Object.assign(promise, {
+    get resolve() {
+      return resolve;
+    },
+    get reject() {
+      return reject;
+    },
+    asPromise() {
+      return promise;
+    }
+  });
+}

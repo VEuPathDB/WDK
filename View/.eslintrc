@@ -9,7 +9,9 @@
     "__DEV__": true
   },
 
-  "plugins": [ "react" ],
+  "plugins": [ "react", "import" ],
+
+  "parser": "babel-eslint",
 
   "parserOptions": {
     "sourceType": "module",

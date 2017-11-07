@@ -2,7 +2,7 @@ import * as React from 'react';
 import { keyBy, pick } from 'lodash';
 import { ViewControllerProps } from '../CommonTypes';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController, { PageControllerProps } from './AbstractPageController';
 import { loadUserDatasetItem, updateUserDatasetItem } from '../actioncreators/UserDatasetsActionCreators';
 import UserDatasetItem from '../components/UserDatasetItem';
 import UserDatasetItemStore, { State as StoreState } from '../stores/UserDatasetItemStore';
@@ -21,7 +21,7 @@ type EventHandlers = typeof ActionCreators;
  * userDataset's id. This avoids race conditions that arise when ajax requests
  * complete in a different order than they were invoked.
  */
-class UserDatasetItemController extends AbstractViewController<State, UserDatasetItemStore, EventHandlers> {
+class UserDatasetItemController extends AbstractPageController<State, UserDatasetItemStore, EventHandlers> {
 
   getStoreClass(): typeof UserDatasetItemStore {
     return UserDatasetItemStore;
@@ -62,7 +62,7 @@ class UserDatasetItemController extends AbstractViewController<State, UserDatase
     return ActionCreators;
   }
 
-  loadData(nextProps?: ViewControllerProps<UserDatasetItemStore>) {
+  loadData(nextProps?: PageControllerProps<UserDatasetItemStore>) {
     const idChanged = nextProps && nextProps.match.params.id !== this.props.match.params.id;
     if (idChanged || !this.state.userDatasetsById[this.props.match.params.id]) {
       this.eventHandlers.loadUserDatasetItem(Number(this.props.match.params.id));

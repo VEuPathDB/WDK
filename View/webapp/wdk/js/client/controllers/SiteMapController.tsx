@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import * as SiteMapActionCreators from '../actioncreators/SiteMapActionCreators';
 import SiteMapStore, { State } from '../stores/SiteMapStore';
 import SiteMap from '../components/SiteMap';
 
 type EventHandlers = typeof SiteMapActionCreators;
 
-class SiteMapController extends AbstractViewController<State, SiteMapStore, EventHandlers> {
+class SiteMapController extends AbstractPageController<State, SiteMapStore, EventHandlers> {
 
   getStoreClass() {
     return SiteMapStore;

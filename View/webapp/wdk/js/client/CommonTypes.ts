@@ -17,7 +17,7 @@ export interface DispatchAction {
 }
 
 export interface MakeDispatchAction {
-  (channel: string, history: History): DispatchAction
+  (channel: string): DispatchAction
 }
 
 export interface Constructor<T> {
@@ -28,7 +28,7 @@ export interface Container<T> {
   get(Class: Constructor<T>): T;
 }
 
-export interface ViewControllerProps<Store> extends RouteComponentProps<any> {
+export interface ViewControllerProps<Store> {
   stores: Container<Store>;
   makeDispatchAction: MakeDispatchAction;
 }

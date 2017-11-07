@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { wrappable, safeHtml } from '../utils/componentUtils';
-import WdkViewController from './WdkViewController';
+import WdkPageController from './WdkPageController';
 
-class QuestionListController extends WdkViewController {
+class QuestionListController extends WdkPageController {
 
   isRenderDataLoaded() {
     return this.state.globalData.questions != null;

@@ -62,6 +62,19 @@ export interface QuestionParameter extends ModelEntity {
   defaultValue: ParameterValue;
 }
 
+export interface FilterParamNew extends QuestionParameter {
+  ontology: Array<{
+    term: string;
+    parent: string;
+    display: string;
+    description: string;
+    type: string;
+    units: string;
+    precision: string;
+    isRange: boolean;
+  }>
+}
+
 export interface AttributeField extends ModelEntity {
   help: string;
   align: string;

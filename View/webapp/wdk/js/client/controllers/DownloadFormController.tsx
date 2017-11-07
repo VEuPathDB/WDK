@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import AbstractViewController from './AbstractViewController';
+import AbstractPageController from './AbstractPageController';
 import * as DownloadFormActionCreators from '../actioncreators/DownloadFormActionCreators';
 import DownloadFormContainer from '../components/DownloadFormContainer';
 import { State, default as DownloadFormStore } from "../stores/DownloadFormStore";
 
-class DownloadFormController extends AbstractViewController<State, DownloadFormStore, typeof DownloadFormActionCreators> {
+class DownloadFormController extends AbstractPageController<State, DownloadFormStore, typeof DownloadFormActionCreators> {
 
   getStoreClass() {
     return DownloadFormStore;
