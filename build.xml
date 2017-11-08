@@ -95,6 +95,10 @@
   <target name="handleOracleDriver">
 
     <!-- set values for supported Oracle driver -->
+    <!-- IMPORTANT CAUTION:  if you update the ojdbc driver here,
+	 do so in all other build.xml files that import the driver,
+    	 to prevent conflicts in gus_home
+    -->
     <property name="oracle.driver.name" value="ojdbc6"/>
     <property name="oracle.version" value="11.2.0.3"/>
 
@@ -149,8 +153,6 @@
 
   <target name="copyLocalOracleDriver" if="oracle.home.complete">
     <echo>Removing old versions of Oracle driver from GUS_HOME</echo>
-    <delete file="${targetDir}/lib/java/db_driver/ojdbc14.jar" quiet="true"/>
-    <delete file="${targetDir}/lib/java/db_driver/ojdbc5.jar" quiet="true"/>
     <echo>Installing local ${oracle.driver.name}.jar from ${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar</echo>
     <copy file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"
           toDir="${targetDir}/lib/java/db_driver"
