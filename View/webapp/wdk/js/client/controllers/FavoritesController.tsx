@@ -1,3 +1,4 @@
+import { pick } from 'lodash';
 import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import AbstractPageController from './AbstractPageController';
@@ -6,22 +7,17 @@ import FavoritesList from '../components/FavoritesList';
 import FavoritesListStore, { State as StoreState } from "../stores/FavoritesListStore";
 
 type State = Pick<StoreState,
+  'tableState' |
+  'tableSelection' |
   'favoritesLoading' |
-  'list' |
   'loadError' |
   'existingFavorite' |
   'editCoordinates' |
   'editValue' |
-  'selectedFavorites' |
-  'searchText' |
-  'filteredList' |
-  'sortByKey' |
-  'sortDirection' |
-  'deletedFavorite'
+  'searchText'
 > & Pick<StoreState['globalData'], 'user' | 'recordClasses'>;
 
 class FavoritesListController extends AbstractPageController<State, FavoritesListStore, typeof ActionCreators> {
-
   getStoreClass() {
     return FavoritesListStore;
   }
@@ -29,36 +25,31 @@ class FavoritesListController extends AbstractPageController<State, FavoritesLis
   getStateFromStore() {
     const {
       globalData: { user, recordClasses },
+      tableState,
+      tableSelection,
+
       favoritesLoading,
-      list,
       loadError,
       existingFavorite,
       editCoordinates,
       editValue,
       searchText,
-      filteredList,
-      sortByKey,
-      sortDirection,
       deletedFavorite,
-      selectedFavorites,
       filterByType
     } = this.store.getState();
 
     return {
+      tableState,
+      tableSelection,
       user,
       recordClasses,
       favoritesLoading,
-      list,
       loadError,
       existingFavorite,
       editCoordinates,
       editValue,
       searchText,
-      filteredList,
-      sortByKey,
-      sortDirection,
       deletedFavorite,
-      selectedFavorites,
       filterByType
     };
   }

@@ -218,7 +218,7 @@ export default class WdkService {
     });
   }
 
-  /** 
+  /**
    * Fetch question with default param values/vocabularies (may get from cache if already present)
    */
   getQuestionAndParameters(identifier: string) {
@@ -226,7 +226,7 @@ export default class WdkService {
     return this._getFromCache(url, () => this._fetchJson<Question>('get', url));
   }
 
-  
+
   /**
    * Fetch question information (e.g. vocabularies) given the passed param values; never cached
    */
@@ -406,14 +406,15 @@ export default class WdkService {
    *
    * @param record Record instance to search for
    */
-  getFavoriteId(record: RecordInstance) {
+  getFavoriteId (record: RecordInstance) {
       let data = [{
         recordClassName: record.recordClassName,
         primaryKey: record.id
       }];
       let url = '/users/current/favorites/query';
-      return this._fetchJson<Array<number>>('post', url, JSON.stringify(data))
-          .then(data => data.length == 0 ? undefined : data[0]);
+      return this
+        ._fetchJson<Array<number>>('post', url, JSON.stringify(data))
+        .then(data => data.length ? data[0] : undefined);
     }
 
   /**
@@ -422,13 +423,12 @@ export default class WdkService {
    *
    * @param record Record to add as a favorite
    */
-  addFavorite(record: RecordInstance) {
-    let favorite = {
-      recordClassName: record.recordClassName,
-      primaryKey: record.id
-    }
-    let url = '/users/current/favorites';
-    return this._fetchJson<Favorite>('post', url, JSON.stringify(favorite))
+  addFavorite (record: RecordInstance) {
+    const { recordClassName, id } = record;
+    const favorite = { recordClassName, primaryKey: id };
+    const url = '/users/current/favorites';
+    return this
+      ._fetchJson<Favorite>('post', url, JSON.stringify(favorite))
       .then(data => data.id);
   }
 
@@ -440,7 +440,8 @@ export default class WdkService {
    */
   deleteFavorite (id: number) {
     let url = '/users/current/favorites/' + id;
-    return this._fetchJson<void>('delete', url)
+    return this
+      ._fetchJson<void>('delete', url)
       .then(() => undefined);
   }
 
