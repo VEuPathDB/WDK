@@ -1,44 +1,48 @@
 import WdkStore, { BaseState } from './WdkStore';
-import { isEqual } from 'lodash';
-import { ListLoadingAction,
+import {
+  TableStateUpdatedAction,
+  TableSelectionUpdatedAction,
+  ListLoadingAction,
   ListReceivedAction,
   ListErrorReceivedAction,
-  FavoriteSelectedAction,
-  FavoriteDeselectedAction,
   EditCellAction,
   ChangeCellAction,
   CancelCellEditAction,
   SaveCellDataAction,
   SaveReceivedAction,
   SaveErrorReceivedAction,
-  DeleteRowAction,
-  DeleteRowsAction,
-  DeleteReceivedAction,
-  DeleteMultiReceivedAction,
+  DeleteFavoritesAction,
   DeleteErrorReceivedAction,
-  UndeletedRowsReceivedAction,
   SearchTermAction,
-  SortColumnAction,
-  AddRowAction,
-  AddReceivedAction,
   AddErrorAction,
   FilterByTypeAction
 } from '../actioncreators/FavoritesActionCreators';
 import { Favorite } from '../utils/WdkModel';
+import { MesaState } from 'mesa';
 
-type Action = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction
-|FavoriteSelectedAction|FavoriteDeselectedAction
-|EditCellAction|ChangeCellAction|CancelCellEditAction
-|SaveCellDataAction|SaveReceivedAction|SaveErrorReceivedAction
-|DeleteRowAction|DeleteRowsAction|DeleteReceivedAction|DeleteMultiReceivedAction|DeleteErrorReceivedAction
-|SearchTermAction|SortColumnAction
-|AddRowAction|AddReceivedAction|AddErrorAction|UndeletedRowsReceivedAction
-|FilterByTypeAction;
+type Action =
+  TableStateUpdatedAction
+  | TableSelectionUpdatedAction
+  | ListLoadingAction
+  | ListReceivedAction
+  | ListErrorReceivedAction
+  | EditCellAction
+  | ChangeCellAction
+  | CancelCellEditAction
+  | AddErrorAction
+  | SaveReceivedAction
+  | SaveCellDataAction
+  | SaveErrorReceivedAction
+  | DeleteFavoritesAction
+  | DeleteErrorReceivedAction
+  | SearchTermAction
+  | FilterByTypeAction;
 
 export interface State extends BaseState {
+  tableState: {};
+  tableSelection: number[];
+
   favoritesLoading: boolean;
-  list: Favorite[];
-  filteredList: Favorite[];
   loadError: Error | null;
   existingFavorite: Favorite;
   editCoordinates: {};
@@ -47,233 +51,129 @@ export interface State extends BaseState {
   deleteError: Error | null;
   deletedFavorite: Favorite | null;
   searchText: string;
-  sortByKey: string;
-  sortDirection: string;
-  selectedFavorites: number[];
   key: string;
   filterByType: string;
 }
 
 export default class FavoritesListStore extends WdkStore<State> {
-
   getInitialState() {
     return Object.assign({
-      favoritesLoading: false,
-      key: "",
-      list: [],
-      filteredList: [],
-      loadError: null,
-      existingFavorite: {},
-      editCoordinates: {},
+      tableState: {},
+      tableSelection: [],
+
+      key: '',
       editValue: '',
-      saveError: null,
-      deleteError: null,
-      deletedFavorite: null,
       searchText: '',
-      sortByKey: 'display',
-      sortDirection: 'asc',
-      selectedFavorites: [],
-      filterByType: null
+      saveError: null,
+      loadError: null,
+      deleteError: null,
+      filterByType: null,
+      editCoordinates: {},
+      existingFavorite: {},
+      deletedFavorite: null,
+      favoritesLoading: false
     }, super.getInitialState());
   }
 
   handleAction(state: State, action: Action): State {
     switch (action.type) {
 
-      // Identifies a loading page so that a spinner can be put in place of page data.
-      case 'favorites/list-loading': return {
-          ...state,
-          favoritesLoading: true
-        };
+      case 'favorites/list-loading': {
+        const favoritesLoading = true;
+        return { ...state, favoritesLoading };
+      }
 
-      // Once the favorites list is received, it is placed in the list and filteredList variables.  The fiteredList
-      // is the list that will be presented to the user.
       case 'favorites/list-received': {
-        const { list } = action.payload;
         const favoritesLoading = false;
-        const listIds = list.map((fav: Favorite) => fav.id);
-        const selectedFavorites = state.selectedFavorites.filter(id => {
-          return listIds.indexOf(id) >= 0;
-        });
-        return {
-          ...state,
-          list,
-          favoritesLoading,
-          selectedFavorites,
-          filteredList: list
-        };
+        const { tableState } = action.payload;
+        const predicate = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, state);
+        const updatedTableState = MesaState.filterRows(tableState, predicate);
+        return { ...state, tableState: updatedTableState, favoritesLoading };
       }
 
-      case 'favorites/favorite-selected': {
-        const { id } = action.payload;
-        const selectedFavorites = state.selectedFavorites.includes(id)
-          ? state.selectedFavorites
-          : [...state.selectedFavorites, id];
-        return {
-          ...state,
-          selectedFavorites
-        };
+      case 'favorites/table-state-updated': {
+        const { tableState } = action.payload;
+        const predicate = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, state);
+        const updatedTableState = MesaState.filterRows(tableState, predicate);
+        return { ...state, tableState: updatedTableState };
       }
 
-      case 'favorites/favorite-deselected': {
-        const { id } = action.payload;
-        const selectedFavorites = state.selectedFavorites.includes(id)
-          ? state.selectedFavorites.filter(fav => fav !== id)
-          : state.selectedFavorites;
-        return {
-          ...state,
-          selectedFavorites
-        };
+      case 'favorites/table-selection-updated': {
+        const { tableSelection } = action.payload;
+        return { ...state, tableSelection };
       }
 
       // If the user visits this page without being logged in, the 403 status code is returned.  The user needs
       // something more meaningful than a generic error message in that case.
-      case 'favorites/list-error':
-        if (action.payload.error.status === 403) {
-          return {
-            ...state,
-            favoritesLoading: false
-          }
+      case 'favorites/list-error': {
+        const { error } = action.payload;
+        if (error.status === 403) {
+          return { ...state, favoritesLoading: false };
+        } else {
+          return { ...state, favoritesLoading: false, loadError: error }
         }
-        else {
-          return {
-            ...state,
-            favoritesLoading: false,
-            loadError: action.payload.error
-          }
-        }
+      }
 
       // State applied when a cell is edited.  The assumption is that only one edit at a time is done.  So
       // if a user clicks edit links consecutively, only the cell for which the last edit link was clicked gains focus.
       // The coordinates of that cell are saved to the editCoordinates variable.  The variable, editValue holds the edited
       // value.  The existingFavorite variable holds the information for the favorite being edited.
-      case 'favorites/edit-cell': return {
-          ...state,
-          key: action.payload.key,
-          existingFavorite: Object.assign(state.existingFavorite,action.payload.rowData),
-          editCoordinates: action.payload.coordinates,
-          editValue: action.payload.value
-        };
+      case 'favorites/edit-cell': {
+        const { key, value, rowData, coordinates } = action.payload;
+        const editValue = value;
+        const editCoordinates = coordinates;
+        const existingFavorite = Object.assign(state.existingFavorite, rowData);
+        return { ...state, key, existingFavorite, editValue, editCoordinates };
+      }
 
       // The variable holding the edited value is updated upon changes.
-      case 'favorites/change-cell': return {
-          ...state,
-          editValue: action.payload
-        };
+      case 'favorites/change-cell': {
+        const editValue = action.payload;
+        return { ...state, editValue };
+      }
 
       // When the edit is cancelled the variable identifying the cell to be edited
-      case 'favorites/cancel-cell-edit': return {
-          ...state,
-          editCoordinates: {}
-        };
+      case 'favorites/cancel-cell-edit': {
+        const editCoordinates = {};
+        return { ...state, editCoordinates };
+      }
 
-      // The favorites list is saved with the updated favorite but whether that updated favorite is added to the filtered
-      // version of that list depends on whether the changes have altered its ability to meet the existing search criteria.
-      case 'favorites/save-received':
-        let updatedList = state.list.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite);
-        let updatedFilteredList = this.meetsFilterAndSearchCriteria(action.payload.updatedFavorite, state)
-          ? state.filteredList.map((favorite) => isEqual(favorite.id, state.existingFavorite.id) ? action.payload.updatedFavorite : favorite)
-          : state.filteredList.filter((favorite) => !isEqual(favorite.id, action.payload.updatedFavorite.id));
-        return {
-          ...state,
-          list: updatedList,
-          filteredList: updatedFilteredList,
-          editCoordinates: {},
-        };
+      case 'favorites/save-received': {
+        const editCoordinates = {};
+        const { tableState } = action.payload;
+        const predicate = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, state);
+        const updatedTableState = MesaState.filterRows(tableState, predicate);
+        return { ...state, tableState: updatedTableState, editCoordinates };
+      }
 
-      case 'favorites/save-error':
-        return {
-          ...state,
-          saveError: action.payload.error
-        };
+      case 'favorites/save-error': {
+        const saveError = action.payload.error;
+        return { ...state, saveError };
+      }
 
-      case 'favorites/delete-received':
-        updatedList = state.list.filter((favorite) => !isEqual(favorite.id, action.payload.deletedFavorite.id));
-        updatedFilteredList = state.filteredList.filter((favorite) => !isEqual(favorite.id, action.payload.deletedFavorite.id));
-        return {
-          ...state,
-          list: updatedList,
-          filteredList: updatedFilteredList,
-          deletedFavorite: action.payload.deletedFavorite,
-          editCoordinates: {}
-        };
-
-      case 'favorites/delete-multi-received':
-        const { deletedFavorites } = action.payload;
-        const deletedIds = deletedFavorites.map(favorite => favorite.id);
-        updatedList = state.list.filter((favorite) => !deletedIds.includes(favorite.id));
-        updatedFilteredList = state.filteredList.filter((favorite) => !deletedIds.includes(favorite.id));
-        return {
-          ...state,
-          list: updatedList,
-          filteredList: updatedFilteredList,
-          editCoordinates: {}
-        };
-
-
-      case 'favorites/delete-error':
-        return {
-          ...state,
-          deleteError: action.payload.error
-        };
+      case 'favorites/delete-error': {
+        const deleteError = action.payload.error;
+        return { ...state, deleteError };
+      }
 
       case 'favorites/search-term': {
-        let { list } = state;
-        let searchText = action.payload;
-        let stateWithTerm = Object.assign({}, state, { searchText });
-        let filteredList = searchText.length || state.filterByType
-          ? list.filter(favorite => this.meetsFilterAndSearchCriteria(favorite, stateWithTerm))
-          : list;
-        return {
-          ...stateWithTerm,
-          filteredList,
-          editCoordinates: {}
-        };
+        const editCoordinates = {};
+        const { tableState } = state;
+        const searchText = action.payload;
+        const stateWithTerm = Object.assign({}, state, { searchText });
+        const predicate = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, stateWithTerm);
+        const updatedTableState = MesaState.filterRows(tableState, predicate);
+        return { ...stateWithTerm, editCoordinates, tableState: updatedTableState };
       }
-
-      case 'favorites/sort-column':
-        return {
-          ...state,
-          sortByKey: action.payload.sortByKey,
-          sortDirection: action.payload.sortDirection
-        };
 
       case 'favorites/filter-by-type': {
-        let { list } = state;
-        let filterByType = action.payload;
-        let stateWithFilter = Object.assign({}, state, { filterByType });
-        let filteredList = list.filter(favorite => this.meetsFilterAndSearchCriteria(favorite, stateWithFilter));
-        return {
-          ...stateWithFilter,
-          filteredList
-        };
-      }
-      // Probably should not be mutating
-      case 'favorites/add-received': {
-        let { list, filteredList } = state;
-        let { addedFavorite } = action.payload;
-        let meetsCriteria = this.meetsFilterAndSearchCriteria(addedFavorite, state);
-
-        return {
-          ...state,
-          list: list.concat([addedFavorite]),
-          filteredList: !meetsCriteria ? filteredList : filteredList.concat(addedFavorite),
-          deletedFavorite: null
-        }
-      }
-
-      case 'favorites/undeleted-rows-received': {
-        let { list, filteredList } = state;
-        let { undeletedFavorites } = action.payload;
-        let isShown = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, state);
-        list = list.concat([...undeletedFavorites]);
-        filteredList = filteredList.concat(undeletedFavorites.filter(fav => isShown(fav)));
-        return {
-          ...state,
-          list,
-          filteredList,
-          selectedFavorites: []
-        }
+        const editCoordinates = {};
+        const { tableState } = state;
+        const filterByType = action.payload;
+        const stateWithFilter = Object.assign({}, state, { filterByType });
+        const predicate = (fav: Favorite) => this.meetsFilterAndSearchCriteria(fav, stateWithFilter);
+        const updatedTableState = MesaState.filterRows(tableState, predicate);
+        return { ...stateWithFilter, editCoordinates, tableState: updatedTableState };
       }
 
       default:
@@ -281,10 +181,12 @@ export default class FavoritesListStore extends WdkStore<State> {
     }
   }
 
-  meetsFilterAndSearchCriteria (favorite:Favorite, state:State) {
-    const searchText = state.searchText.toLowerCase();
-    const { filterByType } = state;
-    return (!filterByType || favorite.recordClassName === filterByType) && (!searchText ||
+  meetsFilterAndSearchCriteria (favorite: Favorite, state: State) {
+    let { filterByType, searchText } = state;
+    searchText = searchText.toLowerCase();
+
+    return (!filterByType || favorite.recordClassName === filterByType) &&
+    (!searchText ||
       (favorite.displayName.toLowerCase().indexOf(searchText) > -1) ||
       (this._getType(favorite, state).toLowerCase().indexOf(searchText) > -1) ||
       (favorite.description != null && favorite.description.toLowerCase().indexOf(searchText) > -1) ||

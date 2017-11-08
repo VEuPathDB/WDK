@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import { escape, orderBy } from 'lodash';
 import { withRouter } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
-import { MesaController as Mesa, Utils as MesaUtils, ModalBoundary } from 'mesa';
-
-import 'mesa/dist/css/mesa.css';
+import { Mesa, Utils as MesaUtils, MesaState, ModalBoundary } from 'mesa';
 
 import RecordLink from './RecordLink';
 import Checkbox from './Checkbox';
@@ -44,20 +42,22 @@ class FavoritesList extends Component {
     this.countFavoritesByType = this.countFavoritesByType.bind(this);
 
     this.handleUndoDelete = this.handleUndoDelete.bind(this);
-    this.handleBulkUndoDelete = this.handleBulkUndoDelete.bind(this);
     this.handleBannerClose = this.handleBannerClose.bind(this);
+    this.handleBulkUndoDelete = this.handleBulkUndoDelete.bind(this);
+
+    this.onSort = this.onSort.bind(this);
     this.onRowSelect = this.onRowSelect.bind(this);
     this.onRowDeselect = this.onRowDeselect.bind(this);
-    this.onSortChange = this.onSortChange.bind(this);
+    this.onMultipleRowSelect = this.onMultipleRowSelect.bind(this);
+    this.onMultipleRowDeselect = this.onMultipleRowDeselect.bind(this);
+
 
     this.getTableActions = this.getTableActions.bind(this);
     this.getTableOptions = this.getTableOptions.bind(this);
     this.getTableColumns = this.getTableColumns.bind(this);
+    this.getTableEventHandlers = this.getTableEventHandlers.bind(this);
 
-    this.state = {
-      banners: [],
-      selectedRows: []
-    };
+    this.state = { banners: [] };
   }
 
   createDeletedBanner (selection) {
@@ -147,8 +147,9 @@ class FavoritesList extends Component {
   }
 
   countFavoritesByType () {
-   const { recordClasses, list } = this.props;
-   const counts = list.reduce((tally, { recordClassName }) => {
+   const { recordClasses, tableState } = this.props;
+   const rows = MesaState.getRows(tableState);
+   const counts = rows.reduce((tally, { recordClassName }) => {
      if (tally[recordClassName]) tally[recordClassName] = tally[recordClassName] + 1;
      else tally[recordClassName] = 1;
      return tally;
@@ -292,24 +293,42 @@ class FavoritesList extends Component {
   // Table event handlers =====================================================
 
   onRowSelect ({ id }) {
-    const { selectFavorite } = this.props.favoritesEvents;
-    selectFavorite(id);
+    const { tableSelection, favoritesEvents } = this.props;
+    const { selectFavorite } = favoritesEvents;
+    selectFavorite(tableSelection, id);
   }
 
   onRowDeselect ({ id }) {
-    const { deselectFavorite } = this.props.favoritesEvents;
-    deselectFavorite(id);
+    const { tableSelection, favoritesEvents } = this.props;
+    const { deselectFavorite } = favoritesEvents;
+    deselectFavorite(tableSelection, id);
   }
 
-  onSortChange ({ key }, direction) {
-    const { sortColumn } = this.props.favoritesEvents;
-    sortColumn(key, direction);
+  onMultipleRowSelect (rows) {
+    const { tableSelection, favoritesEvents } = this.props;
+    const ids = rows.map(row => row.id);
+    const { selectMultipleFavorites } = favoritesEvents;
+    selectMultipleFavorites(tableSelection, ids);
+  }
+
+  onMultipleRowDeselect (rows) {
+    const { tableSelection, favoritesEvents } = this.props;
+    const ids = rows.map(row => row.id);
+    const { deselectMultipleFavorites } = favoritesEvents;
+    deselectMultipleFavorites(tableSelection, ids);
+  }
+
+  onSort ({ key }, direction) {
+    const { tableState, favoritesEvents } = this.props;
+    const { sortColumn } = favoritesEvents;
+    sortColumn(tableState, key, direction);
   }
 
   // Table config generators =================================================
 
   getTableActions () {
-    const { deleteRows } = this.props.favoritesEvents;
+    const { favoritesEvents, tableState } = this.props;
+    const { deleteFavorites } = favoritesEvents;
     return [
       {
         selectionRequired: true,
@@ -320,21 +339,16 @@ class FavoritesList extends Component {
             </button>
           );
         },
-        handler: (rowData) => {
-          // this.handleRowDelete(rowData);
-        },
         callback: (selection) => {
-          deleteRows(selection);
+          deleteFavorites(tableState, selection);
           this.createDeletedBanner(selection);
-          let selectedFavorites = [];
-          this.setState({ selectedFavorites });
         }
       }
     ];
   }
 
   getTableOptions () {
-    const { searchBoxPlaceholder, selectedFavorites } = this.props;
+    const { searchBoxPlaceholder, tableSelection } = this.props;
 
     return {
       useStickyHeader: true,
@@ -344,7 +358,7 @@ class FavoritesList extends Component {
       selectedNoun: 'Favorite',
       selectedPluralNoun: 'Favorites',
       isRowSelected ({ id }) {
-        return selectedFavorites.includes(id);
+        return tableSelection.includes(id);
       }
     };
   }
@@ -385,27 +399,35 @@ class FavoritesList extends Component {
     ];
   }
 
-  render () {
-    let { banners } = this.state;
-    let { recordClasses, list, filteredList, searchText, searchBoxPlaceholder, searchBoxHelp, user } = this.props;
-    let { renderIdCell, renderTypeCell, renderNoteCell, renderGroupCell, onRowSelect, onRowDeselect, onSortChange } = this;
-
-    let sort = { columnKey: this.props.sortByKey, direction: this.props.sortDirection };
-    filteredList = (sort.columnKey ? MesaUtils.textSort(filteredList, sort.columnKey, sort.direction === 'asc') : filteredList);
-
-    const columns = this.getTableColumns();
-    const options = this.getTableOptions();
-    const actions = this.getTableActions();
-    const eventHandlers = {
+  getTableEventHandlers () {
+    const { onSort, onRowSelect, onMultipleRowSelect, onRowDeselect, onMultipleRowDeselect } = this;
+    return {
+      onSort,
       onRowSelect,
       onRowDeselect,
-      onSort: onSortChange
-    };
+      onMultipleRowSelect,
+      onMultipleRowDeselect
+    }
+  }
 
-    const emptinessCulprit = (list.length && !filteredList.length ? 'search' : null);
-    const uiState = { emptinessCulprit, sort };
+  render () {
+    let { banners } = this.state;
+    let { recordClasses, tableState, searchText, searchBoxPlaceholder, searchBoxHelp, user } = this.props;
+    let { renderIdCell, renderTypeCell, renderNoteCell, renderGroupCell } = this;
 
-    const mesaProps = { rows: filteredList, columns, options, actions, uiState, eventHandlers };
+    const rows = MesaState.getRows(tableState);
+    const uiState = ('uiState' in tableState ? MesaState.getUiState(tableState) : null);
+    const { sort } = uiState ? uiState : { sort: {} };
+    const filteredRows = MesaState.getFilteredRows(tableState);
+    const sortedFilteredRows = (sort && sort.columnKey ? MesaUtils.textSort(filteredRows, sort.columnKey, sort.direction === 'asc') : filteredRows);
+
+    tableState = MesaState.setOptions(tableState, this.getTableOptions());
+    tableState = MesaState.setActions(tableState, this.getTableActions());
+    tableState = MesaState.setColumns(tableState, this.getTableColumns());
+    tableState = MesaState.setEventHandlers(tableState, this.getTableEventHandlers());
+    tableState = MesaState.setFilteredRows(tableState, sortedFilteredRows);
+    tableState = MesaState.setEmptinessCulprit(tableState, rows.length && !filteredRows.length ? 'search' : null);
+
     const CountSummary = this.renderCountSummary;
 
     if (!recordClasses) return null;
@@ -417,7 +439,7 @@ class FavoritesList extends Component {
           <h1 className="page-title">Favorites</h1>
           <CountSummary />
           <BannerList onClose={this.handleBannerClose} banners={banners} />
-          <Mesa {...mesaProps}>
+          <Mesa state={tableState}>
             <RealTimeSearchBox
               className="favorites-search-field"
               autoFocus={false}
@@ -477,8 +499,9 @@ class FavoritesList extends Component {
    * @private
    */
   handleCellSave (dataKey) {
-    let favorite = Object.assign({}, this.props.existingFavorite, {[dataKey] : this.props.editValue});
-    this.props.favoritesEvents.saveCellData(favorite);
+    const { tableState, editValue, existingFavorite, favoritesEvents } = this.props;
+    const favorite = Object.assign({}, existingFavorite, { [dataKey] : editValue});
+    favoritesEvents.saveCellData(tableState, favorite);
   }
 
   /**
@@ -501,23 +524,20 @@ class FavoritesList extends Component {
     this.handleCellSave(dataKey);
   }
 
-  /**
-   * Calls appropriate handler when the delete button for a favorite is clicked.  The rowData carries all the
-   * favorite information.  Not sure whether the cache needs to be cleared in this instance.
-   * @param rowData
-   * @private
-   */
-  handleRowDelete (rowData) {
-    this.props.favoritesEvents.deleteRow(rowData);
-    this.onRowDeselect(rowData);
+  handleRowDelete (row) {
+    const { tableState, favoritesEvents } = this.props;
+    favoritesEvents.deleteFavorites(tableState, [ row ]);
+    this.onRowDeselect(row);
   }
 
   handleUndoDelete (row) {
-    this.props.favoritesEvents.addRow(row);
+    const { tableState, favoritesEvents } = this.props;
+    favoritesEvents.undeleteFavorites(tableState, [ row ]);
   }
 
   handleBulkUndoDelete (rows) {
-    this.props.favoritesEvents.undeleteRows(rows);
+    const { tableState, favoritesEvents } = this.props;
+    favoritesEvents.undeleteFavorites(tableState, rows);
   }
 
   getDataKeyTooltip (dataKey) {
@@ -537,7 +557,7 @@ class FavoritesList extends Component {
 
   getRecordClassByName (recordClassName) {
     let { recordClasses } = this.props;
-    return recordClasses.find((recordClass) => recordClass.name === recordClassName);
+    return recordClasses.find(({ name }) => name === recordClassName);
   }
 }
 
