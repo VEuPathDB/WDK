@@ -98,7 +98,7 @@
                           <c:otherwise>
                               <div class="param-control" id="${qP.name}aaa">
                                 <div class="ui-state-error ui-corner-all">
-                                  Unknown param type
+                                  Unknown param type "${paramType}"
                                 </div>
                               </div>
                           </c:otherwise>
