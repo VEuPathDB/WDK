@@ -701,6 +701,11 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="countPredictsAnswerCount">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="useIdTransformSqlForInternalValue">
           <data type="boolean" />
         </attribute>
