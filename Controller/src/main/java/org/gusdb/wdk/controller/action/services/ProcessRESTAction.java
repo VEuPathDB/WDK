@@ -132,7 +132,7 @@ public class ProcessRESTAction extends Action {
 
       // prepare and get the param values
       Map<String, ParamBean<?>> params = question.getParamsMap();
-      ServiceRequestParams requestParams = new ServiceRequestParams(request);
+      LegacyRestServiceRequestParams requestParams = new LegacyRestServiceRequestParams(request);
       Map<String, String> stableValues = new LinkedHashMap<>();
       for (String paramName : params.keySet()) {
         ParamBean<?> param = params.get(paramName);

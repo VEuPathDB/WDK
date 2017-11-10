@@ -11,12 +11,12 @@ import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
-public class ServiceRequestParams implements RequestParams {
+public class LegacyRestServiceRequestParams implements RequestParams {
 
   private final HttpServletRequest _request;
   private final Map<String,String[]> _requestParams;
 
-  public ServiceRequestParams(HttpServletRequest request) {
+  public LegacyRestServiceRequestParams(HttpServletRequest request) {
     _request = request;
     Map<String,String[]> origParams = new HttpRequestData(request).getTypedParamMap();
     // trim parameter names in case URL translation added whitespace
