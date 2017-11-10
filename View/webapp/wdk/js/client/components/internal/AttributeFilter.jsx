@@ -1835,6 +1835,7 @@ class MembershipField extends React.Component {
               onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
             }}
             rows={this.props.distribution}
+            filteredRows={this.props.distribution}
             columns={[
               {
                 key: 'value',
