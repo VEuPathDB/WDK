@@ -79,6 +79,7 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
@@ -1617,5 +1618,20 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       models.close();
       throw e;
     }
+  }
+  
+  /**
+   * Identifies and returns an xml question by its full name.
+   * @param xmlQuestionFullName
+   * @return
+   * @throws WdkModelException
+   */
+  public XmlQuestion getXmlQuestionByFullName(String xmlQuestionFullName) throws WdkModelException {
+	Reference reference = new Reference(xmlQuestionFullName);
+    XmlQuestionSet xmlQuestionSet = getXmlQuestionSet(reference.getSetName());
+    if(xmlQuestionSet == null) throw new WdkModelException("Cannot find xml question set for " + xmlQuestionFullName);
+    XmlQuestion xmlQuestion = xmlQuestionSet.getQuestion(reference.getElementName());
+    if(xmlQuestion == null) throw new WdkModelException("Cannot find xml question with the name " + xmlQuestionFullName);
+    return xmlQuestion;
   }
 }
