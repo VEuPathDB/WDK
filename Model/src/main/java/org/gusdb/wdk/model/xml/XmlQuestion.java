@@ -1,6 +1,10 @@
 package org.gusdb.wdk.model.xml;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.xml.TransformException;
 import org.gusdb.fgputil.xml.XmlTransformer;
 import org.gusdb.wdk.model.WdkModel;
@@ -39,6 +44,8 @@ public class XmlQuestion extends WdkModelBase {
     private XmlRecordClass _recordClass;
     private XmlDataLoader _loader;
     private WdkModel _model;
+    
+    private static final Logger LOG = Logger.getLogger(XmlQuestion.class);
 
     /**
      * @return Returns the description.
@@ -329,4 +336,17 @@ public class XmlQuestion extends WdkModelBase {
         }
         _helps = null;
     }
+    
+  public XmlAnswerValue getFullAnswer() throws WdkModelException {
+    try {
+      XmlAnswerValue a = makeAnswer(1, 3);
+      int c = a.getResultSize();
+      return makeAnswer(1, c);
+    }
+    catch (WdkModelException ex) {
+      LOG.error("Error on getting answer from xmlQuestion '" + getFullName() + "': " + ex);
+      ex.printStackTrace();
+      throw ex;
+    }
+  }
 }

@@ -52,7 +52,7 @@ public class ProfileService extends UserService {
   }
 
   // factored to allow easy appending of user profile props by subclasses
-  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) {
+  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) throws WdkModelException {
     return UserFormatter.getUserJson(user, isSessionUser, includePrefs, propNames);
   }
 
