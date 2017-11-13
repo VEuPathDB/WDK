@@ -51,8 +51,17 @@ public class ProfileService extends UserService {
         userBundle.isSessionUser(), getFlag(includePreferences), propDefs).toString()).build();
   }
 
-  // factored to allow easy appending of user profile props by subclasses
-  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) {
+  /**
+   * Formats user object to JSON.  Factored to allow easy appending of custom properties by subclasses
+   * 
+   * @param user user to format
+   * @param isSessionUser whether the requested user is the currently logged in user
+   * @param includePrefs whether to include user preferences in response
+   * @param propNames user property names configured in Model Config
+   * @return formatted user object
+   * @throws WdkModelException if something goes wrong
+   */
+  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) throws WdkModelException {
     return UserFormatter.getUserJson(user, isSessionUser, includePrefs, propNames);
   }
 
