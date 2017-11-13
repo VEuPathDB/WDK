@@ -63,8 +63,9 @@ public class QuestionRequestParams implements RequestParams {
   }
 
   @Override
-  public void setParam(String name, String value) {
+  public RequestParams setParam(String name, String value) {
     questionForm.setValue(name, value);
+    return this;
   }
 
   @Override

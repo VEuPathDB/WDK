@@ -28,4 +28,12 @@ public class WdkModelException extends WdkException {
     super(cause);
   }
 
+  public static void unwrap(Exception e) throws WdkModelException {
+    send(e.getCause() != null ? e.getCause() : e);
+  }
+
+  private static void send(Throwable t) throws WdkModelException {
+    throw (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(t));
+  }
+
 }

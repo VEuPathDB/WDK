@@ -107,6 +107,14 @@ public class Keys {
   public static final String DISPLAY_TYPE = "displayType";
   public static final String PARSERS = "parsers";
 
+  // dataset-related keys
+  public static final String SOURCE_TYPE = "sourceType";
+  public static final String SOURCE_CONTENT = "sourceContent";
+  public static final String ID_LIST = "idList";
+  public static final String IDS = "ids";
+  public static final String BASKET = "basket";
+  public static final String BASKET_NAME = "basketName";
+
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
   public static final String BASE_CUSTOM_NAME = "baseCustomName";
@@ -150,20 +158,20 @@ public class Keys {
   public static final String PREFERENCES = "preferences";
   public static final String GLOBAL = "global";
   public static final String PROJECT = "project";
-  
+
   // date and date range keys
   public static final String MIN_DATE = "minDate";
   public static final String MAX_DATE = "maxDate";
   public static final String MIN_VALUE = "min";
   public static final String MAX_VALUE = "max";
   public static final String STEP = "step";
-    
+
   // favorites-specific keys
   public static final String FAVORITE_ID = "favoriteId";
   public static final String DISPLAY = "display";
   public static final String NOTE = "note";
   public static final String FAV_NUMBER_PROCESSED = "numberProcessed";
-  
+
   // additional strategy-specific keys
   public static final String AUTHOR = "author";
   public static final String LATEST_STEP_ID = "latestStepId";
@@ -174,6 +182,5 @@ public class Keys {
   public static final String IS_SAVED = "isSaved";
   public static final String IS_VALID = "isValid";
   public static final String IS_DELETED = "isDeleted";
-  
-  
+
 }

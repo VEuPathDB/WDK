@@ -22,6 +22,8 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -36,6 +38,8 @@ import org.json.JSONArray;
  * 
  */
 public class DatasetFactory {
+
+  private static Logger LOG = Logger.getLogger(DatasetFactory.class);
 
   // all the dataset tables are now in wdk user schema.
   public static final String TABLE_DATASET_VALUES = "dataset_values";
@@ -60,8 +64,6 @@ public class DatasetFactory {
   public static final int MAX_VALUE_COLUMNS = 20;
   public static final int MAX_VALUE_LENGTH = 1000;
   public static final int UPLOAD_FILE_MAX_SIZE = 2000;
-
-  private static Logger logger = Logger.getLogger(DatasetFactory.class);
 
   private WdkModel wdkModel;
   private DatabaseInstance userDb;
@@ -109,7 +111,7 @@ public class DatasetFactory {
         if (dataset != null)
           return dataset;
 
-        logger.debug("Creating dataset for user#" + user.getUserId() + ": " + checksum);
+        LOG.debug("Creating dataset for user#" + user.getUserId() + ": " + checksum);
 
         // insert dataset and its values
         Date createdTime = new Date();
@@ -445,5 +447,23 @@ public class DatasetFactory {
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     SqlUtils.executeScalar(wdkModel.getAppDb().getDataSource(), sql.toString(), "wdk-remote-dataset-dummy");
+  }
+
+  public WdkModel getWdkModel() {
+    return wdkModel;
+  }
+
+  public void saveDatasetMetadata(Dataset dataset) throws WdkModelException {
+    try {
+      String sql =
+          "update " + schema + TABLE_DATASETS +
+          " set " + COLUMN_NAME + " = ?" +
+          " where " + COLUMN_DATASET_ID + " = ?";
+      new SQLRunner(wdkModel.getUserDb().getDataSource(), sql, "update-dataset-name")
+          .executeUpdate(new Object[]{ dataset.getName(), dataset.getDatasetId() });
+    }
+    catch (SQLRunnerException e) {
+      WdkModelException.unwrap(e);
+    }
   }
 }

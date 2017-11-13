@@ -12,7 +12,7 @@ public interface RequestParams {
   
   String getUploadFileContent(String name) throws WdkModelException;
   
-  void setParam(String name, String value);
+  RequestParams setParam(String name, String value);
   
   void setArray(String name, String[] array);
   
