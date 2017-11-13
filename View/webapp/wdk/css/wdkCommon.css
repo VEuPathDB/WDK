@@ -1353,6 +1353,24 @@ button.wdk-StepActionButton:focus {
 div.step-analysis-form-pane h3.ui-accordion-header {
   font-weight: bold;
   font-size: 120%;
+  background: none;
+  background: #fafafa !important;
+}
+
+div.step-analysis-form-pane .ui-state-default,
+div.step-analysis-form-pane .ui-widget-content .ui-state-default,
+div.step-analysis-form-pane .ui-widget-header .ui-state-default {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 10, 0.02) !important;
+}
+
+
+div.step-analysis-pane table.dataTable th {
+  background: rgb(241, 241, 241) !important;
+}
+
+.ui-accordion .ui-accordion-content {
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 #step-analysis-title {
@@ -1616,12 +1634,18 @@ tr.rowLight td {
     border-right: black dotted thin;
 }
 
+
+table.dataTable tr {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 table.dataTable tr.even {
-    background-color: #DDDDDD;
+  background-color: rgba(0,0,0,0.02);
 }
 
 table.dataTable tr.odd {
-    background-color: whitesmoke; /* was #FFFFFF */
+  background-color: #fefefe;
 }
 
 /* collapsible */
