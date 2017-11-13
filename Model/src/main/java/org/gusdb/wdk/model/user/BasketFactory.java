@@ -412,6 +412,11 @@ public class BasketFactory {
     }
   }
 
+  public static String getSnapshotBasketQuestionName(RecordClass recordClass) {
+    return Utilities.INTERNAL_QUESTION_SET + "." +
+        recordClass.getFullName().replace('.', '_') + SNAPSHOT_BASKET_QUESTION_SUFFIX;
+  }
+
   /**
    * the method has to be called before the recordClasses are resolved.
    * 
@@ -479,9 +484,12 @@ public class BasketFactory {
     return query;
   }
 
+  public static String getDatasetParamName(RecordClass recordClass) {
+    return recordClass.getFullName().replace('.', '_') + PARAM_DATASET_SUFFIX;
+  }
+
   private DatasetParam getDatasetParam(RecordClass recordClass) throws WdkModelException {
-    String rcName = recordClass.getFullName();
-    String paramName = rcName.replace('.', '_') + PARAM_DATASET_SUFFIX;
+    String paramName = getDatasetParamName(recordClass);
     ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     if (paramSet.contains(paramName))
       return (DatasetParam) paramSet.getParam(paramName);
