@@ -58,7 +58,7 @@ public class LegacyRestServiceRequestParams implements RequestParams {
   }
 
   @Override
-  public void setParam(String name, String value) {
+  public RequestParams setParam(String name, String value) {
     throw new UnsupportedOperationException("Setting params is not supported in our Web Services.");
   }
 
