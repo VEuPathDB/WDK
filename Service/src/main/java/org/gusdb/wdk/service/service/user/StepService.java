@@ -20,14 +20,17 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpec;
+import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
+import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,6 +101,27 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
+  
+  @POST
+  @Path("steps/{stepId}/answer")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response createStep(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
+    try {
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      StepFactory stepFactory = new StepFactory(getWdkModel());
+      Step step = stepFactory.getStepById(Long.parseLong(stepId));
+      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+      JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
+      return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
+    }
+    catch(NumberFormatException nfe) {
+    	  throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
+    }
+    catch (JSONException | RequestMisformatException e) {
+      throw new BadRequestException(e);
+    }
+  }  
 
   private StepChanges updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
