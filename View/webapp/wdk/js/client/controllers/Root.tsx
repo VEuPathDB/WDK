@@ -5,6 +5,7 @@ import { Router, Switch, Route, RouteComponentProps } from 'react-router';
 import {History, Location} from 'history';
 import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "../CommonTypes";
 import WdkStore from "../stores/WdkStore";
+import { ModalBoundary } from 'mesa';
 
 type Props = {
   rootUrl: string,
@@ -81,11 +82,13 @@ export default class Root extends React.Component<Props> {
   render() {
     return (
       <Router history={this.props.history}>
-        <Switch>
-          {this.props.routes.map(route => (
-            <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
-          ))}
-        </Switch>
+        <ModalBoundary>
+          <Switch>
+            {this.props.routes.map(route => (
+              <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
+            ))}
+          </Switch>
+        </ModalBoundary>
       </Router>
     );
   }
