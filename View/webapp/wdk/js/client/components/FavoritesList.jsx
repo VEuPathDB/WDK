@@ -352,11 +352,11 @@ class FavoritesList extends Component {
 
     return {
       useStickyHeader: true,
+      selectedNoun: 'Favorite',
+      selectedPluralNoun: 'Favorites',
       tableBodyMaxHeight: 'calc(100vh - 80px)',
       renderEmptyState: this.renderEmptyState,
       searchPlaceholder: searchBoxPlaceholder,
-      selectedNoun: 'Favorite',
-      selectedPluralNoun: 'Favorites',
       isRowSelected ({ id }) {
         return tableSelection.includes(id);
       }
