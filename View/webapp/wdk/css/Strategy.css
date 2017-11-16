@@ -229,7 +229,6 @@ td.operation {
   background-position: -30px -119px;
 }
 
-
 .rightarrow3 {
   position: absolute;
   left: 54px;
@@ -342,7 +341,7 @@ h6.resultCount {
 }
 
 .diagram div.operation.MINUS {
-  background-position: 0px 0px;
+  background-position: 0px -11px;
 }
 
 .diagram div.operation.INTERSECT {
