@@ -196,7 +196,7 @@ padding:  0;
 }
 
 td.operation, div.operation, li.operation {
-  background-image: url(../images/operationIcons2.png);
+  background-image: url(../images/operationIcons.gif);
 }
 
 td.operation {
@@ -208,38 +208,28 @@ td.operation {
 .operation.MINUS {
   border: 2px solid #FFFFFF;
   height: 25px;
-  background-position: -30px 0px;
+  background-position: -30px -11px;
 }
 
 .operation.INTERSECT {
   border: 2px solid #FFFFFF;
   height: 25px;
-  background-position: -30px -35px;
+  background-position: -30px -47px;
 }
 
 .operation.UNION {
   border: 2px solid #FFFFFF;
   height: 25px;
-  background-position: -30px -72px;
+  background-position: -30px -83px;
 }
 
 .operation.RMINUS {
   border: 2px solid #FFFFFF;
   height: 25px;
-  background-position: -30px -106px;
+  background-position: -30px -119px;
 }
 
-.operation.LONLY {
-  border: 2px solid #FFFFFF;
-  height: 25px;
-  background-position: -30px -178px;
-}
 
-.operation.RONLY {
-  border: 2px solid #FFFFFF;
-  height: 25px;
-  background-position: -30px -142px;
-}
 .rightarrow3 {
   position: absolute;
   left: 54px;
@@ -321,7 +311,7 @@ h6.resultCount {
 .operation.MINUS {
   border: 2px solid #FFFFFF;
   height: 25px;
-  background-position: -30px 0px;
+  background-position: -30px -11px;
 }
 
 .diagram div.simple {
@@ -356,23 +346,15 @@ h6.resultCount {
 }
 
 .diagram div.operation.INTERSECT {
-  background-position: 0px -35px;
+  background-position: 0px -47px;
 }
 
 .diagram div.operation.UNION {
-  background-position: 0px -72px;
+  background-position: 0px -83px;
 }
 
 .diagram div.operation.RMINUS {
-  background-position: 0px -106px;
-}
-
-.diagram div.operation.LONLY {
-  background-position: 0px -178px;
-}
-
-.diagram div.operation.RONLY {
-  background-position: 0px -142px;
+  background-position: 0px -119px;
 }
 
 .diagram div.operation.SPAN.overlap {
