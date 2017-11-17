@@ -246,11 +246,11 @@ public class FilterParamHandler extends AbstractParamHandler {
             break;
           case "range":
             JSONObject range = jsFilter.getJSONObject("value");
-            String min = range.getString("min");
-            String max = range.getString("max");
-            display += min == null ? "less than " + max
-                     : max == null ? "greater than " + min
-                     : "between " + min + " and " + max;
+            Object min = range.get("min");
+            Object max = range.get("max");
+            display += min == null ? "less than " + max.toString()
+                     : max == null ? "greater than " + min.toString()
+                     : "between " + min.toString() + " and " + max.toString();
             break;
           }
           if (i != jsFilters.length()) display += "\n";
