@@ -165,7 +165,7 @@ FilterList.defaultProps = {
 /**
  * Tree of Fields, used to set the active field.
  */
-class FieldList extends React.Component {
+class FieldList extends React.PureComponent {
 
   constructor(props) {
     super(props);
@@ -185,7 +185,7 @@ class FieldList extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.selectedField === nextProps.selectedField) return;
+    if (nextProps.selectedField == null || this.props.selectedField === nextProps.selectedField) return;
 
     const selectedField = nextProps.fields.get(nextProps.selectedField);
     if (
@@ -1793,7 +1793,6 @@ class MembershipField extends React.Component {
       typeof this.props.onSort === 'function'
     );
 
-    // FIXME Put legend in tooltip
     return (
       <ModalBoundary>
         <div className="membership-filter">
@@ -1847,26 +1846,6 @@ class MembershipField extends React.Component {
                   <div>{value == null ? UNKNOWN_ELEMENT : String(value)}</div>
               },
               {
-                key: 'count',
-                name: (
-                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    <div>All</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                  </div>
-                ),
-                sortable: useSort,
-                width: '10em',
-                helpText: (
-                  <div>
-                    The number of <em>{this.props.displayName}</em> with the
-                    given <em>{this.props.field.display}</em> value.
-                  </div>
-                ),
-                renderCell: ({ value }) => (
-                  <div> {value.toLocaleString()} </div>
-                )
-              },
-              {
                 key: 'filteredCount',
                 name: (
                   <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
@@ -1880,6 +1859,26 @@ class MembershipField extends React.Component {
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
                     and that have the given <em>{this.props.field.display}</em> value.
+                  </div>
+                ),
+                renderCell: ({ value }) => (
+                  <div> {value.toLocaleString()} </div>
+                )
+              },
+              {
+                key: 'count',
+                name: (
+                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                    <div>All</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                  </div>
+                ),
+                sortable: useSort,
+                width: '10em',
+                helpText: (
+                  <div>
+                    The number of <em>{this.props.displayName}</em> with the
+                    given <em>{this.props.field.display}</em> value.
                   </div>
                 ),
                 renderCell: ({ value }) => (
