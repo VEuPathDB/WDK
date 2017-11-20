@@ -131,7 +131,7 @@ class Answer extends React.Component {
       return Object.assign({}, attributes, { id });
     }), uiState.sort.columnKey, uiState.sort.direction === 'asc');
 
-    const columns = visibleAttributes.map(({ name, displayName, help, isSortable }) => {
+    const columns = visibleAttributes.map(({ name, displayName, help, isSortable, isPrimary }) => {
       const renderCell = ({ value, row }) => (
         <a
           href={this.createRecordUrl(row)}
@@ -141,10 +141,11 @@ class Answer extends React.Component {
       return Object.assign({
         key: name,
         type: 'html',
-        width: '250px',
         helpText: help,
         name: displayName,
-        sortable: isSortable
+        sortable: isSortable,
+        primary: isPrimary,
+        moveable: true
       }, name === recordClass.recordIdAttributeName ? { renderCell } : {});
     });
 
@@ -158,7 +159,7 @@ class Answer extends React.Component {
     const TableState = this.getTableState();
     const AnswerCount = this.renderAnswerCount;
     const AttributePopup = this.renderAttributePopup;
-    
+
     return (
       <div className="wdk-AnswerContainer">
         <h1 className="wdk-AnswerHeader">
