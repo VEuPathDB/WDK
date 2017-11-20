@@ -108,12 +108,12 @@ class Answer extends React.Component {
   }
 
   getTableState () {
-    const { records, onSort, recordClass, moveColumn, visibleAttributes, displayInfo } = this.props;
+    const { records, onSort, recordClass, onMoveColumn, visibleAttributes, displayInfo } = this.props;
     const { sorting } = displayInfo;
 
     const eventHandlers = {
       onSort ({ key }, direction) { onSort([{ attributeName: key, direction }]); },
-      onColumnReorder: moveColumn
+      onColumnReorder: onMoveColumn
     };
 
     const options = {
