@@ -117,7 +117,7 @@ public class GuestRemover extends BaseCLI {
   /**
    * @param userSchema
    * @param cutoffDate
-   * @return a sql that returns the guests to be removed;
+   * @return an sql query that returns the guests to be removed;
    * @throws SQLException
    * @throws DBStateException
    */

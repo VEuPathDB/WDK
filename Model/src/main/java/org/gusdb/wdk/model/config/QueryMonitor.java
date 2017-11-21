@@ -13,7 +13,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogConfig;
  * An object representation of the <queryMonitor> tag in the model-config.xml.
  * it controls the logging of slow queries & broken queries.
  * 
- * When a SQL runs longer than broken threshold, it doesn't really mean the SQL
+ * When an SQL statement runs longer than broken threshold, it doesn't really mean the SQL
  * is failed, it's just extremely slow, and need to be fixed. If such a super
  * slow SQL occurs, an email with the SQL will be sent to the admin email.
  * 

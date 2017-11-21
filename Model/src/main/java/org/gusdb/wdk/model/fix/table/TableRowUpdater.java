@@ -47,7 +47,7 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
  * 1.  On command line, user provides a plugin class and projectId, plus any args for the plugin
  * 2a. The plugin class tells this class what type of data (subclass of TableRow) it will be processing, AND
  * 2b. The plugin class tells this class how to fetch and update that type of data (subclass of TableRowFactory)
- * 3.  This class runs a SQL query provided by TableRowFactory, then uses the factory to produce a queue of
+ * 3.  This class runs an SQL query provided by TableRowFactory, then uses the factory to produce a queue of
  *     TableRow objects.
  * 4.  A series of threads pick up the TableRow objects from the queue and send them to the plugin for
  *     processing.
