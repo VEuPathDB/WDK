@@ -39,6 +39,7 @@ Provides form input element for a given FilterParam.
 <%-- display the param as an advanced filter param --%>
 <div class="param filter-param ${dependentClass}"
     dependson="${dependedParam}"
+    prompt="${qP.prompt}"
     name="${pNam}"
     data-is-allow-empty="${qp.isAllowEmpty}"
     data-title="${qp.prompt}"
