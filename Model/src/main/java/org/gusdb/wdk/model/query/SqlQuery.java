@@ -24,7 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A SqlQuery is use to access data from a database with SQL, and if the SQL is
+ * An SqlQuery is used to access data from a database with SQL, and if the SQL is
  * relatively slow, it can be optionally cached for better performance.
  * 
  * the param can be embedded into SQL template in such form: $$param_name$$. the

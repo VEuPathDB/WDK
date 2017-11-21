@@ -297,7 +297,7 @@ public class AnswerValue {
 
   /**
    * This method returns a paged attribute sql query.  It is now public because the FileBasedRecordStream object
-   * uses it to acquire a sql statement to execute.
+   * uses it to acquire an sql statement to execute.
    * @param attributeQuery
    * @return
    * @throws WdkModelException
