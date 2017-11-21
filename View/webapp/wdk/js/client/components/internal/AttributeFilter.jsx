@@ -1841,7 +1841,6 @@ class MembershipField extends React.Component {
                 inline: true,
                 name: this.props.field.display,
                 sortable: useSort,
-                width: '50%',
                 renderCell: ({ value }) =>
                   <div>{value == null ? UNKNOWN_ELEMENT : String(value)}</div>
               },
@@ -1888,7 +1887,7 @@ class MembershipField extends React.Component {
               {
                 key: 'distribution',
                 name: 'Distribution',
-                width: '50%',
+                width: '30%',
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
                   <div className="bar">
