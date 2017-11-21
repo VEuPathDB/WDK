@@ -312,21 +312,30 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
 
-    function updateInputFromFilterService() {
+    function updateInputFromFilterService({ triggerChange = true } = {}) {
       var ignored = filterService.data.filter(datum => datum.isIgnored);
       var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
-      input.val(JSON.stringify({
+      var prevValue = input.val();
+      var nextValue = JSON.stringify({
         values: _.map(filteredData, entry => entry.term),
         ignored: _.map(ignored, entry => entry.term),
         filters: filterService.filters
-      }));
+      });
 
       // trigger loading event on $param
       triggerLoading($param, filterService.isLoading);
       renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
+
+      if (prevValue === nextValue) return;
+
+      // set the value
+      input.val(nextValue);
+
+      // trigger change event
+      if (triggerChange) input.change();
     }
 
-    updateInputFromFilterService();
+    updateInputFromFilterService({ triggerChange: false });
     filterService.addListener(updateInputFromFilterService);
 
     console.timeEnd('intialize render :: ' + name);
