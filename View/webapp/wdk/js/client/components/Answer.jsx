@@ -111,11 +111,6 @@ class Answer extends React.Component {
     const { records, onSort, recordClass, onMoveColumn, visibleAttributes, displayInfo } = this.props;
     const { sorting } = displayInfo;
 
-    const eventHandlers = {
-      onSort ({ key }, direction) { onSort([{ attributeName: key, direction }]); },
-      onColumnReorder: onMoveColumn
-    };
-
     const options = {
       useStickyHeader: true,
       tableBodyMaxHeight: 'calc(100vh - 120px)'
@@ -149,6 +144,17 @@ class Answer extends React.Component {
         moveable: true
       }, name === recordClass.recordIdAttributeName ? { renderCell } : {});
     });
+
+
+    const eventHandlers = {
+      onSort ({ key }, direction) { onSort([{ attributeName: key, direction }]); },
+      onColumnReorder: (colKey, newIndex) => {
+	const currentIndex = columns.findIndex(col => col.key === colKey);
+	if (currentIndex < 0) return;
+	if (newIndex < currentIndex) newIndex++;
+        onMoveColumn(colKey, newIndex);
+      }
+    };
 
     return MesaState.create({ rows, columns, options, uiState, eventHandlers });
   }
