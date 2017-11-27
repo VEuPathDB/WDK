@@ -13,16 +13,19 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpec;
@@ -55,19 +58,28 @@ public class StepService extends UserService {
   @Path("steps")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createStep(String body) throws WdkModelException, DataValidationException {
+  public Response createStep(@QueryParam("runStep") Boolean runStep, String body) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
       StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
       Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
+      if(runStep != null && runStep) {
+    	    if(step.isAnswerSpecComplete()) {
+    	      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+    	    	  new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
+    	    }
+    	    else {
+    	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
+    	    }
+      }
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
     }
   }
-
+  
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -106,11 +118,12 @@ public class StepService extends UserService {
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createStep(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
+  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
       Step step = stepFactory.getStepById(Long.parseLong(stepId));
+      if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
       JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
       return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
@@ -118,7 +131,7 @@ public class StepService extends UserService {
     catch(NumberFormatException nfe) {
     	  throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
     }
-    catch (JSONException | RequestMisformatException e) {
+    catch (JSONException | RequestMisformatException | DataValidationException e) {
       throw new BadRequestException(e);
     }
   }  

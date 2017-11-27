@@ -119,6 +119,29 @@ public class AnswerParamHandler extends AbstractParamHandler {
     return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
   
+  /**
+   * Validation method intended for use when whether the param belongs to a
+   * step in a strategy or not is determined by the allowIncompleteSpec flag.  If
+   * not part of a strategy, the answer param value must be null.  Otherwise, it
+   * is validated as it normally would be.
+   * @param user
+   * @param inputStableValue
+   * @param allowIncompleteSpec
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public String validateStableValueSyntax(User user, String inputStableValue, boolean allowIncompleteSpec)
+		  throws WdkUserException, WdkModelException {
+    if(allowIncompleteSpec) {
+      if(inputStableValue != null) {
+        throw new WdkUserException("Unattached steps must have null answer param values.");
+      }
+      return null;  
+  	}
+    else return validateStableValueSyntax(user, inputStableValue);
+  }
+  
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
   WdkModelException {
@@ -132,7 +155,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     catch (NumberFormatException ex) {
       throw new WdkUserException("Invalid input to parameter '" + _param.getPrompt() +
           "'; the input must be a step id.", ex);
-    }    
+	}
   }
 
   @Override

@@ -252,6 +252,131 @@ public class StepFactory {
   WdkModel getWdkModel() {
     return _wdkModel;
   }
+  
+  /**
+   * Creates a step using new step service concept.  
+   * @param user
+   * @param question
+   * @param dependentValues
+   * @param filter
+   * @param pageStart
+   * @param pageEnd
+   * @param deleted
+   * @param validate
+   * @param assignedWeight
+   * @param filterOptions
+   * @param customName
+   * @param isCollapsible
+   * @param collapsedName
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Step createStep(User user, Question question, Map<String, String> dependentValues,
+      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
+      int assignedWeight, FilterOptionList filterOptions, String customName, boolean isCollapsible,
+      String collapsedName) throws WdkModelException, WdkUserException {
+    LOG.debug("Creating step!");
+
+    String questionName = question.getFullName();
+   
+    // prepare the values to be inserted.
+    long userId = user.getUserId();
+
+    String filterName = null;
+   
+    Exception exception = null;
+   
+
+    // prepare SQLs
+    String userIdColumn = Utilities.COLUMN_USER_ID;
+
+    StringBuffer sqlInsertStep = new StringBuffer("INSERT INTO ");
+    sqlInsertStep.append(_userSchema).append(TABLE_STEP).append(" (");
+    sqlInsertStep.append(COLUMN_STEP_ID).append(", ");
+    sqlInsertStep.append(userIdColumn).append(", ");
+    sqlInsertStep.append(COLUMN_CREATE_TIME).append(", ");
+    sqlInsertStep.append(COLUMN_LAST_RUN_TIME).append(", ");
+    sqlInsertStep.append(COLUMN_ESTIMATE_SIZE).append(", ");
+    sqlInsertStep.append(COLUMN_ANSWER_FILTER).append(", ");
+    sqlInsertStep.append(COLUMN_IS_DELETED).append(", ");
+    sqlInsertStep.append(COLUMN_ASSIGNED_WEIGHT).append(", ");
+    sqlInsertStep.append(COLUMN_PROJECT_ID).append(", ");
+    sqlInsertStep.append(COLUMN_PROJECT_VERSION).append(", ");
+    sqlInsertStep.append(COLUMN_QUESTION_NAME).append(", ");
+    sqlInsertStep.append(COLUMN_STRATEGY_ID).append(", ");
+    sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(", ");
+    sqlInsertStep.append(COLUMN_CUSTOM_NAME).append(", ");
+    sqlInsertStep.append(COLUMN_IS_COLLAPSIBLE).append(", ");
+    sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(") ");
+    
+    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    // Create the Step sans Answer
+    Date createTime = new Date();
+    //TODO lastRunTime should be made null once the last_run_time field in db is nullable.
+    Date lastRunTime = new Date(createTime.getTime());
+
+    long stepId;
+
+    try {
+      stepId = _userDb.getPlatform().getNextId(_userDbDs, _userSchema, TABLE_STEP);
+    }
+    catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
+
+    // create the Step
+    Step step = new Step(this, user, stepId);
+    step.setQuestionName(questionName);
+    step.setCreatedTime(createTime);
+    step.setLastRunTime(lastRunTime);
+    step.setDeleted(deleted);
+    step.setParamValues(dependentValues);
+    LOG.debug("Creating step: to set Filter Options and to add Default Filters");
+    step.setFilterOptions(filterOptions);
+    applyAlwaysOnFiltersToNewStep(step);
+    step.setEstimateSize(-1);
+    step.setAssignedWeight(assignedWeight);
+    step.setException(exception);
+    step.setProjectId(_wdkModel.getProjectId());
+    step.setProjectVersion(_wdkModel.getVersion());
+    step.setCustomName(customName);
+    step.setCollapsible(isCollapsible);
+    step.setCollapsedName(collapsedName);
+
+    PreparedStatement psInsertStep = null;
+    try {
+      JSONObject jsParamFilters = step.getParamFilterJSON();
+
+      psInsertStep = SqlUtils.getPreparedStatement(_userDbDs, sqlInsertStep.toString());
+      psInsertStep.setLong(1, stepId);
+      psInsertStep.setLong(2, userId);
+      psInsertStep.setTimestamp(3, new Timestamp(createTime.getTime()));
+      psInsertStep.setTimestamp(4, new Timestamp(lastRunTime.getTime()));
+      psInsertStep.setInt(5, 0);
+      psInsertStep.setString(6, filterName);
+      psInsertStep.setBoolean(7, deleted);
+      psInsertStep.setInt(8, assignedWeight);
+      psInsertStep.setString(9, _wdkModel.getProjectId());
+      psInsertStep.setString(10, _wdkModel.getVersion());
+      psInsertStep.setString(11, questionName);
+      psInsertStep.setObject(12, null);
+      _userDb.getPlatform().setClobData(psInsertStep, 13, JsonUtil.serialize(jsParamFilters), false);
+      psInsertStep.setString(14,  customName);
+      psInsertStep.setBoolean(15, isCollapsible);
+      psInsertStep.setString(16, collapsedName);
+      psInsertStep.executeUpdate();
+    }
+    catch (SQLException | JSONException ex) {
+      throw new WdkModelException("Error while creating step: " + ex.getMessage(), ex);
+    }
+    finally {
+      SqlUtils.closeStatement(psInsertStep);
+    }
+    LOG.debug("Step created!!: " + stepId + "\n\n");
+    return step;
+  }
 
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   public Step createStep(User user, Long strategyId, Question question, Map<String, String> dependentValues,

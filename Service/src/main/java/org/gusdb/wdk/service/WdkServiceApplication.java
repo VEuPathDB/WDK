@@ -74,6 +74,7 @@ public class WdkServiceApplication extends Application {
     .add(FavoritesService.class)
     .add(PublicStrategyService.class)
     .add(SessionService.class)
+    .add(StrategyService.class)
 
     // test
     .add(SampleService.class)

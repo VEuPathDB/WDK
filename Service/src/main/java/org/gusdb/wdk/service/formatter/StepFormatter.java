@@ -23,6 +23,7 @@ import org.json.JSONObject;
  *   estimatedSize: Number (last known number of results),
  *   hasCompleteStepAnalyses: Boolean,
  *   recordClass: String (RecordClass full name),
+ *   answerSpecComplete: boolean (false for unattached steps)
  *   answerSpec: see AnswerRequest (input and output formats are the same)
  * }
  * 
@@ -42,13 +43,17 @@ public class StepFormatter {
         .put(Keys.COLLAPSED_NAME, step.getCollapsedName())
         .put(Keys.DESCRIPTION, step.getDescription())
         .put(Keys.OWNER_ID, step.getUser().getUserId())
-        .put(Keys.STRATEGY_ID, step.getStrategyId())
+        .put(Keys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
         .put(Keys.ESTIMATED_SIZE, step.getEstimateSize())
         .put(Keys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(Keys.RECORD_CLASS_NAME, step.getType())
+        .put(Keys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
         // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
         //    to do so, must extract JSON formatting from Step and other classes
-        .put(Keys.ANSWER_SPEC, createAnswerSpec(step));
+        .put(Keys.ANSWER_SPEC, createAnswerSpec(step))
+        .put(Keys.IS_VALID, step.isValid())
+        .put(Keys.CREATED_TIME, step.getCreatedTime())
+        .put(Keys.LAST_RUN_TIME, step.getLastRunTime());
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
