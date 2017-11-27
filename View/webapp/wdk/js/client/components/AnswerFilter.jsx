@@ -2,8 +2,9 @@ import {debounce} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AnswerFilterSelector from './AnswerFilterSelector';
-import Tooltip from './Tooltip';
+import { HelpTrigger } from 'mesa';
 import { wrappable } from '../utils/componentUtils';
+import Tooltip from './Tooltip';
 
 // concatenate each item in items with arr
 function addToArray(arr, item) {
@@ -133,9 +134,10 @@ class AnswerFilter extends React.Component {
           <button className="fa fa-caret-down wdk-Answer-filterSelectFieldsIcon"
             onClick={this.toggleFilterFieldSelector}/>
         </Tooltip>
-        <Tooltip content={tooltipContent}>
+	<HelpTrigger>{tooltipContent}</HelpTrigger>
+        {/*<Tooltip content={tooltipContent}>
           <i className="fa fa-question-circle fa-lg wdk-Answer-filterInfoIcon"/>
-        </Tooltip>
+        </Tooltip>*/}
 
         <AnswerFilterSelector
           recordClass={recordClass}
