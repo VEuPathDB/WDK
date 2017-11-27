@@ -14,18 +14,19 @@ public class WdkStepFactory {
     try {
       // new step must be created from raw spec
       AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-      Step step = stepFactory.createStep(user, null, answerSpec.getQuestion(),
+      Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
           AnswerValueFactory.convertParams(answerSpec.getParamValues()),
           answerSpec.getLegacyFilter(), 1, -1, false, true, answerSpec.getWeight(),
-          answerSpec.getFilterValues());
+          answerSpec.getFilterValues(), stepRequest.getCustomName(),
+          stepRequest.isCollapsible(), stepRequest.getCollapsedName());
       step.setViewFilterOptions(answerSpec.getViewFilterValues());
       step.saveParamFilters();
 
       // once created, additional user-provided fields can be applied
-      step.setCustomName(stepRequest.getCustomName());
-      step.setCollapsible(stepRequest.isCollapsible());
-      step.setCollapsedName(stepRequest.getCollapsedName());
-      step.update(true);
+      //step.setCustomName(stepRequest.getCustomName());
+      //step.setCollapsible(stepRequest.isCollapsible());
+      //step.setCollapsedName(stepRequest.getCollapsedName());
+      //step.update(true);
       return step;
     }
     catch (WdkUserException e) {

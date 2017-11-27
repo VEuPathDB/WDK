@@ -105,7 +105,7 @@ public class Step {
    * (in place)- also all steps affected by this step are also changed to -1 so the values are set when those
    * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
    */
-  private int _estimateSize = 0;
+  private int _estimateSize = -1;
 
   // LEGACY!!  Any filtering code mods should be applied to the parameterized
   //     filter framework.  TODO: remove this code and migrade the DB
@@ -1546,5 +1546,16 @@ public class Step {
 
   public void setInMemoryOnly(boolean inMemoryOnly) {
     _inMemoryOnly = inMemoryOnly;
+  }
+  
+  public boolean hasAnswerParams() throws WdkModelException {
+    for(Param param : getQuestion().getParams()) {
+    	  if(param instanceof AnswerParam) return true;
+    }
+    return false;
+  }
+  
+  public boolean isAnswerSpecComplete() throws WdkModelException {
+    return hasAnswerParams() ? _strategyId != null : true;
   }
 }

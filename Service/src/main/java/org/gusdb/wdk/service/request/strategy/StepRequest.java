@@ -3,8 +3,13 @@ package org.gusdb.wdk.service.request.strategy;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -36,10 +41,14 @@ public class StepRequest {
     try {
       checkForInvalidProps(newStep);
       JSONObject answerSpecJson = newStep.getJSONObject(Keys.ANSWER_SPEC);
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user);
+      // Since this method is intended for new steps, the step can not yet be part of a strategy and so
+      // any answer params it has should be null.  So allowIncompleteSpec param is true.
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, true);
       String customName = getStringOrDefault(newStep, Keys.CUSTOM_NAME, answerSpec.getQuestion().getName());
       boolean isCollapsible = getBooleanOrDefault(newStep, Keys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(newStep, Keys.COLLAPSED_NAME, customName);
+      // DB field length for collapsedName is 200
+      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
@@ -55,6 +64,8 @@ public class StepRequest {
       String customName = getStringOrDefault(patchSet, Keys.CUSTOM_NAME, step.getCustomName());
       boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, Keys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
       String collapsedName = getStringOrDefault(patchSet, Keys.COLLAPSED_NAME, step.getCollapsedName());
+      // DB field length for collapsedName is 200
+      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
@@ -66,10 +77,23 @@ public class StepRequest {
       throws DataValidationException, RequestMisformatException, WdkModelException {
     if (patchSet.has(Keys.ANSWER_SPEC)) {
       JSONObject answerSpecJson = patchSet.getJSONObject(Keys.ANSWER_SPEC);
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user);
-      // valid answer spec but user cannot change question of an existing step
+      boolean allowIncompleteSpec = step.getStrategyId() == null;
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, allowIncompleteSpec);
+      // user cannot change question of an existing step
       if (!answerSpec.getQuestion().getFullName().equals(step.getQuestion().getFullName())) {
         throw new DataValidationException("Question of an existing step cannot be changed.");
+      }
+      Map<String, Param> updateParamMap = answerSpec.getQuestion().getParamMap();
+      Map<String, org.gusdb.wdk.beans.ParamValue> updateParamValueMap = answerSpec.getParamValues();
+      Map<String, String> currentParamValueMap = step.getParamValues();
+      for(Entry<String,Param> entry : updateParamMap.entrySet()) {
+    	    if(entry.getValue() instanceof AnswerParam) {
+    	    	  Object updateParamValue = updateParamValueMap.get(entry.getKey()).getObjectValue();
+    	    	  Object currentParamValue = currentParamValueMap.get(entry.getKey());
+    	    	  if(updateParamValue == null && currentParamValue != null ||
+    	    	     updateParamValue != null && !updateParamValue.equals(currentParamValue))
+    	    		  throw new DataValidationException("Changes to the answer param values are not allowed.");
+    	    }
       }
       return answerSpec;
     }

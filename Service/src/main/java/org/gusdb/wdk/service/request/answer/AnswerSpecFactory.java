@@ -14,6 +14,8 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.AnswerParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
@@ -78,7 +80,7 @@ public class AnswerSpecFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user) throws DataValidationException, RequestMisformatException {
+  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean allowIncompleteSpec) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
@@ -87,7 +89,7 @@ public class AnswerSpecFactory {
       Question question = model.getQuestion(questionName);
       AnswerSpec request = new AnswerSpec(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user));
+      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user, allowIncompleteSpec));
       // all filter fields are optional
       if (json.has(Keys.LEGACY_FILTER_NAME)) {
         request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
@@ -145,7 +147,7 @@ public class AnswerSpecFactory {
   }
 
   private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
-      Question question, User user) throws WdkUserException, WdkModelException {
+      Question question, User user, boolean allowIncompleteSpec) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
     Map<String, Object> contextValues = getContextValues(paramsJson);
@@ -165,9 +167,15 @@ public class AnswerSpecFactory {
         }
       }
       else {
-        stableValue = (String)contextValues.get(paramName);
+    	    stableValue = contextValues.get(paramName) == JSONObject.NULL ? null : (String)contextValues.get(paramName);
+        //stableValue = (String)contextValues.get(paramName);
       }
-      paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue));    
+      if(expectedParam instanceof AnswerParam && allowIncompleteSpec) {
+    	    paramValue = new ParamValue(expectedParam, ((AnswerParamHandler)expectedParam.getParamHandler()).validateStableValueSyntax(user, stableValue, allowIncompleteSpec)); 
+      }
+      else {
+        paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue)); 
+      }  
       paramValues.put(paramName, paramValue);
 
     }

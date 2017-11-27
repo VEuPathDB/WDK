@@ -93,7 +93,7 @@ public class AnswerService extends WdkService {
 
       // parse answer spec (question, params, etc.) and formatting object
       JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser());
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser(), false);
       JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
 
       return getAnswerResponse(getSessionUser(), answerSpec, formatting);
@@ -138,7 +138,7 @@ public class AnswerService extends WdkService {
   public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
     JSONObject requestJson = new JSONObject(body);
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser());
+    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser(), false);
     AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();

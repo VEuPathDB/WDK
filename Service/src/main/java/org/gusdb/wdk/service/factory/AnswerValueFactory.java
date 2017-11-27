@@ -52,7 +52,7 @@ public class AnswerValueFactory {
   static Map<String, String> convertParams(Map<String, ParamValue> params) {
     Map<String, String> conversion = new HashMap<>();
     for (ParamValue param : params.values()) {
-      conversion.put(param.getName(), param.getObjectValue().toString());
+      conversion.put(param.getName(), param.getObjectValue() == null ? null : param.getObjectValue().toString());
     }
     return conversion;
   }
