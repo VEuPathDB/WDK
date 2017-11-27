@@ -5,7 +5,7 @@ import Page from '../components/Page';
 import { ViewControllerProps } from "../CommonTypes";
 import WdkStore, { BaseState } from "../stores/WdkStore";
 import { RouteComponentProps } from "react-router";
-import { ActionCreator } from "../ActionCreator";
+import { ActionCreatorRecord } from "../ActionCreator";
 import { Action } from "../dispatcher/Dispatcher";
 
 export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
@@ -16,7 +16,7 @@ export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteCompo
 export default abstract class AbstractPageController<
   State extends {} = BaseState,
   Store extends WdkStore = WdkStore,
-  ActionCreators extends Record<any,ActionCreator<Action>> = {}
+  ActionCreators extends ActionCreatorRecord<Action> = {}
 > extends AbstractViewController<State, Store, ActionCreators> {
 
   props: PageControllerProps<Store>;

@@ -16,6 +16,7 @@ import {
   NewStepSpec,
   PrimaryKey,
   Question,
+  Parameter,
   ParameterValue,
   ParameterValues,
   RecordClass,
@@ -236,7 +237,7 @@ export default class WdkService {
   }
 
   getQuestionParamValues(identifier: string, paramName: string, paramValue: ParameterValue, paramValues: ParameterValues) {
-    return this._fetchJson<ParameterValues>(
+    return this._fetchJson<Parameter[]>(
       'post',
       `/questions/${identifier}/refreshed-dependent-params`,
       JSON.stringify({
@@ -584,11 +585,11 @@ export default class WdkService {
       method: method.toUpperCase(),
       body: body,
       credentials: 'include',
-      headers: Object.assign({
+      headers: new Headers(Object.assign({
         'Content-Type': 'application/json'
       }, this._version && {
         [CLIENT_WDK_VERSION_HEADER]: this._version
-      })
+      }))
     }).then(response => {
       if (this._isInvalidating) {
         return pendingPromise as Promise<T>;

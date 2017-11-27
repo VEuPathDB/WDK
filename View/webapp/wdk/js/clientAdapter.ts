@@ -6,6 +6,8 @@ import { createDeferred } from './client/utils/PromiseUtils';
 import { Seq } from './client/utils/IterableUtils';
 import * as Wdk from './client/main';
 import AbstractViewController from './client/controllers/AbstractViewController';
+import { V4MAPPED } from 'dns';
+import { MultiGrid } from 'react-virtualized/dist/es/MultiGrid';
 
 export * from './client/index';
 
@@ -53,15 +55,27 @@ wdk.namespace('wdk', ns => {
    */
   async function clientAdapter($el: JQuery) {
     let el = $el[0];
-    let { name, props, resolver: resolverName } = $el.data();
+    let { name, resolver: resolverName } = el.dataset;
     try {
-      let resolver: ViewControllerResolver = resolverName == null ? defaultResolver : get(window, resolverName);
-      let ViewController = await resolver(name);
-      // 2. Render view controller
-      renderController(ViewController, props, el);
+      if (name == null) {
+        throw new Error("The attribute `data-name` must be specified.");
+      }
+      let resolver: ViewControllerResolver =
+        resolverName == null ? defaultResolver : get(window, resolverName);
+      let [ ViewController, context ] =
+        await Promise.all([ resolver(name), _deferredContext ]);
+
+      observeMutations(el, {
+        onPropsChanged(props: any) {
+          ReactDOM.render(React.createElement(ViewController as any, { ...props, ...context }), el)
+        },
+        onRemoved() {
+          ReactDOM.unmountComponentAtNode(el)
+        }
+      })
     }
     catch(error) {
-      $el.text('There was an error!');
+      el.innerText = 'There was an error!';
       console.error(error);
     }
   }
@@ -72,16 +86,13 @@ wdk.namespace('wdk', ns => {
     return module.default;
   }
 
-  /** Render a `ViewController` into `el`. */
-  async function renderController(ViewController: any, props: any, el: any) {
-    let context = await _deferredContext;
-    // 3. Create mutation observer to unmount when `el` is removed from DOM
-    onNodeRemoved(el, () => ReactDOM.unmountComponentAtNode(el));
-    return ReactDOM.render(React.createElement(ViewController, { ...props, ...context }), el);
-  }
-
-  Object.assign(ns, { clientAdapter, renderController });
+  Object.assign(ns, { clientAdapter });
 });
+
+type MutationOptions = {
+  onPropsChanged: (props: any) => void;
+  onRemoved: () => void;
+}
 
 /**
  * Invoke callback `cb` when `el` is removed from the DOM.
@@ -93,8 +104,21 @@ wdk.namespace('wdk', ns => {
  * potentially be expensive if elements are removed from an ancestor element in
  * rapid succession. The assumption is that this is an unlikely scenario.
  */
-function onNodeRemoved(el: Element, cb: () => void) {
-  let observers = [...ancestors(el)]
+function observeMutations(el: Element, options: MutationOptions) {
+
+  handleDataProps(el);
+
+  let propsChangedObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'data-props') {
+        handleDataProps(mutation.target)
+      }
+    })
+  });
+
+  propsChangedObserver.observe(el, { attributes: true })
+
+  let removeObservers = [...ancestors(el)]
     .map(parent => {
       let observer = new MutationObserver(function(mutations) {
         let elRemoved = Seq.from(mutations)
@@ -102,14 +126,20 @@ function onNodeRemoved(el: Element, cb: () => void) {
           .some(removedNode => removedNode.contains(el));
 
         if (elRemoved) {
-          cb();
-          observers.forEach(observer => observer.disconnect());
+          options.onRemoved();
+          removeObservers.forEach(observer => observer.disconnect());
+          propsChangedObserver.disconnect();
         }
 
       });
       observer.observe(parent, { childList: true });
       return observer;
     });
+
+    function handleDataProps (node: Node) {
+      const dataProps = node.attributes.getNamedItem('data-props');
+      options.onPropsChanged(dataProps && JSON.parse(dataProps.value));
+    }
 }
 
 function* ancestors(el: Element) {

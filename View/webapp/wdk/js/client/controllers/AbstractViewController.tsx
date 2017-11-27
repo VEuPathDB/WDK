@@ -27,8 +27,9 @@ import Loading from '../components/Loading';
 export default abstract class AbstractViewController<
   State extends {} = BaseState,
   Store extends WdkStore = WdkStore,
-  ActionCreators extends Record<any, ActionCreator<Action>> = {}
-> extends React.PureComponent<ViewControllerProps<Store>, State> {
+  ActionCreators extends Record<any, ActionCreator<Action>> = {},
+  Props = {}
+> extends React.PureComponent<ViewControllerProps<Store> & Props, State> {
 
   store: Store;
 
@@ -103,7 +104,7 @@ export default abstract class AbstractViewController<
    * state of the store, the new props, and the old props. On the first call
    * when the component is first mounted, the old props will be undefined.
    */
-  loadData(nextProps?: ViewControllerProps<Store>): void {
+  loadData(prevProps?: Readonly<ViewControllerProps<Store> & Props>): void {
     return undefined;
   }
 
@@ -149,7 +150,7 @@ export default abstract class AbstractViewController<
   /**
    * Registers with this controller's store if it has one and sets initial state
    */
-  constructor(props: ViewControllerProps<Store>) {
+  constructor(props: ViewControllerProps<Store> & Props) {
     super(props);
     const StoreClass = this.getStoreClass();
     this.store = this.props.stores.get(StoreClass);
@@ -173,8 +174,8 @@ export default abstract class AbstractViewController<
     this.loadData();
   }
 
-  componentWillReceiveProps(nextProps: ViewControllerProps<Store>): void {
-    this.loadData(nextProps);
+  componentDidUpdate(prevProps: Readonly<ViewControllerProps<Store> & Props>): void {
+    this.loadData(prevProps);
   }
 
 

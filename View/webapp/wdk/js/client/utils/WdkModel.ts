@@ -2,6 +2,8 @@
  * Type definitions for WDK Model entities
  */
 
+import { Field } from "./FilterService";
+
 interface ModelEntity {
   name: string;
   displayName: string;
@@ -9,6 +11,7 @@ interface ModelEntity {
 }
 
 export interface RecordClass extends ModelEntity {
+  displayNamePlural: string;
   recordIdAttributeName: string;
   primaryKeyColumnRefs: string[];
   description: string;
@@ -29,6 +32,53 @@ export interface Reporter {
   scopes: string[];
 }
 
+export interface ParameterBase extends ModelEntity {
+  help: string;
+  isVisible: boolean;
+  group: string;
+  isReadOnly: boolean;
+  defaultValue: ParameterValue;
+}
+
+export interface StringParam extends ParameterBase {
+  type: 'StringParam';
+}
+
+export interface FilterParamNew extends ParameterBase {
+  type: 'FilterParamNew';
+  filterDataTypeDisplayName?: string;
+  ontology: Array<{
+    term: string;
+    parent: string;
+    display: string;
+    description: string;
+    type: any;
+    units: string;
+    precision: string;
+    isRange: boolean;
+  }>
+}
+
+export interface EnumParam extends ParameterBase {
+  type: 'EnumParam' | 'FlatVocabParam';
+  countOnlyLeaves: boolean;
+  maxSelectedCount: number;
+  minSelectedCount: number;
+  multiPick: boolean;
+  vocabulary: [ string, string, string ][]; // this would be better as an object to clarify meaning of elements.
+}
+
+export type Parameter = StringParam | EnumParam | FilterParamNew;
+
+export interface ParameterGroup {
+  description: string;
+  displayName: string;
+  displayType: string; // this should be a union of string literals
+  isVisible: boolean;
+  name: string;
+  parameters: string[];
+}
+
 export interface Question extends ModelEntity {
   summary: string;
   description: string;
@@ -39,7 +89,8 @@ export interface Question extends ModelEntity {
   reviseBuild: string;
   urlSegment: string;
   class: string;
-  parameters: QuestionParameter[];
+  parameters: Parameter[];
+  groups: ParameterGroup[];
   defaultAttributes: string[];
   dynamicAttributes: AttributeField[];
   defaultSummaryView: string;
@@ -47,32 +98,38 @@ export interface Question extends ModelEntity {
   stepAnalysisPlugins: string[];
 }
 
-export type ParameterValue = string | object;
+export type ParameterValue = string;
 
 export type ParameterValues = Record<string, ParameterValue>;
 
-export type OntologyTermSummary = Record<string, { filtered: number, unfiltered: number }>;
+export type OntologyTermSummary = Array<{
+  value: string | number,
+  filteredCount: number,
+  count: number
+}>
 
-export interface QuestionParameter extends ModelEntity {
-  help: string;
-  type: string;
-  isVisible: boolean;
-  group: string;
-  isReadOnly: boolean;
-  defaultValue: ParameterValue;
+export type SortSpec = {
+  groupBySelected: boolean;
+  columnKey: string;
+  direction: string;
+};
+
+export type FieldState = {
+  sort: SortSpec;
 }
 
-export interface FilterParamNew extends QuestionParameter {
-  ontology: Array<{
-    term: string;
-    parent: string;
-    display: string;
-    description: string;
-    type: string;
-    units: string;
-    precision: string;
-    isRange: boolean;
-  }>
+export type ParamUIState = { } | {
+  errorMessage?: string;
+  loading: boolean;
+  activeOntologyTerm?: string;
+  hideFilterPanel: boolean;
+  hideFieldPanel: boolean;
+  ontologyTermSummaries: Record<string, OntologyTermSummary>;
+  defaultMemberFieldState: FieldState;
+  fieldStates: Record<string, FieldState>;
+  ontology: Field[];
+  filteredCount?: number;
+  unfilteredCount?: number;
 }
 
 export interface AttributeField extends ModelEntity {

@@ -1,5 +1,7 @@
 import AbstractPageController from './AbstractPageController';
 import WdkStore, { BaseState } from '../stores/WdkStore';
+import { ActionCreator, ActionCreatorRecord } from '../ActionCreator';
+import { Action } from '../dispatcher/Dispatcher';
 
 /**
  * Simple implementation of 'AbstractPageController' that uses 'WdkStore' and
@@ -13,7 +15,7 @@ import WdkStore, { BaseState } from '../stores/WdkStore';
  * 'getStateFromStore' method hook, but the easy-to-add performance gains we
  * get from 'getStateFromStore' might outweigh the extra layer here.
  */
-export default class WdkPageController<ActionCreators = {}> extends AbstractPageController<BaseState, WdkStore, ActionCreators> {
+export default class WdkPageController<ActionCreators extends ActionCreatorRecord<Action> = {}> extends AbstractPageController<BaseState, WdkStore, ActionCreators> {
 
   getStateFromStore() {
     return this.store.getState();

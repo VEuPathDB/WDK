@@ -20,6 +20,14 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     initDependentParamHandlers(element);
     initTypeAhead(element);
     initFilterParam(element);
+    initLegacyParamControllers(element);
+
+
+    if (element.find('[data-type="filter-param"],[data-type="filter-param-new"]').length > 0) {
+      // add class to move prompts to left
+      element.addClass('move-left');
+    }
+
 
     // need to trigger the click event so that the stage is set correctly on revise.
     element.find("#operations input[type='radio']:checked").click();
@@ -130,6 +138,45 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
   }
 
+  // Connect LegacyParamControllers to the rest of the form.
+  // - Find the set of uniq depended param names
+  // - Listen to change events for all of them
+  // - When any changes, update all LegacyParamControllers with updated `paramValues` prop
+  function initLegacyParamControllers($element) {
+    let legacyParamControllers = $element.find('[data-name=LegacyParamController]').toArray();
+    Seq.from(legacyParamControllers)
+      .map(el => el.getAttribute('dependson'))
+      .filter(dependson => dependson != null)
+      .flatMap(dependson => dependson.split(/\s*,\s*/))
+      .uniq()
+      .forEach(name => {
+        $element.find(`.param[name=${name}]`)
+          .on('change', `#${name}:input`, event => {
+            legacyParamControllers.forEach(el => {
+              const propsAttrValue = el.getAttribute('data-props');
+
+              if (propsAttrValue == null) {
+                console.error('Expected data-props to have a value ... skipping');
+                return;
+              }
+
+              const prevProps = JSON.parse(propsAttrValue);
+              const { value } = event.target;
+
+              if (prevProps.paramValues[name] === value) return;
+
+              const nextProps = Object.assign({}, prevProps, {
+                paramValues: Object.assign({}, prevProps.paramValues, {
+                  [name]: value
+                })
+              });
+
+              el.setAttribute('data-props', JSON.stringify(nextProps));
+            });
+          });
+      });
+  }
+
   function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
     var dependedName = dependedParam.attr("name");
     var $form = dependedParam.closest("form");
@@ -193,11 +240,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var form = element.closest('form');
     var filterParams = element.find('[data-type="filter-param"]');
     var keepPreviousValue = element.closest('form').is('.is-revise');
-
-    if (filterParams.length > 0) {
-      // add class to move prompts to left
-      element.addClass('move-left');
-    }
 
     filterParams.each(function(i, node) {
       var $param = $(node);

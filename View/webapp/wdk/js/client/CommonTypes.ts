@@ -13,7 +13,7 @@ export interface StoreConstructor<T extends WdkStore> {
 }
 
 export interface DispatchAction {
-  (action: ActionCreator<Action>): ActionCreatorResult<Action>
+  (action: ActionCreatorResult<Action>): any;
 }
 
 export interface MakeDispatchAction {

@@ -62,8 +62,8 @@ class UserDatasetItemController extends AbstractPageController<State, UserDatase
     return ActionCreators;
   }
 
-  loadData(nextProps?: PageControllerProps<UserDatasetItemStore>) {
-    const idChanged = nextProps && nextProps.match.params.id !== this.props.match.params.id;
+  loadData(prevProps?: PageControllerProps<UserDatasetItemStore>) {
+    const idChanged = prevProps && prevProps.match.params.id !== this.props.match.params.id;
     if (idChanged || !this.state.userDatasetsById[this.props.match.params.id]) {
       this.eventHandlers.loadUserDatasetItem(Number(this.props.match.params.id));
     }
