@@ -1,6 +1,5 @@
 import { keyBy, mapValues } from 'lodash';
 
-import * as AttributeFilter from '../../utils/AttributeFilter';
 import { Filter } from '../../utils/FilterService';
 import { OntologyTermSummary } from '../../utils/WdkModel';
 import { Action } from './ActionCreators';
@@ -41,7 +40,7 @@ export type State = Readonly<{
 }>;
 
 export type Value = {
-  filters: AttributeFilter.Filter[]
+  filters: Filter[]
 }
 
 const initialState: State = {
