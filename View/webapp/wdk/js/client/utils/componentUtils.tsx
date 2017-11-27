@@ -38,10 +38,7 @@ export function pure<P>(Component: React.StatelessComponent<P>) {
 }
 
 interface ComponentWrapper<P> extends React.ComponentClass<P> {
-  wrapComponent(factory: (Component: React.ComponentClass<P>) => React.ComponentClass<P>): void;
-  wrapComponent(factory: (Component: React.ComponentClass<P>) => React.StatelessComponent<P>): void;
-  wrapComponent(factory: (Component: React.StatelessComponent<P>) => React.ComponentClass<P>): void;
-  wrapComponent(factory: (Component: React.StatelessComponent<P>) => React.StatelessComponent<P>): void;
+  wrapComponent(factory: (Component: React.ComponentType<P>) => React.ComponentType<P>): void;
 }
 
 /**
@@ -97,9 +94,7 @@ interface ComponentWrapper<P> extends React.ComponentClass<P> {
  *     });
  *
  */
-export function wrappable<P>(Component: React.ComponentClass<P>): ComponentWrapper<P>;
-export function wrappable<P>(Component: React.StatelessComponent<P>): ComponentWrapper<P>;
-export function wrappable<P>(Component: any): ComponentWrapper<P> {
+export function wrappable<P>(Component: React.ComponentType<P>): ComponentWrapper<P> {
   return class Wrapper extends React.PureComponent<P> {
 
     // Forward calls for displayName and propTypes to the wrapped Component.
@@ -129,7 +124,7 @@ export function wrappable<P>(Component: any): ComponentWrapper<P> {
      *  Component. The function will receive the current Component as its sole
      *  param.
      */
-    static wrapComponent(factory: (Component: any) => any) {
+    static wrapComponent(factory: (Component: React.ComponentType<P>) => React.ComponentType<P>) {
       Component = factory(Component);
     }
 

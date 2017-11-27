@@ -30,6 +30,8 @@ export interface ActionCreator<T extends Action> {
   (...args: any[]): ActionCreatorResult<T>;
 }
 
+export type ActionCreatorRecord<T extends Action> = Record<string, ActionCreator<T>>
+
 /**
  * The DispatchAction type describes the type of function that is used to
  * dispatch actions.

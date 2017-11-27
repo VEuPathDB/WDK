@@ -22,7 +22,7 @@
 <c:forEach items="${paramGroup}" var="paramItem">
   <c:set var="pNam" value="${paramItem.key}" />
   <c:set var="qP" value="${paramItem.value}" />
-  
+
   <c:set var="isHidden" value="${qP.isVisible == false}"/>
   <c:set var="isReadonly" value="${qP.isReadonly == true}"/>
   <c:set var="paramType" value="${qP.type}" />
@@ -60,6 +60,11 @@
                   <c:when test="${paramType eq 'FilterParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                         <imp:filterParamInput qp="${qP}" />
+                      </div>
+                  </c:when>
+                  <c:when test="${paramType eq 'FilterParamNew'}">
+                      <div class="param-control" id="${qP.name}aaa">
+                        <imp:filterParamNewInput qp="${qP}"/>
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">

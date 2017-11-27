@@ -18,6 +18,11 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
   /** The store that provides global state */
   globalDataStore: GlobalDataStore;
 
+  // Makes it possible to access the type of the Store's state via typescript.
+  // E.g., Store['state'].
+  get state() {
+    return this.getState();
+  }
 
   /*--------------- Methods that should probably be overridden ---------------*/
 
