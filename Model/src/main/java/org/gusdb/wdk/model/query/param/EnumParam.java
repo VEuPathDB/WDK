@@ -154,6 +154,15 @@ public class EnumParam extends AbstractEnumParam {
       setDefault(sb.toString());
     }
   }
+  
+  /**
+   * enum params can't get stale, because they can't actually be dependent (since they have no query)
+   */
+  @Override
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    return false;
+  }
+
 
   /*
    * (non-Javadoc)
