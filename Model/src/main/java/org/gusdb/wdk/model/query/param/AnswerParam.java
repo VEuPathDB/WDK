@@ -2,10 +2,13 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -44,6 +47,8 @@ public class AnswerParam extends Param {
   private List<RecordClassReference> recordClassRefs;
   private Map<String, RecordClass> recordClasses;
 
+  private boolean _exposeAsAttribute = false;
+
   public AnswerParam() {
     recordClassRefs = new ArrayList<RecordClassReference>();
     recordClasses = new LinkedHashMap<String, RecordClass>();
@@ -55,6 +60,7 @@ public class AnswerParam extends Param {
 
   private AnswerParam(AnswerParam param) {
     super(param);
+    _exposeAsAttribute = param._exposeAsAttribute;
     if (param.recordClassRefs != null)
       this.recordClassRefs = new ArrayList<RecordClassReference>(param.recordClassRefs);
     if (param.recordClasses != null)
@@ -76,21 +82,11 @@ public class AnswerParam extends Param {
     return new LinkedHashMap<String, RecordClass>(recordClasses);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new AnswerParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     if (_resolved)
@@ -191,6 +187,14 @@ public class AnswerParam extends Param {
     return recordClasses.containsKey(recordClassName);
   }
 
+  public void setExposeAsAttribute(boolean exposeAsAttribute) {
+    _exposeAsAttribute = exposeAsAttribute;
+  }
+
+  public boolean isExposeAsAttribute() {
+    return _exposeAsAttribute;
+  }
+
   @Override
   protected void applySuggestion(ParamSuggestion suggest) {
     // do nothing
@@ -213,5 +217,18 @@ public class AnswerParam extends Param {
     if (brief.length() > truncateLength)
       brief = brief.substring(0, truncateLength) + "...";
     return brief;
+  }
+
+  public static List<AnswerParam> getCacheableParams(Collection<Param> params) {
+    return params.stream()
+        .filter(param -> param instanceof AnswerParam)
+        .map(param -> (AnswerParam)param)
+        .filter(param -> param.isExposeAsAttribute())
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + "  exposeAsAttribute=" + _exposeAsAttribute + FormatUtil.NL;
   }
 }

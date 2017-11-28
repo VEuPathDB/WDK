@@ -506,14 +506,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         saNames.append(saName + ", ");
       }
     }
-    StringBuffer buf = new StringBuffer("Question: name='" + _name + "'"
-        + newline + "  recordClass='" + _recordClassRef + "'" + newline
-        + "  query='" + _idQueryRef + "'" + newline + "  displayName='"
-        + getDisplayName() + "'" + newline + "  customJavascript='"
-        + getCustomJavascript() + "'" + newline + "  summary='" + getSummary()
-        + "'" + newline + "  description='" + getDescription() + "'" + newline
-        + "  summaryAttributes='" + saNames + "'" + newline + "  help='"
-        + getHelp() + "'" + newline);
+    StringBuffer buf = new StringBuffer(
+        "Question: name='" + _name + "'" + newline +
+        "  recordClass='" + _recordClassRef + "'" + newline +
+        "  query='" + _idQueryRef + "'" + newline +
+        "  displayName='" + getDisplayName() + "'" + newline +
+        "  customJavascript='" + getCustomJavascript() + "'" + newline +
+        "  summary='" + getSummary() + "'" + newline +
+        "  description='" + getDescription() + "'" + newline +
+        "  summaryAttributes='" + saNames + "'" + newline +
+        "  help='" + getHelp() + "'" + newline);
     if (_dynamicAttributeSet != null)
       buf.append(_dynamicAttributeSet.toString());
     return buf.toString();
@@ -1009,11 +1011,19 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
     if (!hasWeight) {
       // create and add the weight column
-      Column column = new Column();
-      column.setName(Utilities.COLUMN_WEIGHT);
-      column.setType(ColumnType.NUMBER);
-      column.setWidth(12);
-      query.addColumn(column);
+      query.addColumn(createDynamicNumberColumn(Utilities.COLUMN_WEIGHT));
+    }
+
+    // create and add columns for answer param values
+    for (AnswerParam param : AnswerParam.getCacheableParams(getParamMap().values())) {
+      String paramName = param.getName();
+      try {
+        query.addColumn(createDynamicNumberColumn(paramName));
+      }
+      catch (WdkModelException e) {
+        throw new WdkModelException("Question '" + _name + "' contains answer param [" +
+            paramName + "] with the same name as one of its query's columns.");
+      }
     }
 
     // dynamic query doesn't have sql defined, here just fill in the stub
@@ -1023,6 +1033,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     query.excludeResources(wdkModel.getProjectId());
 
     return query;
+  }
+
+  private static Column createDynamicNumberColumn(String name) {
+    Column column = new Column();
+    column.setName(name);
+    column.setType(ColumnType.NUMBER);
+    column.setWidth(12);
+    return column;
   }
 
   public void setShortDisplayName(String shortDisplayName) {
