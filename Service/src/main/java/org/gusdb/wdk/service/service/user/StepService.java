@@ -106,8 +106,11 @@ public class StepService extends UserService {
         step.update(true);
       }
       
-      // reset the estimated size for this step and any downstream steps, if any
+      // reset the estimated size in the database for this step and any downstream steps, if any
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
+      
+      // reset the current step object estimate size
+      step.setEstimateSize(-1);
       
       // return updated step
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();

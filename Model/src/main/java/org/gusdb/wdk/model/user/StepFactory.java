@@ -2036,8 +2036,8 @@ public class StepFactory {
   }
 
   /**
-   * Given a step, identify all downstream steps and set the estimate size of each to -1.
-   * @param step
+   * Given a step, identify it and all downstream steps and set the estimate size of each to -1.
+   * @param step - step to start from
    * @throws WdkModelException
    */
   public void resetEstimateSizeForThisAndDownstreamSteps(Step step) throws WdkModelException {
