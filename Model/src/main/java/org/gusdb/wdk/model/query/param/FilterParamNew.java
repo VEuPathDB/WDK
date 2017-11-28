@@ -883,6 +883,36 @@ public class FilterParamNew extends AbstractDependentParam {
     return new FilterParamNewInstance(this);
   }
 
+  /**
+   * this param is stale if either its ontology or value map queries consumes any of the stale depended params
+   */
+  @Override
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    boolean stale = false;
+    for (String fullName : staleDependedParamsFullNames) {
+      
+      if (_ontologyQuery != null) {
+        for (Param param : _ontologyQuery.getParams()) {
+          if (param.getFullName().equals(fullName)) {
+            stale = true;
+            break;
+          }
+        }
+      }
+
+      if (_valuesMapQuery != null) {
+        for (Param param : _valuesMapQuery.getParams()) {
+          if (param.getFullName().equals(fullName)) {
+            stale = true;
+            break;
+          }
+        }
+      }
+
+    }
+    return stale;
+  }
+
   @Override
   protected DependentParamInstance createDependentParamInstance(User user,
       Map<String, String> dependedParamValues) throws WdkModelException {
