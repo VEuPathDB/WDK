@@ -1,17 +1,17 @@
 package org.gusdb.wdk.model.answer.single;
 
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -63,17 +63,12 @@ public class SingleRecordAnswerValue extends AnswerValue {
   protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
-      .append(FormatUtil.join(Functions.mapToList(_pkMap.entrySet(),
-        new Function<Entry<String,Object>, String>() {
-          @Override
-          public String apply(Entry<String, Object> pkColumnValue) {
-            Object valueObj = pkColumnValue.getValue();
-            String value = (valueObj instanceof Number ? valueObj.toString() :
-              "'" + DBPlatform.normalizeString(valueObj.toString()) + "'");
-            return value + " as " + pkColumnValue.getKey();
-          }
-        }
-      ).toArray(), ", "))
+      .append(join(mapToList(_pkMap.entrySet(), pkColumnValue -> {
+        Object valueObj = pkColumnValue.getValue();
+        String value = (valueObj instanceof Number ? valueObj.toString() :
+          "'" + DBPlatform.normalizeString(valueObj.toString()) + "'");
+        return value + " as " + pkColumnValue.getKey();
+      }).toArray(), ", "))
       .append(platform.getDummyTable())
       .append(" )")
       .toString();
@@ -106,10 +101,10 @@ public class SingleRecordAnswerValue extends AnswerValue {
 
   @Override
   public Map<String, String> getParamDisplays() {
-    return new MapBuilder<String,String>()
-        .put(SingleRecordQuestion.PRIMARY_KEY_PARAM_NAME,
-            FormatUtil.join(_pkMap.values().toArray(), ","))
-        .toMap();
+    return new MapBuilder<String,String>(
+        SingleRecordQuestion.PRIMARY_KEY_PARAM_NAME,
+        join(_pkMap.values().toArray(), ",")
+    ).toMap();
   }
 
   @Override

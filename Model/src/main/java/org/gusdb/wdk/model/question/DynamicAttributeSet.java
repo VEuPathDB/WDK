@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -11,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -93,11 +95,6 @@ public class DynamicAttributeSet extends WdkModelBase {
   // private methods //
   // /////////////////////////////////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude the attribute fields
@@ -145,9 +142,9 @@ public class DynamicAttributeSet extends WdkModelBase {
       attribute.addAttributePluginReference(reference);
 
       attribute.excludeResources(projectId);
-
       attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
     }
+
   }
 
   @Override
@@ -155,6 +152,31 @@ public class DynamicAttributeSet extends WdkModelBase {
     RecordClass recordClass = question.getRecordClass();
     Query dynamicAttributeQuery = question.getDynamicAttributeQuery();
     Map<String, Column> columns = dynamicAttributeQuery.getColumnMap();
+
+    // check if answer params exist; if so add their values as dynamic columns
+    Set<String> rcAttributeNames = question.getRecordClass().getAttributeFieldMap().keySet();
+    List<AnswerParam> params = AnswerParam.getCacheableParams(question.getParamMap().values());
+    for (AnswerParam param : params) {
+      String paramName = param.getName();
+      String errorMsgPrefix = "Question " + question.getFullName() + " contains answer param with name '" +
+          paramName + "' that conflicts with the name of an ";
+      if (attributeFieldMap.containsKey(paramName)) {
+        throw new WdkModelException(errorMsgPrefix + "existing dynamic column.");
+      }
+      if (rcAttributeNames.contains(paramName)) {
+        throw new WdkModelException(errorMsgPrefix + "attribute in the question's recordclass.");
+      }
+      // param passes validation; add dynamic attribute
+      QueryColumnAttributeField attribute = new QueryColumnAttributeField();
+      attribute.setName(paramName);
+      attribute.setDisplayName("AnswerParam: " + paramName);
+      attribute.setColumn(columns.get(paramName));
+      attribute.setInternal(true);
+      attribute.setInReportMaker(false);
+      attribute.excludeResources(wdkModel.getProjectId());
+      attribute.resolveReferences(wdkModel);
+      attributeFieldMap.put(paramName, attribute);
+    }
 
     // make sure the dynamic attribute set doesn't have duplicated attributes
     Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();

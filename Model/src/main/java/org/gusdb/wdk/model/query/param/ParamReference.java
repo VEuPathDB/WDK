@@ -67,7 +67,7 @@ public class ParamReference extends Reference {
     if (help != null)
       param.setHelp(help);
 
-		// set visibleHelp if exists
+    // set visibleHelp if exists
     String visibleHelp = paramRef.getVisibleHelp();
     if (visibleHelp != null)
       param.setVisibleHelp(visibleHelp);
@@ -90,6 +90,7 @@ public class ParamReference extends Reference {
     Boolean countOnlyLeaves = paramRef.getCountOnlyLeaves();
     Long interval = paramRef.getInterval();
     Integer depthExpanded = paramRef.getDepthExpanded();
+    Boolean exposeAsAttribute = paramRef.isExposeAsAttribute();
     
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
@@ -170,7 +171,7 @@ public class ParamReference extends Reference {
             + "' is not a stringParam. The 'number' property can "
             + "only be applied to paramRefs of stringParams.");
       }
-      
+
       if (param instanceof TimestampParam) {
         if (interval != null)
           ((TimestampParam)param).setInterval(interval);
@@ -178,6 +179,15 @@ public class ParamReference extends Reference {
         throw new WdkModelException("The paramRef to '" + twoPartName
             + "' is not a timestampParam. The 'interval' property can "
             + "only be applied to paramRefs of timestampParam.");
+      }
+
+      if (param instanceof AnswerParam) {
+        if (exposeAsAttribute != null)
+          ((AnswerParam)param).setExposeAsAttribute(exposeAsAttribute);
+      } else if (exposeAsAttribute != null) {
+        throw new WdkModelException("The paramRef to '" + twoPartName
+            + "' is not a answerParam.  The 'exposeAsAttribute' property can "
+            + "only be applied to paramRefs of answerParam.");
       }
     }
 
@@ -211,11 +221,12 @@ public class ParamReference extends Reference {
   private Boolean _countOnlyLeaves;
   private String _prompt;
   private Integer _depthExpanded;
+  private Boolean _exposeAsAttribute;
 
   private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
   private String _help;
 
-	private List<WdkModelText> _visibleHelps = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _visibleHelps = new ArrayList<WdkModelText>();
   private String _visibleHelp;
 
   // this property only applies to timestamp param.
@@ -406,13 +417,21 @@ public class ParamReference extends Reference {
   public void setSuppressNode(Boolean suppressNode) {
     _suppressNode = suppressNode;
   }
-  
+
   public Integer getDepthExpanded() {
     return _depthExpanded;
   }
-  
+
   public void setDepthExpanded(Integer depthExpanded) {
     _depthExpanded = depthExpanded;
+  }
+
+  public Boolean isExposeAsAttribute() {
+    return _exposeAsAttribute;
+  }
+
+  public void setExposeAsAttribute(Boolean exposeAsAttribute) {
+    _exposeAsAttribute = exposeAsAttribute;
   }
 
   public Boolean getMultiPick() {

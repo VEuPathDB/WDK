@@ -521,6 +521,11 @@
   <define name="answerParam">
     <element name="answerParam">
       <ref name="ParamBaseProperties" />
+      <optional>
+        <attribute name="exposeAsAttribute">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <!-- defines the type of the values of this answerParam -->
       <zeroOrMore>
         <choice>
@@ -976,10 +981,15 @@
       <ref name="EnumParamDisplayType"/>
       <optional>
         <attribute name="prompt" />
-      </optional>      
+      </optional>
       <optional>
         <attribute name="interval">
           <data type="positiveInteger" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="exposeAsAttribute">
+          <data type="boolean" />
         </attribute>
       </optional>
       <zeroOrMore>

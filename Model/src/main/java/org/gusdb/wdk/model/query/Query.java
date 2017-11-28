@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -296,12 +297,22 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return array;
   }
 
-  public void addColumn(Column column) {
-    column.setQuery(this);
-    if (columnList != null)
-      this.columnList.add(column);
-    else
+  public void addColumn(Column column) throws WdkModelException {
+    WdkModelException duplicationError = new WdkModelException("More than one column with name '" +
+        column.getName() + "' added to Query '" + getFullName() + "'.");
+    if (columnList != null) {
+      if (!Functions.filter(columnList, col -> col.getName().equals(column.getName())).isEmpty()) {
+        throw duplicationError;
+      }
+      columnList.add(column);
+    }
+    else {
+      if (!Functions.filter(columnMap.keySet(), col -> col.equals(column.getName())).isEmpty()) {
+        throw duplicationError;
+      }
       columnMap.put(column.getName(), column);
+    }
+    column.setQuery(this);
   }
 
   public Map<String, Column> getColumnMap() {
@@ -460,12 +471,11 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     for (ParamReference paramRef : paramRefList) {
 
-      Param param;
-      if (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET)
-	  && (paramRef.getElementName().equals(Utilities.PARAM_USER_ID)))
-	param = getUserParam(wdkModel);
-      else
-	param = ParamReference.resolveReference(wdkModel, paramRef, this);
+      Param param =
+          (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET) &&
+             paramRef.getElementName().equals(Utilities.PARAM_USER_ID)) ?
+          getUserParam(wdkModel) :
+          ParamReference.resolveReference(wdkModel, paramRef, this);
       String paramName = param.getName();
       if (paramMap.containsKey(paramName)) {
         throw new WdkModelException("The param '" + paramName + "' is duplicated in query " + getFullName());

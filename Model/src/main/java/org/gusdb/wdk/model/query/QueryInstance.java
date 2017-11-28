@@ -117,8 +117,8 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
-  private void setContextParamStableValues(Map<String, String> contextParamStableValues, boolean validate) throws WdkModelException,
-      WdkUserException {
+  private void setContextParamStableValues(Map<String, String> contextParamStableValues, boolean validate)
+      throws WdkModelException, WdkUserException {
     LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
     for (String paramName : contextParamStableValues.keySet()) {
       LOG.trace(paramName + "='" + contextParamStableValues.get(paramName) + "'");

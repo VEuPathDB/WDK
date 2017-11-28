@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.answer;
 
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,6 +34,7 @@ import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -398,7 +402,7 @@ public class AnswerValue {
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
-      sql = _idsQueryInstance.getSql();
+      sql = getBaseIdSql();
     }
     else {
       // make an instance from the original attribute query, and attribute
@@ -521,42 +525,64 @@ public class AnswerValue {
       return getIdSql(null, false);
   }
 
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  private String getBaseIdSql() throws WdkModelException, WdkUserException {
 
+    // get base ID sql from query instance
     String innerSql = _idsQueryInstance.getSql();
-
-    // add comments to id sql
     innerSql = " /* the ID query */" + innerSql;
 
-    int assignedWeight = _idsQueryInstance.getAssignedWeight();
-    // apply old filter
+    // add answer param columns
+    innerSql = applyAnswerParams(innerSql, _question.getParamMap(), _idsQueryInstance.getParamStableValues());
+    innerSql = " /* answer param value cols applied on id query */ " + innerSql;
+
+    return innerSql;
+  }
+
+  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+
+    // get base ID sql from query instance and answer params
+    String innerSql = getBaseIdSql();
+
+    // apply old-style answer filter
     if (_filter != null) {
-      innerSql = _filter.applyFilter(_user, innerSql, assignedWeight);
+      innerSql = _filter.applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
       innerSql = " /* old filter applied on id query */ " + innerSql;
     }
 
     // apply "new" filters
     if (_filterOptions != null) {
-      // logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " +
-      // excludeFilter);
       innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
       innerSql = " /* new filter applied on id query */ " + innerSql;
     }
+
     // apply view filters if requested
     boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
     if (viewFiltersApplied && !excludeViewFilters) {
-      LOG.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " +
-          _viewFilterOptions.getFilterOptions().keySet() + " " + this);
       innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
-      LOG.debug("innersql: " + innerSql);
       innerSql = " /* new view filter applied on id query */ " + innerSql;
     }
 
     innerSql = "(" + innerSql + ")";
-    LOG.debug("AnswerValue: ID SQL constructed with all filters:\n");
+    LOG.debug("AnswerValue: ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
 
+  }
+
+  private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, Map<String, String> paramStableValues) {
+
+    // gather list of answer params for this question
+    List<AnswerParam> answerParams = AnswerParam.getCacheableParams(paramMap.values());
+
+    // if no answer params, then return incoming SQL
+    if (answerParams.isEmpty()) return innerSql;
+
+    // build list of columns to add, then join into string
+    String extraCols = join(mapToList(answerParams, param ->
+      ", " + paramStableValues.get(param.getName()) + " as " + param.getName()), "");
+
+    // return wrapped innerSql including new columns
+    return " select papidsql.*" + extraCols + " from ( " + innerSql + " ) papidsql ";
   }
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
