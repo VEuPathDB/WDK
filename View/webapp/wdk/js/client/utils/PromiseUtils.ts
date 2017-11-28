@@ -58,15 +58,14 @@ export function latest<T>(promiseFactory: PromiseFactory<T>) {
 
 /**
  * Function decorator that returns a new function such that each call waits for
- * the previous call's returned Promise to resolve before proceding.
+ * the previous call's returned Promise to resolve before proceeding.
  *
  * @param promiseFactory Function that produces Promises
  */
 export function synchronized<T>(promiseFactory: PromiseFactory<T>) {
-  let queue: Promise<void>;
+  let queue: Promise<void> = Promise.resolve();
   return function enque(...args: any[]) {
-    const task = queue == null ? promiseFactory.apply(this, args)
-      : queue.then(() => promiseFactory.apply(this, args));
+    const task = queue.then(() => promiseFactory.apply(this, args));
     queue = task.then(() => {}, () => {});
     return task;
   }
