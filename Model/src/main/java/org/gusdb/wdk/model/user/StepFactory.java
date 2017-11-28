@@ -41,7 +41,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -2035,33 +2034,21 @@ public class StepFactory {
     }
     return false;
   }
-  
+
   /**
-   * Given a step, identify all descendant steps and set the estimate size of each to 0.
-   * @param user - presumed owner of step
+   * Given a step, identify all downstream steps and set the estimate size of each to -1.
    * @param step
-   * @throws WdkUserException
    * @throws WdkModelException
    */
-  public void resetEstimateSizeForDownstreamSteps(User user, Step step) throws WdkModelException {
-    Long strategyId = step.getStrategyId();
-    if(strategyId != null) {
-    	  try {
-    	    Strategy strategy = getStrategyById(user, strategyId);
-        String stepIdSql = selectStepAndChildren(strategy.getFirstStep().getStepId());
-        String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_ESTIMATE_SIZE + " = -1 " +
-	                 " WHERE step_id IN (" + stepIdSql + ")";
-        SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-strategy-on-steps");
-      }
-    	  //TODO This shouldn't happen as the web service has already identified the step
-    	  // owner as the user and that same user will own the strategy unless the
-    	  // strategy is virtually deleted.  Worry about this?
-    	  catch(WdkUserException wue) {
-    		throw new WdkRuntimeException(wue);
-    	  }
-      catch (SQLException ex) {
-        throw new WdkModelException(ex);
-      }
+  public void resetEstimateSizeForThisAndDownstreamSteps(Step step) throws WdkModelException {
+    try {
+      String stepIdSql = selectStepAndParents(step.getStepId());
+      String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_ESTIMATE_SIZE + " = -1 " +
+	               " WHERE step_id IN (" + stepIdSql + ")";
+      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
   }
 }

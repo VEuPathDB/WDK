@@ -21,7 +21,6 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -108,8 +107,7 @@ public class StepService extends UserService {
       }
       
       // reset the estimated size for this step and any downstream steps, if any
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      getWdkModel().getStepFactory().resetEstimateSizeForDownstreamSteps(user, step);
+      getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
       
       // return updated step
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
