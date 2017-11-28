@@ -90,6 +90,12 @@ public class FilterParamNewStableValue {
 
     if (errmsg != null) errors.add(errmsg);
     
+    // TODO: remove this test once values map query becomes required
+    if (_param.getValuesMapQuery() == null) {
+      if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '"));
+      return null;
+    }
+    
     // validate fields against ontology; collect fields that are not isRange
     Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
     Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();
@@ -105,7 +111,7 @@ public class FilterParamNewStableValue {
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
       Set<String> relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(Collectors.toSet());
-      Map<String, Set<String>> metadataMembers = _param.getDistinctMetaDataValues(user, contextParamValues,
+      Map<String, Set<String>> metadataMembers = _param.getValuesMap(user, contextParamValues,
           relevantOntologyTerms, ontology, dataSource);
 
       // iterate through our member filters, validating the values of each
@@ -235,43 +241,6 @@ public class FilterParamNewStableValue {
     return null;
   }
 
-  // temporary hack
-  private boolean inferIsRange(JSONObject jsFilter) {
-    boolean isRange = true;
-    try {
-      if (!jsFilter.isNull(FILTERS_VALUE)) jsFilter.getJSONObject(FILTERS_VALUE);
-    }
-    catch (JSONException e) {
-      isRange = false;
-    }
-    return isRange;
-  }
-
-  // temporary hack
-  private OntologyItemType inferRangeType(JSONObject jsValue) {
-    OntologyItemType type = OntologyItemType.NUMBER;
-    try {
-      // use JSONException to expose date type (i.e. not number type)
-      if (!jsValue.isNull(FILTERS_MIN)) jsValue.getDouble(FILTERS_MIN);
-      if (!jsValue.isNull(FILTERS_MAX)) jsValue.getDouble(FILTERS_MAX);
-    }
-    catch (JSONException e) {
-      type = OntologyItemType.DATE;
-    }
-    return type;
-  }
-
-  // temporary hack
-  private OntologyItemType inferMemberType(JSONArray jsValue) {
-    OntologyItemType type = OntologyItemType.NUMBER;
-    try {
-      if (!jsValue.isNull(0)) jsValue.getDouble(0);
-    }
-    catch (JSONException e) {
-      type = OntologyItemType.STRING;
-    }
-    return type;
-  }
 
   /**
    * @param user  
