@@ -900,8 +900,8 @@ public class FilterParamNew extends AbstractDependentParam {
         }
       }
 
-      if (_valuesMapQuery != null) {
-        for (Param param : _valuesMapQuery.getParams()) {
+      if (_ontologyValuesQuery != null) {
+        for (Param param : _ontologyValuesQuery.getParams()) {
           if (param.getFullName().equals(fullName)) {
             stale = true;
             break;
