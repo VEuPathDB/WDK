@@ -29,11 +29,15 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   public JSONObject getJson(User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
+      LOG.info("222222222222222222222222222222222222222222222222222222222222  formatter");
+
     pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
     pJson.put("ontology", getOntologyJson(user, dependedParamValues));
-    //    pJson.put("values", getValuesJson(user, dependedParamValues));
+    JSONObject valuesMap = getValuesJson(user, dependedParamValues);
+    //TODO: remove the null test when val map query becomes required
+    if (valuesMap != null) pJson.put("values", valuesMap);
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
-    pJson.put("canUseCountToPredictSearchCount", filterParam.getCanUseCountToPredictSearchCount());
+    pJson.put("countPredictsAnswerCount", filterParam.getCountPredictsAnswerCount());
     return pJson;
   }
 
@@ -59,7 +63,10 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
 
   public JSONObject getValuesJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
  
-    Map<String, Set<String>>  valuesMap = filterParam.getDistinctMetaDataValues(user, dependedParamValues);
+    Map<String, Set<String>>  valuesMap = filterParam.getValuesMap(user, dependedParamValues);
+
+    // TODO: remove this when values map is required
+    if (valuesMap == null) return null;
  
     JSONObject valuesMapJson = new JSONObject();
     for (String term : valuesMap.keySet()) {
