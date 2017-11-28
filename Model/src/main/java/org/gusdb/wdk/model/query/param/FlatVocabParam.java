@@ -167,6 +167,16 @@ public class FlatVocabParam extends AbstractEnumParam {
       throw new WdkModelException(e);
     }
   }
+  
+  /**
+   * flat vocab params are always stale if any depended param is stale
+   */
+  @Override
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    return true;
+  }
+
+
 
   /*
    * (non-Javadoc)

@@ -714,6 +714,48 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     }
     return answer;
   }
+  
+  /**
+   * by default, params are not dependent, and so do not become stale.  must be overridden by dependent params
+   * @param dependedParams
+   * @return
+   */
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    return false;
+  }
+  
+  /**
+   * 
+   * given an input list of changed or stale params, return a list of (recursively) dependent params that
+   * are stale as a consequence. 
+   * when this method is called on the root stale param, the input list should include that param's name, 
+   * to get the ball rolling
+   * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
+   * because they are stale.  if this list includes the name of this param, treat it as if it was its own depended parent.
+   * @return a list of stale dependent params, including this param if stale
+   */
+  public Set<Param> getStaleParams(Set<String> staleDependedParamsFullNames) {
+
+    Set<Param> dependentParams = new HashSet<Param>();  // return value
+
+    // if this param is stale, add it to stale depended list and recurse to find kids' stale dependents
+    if (staleDependedParamsFullNames.contains(getFullName()) 
+        || isStale(staleDependedParamsFullNames)) {
+      
+      dependentParams.add(this);
+     
+      // add name to list of stale depended param names
+      Set<String> newDependedParams = new HashSet<String>(staleDependedParamsFullNames);
+      newDependedParams.add(getFullName());
+
+      // pass the new list to immediate dependents
+      for (Param dependentParam : getDependentParams()) {
+        dependentParams.addAll(dependentParam.getStaleParams(newDependedParams));
+      }
+    }
+    
+    return dependentParams;
+  }
 
   public ParamHandler getParamHandler() {
     return _handler;

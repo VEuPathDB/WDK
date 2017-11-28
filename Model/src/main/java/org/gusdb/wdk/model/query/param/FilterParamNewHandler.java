@@ -99,13 +99,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      //  String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
-            String err = stableValue.validateSyntax();
+      LOG.info("333333333333333333333333333333333333333333333333333333333333  toInternaValue()");
+      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
       if (err != null) throw new WdkModelException(err);
       String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
-      //      LOG.info("11111111111 33333333333333333333333333333333 sql " + fvSql);
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      // LOG.info("11111111111 44444444444444444444444444444444 cached " + cachedSql);
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql): cachedSql;
       
     }

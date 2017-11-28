@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -91,7 +92,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateStep(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
+  public Response updateStep(@PathParam("stepId") String stepId, String body) throws WdkUserException, WdkModelException, DataValidationException {
     try {
       Step step = getStepForCurrentUser(stepId);
       JSONObject patchJson = new JSONObject(body);
@@ -105,7 +106,11 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-
+      
+      // reset the estimated size for this step and any downstream steps, if any
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      getWdkModel().getStepFactory().resetEstimateSizeForDownstreamSteps(user, step);
+      
       // return updated step
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
