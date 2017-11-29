@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -34,7 +35,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.log4j.Logger;
 
 
 
@@ -69,7 +69,6 @@ import org.apache.log4j.Logger;
  */
 public class FilterParamNew extends AbstractDependentParam {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
@@ -665,7 +664,6 @@ public class FilterParamNew extends AbstractDependentParam {
     
     contextParamValues = ensureRequiredContext(user, contextParamValues);
 
-    Set<String> memberTerms = new HashSet<String>();
     Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
     return getValuesMap(user, contextParamValues, null, ontology, _wdkModel.getAppDb().getDataSource());
   }

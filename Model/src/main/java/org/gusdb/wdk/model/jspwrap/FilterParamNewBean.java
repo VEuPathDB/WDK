@@ -1,16 +1,14 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.stream.Collectors;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class FilterParamNewBean extends ParamBean<FilterParamNew> {
 
   public FilterParamNewBean(FilterParamNew param) {
     super(param);
-    // TODO Auto-generated constructor stub
   }
 
   public String getDependedParamNames() throws WdkModelException {

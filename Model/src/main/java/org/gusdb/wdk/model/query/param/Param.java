@@ -716,8 +716,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
   
   /**
-   * by default, params are not dependent, and so do not become stale.  must be overridden by dependent params
-   * @param dependedParams
+   * By default, params are not dependent, and so do not become stale.  must be overridden by dependent params
+   * 
+   * @param staleDependedParamsFullNames
    * @return
    */
   public boolean isStale(Set<String> staleDependedParamsFullNames) {

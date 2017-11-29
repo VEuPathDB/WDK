@@ -20,7 +20,6 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -91,7 +90,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateStep(@PathParam("stepId") String stepId, String body) throws WdkUserException, WdkModelException, DataValidationException {
+  public Response updateStep(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
     try {
       Step step = getStepForCurrentUser(stepId);
       JSONObject patchJson = new JSONObject(body);
@@ -119,7 +118,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -137,7 +136,7 @@ public class StepService extends UserService {
     catch(NumberFormatException nfe) {
     	  throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
     }
-    catch (JSONException | RequestMisformatException | DataValidationException e) {
+    catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
     }
   }  
