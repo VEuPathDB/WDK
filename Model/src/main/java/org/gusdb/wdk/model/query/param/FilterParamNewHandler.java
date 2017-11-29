@@ -100,9 +100,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      LOG.info("333333333333333333333333333333333333333333333333333333333333  toInternaValue()");
-      String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
-      if (err != null) throw new WdkModelException(err);
       String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql): cachedSql;

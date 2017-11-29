@@ -709,8 +709,6 @@ public class FilterParamNew extends AbstractDependentParam {
 
     String filterSelectSql = "SELECT * FROM (" + ontologyValuesSql + ") vm" +  ontologyTermsWhereClause;
 
-    LOG.info("888888888888888888888888888888888888888888888888888888888888888" + filterSelectSql);
-        
     // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
     try {
@@ -864,7 +862,7 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    LOG.info("44444444444444444444444444444444444444444444444444444444444444444444  validateValue()");
+
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
     if (err != null) throw new WdkModelException(err);
