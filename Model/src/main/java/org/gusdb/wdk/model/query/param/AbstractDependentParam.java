@@ -297,6 +297,7 @@ public abstract class AbstractDependentParam extends Param {
 
   public abstract String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException;
   
+  @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
   
   protected abstract DependentParamInstance createDependentParamInstance(User user, Map<String, String> dependedParamValues)

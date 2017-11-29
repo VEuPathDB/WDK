@@ -20,7 +20,6 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -118,7 +117,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException, DataValidationException {
+  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());

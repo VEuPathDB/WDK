@@ -15,7 +15,7 @@ public class IrodsUserDatasetSession extends JsonUserDatasetSession {
   private static final Logger logger = Logger.getLogger(IrodsUserDatasetSession.class);	
 
   public IrodsUserDatasetSession(Path usersRootDir, String wdkTempDirName) {
-    super(new IrodsUserDatasetStoreAdaptor(wdkTempDirName, usersRootDir), usersRootDir);
+    super(new IrodsUserDatasetStoreAdaptor(wdkTempDirName), usersRootDir);
   }
 
   @Override
