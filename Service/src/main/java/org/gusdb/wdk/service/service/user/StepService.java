@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.TestUtil.nullSafeEquals;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
@@ -19,7 +20,10 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -96,6 +100,9 @@ public class StepService extends UserService {
       JSONObject patchJson = new JSONObject(body);
       StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModelBean(), getSessionUser());
       StepChanges changes = updateStep(step, stepRequest);
+      
+      // re-validate the step and throw a DataValidation exception if the step is not valid
+      validateStep(step);
 
       // save parts of step that changed
       if (changes.paramFiltersChanged()) {
@@ -114,7 +121,10 @@ public class StepService extends UserService {
       // return updated step
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
-    catch (JSONException | RequestMisformatException e) {
+    catch (WdkUserException wue) {
+    	  throw new DataValidationException(wue);
+    }
+    catch (JSONException e) {
       throw new BadRequestException(e);
     }
   }
@@ -154,6 +164,7 @@ public class StepService extends UserService {
       if (nullSafeEquals(oldParamValues.get(paramName), newParamValues.get(paramName).getObjectValue())) paramFiltersChanged = true;
       step.setParamValue(paramName, (String)newParamValues.get(paramName).getObjectValue());
     }
+
     if (nullSafeEquals(step.getFilter(), answerSpec.getLegacyFilter())) paramFiltersChanged = true;
     step.setFilterName(answerSpec.getLegacyFilter() == null ? null : answerSpec.getLegacyFilter().getName());
     if (nullSafeEquals(step.getFilterOptions(), answerSpec.getFilterValues())) paramFiltersChanged = true;
@@ -184,5 +195,27 @@ public class StepService extends UserService {
     catch (NumberFormatException | WdkModelException e) {
       throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
+  }
+  
+  /**
+   * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
+   * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
+   * @param step - the step to check for validity
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+  private void validateStep(Step step) throws WdkModelException, DataValidationException {
+	if(step.isAnswerSpecComplete()) { 
+      try {	  
+        User user = getUserBundle(Access.PRIVATE).getSessionUser();
+        Question question = step.getQuestion();
+        Map<String, String> context = new LinkedHashMap<String, String>();
+        context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+        question.getQuery().makeInstance(user, step.getParamValues(), true, step.getAssignedWeight(), context);
+      }
+      catch(WdkUserException wue) {
+    	    throw new DataValidationException(wue);
+      }
+	}  
   }
 }

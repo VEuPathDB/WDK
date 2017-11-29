@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.provider;
 
+import java.util.Arrays;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -111,6 +113,9 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     while((t = descendent.getCause()) != null) {
       if(t.getMessage() != null) {
         messages.append(t.getMessage() + System.lineSeparator());
+      }
+      if(t instanceof WdkUserException && ((WdkUserException)t).getParamErrors() != null) {
+        messages.append(Arrays.toString(((WdkUserException)t).getParamErrors().entrySet().toArray()));
       }
       if(t instanceof JSONException || t instanceof WdkUserException) {
         unwindable = true;
