@@ -23,7 +23,8 @@ import org.apache.log4j.Logger;
  *
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
-  @SuppressWarnings("unused")  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
+
+  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
 
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
