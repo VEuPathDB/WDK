@@ -164,7 +164,7 @@ export function updateUserPreferences(newPreferences: UserPreferences): ActionTh
 };
 
 function sendPrefUpdateOnCompletion(
-  promise: Promise<void>,
+  promise: Promise<UserPreferences>,
   actionName: PreferenceUpdateAction['type']|PreferencesUpdateAction['type'],
   payload: UserPreferences
 ): Promise<PreferenceUpdateAction|PreferencesUpdateAction> {

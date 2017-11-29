@@ -26,7 +26,7 @@ import {
   Favorite
 } from './WdkModel';
 import { User, PreferenceScope, UserPreferences, Step, UserWithPrefs } from './WdkUser';
-import { pendingPromise } from './PromiseUtils';
+import { pendingPromise, synchronized } from './PromiseUtils';
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -124,10 +124,10 @@ export default class WdkService {
   });
   private _cache: Map<string, Promise<any>> = new Map;
   private _recordCache: Map<string, {request: RecordRequest; response: Promise<RecordInstance>}> = new Map;
-  private _preferences: Promise<UserPreferences>;
-  private _currentUserPromise: Promise<User>;
-  private _initialCheck: Promise<void>;
-  private _version: number;
+  private _preferences: Promise<UserPreferences> | undefined;
+  private _currentUserPromise: Promise<User> | undefined;
+  private _initialCheck: Promise<void> | undefined;
+  private _version: number | undefined;
   private _isInvalidating = false;
 
   /**
@@ -135,6 +135,7 @@ export default class WdkService {
    */
   private constructor(private serviceUrl: string) {
     this.getOntology = memoize(this.getOntology.bind(this));
+    this.updateCurrentUserPreference = synchronized(this.updateCurrentUserPreference);
   }
 
   /**
@@ -508,33 +509,31 @@ export default class WdkService {
     return this._fetchJson<void>('post', url, data);
   }
 
-  getCurrentUserPreferences() {
+  getCurrentUserPreferences() : Promise<UserPreferences> {
     if (!this._preferences) {
       this._preferences = this._fetchJson<UserPreferences>('get', '/users/current/preferences');
     }
     return this._preferences;
   }
 
-  updateCurrentUserPreference(scope: PreferenceScope, key: string, value: string) {
+  updateCurrentUserPreference(scope: PreferenceScope, key: string, value: string) : Promise<UserPreferences> {
     let entries = { [scope]: { [key]: value }};
     let url = '/users/current/preferences';
     let data = JSON.stringify(entries);
-    return this._fetchJson<void>('patch', url, data).then(() => {
-      // merge with cached preferences only if patch succeeds
-      this._preferences = this._preferences.then(preferences => {
-        return { ...preferences, ...entries };
+    return this._fetchJson<void>('patch', url, data)
+      .then(() => this.getCurrentUserPreferences())
+      .then(preferences => {
+        // merge with cached preferences only if patch succeeds
+        return this._preferences = Promise.resolve({ ...preferences, ...entries });
       });
-    });
   }
 
-  updateCurrentUserPreferences(entries: UserPreferences) {
+  updateCurrentUserPreferences(entries: UserPreferences) : Promise<UserPreferences> {
     let url = '/users/current/preferences';
     let data = JSON.stringify(entries);
     return this._fetchJson<void>('put', url, data).then(() => {
       // merge with cached preferences only if patch succeeds
-      this._preferences = this._preferences.then(preferences => {
-        return { ...entries };
-      });
+      return this._preferences = Promise.resolve(entries);
     });
   }
 
