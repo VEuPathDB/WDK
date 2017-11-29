@@ -240,8 +240,10 @@ public class QuestionService extends WdkService {
     // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
+    LOG.info("666666666666666666666666666666666666666666666666666666666666666666 stale params: " + changedParam.getStaleDependentParams());
+
     return Response.ok(QuestionFormatter.getParamsJson(
-        changedParam.getAllDependentParams(),
+        changedParam.getStaleDependentParams(),
         true,
         getSessionUser(),
         contextParamValues).toString()).build();

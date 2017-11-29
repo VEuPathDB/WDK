@@ -98,6 +98,7 @@ public class Keys {
   // param-related keys
   public static final String DEFAULT_VALUE = "defaultValue";
   public static final String VOCABULARY = "vocabulary";
+  public static final String DEPENDENT_PARAMS = "dependentParams";
 
   // specific param-related keys
   public static final String COUNT_ONLY_LEAVES = "countOnlyLeaves";

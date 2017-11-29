@@ -725,37 +725,39 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return false;
   }
   
+  public Set<Param> getStaleDependentParams() {
+    Set<String> ss = new HashSet<String>();
+    ss.add(getFullName());
+    return getStaleDependentParams(ss);
+  }
+
+
   /**
    * 
    * given an input list of changed or stale params, return a list of (recursively) dependent params that
    * are stale as a consequence. 
-   * when this method is called on the root stale param, the input list should include that param's name, 
-   * to get the ball rolling
    * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
-   * because they are stale.  if this list includes the name of this param, treat it as if it was its own depended parent.
-   * @return a list of stale dependent params, including this param if stale
+   * because they are stale.  
+   * @return a list of stale dependent params
    */
-  public Set<Param> getStaleParams(Set<String> staleDependedParamsFullNames) {
+  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
 
-    Set<Param> dependentParams = new HashSet<Param>();  // return value
+    Set<Param> staleDependentParams = new HashSet<Param>(); // return value
 
-    // if this param is stale, add it to stale depended list and recurse to find kids' stale dependents
-    if (staleDependedParamsFullNames.contains(getFullName()) 
-        || isStale(staleDependedParamsFullNames)) {
-      
-      dependentParams.add(this);
-     
-      // add name to list of stale depended param names
-      Set<String> newDependedParams = new HashSet<String>(staleDependedParamsFullNames);
-      newDependedParams.add(getFullName());
+    for (Param dependentParam : getDependentParams()) {
 
-      // pass the new list to immediate dependents
-      for (Param dependentParam : getDependentParams()) {
-        dependentParams.addAll(dependentParam.getStaleParams(newDependedParams));
+      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents
+      if (dependentParam.isStale(staleDependedParamsFullNames)) {
+
+        staleDependentParams.add(dependentParam);
+
+        Set<String> newStaleDependedParams = new HashSet<String>(staleDependedParamsFullNames);
+        newStaleDependedParams.add(getFullName());
+
+        staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));
       }
     }
-    
-    return dependentParams;
+    return staleDependentParams;
   }
 
   public ParamHandler getParamHandler() {
