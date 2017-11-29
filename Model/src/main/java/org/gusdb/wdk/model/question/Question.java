@@ -1268,4 +1268,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public boolean isBoolean() {
     return getQuery().isBoolean();
   }
+  
+  public boolean hasAnswerParams() {
+    return Arrays.stream(getParams()).anyMatch(p -> p instanceof AnswerParam);
+  }
 }

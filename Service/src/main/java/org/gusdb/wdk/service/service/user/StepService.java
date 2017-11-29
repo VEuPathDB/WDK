@@ -66,7 +66,15 @@ public class StepService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
       StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
+      
+      // validate the step and throw a DataValidation exception if not valid
+      // new step are, by definition, not part of a strategy
+      validateStep(stepRequest.getAnswerSpec(), false);
+      
+      // create the step and insert into the database
       Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
+      
+      // 
       if(runStep != null && runStep) {
     	    if(step.isAnswerSpecComplete()) {
     	      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
@@ -99,10 +107,12 @@ public class StepService extends UserService {
       Step step = getStepForCurrentUser(stepId);
       JSONObject patchJson = new JSONObject(body);
       StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModelBean(), getSessionUser());
-      StepChanges changes = updateStep(step, stepRequest);
       
-      // re-validate the step and throw a DataValidation exception if the step is not valid
-      validateStep(step);
+      // re-validate the step and throw a DataValidation exception if not valid
+      // a patched step may or may be already be part of a strategy.
+      validateStep(stepRequest.getAnswerSpec(), getStepForCurrentUser(stepId).getStrategyId() != null);
+      
+      StepChanges changes = updateStep(step, stepRequest);
 
       // save parts of step that changed
       if (changes.paramFiltersChanged()) {
@@ -200,22 +210,22 @@ public class StepService extends UserService {
   /**
    * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
    * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
-   * @param step - the step to check for validity
+   * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
    * @throws WdkModelException
    * @throws DataValidationException
    */
-  private void validateStep(Step step) throws WdkModelException, DataValidationException {
-	if(step.isAnswerSpecComplete()) { 
-      try {	  
-        User user = getUserBundle(Access.PRIVATE).getSessionUser();
-        Question question = step.getQuestion();
-        Map<String, String> context = new LinkedHashMap<String, String>();
-        context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-        question.getQuery().makeInstance(user, step.getParamValues(), true, step.getAssignedWeight(), context);
-      }
+  protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
+	Question question = answerSpec.getQuestion();
+	if(question.hasAnswerParams() ? inStrategy : true) {
+	  Map<String, String> context = new LinkedHashMap<String, String>();
+      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+	  try {  
+	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+        question.getQuery().makeInstance(user, AnswerValueFactory.convertParams(answerSpec.getParamValues()), true, answerSpec.getWeight(), context);
+	  }
       catch(WdkUserException wue) {
-    	    throw new DataValidationException(wue);
+        throw new DataValidationException(wue);
       }
-	}  
+	}
   }
 }

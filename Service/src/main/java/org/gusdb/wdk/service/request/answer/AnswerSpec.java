@@ -59,4 +59,5 @@ public class AnswerSpec {
   void setWeight(int weight) {
     _weight = weight;
   }
+
 }

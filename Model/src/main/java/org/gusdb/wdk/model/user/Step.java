@@ -1548,14 +1548,7 @@ public class Step {
     _inMemoryOnly = inMemoryOnly;
   }
   
-  public boolean hasAnswerParams() throws WdkModelException {
-    for(Param param : getQuestion().getParams()) {
-    	  if(param instanceof AnswerParam) return true;
-    }
-    return false;
-  }
-  
   public boolean isAnswerSpecComplete() throws WdkModelException {
-    return hasAnswerParams() ? _strategyId != null : true;
+    return getQuestion().hasAnswerParams() ? _strategyId != null : true;
   }
 }
