@@ -1433,7 +1433,7 @@ div.step-analysis-pane table.dataTable th {
   background-position: top center;
   background-repeat: no-repeat;
   overflow: hidden;
-  background-size: cover;
+  background-size: auto 80%;
 }
 .analysis-menu-tab-pane li.inactive {
   opacity: .5;
