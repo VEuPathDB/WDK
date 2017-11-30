@@ -7,6 +7,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
@@ -118,29 +119,6 @@ public abstract class WdkService {
   }
 
   /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value (false) if the passed value is null.
-   * 
-   * @param boolValue flag value passed to service
-   * @return unboxed value or false if null
-   */
-  protected boolean getFlag(Boolean boolValue) {
-    return (boolValue == null ? false : boolValue);
-  }
-
-  /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value if the passed value is null.
-   * 
-   * @param boolValue flag value passed to service
-   * @param defaultValue default value if boolValue is null
-   * @return unboxed value or defaultValue if null
-   */
-  protected boolean getFlag(Boolean boolValue, boolean defaultValue) {
-    return (boolValue == null ? defaultValue : boolValue);
-  }
-
-  /**
    * Returns a session-aware user bundle based on the input string.
    * 
    * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
@@ -181,5 +159,45 @@ public abstract class WdkService {
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
       RequestType.WDK_SERVICE);
+  }
+
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value (false) if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @return unboxed value or false if null
+   */
+  protected static boolean getFlag(Boolean boolValue) {
+    return (boolValue == null ? false : boolValue);
+  }
+
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @param defaultValue default value if boolValue is null
+   * @return unboxed value or defaultValue if null
+   */
+  protected static boolean getFlag(Boolean boolValue, boolean defaultValue) {
+    return (boolValue == null ? defaultValue : boolValue);
+  }
+
+  /**
+   * Attempts to parse the passed string into a long int.  If successful,
+   * returns it; if not, a service NotFoundException is thrown.
+   * 
+   * @param idString string to parse to ID (type long)
+   * @return successfully passed long value
+   * @throws NotFoundException if unable to parse
+   */
+  protected static long parseIdOrNotFound(String idString) {
+    try {
+      return Long.parseLong(idString);
+    }
+    catch (NumberFormatException e) {
+      throw new NotFoundException(formatNotFound(idString));
+    }
   }
 }
