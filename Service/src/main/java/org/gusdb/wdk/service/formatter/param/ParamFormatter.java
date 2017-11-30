@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.service.formatter.Keys;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,6 +34,9 @@ public class ParamFormatter<T extends Param> {
     pJson.put(Keys.IS_VISIBLE, _param.isVisible());
     pJson.put(Keys.GROUP, _param.getGroup().getName());
     pJson.put(Keys.IS_READ_ONLY, _param.isReadonly());
+    JSONArray dependentParamsJson = new JSONArray();
+    for (Param p : _param.getDependentParams()) dependentParamsJson.put(p.getName());
+    pJson.put(Keys.DEPENDENT_PARAMS, dependentParamsJson);
     pJson.put(Keys.DEFAULT_VALUE, getDefault());
     return pJson;
   }
