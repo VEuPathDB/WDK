@@ -746,8 +746,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
     for (Param dependentParam : getDependentParams()) {
 
-      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents
-      if (dependentParam.isStale(staleDependedParamsFullNames)) {
+      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents (unless already visited)
+      if (!staleDependedParamsFullNames.contains(dependentParam.getName()) && dependentParam.isStale(staleDependedParamsFullNames)) {
 
         staleDependentParams.add(dependentParam);
 
