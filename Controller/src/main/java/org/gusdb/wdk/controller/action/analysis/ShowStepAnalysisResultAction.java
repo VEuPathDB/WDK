@@ -55,8 +55,10 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
         return new ActionResult()
             .setViewPath(viewPath)
             .setRequestAttribute("wdkModel", getWdkModel())
+            .setRequestAttribute("stepId", context.getStep().getStepId())
             .setRequestAttribute("analysisId", context.getAnalysisId())
             .setRequestAttribute("contextHash", context.createHash())
+            .setRequestAttribute("accessToken", context.getAccessToken())
             .setRequestAttribute("viewModel", result.getResultViewModel());
       case PENDING:
       case RUNNING:

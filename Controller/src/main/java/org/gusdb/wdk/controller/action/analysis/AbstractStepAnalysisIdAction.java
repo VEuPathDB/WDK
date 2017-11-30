@@ -45,8 +45,8 @@ public abstract class AbstractStepAnalysisIdAction extends WdkAction {
     return PARAMS;
   }
   
-  protected final int getAnalysisId() {
-    return getParams().getIntValue(StepAnalysisContext.ANALYSIS_ID_KEY);
+  protected final long getAnalysisId() {
+    return getParams().getLongValue(StepAnalysisContext.ANALYSIS_ID_KEY);
   }
   
   protected final StepAnalysisFactory getAnalysisMgr() {

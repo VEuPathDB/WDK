@@ -392,4 +392,16 @@ public class StepAnalysisContext {
       (invalidReason == null || invalidReason.isEmpty()) ?
           "Unable to determine." : invalidReason);
   }
+
+  /**
+   * Generates and returns a salted access token.  If user can present
+   * this token, they will have access to restricted properties of
+   * this particular analysis.
+   * 
+   * @return salted access token
+   * @throws WdkModelException if unable to read WDK model's secret key file
+   */
+  public String getAccessToken() throws WdkModelException {
+    return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getSecretKey(), true);
+  }
 }

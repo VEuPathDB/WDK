@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,8 +21,8 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
-import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
+import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -542,5 +543,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   public void dropResultsTable(boolean purge) throws WdkModelException {
     _dataStore.deleteExecutionTable(purge);
     _fileStore.deleteAllExecutions();
+  }
+
+  @Override
+  public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void setProperties(long analysisId, InputStream propertyStream) {
+    // TODO Auto-generated method stub
   }
 }

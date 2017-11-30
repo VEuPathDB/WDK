@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -61,4 +62,25 @@ public interface StepAnalysisFactory {
 
   public void dropResultsTable(boolean purge) throws WdkModelException;
 
+  public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException;
+
+  public void setProperties(long analysisId, InputStream propertyStream) throws WdkModelException, WdkUserException;
+
+  public default InputStream getProperties(StepAnalysisContext context) throws WdkModelException {
+    try{
+      return getProperties(context.getAnalysisId());
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
+  public default void setProperties(StepAnalysisContext context, InputStream propertiesStream) throws WdkModelException {
+    try{
+      setProperties(context.getAnalysisId(), propertiesStream);
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
+  }
 }
