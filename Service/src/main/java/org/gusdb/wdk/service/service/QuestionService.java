@@ -51,13 +51,11 @@ import org.json.JSONObject;
 @Path("/questions")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
-  
-  @SuppressWarnings("unused")
+
   private static final Logger LOG = Logger.getLogger(QuestionService.class);
 
-
   private static final String QUESTION_RESOURCE = "Question Name: ";
-  
+
   /**
    * Get a list of all questions for a recordClass. Does not supply details of the questions (use another endpoint for that).
    */

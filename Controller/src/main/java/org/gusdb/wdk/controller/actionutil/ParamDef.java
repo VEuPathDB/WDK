@@ -19,7 +19,7 @@ public class ParamDef {
 
 	/** Data type of this parameter (for type checking) */
 	public enum DataType {
-		STRING, INTEGER, FLOAT, BOOLEAN, FILE;
+		STRING, INTEGER, FLOAT, BOOLEAN, FILE, LONG;
 	}
 	
 	private Required _required;

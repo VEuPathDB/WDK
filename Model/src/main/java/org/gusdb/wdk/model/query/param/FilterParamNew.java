@@ -69,6 +69,7 @@ import org.json.JSONObject;
  */
 public class FilterParamNew extends AbstractDependentParam {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}

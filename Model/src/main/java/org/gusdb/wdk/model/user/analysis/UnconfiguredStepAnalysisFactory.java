@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,6 +138,16 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
 
   @Override
   public void expireLongRunningExecutions() throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public void setProperties(long analysisId, InputStream propertyStream) {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 }

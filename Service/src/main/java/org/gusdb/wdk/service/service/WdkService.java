@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -8,9 +10,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.errors.ErrorBundle;
@@ -159,6 +164,24 @@ public abstract class WdkService {
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
       RequestType.WDK_SERVICE);
+  }
+
+  /**
+   * Creates a JAX/RS StreamingOutput object based on incoming data
+   * content from a file, database, or other data producer
+   * 
+   * @param content data to be streamed to the client
+   * @return streaming output object that will stream content to the client
+   */
+  protected StreamingOutput getStreamingOutput(InputStream content) {
+    return outputStream -> {
+      try {
+        IoUtil.transferStream(outputStream, content);
+      }
+      catch (IOException e) {
+        throw new WebApplicationException(e);
+      }
+    };
   }
 
   /**

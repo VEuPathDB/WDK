@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
 
   public static final String LABELS_SUFFIX = "-labels";
