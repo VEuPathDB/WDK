@@ -547,12 +547,17 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
   @Override
   public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException {
-    // TODO Auto-generated method stub
-    return null;
+    InputStream result = _dataStore.getProperties(analysisId);
+    if (result == null) {
+      throw new WdkUserException("No analysis found with ID " + analysisId);
+    }
+    return result;
   }
 
   @Override
-  public void setProperties(long analysisId, InputStream propertyStream) {
-    // TODO Auto-generated method stub
+  public void setProperties(long analysisId, InputStream propertyStream) throws WdkModelException, WdkUserException {
+    if (!_dataStore.setProperties(analysisId, propertyStream)) {
+      throw new WdkUserException("No analysis found with ID " + analysisId);
+    }
   }
 }
