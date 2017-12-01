@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -26,6 +31,8 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   private static Map<Long, List<Long>> STEP_ANALYSIS_MAP = new HashMap<>();
   // will map analysisId -> AnalysisInfo
   private static Map<Long, AnalysisInfo> ANALYSIS_INFO_MAP = new HashMap<>();
+  // will map analysisId -> String (emulated properties CLOB)
+  private static Map<Long, String> ANALYSIS_PROPERTIES_MAP = new HashMap<>();
 
   /**
    * Eventual table will have:
@@ -71,6 +78,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
       long stepId = ANALYSIS_INFO_MAP.get(analysisId).stepId;
       ANALYSIS_INFO_MAP.remove(analysisId);
+      ANALYSIS_PROPERTIES_MAP.remove(analysisId);
       
       // remove reference to this analysis in step map
       List<Long> idsForStep = STEP_ANALYSIS_MAP.get(stepId);
@@ -315,5 +323,33 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   public void deleteExecutionTable(boolean purge) throws WdkModelException {
     // just clear the execution table for in memory data store
     deleteAllExecutions();
+  }
+
+  @Override
+  public InputStream getProperties(long analysisId) throws WdkModelException {
+    synchronized(ANALYSIS_INFO_MAP) {
+      if (!ANALYSIS_INFO_MAP.containsKey(analysisId)) {
+        return null;
+      }
+      String props = ANALYSIS_PROPERTIES_MAP.get(analysisId);
+      if (props == null) props = "";
+      return new ByteArrayInputStream(props.getBytes());
+    }
+  }
+
+  @Override
+  public boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException {
+    synchronized(ANALYSIS_INFO_MAP) {
+      if (!ANALYSIS_INFO_MAP.containsKey(analysisId)) {
+        return false;
+      }
+      try {
+        ANALYSIS_PROPERTIES_MAP.put(analysisId, IoUtil.readAllChars(new InputStreamReader(propertiesStream)));
+        return true;
+      }
+      catch (IOException e) {
+        throw new WdkModelException("Unable to read whole properties stream", e);
+      }
+    }
   }
 }
