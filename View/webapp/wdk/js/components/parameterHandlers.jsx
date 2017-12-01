@@ -118,7 +118,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
 
       // set previous value
-      dependedValuesMap[dependedName] = dependedParam.find('input, select').val();
+      dependedValuesMap[dependedName] = dependedParam.find(':text, textarea, :checked, select').val();
 
       var handleChange = function handleChange(e) {
         var newValue = e.target.value;
@@ -445,12 +445,13 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       nextSearchTerm: displayCurrent
     });
 
+    // Removing this feature since it is confusing.
     // closeOnSelect doesn't work, so this is a fix
-    $input.on('select2-selecting', function() {
-      $input.one('select2-close', function() {
-        if (isMultiple) $input.select2('open');
-      })
-    });
+    // $input.on('select2-selecting', function() {
+    //   $input.one('select2-close', function() {
+    //     if (isMultiple) $input.select2('open');
+    //   })
+    // });
 
     // Search for matching vocab values, then use $input.select2('val', ...)
     $input.select2('container').find('input.select2-input').on('paste', function(event) {
