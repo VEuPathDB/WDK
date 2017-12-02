@@ -57,19 +57,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
 
-  /* TODO: remove if not needed before 7/31/14
-  private static final String TAB_NAME_MACRO = "$$TAB_NAME$$";
-  private static final String DUPLICATE_CONTEXT_MESSAGE =
-      "<p>You have another analysis tab open with the same parameter values " +
-      "as those set below.  Either close this tab and use that tab (named '" +
-      TAB_NAME_MACRO + "') or change the parameters below.</p>" +
-      "<p>If you revised your strategy and expected to compare the analysis " +
-      "from the previous version of the strategy with that of the revised " +
-      "version, this is not the correct approach.  Once you revise a " +
-      "strategy, all previous analysis results are invalidated.  Instead, " +
-      "duplicate the strategy and revise it as necessary.  Then run an " +
-      "analysis on each and compare the two results.</p>"; */
-
   static final boolean USE_DB_PERSISTENCE = true;
 
   private final ExecutionConfig _execConfig;
