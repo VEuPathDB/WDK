@@ -21,7 +21,7 @@ public abstract class AbstractStepAnalysisIdAction extends WdkAction {
   
   private static final Map<String,ParamDef> PARAMS =
       new MapBuilder<String, ParamDef>().put(StepAnalysisContext.ANALYSIS_ID_KEY,
-          new ParamDef(Required.REQUIRED, DataType.INTEGER)).toMap();
+          new ParamDef(Required.REQUIRED, DataType.LONG)).toMap();
   
   private StepAnalysisFactory _analysisMgr;
   
