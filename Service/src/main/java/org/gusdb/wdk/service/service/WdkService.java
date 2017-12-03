@@ -211,16 +211,17 @@ public abstract class WdkService {
    * Attempts to parse the passed string into a long int.  If successful,
    * returns it; if not, a service NotFoundException is thrown.
    * 
+   * @param resourceType type of resource to display if not found
    * @param idString string to parse to ID (type long)
    * @return successfully passed long value
    * @throws NotFoundException if unable to parse
    */
-  protected static long parseIdOrNotFound(String idString) {
+  protected static long parseIdOrNotFound(String resourceType, String idString) {
     try {
       return Long.parseLong(idString);
     }
     catch (NumberFormatException e) {
-      throw new NotFoundException(formatNotFound(idString));
+      throw new NotFoundException(formatNotFound(resourceType + ": " + idString));
     }
   }
 }

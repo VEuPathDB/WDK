@@ -191,7 +191,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
         Map<Long, AnalysisInfoPlusStatus> map = new LinkedHashMap<>();
         for (Long analysisId : analysisIds) {
           AnalysisInfoPlusStatus aips = new AnalysisInfoPlusStatus(ANALYSIS_INFO_MAP.get(analysisId));
-          if (RESULT_INFO_MAP.containsKey(aips.analysisInfo.contextHash)) {
+          if (aips.analysisInfo != null && RESULT_INFO_MAP.containsKey(aips.analysisInfo.contextHash)) {
             aips.status = RESULT_INFO_MAP.get(aips.analysisInfo.contextHash).getStatus();
           }
           map.put(analysisId, aips);
