@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 import org.gusdb.wdk.service.UserBundle;
 
@@ -29,37 +30,49 @@ public class StepAnalysisService extends UserService {
   @Path("/steps/{stepId}/analyses/{analysisId}/properties")
   @Produces(MediaType.TEXT_PLAIN)
   public Response getStepAnalysisProperties(
+      @PathParam("stepId") String stepIdStr,
       @PathParam("analysisId") String analysisIdStr,
       @QueryParam("accessToken") String accessToken) throws WdkModelException {
-    StepAnalysisContext context = getAnalysis(analysisIdStr, accessToken);
+    StepAnalysisContext context = getAnalysis(analysisIdStr, stepIdStr, accessToken);
     InputStream propertiesStream = getWdkModel().getStepAnalysisFactory().getProperties(context);
     return Response.ok(getStreamingOutput(propertiesStream)).build();
   }
 
   @PUT
-  @Path("/step-analyses/{analysisId}/properties")
+  @Path("/steps/{stepId}/analyses/{analysisId}/properties")
   @Consumes(MediaType.TEXT_PLAIN)
   public Response setStepAnalysisProperties(
+      @PathParam("stepId") String stepIdStr,
       @PathParam("analysisId") String analysisIdStr,
       @QueryParam("accessToken") String accessToken,
       InputStream body) throws WdkModelException {
-    StepAnalysisContext context = getAnalysis(analysisIdStr, accessToken);
+    StepAnalysisContext context = getAnalysis(analysisIdStr, stepIdStr, accessToken);
     getWdkModel().getStepAnalysisFactory().setProperties(context, body);
     return Response.noContent().build();
   }
 
-  private StepAnalysisContext getAnalysis(String analysisIdStr, String accessToken) throws WdkModelException {
+  private StepAnalysisContext getAnalysis(String analysisIdStr, String stepIdStr, String accessToken) throws WdkModelException {
     try {
-      long analysisId = parseIdOrNotFound(analysisIdStr);
+      long stepId = parseIdOrNotFound("step", stepIdStr);
+      long analysisId = parseIdOrNotFound("step analysis", analysisIdStr);
       UserBundle userBundle = getUserBundle(Access.PUBLIC);
       StepAnalysisContext context = getWdkModel().getStepAnalysisFactory().getSavedContext(analysisId);
+      Step step = context.getStep();
+      if (stepId != step.getStepId()) {
+        // step of this analysis does not match step in URL
+        throw new NotFoundException("Step " + stepId + " does not contain analysis " + analysisId);
+      }
+      if (userBundle.getTargetUser().getUserId() != step.getUser().getUserId()) {
+        // owner of this step does not match user in URL
+        throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step " + stepIdStr);
+      }
       if (userBundle.isSessionUser() || context.getAccessToken().equals(accessToken)) {
         return context;
       }
       throw new ForbiddenException();
     }
     catch (WdkUserException e) {
-      throw new NotFoundException(formatNotFound(analysisIdStr));
+      throw new NotFoundException(formatNotFound("step analysis: " + analysisIdStr));
     }
   }
 }
