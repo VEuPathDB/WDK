@@ -22,14 +22,14 @@ public class ValidatedParamStableValues extends ParamStableValues {
   
   private ValidatedParamStableValues(User user, Query query, Map<String,String> paramStableValues) throws WdkUserException, WdkModelException {
 	super(user, query, paramStableValues);
-    validateParamStableValuesAndFillEmptyWithDefaults();
+    validateParamStableValues();
   }
 
   public static ValidatedParamStableValues createFromCompleteParamValuesMap(User user, Query query, Map<String,String> paramStableValues) throws WdkUserException, WdkModelException {
     	return new ValidatedParamStableValues(user, query, paramStableValues);
   }
   
-  private void validateParamStableValuesAndFillEmptyWithDefaults() throws WdkUserException, WdkModelException {
+  private void validateParamStableValues() throws WdkUserException, WdkModelException {
     Map<String, Param> params = _query.getParamMap();
     Map<String, String> errors = null;
 
