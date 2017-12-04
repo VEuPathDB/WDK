@@ -101,14 +101,12 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.find("#choose-step-analysis").get().forEach(addHideButton);
 
     // delegate events for create analysis pane
-    $element.on('click keydown', '.sa-selector-container li', function(event) {
-      var skip = (this.className == 'inactive' ||
-                  (event.type === 'keydown' && event.which !== ENTER_KEY_CODE));
-
-      if (skip) return;
+    $element.on('click keydown', '.analysis-selector-container [data-step-id]', function(event) {
+      var inactive = (this.className == 'inactive');
+      var notEnterKey = (event.type === 'keydown' && event.which !== ENTER_KEY_CODE);
+      if (inactive || notEnterKey) return;
 
       var data = $(this).data();
-
       this.appendChild(spinner.spin().el);
 
       createStepAnalysis(data.name, data.stepId).
@@ -427,7 +425,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
           // assign headings tooltips if there are any
           wdk.tooltips.assignParamTooltips('.step-analysis-results-pane .help-link');
-          
+
           trigger('resultsload', $element, eventData);
           trigger('statuschange', $element, eventData);
         }
