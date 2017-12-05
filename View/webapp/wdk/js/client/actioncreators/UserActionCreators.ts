@@ -1,7 +1,7 @@
 import {filterOutProps} from '../utils/componentUtils';
 import {confirm} from '../utils/Platform';
 import { broadcast } from '../utils/StaticDataUtils';
-import {ActionThunk} from "../ActionCreator";
+import {ActionThunk} from "../utils/ActionCreatorUtils";
 import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "../utils/WdkUser";
 import {RecordInstance} from "../utils/WdkModel";
 import * as AuthUtil from '../utils/AuthUtil';

@@ -5,10 +5,14 @@ import { Filter, MemberFilter } from '../../utils/FilterService';
 import { getTree } from '../../utils/FilterServiceUtils';
 import { filter, Seq } from '../../utils/IterableUtils';
 import { preorderSeq } from '../../utils/TreeUtils';
-import { FilterParamNew } from '../../utils/WdkModel';
+import { FilterParamNew, Parameter } from '../../utils/WdkModel';
 import { SortSpec } from './State';
 
 const natSortComparator = (natsort as any)();
+
+export function isType(parameter: Parameter): parameter is FilterParamNew {
+  return parameter.type === 'FilterParamNew';
+}
 
 export function getLeaves(ontology: FilterParamNew['ontology']) {
   return Seq.from(preorderSeq(getTree(ontology)))

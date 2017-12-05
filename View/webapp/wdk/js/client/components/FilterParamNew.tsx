@@ -1,11 +1,15 @@
-import { getLeaves } from '../params/FilterParamNew/Utils';
-import { debounce, get, memoize, pick } from 'lodash';
+import { get, isEqual, memoize, pick } from 'lodash';
 import React from 'react';
 
-import { Props as ParamProps } from '../params';
-import * as ActionCreators from '../params/FilterParamNew/ActionCreators';
+import {
+  ActiveFieldSetAction,
+  FieldStateUpdatedAction,
+  FiltersUpdatedAction,
+} from '../params/FilterParamNew/ActionCreators';
 import { MemberFieldState, State } from '../params/FilterParamNew/State';
-import { Field, Filter } from '../utils/FilterService';
+import { getLeaves, sortDistribution } from '../params/FilterParamNew/Utils';
+import { Props as ParamProps } from '../params/Utils';
+import { Field, Filter, MemberFilter } from '../utils/FilterService';
 import { FilterParamNew as TFilterParamNew } from '../utils/WdkModel';
 import Loading from './Loading';
 import _ServerSideAttributeFilter from './ServerSideAttributeFilter';
@@ -26,7 +30,6 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     this._handleActiveFieldChange = this._handleActiveFieldChange.bind(this);
     this._handleFilterChange = this._handleFilterChange.bind(this);
     this._handleMemberSort = this._handleMemberSort.bind(this);
-    this._updateCounts = debounce(this._updateCounts, 1000);
   }
 
   _getFieldMap = memoize((parameter: Props['parameter']) =>
@@ -41,12 +44,11 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   }
 
   _handleActiveFieldChange(term: string) {
-    this.props.dispatch(ActionCreators.updateActiveField(
-      this.props.ctx,
-      term,
-      this._getFiltersFromValue(this.props.value),
-      get(this.props.uiState.fieldStates, [ term, 'ontologyTermSummary' ]) == null
-    ));
+    this.props.dispatch(ActiveFieldSetAction.create({
+      ...this.props.ctx,
+      activeField: term,
+      loadOntologyTermSummary: get(this.props.uiState.fieldStates, [ term, 'ontologyTermSummary' ]) == null
+    }));
   }
 
   _handleFilterChange(filters: Filter[]) {
@@ -55,21 +57,34 @@ export default class FilterParamNew extends React.PureComponent<Props> {
       dispatch,
       onParamValueChange,
       value,
-      uiState: { activeOntologyTerm }
+      uiState: { activeOntologyTerm: activeField }
     } = this.props;
+    const prevFilters = this._getFiltersFromValue(this.props.value);
 
     onParamValueChange(JSON.stringify({ filters }));
-    this._updateCounts(filters);
+    dispatch(FiltersUpdatedAction.create({...ctx, prevFilters, filters}));
+
+    if (activeField != null) {
+      // Update summary counts for active field if other field filters have been modified
+      const prevOtherFilters = prevFilters.filter(f => f.field != activeField);
+      const otherFilters = filters.filter(f => f.field !== activeField);
+      if (!isEqual(prevOtherFilters, otherFilters)) {
+        dispatch(ActiveFieldSetAction.create({ ...ctx, activeField, loadOntologyTermSummary: true }));
+      }
+    }
   }
 
   _handleMemberSort(field: Field, sort: MemberFieldState['sort']) {
-    this.props.dispatch(ActionCreators.updateMemberFieldSort(this.props.ctx, field.term, this.props.uiState.fieldStates[field.term] as MemberFieldState, sort));
-  }
-
-  _updateCounts(filters: Filter[]) {
-    const { ctx, dispatch, uiState: { activeOntologyTerm } } = this.props;
-    dispatch(ActionCreators.updateFilters(ctx, filters, activeOntologyTerm));
-    dispatch(ActionCreators.updateSummaryCounts(ctx, filters));
+    const filters = this._getFiltersFromValue(this.props.value);
+    const { ontologyTermSummary } = this.props.uiState.fieldStates[field.term] as MemberFieldState
+    this.props.dispatch(FieldStateUpdatedAction.create({
+      ...this.props.ctx,
+      field: field.term,
+      fieldState: {
+        sort,
+        ontologyTermSummary: sortDistribution(ontologyTermSummary, sort, filters.find(f => f.field === field.term) as MemberFilter)
+      }
+    }));
   }
 
   render() {

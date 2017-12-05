@@ -1,4 +1,4 @@
-import { ActionThunk } from '../ActionCreator';
+import { ActionThunk } from '../utils/ActionCreatorUtils';
 import {pick} from 'lodash';
 import {AttributeField, RecordClass, Question, Answer, TableField} from '../utils/WdkModel'
 

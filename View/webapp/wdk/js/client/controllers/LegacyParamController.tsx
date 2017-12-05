@@ -2,16 +2,20 @@ import { debounce, flow, get, isEqual, partial } from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { loadQuestion, updateParamValue, updateDependentParams } from '../actioncreators/QuestionActionCreators';
+import {
+  ActiveQuestionUpdatedAction,
+  ParamValueUpdatedAction
+} from '../actioncreators/QuestionActionCreators';
 import * as ParamModules from '../params';
 import QuestionStore, { State } from '../stores/QuestionStore';
+import { Seq } from '../utils/IterableUtils';
 import { Parameter } from '../utils/WdkModel';
 import AbstractViewController from './AbstractViewController';
+import { Context } from '../params/Utils';
 
 const ActionCreators = {
-  loadQuestion,
-  updateParamValue,
-  updateDependentParams
+  setActiveQuestion: ActiveQuestionUpdatedAction.create,
+  updateParamValue: ParamValueUpdatedAction.create
 }
 
 type Props = {
@@ -29,17 +33,6 @@ export default class LegacyParamController extends AbstractViewController<
   Props
 > {
 
-  // Apply modifications to event handlers that are scoped to this
-  // LegacyParamController instance.
-  eventHandlers: typeof ActionCreators = {
-    ...this.eventHandlers,
-
-    // XXX This could be more sophisticated:
-    // - debounce if prev and next param names are the same
-    // - synchronize if prev and next param names are different
-    updateDependentParams: debounce(this.eventHandlers.updateDependentParams, 1000)
-  }
-
   paramModules = ParamModules;
 
   getStoreClass() {
@@ -54,11 +47,20 @@ export default class LegacyParamController extends AbstractViewController<
     return ActionCreators;
   }
 
+  getDependentParams(parameter: Parameter): Seq<Parameter> {
+    return Seq.from(parameter.dependentParams)
+      .map(name => this.state.question.parametersByName[name])
+      .flatMap(dependentParam => this.getDependentParams(dependentParam))
+  }
+
   loadData(prevProps?: Props) {
     if (
       this.state.questionStatus == null
     ) {
-      this.eventHandlers.loadQuestion(this.props.questionName, this.props.paramValues);
+      this.eventHandlers.setActiveQuestion({
+        questionName: this.props.questionName,
+        paramValues: this.props.paramValues
+      });
     }
 
     else if (prevProps != null) {
@@ -70,11 +72,15 @@ export default class LegacyParamController extends AbstractViewController<
       if (changedParams.length > 1) {
         console.warn('Received multiple changed param values: %o', changedParams);
       }
-      changedParams.forEach(([name, value]) => {
+      changedParams.forEach(([name, paramValue]) => {
         let parameter = this.state.question.parameters.find(p => p.name === name);
         if (parameter) {
-          this.eventHandlers.updateParamValue(this.getContext(parameter), value);
-          this.eventHandlers.updateDependentParams(this.getContext(parameter), value);
+          const dependentParameters = this.getDependentParams(parameter).toArray();
+          this.eventHandlers.updateParamValue({
+            ...this.getContext(parameter),
+            paramValue,
+            dependentParameters
+          });
         }
       });
     }
@@ -92,7 +98,7 @@ export default class LegacyParamController extends AbstractViewController<
     return this.state.questionStatus === 'not-found';
   }
 
-  getContext<T extends Parameter>(parameter: T): ParamModules.Context<T> {
+  getContext<T extends Parameter>(parameter: T): Context<T> {
     return {
       questionName: this.state.question.name,
       parameter: parameter,
@@ -115,9 +121,13 @@ export default class LegacyParamController extends AbstractViewController<
           dispatch={this.dispatchAction}
           value={this.state.paramValues[parameter.name]}
           uiState={this.state.paramUIState[parameter.name]}
-          onParamValueChange={(value: string) => {
-            this.eventHandlers.updateParamValue(ctx, value);
-            this.eventHandlers.updateDependentParams(ctx, value);
+          onParamValueChange={(paramValue: string) => {
+            const dependentParameters = this.getDependentParams(parameter).toArray();
+            this.eventHandlers.updateParamValue({
+              ...ctx,
+              paramValue,
+              dependentParameters
+            });
           }}
         />
         <ParamterInput

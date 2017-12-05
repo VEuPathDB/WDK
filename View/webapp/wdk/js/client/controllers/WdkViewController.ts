@@ -1,7 +1,7 @@
 import AbstractViewController from './AbstractViewController';
 import WdkStore, { BaseState } from '../stores/WdkStore';
 import { Action } from '../dispatcher/Dispatcher';
-import { ActionCreatorRecord } from '../ActionCreator';
+import { ActionCreatorRecord } from '../utils/ActionCreatorUtils';
 
 /**
  * Simple implementation of 'AbstractViewController' that uses 'WdkStore' and

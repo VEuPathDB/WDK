@@ -1,12 +1,16 @@
-import { isEqual } from 'lodash';
+import { Observable } from 'rxjs';
 
-import { ActionThunk } from '../../ActionCreator';
-import { Filter, MemberFilter } from '../../utils/FilterService';
+import { ActionCreatorServices, combineEpics } from '../../utils/ActionCreatorUtils';
+import { ParamLoadedAction } from '../../actioncreators/QuestionActionCreators';
+import { Action } from '../../dispatcher/Dispatcher';
+import { makeActionCreator, payload } from '../../utils/ActionCreatorUtils';
+import { Filter } from '../../utils/FilterService';
 import { FilterParamNew } from '../../utils/WdkModel';
-import { Context } from '../index';
-import { ACTIVE_FIELD_SET, FIELD_STATE_UPDATED, FILTERS_UPDATED, SUMMARY_COUNTS_LOADED } from './Constants';
-import { FieldState, MemberFieldState, SortSpec } from './State';
+import { Context, isContextType } from '../Utils';
+import { FieldState, MemberFieldState } from './State';
+import { isType } from './Utils';
 import { findFirstLeaf, getFilters, isMemberField, sortDistribution } from './Utils';
+
 
 type Ctx = Context<FilterParamNew>
 
@@ -16,127 +20,145 @@ const defaultMemberFieldSort: MemberFieldState['sort'] = {
   groupBySelected: false
 }
 
-// Actions
-// -------
+// Action Creators
+// ---------------
 
-// Properties we expect for all FilterParamNew Actions
-type ActionBase = {
-  payload: Context<FilterParamNew>
-}
-
-export type Action = ActionBase & (
-  {
-    type: typeof ACTIVE_FIELD_SET,
-    payload: { activeField: string }
-  } | {
-    type: typeof SUMMARY_COUNTS_LOADED,
-    payload: { filtered: number, unfiltered: number }
-  } | {
-    type: typeof FIELD_STATE_UPDATED,
-    payload: { field: string, fieldState: Record<string, any> }
-  } | {
-    type: typeof FILTERS_UPDATED,
-    payload: { prevFilters: Filter[], filters: Filter[] }
-  }
+export const ActiveFieldSetAction = makeActionCreator(
+  'filter-param-new/active-field-set',
+  payload<Context<FilterParamNew> & {
+    activeField: string;
+    loadOntologyTermSummary: boolean;
+  }>()
 )
 
-// ActionCreators
-// --------------
+export const SummaryCountsLoadedAction = makeActionCreator(
+  'filter-param-new/summary-counts-loaded',
+  payload<Context<FilterParamNew> & {
+    filtered: number;
+    unfiltered: number;
+  }>()
+)
 
-export function init(ctx: Ctx): ActionThunk<Action> {
-  return (dispatch, { wdkService }) => {
-    const filters = getFiltersFromContext(ctx);
-    const activeField = filters.length === 0 ? findFirstLeaf(getOntologyFromContext(ctx)) : filters[0].field;
-    dispatch(updateActiveField(ctx, activeField, filters, true));
-    dispatch(updateSummaryCounts(ctx, filters));
-  }
+export const FieldStateUpdatedAction = makeActionCreator(
+  'filter-param-new/field-state-updated',
+  payload<Context<FilterParamNew> & {
+    field: string;
+    fieldState: Record<string, any>;
+  }>()
+)
+
+export const FiltersUpdatedAction = makeActionCreator(
+  'filter-param-new/filters-updated',
+  payload<Context<FilterParamNew> & {
+    prevFilters: Filter[];
+    filters: Filter[];
+  }>()
+)
+
+// Epics
+// -----
+
+// export default combineEpics(initEpic, updateActiveFieldEpic, updateSummaryCountsEpic);
+
+export default function initEpic(action$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
+  return action$
+    .filter(ParamLoadedAction.isType)
+    .mergeMap(action => {
+      if (!isContextType(action.payload.ctx, isType)) return Observable.empty();
+
+      const { ctx } = action.payload;
+      const filters = getFiltersFromContext(ctx);
+      const activeField = filters.length === 0 ? findFirstLeaf(getOntologyFromContext(ctx)) : filters[0].field;
+      const paramAction$ = action$.filter(action => (
+        (ActiveFieldSetAction.isType(action) || FiltersUpdatedAction.isType(action)) &&
+        action.payload.questionName === ctx.questionName &&
+        action.payload.parameter.name === ctx.parameter.name
+      ));
+
+      // The order here is important. We want to first merge the child epics
+      // (updateActiveFieldEpic and ypdateSummaryCountsEpic), THEN we want to
+      // merge the Observable of ActiveFieldSetAction. This will ensure that
+      // updateActiveFieldEpic receives that action.
+      return updateActiveFieldEpic(paramAction$, services)
+        .merge(updateSummaryCountsEpic(paramAction$, services))
+        .merge(Observable.of(ActiveFieldSetAction.create({ ...ctx, activeField, loadOntologyTermSummary: true })));
+    })
 }
 
-export function updateActiveField(ctx: Ctx, activeField: string, allFilters: Filter[], loadSummary: boolean): ActionThunk<Action> {
-  return (dispatch, { wdkService }) => {
-    const { parameter, questionName, paramValues } = ctx;
-    dispatch({ type: ACTIVE_FIELD_SET, payload: { ...ctx, activeField }});
+export function updateActiveFieldEpic(action$: Observable<Action>, { wdkService }: ActionCreatorServices): Observable<Action> {
+  return action$
+    .filter(ActiveFieldSetAction.isType)
+    .filter(action => action.payload.loadOntologyTermSummary)
+    .debounceTime(1000)
+    .mergeMap(action => {
+      const { questionName, paramValues, parameter, activeField } = action.payload;
+      const filters = getFiltersFromContext(action.payload);
 
-    if (loadSummary) {
-      const filters = allFilters.filter(f => f.field !== activeField);
-      dispatch(updateFieldState(ctx, activeField, { loading: true }))
-
-      wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeField, paramValues).then(
+      return Observable.from(wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeField, paramValues).then(
         summary => {
           let fieldState: FieldState = isMemberField(parameter, activeField) ? {
             loading: false,
             sort: defaultMemberFieldSort,
             ontologyTermSummary: sortDistribution(summary, defaultMemberFieldSort)
           } : {
-            loading: false,
-            ontologyTermSummary: summary
-          };
-          dispatch(updateFieldState(ctx, activeField, fieldState))
+              loading: false,
+              ontologyTermSummary: summary
+            };
+          return FieldStateUpdatedAction.create({
+            questionName,
+            parameter,
+            paramValues,
+            field: activeField,
+            fieldState
+          })
         },
         error => {
-          dispatch(updateFieldState(ctx, activeField, {
-            loading: false,
-            errorMessage: 'Unable to load ontologyTermSummary for "' + activeField + '".'
-          }));
           console.error(error);
+          return FieldStateUpdatedAction.create({
+            questionName,
+            parameter,
+            paramValues,
+            field: activeField,
+            fieldState: {
+              loading: false,
+              errorMessage: 'Unable to load ontologyTermSummary for "' + activeField + '".'
+            }
+          });
         }
-      )
-    }
-  }
+      ))
+      .merge(wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
+        counts => SummaryCountsLoadedAction.create({
+          questionName: action.payload.questionName,
+          parameter: action.payload.parameter,
+          paramValues: action.payload.paramValues,
+          ...counts
+        })
+      ))
+      .takeUntil(action$.filter(ActiveFieldSetAction.isType));
+    })
 }
 
-export function updateSummaryCounts(ctx: Ctx, filters: Filter[]): ActionThunk<Action> {
-  return (dispatch, { wdkService }) => {
-    const { parameter, questionName, paramValues } = ctx;
-    wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
-      counts => {
-        dispatch({ type: SUMMARY_COUNTS_LOADED, payload: { ...counts, ...ctx } })
-      }
-    )
-  };
-}
-
-export function updateFilters(ctx: Ctx, filters: Filter[], activeField?: string): ActionThunk<Action> {
-  return dispatch => {
-    const prevFilters = getFiltersFromContext(ctx);
-
-    dispatch({
-      type: FILTERS_UPDATED,
-      payload: { ...ctx, prevFilters, filters }
-    });
-
-    if (activeField != null) {
-      // Update summary counts for active field if other field filters have been modified
-      const prevOtherFilters = prevFilters.filter(f => f.field != activeField);
-      const otherFilters = filters.filter(f => f.field !== activeField);
-      if (!isEqual(prevOtherFilters, otherFilters)) {
-        dispatch(updateActiveField(ctx, activeField, filters, true));
-      }
-    }
-
-  };
+export function updateSummaryCountsEpic(action$: Observable<Action>, { wdkService }: ActionCreatorServices) {
+  return action$.filter(FiltersUpdatedAction.isType)
+    .debounceTime(1000)
+    .mergeMap(action => {
+      const { parameter, questionName, paramValues, filters, prevFilters } = action.payload;
+      return Observable.from(wdkService.getFilterParamSummaryCounts(
+        questionName, parameter.name, filters, paramValues).then(
+          counts => SummaryCountsLoadedAction.create({
+            questionName: action.payload.questionName,
+            parameter: action.payload.parameter,
+            paramValues: action.payload.paramValues,
+            ...counts
+          })
+        ))
+        .takeUntil(action$.filter(FiltersUpdatedAction.isType));
+    })
 }
 
 
-// membership filter action creators
-// ---------------------------------
-
-export function updateMemberFieldSort(ctx: Ctx, field: string, prevFieldState: FieldState, sort: SortSpec): Action {
-  const { paramValues, parameter } = ctx;
-  const filters = getFilters(paramValues[parameter.name]);
-  return updateFieldState(ctx, field, {
-    sort,
-    ontologyTermSummary: sortDistribution(prevFieldState.ontologyTermSummary, sort, filters.find(f => f.field === field) as MemberFilter)
-  })
-}
-
-// XXX Should these be coarse or fine grained?
-export function updateFieldState(ctx: Ctx, field: string, fieldState: Record<string, any>): Action {
-  return {
-    type: FIELD_STATE_UPDATED,
-    payload: { ...ctx, field, fieldState }
-  };
-}
+// Helpers
+// -------
 
 function getFiltersFromContext(ctx: Ctx) {
   return getFilters(ctx.paramValues[ctx.parameter.name]);

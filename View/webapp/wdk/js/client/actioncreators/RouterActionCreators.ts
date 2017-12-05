@@ -6,7 +6,7 @@
  */
 
 import { Location } from 'history';
-import { ActionThunk } from '../ActionCreator';
+import { ActionThunk } from '../utils/ActionCreatorUtils';
 
 export type LocationAction = {
   type: 'router/location-updated',

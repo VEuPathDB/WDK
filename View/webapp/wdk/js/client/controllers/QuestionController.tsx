@@ -1,20 +1,22 @@
-import { debounce, get } from 'lodash';
+import { get } from 'lodash';
 import * as React from 'react';
 
-import { loadQuestion, updateDependentParams, updateParamValue } from '../actioncreators/QuestionActionCreators';
+import {
+  ActiveQuestionUpdatedAction,
+  ParamValueUpdatedAction
+} from '../actioncreators/QuestionActionCreators';
 import * as ParamModules from '../params';
 import * as p from '../params';
 import QuestionStore, { State } from '../stores/QuestionStore';
 import { wrappable } from '../utils/componentUtils';
-import { Parameter, RecordClass, ParameterGroup } from '../utils/WdkModel';
+import { Seq } from '../utils/IterableUtils';
+import { Parameter, ParameterGroup } from '../utils/WdkModel';
 import AbstractPageController from './AbstractPageController';
-import { Seq } from "../utils/IterableUtils";
 
 type QuestionState = State['questions'][string];
 
 const ActionCreators = {
-  updateParamValue,
-  updateDependentParams
+  updateParamValue: ParamValueUpdatedAction.create
 }
 
 class QuestionController extends AbstractPageController<QuestionState, QuestionStore, typeof ActionCreators> {
@@ -31,22 +33,13 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
     return get(this.store.getState(), ['questions', this.props.match.params.question], {}) as QuestionState;
   }
 
-  // Apply modifications to event handlers that are scoped to this
-  // LegacyParamController instance.
-  eventHandlers: typeof ActionCreators = {
-    ...this.eventHandlers,
-
-    // XXX This could be more sophisticated:
-    // - latest if prev and next param names are the same
-    // - synchronize if prev and next param names are different
-    updateDependentParams: debounce(this.eventHandlers.updateDependentParams, 1000)
-  }
-
   paramModules = ParamModules;
 
   loadData() {
     if (this.state.questionStatus == null) {
-      this.dispatchAction(loadQuestion(this.props.match.params.question));
+      this.dispatchAction(ActiveQuestionUpdatedAction.create({
+        questionName: this.props.match.params.question
+      }));
     }
   }
 
@@ -77,6 +70,12 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
     };
   }
 
+  getDependentParams(parameter: Parameter): Seq<Parameter> {
+    return Seq.from(parameter.dependentParams)
+      .map(name => this.state.question.parametersByName[name])
+      .flatMap(dependentParam => this.getDependentParams(dependentParam))
+  }
+
   renderGroup(group: ParameterGroup) {
     return (
       <div key={group.name}>
@@ -101,9 +100,9 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
           value={paramValues[parameter.name]}
           uiState={paramUIState[parameter.name]}
           dispatch={this.dispatchAction}
-          onParamValueChange={value => {
-            this.eventHandlers.updateParamValue(ctx, value);
-            this.eventHandlers.updateDependentParams(ctx, value);
+          onParamValueChange={paramValue => {
+            const dependentParameters = this.getDependentParams(parameter).toArray();
+            this.eventHandlers.updateParamValue({ ...ctx, paramValue, dependentParameters });
           }}
         />
       </div>
@@ -114,7 +113,9 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
     return (
       <div>
         <h1>{this.getTitle()}</h1>
-        {this.state.question.groups.filter(g => g.isVisible).map(g => this.renderGroup(g))}
+        {this.state.question.groups
+         // .filter(g => g.isVisible)
+             .map(g => this.renderGroup(g))}
       </div>
     );
   }
