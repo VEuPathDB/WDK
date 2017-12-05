@@ -35,26 +35,56 @@ export type ActionCreatorRecord<T extends Action> = Record<string, ActionCreator
 export type DispatchAction<T extends Action> = (action: ActionCreatorResult<T>) => ActionCreatorResult<T>;
 
 
+
+/**
+ * An Action that carries the type of its `type` and `payload` properties
+ */
 interface TypedAction<T extends string, S> {
   type: T;
   payload: S;
 }
 
+/**
+ * A type used to carry some generic type. Used by the `payload()` function below.
+ */
 interface Data<T> { }
 
+/**
+ * An object that can be used to create Actions and to test for them.
+ */
 interface TypedActionCreator<T extends string, S> {
+  // For convenience
   type: T;
+  // Create a TypedAction<T,S>
   create(payload: S): TypedAction<T, S>;
+  // Verify if an action is a TypedAction<T,S>
   isType(action: Action): action is TypedAction<T, S>;
 }
 
+/**
+ * An Action with no payload
+ */
 interface EmptyActionCreator<T extends string> extends TypedActionCreator<T, undefined> {
   create(): TypedAction<T, undefined>
 }
 
 
+// A basic object used to satisfy typescript's compiler (see `payload()` below).
 const empty = Object.create(null);
 
+/**
+ * This is a trick to make `makeActionCreator()` infer the type of the Action's
+ * `payload` property. By doing this, we can declare the types of an Action's
+ * `type` and `payload` property non-redundantly. Without this trick, we would
+ * have to declare the generic types as well as pass the string value of `type`:
+ * `const ActionCreator = makeActionCreator<'my-type', { name: string }>('my-type');`
+ *
+ * @example
+ * ```
+ * // Note that we have to call `payload` (see the parentheses).
+ * const ActionCreator = makeActionCreator('my-type', payload<{ name: string }>());
+ * ```
+ */
 export function payload<T = undefined>(): Data<T> {
   return empty as Data<T>;
 }
@@ -89,10 +119,37 @@ export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): Ty
     }
 }
 
+
+
+/**
+ * An Epic can be thought of as a listener that reacts to specific Actions that
+ * get dispatched, by creating more actions. This is useful for creating actions
+ * that require asynchronous work (such as loading data from a server).
+ *
+ * The basic shape of an Epic is that it is a function that consumes a stream of
+ * Actions, and it returns a stream of new Actions. The Actions it consumes are
+ * those that have already been handled by the store. The Actions it produces
+ * are handled by the Store as they are emitted (more on that later). Note that
+ * it can return an empty stream, which might happen if an Action it expects is
+ * never emitted.
+ *
+ * For convenience, Epics in WDK will also have configured services passed to
+ * them.
+ *
+ * Epics are also scoped to a store. This means that an Epic will only receive
+ * Actions for which WdkStore#storeShouldReceiveAction(channel) returns true,
+ * and all Actions produced by the Epic will contain the Store's channel
+ * (unless the `broadcast()` action decorator is used).
+ */
 export interface Epic {
   (action$: Observable<Action>, services: ActionCreatorServices): Observable<Action>;
 }
 
+/**
+ * Creates an Epic that emits the Actions of all input Epics. Actions are
+ * emitted in the order that the input Epics emit actions (e.g., they are
+ * interleaved).
+ */
 export function combineEpics(...epics: Epic[]): Epic {
   return <Epic>((action$, services) =>
     Observable.merge(...epics.map(epic => epic(action$, services))))
