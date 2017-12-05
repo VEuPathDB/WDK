@@ -717,6 +717,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   
   /**
    * By default, params are not dependent, and so do not become stale.  must be overridden by dependent params
+   * The definition of stale is: given a possible changes in values of the depended params provided on input,
+   * this param is stale if a previous value for it might no longer be valid
    * 
    * @param staleDependedParamsFullNames
    * @return
