@@ -1,15 +1,16 @@
 import { Observable } from 'rxjs';
 
 import { ActionCreatorServices, combineEpics } from '../../utils/ActionCreatorUtils';
-import { ParamLoadedAction } from '../../actioncreators/QuestionActionCreators';
+import { ParamLoadedAction, ParamValueUpdatedAction } from '../../actioncreators/QuestionActionCreators';
 import { Action } from '../../dispatcher/Dispatcher';
 import { makeActionCreator, payload } from '../../utils/ActionCreatorUtils';
 import { Filter } from '../../utils/FilterService';
-import { FilterParamNew } from '../../utils/WdkModel';
+import { FilterParamNew, ParameterValues } from '../../utils/WdkModel';
 import { Context, isContextType } from '../Utils';
 import { FieldState, MemberFieldState } from './State';
 import { isType } from './Utils';
 import { findFirstLeaf, getFilters, isMemberField, sortDistribution } from './Utils';
+import WdkService from '../../utils/WdkService';
 
 
 type Ctx = Context<FilterParamNew>
@@ -93,48 +94,9 @@ export function updateActiveFieldEpic(action$: Observable<Action>, { wdkService 
     .mergeMap(action => {
       const { questionName, paramValues, parameter, activeField } = action.payload;
       const filters = getFiltersFromContext(action.payload);
-
-      return Observable.from(wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeField, paramValues).then(
-        summary => {
-          let fieldState: FieldState = isMemberField(parameter, activeField) ? {
-            loading: false,
-            sort: defaultMemberFieldSort,
-            ontologyTermSummary: sortDistribution(summary, defaultMemberFieldSort)
-          } : {
-              loading: false,
-              ontologyTermSummary: summary
-            };
-          return FieldStateUpdatedAction.create({
-            questionName,
-            parameter,
-            paramValues,
-            field: activeField,
-            fieldState
-          })
-        },
-        error => {
-          console.error(error);
-          return FieldStateUpdatedAction.create({
-            questionName,
-            parameter,
-            paramValues,
-            field: activeField,
-            fieldState: {
-              loading: false,
-              errorMessage: 'Unable to load ontologyTermSummary for "' + activeField + '".'
-            }
-          });
-        }
-      ))
-      .merge(wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
-        counts => SummaryCountsLoadedAction.create({
-          questionName: action.payload.questionName,
-          parameter: action.payload.parameter,
-          paramValues: action.payload.paramValues,
-          ...counts
-        })
-      ))
-      .takeUntil(action$.filter(ActiveFieldSetAction.isType));
+      return Observable.from(getOntologyTermSummary(wdkService, activeField, questionName, parameter, filters, paramValues))
+        .merge(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues))
+        .takeUntil(action$.filter(ActiveFieldSetAction.isType));
     })
 }
 
@@ -142,16 +104,8 @@ export function updateSummaryCountsEpic(action$: Observable<Action>, { wdkServic
   return action$.filter(FiltersUpdatedAction.isType)
     .debounceTime(1000)
     .mergeMap(action => {
-      const { parameter, questionName, paramValues, filters, prevFilters } = action.payload;
-      return Observable.from(wdkService.getFilterParamSummaryCounts(
-        questionName, parameter.name, filters, paramValues).then(
-          counts => SummaryCountsLoadedAction.create({
-            questionName: action.payload.questionName,
-            parameter: action.payload.parameter,
-            paramValues: action.payload.paramValues,
-            ...counts
-          })
-        ))
+      const { parameter, questionName, paramValues, filters } = action.payload;
+      return Observable.from(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues))
         .takeUntil(action$.filter(FiltersUpdatedAction.isType));
     })
 }
@@ -159,6 +113,65 @@ export function updateSummaryCountsEpic(action$: Observable<Action>, { wdkServic
 
 // Helpers
 // -------
+
+function getOntologyTermSummary(
+  wdkService: WdkService,
+  activeField: string,
+  questionName: string,
+  parameter: FilterParamNew,
+  filters: Filter[],
+  paramValues: ParameterValues
+) {
+  return wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeField, paramValues).then(
+    summary => {
+      let fieldState: FieldState = isMemberField(parameter, activeField) ? {
+        loading: false,
+        sort: defaultMemberFieldSort,
+        ontologyTermSummary: sortDistribution(summary, defaultMemberFieldSort)
+      } : {
+          loading: false,
+          ontologyTermSummary: summary
+        };
+      return FieldStateUpdatedAction.create({
+        questionName,
+        parameter,
+        paramValues,
+        field: activeField,
+        fieldState
+      })
+    },
+    error => {
+      console.error(error);
+      return FieldStateUpdatedAction.create({
+        questionName,
+        parameter,
+        paramValues,
+        field: activeField,
+        fieldState: {
+          loading: false,
+          errorMessage: 'Unable to load ontologyTermSummary for "' + activeField + '".'
+        }
+      });
+    }
+  )
+}
+
+function getSummaryCounts(
+  wdkService: WdkService,
+  questionName: string,
+  parameter: FilterParamNew,
+  filters: Filter[],
+  paramValues: ParameterValues
+) {
+  return wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
+    counts => SummaryCountsLoadedAction.create({
+      questionName,
+      parameter,
+      paramValues,
+      ...counts
+    })
+  )
+}
 
 function getFiltersFromContext(ctx: Ctx) {
   return getFilters(ctx.paramValues[ctx.parameter.name]);
