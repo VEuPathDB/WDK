@@ -7,7 +7,7 @@ import {
 
 // helpers
 
-function timeout(ms) {
+function timeout(ms: number): Promise<number> {
   return new Promise(function(resolve, reject) {
     setTimeout(function() {
       resolve(ms);
@@ -27,7 +27,7 @@ test('latest', function(t) {
 
 test('synchronized', function(t) {
   const synchronizedTimeout = synchronized(timeout);
-  const called = [];
+  const called: number[] = [];
   return Promise.all([
     synchronizedTimeout(400).then(ms => called.push(ms)),
     synchronizedTimeout(300).then(ms => called.push(ms)),
@@ -42,7 +42,7 @@ test('synchronized', function(t) {
 
 test('Mutex', function(t) {
   const mutex = new Mutex();
-  const called = [];
+  const called: number[] = [];
   const error = new Error("Inside synchronize.");
   const mss = [400,300,200,100];
 
@@ -60,7 +60,7 @@ test('Mutex', function(t) {
     t.is(err, error, "Errors should be handled by consumer");
   });
 
-  return mutex.synchronize(() => {}).then(() => {
+  return mutex.synchronize(() => Promise.resolve()).then(() => {
     t.deepEqual(called, [400,300,200,100], "Promises should resolve in order added");
   });
 

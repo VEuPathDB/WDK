@@ -5,7 +5,7 @@ import Page from '../components/Page';
 import { ViewControllerProps } from "../CommonTypes";
 import WdkStore, { BaseState } from "../stores/WdkStore";
 import { RouteComponentProps } from "react-router";
-import { ActionCreatorRecord } from "../ActionCreator";
+import { ActionCreatorRecord } from "../utils/ActionCreatorUtils";
 import { Action } from "../dispatcher/Dispatcher";
 
 export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;

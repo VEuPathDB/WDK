@@ -1,4 +1,4 @@
-import {ActionThunk} from "../ActionCreator";
+import {ActionThunk} from "../utils/ActionCreatorUtils";
 import {UserDatasetMeta, UserDataset} from "../utils/WdkModel";
 import {ServiceError} from "../utils/WdkService";
 

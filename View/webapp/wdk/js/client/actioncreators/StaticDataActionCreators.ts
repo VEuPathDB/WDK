@@ -1,6 +1,6 @@
 import { broadcast } from '../utils/StaticDataUtils';
 import WdkService from "../utils/WdkService";
-import {ActionThunk, DispatchAction} from "../ActionCreator";
+import {ActionThunk, DispatchAction} from "../utils/ActionCreatorUtils";
 import {ServiceConfig} from "../utils/WdkService";
 import {CategoryOntology} from "../utils/CategoryUtils";
 import {Question, RecordClass} from "../utils/WdkModel";

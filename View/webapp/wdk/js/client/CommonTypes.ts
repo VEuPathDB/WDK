@@ -1,7 +1,7 @@
 import WdkStore from "./stores/WdkStore";
 import WdkDispatcher, { Action } from "./dispatcher/Dispatcher";
 import GlobalDataStore from "./stores/GlobalDataStore";
-import { ActionCreatorResult, ActionCreator } from "./ActionCreator";
+import { ActionCreator, ActionCreatorResult, ActionCreatorServices } from './utils/ActionCreatorUtils';
 import { RouteComponentProps } from "react-router";
 import { History } from 'history';
 import AbstractViewController from './controllers/AbstractViewController';
@@ -9,7 +9,7 @@ import { ComponentType } from "react";
 
 
 export interface StoreConstructor<T extends WdkStore> {
-  new(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore): T;
+  new(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices): T;
 }
 
 export interface DispatchAction {

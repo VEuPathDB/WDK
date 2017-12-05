@@ -38,6 +38,7 @@ export interface ParameterBase extends ModelEntity {
   group: string;
   isReadOnly: boolean;
   defaultValue: ParameterValue;
+  dependentParams: string[];
 }
 
 export interface StringParam extends ParameterBase {

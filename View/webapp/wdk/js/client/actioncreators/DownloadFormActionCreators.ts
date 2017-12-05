@@ -1,6 +1,6 @@
 import { submitAsForm } from '../utils/FormSubmitter';
 import { getStepBundlePromise, getSingleRecordStepBundlePromise } from '../utils/stepUtils';
-import { ActionThunk } from '../ActionCreator';
+import { ActionThunk } from '../utils/ActionCreatorUtils';
 import { Step } from '../utils/WdkUser';
 import {Question, RecordClass} from "../utils/WdkModel";
 

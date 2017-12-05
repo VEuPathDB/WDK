@@ -4,7 +4,7 @@ import {
   OntologyNode
 } from '../utils/OntologyUtils';
 
-import { ActionThunk } from '../ActionCreator';
+import { ActionThunk } from '../utils/ActionCreatorUtils';
 
 export type LoadingAction = {
   type: 'sitemap/loading'

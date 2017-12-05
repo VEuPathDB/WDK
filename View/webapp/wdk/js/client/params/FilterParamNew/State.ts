@@ -1,9 +1,14 @@
 import { keyBy, mapValues } from 'lodash';
 
+import { Action } from '../../dispatcher/Dispatcher';
 import { Filter } from '../../utils/FilterService';
 import { OntologyTermSummary } from '../../utils/WdkModel';
-import { Action } from './ActionCreators';
-import * as ActionTypes from './Constants';
+import {
+  ActiveFieldSetAction,
+  FieldStateUpdatedAction,
+  FiltersUpdatedAction,
+  SummaryCountsLoadedAction,
+} from './ActionCreators';
 
 
 export type SortSpec = {
@@ -49,43 +54,35 @@ const initialState: State = {
 
 // FIXME Set loading and error statuses on ontologyTermSummaries entries
 export function reduce(state: State = initialState, action: Action): State {
-  switch (action.type) {
+  if (ActiveFieldSetAction.isType(action)) return {
+    ...state,
+    activeOntologyTerm: action.payload.activeField,
+    fieldStates: state.fieldStates[action.payload.activeField] == null ? {
+      ...state.fieldStates,
+      [action.payload.activeField]: { }
+    } : state.fieldStates
+  }
 
-    case ActionTypes.ACTIVE_FIELD_SET:
-      return {
-        ...state,
-        activeOntologyTerm: action.payload.activeField,
-        fieldStates: state.fieldStates[action.payload.activeField] == null ? {
-          ...state.fieldStates,
-          [action.payload.activeField]: { }
-        } : state.fieldStates
+  if (SummaryCountsLoadedAction.isType(action)) return {
+    ...state,
+    filteredCount: action.payload.filtered,
+    unfilteredCount: action.payload.unfiltered
+  }
+
+  if (FieldStateUpdatedAction.isType(action)) return {
+    ...state,
+    fieldStates: {
+      ...state.fieldStates,
+      [action.payload.field]: {
+        ...state.fieldStates[action.payload.field],
+        ...action.payload.fieldState
       }
+    }
+  }
 
-    case ActionTypes.SUMMARY_COUNTS_LOADED:
-      return {
-        ...state,
-        filteredCount: action.payload.filtered,
-        unfilteredCount: action.payload.unfiltered
-      }
-
-    case ActionTypes.FIELD_STATE_UPDATED:
-      return {
-        ...state,
-        fieldStates: {
-          ...state.fieldStates,
-          [action.payload.field]: {
-            ...state.fieldStates[action.payload.field],
-            ...action.payload.fieldState
-          }
-        }
-      }
-
-    case ActionTypes.FILTERS_UPDATED:
-      return {
-        ...state,
-        fieldStates: handleFilterChange(state, action.payload.prevFilters, action.payload.filters)
-      }
-
+  if (FiltersUpdatedAction.isType(action)) return {
+    ...state,
+    fieldStates: handleFilterChange(state, action.payload.prevFilters, action.payload.filters)
   }
 
   return state;
