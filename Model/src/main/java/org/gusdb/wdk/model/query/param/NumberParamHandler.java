@@ -26,7 +26,7 @@ public class NumberParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  public String toStableValue(User user, Object rawValue)
       throws WdkUserException {
     return (String) rawValue;
   }
