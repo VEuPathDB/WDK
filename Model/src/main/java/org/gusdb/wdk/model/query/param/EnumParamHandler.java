@@ -59,7 +59,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String[] toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
+  public String[] toRawValue(User user, String stableValue) {
     if (stableValue == null)
       return null;
     String[] rawValue = stableValue.split(",+");
@@ -240,7 +240,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
     Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);
-    String[] terms = toRawValue(user, stableValue, contextParamValues);
+    String[] terms = toRawValue(user, stableValue);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0) buffer.append(", ");

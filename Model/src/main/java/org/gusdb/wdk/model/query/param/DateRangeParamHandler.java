@@ -36,7 +36,7 @@ public class DateRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
+  public String toRawValue(User user, String stableValue) {
     return stableValue;
   }
 
@@ -99,7 +99,7 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
-    return toRawValue(user, stableValue, contextParamValues).replace("{", "").replace("}", "").replace("\"", "");
+    return toRawValue(user, stableValue).replace("{", "").replace("}", "").replace("\"", "");
   }
 
 }

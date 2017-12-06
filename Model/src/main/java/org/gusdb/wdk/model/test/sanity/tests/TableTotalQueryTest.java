@@ -10,7 +10,9 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
@@ -26,8 +28,10 @@ public class TableTotalQueryTest extends QueryTest {
 
     Map<String, String> params = new LinkedHashMap<String, String>();
 
+    ValidatedParamStableValues validatedParamStableValues =
+        ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, params));
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-        params, true, 0, new LinkedHashMap<String, String>());
+        validatedParamStableValues, true, 0, new LinkedHashMap<String, String>());
 
     String sql = instance.getUncachedSql();
     DataSource dataSource = query.getWdkModel().getAppDb().getDataSource();

@@ -54,7 +54,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Step toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public Step toRawValue(User user, String stableValue)
       throws WdkModelException {
     long stepId = Long.valueOf(stableValue);
     return StepUtilities.getStep(user, stepId);
@@ -200,6 +200,6 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   @Override
   public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
-    return toRawValue(user, stableValue, contextParamValues).getCustomName();
+    return toRawValue(user, stableValue).getCustomName();
   }
 }

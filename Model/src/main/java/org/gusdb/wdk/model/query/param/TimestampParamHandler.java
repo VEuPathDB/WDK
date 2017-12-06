@@ -39,7 +39,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
+  public String toRawValue(User user, String stableValue) {
     return stableValue;
   }
 
@@ -102,7 +102,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
-    return toRawValue(user, stableValue, contextParamValues);
+    return toRawValue(user, stableValue);
   }
 
 }
