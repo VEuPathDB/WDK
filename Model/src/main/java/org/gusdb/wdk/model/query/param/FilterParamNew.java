@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -513,7 +514,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
-  public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user,
+  public <T> OntologyTermSummary<T> getOntologyTermSummary(User user,
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
 
@@ -539,14 +540,18 @@ public class FilterParamNew extends AbstractDependentParam {
     // limit it to our ontology_id
     String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
         " = ?";
+    
+    // while we are here, format sql to find distinct internals in unfiltered
+    String internalsSqlPerOntologyId = "SELECT count (distinct internal) as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+        " = ?";
 
     // read into a map of internal -> value(s)
     Map<String, List<T>> unfiltered = getMetaData(user, contextParamValues, ontologyItem, paramInstance,
         metadataSqlPerOntologyId, ontologyItemClass);
 
     // get histogram of those, stored in JSON
-    Map<T, FilterParamSummaryCounts> summaryCounts = new HashMap<>();
-    populateSummaryCounts(unfiltered, summaryCounts, false); // stuff in to 0th position in array
+    Map<T, FilterParamSummaryCounts> summaryCountsMap = new HashMap<>();
+    populateSummaryCounts(unfiltered, summaryCountsMap, false); // stuff in to 0th position in array
 
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
@@ -557,14 +562,84 @@ public class FilterParamNew extends AbstractDependentParam {
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql +
         ")";
 
+    // while we are here, format sql to find distinct internals in filtered
+    String internalsSqlPerOntologyIdFiltered = internalsSqlPerOntologyId + " AND internal in (" + internalSql +
+        ")";
+
     // read this filtered set into map of internal -> value(s)
     Map<String, List<T>> filtered = getMetaData(user, contextParamValues, ontologyItem, paramInstance,
         metadataSqlPerOntologyIdFiltered, ontologyItemClass);
 
     // add the filtered set into the histogram
-    populateSummaryCounts(filtered, summaryCounts, true); // stuff in to 1st position in array
+    populateSummaryCounts(filtered, summaryCountsMap, true); // stuff in to 1st position in array
 
-    return summaryCounts;
+    OntologyTermSummary <T> summary = new OntologyTermSummary<T>(summaryCountsMap);
+    
+    getCountsOfInternals(summary, internalsSqlPerOntologyId, internalsSqlPerOntologyIdFiltered, ontologyItem.getOntologyId());
+     
+    return summary;
+  }
+  
+  /**
+   * update the provided OntologyTermSummary with counts of internals.
+   * @param summary
+   * @param internalsSqlPerOntologyId
+   * @param internalsSqlPerOntologyIdFiltered
+   * @param ontologyId
+   * @throws WdkModelException
+   */
+  private <T> void getCountsOfInternals(OntologyTermSummary <T> summary, String internalsSqlPerOntologyId, 
+      String internalsSqlPerOntologyIdFiltered, String ontologyId) throws WdkModelException {
+ 
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+    PreparedStatement ps = null;
+    ResultSet resultSet = null;
+
+    try {
+      ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyId);
+      ps.setString(1, ontologyId);
+      resultSet = ps.executeQuery();
+      resultSet.next();
+      BigDecimal count = resultSet.getBigDecimal(1);
+      summary.setDistinctInternal(count.intValue());
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, ps);
+    }
+  
+    try {
+      ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyIdFiltered);
+      ps.setString(1, ontologyId);
+      resultSet = ps.executeQuery();
+      resultSet.next();
+      BigDecimal count = resultSet.getBigDecimal(1);
+      summary.setDistinctMatchingInternal(count.intValue());
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, ps);
+    }
+
+  }
+  
+  public class OntologyTermSummary <T> {
+    OntologyTermSummary(Map<T, FilterParamSummaryCounts> summaryCounts) {
+      _summaryCounts = summaryCounts;
+    }
+    void setDistinctInternal(int di) { _distinctInternal = di; }
+    void setDistinctMatchingInternal(int dmi) { _distinctMatchingInternal = dmi; }
+    private Map<T, FilterParamSummaryCounts> _summaryCounts;
+    private int _distinctInternal;
+    private int _distinctMatchingInternal;
+    public Map<T, FilterParamSummaryCounts> getSummaryCounts() { return _summaryCounts; }
+    public int getDistinctInternal() { return _distinctInternal; }
+    public int getDistinctMatchingInternal() { return _distinctMatchingInternal; }
+
   }
 
   /**

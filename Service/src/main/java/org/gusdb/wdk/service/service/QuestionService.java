@@ -34,7 +34,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -238,8 +237,6 @@ public class QuestionService extends WdkService {
     // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
-    LOG.info("666666666666666666666666666666666666666666666666666666666666666666 stale params: " + changedParam.getStaleDependentParams());
-
     return Response.ok(QuestionFormatter.getParamsJson(
         changedParam.getStaleDependentParams(),
         true,
@@ -299,7 +296,7 @@ public class QuestionService extends WdkService {
       if (ontologyItem == null) {
         throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
       }
-      JSONArray summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
+      JSONObject summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
           ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
       return Response.ok(summaryJson.toString()).build();
     }
@@ -308,12 +305,14 @@ public class QuestionService extends WdkService {
     }
   }
 
-  private <T> JSONArray getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
+  private <T> JSONObject getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
       FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
           throws WdkModelException {
-    Map<T,FilterParamSummaryCounts> counts = param.getOntologyTermSummary(
+    
+    FilterParamNew.OntologyTermSummary<T> summary = param.getOntologyTermSummary(
         user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
-    return QuestionFormatter.getOntologyTermSummaryJson(counts);
+
+    return QuestionFormatter.getOntologyTermSummaryJson(summary);
   }
 
   /**
