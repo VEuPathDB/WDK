@@ -510,7 +510,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
-      String[] terms = getTerms(user, stableValue, contextParamValues);
+      String[] terms = getTerms(user, stableValue);
       LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
           ", with contextParamValues=" + FormatUtil.prettyPrint(contextParamValues));
 
@@ -545,8 +545,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
   
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
-    return (String[]) getRawValue(user, stableValue, contextParamValues);
+  public String[] getTerms(User user, String stableValue) throws WdkModelException {
+    return (String[]) getRawValue(user, stableValue);
   }
 
   private int getNumSelected(User user, String[] terms, Map<String, String> contextParamValues) {
@@ -743,11 +743,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return values;
   }
 
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues, EnumParamVocabInstance cache) throws WdkModelException {
+  protected String getValidStableValue(User user, String stableValue, EnumParamVocabInstance cache) throws WdkModelException {
     if (stableValue == null)
       return cache.getDefaultValue();
 
-    String[] terms = getTerms(user, stableValue, contextParamValues);
+    String[] terms = getTerms(user, stableValue);
     // logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
     Map<String, String> termMap = cache.getVocabMap();
     Set<String> validValues = new LinkedHashSet<>();

@@ -64,7 +64,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Dataset toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public Dataset toRawValue(User user, String stableValue)
       throws WdkModelException {
     long datasetId = Long.valueOf(stableValue);
     return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
@@ -267,6 +267,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return toRawValue(user, stableValue, contextParamValues).getContent();
+    return toRawValue(user, stableValue).getContent();
   }
 }

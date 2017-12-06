@@ -63,7 +63,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      This method is not relevant to service layer, since it only uses stable values, never raw values.
    */
   @Override
-  public String toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toRawValue(User user, String stableValue) {
     return stableValue;
   }
 

@@ -410,7 +410,7 @@ public class FilterParam extends FlatVocabParam {
    * remove from stableValue unrecognized terms.  if stableValue empty, use default.
    */
   @Override
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
+  protected String getValidStableValue(User user, String stableValue,
       EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
@@ -458,7 +458,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
+  public String[] getTerms(User user, String stableValue)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return new String[0];

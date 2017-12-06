@@ -584,9 +584,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Object getRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public Object getRawValue(User user, String stableValue)
       throws WdkModelException {
-    return _handler.toRawValue(user, stableValue, contextParamValues);
+    return _handler.toRawValue(user, stableValue);
   }
 
   /**

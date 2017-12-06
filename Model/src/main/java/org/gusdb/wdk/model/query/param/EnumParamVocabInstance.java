@@ -213,12 +213,12 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   @Override
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return _aeParam.getValidStableValue(user, stableValue, contextParamValues, this);
+    return _aeParam.getValidStableValue(user, stableValue, this);
   }
 
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
+  public String[] getTerms(User user, String stableValue)
       throws WdkModelException {
-    return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);
+    return (String[]) _aeParam.getRawValue(user, stableValue);
   }
 
 }
