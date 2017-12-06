@@ -39,7 +39,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  public String toStableValue(User user, Object rawValue)
       throws WdkModelException {
     Step step = (Step) rawValue;
     return Long.toString(step.getStepId());

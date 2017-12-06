@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues) {
+  public String toStableValue(User user, Object rawValue) {
     if (!(rawValue instanceof String[]))
       new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
@@ -171,7 +170,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       rawValue = _param.getDefault().split(",+");
     }
 
-    return _param.getStableValue(user, rawValue, new HashMap<String, String>());
+    return _param.toStableValue(user, rawValue);
   }
 
   @Override

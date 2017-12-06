@@ -218,7 +218,7 @@ public class QueryTester {
         continue;
       }
       String rawValue = rawValues.get(paramName);
-      String stableValue = param.getStableValue(user, rawValue, stableValues);
+      String stableValue = param.toStableValue(user, rawValue);
       stableValues.put(paramName, stableValue);
     }
     if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {

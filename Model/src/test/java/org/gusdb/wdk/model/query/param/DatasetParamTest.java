@@ -101,8 +101,7 @@ public class DatasetParamTest {
     
     Map<String, String> contextValues = new LinkedHashMap<>();
 
-    String stableValue = _datasetParam.getStableValue(_user, dataset,
-        contextValues);
+    String stableValue = _datasetParam.toStableValue(_user, dataset);
     long datasetId = Long.valueOf(stableValue);
     Assert.assertEquals(dataset.getDatasetId(), datasetId);
     

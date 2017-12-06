@@ -118,7 +118,7 @@ public class FilterForm extends QuestionForm {
         for (int j = 0; j < pVals.length; j++) {
           try {
             String rawValue = pVals[j];
-            String stableValue = p.getStableValue(user, rawValue, contextValues);
+            String stableValue = p.getStableValue(user, rawValue);
             p.validate(user, stableValue, contextValues);
           } catch (Exception ex) {
             ex.printStackTrace();

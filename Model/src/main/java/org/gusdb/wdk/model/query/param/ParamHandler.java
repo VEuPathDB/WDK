@@ -66,7 +66,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
   /**
