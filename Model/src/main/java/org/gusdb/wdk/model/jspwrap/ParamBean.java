@@ -166,7 +166,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getStableValue(UserBean user, Object rawValue, ValidatedParamStableValues contextValues)
+  public String getStableValue(UserBean user, Object rawValue)
       throws WdkModelException, WdkUserException {
     return _param.getStableValue(user.getUser(), rawValue);
   }

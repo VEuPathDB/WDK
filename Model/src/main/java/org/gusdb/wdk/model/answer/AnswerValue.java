@@ -245,7 +245,7 @@ public class AnswerValue {
    */
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-    ParamStableValues paramsMap = _idsQueryInstance.getParamStableValues();
+    ValidatedParamStableValues paramsMap = _idsQueryInstance.getValidatedParamStableValues();
     Param[] params = _question.getParams();
     for (int i = 0; i < params.length; i++) {
       Param param = params[i];
@@ -374,7 +374,7 @@ public class AnswerValue {
     // recordClass.
     //Map<String, String> params = new LinkedHashMap<String, String>();
     ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteParamValuesMap(_user, tableQuery, new LinkedHashMap<String, String>());
+    	    ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(tableQuery, new LinkedHashMap<String, String>()));
     QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
@@ -417,7 +417,7 @@ public class AnswerValue {
       QueryInstance<?> attributeQueryInstance;
       try {
     	    ValidatedParamStableValues validatedParamStableValues =
-    	    	    ValidatedParamStableValues.createFromCompleteParamValuesMap(_user, attributeQuery, new LinkedHashMap<String, String>());
+    	    	    ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(attributeQuery, new LinkedHashMap<String, String>()));
         attributeQueryInstance = attributeQuery.makeInstance(_user, validatedParamStableValues, true, 0,
             new LinkedHashMap<String, String>());
       }
@@ -538,7 +538,7 @@ public class AnswerValue {
     innerSql = " /* the ID query */" + innerSql;
 
     // add answer param columns
-    innerSql = applyAnswerParams(innerSql, _question.getParamMap(), _idsQueryInstance.getParamStableValues());
+    innerSql = applyAnswerParams(innerSql, _question.getParamMap(), _idsQueryInstance.getValidatedParamStableValues());
     innerSql = " /* answer param value cols applied on id query */ " + innerSql;
 
     return innerSql;
