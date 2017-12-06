@@ -5,6 +5,8 @@ import { ActionCreatorRecord, Epic } from '../utils/ActionCreatorUtils';
 
 // Types
 // -----
+
+// FIXME Add full question, paramUIState and groupUIState
 export type Context<T extends Parameter> = {
   questionName: string;
   parameter: T;

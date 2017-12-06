@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { ActionCreatorServices, combineEpics } from '../../utils/ActionCreatorUtils';
+import { EpicServices, combineEpics } from '../../utils/ActionCreatorUtils';
 import { ParamLoadedAction, ParamValueUpdatedAction } from '../../actioncreators/QuestionActionCreators';
 import { Action } from '../../dispatcher/Dispatcher';
 import { makeActionCreator, payload } from '../../utils/ActionCreatorUtils';
@@ -11,6 +11,7 @@ import { FieldState, MemberFieldState } from './State';
 import { isType } from './Utils';
 import { findFirstLeaf, getFilters, isMemberField, sortDistribution } from './Utils';
 import WdkService from '../../utils/WdkService';
+import QuestionStore from '../../stores/QuestionStore';
 
 
 type Ctx = Context<FilterParamNew>
@@ -59,9 +60,9 @@ export const FiltersUpdatedAction = makeActionCreator(
 // Epics
 // -----
 
-// export default combineEpics(initEpic, updateActiveFieldEpic, updateSummaryCountsEpic);
+export default combineEpics(initEpic, updateDependentParamsActiveFieldEpic);
 
-export default function initEpic(action$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
+function initEpic(action$: Observable<Action>, services: EpicServices<QuestionStore>): Observable<Action> {
   return action$
     .filter(ParamLoadedAction.isType)
     .mergeMap(action => {
@@ -86,27 +87,46 @@ export default function initEpic(action$: Observable<Action>, services: ActionCr
     })
 }
 
-export function updateActiveFieldEpic(action$: Observable<Action>, { wdkService }: ActionCreatorServices): Observable<Action> {
+function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
+  return action$.filter(ParamValueUpdatedAction.isType)
+    .debounceTime(1000)
+    .switchMap(action => {
+      const { questionName, dependentParameters } = action.payload;
+      return Observable.from(dependentParameters)
+        .filter(isType)
+        .mergeMap(parameter => {
+          const { paramUIState, paramValues } = store.getState().questions[questionName];
+          const filters = JSON.parse(paramValues[parameter.name]).filters as Filter[];
+          const { activeOntologyTerm } = paramUIState[parameter.name];
+          return Observable.merge(
+            getOntologyTermSummary(wdkService, activeOntologyTerm, questionName, parameter, filters, paramValues),
+            getSummaryCounts(wdkService, questionName, parameter, filters, paramValues)
+          );
+        })
+    })
+}
+
+function updateActiveFieldEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>): Observable<Action> {
   return action$
     .filter(ActiveFieldSetAction.isType)
     .filter(action => action.payload.loadOntologyTermSummary)
     .debounceTime(1000)
-    .mergeMap(action => {
+    .switchMap(action => {
       const { questionName, paramValues, parameter, activeField } = action.payload;
       const filters = getFiltersFromContext(action.payload);
-      return Observable.from(getOntologyTermSummary(wdkService, activeField, questionName, parameter, filters, paramValues))
-        .merge(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues))
-        .takeUntil(action$.filter(ActiveFieldSetAction.isType));
+      return Observable.merge(
+        getOntologyTermSummary(wdkService, activeField, questionName, parameter, filters, paramValues),
+        getSummaryCounts(wdkService, questionName, parameter, filters, paramValues)
+      );
     })
 }
 
-export function updateSummaryCountsEpic(action$: Observable<Action>, { wdkService }: ActionCreatorServices) {
+function updateSummaryCountsEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>) {
   return action$.filter(FiltersUpdatedAction.isType)
     .debounceTime(1000)
-    .mergeMap(action => {
+    .switchMap(action => {
       const { parameter, questionName, paramValues, filters } = action.payload;
-      return Observable.from(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues))
-        .takeUntil(action$.filter(FiltersUpdatedAction.isType));
+      return Observable.from(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues));
     })
 }
 
@@ -127,7 +147,10 @@ function getOntologyTermSummary(
       let fieldState: FieldState = isMemberField(parameter, activeField) ? {
         loading: false,
         sort: defaultMemberFieldSort,
-        ontologyTermSummary: sortDistribution(summary, defaultMemberFieldSort)
+        ontologyTermSummary: {
+          ...summary,
+          valueCounts: sortDistribution(summary.valueCounts, defaultMemberFieldSort)
+        }
       } : {
           loading: false,
           ontologyTermSummary: summary

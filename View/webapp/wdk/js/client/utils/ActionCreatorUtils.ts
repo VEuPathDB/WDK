@@ -3,6 +3,7 @@ import { Observable } from 'rxjs/Observable';
 import { Action } from './../dispatcher/Dispatcher';
 import { PageTransitioner } from './PageTransitioner';
 import WdkService from './WdkService';
+import WdkStore from '../stores/WdkStore';
 
 export interface ActionCreatorServices {
   wdkService: WdkService;
@@ -120,6 +121,9 @@ export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): Ty
 }
 
 
+export interface EpicServices<T extends WdkStore = WdkStore> extends ActionCreatorServices {
+  store: T;
+}
 
 /**
  * An Epic can be thought of as a listener that reacts to specific Actions that
@@ -141,8 +145,8 @@ export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): Ty
  * and all Actions produced by the Epic will contain the Store's channel
  * (unless the `broadcast()` action decorator is used).
  */
-export interface Epic {
-  (action$: Observable<Action>, services: ActionCreatorServices): Observable<Action>;
+export interface Epic<T extends WdkStore = WdkStore>{
+  (action$: Observable<Action>, services: EpicServices<T>): Observable<Action>;
 }
 
 /**
@@ -150,7 +154,7 @@ export interface Epic {
  * emitted in the order that the input Epics emit actions (e.g., they are
  * interleaved).
  */
-export function combineEpics(...epics: Epic[]): Epic {
-  return <Epic>((action$, services) =>
+export function combineEpics<T extends WdkStore>(...epics: Epic<T>[]): Epic<T> {
+  return <Epic<T>>((action$, services) =>
     Observable.merge(...epics.map(epic => epic(action$, services))))
 }

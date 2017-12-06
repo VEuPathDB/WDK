@@ -5,7 +5,7 @@ import { Filter, MemberFilter } from '../../utils/FilterService';
 import { getTree } from '../../utils/FilterServiceUtils';
 import { filter, Seq } from '../../utils/IterableUtils';
 import { preorderSeq } from '../../utils/TreeUtils';
-import { FilterParamNew, Parameter } from '../../utils/WdkModel';
+import { FilterParamNew, Parameter, OntologyTermSummary } from '../../utils/WdkModel';
 import { SortSpec } from './State';
 
 const natSortComparator = (natsort as any)();
@@ -57,7 +57,7 @@ function makeSelectionComparator(values: any) {
  * @param {Distribution} distribution
  * @param {SortSpec} sort
  */
-export function sortDistribution(distribution: any, sort: SortSpec, filter?: MemberFilter) {
+export function sortDistribution(distribution: OntologyTermSummary['valueCounts'], sort: SortSpec, filter?: MemberFilter) {
   let { columnKey, direction, groupBySelected } = sort;
 
   let sortedDist = distribution.slice().sort(function compare(a: any, b: any) {

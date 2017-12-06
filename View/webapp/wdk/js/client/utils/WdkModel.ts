@@ -103,11 +103,15 @@ export type ParameterValue = string;
 
 export type ParameterValues = Record<string, ParameterValue>;
 
-export type OntologyTermSummary = Array<{
-  value: string | number,
-  filteredCount: number,
-  count: number
-}>
+export type OntologyTermSummary = {
+  valueCounts: Array<{
+    value: string | number,
+    filteredCount: number,
+    count: number
+  }>;
+  internalsCount: number;
+  internalsFilteredCount: number;
+};
 
 export type SortSpec = {
   groupBySelected: boolean;

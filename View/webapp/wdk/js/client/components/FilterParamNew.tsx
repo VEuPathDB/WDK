@@ -82,7 +82,10 @@ export default class FilterParamNew extends React.PureComponent<Props> {
       field: field.term,
       fieldState: {
         sort,
-        ontologyTermSummary: sortDistribution(ontologyTermSummary, sort, filters.find(f => f.field === field.term) as MemberFilter)
+        ontologyTermSummary: {
+          ...ontologyTermSummary,
+          valuCounts: sortDistribution(ontologyTermSummary!.valueCounts, sort, filters.find(f => f.field === field.term) as MemberFilter)
+        }
       }
     }));
   }
