@@ -24,7 +24,6 @@ import org.gusdb.wdk.model.query.param.DependentParamInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
@@ -681,7 +680,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       if (param instanceof AbstractDependentParam) {
         // for enum/flatVocab params, call a special method to process it
         Map<String, DependentParamInstance> caches = new HashMap<>();
-        ((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
+        //((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
       }
       else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;

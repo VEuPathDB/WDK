@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
@@ -78,11 +79,12 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
 
     //Map<String, String> paramValues = _primaryKey.getValues();
-    ParamStableValues paramStableValues = ParamStableValues.createFromCompleteParamValuesMap(_user, query, _primaryKey.getValues());
+    ValidatedParamStableValues validatedParamStableValues =
+        ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(query, _primaryKey.getValues()));
 
     try {
       // put user id in the attribute query
-      QueryInstance<?> instance = query.makeInstance(_user, paramStableValues, true, 0,
+      QueryInstance<?> instance = query.makeInstance(_user, validatedParamStableValues, true, 0,
           new LinkedHashMap<String, String>());
 
       try (ResultList resultList = instance.getResults()) {

@@ -29,10 +29,10 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   private Query query;
-  private Map<String, String> paramValues;
+  private ValidatedParamStableValues paramValues;
   private User user;
 
-  public OntologyItemNewFetcher(Query ontologyQuery, Map<String, String> paramValues, User user) {
+  public OntologyItemNewFetcher(Query ontologyQuery, ValidatedParamStableValues paramValues, User user) {
     this.query = ontologyQuery;
     this.paramValues = paramValues;
     this.user = user;

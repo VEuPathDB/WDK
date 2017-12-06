@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -9,8 +7,8 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for consumption by a view
@@ -25,12 +23,12 @@ public abstract class ParamBean<T extends Param> {
   protected int _truncateLength;
   protected T _param;
 
-  protected ParamStableValues _contextValues;
+  protected ValidatedParamStableValues _contextValues;
 
   public ParamBean(T param) {
     _param = param;
     _truncateLength = Utilities.TRUNCATE_DEFAULT;
-    _contextValues = new LinkedHashMap<>();
+   //_contextValues = new LinkedHashMap<>();
   }
 
   public void setUser(UserBean user) {
@@ -102,7 +100,7 @@ public abstract class ParamBean<T extends Param> {
   /**
    * for controller
    */
-  public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
+  public void validate(UserBean user, String rawOrDependentValue, ValidatedParamStableValues contextValues)
       throws WdkModelException, WdkUserException {
     _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
@@ -142,7 +140,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getSignature(UserBean user, String stableValue, ParamStableValues contextValues)
+  public String getSignature(UserBean user, String stableValue, ValidatedParamStableValues contextValues)
       throws WdkModelException, WdkUserException {
     return _param.getSignature(user.getUser(), stableValue, contextValues);
   }
@@ -168,9 +166,9 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getStableValue(UserBean user, Object rawValue, Map<String, String> contextValues)
+  public String getStableValue(UserBean user, Object rawValue, ValidatedParamStableValues contextValues)
       throws WdkModelException, WdkUserException {
-    return _param.getStableValue(user.getUser(), rawValue, contextValues);
+    return _param.getStableValue(user.getUser(), rawValue);
   }
 
   public UserBean getUser() {
@@ -188,7 +186,7 @@ public abstract class ParamBean<T extends Param> {
   /**
    * @return the contextValues
    */
-  public Map<String, String> getContextValues() {
+  public ValidatedParamStableValues getContextValues() {
     return _contextValues;
   }
 
@@ -196,7 +194,7 @@ public abstract class ParamBean<T extends Param> {
    * @param contextValues
    *          the contextValues to set
    */
-  public void setContextValues(Map<String, String> contextValues) {
+  public void setContextValues(ValidatedParamStableValues contextValues) {
     _contextValues = contextValues;
   }
 
@@ -205,7 +203,7 @@ public abstract class ParamBean<T extends Param> {
     _param.prepareDisplay(user.getUser(), requestParams, _contextValues);
   }
 
-  public void prepareDisplay(UserBean user, RequestParams requestParams, Map<String, String> contextValues)
+  public void prepareDisplay(UserBean user, RequestParams requestParams, ValidatedParamStableValues contextValues)
       throws WdkModelException, WdkUserException {
     _param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }

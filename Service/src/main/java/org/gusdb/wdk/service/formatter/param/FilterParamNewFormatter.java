@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +26,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   }
 
   @Override
-  public JSONObject getJson(User user, Map<String, String> dependedParamValues)
+  public JSONObject getJson(User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
       LOG.info("222222222222222222222222222222222222222222222222222222222222  formatter");
@@ -40,7 +41,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return pJson;
   }
 
-  public JSONArray getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
+  public JSONArray getOntologyJson(User user, ValidatedParamStableValues dependedParamValues) throws JSONException, WdkModelException {
     Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, dependedParamValues);
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
@@ -60,7 +61,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return ontologyJson; 
   }
 
-  public JSONObject getValuesJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
+  public JSONObject getValuesJson(User user, ValidatedParamStableValues dependedParamValues) throws JSONException, WdkModelException {
  
     Map<String, Set<String>>  valuesMap = filterParam.getValuesMap(user, dependedParamValues);
 

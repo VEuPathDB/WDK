@@ -401,7 +401,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabMap(user, null);
   }
 
-  public Map<String, String> getVocabMap(User user, ParamStableValues contextParamValues) {
+  public Map<String, String> getVocabMap(User user, ValidatedParamStableValues contextParamValues) {
     return getVocabInstance(user, contextParamValues).getVocabMap();
   }
 
@@ -507,12 +507,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
+  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
       String[] terms = getTerms(user, stableValue, contextParamValues);
       LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
-          ", with contextParamValues=" + FormatUtil.prettyPrint(contextParamValues));
+          ", with contextParamValues=" + contextParamValues.prettyPrint());
 
       if (terms.length == 0 && !_allowEmpty)
         throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");

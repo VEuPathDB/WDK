@@ -50,7 +50,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      This method is not relevant to service layer, since it only uses stable values, never raw values.
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues) {
+  public String toStableValue(User user, Object rawValue) {
     return (String) rawValue;
   }
 
@@ -62,7 +62,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      This method is not relevant to service layer, since it only uses stable values, never raw values.
    */
   @Override
-  public String toRawValue(User user, String stableValue, ParamStableValues contextParamValues) {
+  public String toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
     return stableValue;
   }
 
@@ -93,12 +93,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValueString, ParamStableValues contextParamValues)
+  public String toInternalValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
-      contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
+      //contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
       LOG.info("333333333333333333333333333333333333333333333333333333333333  toInternaValue()");
       String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _param.getWdkModel().getAppDb().getDataSource());
@@ -163,15 +163,15 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValueString, ParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
+  public String toSignature(User user, String stableValueString, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew param = (FilterParamNew)_param;
-    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
+    //contextParamValues = param.ensureRequiredContext(user, contextParamValues);
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
     return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
 
-  private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+  private String dependedParamsSignature(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
@@ -216,7 +216,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // do nothing
    }
@@ -227,11 +227,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValueString, ParamStableValues contextParamValues)
+  public String getDisplayValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
     FilterParamNew param = (FilterParamNew)_param;
-    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
+    //contextParamValues = param.ensureRequiredContext(user, contextParamValues);
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
     return stableValue.getDisplayValue(user, contextParamValues);
   } 

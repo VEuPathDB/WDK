@@ -27,8 +27,7 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException {
+  public String toStableValue(User user, Object rawValue) throws WdkUserException {
     return (String) rawValue;
   }
 

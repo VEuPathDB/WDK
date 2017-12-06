@@ -104,7 +104,7 @@ public class NumberRangeParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
+  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
 
     Double values[] = new Double[2];

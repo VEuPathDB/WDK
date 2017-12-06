@@ -1,12 +1,12 @@
 package org.gusdb.wdk.service.formatter.param;
 
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
@@ -37,7 +37,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
     return null;
   }
 
-  protected EnumParamVocabInstance getVocabInstance(User user, Map<String,String> dependedParamValues) {
+  protected EnumParamVocabInstance getVocabInstance(User user, ValidatedParamStableValues dependedParamValues) {
     return _param.getVocabInstance(user, dependedParamValues);
   }
 

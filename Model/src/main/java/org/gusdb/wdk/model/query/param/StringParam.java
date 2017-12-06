@@ -176,7 +176,7 @@ public class StringParam extends Param {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
+  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
     if (_isNumber) {
       try {

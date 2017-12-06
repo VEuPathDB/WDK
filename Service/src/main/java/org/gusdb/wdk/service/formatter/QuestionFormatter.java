@@ -12,12 +12,13 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
-import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +47,7 @@ import org.json.JSONObject;
  */
 public class QuestionFormatter {
 
-  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams, User user, Map<String, String> dependedParamValues)
+  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams, User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray json = new JSONArray();
     for (Question q : questions) {
@@ -58,13 +59,13 @@ public class QuestionFormatter {
   }
 
   public static JSONObject getQuestionJson(Question q, boolean expandParams, 
-      User user, Map<String, String> dependedParamValues)
+      User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     return getQuestionJson(q, expandParams, user, dependedParamValues, q.getParamMap().values());
   }
 
   public static JSONObject getQuestionJson(Question q, boolean expandParams, 
-      User user, Map<String, String> dependedParamValues, Collection<Param> params)
+      User user, ValidatedParamStableValues dependedParamValues, Collection<Param> params)
       throws JSONException, WdkModelException, WdkUserException {
     return new JSONObject()
       .put(Keys.NAME, q.getFullName())
@@ -88,7 +89,7 @@ public class QuestionFormatter {
       .put(Keys.PROPERTIES, q.getPropertyLists());
   }
 
-  public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, Map<String, String> dependedParamValues)
+  public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray paramsJson = new JSONArray();
     for (Param param : params) {

@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONException;
@@ -26,7 +27,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
   }
 
   @Override
-  public JSONObject getJson(User user, Map<String, String> dependedParamValues)
+  public JSONObject getJson(User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
@@ -48,7 +49,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
     return metaDataJson; 
   }
 
-  public JSONObject getMetaDataSpecJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException, WdkUserException {
+  public JSONObject getMetaDataSpecJson(User user, ValidatedParamStableValues dependedParamValues) throws JSONException, WdkModelException, WdkUserException {
     Map<String, Map<String, String>> metaDataSpecMap = filterParam.getMetadataSpec(user, dependedParamValues);
     JSONObject metaDataSpecJson = new JSONObject();
     for (String prop : metaDataSpecMap.keySet()) {

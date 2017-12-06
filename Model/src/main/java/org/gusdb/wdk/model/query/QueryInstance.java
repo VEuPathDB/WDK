@@ -238,7 +238,7 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
-  public ValidatedParamStableValues getParamStableValues() {
+  public ValidatedParamStableValues getValidatedParamStableValues() {
     return _contextParamStableValues;
   }
 

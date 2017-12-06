@@ -44,7 +44,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues) {
+  public String toStableValue(User user, Object rawValue) {
     return (String) rawValue;
   }
 
@@ -55,7 +55,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue, ParamStableValues contextParamValues) {
+  public String toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
@@ -71,7 +71,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ParamStableValues contextParamValues)
+  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
@@ -119,7 +119,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ParamStableValues contextParamValues)
+  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     stableValue = normalizeStableValue(stableValue);
     try {
@@ -171,7 +171,7 @@ public class FilterParamHandler extends AbstractParamHandler {
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
@@ -221,7 +221,7 @@ public class FilterParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, ParamStableValues contextParamValues)
+  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     stableValue = normalizeStableValue(stableValue);
     JSONObject jsValue = new JSONObject(stableValue);

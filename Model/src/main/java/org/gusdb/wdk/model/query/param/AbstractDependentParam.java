@@ -302,7 +302,7 @@ public abstract class AbstractDependentParam extends Param {
   }
 
 
-  public abstract String getDefault(User user, ParamStableValues contextParamValues) throws WdkModelException;
+  public abstract String getDefault(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException;
   
   @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
@@ -314,7 +314,7 @@ public abstract class AbstractDependentParam extends Param {
       SelectMode sanitySelectMode); 
 
   static JSONObject getDependedParamValuesJson(
-      ParamStableValues dependedParamValues, Set<Param> dependedParams) {
+      ValidatedParamStableValues dependedParamValues, Set<Param> dependedParams) {
     JSONObject dependedParamValuesJson = new JSONObject();
     if (dependedParams == null || dependedParams.isEmpty())
       return dependedParamValuesJson;

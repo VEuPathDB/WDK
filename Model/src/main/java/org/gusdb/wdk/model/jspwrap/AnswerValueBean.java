@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -103,8 +103,8 @@ public class AnswerValueBean {
         return answerValue.getParamDisplays();
     }
 
-    public ParamStableValues getInternalParams() {
-        return answerValue.getIdsQueryInstance().getParamStableValues();
+    public ValidatedParamStableValues getInternalParams() {
+        return answerValue.getIdsQueryInstance().getValidatedParamStableValues();
     }
 
     public String getChecksum() throws WdkModelException, WdkUserException {
@@ -119,7 +119,7 @@ public class AnswerValueBean {
             throw new RuntimeException("getBooleanOperation can not be called"
                     + " on simple AnswerBean");
         }
-        ParamStableValues params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         return params.get(BooleanQuery.OPERATOR_PARAM);
     }
 
@@ -135,7 +135,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         AnswerParam param = null;
-        ParamStableValues params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         if (getIsBoolean()) {
             BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
             param = query.getLeftOperandParam();
@@ -169,7 +169,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-        ParamStableValues params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         AnswerParam param = query.getRightOperandParam();
         String stableValue = params.get(param.getName());
         User user = answerValue.getUser();

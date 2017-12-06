@@ -53,7 +53,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+   void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -66,7 +66,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
+  String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
   /**

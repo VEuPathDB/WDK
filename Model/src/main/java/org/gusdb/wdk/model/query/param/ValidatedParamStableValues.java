@@ -83,10 +83,10 @@ public class ValidatedParamStableValues {
     for(Param dependentParam : changedParam.getDependentParams()) {
       updatedValues.resolveParamValue(dependentParam, updatedValues._paramStableValues);
     }
-    changedParam.validate(user, changedParamValue, new ParamStableValues(updatedValues._paramStableValues));
+    changedParam.validate(user, changedParamValue, updatedValues);
     for(Param dependentParam : changedParam.getAllDependentParams()) {
       String dependentValue = updatedValues.get(dependentParam.getName());
-      dependentParam.validate(user, dependentValue, new ParamStableValues(updatedValues._paramStableValues));
+      dependentParam.validate(user, dependentValue, updatedValues);
     }
     return updatedValues;
   }
@@ -128,6 +128,14 @@ public class ValidatedParamStableValues {
   public String prettyPrint() {
 	return FormatUtil.prettyPrint(_paramStableValues, Style.SINGLE_LINE);
   }
+  
+  public int size() {
+    return _paramStableValues.size();
+  }
+  
+  public boolean containsKey(Object key) {
+    return _paramStableValues.containsKey(key);
+  }
 
   protected void fillEmptyValues() throws WdkModelException {
     Map<String, Param> paramMap = _paramStableValues.getQuery().getParamMap();
@@ -165,7 +173,7 @@ public class ValidatedParamStableValues {
 	String errMsg = null;
 	try {  
 	  String value = _paramStableValues.get(param.getName());
-      param.validate(_user, value, new ParamStableValues(_paramStableValues));
+      param.validate(_user, value, this);
     }
     catch (Exception ex) {
       ex.printStackTrace();

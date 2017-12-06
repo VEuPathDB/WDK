@@ -44,6 +44,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
@@ -687,7 +688,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
     	  ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteParamValuesMap(user, allRecordsQuery, new HashMap<>());
+    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(allRecordsQuery, new HashMap<>()));
       String baseSql = allRecordsQuery.makeInstance(user, validatedParamStableValues, false, 0, new HashMap<>()).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),

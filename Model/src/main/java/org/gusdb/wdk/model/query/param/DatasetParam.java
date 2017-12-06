@@ -152,7 +152,7 @@ public class DatasetParam extends Param {
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
+  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     // make sure the dataset exists
     int datasetId = Integer.parseInt(stableValue);

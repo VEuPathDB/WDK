@@ -246,7 +246,7 @@ public class FilterParamNewStableValue {
    * @param user  
    * @param contextParamValues 
    */
-  String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
+  String getDisplayValue(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException {
 
     initWithThrow();
     Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);

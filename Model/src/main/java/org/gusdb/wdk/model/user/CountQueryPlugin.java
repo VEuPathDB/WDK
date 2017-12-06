@@ -12,6 +12,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 public class CountQueryPlugin implements CountPlugin {
 
@@ -59,7 +61,9 @@ public class CountQueryPlugin implements CountPlugin {
     paramValues.put(params[0].getName(), Long.toString(step.getStepId()));
 
     // create a queryInstance, and get count;
-    QueryInstance<?> queryInstance = _query.makeInstance(step.getUser(), paramValues, false, 0, paramValues);
+    ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(step.getUser(), new ParamStableValues(_query, paramValues));
+    QueryInstance<?> queryInstance = _query.makeInstance(step.getUser(), validatedParamStableValues, false, 0, paramValues);
     try (ResultList resultList = queryInstance.getResults()) {
 
       // verify the result

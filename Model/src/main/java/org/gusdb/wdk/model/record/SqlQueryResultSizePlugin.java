@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 public class SqlQueryResultSizePlugin implements ResultSize {
@@ -53,7 +54,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
     QueryInstance<?> queryInstance;
     try {
     	  ValidatedParamStableValues validatedParamStableValues =
-          ValidatedParamStableValues.createFromCompleteParamValuesMap(answerValue.getUser(), _query, params);
+          ValidatedParamStableValues.createFromCompleteValues(answerValue.getUser(), new ParamStableValues(_query, params));
       queryInstance = _query.makeInstance(answerValue.getUser(), validatedParamStableValues, true, 0,
           new LinkedHashMap<String, String>());
     }

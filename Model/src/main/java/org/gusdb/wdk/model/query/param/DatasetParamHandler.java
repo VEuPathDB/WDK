@@ -49,7 +49,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
+  public String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException {
     Dataset dataset = (Dataset) rawValue;
     return Long.toString(dataset.getDatasetId());

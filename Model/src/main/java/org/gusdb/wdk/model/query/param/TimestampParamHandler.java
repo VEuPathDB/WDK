@@ -28,7 +28,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues) {
+  public String toStableValue(User user, Object rawValue) {
     return (String) rawValue;
   }
 

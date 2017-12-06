@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
@@ -236,7 +237,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     }
 
     ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteParamValuesMap(user, _aliasQuery, oldValues);
+    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_aliasQuery, oldValues));
     QueryInstance<?> instance = _aliasQuery.makeInstance(user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     

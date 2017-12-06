@@ -84,7 +84,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * @param user
    * @param rawOrDependentValue
    */
-  protected abstract void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
+  protected abstract void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -498,7 +498,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public void validate(User user, String stableValue, ParamStableValues contextParamValues)
+  public void validate(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // handle the empty case
     if (stableValue == null || stableValue.length() == 0) {
@@ -564,9 +564,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String getStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
+  public String getStableValue(User user, Object rawValue)
       throws WdkModelException, WdkUserException {
-    return _handler.toStableValue(user, rawValue, contextParamValues);
+    return _handler.toStableValue(user, rawValue);
   }
 
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
