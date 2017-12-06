@@ -746,7 +746,7 @@ export class AttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -762,7 +762,7 @@ export class AttributeFilter extends React.Component {
       filters,
       invalidFilters,
       activeField,
-      activeFieldSummary,
+      activeFieldDistribution,
       fieldMetadataMap
     } = this.props;
 
@@ -841,7 +841,7 @@ export class AttributeFilter extends React.Component {
                   filter={selectedFilter}
                   filteredDataCount={filteredNotIgnored.length}
                   dataCount={dataCount}
-                  distribution={activeFieldSummary}
+                  distribution={activeFieldDistribution}
                   onChange={this.handleFieldFilterChange}
                   addTopPadding
                 />
@@ -887,7 +887,7 @@ AttributeFilter.propTypes = {
   ignoredData: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
   activeField: PropTypes.string,
-  activeFieldSummary: PropTypes.array,
+  activeFieldDistribution: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
   renderSelectionInfo: PropTypes.func,
 
@@ -938,7 +938,7 @@ export class ServerSideAttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -960,7 +960,7 @@ export class ServerSideAttributeFilter extends React.Component {
       invalidFilters,
       activeField,
       activeFieldState,
-      activeFieldSummary
+      activeFieldDistribution
     } = this.props;
 
     var displayName = this.props.displayName;
@@ -1003,7 +1003,7 @@ export class ServerSideAttributeFilter extends React.Component {
             field={fields.get(activeField)}
             fieldState={activeFieldState}
             filter={selectedFilter}
-            distribution={activeFieldSummary}
+            distribution={activeFieldDistribution}
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
             useFullWidth={hideFieldPanel}
@@ -1031,7 +1031,9 @@ ServerSideAttributeFilter.propTypes = {
   filteredDataCount: PropTypes.number,
   activeField: PropTypes.string,
   activeFieldState: PropTypes.object,
-  activeFieldSummary: PropTypes.array,
+  activeFieldDistribution: PropTypes.array,
+  // TODO Add activeFieldDataCount and activeFieldFilteredDataCount
+  // These are counts of distinct data with values for the active field
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
