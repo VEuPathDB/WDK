@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
+import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -21,6 +22,7 @@ import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 
 /**
  * Formats WDK Question objects.  Question JSON will have the following form:
@@ -126,10 +128,18 @@ public class QuestionFormatter {
   }
 
   /*
-   * [ { value: string|null; count: number; filteredCount: number; }, ... ]
+   * {
+   *   "valueCounts" : [ { value: string|null; count: number; filteredCount: number; }, ... ],
+   *   "internalsCount" : 12456,
+   *   "internalsFilteredCount" : 4352
+   * }
    */
-  public static <T> JSONArray getOntologyTermSummaryJson(Map<T,FilterParamSummaryCounts> counts) {
-    JSONArray json = new JSONArray();
+  public static <T> JSONObject getOntologyTermSummaryJson(FilterParamNew.OntologyTermSummary<T> summary) {
+    Map<T,FilterParamSummaryCounts> counts = summary.getSummaryCounts();
+    
+    JSONObject json = new JSONObject();
+    
+    JSONArray jsonarray = new JSONArray();
     for (Entry<T,FilterParamSummaryCounts> entry : counts.entrySet()) {
       T termValue = entry.getKey();
       FilterParamSummaryCounts fpsc = entry.getValue();
@@ -137,8 +147,12 @@ public class QuestionFormatter {
       c.put("value", termValue == null ? JSONObject.NULL : termValue);
       c.put("count", fpsc.unfilteredCount);
       c.put("filteredCount", fpsc.filteredCount);
-      json.put(c);
+      jsonarray.put(c);
     }
+    
+    json.put("valueCounts", jsonarray);
+    json.put("internalsCount", summary.getDistinctInternal());
+    json.put("internalsFilteredCount", summary.getDistinctMatchingInternal());
     return json;
   
   }
