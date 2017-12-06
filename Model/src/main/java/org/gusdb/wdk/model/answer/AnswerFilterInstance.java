@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
@@ -56,7 +57,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   private String _description;
 
   private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
-  private ValidatedParamStableValues _stableValues = new LinkedHashMap<String, String>();
+  private Map<String,String> _stableValues = new LinkedHashMap<String, String>();
 
   private RecordClass _recordClass;
   private SqlQuery _filterQuery;
@@ -304,13 +305,15 @@ public class AnswerFilterInstance extends WdkModelBase {
         continue;
 
       String stableValue = _stableValues.get(param.getName());
+      ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_filterQuery, _stableValues));
       try {
-        param.validate(user, stableValue, _stableValues);
+        param.validate(user, stableValue, validatedParamStableValues);
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
       }
-      String internal = param.getInternalValue(user, stableValue, _stableValues);
+      String internal = param.getInternalValue(user, stableValue, validatedParamStableValues);
       filterSql = param.replaceSql(filterSql, internal);
     }
 

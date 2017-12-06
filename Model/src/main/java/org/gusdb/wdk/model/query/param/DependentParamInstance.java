@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.Map;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;

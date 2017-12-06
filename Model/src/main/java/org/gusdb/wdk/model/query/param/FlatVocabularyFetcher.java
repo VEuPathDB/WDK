@@ -114,7 +114,6 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-      //TODO CWL - Verify that selected method is correct
       ValidatedParamStableValues validatedParamStableValues =
     	      ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(_vocabQuery, values));
       QueryInstance<?> instance = _vocabQuery.makeInstance(_user, validatedParamStableValues, false, 0, context);

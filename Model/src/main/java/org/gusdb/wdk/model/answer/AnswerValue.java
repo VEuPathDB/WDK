@@ -538,7 +538,7 @@ public class AnswerValue {
     innerSql = " /* the ID query */" + innerSql;
 
     // add answer param columns
-    innerSql = applyAnswerParams(innerSql, _question.getParamMap(), _idsQueryInstance.getValidatedParamStableValues());
+    innerSql = applyAnswerParams(innerSql, _question.getParamMap().values(), _idsQueryInstance.getValidatedParamStableValues());
     innerSql = " /* answer param value cols applied on id query */ " + innerSql;
 
     return innerSql;
@@ -575,16 +575,16 @@ public class AnswerValue {
 
   }
 
-  private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, ParamStableValues paramStableValues) {
+  private static String applyAnswerParams(String innerSql, Collection<Param> answerParams, ValidatedParamStableValues paramStableValues) {
 
     // gather list of answer params for this question
-    List<AnswerParam> answerParams = AnswerParam.getCacheableParams(paramMap.values());
+    List<AnswerParam> cacheableParams = AnswerParam.getCacheableParams(answerParams);
 
     // if no answer params, then return incoming SQL
-    if (answerParams.isEmpty()) return innerSql;
+    if (cacheableParams.isEmpty()) return innerSql;
 
     // build list of columns to add, then join into string
-    String extraCols = join(mapToList(answerParams, param ->
+    String extraCols = join(mapToList(cacheableParams, param ->
       ", " + paramStableValues.get(param.getName()) + " as " + param.getName()), "");
 
     // return wrapped innerSql including new columns
