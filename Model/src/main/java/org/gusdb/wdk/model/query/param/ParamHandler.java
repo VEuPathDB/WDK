@@ -78,7 +78,7 @@ public interface ParamHandler {
    * @return
    * @throws WdkModelException
    */
-  Object toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  Object toRawValue(User user, String stableValue)
       throws WdkModelException;
 
   String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)

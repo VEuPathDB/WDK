@@ -55,7 +55,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toRawValue(User user, String stableValue) {
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }

@@ -119,7 +119,7 @@ public abstract class ParamBean<T extends Param> {
   }
 
   public Object getRawValue() throws WdkModelException {
-    return _param.getRawValue(_userBean.getUser(), _stableValue, _contextValues);
+    return _param.getRawValue(_userBean.getUser(), _stableValue);
   }
 
   public String getBriefRawValue() throws WdkModelException {
