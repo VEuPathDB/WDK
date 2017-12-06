@@ -407,10 +407,10 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
-  public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
+  public Map<String, OntologyItem> getOntology(User user, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
+    //contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(_ontologyQuery, contextParamValues, user);
     Map<String, OntologyItem> map = null;
@@ -445,7 +445,9 @@ public class FilterParamNew extends AbstractDependentParam {
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
+    	
+    	  ParamStableValues paramStableValues = ParamStableValues.createFromCompleteParamValues(user, new ParamStableValues(bgdQuery, contextParamValues));
+      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, paramStableValues, true, 0,
           new HashMap<String, String>());
       bgdSql = queryInstance.getSql();
     }
@@ -527,7 +529,9 @@ public class FilterParamNew extends AbstractDependentParam {
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
+    	  ValidatedParamStableValues validatedParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(user, bgdQuery, contextParamValues);
+      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, validatedParamStableValues, true, 0,
           new HashMap<String, String>());
       bgdSql = queryInstance.getSql();
     }
@@ -660,9 +664,9 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   public Map<String, Set<String>> getValuesMap(User user,
-      Map<String, String> contextParamValues) throws WdkModelException {
+      ValidatedParamStableValues contextParamValues) throws WdkModelException {
     
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
+    //contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
     return getValuesMap(user, contextParamValues, null, ontology, _wdkModel.getAppDb().getDataSource());
@@ -690,7 +694,9 @@ public class FilterParamNew extends AbstractDependentParam {
  
     String ontologyValuesSql;
     try {
-      QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, contextParamValues, true, 0,
+    	  ValidatedParamStableValues validatedParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_ontologyValuesQuery, contextParamValues));
+      QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, validatedParamStableValues, true, 0,
           new HashMap<String, String>());
       ontologyValuesSql = instance.getSql();
     }
@@ -741,7 +747,9 @@ public class FilterParamNew extends AbstractDependentParam {
 
      try {
        String metadataSql;
-       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+       ValidatedParamStableValues validatedParamStableValues =
+    	       ValidatedParamStableValues.createFromCompleteValues(user, metadataQuery, contextParamValues);
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, validatedParamStableValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
 
        Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
@@ -828,7 +836,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * Default is always no filter... until there is pressure to change this.
    */
   @Override
-  public String getDefault(User user, Map<String, String> contextParamValues) {
+  public String getDefault(User user, ParamStableValues contextParamValues) {
     String defaultValue = new JSONObject().toString();
     return defaultValue;
   }
@@ -860,7 +868,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * check each filter in stable value. add each invalid one to error message, and throw user exception.
    */
   @Override
-  protected void validateValue(User user, String stableValueString, Map<String, String> contextParamValues)
+  protected void validateValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);

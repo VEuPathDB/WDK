@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
@@ -24,7 +25,7 @@ public abstract class ParamBean<T extends Param> {
   protected int _truncateLength;
   protected T _param;
 
-  protected Map<String, String> _contextValues;
+  protected ParamStableValues _contextValues;
 
   public ParamBean(T param) {
     _param = param;
@@ -141,7 +142,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getSignature(UserBean user, String stableValue, Map<String, String> contextValues)
+  public String getSignature(UserBean user, String stableValue, ParamStableValues contextValues)
       throws WdkModelException, WdkUserException {
     return _param.getSignature(user.getUser(), stableValue, contextValues);
   }

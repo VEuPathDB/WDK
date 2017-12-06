@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -134,7 +135,7 @@ public class ProcessQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#makeInstance()
    */
   @Override
-  public ProcessQueryInstance makeInstance(User user, Map<String, String> values,
+  public ProcessQueryInstance makeInstance(User user, ValidatedParamStableValues values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new ProcessQueryInstance(user, this, values, validate,

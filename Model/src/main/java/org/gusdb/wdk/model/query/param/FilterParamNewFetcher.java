@@ -26,7 +26,7 @@ public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterPar
     _param = param;
   }
 
-  public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
+  public String getCacheKey(ValidatedParamStableValues dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _param.getWdkModel().getProjectId());
     cacheKeyJson.put(ONTOLOGY_QUERY_REF_KEY, _param.getOntologyQuery().getFullName());

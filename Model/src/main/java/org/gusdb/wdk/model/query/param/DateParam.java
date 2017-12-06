@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -144,7 +143,7 @@ public class DateParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
 
     LocalDate dateValue = null;  

@@ -49,7 +49,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
     Dataset dataset = (Dataset) rawValue;
     return Long.toString(dataset.getDatasetId());
@@ -64,7 +64,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Dataset toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public Dataset toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     long datasetId = Long.valueOf(stableValue);
     return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
@@ -77,7 +77,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
     if (_param.isNoTranslation())
       return stableValue;
 
@@ -109,7 +109,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     long datasetId = Long.valueOf(stableValue);
     Dataset dataset = user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
@@ -231,7 +231,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     DatasetParam datasetParam = (DatasetParam) _param;
     // check if the stable value is available
@@ -265,7 +265,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return toRawValue(user, stableValue, contextParamValues).getContent();
   }

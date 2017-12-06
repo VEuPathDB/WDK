@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -40,7 +41,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> contextParamStableValues, boolean validate,
+  protected SqlQueryInstance(User user, SqlQuery query, ValidatedParamStableValues contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, contextParamStableValues, validate, assignedWeight, context);
     _query = query;

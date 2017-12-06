@@ -161,7 +161,7 @@ public class DateRangeParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
 
     LocalDate values[] = new LocalDate[2];

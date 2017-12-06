@@ -82,7 +82,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues, DataSource dataSource) throws WdkModelException {
+   String validateSyntaxAndSemantics(User user, ValidatedParamStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
     List<String> errors = new ArrayList<String>();

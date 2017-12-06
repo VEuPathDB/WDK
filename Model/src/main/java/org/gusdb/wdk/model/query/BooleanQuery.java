@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -197,7 +198,7 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  public BooleanQueryInstance makeInstance(User user, Map<String, String> values,
+  public BooleanQueryInstance makeInstance(User user, ValidatedParamStableValues values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new BooleanQueryInstance(user, this, values, validate,

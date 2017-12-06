@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -105,7 +104,7 @@ public class NumberRangeParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+  protected void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException {
 
     Double values[] = new Double[2];

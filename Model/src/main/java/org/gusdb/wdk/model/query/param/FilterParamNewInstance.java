@@ -24,7 +24,7 @@ public class FilterParamNewInstance implements DependentParamInstance {
    * only needed by actions, which FilterParamNew does not support.   
    */
   @Override
-  public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return _param.getDefault();
     return stableValue;

@@ -62,7 +62,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      This method is not relevant to service layer, since it only uses stable values, never raw values.
    */
   @Override
-  public String toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toRawValue(User user, String stableValue, ParamStableValues contextParamValues) {
     return stableValue;
   }
 
@@ -93,7 +93,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValueString, Map<String, String> contextParamValues)
+  public String toInternalValue(User user, String stableValueString, ParamStableValues contextParamValues)
       throws WdkModelException {
 
     try {
@@ -121,7 +121,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        // transform flag
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
-       SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.emptyMap());
+       //TODO CWL - Verify that selected method is correct
+       ValidatedParamStableValues validatedParamStableValues =
+         ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(sqlQuery, paramValues));
+       SqlQueryInstance instance = sqlQuery.makeInstance(user, validatedParamStableValues, false, 0, Collections.emptyMap());
        return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
@@ -160,7 +163,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+  public String toSignature(User user, String stableValueString, ParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew param = (FilterParamNew)_param;
     contextParamValues = param.ensureRequiredContext(user, contextParamValues);
 
@@ -213,7 +216,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // do nothing
    }
@@ -224,7 +227,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValueString, Map<String, String> contextParamValues)
+  public String getDisplayValue(User user, String stableValueString, ParamStableValues contextParamValues)
       throws WdkModelException {
 
     FilterParamNew param = (FilterParamNew)_param;

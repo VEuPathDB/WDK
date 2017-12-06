@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -129,32 +128,39 @@ public abstract class AbstractDependentParam extends Param {
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
 
-  protected Map<String,String> ensureRequiredContext(User user, Map<String, String> contextParamValues) {
-    if (contextParamValues == null) {
-      contextParamValues = new LinkedHashMap<>();
-    }
-    if (isDependentParam()) {
-      try {
-        // for each depended param, ensure it has a value in contextParamValues
-        for (Param dependedParam : getDependedParams()) {
-
-          String dependedParamVal = contextParamValues.get(dependedParam.getName());
-          if (dependedParamVal == null) {
-            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
-                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
-                : dependedParam.getDefault();
-            if (dependedParamVal == null)
-              throw new NoDependedValueException(
-                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
-                      getName() + " without setting depended value.");
-            contextParamValues.put(dependedParam.getName(), dependedParamVal);
-          }
-        }
-      }
-      catch (Exception ex) {
-        throw new NoDependedValueException(ex);
-      }
-    }
+  /**
+   * Currently replaced by a similar method (resolveParamValue) in ValidatedParamStableValues.
+   * @param user
+   * @param contextParamValues
+   * @return
+   */
+  @Deprecated
+  protected Map<String,String> ensureRequiredContext(User user, Map<String,String> contextParamValues) {
+//    if (contextParamValues == null) {
+//      contextParamValues = new LinkedHashMap<>();
+//    }
+//    if (isDependentParam()) {
+//      try {
+//        // for each depended param, ensure it has a value in contextParamValues
+//        for (Param dependedParam : getDependedParams()) {
+//
+//          String dependedParamVal = contextParamValues.get(dependedParam.getName());
+//          if (dependedParamVal == null) {
+//            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
+//                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
+//                : dependedParam.getDefault();
+//            if (dependedParamVal == null)
+//              throw new NoDependedValueException(
+//                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
+//                      getName() + " without setting depended value.");
+//            contextParamValues.put(dependedParam.getName(), dependedParamVal);
+//          }
+//        }
+//      }
+//      catch (Exception ex) {
+//        throw new NoDependedValueException(ex);
+//      }
+//    }
     return contextParamValues;
   }
 
@@ -256,58 +262,59 @@ public abstract class AbstractDependentParam extends Param {
   }
   
   /**
-   * 
+   * Duplicates functionality now in ValidatedParamStableValues
    * @param user
    * @param contextParamValues map from name to stable values
    * @param instances
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void fillContextParamValues(User user, Map<String, String> contextParamValues,
+  @Deprecated
+  public void fillContextParamValues(User user, ParamStableValues contextParamValues,
       Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
-
-    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
-
-    // make sure the values for depended params are fetched first.
-    if (isDependentParam()) {
-      for (Param dependedParam : getDependedParams()) {
-        LOG.debug(_name + " depends on " + dependedParam.getName());
-        if (dependedParam instanceof AbstractDependentParam) {
-          ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
-        }
-      }
-    }
-
-    // check if the value for this param is correct
-    DependentParamInstance instance = instances.get(_name);
-    if (instance == null) {
-      instance = createDependentParamInstance(user, contextParamValues);
-      instances.put(_name, instance);
-    }
-
-    String stableValue = contextParamValues.get(_name);
-    String value = instance.getValidStableValue(user, stableValue, contextParamValues);
-
-    if (value != null) {
-      contextParamValues.put(_name, value);
-      //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
-    }
+//
+//    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
+//
+//    // make sure the values for depended params are fetched first.
+//    if (isDependentParam()) {
+//      for (Param dependedParam : getDependedParams()) {
+//        LOG.debug(_name + " depends on " + dependedParam.getName());
+//        if (dependedParam instanceof AbstractDependentParam) {
+//          ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
+//        }
+//      }
+//    }
+//
+//    // check if the value for this param is correct
+//    DependentParamInstance instance = instances.get(_name);
+//    if (instance == null) {
+//      instance = createDependentParamInstance(user, contextParamValues);
+//      instances.put(_name, instance);
+//    }
+//
+//    String stableValue = contextParamValues.get(_name);
+//    String value = instance.getValidStableValue(user, stableValue, contextParamValues);
+//
+//    if (value != null) {
+//      contextParamValues.put(_name, value);
+//      //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+//    }
   }
 
 
-  public abstract String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException;
+  public abstract String getDefault(User user, ParamStableValues contextParamValues) throws WdkModelException;
   
   @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
   
-  protected abstract DependentParamInstance createDependentParamInstance(User user, Map<String, String> dependedParamValues)
+  protected abstract DependentParamInstance createDependentParamInstance(User user, ValidatedParamStableValues dependedParamValues)
       throws WdkModelException, WdkUserException;
 
-  public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
+  public abstract String getSanityDefault(User user, ValidatedParamStableValues contextParamValues,
       SelectMode sanitySelectMode); 
-  
+
   static JSONObject getDependedParamValuesJson(
-      Map<String, String> dependedParamValues, Set<Param> dependedParams) {
+      ParamStableValues dependedParamValues, Set<Param> dependedParams) {
     JSONObject dependedParamValuesJson = new JSONObject();
     if (dependedParams == null || dependedParams.isEmpty())
       return dependedParamValuesJson;

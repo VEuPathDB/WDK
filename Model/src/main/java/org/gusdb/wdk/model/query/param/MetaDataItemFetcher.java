@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -62,7 +62,10 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
         requiredParamValues.put(paramName, paramValues.get(paramName));
 
-    return query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
+    //TODO CWL - Verify that selected method is correct
+    ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, requiredParamValues));
+    return query.makeInstance(user, validatedParamStableValues, true, 0, new HashMap<String, String>());
   }
 
   public String getCacheKey() throws JSONException {

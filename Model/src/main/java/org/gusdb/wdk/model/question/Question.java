@@ -32,6 +32,8 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -376,7 +378,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
-    QueryInstance<?> qi = _query.makeInstance(user, dependentValues, validate,
+    ValidatedParamStableValues validatedParamStableValues =
+      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_query, dependentValues));
+    
+    QueryInstance<?> qi = _query.makeInstance(user, validatedParamStableValues, validate,
         assignedWeight, context);
     AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
         pageEnd, sortingAttributes, filter);

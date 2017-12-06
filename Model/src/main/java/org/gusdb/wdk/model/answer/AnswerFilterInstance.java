@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -55,7 +56,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   private String _description;
 
   private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
-  private Map<String, String> _stableValues = new LinkedHashMap<String, String>();
+  private ValidatedParamStableValues _stableValues = new LinkedHashMap<String, String>();
 
   private RecordClass _recordClass;
   private SqlQuery _filterQuery;

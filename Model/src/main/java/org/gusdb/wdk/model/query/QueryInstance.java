@@ -20,8 +20,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,7 @@ public abstract class QueryInstance<T extends Query> {
   private long _instanceId;
   protected T _query;
   protected WdkModel _wdkModel;
-  protected Map<String, String> _contextParamStableValues;
+  protected ValidatedParamStableValues _contextParamStableValues;
   protected String _resultMessage;
 
   private String _checksum;
@@ -84,18 +84,19 @@ public abstract class QueryInstance<T extends Query> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  protected QueryInstance(User user, T query, Map<String, String> contextParamStableValues, boolean validate,
+  protected QueryInstance(User user, T query, ValidatedParamStableValues contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     _user = user;
     _query = query;
     _wdkModel = query.getWdkModel();
     _assignedWeight = assignedWeight;
     _context = new HashMap<>(context);
+    _checksum = null;
 
     _context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
     _context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
 
-    setContextParamStableValues(contextParamStableValues, validate);
+//    setContextParamStableValues(contextParamStableValues, validate);
   }
 
   public Query getQuery() {
@@ -117,27 +118,27 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
-  private void setContextParamStableValues(Map<String, String> contextParamStableValues, boolean validate)
-      throws WdkModelException, WdkUserException {
-    LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
-    for (String paramName : contextParamStableValues.keySet()) {
-      LOG.trace(paramName + "='" + contextParamStableValues.get(paramName) + "'");
-    }
-
-    // add user_id into the param values
-    Map<String, Param> params = _query.getParamMap();
-    String userKey = Utilities.PARAM_USER_ID;
-    if (params.containsKey(userKey) && !contextParamStableValues.containsKey(userKey)) {
-      contextParamStableValues.put(userKey, Long.toString(_user.getUserId()));
-    }
-
-    if (validate)
-      validateContextValuesAndFillEmptyWithDefaults(_user, contextParamStableValues);
-
-    // passed, assign the value
-    _contextParamStableValues = contextParamStableValues;
-    _checksum = null;
-  }
+//  private void setContextParamStableValues(ValidParamValueMap contextParamStableValues, boolean validate)
+//      throws WdkModelException, WdkUserException {
+//    LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
+//    for (String paramName : contextParamStableValues.keySet()) {
+//      LOG.trace(paramName + "='" + contextParamStableValues.get(paramName) + "'");
+//    }
+//
+//    // add user_id into the param values
+//    //Map<String, Param> params = _query.getParamMap();
+//    //String userKey = Utilities.PARAM_USER_ID;
+//    //if (params.containsKey(userKey) && !contextParamStableValues.containsKey(userKey)) {
+//    //  contextParamStableValues.put(userKey, Long.toString(_user.getUserId()));
+//    //}
+//
+//    if (validate)
+//      //validateContextValuesAndFillEmptyWithDefaults(_user, contextParamStableValues);
+//
+//    // passed, assign the value
+//    _contextParamStableValues = contextParamStableValues;
+//    _checksum = null;
+//  }
 
   public String getResultMessage() {
     // make sure the result message is loaded by getting instance id
@@ -237,7 +238,7 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
-  public Map<String, String> getParamStableValues() {
+  public ValidatedParamStableValues getParamStableValues() {
     return _contextParamStableValues;
   }
 
@@ -251,98 +252,17 @@ public abstract class QueryInstance<T extends Query> {
     return resultFactory.getCachedSql(this, performSorting);
   }
 
-  private void validateContextValuesAndFillEmptyWithDefaults(User user, Map<String, String> values) throws WdkUserException,
-      WdkModelException {
-    Map<String, Param> params = _query.getParamMap();
-    Map<String, String> errors = null;
-
-    values = fillEmptyValues(values);
-    // then check that all params have supplied values
-    for (String paramName : values.keySet()) {
-      String errMsg = null;
-      String dependentValue = values.get(paramName);
-      String prompt = paramName;
-      try {
-        if (!params.containsKey(paramName)) {
-          // LOG.warn("The parameter '" + paramName + "' doesn't exist in query " + _query.getFullName());
-          continue;
-        }
-
-        Param param = params.get(paramName);
-        prompt = param.getPrompt();
-
-        // validate param
-        param.validate(user, dependentValue, values);
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
-        errMsg = ex.getMessage();
-        if (errMsg == null)
-          errMsg = ex.getClass().getName();
-      }
-      if (errMsg != null) {
-        if (errors == null)
-          errors = new LinkedHashMap<String, String>();
-        errors.put(prompt, errMsg);
-      }
-    }
-    if (errors != null) {
-      WdkUserException ex = new ParamValuesInvalidException("In query " + _query.getFullName() + " some of the input parameters are invalid or missing.", errors);
-      LOG.error(ex);
-      throw ex;
-    }
-  }
-
-  private Map<String, String> fillEmptyValues(Map<String, String> stableValues) throws WdkModelException {
-    Map<String, String> newValues = new LinkedHashMap<String, String>(stableValues);
-    Map<String, Param> paramMap = _query.getParamMap();
-
-    // iterate through this query's params, filling values
-    for (String paramName : paramMap.keySet()) {
-      resolveParamValue(paramMap.get(paramName), newValues);
-    }
-    return newValues;
-  }
-
-  private void resolveParamValue(Param param, Map<String, String> stableValues) throws WdkModelException {
-    String value;
-    if (!stableValues.containsKey(param.getName())) {
-      // param not provided, determine value
-      if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
-        // special case; must get value of depended param first
-        AbstractDependentParam adParam = (AbstractDependentParam) param;
-        Map<String, String> dependedValues = new LinkedHashMap<>();
-        for (Param dependedParam : adParam.getDependedParams()) {
-          resolveParamValue(dependedParam, stableValues);
-          String dependedName = dependedParam.getName();
-          dependedValues.put(dependedName, stableValues.get(dependedName));
-        }
-        value = adParam.getDefault(_user, dependedValues);
-      }
-      else {
-        value = param.getDefault();
-      }
-    }
-    else { // param provided, but it can be empty
-      value = stableValues.get(param.getName());
-      if (value == null || value.length() == 0) {
-        value = param.isAllowEmpty() ? param.getEmptyValue() : null;
-      }
-    }
-    stableValues.put(param.getName(), value);
-  }
-
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
 
     if (_paramInternalValues == null) {
-      // the empty & default values are filled
-      Map<String, String> stableValues = fillEmptyValues(_contextParamStableValues);
+    	  // _contextParaStableValues should already have the empty values filled in. 
       _paramInternalValues = new LinkedHashMap<String, String>();
       Map<String, Param> params = _query.getParamMap();
       for (String paramName : params.keySet()) {
         Param param = params.get(paramName);
-        String internalValue, stableValue = stableValues.get(paramName);
-        internalValue = param.getInternalValue(_user, stableValue, stableValues);
+        //String internalValue, stableValue = stableValues.get(paramName);
+        String internalValue, stableValue = _contextParamStableValues.get(paramName);
+        internalValue = param.getInternalValue(_user, stableValue, _contextParamStableValues);
         _paramInternalValues.put(paramName, internalValue);
       }
     }

@@ -49,9 +49,9 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, ValidatedParamStableValues dependedParamValues)
       throws WdkModelException {
-    LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    LOG.trace("Entering createEnumParamCache(" + dependedParamValues.prettyPrint() + ")");
     Set<Param> dependedParams = getDependedParams();
     EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues, this);
     EnumItem[] enumItems = _enumItemList.getEnumItems();
@@ -87,7 +87,7 @@ public class EnumParam extends AbstractEnumParam {
 
     initTreeMap(cache);
     applySelectMode(cache);
-    LOG.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    LOG.trace("Leaving createEnumParamCache(" + dependedParamValues.prettyPrint() + ")");
     return cache;
   }
 

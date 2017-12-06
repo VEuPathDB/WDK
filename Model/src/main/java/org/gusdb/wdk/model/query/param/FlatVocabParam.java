@@ -155,7 +155,7 @@ public class FlatVocabParam extends AbstractEnumParam {
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
    */
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, ValidatedParamStableValues dependedParamValues)
       throws WdkModelException, WdkUserException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);

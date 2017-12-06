@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.user.User;
 
 public interface DependentParamInstance {
 
-  String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
+  String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
 }

@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.ClientRequest;
@@ -57,7 +58,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> contextParamStableValues, boolean validate,
+  public ProcessQueryInstance(User user, ProcessQuery query, ValidatedParamStableValues contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, contextParamStableValues, validate, assignedWeight, context);
     _query = query;

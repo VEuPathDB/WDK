@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
@@ -35,7 +36,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    * @throws WdkUserException
    */
   protected BooleanQueryInstance(User user, BooleanQuery query,
-      Map<String, String> values, boolean validate, int assignedWeight,
+      ValidatedParamStableValues values, boolean validate, int assignedWeight,
       Map<String, String> context) throws WdkModelException, WdkUserException {
     // boolean query doesn't use assigned weight
     super(user, query, values, validate, assignedWeight, context);

@@ -29,7 +29,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
 
   // param this cache was created by
   // context values used to create this cache
-  private Map<String, String> _dependedParamValues;
+  private ValidatedParamStableValues _dependedParamValues;
   // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
   private String _defaultValue;
 
@@ -41,7 +41,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
 
   private AbstractEnumParam _aeParam;
 
-  public EnumParamVocabInstance(Map<String, String> dependedParamValues, AbstractEnumParam aeParam) {
+  public EnumParamVocabInstance(ValidatedParamStableValues dependedParamValues, AbstractEnumParam aeParam) {
     _dependedParamValues = dependedParamValues;
     _aeParam = aeParam;
   }
@@ -177,7 +177,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
     return _termTreeList;
   }
 
-  Map<String, String> getDependedValues() {
+  ValidatedParamStableValues getDependedValues() {
     return _dependedParamValues;
   }
 
@@ -211,12 +211,12 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   }
 
   @Override
-  public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return _aeParam.getValidStableValue(user, stableValue, contextParamValues, this);
   }
 
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
+  public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);
   }

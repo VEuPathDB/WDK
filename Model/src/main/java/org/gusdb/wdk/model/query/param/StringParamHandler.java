@@ -29,7 +29,7 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
       throws WdkUserException {
     return (String) rawValue;
   }
@@ -41,7 +41,7 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
     return stableValue;
   }
 
@@ -54,7 +54,7 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0) return "";
     return EncryptionUtil.encrypt(stableValue);
@@ -70,7 +70,7 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     if (_param.isNoTranslation())
       return stableValue;
@@ -109,7 +109,7 @@ public class StringParamHandler extends AbstractParamHandler {
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
@@ -125,7 +125,7 @@ public class StringParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return toRawValue(user, stableValue, contextParamValues);
   }

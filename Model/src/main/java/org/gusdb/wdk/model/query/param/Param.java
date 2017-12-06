@@ -84,7 +84,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * @param user
    * @param rawOrDependentValue
    */
-  protected abstract void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+  protected abstract void validateValue(User user, String stableValue, ParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -498,7 +498,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public void validate(User user, String stableValue, Map<String, String> contextParamValues)
+  public void validate(User user, String stableValue, ParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // handle the empty case
     if (stableValue == null || stableValue.length() == 0) {
@@ -564,7 +564,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String getStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  public String getStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     return _handler.toStableValue(user, rawValue, contextParamValues);
   }
@@ -584,7 +584,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Object getRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public Object getRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return _handler.toRawValue(user, stableValue, contextParamValues);
   }
@@ -602,7 +602,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String getInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       if (isAllowEmpty())
@@ -620,7 +620,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
     return _handler.toSignature(user, stableValue, contextParamValues);
@@ -663,7 +663,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return values;
   }
 
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     _handler.prepareDisplay(user, requestParams, contextParamValues);
   }
@@ -687,7 +687,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _handlerReferences.add(handlerReference);
   }
   
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
     return _handler.getDisplayValue(user, stableValue, contextParamValues);
   }
   

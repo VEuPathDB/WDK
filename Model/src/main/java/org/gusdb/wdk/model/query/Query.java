@@ -24,8 +24,10 @@ import org.gusdb.wdk.model.query.param.DependentParamInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.User;
@@ -140,7 +142,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
+  public abstract QueryInstance<? extends Query> makeInstance(User user, ValidatedParamStableValues values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
 
   @Override
@@ -632,16 +634,16 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
+  public Map<String, String> getSignatures(User user, ValidatedParamStableValues validatedParamStableValues)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
-    for (String paramName : stableValues.keySet()) {
+    for (String paramName : validatedParamStableValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
          continue;
       }
-      String stableValue = stableValues.get(paramName);
-      String signature = param.getSignature(user, stableValue, stableValues);
+      String stableValue = validatedParamStableValues.get(paramName);
+      String signature = param.getSignature(user, stableValue, validatedParamStableValues);
       signatures.put(paramName, signature);
     }
     return signatures;

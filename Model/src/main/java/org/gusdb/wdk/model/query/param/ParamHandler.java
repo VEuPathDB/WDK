@@ -53,7 +53,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -66,7 +66,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
+  String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues)
       throws WdkUserException, WdkModelException;
 
   /**
@@ -78,16 +78,16 @@ public interface ParamHandler {
    * @return
    * @throws WdkModelException
    */
-  Object toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
+  Object toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException;
 
-  String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
-  String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
   
-  String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException;
+  String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException;
 }

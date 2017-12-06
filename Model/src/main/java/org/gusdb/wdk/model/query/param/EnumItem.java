@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.script.ScriptException;
 
@@ -11,9 +10,9 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This class represent a display/term/internal tuplet of an enumParam value. An
@@ -182,7 +181,7 @@ public class EnumItem extends WdkModelBase {
    * @param dependedValues
    * @return
    */
-  public boolean isValidFor(Map<String, String> dependedParamValues)
+  public boolean isValidFor(ValidatedParamStableValues dependedParamValues)
       throws WdkModelException {
     // convert the map into a JSON
     try {

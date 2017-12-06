@@ -38,7 +38,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues) {
+  public String toStableValue(User user, Object rawValue, ValidatedParamStableValues contextParamValues) {
     if (!(rawValue instanceof String[]))
       new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
@@ -59,7 +59,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String[] toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
+  public String[] toRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
     if (stableValue == null)
       return null;
     String[] rawValue = stableValue.split(",+");
@@ -81,7 +81,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
@@ -116,7 +116,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
@@ -182,7 +182,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
@@ -236,7 +236,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
     Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);

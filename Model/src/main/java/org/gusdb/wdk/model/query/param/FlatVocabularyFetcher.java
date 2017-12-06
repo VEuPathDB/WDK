@@ -40,7 +40,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     _vocabQuery = param.getQuery();
   }
 
-  public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
+  public String getCacheKey(ValidatedParamStableValues dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
@@ -67,7 +67,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     return fetchItem(dependedParamValues);
   }
 
-  public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
+  public EnumParamVocabInstance fetchItem(ValidatedParamStableValues dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
@@ -112,7 +112,10 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
+      //TODO CWL - Verify that selected method is correct
+      ValidatedParamStableValues validatedParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(_vocabQuery, values));
+      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, validatedParamStableValues, false, 0, context);
       try (ResultList result = instance.getResults()) {
         while (result.next()) {
           Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);

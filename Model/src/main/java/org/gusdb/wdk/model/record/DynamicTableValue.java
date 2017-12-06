@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.user.User;
 
@@ -25,8 +26,9 @@ public class DynamicTableValue extends TableValue {
     super(tableField);
 
     // create query instance; TableValue will initialize rows by itself
+    ParamStableValues paramStableValues = ParamStableValues.createFromCompleteParamValuesMap(user, tableField.getWrappedQuery(), primaryKey.getValues());
     _queryInstance = tableField.getWrappedQuery().makeInstance(
-        user, primaryKey.getValues(), true, 0, new LinkedHashMap<String, String>());
+        user, paramStableValues, true, 0, new LinkedHashMap<String, String>());
   }
 
   private void loadRowsFromQuery() {

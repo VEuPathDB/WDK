@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 /**
  * For now only supports numeric property (count)
@@ -66,7 +67,8 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
     params.put(WDK_ID_SQL_PARAM, answerValue.getIdSql());
     QueryInstance<?> queryInstance;
     try {
-      queryInstance = _query.makeInstance(answerValue.getUser(), params, true, 0,
+    	  ValidatedParamStableValues validatedParamStableValues = ValidatedParamStableValues.createFromCompleteParamValuesMap(answerValue.getUser(), _query, params);
+      queryInstance = _query.makeInstance(answerValue.getUser(), validatedParamStableValues, true, 0,
           new LinkedHashMap<String, String>());
     }
     catch (WdkUserException ex) {

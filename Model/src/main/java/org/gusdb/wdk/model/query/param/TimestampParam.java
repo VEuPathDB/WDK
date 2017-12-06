@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.util.Map;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -94,7 +92,7 @@ public class TimestampParam extends Param {
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String rawOrDependentValue, Map<String, String> contextParamValues)
+  protected void validateValue(User user, String rawOrDependentValue, ParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // nothing to validation. the value of timestamp can be any string
   }

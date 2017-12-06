@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -136,7 +137,7 @@ public class SqlQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#makeInstance()
    */
   @Override
-  public SqlQueryInstance makeInstance(User user, Map<String, String> values,
+  public SqlQueryInstance makeInstance(User user, ValidatedParamStableValues values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new SqlQueryInstance(user, this, values, validate, assignedWeight,
