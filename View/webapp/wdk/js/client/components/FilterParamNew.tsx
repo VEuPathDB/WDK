@@ -107,7 +107,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
           displayName={parameter.filterDataTypeDisplayName || parameter.displayName}
 
           activeField={uiState.activeOntologyTerm}
-          activeFieldSummary={activeFieldSummary}
+          activeFieldDistribution={activeFieldSummary && activeFieldSummary.valueCounts}
           activeFieldState={activeFieldState}
           fields={this._getFieldMap(parameter)}
           filters={filters}
