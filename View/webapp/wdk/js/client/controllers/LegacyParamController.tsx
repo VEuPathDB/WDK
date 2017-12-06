@@ -50,7 +50,8 @@ export default class LegacyParamController extends AbstractViewController<
   getDependentParams(parameter: Parameter): Seq<Parameter> {
     return Seq.from(parameter.dependentParams)
       .map(name => this.state.question.parametersByName[name])
-      .flatMap(dependentParam => this.getDependentParams(dependentParam))
+      .flatMap(dependentParam =>
+        Seq.of(dependentParam).concat(this.getDependentParams(dependentParam)));
   }
 
   loadData(prevProps?: Props) {
