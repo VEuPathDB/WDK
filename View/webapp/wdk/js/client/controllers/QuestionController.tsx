@@ -5,8 +5,7 @@ import {
   ActiveQuestionUpdatedAction,
   ParamValueUpdatedAction
 } from '../actioncreators/QuestionActionCreators';
-import * as ParamModules from '../params';
-import * as p from '../params';
+import ParamComponent from '../components/Parameter';
 import QuestionStore, { State } from '../stores/QuestionStore';
 import { wrappable } from '../utils/componentUtils';
 import { Seq } from '../utils/IterableUtils';
@@ -32,8 +31,6 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
   getStateFromStore() {
     return get(this.store.getState(), ['questions', this.props.match.params.question], {}) as QuestionState;
   }
-
-  paramModules = ParamModules;
 
   loadData() {
     if (this.state.questionStatus == null) {
@@ -73,7 +70,8 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
   getDependentParams(parameter: Parameter): Seq<Parameter> {
     return Seq.from(parameter.dependentParams)
       .map(name => this.state.question.parametersByName[name])
-      .flatMap(dependentParam => this.getDependentParams(dependentParam))
+      .flatMap(dependentParam =>
+        Seq.of(dependentParam).concat(this.getDependentParams(dependentParam)))
   }
 
   renderGroup(group: ParameterGroup) {
@@ -94,7 +92,7 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
     return (
       <div key={parameter.name}>
         <h3>{parameter.displayName}</h3>
-        <p.ParamComponent
+        <ParamComponent
           ctx={ctx}
           parameter={parameter}
           value={paramValues[parameter.name]}

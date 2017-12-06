@@ -1,11 +1,13 @@
 import { Observable } from 'rxjs/Rx';
 
-import { combineEpics, ActionCreatorServices } from '../utils/ActionCreatorUtils';
+import { combineEpics, EpicServices } from '../utils/ActionCreatorUtils';
 import { Context } from '../params/Utils';
 import { makeActionCreator, payload } from '../utils/ActionCreatorUtils';
 import { Parameter, ParameterValue, ParameterValues, Question, RecordClass } from '../utils/WdkModel';
 import WdkService from '../utils/WdkService';
 import { Action } from '../dispatcher/Dispatcher';
+import RecordViewStore from '../stores/RecordViewStore';
+import QuestionStore from '../stores/QuestionStore';
 
 type BasePayload = {
   questionName: string;
@@ -77,7 +79,7 @@ export const ParamStateUpdatedAction = makeActionCreator(
 
 export const questionEpic = combineEpics(loadQuestionEpic, updateDependentParamsEpic);
 
-function loadQuestionEpic(action$: Observable<Action>, { wdkService }: ActionCreatorServices): Observable<Action> {
+function loadQuestionEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>): Observable<Action> {
   return action$
     .filter(ActiveQuestionUpdatedAction.isType)
     .mergeMap(action =>
@@ -91,7 +93,7 @@ function loadQuestionEpic(action$: Observable<Action>, { wdkService }: ActionCre
     )
 }
 
-function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: ActionCreatorServices): Observable<Action> {
+function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
   return action$.filter(ParamValueUpdatedAction.isType)
     .debounceTime(1000)
     .mergeMap(action => {

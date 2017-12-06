@@ -3,7 +3,7 @@ import { ReduceStore } from 'flux/utils';
 import WdkDispatcher, { Action } from '../dispatcher/Dispatcher';
 import GlobalDataStore from './GlobalDataStore';
 import { GlobalData } from './GlobalDataStore';
-import { ActionCreatorServices, Epic } from '../utils/ActionCreatorUtils';
+import { ActionCreatorServices, Epic, EpicServices } from '../utils/ActionCreatorUtils';
 import { Observable, Subject } from 'rxjs/Rx';
 import { setTimeout } from 'timers';
 
@@ -67,7 +67,8 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
    * A root epic that merges the observables returned by `getEpics()`.
    */
   rootEpic(actions$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
-    const epicActions = this.getEpics().map(epic => epic(actions$, services))
+    const epicServices = { ...services, store: this };
+    const epicActions = this.getEpics().map(epic => epic(actions$, epicServices));
     return Observable.merge(...epicActions);
   }
 
@@ -99,10 +100,24 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     const action$ = dispatcher.asObservable().filter(action =>
       this.storeShouldReceiveAction(action.channel));
 
-    this.rootEpic(action$, services)
-      // Assign channel unless action isBroadcast
-      .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
-      .subscribe(action => dispatcher.dispatch(action));
+    const startEpic = (): Observable<Action> =>
+      this.rootEpic(action$, services)
+        // Assign channel unless action isBroadcast
+        .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
+        .catch((error: Error, caught) => {
+          console.error(error);
+          // restart epic
+          return startEpic();
+        })
+
+    startEpic().subscribe(
+      action => {
+        dispatcher.dispatch(action)
+      },
+      error => {
+        // TODO What to do with error?
+        console.error(error);
+      });
   }
 
 }
