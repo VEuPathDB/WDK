@@ -64,6 +64,7 @@ public abstract class QueryInstance<T extends Query> {
   private long _instanceId;
   protected T _query;
   protected WdkModel _wdkModel;
+  //TODO - CWL Verify
   protected ValidatedParamStableValues _contextParamStableValues;
   protected String _resultMessage;
 
@@ -84,6 +85,7 @@ public abstract class QueryInstance<T extends Query> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  //TODO - CWL Verify 
   protected QueryInstance(User user, T query, ValidatedParamStableValues contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     _user = user;
@@ -118,6 +120,7 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
+//TODO - CWL Verify
 //  private void setContextParamStableValues(ValidParamValueMap contextParamStableValues, boolean validate)
 //      throws WdkModelException, WdkUserException {
 //    LOG.trace("----- input value for [" + _query.getFullName() + "] -----");
@@ -238,6 +241,7 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
+  //TODO - CWL Verify
   public ValidatedParamStableValues getValidatedParamStableValues() {
     return _contextParamStableValues;
   }
@@ -252,6 +256,7 @@ public abstract class QueryInstance<T extends Query> {
     return resultFactory.getCachedSql(this, performSorting);
   }
 
+  //TODO - Verify CWL
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
 
     if (_paramInternalValues == null) {

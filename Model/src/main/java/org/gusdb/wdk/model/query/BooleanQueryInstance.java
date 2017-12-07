@@ -35,6 +35,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    * @param values
    * @throws WdkUserException
    */
+  //TODO - CWL Verify 
   protected BooleanQueryInstance(User user, BooleanQuery query,
       ValidatedParamStableValues values, boolean validate, int assignedWeight,
       Map<String, String> context) throws WdkModelException, WdkUserException {

@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.query.ParamValuesInvalidException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 
+//TODO - CWL Verify
 public class ValidatedParamStableValues {
   
   private static final Logger LOG = Logger.getLogger(ValidatedParamStableValues.class);

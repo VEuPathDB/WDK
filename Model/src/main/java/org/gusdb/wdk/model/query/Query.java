@@ -141,6 +141,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
+  //TODO - CWL Verify
   public abstract QueryInstance<? extends Query> makeInstance(User user, ValidatedParamStableValues values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
 
@@ -633,6 +634,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
+  //TODO - CWL Verify
   public Map<String, String> getSignatures(User user, ValidatedParamStableValues validatedParamStableValues)
       throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
@@ -674,6 +676,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  //TODO - CWL Verify 
   public void fillContextParamValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     for (Param param : paramMap.values()) {

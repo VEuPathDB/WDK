@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.query.Query;
 
-
+//TODO - CWL Verify
 public class ParamStableValues extends HashMap<String,String> {
   private static final long serialVersionUID = 1L;
   private final Query _query;

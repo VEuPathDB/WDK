@@ -41,6 +41,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  //TODO - CWL Verify
   protected SqlQueryInstance(User user, SqlQuery query, ValidatedParamStableValues contextParamStableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, contextParamStableValues, validate, assignedWeight, context);
