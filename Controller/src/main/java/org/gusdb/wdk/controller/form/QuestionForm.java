@@ -14,12 +14,15 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 /**
  * form bean for showing a wdk question from a question set.
@@ -43,6 +46,7 @@ public class QuestionForm extends MapActionForm {
    * validate the properties that have been sent from the HTTP request, and return an ActionErrors object that
    * encapsulates any validation errors
    */
+  //TODO - CWL Verify
   @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
     LOG.debug("\n\n\n\n\n\nstart form validation...");
@@ -94,26 +98,43 @@ public class QuestionForm extends MapActionForm {
         LOG.error("getting stable value failed", ex);
       }
     }
-
-    // assign context values to the param bean
-    for (ParamBean<?> param : params.values()) {
-      param.setUser(user);
-      param.setContextValues(contextValues);
+    try {
+      ValidatedParamStableValues validatedParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
     }
-
-    // validate params
-    for (String paramName : params.keySet()) {
-      ParamBean<?> param = params.get(paramName);
-      try {
-        String stableValue = contextValues.get(paramName);
-        param.validate(user, stableValue, contextValues);
-      }
-      catch (Exception ex) {
-        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
+    catch(WdkUserException wue) {
+    	  Map<String,String> errorMap = wue.getParamErrors();
+    	  for(String paramName : errorMap.keySet()) {
+    		ParamBean<?> param = params.get(paramName);
+    		ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), errorMap.get(paramName));
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-        LOG.error("validation failed.", ex);
-      }
+        LOG.error("validation failed.", wue);
+    	  }
     }
+    catch(WdkModelException wme) {
+    	  throw new WdkRuntimeException(wme);
+    }
+
+//    // assign context values to the param bean
+//    for (ParamBean<?> param : params.values()) {
+//      param.setUser(user);
+//      param.setContextValues(contextValues);
+//    }
+//
+//    // validate params
+//    for (String paramName : params.keySet()) {
+//      ParamBean<?> param = params.get(paramName);
+//      try {
+//        String stableValue = contextValues.get(paramName);
+//        param.validate(user, stableValue, contextValues);
+//      }
+//      catch (Exception ex) {
+//    	    
+//        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
+//        errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+//        LOG.error("validation failed.", ex);
+//      }
+//    }
 
     // validate weight
     boolean hasWeight = (_weight != null && _weight.length() > 0);
