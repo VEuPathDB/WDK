@@ -391,8 +391,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   public boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException {
     int rowsAffected = new SQLRunner(_userDs, SET_ANALYSIS_PROPERTIES, "set-step-analysis-props").executeUpdate(
-        new Object[] { analysisId, propertiesStream },
-        new Integer[] { Types.BIGINT, Types.CLOB });
+        new Object[] { propertiesStream, analysisId },
+        new Integer[] { Types.CLOB, Types.BIGINT });
     return rowsAffected > 0;
   }
 
