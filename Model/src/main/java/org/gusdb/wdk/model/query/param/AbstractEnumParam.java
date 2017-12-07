@@ -518,7 +518,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
-      String[] terms = getTerms(user, stableValue, contextParamValues);
+      String[] terms = getTerms(user, stableValue);
       LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
           ", with contextParamValues=" + contextParamValues.prettyPrint());
 
@@ -554,8 +554,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
   
   //TODO - CWL Verify
-  public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
-    return (String[]) getRawValue(user, stableValue, contextParamValues);
+  public String[] getTerms(User user, String stableValue) throws WdkModelException {
+    return (String[]) getRawValue(user, stableValue);
   }
 
   //TODO - CWL Verify
@@ -758,7 +758,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     if (stableValue == null)
       return cache.getDefaultValue();
 
-    String[] terms = getTerms(user, stableValue, contextParamValues);
+    String[] terms = getTerms(user, stableValue);
     // logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
     Map<String, String> termMap = cache.getVocabMap();
     Set<String> validValues = new LinkedHashSet<>();

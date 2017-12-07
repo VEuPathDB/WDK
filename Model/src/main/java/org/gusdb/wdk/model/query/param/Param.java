@@ -588,7 +588,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException
    */
   //TODO - CWL Verify 
-  public Object getRawValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public Object getRawValue(User user, String stableValue)
       throws WdkModelException {
     return _handler.toRawValue(user, stableValue);
   }
