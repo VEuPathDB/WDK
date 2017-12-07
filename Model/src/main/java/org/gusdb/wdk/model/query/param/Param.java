@@ -110,7 +110,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.
-  private String _defaultValue;
+  protected String _defaultValue;
   private String _emptyValue;
 
   // sometimes different values are desired for normal operation vs. sanity test;
@@ -501,15 +501,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public void validate(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     // handle the empty case
-    if (stableValue == null || stableValue.length() == 0) {
-      if (!_allowEmpty)
-	throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
-      // otherwise, got empty value and is allowed, no need for further
-      // validation.
+    if (stableValue == null || stableValue.isEmpty()) {
+      if (!_allowEmpty) {
+        throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
+        // otherwise, got empty value and is allowed, no need for further validation
+      }
     }
     else {
-      // value is not empty, the sub classes will complete further
-      // validation
+      // value is not empty, the sub classes will complete further validation
       validateValue(user, stableValue, contextParamValues);
     }
   }
