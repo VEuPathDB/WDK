@@ -304,7 +304,9 @@ public class QuestionService extends WdkService {
       if (ontologyItem == null) {
         throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
       }
-      JSONArray summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
+      ValidatedParamStableValues validationParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(), contextParamValues));
+      JSONArray summaryJson = getOntologyTermSummaryJson(user, validatedParamStableValues, filterParam,
           ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
       return Response.ok(summaryJson.toString()).build();
     }
@@ -313,7 +315,8 @@ public class QuestionService extends WdkService {
     }
   }
 
-  private <T> JSONArray getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
+  //TODO - CWL Verify
+  private <T> JSONArray getOntologyTermSummaryJson(User user, ValidatedParamStableValues contextParamValues,
       FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
           throws WdkModelException {
     Map<T,FilterParamSummaryCounts> counts = param.getOntologyTermSummary(

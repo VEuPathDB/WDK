@@ -23,6 +23,8 @@ import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -221,7 +223,8 @@ public class StepService extends UserService {
       context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
 	  try {  
 	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-        question.getQuery().makeInstance(user, AnswerValueFactory.convertParams(answerSpec.getParamValues()), true, answerSpec.getWeight(), context);
+	    Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
+	    	ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(),params));
 	  }
       catch(WdkUserException wue) {
         throw new DataValidationException(wue);

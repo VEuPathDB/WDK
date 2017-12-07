@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -34,7 +35,7 @@ public class StepUtilities {
   public static Step createStep(User user, Long strategyId, AnswerValue answerValue, boolean deleted, int assignedWeight)
       throws WdkModelException {
     Question question = answerValue.getQuestion();
-    Map<String, String> paramValues = answerValue.getIdsQueryInstance().getParamStableValues();
+    ValidatedParamStableValues paramValues = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
     AnswerFilterInstance filter = answerValue.getFilter();
     int startIndex = answerValue.getStartIndex();
     int endIndex = answerValue.getEndIndex();
