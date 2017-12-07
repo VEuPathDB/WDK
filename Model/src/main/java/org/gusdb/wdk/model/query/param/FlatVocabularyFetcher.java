@@ -40,6 +40,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     _vocabQuery = param.getQuery();
   }
 
+  //TODO - CWL Verify
   public String getCacheKey(ValidatedParamStableValues dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
@@ -56,6 +57,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
    * @throws UnfetchableItemException if unable to fetch item
    */
   @Override
+  //TODO - CWL Verify
   public EnumParamVocabInstance fetchItem(String cacheKey) throws WdkUserException, UnfetchableItemException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
@@ -69,6 +71,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     return fetchItem(validatedParamStableValues);
   }
 
+  //TODO - CWL Verify
   public EnumParamVocabInstance fetchItem(ValidatedParamStableValues dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
@@ -76,6 +79,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
     return vocabInstance;
   }
 
+  //TODO - CWL Verify
   private void populateVocabInstance(EnumParamVocabInstance vocabInstance) throws UnfetchableItemException {
     try {
       // check if the query has "display" column

@@ -249,6 +249,7 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  //TODO - CWL Verify 
   public Map<String, Map<String, String>> getMetadataSpec(User user, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
@@ -294,6 +295,7 @@ public class FilterParam extends FlatVocabParam {
     throw new WdkModelException(nestedException);
   }
 
+  //TODO - CWL Verify
   public Map<String, List<String>> getMetaData(User user, ValidatedParamStableValues contextParamValues, String property)
       throws WdkModelException, WdkUserException {
     EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
@@ -311,6 +313,7 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  //TODO - CWL Verify 
   public Map<String, List<String>> getMetaData(User user, ValidatedParamStableValues contextParamValues, String property,
       EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
@@ -370,6 +373,7 @@ public class FilterParam extends FlatVocabParam {
     return jsParam;
   }
 
+  //TODO - CWL Verify
   private void appendJsonFilterValue(JSONObject jsParam, User user, ValidatedParamStableValues contextParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)

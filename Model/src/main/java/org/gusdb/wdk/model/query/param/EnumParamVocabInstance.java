@@ -29,6 +29,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
 
   // param this cache was created by
   // context values used to create this cache
+  //TODO - CWL Verify
   private ValidatedParamStableValues _dependedParamValues;
   // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
   private String _defaultValue;
@@ -41,6 +42,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
 
   private AbstractEnumParam _aeParam;
 
+  //TODO - CWL Verify
   public EnumParamVocabInstance(ValidatedParamStableValues dependedParamValues, AbstractEnumParam aeParam) {
     _dependedParamValues = dependedParamValues;
     _aeParam = aeParam;
@@ -177,6 +179,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
     return _termTreeList;
   }
 
+  //TODO - CWL Verify
   ValidatedParamStableValues getDependedValues() {
     return _dependedParamValues;
   }
@@ -216,6 +219,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
     return _aeParam.getValidStableValue(user, stableValue, contextParamValues, this);
   }
 
+  //TODO - CWL Verify
   public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
     return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);

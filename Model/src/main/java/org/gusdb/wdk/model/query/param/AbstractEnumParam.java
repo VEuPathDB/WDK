@@ -140,6 +140,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private int depthExpanded = 0;
 
+  //TODO - CWL Verify
   protected abstract EnumParamVocabInstance createVocabInstance(User user, ValidatedParamStableValues dependedParamValues)
       throws WdkModelException, WdkUserException;
   
@@ -179,6 +180,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @param contextParamValues
    * @return
    */
+  //TODO - CWL Verify 
   public EnumParamVocabInstance getVocabInstance(User user, ValidatedParamStableValues contextParamValues) {
 
     // make sure context is populated with values we need (our depended params)
@@ -367,6 +369,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocab(user, null);
   }
 
+  //TODO - CWL Verify
   public String[] getVocab(User user, ValidatedParamStableValues dependedParamValues) throws WdkRuntimeException {
     return getVocabInstance(user, dependedParamValues).getVocab();
   }
@@ -375,6 +378,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabTreeRoots(user, null);
   }
 
+  //TODO - CWL Verify
   public EnumParamTermNode[] getVocabTreeRoots(User user, ValidatedParamStableValues dependedParamValues) {
     return getVocabInstance(user, dependedParamValues).getVocabTreeRoots();
   }
@@ -383,6 +387,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInternal(user, null);
   }
 
+  //TODO - CWL Verify
   public String[] getVocabInternal(User user, ValidatedParamStableValues dependedParamValues) {
     return getVocabInstance(user, dependedParamValues).getVocabInternal(isNoTranslation());
   }
@@ -401,6 +406,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabMap(user, null);
   }
 
+  //TODO - CWL Verify
   public Map<String, String> getVocabMap(User user, ValidatedParamStableValues contextParamValues) {
     return getVocabInstance(user, contextParamValues).getVocabMap();
   }
@@ -409,6 +415,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getDisplayMap(user, null);
   }
 
+  //TODO - CWL Verify
   public Map<String, String> getDisplayMap(User user, ValidatedParamStableValues dependedParamValues) {
     return getVocabInstance(user, dependedParamValues).getDisplayMap();
   }
@@ -417,6 +424,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getParentMap(user, null);
   }
 
+  //TODO - CWL Verify
   public Map<String, String> getParentMap(User user, ValidatedParamStableValues dependedParamValues) {
     return getVocabInstance(user, dependedParamValues).getParentMap();
   }
@@ -545,10 +553,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
   
+  //TODO - CWL Verify
   public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
     return (String[]) getRawValue(user, stableValue, contextParamValues);
   }
 
+  //TODO - CWL Verify
   private int getNumSelected(User user, String[] terms, ValidatedParamStableValues contextParamValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and
     // count the leaves
@@ -743,6 +753,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return values;
   }
 
+  //TODO - CWL Verify
   protected String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues, EnumParamVocabInstance cache) throws WdkModelException {
     if (stableValue == null)
       return cache.getDefaultValue();
@@ -810,6 +821,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
 
+  //TODO - CWL Verify
   public JSONObject getJsonValues(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException,
       WdkUserException {
     return getJsonValues(createVocabInstance(user, contextParamValues));

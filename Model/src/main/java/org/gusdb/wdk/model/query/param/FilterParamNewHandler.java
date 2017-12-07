@@ -93,6 +93,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
+  //TODO - CWL Verify
   public String toInternalValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
@@ -121,7 +122,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        // transform flag
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
-       //TODO CWL - Verify that selected method is correct
+       //TODO CWL - Verify
        ValidatedParamStableValues validatedParamStableValues =
          ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(sqlQuery, paramValues));
        SqlQueryInstance instance = sqlQuery.makeInstance(user, validatedParamStableValues, false, 0, Collections.emptyMap());
@@ -163,6 +164,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
+  //TODO - CWL Verify
   public String toSignature(User user, String stableValueString, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew param = (FilterParamNew)_param;
     //contextParamValues = param.ensureRequiredContext(user, contextParamValues);
@@ -171,6 +173,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
 
+  //TODO - CWL Verify
   private String dependedParamsSignature(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
@@ -227,6 +230,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
+  //TODO - CWL Verify
   public String getDisplayValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 

@@ -29,15 +29,18 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   private Query query;
+  //TODO - CWL Verify
   private ValidatedParamStableValues paramValues;
   private User user;
 
+  //TODO - CWL Verify
   public OntologyItemNewFetcher(Query ontologyQuery, ValidatedParamStableValues paramValues, User user) {
     this.query = ontologyQuery;
     this.paramValues = paramValues;
     this.user = user;
   }
 
+  //TODO - CWL Verify
   @Override
   public Map<String, OntologyItem> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
@@ -47,7 +50,7 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
         if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
           requiredParamValues.put(paramName, paramValues.get(paramName));
 
-      //TODO CWL - Verify that selected method is correct
+      //TODO CWL - Verify
       ValidatedParamStableValues validatedParamStableValues =
     	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, requiredParamValues));
       QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,

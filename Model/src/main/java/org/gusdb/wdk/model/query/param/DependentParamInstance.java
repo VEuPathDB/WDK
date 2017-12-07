@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.user.User;
 
 public interface DependentParamInstance {
 
+  //TODO - CWL Verify
   String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 

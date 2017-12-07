@@ -407,6 +407,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   public Map<String, OntologyItem> getOntology(User user, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 
@@ -433,6 +434,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return { totalCount: number; filteredCount: number; }
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   public FilterParamSummaryCounts getTotalsSummary(User user, ValidatedParamStableValues contextParamValues,
       JSONObject appliedFilters) throws WdkModelException {
 
@@ -445,7 +447,6 @@ public class FilterParamNew extends AbstractDependentParam {
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-    	
       QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
       bgdSql = queryInstance.getSql();
@@ -513,6 +514,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
+  //TODO - CWL Verify 
   public <T> Map<T, FilterParamSummaryCounts> getOntologyTermSummary(User user,
       ValidatedParamStableValues contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
@@ -618,6 +620,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
+  //TODO - CWL Verify 
   private <T> Map<String, List<T>> getMetaData(User user, ValidatedParamStableValues contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
       throws WdkModelException {
@@ -660,6 +663,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return metadata;
   }
   
+  //TODO - CWL Verify
   public Map<String, Set<String>> getValuesMap(User user,
       ValidatedParamStableValues contextParamValues) throws WdkModelException {
     
@@ -679,6 +683,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   Map<String, Set<String>> getValuesMap(User user,
       ValidatedParamStableValues contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
@@ -770,6 +775,7 @@ public class FilterParamNew extends AbstractDependentParam {
    }
    
 
+  //TODO - CWL Verify
   public JSONObject getJsonValues(User user, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
 

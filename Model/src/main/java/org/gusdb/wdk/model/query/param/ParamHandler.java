@@ -53,6 +53,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
+   //TODO - CWL Verify
    void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
@@ -66,6 +67,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
@@ -78,16 +80,20 @@ public interface ParamHandler {
    * @return
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   Object toRawValue(User user, String stableValue)
       throws WdkModelException;
 
+  //TODO - CWL Verify
   String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
+  //TODO - CWL Verify
   String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
   
+  //TODO - CWL Verify
   String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException;
 }

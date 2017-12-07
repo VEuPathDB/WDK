@@ -62,7 +62,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
         requiredParamValues.put(paramName, paramValues.get(paramName));
 
-    //TODO CWL - Verify that selected method is correct
+    //TODO CWL - Verify
     ValidatedParamStableValues validatedParamStableValues =
     	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, requiredParamValues));
     return query.makeInstance(user, validatedParamStableValues, true, 0, new HashMap<String, String>());

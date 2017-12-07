@@ -157,7 +157,6 @@ public class AnswerParamHandler extends AbstractParamHandler {
           "'; the input must be a step id.", ex);
 	}
   }
-
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {

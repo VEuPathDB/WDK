@@ -82,6 +82,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
+   //TODO - CWL Verify
    String validateSyntaxAndSemantics(User user, ValidatedParamStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
@@ -246,6 +247,7 @@ public class FilterParamNewStableValue {
    * @param user  
    * @param contextParamValues 
    */
+  //TODO - CWL Verify 
   String getDisplayValue(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException {
 
     initWithThrow();
