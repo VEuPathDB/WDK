@@ -463,7 +463,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String[] getTerms(User user, String stableValue)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return new String[0];

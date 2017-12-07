@@ -222,7 +222,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   //TODO - CWL Verify
   public String[] getTerms(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException {
-    return (String[]) _aeParam.getRawValue(user, stableValue, contextParamValues);
+    return (String[]) _aeParam.getRawValue(user, stableValue);
   }
 
 }
