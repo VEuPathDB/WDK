@@ -99,8 +99,7 @@ public class QuestionForm extends MapActionForm {
       }
     }
     try {
-      ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+    	  ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
     }
     catch(WdkUserException wue) {
     	  Map<String,String> errorMap = wue.getParamErrors();

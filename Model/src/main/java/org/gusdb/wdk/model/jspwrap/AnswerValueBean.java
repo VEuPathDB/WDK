@@ -156,7 +156,7 @@ public class AnswerValueBean {
         }
         String stableValue = params.get(param.getName());
         User user = answerValue.getUser();
-        Step step = (Step)param.getRawValue(user, stableValue, params);
+        Step step = (Step)param.getRawValue(user, stableValue);
         return new AnswerValueBean(step.getAnswerValue());
     }
 
@@ -177,7 +177,7 @@ public class AnswerValueBean {
         AnswerParam param = query.getRightOperandParam();
         String stableValue = params.get(param.getName());
         User user = answerValue.getUser();
-        Step step = (Step)param.getRawValue(user, stableValue, params);
+        Step step = (Step)param.getRawValue(user, stableValue);
         return new AnswerValueBean(step.getAnswerValue());
     }
 

@@ -13,13 +13,16 @@ import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 /**
  * form bean for holding the boolean expression string fro queryStep.jsp page
@@ -53,6 +56,7 @@ public class FilterForm extends QuestionForm {
    * validate the properties that have been sent from the HTTP request, and
    * return an ActionErrors object that encapsulates any validation errors
    */
+  //TODO - CWL Verify
   @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
     UserBean user = ActionUtility.getUser(request);
@@ -100,45 +104,51 @@ public class FilterForm extends QuestionForm {
       }
       contextValues.put(param.getName(), value);
     }
-
-    for (int i = 0; i < params.length; i++) {
-      ParamBean<?> p = params[i];
-      try {
-        String[] pVals = null;
-        if ((p instanceof EnumParamBean) || (p instanceof AnswerParamBean)) {
-          pVals = getMyMultiProp(p.getName());
-          if (pVals == null) {
-            pVals = new String[] { "" };
-          }
-        } else {
-          pVals = new String[] { getMyProp(p.getName()) };
-        }
-
-        String errMsg = null;
-        for (int j = 0; j < pVals.length; j++) {
-          try {
-            String rawValue = pVals[j];
-            String stableValue = p.getStableValue(user, rawValue);
-            p.validate(user, stableValue, contextValues);
-          } catch (Exception ex) {
-            ex.printStackTrace();
-
-            if (errMsg == null) errMsg = ex.getMessage();
-            else errMsg += "; " + ex.getMessage();
-          }
-        }
-        if (errMsg != null) {
-          errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-              "mapped.properties", p.getPrompt(), errMsg));
-          request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
-        }
-        // System.out.println("===== Validated " + p.getName() + ": '" +
-        // errMsg + "'");
-      } catch (Exception exp) {
-        errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-            "mapped.properties", p.getPrompt(), exp.getMessage()));
-        request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+    
+    try {
+      ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+  
+//
+//        String errMsg = null;
+//  
+//        for (int j = 0; j < pVals.length; j++) {
+//          try {
+//            String rawValue = pVals[j];
+//            String stableValue = p.getStableValue(user, rawValue);
+//            p.validate(user, stableValue, contextValues);
+//          } catch (Exception ex) {
+//            ex.printStackTrace();
+//
+//            if (errMsg == null) errMsg = ex.getMessage();
+//            else errMsg += "; " + ex.getMessage();
+//          }
+//        }
+//        if (errMsg != null) {
+//          errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
+//              "mapped.properties", p.getPrompt(), errMsg));
+//          request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+//        }
+//        // System.out.println("===== Validated " + p.getName() + ": '" +
+//        // errMsg + "'");
+//      } catch (Exception exp) {
+//        errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
+//            "mapped.properties", p.getPrompt(), exp.getMessage()));
+//        request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+//      }
+    }
+    catch(WdkUserException wue) {
+      Map<String,Param> paramMap = wdkQuestion.getQuestion().getParamMap();
+      Map<String,String> errorMap = wue.getParamErrors();
+      for(String paramName : errorMap.keySet()) {
+        Param param = paramMap.get(paramName);
+        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), errorMap.get(paramName));  
+        errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+        logger.error("validation failed.", wue);
       }
+      request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+    }
+    catch(WdkModelException wme) {
+      throw new WdkRuntimeException(wme);
     }
     return errors;
   }

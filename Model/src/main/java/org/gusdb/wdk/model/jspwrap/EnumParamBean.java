@@ -185,7 +185,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String getRawDisplayValue() throws WdkModelException {
-    String[] terms = _param.getTerms(_userBean.getUser(), _stableValue, _contextValues);
+    String[] terms = _param.getTerms(_userBean.getUser(), _stableValue);
 		if (terms == null) return null;
 
 
@@ -301,7 +301,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       _stableValue = getDefault();
 
     if (_stableValue != null)
-      currentValues = (String[]) _param.getRawValue(_userBean.getUser(), stabletValue, _contextValues);
+      currentValues = (String[]) _param.getRawValue(_userBean.getUser(), stabletValue);
 
   }
 

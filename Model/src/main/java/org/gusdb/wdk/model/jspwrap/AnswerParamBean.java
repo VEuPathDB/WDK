@@ -30,7 +30,7 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
       AnswerParam answerParam = _param;
         try {
             User user = this._userBean.getUser();
-            Step step = (Step)answerParam.getRawValue(user, _stableValue, _contextValues);
+            Step step = (Step)answerParam.getRawValue(user, _stableValue);
             AnswerValue answerValue = step.getAnswerValue();
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
