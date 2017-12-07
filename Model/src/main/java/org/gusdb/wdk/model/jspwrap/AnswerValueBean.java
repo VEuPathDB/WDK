@@ -103,6 +103,7 @@ public class AnswerValueBean {
         return answerValue.getParamDisplays();
     }
 
+    //TODO - CWL Verify
     public ValidatedParamStableValues getInternalParams() {
         return answerValue.getIdsQueryInstance().getValidatedParamStableValues();
     }
@@ -114,6 +115,7 @@ public class AnswerValueBean {
     /**
      * @return opertation for boolean answer
      */
+    //TODO - CWL Verify 
     public String getBooleanOperation() {
         if (!getIsBoolean()) {
             throw new RuntimeException("getBooleanOperation can not be called"
@@ -128,6 +130,7 @@ public class AnswerValueBean {
      *         for a simple question.
      * @throws WdkUserException 
      */
+    //TODO - CWL Verify 
     public AnswerValueBean getFirstChildAnswer()
             throws WdkModelException, WdkUserException {
         if (!getIsCombined()) {
@@ -162,6 +165,7 @@ public class AnswerValueBean {
      *         for a simple question.
      * @throws WdkUserException 
      */
+    //TODO - CWL Verify 
     public AnswerValueBean getSecondChildAnswer()
             throws WdkModelException, WdkUserException {
         if (!getIsBoolean()) {

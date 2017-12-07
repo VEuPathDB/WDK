@@ -92,6 +92,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     }
   }
 
+  //TODO - CWL Verify
   private boolean compareValues(ValidatedParamStableValues left, ValidatedParamStableValues right) {
     if (left.size() != right.size())
       return false;

@@ -22,6 +22,7 @@ public class TableTotalQueryTest extends QueryTest {
     super(user, querySet, query, paramValuesSet);
   }
 
+  //TODO - CWL Verify
   @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
