@@ -28,6 +28,8 @@ import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamHandler;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -282,6 +284,7 @@ public class QuestionService extends WdkService {
    * @throws WdkModelException
    * @throws DataValidationException 
    */
+  //TODO - CWL Verify
   @POST
   @Path("/{questionName}/{paramName}/ontology-term-summary")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -295,7 +298,9 @@ public class QuestionService extends WdkService {
       JSONObject jsonBody = new JSONObject(body);
       String ontologyId = jsonBody.getString("ontologyId");
       Map<String, String> contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
-      OntologyItem ontologyItem = filterParam.getOntology(user, contextParamValues).get(ontologyId);
+      ValidatedParamStableValues validatedParamStableValues =
+    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(), contextParamValues));
+      OntologyItem ontologyItem = filterParam.getOntology(user, validatedParamStableValues).get(ontologyId);
       if (ontologyItem == null) {
         throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
       }
@@ -349,7 +354,9 @@ public class QuestionService extends WdkService {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       //JSONObject filters = jsonBody.getJSONObject("filters");
-      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, jsonBody);
+      ValidatedParamStableValues validatedParamStableValues =
+          ValidatedParamStableValues.createFromCompleteValues(getSessionUser(), new ParamStableValues(question.getQuery(), contextParamValues));
+      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), validatedParamStableValues, jsonBody);
       return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts).toString()).build();
     }
     catch (JSONException e) {
@@ -375,6 +382,7 @@ public class QuestionService extends WdkService {
   /*
    * { internalValue: "la de dah" }
    */
+  //TODO - CWL Verify
   @POST
   @Path("/{questionName}/{paramName}/internal-value")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -393,7 +401,9 @@ public class QuestionService extends WdkService {
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       JSONObject stableValueJson = jsonBody.getJSONObject("stableValue");
       String stableValue = stableValueJson.toString();
-      String internalValue = paramHandler.toInternalValue(getSessionUser(), stableValue, contextParamValues);
+      ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(getSessionUser(), new ParamStableValues(question.getQuery(), contextParamValues));
+      String internalValue = paramHandler.toInternalValue(getSessionUser(), stableValue, validatedParamStableValues);
       return Response.ok(QuestionFormatter.getInternalValueJson(internalValue).toString()).build();
     }
     catch (JSONException e) {

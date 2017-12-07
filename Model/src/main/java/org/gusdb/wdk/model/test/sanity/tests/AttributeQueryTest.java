@@ -16,7 +16,9 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
@@ -80,13 +82,15 @@ public class AttributeQueryTest extends QueryTest {
     }
   }
 
+  //TODO - CWL Verify
   private static int testAttributeQueryCount(User user, Query query)
       throws SQLException, WdkModelException, WdkUserException {
 
     Map<String, String> params = new LinkedHashMap<String, String>();
-
+    ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, params));
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-        params, true, 0, new LinkedHashMap<String, String>());
+        validatedParamStableValues, true, 0, new LinkedHashMap<String, String>());
 
     String sql = "select count (1) from (" + instance.getUncachedSql() + ")";
 
@@ -105,13 +109,15 @@ public class AttributeQueryTest extends QueryTest {
     }
   }
 
+  //TODO - CWL Verify
   private static void testAttributeQueryTime(User user, Query query,
       ParamValuesSet paramValuesSet, int count) throws SQLException, WdkModelException, WdkUserException {
     // put user id into the param
     Map<String, String> params = new LinkedHashMap<String, String>();
-
+    ValidatedParamStableValues validatedParamStableValues =
+    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, params));
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-        params, true, 0, new LinkedHashMap<String, String>());
+        validatedParamStableValues, true, 0, new LinkedHashMap<String, String>());
 
     String sql = "select * from (" + instance.getUncachedSql() + ") f "
         + paramValuesSet.getWhereClause();

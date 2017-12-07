@@ -26,8 +26,10 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTester {
@@ -42,18 +44,24 @@ public class QueryTester {
     user = wdkModel.getSystemUser();
   }
 
+  //TODO - CWL Verify
   private String showSql(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
+	ValidatedParamStableValues validatedParamStableValues =
+	    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, paramHash));
+    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
     } else return instance.getSql();
   }
 
+  //TODO - CWL Verify
   private String showResultTable(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
+	ValidatedParamStableValues validatedParamStableValues =
+	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, paramHash));
+    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     //ResultFactory resultFactory = wdkModel.getResultFactory();
     //CacheFactory cacheFactory = resultFactory.getCacheFactory();
@@ -191,7 +199,9 @@ public class QueryTester {
           String table = tester.showResultTable(query, stableValues);
           System.out.println(table);
         } else {
-          QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
+        	  ValidatedParamStableValues validatedParamStableValues =
+        	    	    ValidatedParamStableValues.createFromCompleteValues(tester.user, new ParamStableValues(query, stableValues));
+          QueryInstance<?> instance = query.makeInstance(tester.user, validatedParamStableValues,
               true, 0, new LinkedHashMap<String, String>());
           try (ResultList rs = instance.getResults()) {
             print(query, rs);
@@ -201,6 +211,7 @@ public class QueryTester {
     }
   }
 
+  //TODO - CWL Verify
   public static Map<String, String> getStableValues(Query query, User user, Map<String, String> rawValues)
       throws WdkModelException, WdkUserException {
     // initialize the stable values with raw values first, then replace them one
@@ -218,7 +229,7 @@ public class QueryTester {
         continue;
       }
       String rawValue = rawValues.get(paramName);
-      String stableValue = param.getStableValue(user, rawValue, stableValues);
+      String stableValue = param.getStableValue(user, rawValue);
       stableValues.put(paramName, stableValue);
     }
     if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
