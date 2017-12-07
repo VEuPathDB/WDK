@@ -46,7 +46,7 @@ public class AnswerParamTest {
     for (Param param : _question.getParams()) {
       if (param instanceof AnswerParam) {
         AnswerParam answerParam = (AnswerParam) param;
-        Step step1 = (Step) answerParam.getRawValue(user, paramValue, null);
+        Step step1 = (Step) answerParam.getRawValue(user, paramValue);
 
         Assert.assertEquals("raw value", step.getStepId(), step1.getStepId());
       }

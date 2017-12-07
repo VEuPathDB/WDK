@@ -10,7 +10,9 @@ import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
@@ -49,8 +51,10 @@ public class TableQueryTest {
                             continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
+                        ValidatedParamStableValues validatedParamStableValues =
+                        	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, values));
                         QueryInstance<?> instance = query.makeInstance(user,
-                                values, true, 0,
+                                validatedParamStableValues, true, 0,
                                 new LinkedHashMap<String, String>());
                         int result = instance.getResultSize();
                         if (ASSERTION) {

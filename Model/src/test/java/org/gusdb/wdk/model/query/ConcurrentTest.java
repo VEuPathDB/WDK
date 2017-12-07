@@ -10,7 +10,9 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Test;
@@ -45,7 +47,9 @@ public class ConcurrentTest {
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-                QueryInstance<?> instance = query.makeInstance(user, values, true,
+            	    ValidatedParamStableValues validatedParamStableValues =
+            	    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, values));
+                QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true,
                         0, new LinkedHashMap<String, String>());
                 try (ResultList resultList = instance.getResults()) {
                   resultList.next();

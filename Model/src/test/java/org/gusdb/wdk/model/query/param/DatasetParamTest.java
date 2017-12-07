@@ -105,7 +105,7 @@ public class DatasetParamTest {
     long datasetId = Long.valueOf(stableValue);
     Assert.assertEquals(dataset.getDatasetId(), datasetId);
     
-    Dataset dataset1 = (Dataset)_datasetParam.getRawValue(_user, stableValue, contextValues);
+    Dataset dataset1 = (Dataset)_datasetParam.getRawValue(_user, stableValue);
 
     Assert.assertEquals(dataset.getDatasetId(), dataset1.getDatasetId());
     assertEquals(data, dataset.getValues());
@@ -124,8 +124,7 @@ public class DatasetParamTest {
 
     String stableValue = Long.toString(dataset.getDatasetId());
 
-    Dataset rawValue = (Dataset)_datasetParam.getRawValue(_user, stableValue,
-        null);
+    Dataset rawValue = (Dataset)_datasetParam.getRawValue(_user, stableValue);
     Assert.assertEquals(dataset.getDatasetId(), rawValue.getDatasetId());
   }
 }
