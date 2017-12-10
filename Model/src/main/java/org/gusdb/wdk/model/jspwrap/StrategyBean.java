@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
@@ -198,7 +199,7 @@ public class StrategyBean {
   private String formatDate(Date date) {
     if (date == null)
       return "-";
-    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    DateFormat formatter = new SimpleDateFormat(FormatUtil.STANDARD_DATETIME_FORMAT_DASH);
     return formatter.format(date);
   }
 

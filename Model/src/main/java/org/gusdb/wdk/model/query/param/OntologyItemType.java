@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 
 public enum OntologyItemType {
@@ -24,7 +25,7 @@ public enum OntologyItemType {
 
   private static class BranchNode{}
 
-  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_DASH);
 
   private final String _identifier;
   private final String _metadataQueryColumn;
