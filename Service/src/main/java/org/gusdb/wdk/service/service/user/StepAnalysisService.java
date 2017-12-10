@@ -1,10 +1,6 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
@@ -18,8 +14,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
@@ -27,8 +21,6 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 import org.gusdb.wdk.service.UserBundle;
 
 public class StepAnalysisService extends UserService {
-
-  private static final Logger LOG = Logger.getLogger(StepAnalysisService.class);
 
   protected StepAnalysisService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -53,12 +45,9 @@ public class StepAnalysisService extends UserService {
       @PathParam("stepId") String stepIdStr,
       @PathParam("analysisId") String analysisIdStr,
       @QueryParam("accessToken") String accessToken,
-      InputStream body) throws WdkModelException, IOException {
-    String bodyStr = IoUtil.readAllChars(new InputStreamReader(body));
+      InputStream body) throws WdkModelException {
     StepAnalysisContext context = getAnalysis(analysisIdStr, stepIdStr, accessToken);
-    LOG.info("Properties body: " + bodyStr);
-    getWdkModel().getStepAnalysisFactory().setProperties(context,
-        new ByteArrayInputStream(bodyStr.getBytes(StandardCharsets.UTF_8.name())));
+    getWdkModel().getStepAnalysisFactory().setProperties(context, body);
     return Response.noContent().build();
   }
 
