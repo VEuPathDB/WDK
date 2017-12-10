@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -78,7 +79,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
 	catch(NumberFormatException nfe) {
       throw new WdkModelException("The oldest number of days argument, '" + oldestNumberOfDays + "', must be an integer.");
 	}
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat formatter = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_SLASH);
 	Calendar oneMonthPriorToNowCal = Calendar.getInstance();
 	oneMonthPriorToNowCal.add(Calendar.MONTH, -1);
 	Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
