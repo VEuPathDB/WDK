@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -7,9 +9,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.errors.ErrorBundle;
@@ -118,29 +124,6 @@ public abstract class WdkService {
   }
 
   /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value (false) if the passed value is null.
-   * 
-   * @param boolValue flag value passed to service
-   * @return unboxed value or false if null
-   */
-  protected boolean getFlag(Boolean boolValue) {
-    return (boolValue == null ? false : boolValue);
-  }
-
-  /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value if the passed value is null.
-   * 
-   * @param boolValue flag value passed to service
-   * @param defaultValue default value if boolValue is null
-   * @return unboxed value or defaultValue if null
-   */
-  protected boolean getFlag(Boolean boolValue, boolean defaultValue) {
-    return (boolValue == null ? defaultValue : boolValue);
-  }
-
-  /**
    * Returns a session-aware user bundle based on the input string.
    * 
    * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
@@ -181,5 +164,64 @@ public abstract class WdkService {
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
       RequestType.WDK_SERVICE);
+  }
+
+  /**
+   * Creates a JAX/RS StreamingOutput object based on incoming data
+   * content from a file, database, or other data producer
+   * 
+   * @param content data to be streamed to the client
+   * @return streaming output object that will stream content to the client
+   */
+  protected StreamingOutput getStreamingOutput(InputStream content) {
+    return outputStream -> {
+      try {
+        IoUtil.transferStream(outputStream, content);
+      }
+      catch (IOException e) {
+        throw new WebApplicationException(e);
+      }
+    };
+  }
+
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value (false) if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @return unboxed value or false if null
+   */
+  protected static boolean getFlag(Boolean boolValue) {
+    return (boolValue == null ? false : boolValue);
+  }
+
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @param defaultValue default value if boolValue is null
+   * @return unboxed value or defaultValue if null
+   */
+  protected static boolean getFlag(Boolean boolValue, boolean defaultValue) {
+    return (boolValue == null ? defaultValue : boolValue);
+  }
+
+  /**
+   * Attempts to parse the passed string into a long int.  If successful,
+   * returns it; if not, a service NotFoundException is thrown.
+   * 
+   * @param resourceType type of resource to display if not found
+   * @param idString string to parse to ID (type long)
+   * @return successfully passed long value
+   * @throws NotFoundException if unable to parse
+   */
+  protected static long parseIdOrNotFound(String resourceType, String idString) {
+    try {
+      return Long.parseLong(idString);
+    }
+    catch (NumberFormatException e) {
+      throw new NotFoundException(formatNotFound(resourceType + ": " + idString));
+    }
   }
 }

@@ -1,7 +1,11 @@
 package org.gusdb.wdk.model.user.analysis;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -17,6 +21,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.db.DatabaseResultStream;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
@@ -64,6 +70,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String GET_ANALYSIS_IDS_BY_HASH_SQL;
   private String GET_ALL_ANALYSIS_IDS_SQL;
   private String GET_ANALYSES_BY_IDS_SQL;
+  private String GET_ANALYSIS_PROPERTIES;
+  private String SET_ANALYSIS_PROPERTIES;
 
   // SQL to update and query execution table
   private String CREATE_EXECUTION_TABLE_SQL;
@@ -139,6 +147,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  INVALID_STEP_REASON  " + userStringType + "," +
         "  CONTEXT_HASH         " + hashType + "," +
         "  CONTEXT              " + clobType + "," +
+        "  PROPERTIES           " + clobType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
     ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
@@ -169,6 +178,11 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
         " INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT FROM " + table +
         " WHERE ANALYSIS_ID IN (" + IN_CLAUSE_KEY + ")";
+    GET_ANALYSIS_PROPERTIES =
+        "SELECT PROPERTIES FROM " + table + " WHERE ANALYSIS_ID = ?";
+    SET_ANALYSIS_PROPERTIES =
+        "UPDATE " + table + " SET PROPERTIES = ? WHERE ANALYSIS_ID = ?";
+    
   }
 
   /**
@@ -343,6 +357,43 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
+  }
+
+  /**
+   * Returns the properties CLOB as an InputStream if analysis with given ID is found, or null if not found
+   */
+  @Override
+  public InputStream getProperties(long analysisId) throws WdkModelException {
+    // NOTE: Cannot use SQLRunner here because we actually DON'T want to close connection, etc. in the
+    //   success case. Must assume connection will be closed by the DatabaseResultStream after it is read.
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    try {
+      conn = _userDs.getConnection();
+      stmt = conn.prepareStatement(GET_ANALYSIS_PROPERTIES);
+      stmt.setLong(1, analysisId);
+      rs = stmt.executeQuery();
+      if (rs.next()) {
+        return new DatabaseResultStream(rs, "PROPERTIES");
+      }
+      // could not find row for this analysis ID; close resources and return null
+      SqlUtils.closeQuietly(rs, stmt, conn);
+      return null;
+    }
+    catch (SQLException e) {
+      // close only in failure case (not finally); if success, caller must close
+      SqlUtils.closeQuietly(rs, stmt, conn);
+      throw new WdkModelException(e);
+    }
+  }
+
+  @Override
+  public boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException {
+    int rowsAffected = new SQLRunner(_userDs, SET_ANALYSIS_PROPERTIES, "set-step-analysis-props").executeUpdate(
+        new Object[] { propertiesStream, analysisId },
+        new Integer[] { Types.CLOB, Types.BIGINT });
+    return rowsAffected > 0;
   }
 
   @Override

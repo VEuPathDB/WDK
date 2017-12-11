@@ -106,7 +106,8 @@ public class FilterForm extends QuestionForm {
     }
     
     try {
-      ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+      ValidatedParamStableValues.createFromCompleteValues(user.getUser(),
+          new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
   
 //
 //        String errMsg = null;

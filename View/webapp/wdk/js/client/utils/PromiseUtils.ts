@@ -1,7 +1,7 @@
 // Utilities for working with Promises.
 
 interface PromiseFactory<T> {
-  (...args: any[]): Promise<T>
+  (...args: any[]): Promise<T>;
 }
 
 // A Promise that never leaves the pending state.
@@ -64,7 +64,7 @@ export function latest<T>(promiseFactory: PromiseFactory<T>) {
  */
 export function synchronized<T>(promiseFactory: PromiseFactory<T>) {
   let queue: Promise<void> = Promise.resolve();
-  return function enque(...args: any[]) {
+  return <PromiseFactory<T>>function enque(...args: any[]) {
     const task = queue.then(() => promiseFactory.apply(this, args));
     queue = task.then(() => {}, () => {});
     return task;

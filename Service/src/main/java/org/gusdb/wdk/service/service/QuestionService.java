@@ -53,13 +53,12 @@ import org.json.JSONObject;
 @Path("/questions")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
-  
+
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuestionService.class);
 
-
   private static final String QUESTION_RESOURCE = "Question Name: ";
-  
+
   /**
    * Get a list of all questions for a recordClass. Does not supply details of the questions (use another endpoint for that).
    */
@@ -243,7 +242,7 @@ public class QuestionService extends WdkService {
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
     return Response.ok(QuestionFormatter.getParamsJson(
-        changedParam.getAllDependentParams(),
+        changedParam.getStaleDependentParams(),
         true,
         getSessionUser(),
         contextParamValues).toString()).build();
@@ -299,14 +298,13 @@ public class QuestionService extends WdkService {
       String ontologyId = jsonBody.getString("ontologyId");
       Map<String, String> contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(), contextParamValues));
+          ValidatedParamStableValues.createFromCompleteValues(user,
+              new ParamStableValues(question.getQuery(), contextParamValues));
       OntologyItem ontologyItem = filterParam.getOntology(user, validatedParamStableValues).get(ontologyId);
       if (ontologyItem == null) {
         throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
       }
-      ValidatedParamStableValues validationParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(), contextParamValues));
-      JSONArray summaryJson = getOntologyTermSummaryJson(user, validatedParamStableValues, filterParam,
+      JSONObject summaryJson = getOntologyTermSummaryJson(user, validatedParamStableValues, filterParam,
           ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
       return Response.ok(summaryJson.toString()).build();
     }
@@ -316,12 +314,14 @@ public class QuestionService extends WdkService {
   }
 
   //TODO - CWL Verify
-  private <T> JSONArray getOntologyTermSummaryJson(User user, ValidatedParamStableValues contextParamValues,
+  private <T> JSONObject getOntologyTermSummaryJson(User user, ValidatedParamStableValues contextParamValues,
       FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
           throws WdkModelException {
-    Map<T,FilterParamSummaryCounts> counts = param.getOntologyTermSummary(
+    
+    FilterParamNew.OntologyTermSummary<T> summary = param.getOntologyTermSummary(
         user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
-    return QuestionFormatter.getOntologyTermSummaryJson(counts);
+
+    return QuestionFormatter.getOntologyTermSummaryJson(summary);
   }
 
   /**

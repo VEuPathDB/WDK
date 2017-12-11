@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Parameter, EnumParam } from "../utils/WdkModel";
-import { Props } from "./index";
+import { Props } from "./Utils";
 
 // Use this for both EnumParam and FlatVocabParam.
 export function isType(parameter: Parameter): parameter is EnumParam {

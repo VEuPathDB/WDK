@@ -1,6 +1,6 @@
 import AbstractPageController from './AbstractPageController';
 import WdkStore, { BaseState } from '../stores/WdkStore';
-import { ActionCreator, ActionCreatorRecord } from '../ActionCreator';
+import { ActionCreator, ActionCreatorRecord } from '../utils/ActionCreatorUtils';
 import { Action } from '../dispatcher/Dispatcher';
 
 /**

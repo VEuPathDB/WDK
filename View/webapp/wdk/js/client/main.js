@@ -45,9 +45,11 @@ export function initialize(options) {
 
   let history = canUseRouter && createBrowserHistory({ basename: rootUrl });
   let wdkService = WdkService.getInstance(endpoint);
+  let transitioner = getTransitioner(history);
+  let services = { wdkService, transitioner };
   let dispatcher = new Dispatcher();
-  let makeDispatchAction = getDispatchActionMaker(dispatcher, wdkService, history);
-  let stores = configureStores(dispatcher, storeWrappers);
+  let makeDispatchAction = getDispatchActionMaker(dispatcher, services);
+  let stores = configureStores(dispatcher, storeWrappers, services);
 
   // load static WDK data into service cache and view stores that need it
   let dispatchAction = makeDispatchAction('global');
@@ -97,14 +99,14 @@ export function initialize(options) {
  * @param {Dispatcher} dispatcher
  * @param {Object} storeWrappers Named functions that return store override classes
  */
-function configureStores(dispatcher, storeWrappers) {
+function configureStores(dispatcher, storeWrappers, services) {
   const storeProviderTupleByKey = wrapStores(storeWrappers);
   const GlobalDataStore = storeProviderTupleByKey.GlobalDataStore[1];
   const globalDataStore = new GlobalDataStore(dispatcher);
   return new Map(Object.entries(storeProviderTupleByKey)
     .filter(([key]) => key !== 'GlobalDataStore')
     .map(([key, [Store, Provider]]) =>
-      [Store, new Provider(dispatcher, key, globalDataStore)]))
+      [Store, new Provider(dispatcher, key, globalDataStore, services)]))
 }
 
 /**
@@ -167,10 +169,8 @@ function wrapStores(storeWrappers) {
  * @param {Dispatcher} dispatcher
  * @param {Object?} serviceSubset
  */
-export function getDispatchActionMaker(dispatcher, wdkService, history) {
+export function getDispatchActionMaker(dispatcher, services) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
-  let transitioner = getTransitioner(history);
-  let services = { wdkService, transitioner };
   return function makeDispatchAction(channel) {
     if (channel === undefined) {
       console.warn("Call to makeDispatchAction() with no channel defined.");

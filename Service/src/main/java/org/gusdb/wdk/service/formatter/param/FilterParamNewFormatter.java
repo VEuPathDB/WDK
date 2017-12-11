@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> implements DependentParamProvider {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
 
   protected FilterParamNew filterParam; 
@@ -29,7 +30,6 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   public JSONObject getJson(User user, ValidatedParamStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
-      LOG.info("222222222222222222222222222222222222222222222222222222222222  formatter");
 
     pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
     pJson.put("ontology", getOntologyJson(user, dependedParamValues));

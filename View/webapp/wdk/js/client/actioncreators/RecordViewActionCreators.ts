@@ -13,7 +13,7 @@ import {
   FavoritesStatusLoadingAction
 } from './UserActionCreators';
 import { PrimaryKey, RecordInstance, RecordClass } from '../utils/WdkModel';
-import { ActionThunk, DispatchAction } from '../ActionCreator';
+import { ActionThunk, DispatchAction } from '../utils/ActionCreatorUtils';
 import { Action } from '../dispatcher/Dispatcher';
 import WdkService from '../utils/WdkService';
 import { CategoryTreeNode } from "../utils/CategoryUtils";

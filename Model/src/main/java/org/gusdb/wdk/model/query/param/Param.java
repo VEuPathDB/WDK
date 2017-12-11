@@ -111,7 +111,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.
-  private String _defaultValue;
+  protected String _defaultValue;
   private String _emptyValue;
 
   // sometimes different values are desired for normal operation vs. sanity test;
@@ -503,15 +503,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public void validate(User user, String stableValue, ValidatedParamStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     // handle the empty case
-    if (stableValue == null || stableValue.length() == 0) {
-      if (!_allowEmpty)
-	throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
-      // otherwise, got empty value and is allowed, no need for further
-      // validation.
+    if (stableValue == null || stableValue.isEmpty()) {
+      if (!_allowEmpty) {
+        throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
+        // otherwise, got empty value and is allowed, no need for further validation
+      }
     }
     else {
-      // value is not empty, the sub classes will complete further
-      // validation
+      // value is not empty, the sub classes will complete further validation
       validateValue(user, stableValue, contextParamValues);
     }
   }
@@ -566,8 +565,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
-  public String getStableValue(User user, Object rawValue)
+  //TODO - CWL Verify
+  public String toStableValue(User user, Object rawValue)
       throws WdkModelException, WdkUserException {
     return _handler.toStableValue(user, rawValue);
   }
@@ -725,6 +724,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   
   /**
    * By default, params are not dependent, and so do not become stale.  must be overridden by dependent params
+   * The definition of stale is: given a possible changes in values of the depended params provided on input,
+   * this param is stale if a previous value for it might no longer be valid
    * 
    * @param staleDependedParamsFullNames
    * @return
@@ -733,37 +734,39 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return false;
   }
   
+  public Set<Param> getStaleDependentParams() {
+    Set<String> ss = new HashSet<String>();
+    ss.add(getFullName());
+    return getStaleDependentParams(ss);
+  }
+
+
   /**
    * 
    * given an input list of changed or stale params, return a list of (recursively) dependent params that
    * are stale as a consequence. 
-   * when this method is called on the root stale param, the input list should include that param's name, 
-   * to get the ball rolling
    * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
-   * because they are stale.  if this list includes the name of this param, treat it as if it was its own depended parent.
-   * @return a list of stale dependent params, including this param if stale
+   * because they are stale.  
+   * @return a list of stale dependent params
    */
-  public Set<Param> getStaleParams(Set<String> staleDependedParamsFullNames) {
+  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
 
-    Set<Param> dependentParams = new HashSet<Param>();  // return value
+    Set<Param> staleDependentParams = new HashSet<Param>(); // return value
 
-    // if this param is stale, add it to stale depended list and recurse to find kids' stale dependents
-    if (staleDependedParamsFullNames.contains(getFullName()) 
-        || isStale(staleDependedParamsFullNames)) {
-      
-      dependentParams.add(this);
-     
-      // add name to list of stale depended param names
-      Set<String> newDependedParams = new HashSet<String>(staleDependedParamsFullNames);
-      newDependedParams.add(getFullName());
+    for (Param dependentParam : getDependentParams()) {
 
-      // pass the new list to immediate dependents
-      for (Param dependentParam : getDependentParams()) {
-        dependentParams.addAll(dependentParam.getStaleParams(newDependedParams));
+      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents (unless already visited)
+      if (!staleDependedParamsFullNames.contains(dependentParam.getName()) && dependentParam.isStale(staleDependedParamsFullNames)) {
+
+        staleDependentParams.add(dependentParam);
+
+        Set<String> newStaleDependedParams = new HashSet<String>(staleDependedParamsFullNames);
+        newStaleDependedParams.add(getFullName());
+
+        staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));
       }
     }
-    
-    return dependentParams;
+    return staleDependentParams;
   }
 
   public ParamHandler getParamHandler() {

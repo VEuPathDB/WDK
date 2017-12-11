@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.analysis;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -89,6 +90,8 @@ public abstract class StepAnalysisDataStore {
   public abstract void setHasParams(long analysisId, boolean hasParams) throws WdkModelException;
   public abstract void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException;
   public abstract void updateContext(long analysisId, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract InputStream getProperties(long analysisId) throws WdkModelException;
+  public abstract boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException;
   protected abstract List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
   protected abstract List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException;
   protected abstract List<Long> getAllAnalysisIds() throws WdkModelException;

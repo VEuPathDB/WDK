@@ -1,10 +1,11 @@
-/**
- * Created by dfalke on 8/17/16.
- */
 import { ReduceStore } from 'flux/utils';
-import WdkDispatcher, {Action} from '../dispatcher/Dispatcher';
+
+import WdkDispatcher, { Action } from '../dispatcher/Dispatcher';
 import GlobalDataStore from './GlobalDataStore';
-import {GlobalData} from "./GlobalDataStore";
+import { GlobalData } from './GlobalDataStore';
+import { ActionCreatorServices, Epic, EpicServices } from '../utils/ActionCreatorUtils';
+import { Observable, Subject } from 'rxjs/Rx';
+import { setTimeout } from 'timers';
 
 export interface BaseState {
   globalData: Partial<GlobalData>;
@@ -41,6 +42,14 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     return state;
   }
 
+  /**
+   * Return an array of Epics that will observe actions handled by this store.
+   * Epics only respond to actions for which `storeShouldReceiveAction(action.chanel)`
+   * returns true.
+   */
+  getEpics(): Epic[] {
+    return [] as Epic[]
+  }
 
   /*---------- Methods that may be overridden in special cases ----------*/
 
@@ -54,12 +63,22 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     return (channel === undefined /* broadcast */ || channel === this.channel);
   }
 
+  /**
+   * A root epic that merges the observables returned by `getEpics()`.
+   */
+  rootEpic(actions$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
+    const epicServices = { ...services, store: this };
+    const epicActions = this.getEpics().map(epic => epic(actions$, epicServices));
+    return Observable.merge(...epicActions);
+  }
+
   /*------------- Methods that should probably not be overridden -------------*/
 
-  constructor(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore) {
+  constructor(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices) {
     super(dispatcher);
     this.channel = channel;
     this.globalDataStore = globalDataStore;
+    this.configureEpic(dispatcher, services);
   }
 
   reduce(state: State, action: Action): State {
@@ -74,6 +93,31 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
       return this.handleAction(state, action);
     }
     return state;
+  }
+
+  configureEpic(dispatcher: WdkDispatcher, services: ActionCreatorServices) {
+    // Wire up epics.
+    const action$ = dispatcher.asObservable().filter(action =>
+      this.storeShouldReceiveAction(action.channel));
+
+    const startEpic = (): Observable<Action> =>
+      this.rootEpic(action$, services)
+        // Assign channel unless action isBroadcast
+        .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
+        .catch((error: Error, caught) => {
+          console.error(error);
+          // restart epic
+          return startEpic();
+        })
+
+    startEpic().subscribe(
+      action => {
+        dispatcher.dispatch(action)
+      },
+      error => {
+        // TODO What to do with error?
+        console.error(error);
+      });
   }
 
 }

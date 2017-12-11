@@ -1,10 +1,6 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -171,7 +167,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       rawValue = _param.getDefault().split(",+");
     }
 
-    return _param.getStableValue(user, rawValue);
+    return _param.toStableValue(user, rawValue);
   }
 
   @Override

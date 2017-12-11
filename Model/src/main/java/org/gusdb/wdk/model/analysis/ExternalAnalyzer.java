@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -67,6 +69,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String HEADER_MAPPING_FILE_NAME = "header.mapping";
   protected static final String MODEL_PROPS_FILE_NAME = "model.prop";
   protected static final String MODEL_XML_PROPS_FILE_NAME = "modelXml.prop";
+  protected static final String LAST_RUN_FILE_NAME = "last_run";
 
   protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
@@ -132,6 +135,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
+    writeLastRunFile(storageDir);
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
@@ -168,6 +172,17 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     }
 
     return ExecutionStatus.COMPLETE;
+  }
+
+  private void writeLastRunFile(String storageDir) throws WdkModelException {
+    File lastRunFile = Paths.get(storageDir, LAST_RUN_FILE_NAME).toFile();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(lastRunFile))) {
+      out.write(new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(new Date()));
+      out.newLine();
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Could not write " + lastRunFile.getAbsolutePath(), e);
+    }
   }
 
   private void dumpHeaderDisplayMap(RecordClass recordClass, String storageDir) throws WdkModelException {

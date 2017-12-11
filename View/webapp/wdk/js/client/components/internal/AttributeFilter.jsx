@@ -1,7 +1,7 @@
 import natsort from 'natural-sort'; //eslint-disable-line
 import $ from 'jquery';
 import { Seq } from '../../utils/IterableUtils';
-import { lazy } from '../../utils/componentUtils';
+import { lazy, safeHtml } from '../../utils/componentUtils';
 import {
   getFilterValueDisplay,
   getTree,
@@ -199,6 +199,12 @@ class FieldList extends React.PureComponent {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.selectedField !== this.props.selectedField) {
+      this._scrollSelectedFieldIntoView();
+    }
+  }
+
   handleCheckboxTreeRef(component) {
     this.treeDomNode = findDOMNode(component);
   }
@@ -219,13 +225,23 @@ class FieldList extends React.PureComponent {
   handleSearchTermChange(searchTerm) {
     // update search term, then if it is empty, make sure selected field is visible
     this.setState({searchTerm}, () => {
-      if (searchTerm == '' && this.selectedFieldDOMNode != null) {
-        let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
-        if (scrollList != null) {
-          scrollList.scrollTop = this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2);
-        }
-      }
+      if (searchTerm == '') this._scrollSelectedFieldIntoView();
     });
+  }
+
+  _scrollSelectedFieldIntoView() {
+    if (this.selectedFieldDOMNode != null) {
+      let scrollList = this.treeDomNode.querySelector('.wdk-CheckboxTreeList');
+      if (
+        scrollList != null &&
+        // below the bottom
+        ((scrollList.scrollTop > this.selectedFieldDOMNode.offsetTop) ||
+        (scrollList.clientHeight + scrollList.scrollTop) <= (this.selectedFieldDOMNode.offsetTop + this.selectedFieldDOMNode.clientHeight))
+        // above the top
+      ) {
+        scrollList.scrollTop = this.selectedFieldDOMNode.offsetTop - (scrollList.clientHeight / 2);
+      }
+    }
   }
 
   getNodeId(node) {
@@ -239,7 +255,7 @@ class FieldList extends React.PureComponent {
   renderNode({node}) {
     let isActive = this.props.selectedField === node.field.term;
     return (
-      <Tooltip content={node.field.description} >
+      <Tooltip content={node.field.description} hideDelay={0}>
         {node.children.length > 0
         ? (
           <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
@@ -746,7 +762,7 @@ export class AttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -762,7 +778,7 @@ export class AttributeFilter extends React.Component {
       filters,
       invalidFilters,
       activeField,
-      activeFieldSummary,
+      activeFieldDistribution,
       fieldMetadataMap
     } = this.props;
 
@@ -841,7 +857,7 @@ export class AttributeFilter extends React.Component {
                   filter={selectedFilter}
                   filteredDataCount={filteredNotIgnored.length}
                   dataCount={dataCount}
-                  distribution={activeFieldSummary}
+                  distribution={activeFieldDistribution}
                   onChange={this.handleFieldFilterChange}
                   addTopPadding
                 />
@@ -887,7 +903,7 @@ AttributeFilter.propTypes = {
   ignoredData: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
   activeField: PropTypes.string,
-  activeFieldSummary: PropTypes.array,
+  activeFieldDistribution: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
   renderSelectionInfo: PropTypes.func,
 
@@ -938,7 +954,7 @@ export class ServerSideAttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldSummary)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -960,7 +976,7 @@ export class ServerSideAttributeFilter extends React.Component {
       invalidFilters,
       activeField,
       activeFieldState,
-      activeFieldSummary
+      activeFieldDistribution
     } = this.props;
 
     var displayName = this.props.displayName;
@@ -1003,7 +1019,7 @@ export class ServerSideAttributeFilter extends React.Component {
             field={fields.get(activeField)}
             fieldState={activeFieldState}
             filter={selectedFilter}
-            distribution={activeFieldSummary}
+            distribution={activeFieldDistribution}
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
             useFullWidth={hideFieldPanel}
@@ -1031,7 +1047,9 @@ ServerSideAttributeFilter.propTypes = {
   filteredDataCount: PropTypes.number,
   activeField: PropTypes.string,
   activeFieldState: PropTypes.object,
-  activeFieldSummary: PropTypes.array,
+  activeFieldDistribution: PropTypes.array,
+  // TODO Add activeFieldDataCount and activeFieldFilteredDataCount
+  // These are counts of distinct data with values for the active field
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
@@ -1842,7 +1860,7 @@ class MembershipField extends React.Component {
                 name: this.props.field.display,
                 sortable: useSort,
                 renderCell: ({ value }) =>
-                  <div>{value == null ? UNKNOWN_ELEMENT : String(value)}</div>
+                  <div>{value == null ? UNKNOWN_ELEMENT : safeHtml(String(value))}</div>
               },
               {
                 key: 'filteredCount',

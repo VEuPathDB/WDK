@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,8 +21,8 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
-import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
+import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -55,19 +56,6 @@ import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
 public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListener {
 
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
-
-  /* TODO: remove if not needed before 7/31/14
-  private static final String TAB_NAME_MACRO = "$$TAB_NAME$$";
-  private static final String DUPLICATE_CONTEXT_MESSAGE =
-      "<p>You have another analysis tab open with the same parameter values " +
-      "as those set below.  Either close this tab and use that tab (named '" +
-      TAB_NAME_MACRO + "') or change the parameters below.</p>" +
-      "<p>If you revised your strategy and expected to compare the analysis " +
-      "from the previous version of the strategy with that of the revised " +
-      "version, this is not the correct approach.  Once you revise a " +
-      "strategy, all previous analysis results are invalidated.  Instead, " +
-      "duplicate the strategy and revise it as necessary.  Then run an " +
-      "analysis on each and compare the two results.</p>"; */
 
   static final boolean USE_DB_PERSISTENCE = true;
 
@@ -542,5 +530,21 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   public void dropResultsTable(boolean purge) throws WdkModelException {
     _dataStore.deleteExecutionTable(purge);
     _fileStore.deleteAllExecutions();
+  }
+
+  @Override
+  public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException {
+    InputStream result = _dataStore.getProperties(analysisId);
+    if (result == null) {
+      throw new WdkUserException("No analysis found with ID " + analysisId);
+    }
+    return result;
+  }
+
+  @Override
+  public void setProperties(long analysisId, InputStream propertyStream) throws WdkModelException, WdkUserException {
+    if (!_dataStore.setProperties(analysisId, propertyStream)) {
+      throw new WdkUserException("No analysis found with ID " + analysisId);
+    }
   }
 }

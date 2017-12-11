@@ -4,9 +4,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -98,10 +96,8 @@ public class DatasetParamTest {
 
     DatasetFactory datasetFactory = _user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.createOrGetDataset(_user, parser, content, uploadFile);
-    
-    Map<String, String> contextValues = new LinkedHashMap<>();
 
-    String stableValue = _datasetParam.getStableValue(_user, dataset);
+    String stableValue = _datasetParam.toStableValue(_user, dataset);
     long datasetId = Long.valueOf(stableValue);
     Assert.assertEquals(dataset.getDatasetId(), datasetId);
     

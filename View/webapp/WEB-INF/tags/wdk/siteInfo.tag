@@ -10,11 +10,11 @@
 <c:set var="request_uri" value="${requestScope['javax.servlet.forward.request_uri']}" />
 <c:set var="request_uri" value="${fn:substringAfter(request_uri, '/')}" />
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
-<c:set var="webAppUrl" value = "${scheme}://${serverName}:${serverPort}/${request_uri}" />
+<c:set var="config" value="${wdkModel.model.modelConfig}"/>
+<c:set var="webAppUrl" value="${config.webAppUrl}" />
 <c:set var="exportBaseUrl" value = "${webAppUrl}/im.do?s=" />
 <c:set var="wdkServiceUrl" value="${webAppUrl}${initParam.wdkServiceEndpoint}"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
-<c:set var="config" value="${wdkModel.model.modelConfig}"/>
 
 <c:set var="isGuest">
   <c:choose>
@@ -70,10 +70,10 @@
 
   <!-- for future uses -->
   <div id="wdk-user"
-    data-id="${wdkUser.userId}" 
-    data-name="${wdkUser.firstName} ${wdkUser.lastName}" 
-    data-country="${wdkUser.country}" 
-    data-email="${wdkUser.email}" 
+    data-id="${wdkUser.userId}"
+    data-name="${wdkUser.firstName} ${wdkUser.lastName}"
+    data-country="${wdkUser.country}"
+    data-email="${wdkUser.email}"
     data-is-guest="${wdkUser.guest}"></div>
 
   <div id="wdk-web-app-url" value="<c:url value='/'/>"></div>

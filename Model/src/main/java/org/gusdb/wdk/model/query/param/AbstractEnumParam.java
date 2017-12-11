@@ -753,8 +753,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return values;
   }
 
-  //TODO - CWL Verify
-  protected String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues, EnumParamVocabInstance cache) throws WdkModelException {
+  protected String getValidStableValue(User user, String stableValue, EnumParamVocabInstance cache) throws WdkModelException {
+
     if (stableValue == null)
       return cache.getDefaultValue();
 

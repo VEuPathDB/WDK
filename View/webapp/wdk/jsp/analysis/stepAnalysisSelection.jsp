@@ -9,40 +9,39 @@
       <div class="analysis-menu-tab-pane">
         <h3>Analyze your ${question.recordClass.displayName} results with a tool below.</h3>
 
-        <div class="sa-selector-container">
-          <ul>
-            <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
-              <c:set var="analysis" value="${analysisEntry.value}"/>
-              <c:set var="style">
-                <c:if test="${not empty analysis.customThumbnail}">
-                  background-image: url(${analysis.customThumbnail})
-                </c:if>
-              </c:set>
-              <c:set var="class">
-                <c:if test="${analysis.releaseVersion le 0}">inactive</c:if>
-              </c:set>
-
-              <li class="${class} wdk-tooltip"
-                  role="${class eq 'inactive' ? '' : 'link'}"
-                  tabindex="${class eq 'inactive' ? '' : '0'}"
-                  style="${style}"
-                  title="${analysis.shortDescription}"
-                  data-name="${analysis.name}" data-step-id="${wdkStep.stepId}">
-                <c:if test="${analysis.releaseVersion le 0}">
-                  <div class="analysis-selection-banner">Coming soon...</div>
-                </c:if>
-                <c:if test="${analysis.releaseVersion eq wdkModel.model.buildNumber}">
-                  <div class="analysis-selection-banner new-analysis"></div>
-                </c:if>
-                <div class="analysis-wrapper">
-                  <div class="analysis-title">${analysis.displayName}</div>
-                  <div class="analysis-description">
-                    ${analysis.shortDescription}
-                  </div>
-                </div>
-              </li>
-            </c:forEach>
-          </ul>
+        <div class="analysis-selector-container">
+          <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
+            <!-- VAR ASSIGNMENT -->
+            <c:set var="analysis" value="${analysisEntry.value}"/>
+            <c:set var="style">
+              <c:if test="${not empty analysis.customThumbnail}">
+                background-image: url(${analysis.customThumbnail})
+              </c:if>
+            </c:set>
+            <c:set var="class">
+              <c:if test="${analysis.releaseVersion le 0}">inactive</c:if>
+            </c:set>
+            <!-- element -->
+            <div class="${class} analysis-selector wdk-tooltip"
+              role="${class eq 'inactive' ? '' : 'link'}"
+              tabindex="${class eq 'inactive' ? '' : '0'}"
+              title="${analysis.shortDescription}"
+              data-name="${analysis.name}"
+              data-step-id="${wdkStep.stepId}"
+            >
+              <c:if test="${analysis.releaseVersion le 0}">
+                <div class="analysis-selection-banner">Coming soon...</div>
+              </c:if>
+              <c:if test="${analysis.releaseVersion eq wdkModel.model.buildNumber}">
+                <div class="analysis-selection-banner new-analysis"></div>
+              </c:if>
+              <div class="analysis-selector-image" style="${style}"> </div>
+              <div class="analysis-selector-content">
+                <div class="analysis-selector-title">${analysis.displayName}</div>
+                <p class="analysis-selector-description">${analysis.shortDescription}</p>
+              </div>
+            </div>
+          </c:forEach>
         </div>
       </div>
     </body>

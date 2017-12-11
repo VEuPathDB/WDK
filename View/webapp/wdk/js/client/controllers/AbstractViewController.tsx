@@ -1,6 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { ActionCreator } from '../ActionCreator';
+import { ActionCreator } from '../utils/ActionCreatorUtils';
 import { wrapActions } from '../utils/componentUtils';
 import WdkStore, { BaseState } from '../stores/WdkStore';
 import { Action } from "../dispatcher/Dispatcher";

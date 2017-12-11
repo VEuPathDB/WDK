@@ -1,18 +1,20 @@
 import { keyBy } from 'lodash';
 
+import { Epic } from '../utils/ActionCreatorUtils';
 import {
-  Action,
-  ACTIVE_QUESTION_UPDATED,
-  PARAM_ERROR,
-  PARAM_STATE_UPDATED,
-  PARAM_VALUE_UPDATED,
-  PARAMS_UPDATED,
-  QUESTION_ERROR,
-  QUESTION_LOADED,
-  QUESTION_NOT_FOUND,
+  ActiveQuestionUpdatedAction,
+  ParamErrorAction,
+  ParamStateUpdatedAction,
+  ParamsUpdatedAction,
+  ParamValueUpdatedAction,
+  questionEpic,
+  QuestionErrorAction,
+  QuestionLoadedAction,
+  QuestionNotFoundAction,
 } from '../actioncreators/QuestionActionCreators';
-import { reduce as paramReducer } from '../params';
-import { Question, ParameterGroup, Parameter, RecordClass } from '../utils/WdkModel';
+import { Action } from '../dispatcher/Dispatcher';
+import { paramEpic, reduce as paramReducer } from '../params';
+import { Parameter, ParameterGroup, Question, RecordClass } from '../utils/WdkModel';
 import WdkStore, { BaseState } from './WdkStore';
 
 type QuestionState = {
@@ -51,90 +53,90 @@ export default class QuestionStore extends WdkStore<State> {
     };
   }
 
+  getEpics(): Epic[] {
+    return [ questionEpic, paramEpic ];
+  }
+
 }
 
 function reduceQuestionState(state: QuestionState, action: Action): QuestionState {
-  if (action.type === ACTIVE_QUESTION_UPDATED) {
+  if (ActiveQuestionUpdatedAction.isType(action)) return {
+    ...state,
+    paramValues: action.payload.paramValues || {},
+    questionStatus: 'loading'
+  }
+
+  if (QuestionLoadedAction.isType(action)) return {
+    ...state,
+    questionStatus: 'complete',
+    question: normalizeQuesiton(action.payload.question),
+    recordClass: action.payload.recordClass,
+    paramValues: action.payload.paramValues,
+    paramErrors: action.payload.question.parameters.reduce((paramValues, param) =>
+      Object.assign(paramValues, { [param.name]: undefined }), {}),
+    paramUIState: action.payload.question.parameters.reduce((paramUIState, param) =>
+      Object.assign(paramUIState, { [param.name]: paramReducer(param, undefined, { type: 'init' }) }), {})
+  }
+
+  if (QuestionErrorAction.isType(action)) return {
+    ...state,
+    questionStatus: 'error'
+  };
+
+  if (QuestionNotFoundAction.isType(action)) return {
+    ...state,
+    questionStatus: 'not-found'
+  };
+
+  if (ParamValueUpdatedAction.isType(action)) return {
+    ...state,
+    paramValues: {
+      ...state.paramValues,
+      [action.payload.parameter.name]: action.payload.paramValue
+    },
+    paramErrors: {
+      ...state.paramErrors,
+      [action.payload.parameter.name]: undefined
+    }
+  };
+
+  if (ParamErrorAction.isType(action)) return {
+    ...state,
+    paramErrors: {
+      ...state.paramErrors,
+      [action.payload.paramName]: action.payload.error
+    }
+  };
+
+  if (ParamsUpdatedAction.isType(action)) {
+    const newParamsByName = keyBy(action.payload.parameters, 'name');
+    const newParamValuesByName = keyBy(
+      action.payload.parameters.map(p => p.defaultValue),
+      'name'
+    );
+    // merge updated parameters into quesiton and reset their values
     return {
       ...state,
-      paramValues: action.payload.paramValues || {},
-      questionStatus: 'loading'
-    }
+      paramValues: {
+        ...state.paramValues,
+        ...newParamValuesByName
+      },
+      question: {
+        ...state.question,
+        parameters: state.question.parameters
+          .map(parameter => newParamsByName[parameter.name] || parameter)
+
+      }
+    };
   }
 
-  switch (action.type) {
-
-    case QUESTION_LOADED:
-      return {
-        ...state,
-        questionStatus: 'complete',
-        question: normalizeQuesiton(action.payload.question),
-        recordClass: action.payload.recordClass,
-        paramValues: action.payload.paramValues,
-        paramErrors: action.payload.question.parameters.reduce((paramValues, param) =>
-          Object.assign(paramValues, { [param.name]: undefined }), {}),
-        paramUIState: action.payload.question.parameters.reduce((paramUIState, param) =>
-          Object.assign(paramUIState, { [param.name]: paramReducer(param, undefined, { type: 'init' }) }), {})
-      };
-
-    case QUESTION_ERROR:
-      return {
-        ...state,
-        questionStatus: 'error'
-      };
-
-    case QUESTION_NOT_FOUND:
-      return {
-        ...state,
-        questionStatus: 'not-found'
-      };
-
-    case PARAM_VALUE_UPDATED:
-      return {
-        ...state,
-        paramValues: {
-          ...state.paramValues,
-          [action.payload.parameter.name]: action.payload.paramValue
-        },
-        paramErrors: {
-          ...state.paramErrors,
-          [action.payload.parameter.name]: undefined
-        }
-      };
-
-    case PARAM_ERROR:
-      return {
-        ...state,
-        paramErrors: {
-          ...state.paramErrors,
-          [action.payload.paramName]: action.payload.error
-        }
-      };
-
-    case PARAMS_UPDATED: {
-      let newParamsByName = keyBy(action.payload.parameters, 'name');
-      // merge updated parameters into quesiton
-      return {
-        ...state,
-        question: {
-          ...state.question,
-          parameters: state.question.parameters
-            .map(parameter => newParamsByName[parameter.name] || parameter)
-
-        }
-      };
+  if (ParamStateUpdatedAction.isType(action)) return {
+    ...state,
+    paramUIState: {
+      ...state.paramUIState,
+      [action.payload.paramName]: action.payload.paramState
     }
-
-    case PARAM_STATE_UPDATED:
-      return {
-        ...state,
-        paramUIState: {
-          ...state.paramUIState,
-          [action.payload.paramName]: action.payload.paramState
-        }
-      };
-
-  }
+  };
 
   // finally, handle parameter specific actions
   return reduceParamState(state, action);

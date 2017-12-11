@@ -415,7 +415,7 @@ public class FilterParam extends FlatVocabParam {
    * remove from stableValue unrecognized terms.  if stableValue empty, use default.
    */
   @Override
-  protected String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues,
+  protected String getValidStableValue(User user, String stableValue,
       EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
