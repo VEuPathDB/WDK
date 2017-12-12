@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.TestUtil.nullSafeEquals;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
@@ -19,7 +20,10 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.beans.ParamValue;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -62,6 +66,12 @@ public class StepService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
       StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
+      
+      // validate the step and throw a DataValidation exception if not valid
+      // new step are, by definition, not part of a strategy
+//      validateStep(stepRequest.getAnswerSpec(), false);
+      
+      // create the step and insert into the database
       Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
       if(runStep != null && runStep) {
     	    if(step.isAnswerSpecComplete()) {
@@ -72,7 +82,7 @@ public class StepService extends UserService {
     	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
     	    }
       }
-      return Response.ok(StepFormatter.getStepJson(step).toString()).build();
+      return Response.ok(StepFormatter.getStepJson(step, true).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
@@ -83,7 +93,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
-    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId)).toString()).build();
+    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId), false).toString()).build();
   }
 
   @PATCH
@@ -104,11 +114,20 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-
+      
+      // reset the estimated size in the database for this step and any downstream steps, if any
+      getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
+      
+      // reset the current step object estimate size
+      step.setEstimateSize(-1);
+      
       // return updated step
-      return Response.ok(StepFormatter.getStepJson(step).toString()).build();
+      return Response.ok(StepFormatter.getStepJson(step, false).toString()).build();
     }
-    catch (JSONException | RequestMisformatException e) {
+    catch (WdkUserException wue) {
+    	  throw new DataValidationException(wue);
+    }
+    catch (JSONException e) {
       throw new BadRequestException(e);
     }
   }
@@ -179,4 +198,26 @@ public class StepService extends UserService {
       throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
+  
+  /**
+   * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
+   * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
+   * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+//  protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
+//	Question question = answerSpec.getQuestion();
+//	if(question.hasAnswerParams() ? inStrategy : true) {
+//	  Map<String, String> context = new LinkedHashMap<String, String>();
+//      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+//	  try {  
+//	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+//	    //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
+//	  }
+//      catch(WdkUserException wue) {
+//        throw new DataValidationException(wue);
+//      }
+//	}
+//  }
 }
