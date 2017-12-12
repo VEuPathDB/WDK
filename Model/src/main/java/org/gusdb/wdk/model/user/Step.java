@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -455,6 +456,52 @@ public class Step {
    */
   public long getStepId() {
     return _stepId;
+  }
+  
+  /**
+   * Basic getter than just returns the current value for this field without checks,
+   * lazy loading, or side effects (e.g., database updates)
+   * @return
+   */
+  public int getRawEstimateSize() {
+	return _estimateSize;
+  }
+  
+  /**
+   * Calculate the estimate size
+   * @return
+   */
+  public int calculateEstimateSize() {
+    try {
+      if (!isValid()) {
+        return RESET_SIZE_FLAG;
+      }
+      if (_estimateSize == RESET_SIZE_FLAG) {
+        // The flag indicates if the size has been reset, and need to be calculated again.
+        try {
+          _estimateSize = getResultSize();
+          this.update(true);
+        }
+        catch (ParamValuesInvalidException e) {
+          // means we have invalid param values in this Step; invalidate locally
+          // TODO: experimented with writing this value to DB here but that causes errors if bad params
+          //   are entered during Add Step.  Figure out why and maybe add back
+          //invalidateStep();
+          _valid = false;
+          _validityChecked = true;
+          return 0;
+        }
+      }
+      return _estimateSize;
+    }
+    catch (Exception e) {
+      // do not throw error in this method, just return 0, to avoid infinite
+      // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
+      // it sees a -1;
+    	  // Used by service and NOT by struts
+      LOG.error("Error occurred, use the old estimate size", e);
+      return -1;
+    }
   }
 
   /**
