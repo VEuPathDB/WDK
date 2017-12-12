@@ -1,5 +1,8 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -9,8 +12,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
+import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
@@ -26,12 +33,22 @@ public class StrategyService extends UserService {
   }
   
   @GET
+  @Path("strategies")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getStrategies() throws WdkModelException {
+	User user = getPrivateRegisteredUser();
+	List<Strategy> strategies = getWdkModel().getStepFactory().loadStrategies(user,false,false);
+    return Response.ok(StrategyFormatter.getStrategiesJson(strategies, false).toString()).build();
+  }
+  
+  
+  @GET
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStrategy(@PathParam("strategyId") String strategyId) throws WdkModelException {
-    return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(strategyId)).toString()).build();
+    return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(strategyId), true).toString()).build();
   }
-
+  
   
   protected Strategy getStrategyForCurrentUser(String strategyId) {
     try {
@@ -47,4 +64,5 @@ public class StrategyService extends UserService {
       throw new NotFoundException(WdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
   }
+
 }
