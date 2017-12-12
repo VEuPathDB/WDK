@@ -1051,7 +1051,7 @@ public class StepFactory {
     }
   }
 
-  List<Strategy> loadStrategies(User user, boolean saved, boolean recent) throws WdkModelException {
+  public List<Strategy> loadStrategies(User user, boolean saved, boolean recent) throws WdkModelException {
     StringBuilder sql = new StringBuilder(stratsByUserSql).append(isSavedCondition);
     if (recent)
       sql.append(byLastViewedCondition);
@@ -2033,5 +2033,22 @@ public class StepFactory {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Given a step, identify it and all downstream steps and set the estimate size of each to -1.
+   * @param step - step to start from
+   * @throws WdkModelException
+   */
+  public void resetEstimateSizeForThisAndDownstreamSteps(Step step) throws WdkModelException {
+    try {
+      String stepIdSql = selectStepAndParents(step.getStepId());
+      String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_ESTIMATE_SIZE + " = -1 " +
+	               " WHERE step_id IN (" + stepIdSql + ")";
+      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 }
