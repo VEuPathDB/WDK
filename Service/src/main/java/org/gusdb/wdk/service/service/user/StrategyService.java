@@ -1,11 +1,13 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -13,15 +15,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.wdk.model.FieldTree;
-import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.request.strategy.StrategyRequest;
 import org.gusdb.wdk.service.service.WdkService;
+import org.json.JSONObject;
 
 
 public class StrategyService extends UserService {
@@ -41,6 +46,42 @@ public class StrategyService extends UserService {
     return Response.ok(StrategyFormatter.getStrategiesJson(strategies, false).toString()).build();
   }
   
+  @POST
+  @Path("strategies")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response createStrategy(String body) throws WdkModelException, DataValidationException {
+    try {
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      JSONObject json = new JSONObject(body);
+      StepFactory stepFactory = getWdkModel().getStepFactory();
+      StrategyRequest strategyRequest = StrategyRequest.createFromJson(json, stepFactory, user, getWdkModel().getProjectId());
+      TreeNode<Step> stepTree = strategyRequest.getStepTree();
+      Step rootStep = stepTree.getContents();
+      Strategy strategy = stepFactory.createStrategy(user,
+    		                           rootStep,
+    		                           strategyRequest.getName(),
+    		                           strategyRequest.getSavedName(),
+    		                           strategyRequest.isSaved(),
+    		                           strategyRequest.getDescription(),
+    		                           strategyRequest.isHidden(),
+    		                           strategyRequest.isPublic());
+      rootStep.setStrategyId(strategy.getStrategyId());
+      rootStep.update(true);
+      return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId())), true).toString()).build();
+    }
+    catch(WdkModelException wme) {
+    	  throw new WdkModelException("Unable to create the strategy.", wme);
+    }
+    catch(RequestMisformatException rmfe) {
+    	  throw new BadRequestException(rmfe);
+    }
+    catch(WdkUserException wue) {
+    	  throw new DataValidationException(wue);
+    }
+  }
+  
+  
   
   @GET
   @Path("strategies/{strategyId}")
@@ -48,7 +89,6 @@ public class StrategyService extends UserService {
   public Response getStrategy(@PathParam("strategyId") String strategyId) throws WdkModelException {
     return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(strategyId), true).toString()).build();
   }
-  
   
   protected Strategy getStrategyForCurrentUser(String strategyId) {
     try {

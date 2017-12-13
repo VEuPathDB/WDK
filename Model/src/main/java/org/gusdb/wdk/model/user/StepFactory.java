@@ -1502,7 +1502,7 @@ public class StepFactory {
   // of answers
   // and steps tables is handled in other functions. Once the Step
   // object exists, all of this data is already in the db.
-  Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
+  public Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
       String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
     long strategyId = (root.getStrategyId() == null) ? getNewStrategyId() : root.getStrategyId();
     return createStrategy(user, strategyId, root, name, savedName, saved, description, hidden, isPublic);
