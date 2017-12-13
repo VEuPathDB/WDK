@@ -48,7 +48,7 @@ public class StepRequest {
       boolean isCollapsible = getBooleanOrDefault(newStep, Keys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(newStep, Keys.COLLAPSED_NAME, customName);
       // DB field length for collapsedName is 200
-      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
+      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, Math.min(collapsedName.length(),200));
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
