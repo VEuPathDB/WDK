@@ -252,7 +252,7 @@ public class QuestionService extends WdkService {
 
     for (Iterator<?> keys = contextJson.keys(); keys.hasNext();) {
       String keyName = (String) keys.next();
-      String keyValue = contextJson.getString(keyName);
+      String keyValue = contextJson.get(keyName).toString();
       if (keyName == null) throw new WdkUserException("contextParamValues contains a null key");
       if (keyValue == null) throw new WdkUserException("Parameter name '" + keyName + "' has null value");
       if (!question.getParamMap().containsKey(keyName)) throw new WdkUserException("Parameter '" + keyName + "' is not in question '" + question.getFullName() + "'.");
