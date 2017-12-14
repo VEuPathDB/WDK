@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
