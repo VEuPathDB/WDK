@@ -190,7 +190,7 @@ public class AnswerSpecFactory {
     String[] names = JSONObject.getNames(contextObject);
     if (names == null) return contextValues;
     for (String name : names) {
-      contextValues.put(name, contextObject.get(name));
+      contextValues.put(name, contextObject.get(name).toString());
       LOG.info("Added request parameter '" + name +
           "', value = " + contextValues.get(name).toString());
     }
