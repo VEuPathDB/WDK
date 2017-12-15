@@ -2051,4 +2051,33 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
   }
+  
+  public void setStrategyIdForThisAndUpstreamSteps(Step step, Long strategyId) throws WdkModelException {
+    try {
+      String stepIdSql = selectStepAndChildren(step.getStepId());
+    	  String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
+	               " WHERE step_id IN (" + stepIdSql + ")";
+      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-set-strategy-id-on-steps");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+  
+  public void patchAnswerParams(Step step) throws WdkModelException {
+	Param[] params = step.getQuestion().getParams();
+	boolean leftParamEmpty = true;
+	for(Param param : params) {
+	  if(param instanceof AnswerParam) {
+		if(leftParamEmpty) {
+		  step.setParamValue(param.getName(), Long.toString(step.getPreviousStepId()));
+		  leftParamEmpty = false;
+		}
+		else {
+		  step.setParamValue(param.getName(), Long.toString(step.getChildStepId()));
+		}
+	  }
+	}
+	step.saveParamFilters();
+  }
 }
