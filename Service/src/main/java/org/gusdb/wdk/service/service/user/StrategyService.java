@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -14,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -58,6 +60,20 @@ public class StrategyService extends UserService {
       StrategyRequest strategyRequest = StrategyRequest.createFromJson(json, stepFactory, user, getWdkModel().getProjectId());
       TreeNode<Step> stepTree = strategyRequest.getStepTree();
       Step rootStep = stepTree.getContents();
+     
+      // Pull all the steps out of the tree
+      List<Step> steps = stepTree.
+    		  findAll(step -> true)
+    		  .stream()
+    		  .map(node -> node.getContents())
+    		  .collect(Collectors.toList());
+      
+      // Update steps with filled in answer params and save.
+      for(Step step : steps) {
+    	    stepFactory.patchAnswerParams(step);
+      }
+      
+      // Create the strategy
       Strategy strategy = stepFactory.createStrategy(user,
     		                           rootStep,
     		                           strategyRequest.getName(),
@@ -66,8 +82,15 @@ public class StrategyService extends UserService {
     		                           strategyRequest.getDescription(),
     		                           strategyRequest.isHidden(),
     		                           strategyRequest.isPublic());
-      rootStep.setStrategyId(strategy.getStrategyId());
-      rootStep.update(true);
+      
+      // Add new strategy to all the embedded steps
+      steps.stream().forEach(step -> step.setStrategyId(strategy.getStrategyId()));
+      
+      // Update left/right child ids in db first
+      //rootStep.update(true);
+      
+      // Update those steps in the database with the strategyId
+      stepFactory.setStrategyIdForThisAndUpstreamSteps(rootStep, strategy.getStrategyId());
       return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId())), true).toString()).build();
     }
     catch(WdkModelException wme) {
