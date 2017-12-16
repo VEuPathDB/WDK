@@ -86,7 +86,7 @@ public class StepService extends UserService {
     	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
     	    }
       }
-      return Response.ok(StepFormatter.getStepJson(step).toString()).build();
+      return Response.ok(StepFormatter.getStepJson(step, true).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
@@ -97,7 +97,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
-    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId)).toString()).build();
+    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId), false).toString()).build();
   }
 
   @PATCH
@@ -131,7 +131,7 @@ public class StepService extends UserService {
       step.setEstimateSize(-1);
       
       // return updated step
-      return Response.ok(StepFormatter.getStepJson(step).toString()).build();
+      return Response.ok(StepFormatter.getStepJson(step, false).toString()).build();
     }
     catch (WdkUserException wue) {
     	  throw new DataValidationException(wue);
@@ -234,4 +234,5 @@ public class StepService extends UserService {
       }
     }
   }
+
 }

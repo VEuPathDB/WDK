@@ -31,7 +31,7 @@ import org.json.JSONObject;
  */
 public class StepFormatter {
 
-  public static JSONObject getStepJson(Step step) throws WdkModelException {
+  public static JSONObject getStepJson(Step step, boolean loadEstimateSize) throws WdkModelException {
     try {
       return new JSONObject()
         .put(Keys.ID, step.getStepId())
@@ -44,8 +44,7 @@ public class StepFormatter {
         .put(Keys.DESCRIPTION, step.getDescription())
         .put(Keys.OWNER_ID, step.getUser().getUserId())
         .put(Keys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
-        //FIXME:  getEstimateSize() will never return a -1 even if the object field is -1, so why do this?
-        .put(Keys.ESTIMATED_SIZE, step.getEstimateSize() == -1 ? JSONObject.NULL : step.getEstimateSize())
+        .put(Keys.ESTIMATED_SIZE, loadEstimateSize ? step.calculateEstimateSize() : step.getRawEstimateSize())
         .put(Keys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(Keys.RECORD_CLASS_NAME, step.getType())
         .put(Keys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())

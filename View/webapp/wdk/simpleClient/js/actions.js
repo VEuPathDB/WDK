@@ -108,14 +108,14 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       setLoading(true);
       jQuery.ajax({
         type: "GET",
-        url: _serviceUrl + "/question/" + questionName + "?expandParams=true&" +
+        url: _serviceUrl + "/questions/" + questionName + "?expandParams=true&" +
           "expandAttributes=true&expandTables=true&expandTableAttributes=true",
         success: function(questionData, textStatus, jqXHR) {
           // got question, now get recordclass for that question
           var rcName = questionData.recordClassName;
           jQuery.ajax({
             type: "GET",
-            url: _serviceUrl + "/record/" + rcName + "?expandAttributes=true",
+            url: _serviceUrl + "/records/" + rcName + "?expandAttributes=true",
             success: function(recordClassData, textStatus, jqXHR) {
               setLoading(false);
               action.data = {

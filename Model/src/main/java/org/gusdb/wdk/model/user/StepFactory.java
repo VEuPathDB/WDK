@@ -382,7 +382,7 @@ public class StepFactory {
 
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   public Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues dependentValues,
-      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
+      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     LOG.debug("Creating step!");
 
@@ -1053,7 +1053,7 @@ public class StepFactory {
     }
   }
 
-  List<Strategy> loadStrategies(User user, boolean saved, boolean recent) throws WdkModelException {
+  public List<Strategy> loadStrategies(User user, boolean saved, boolean recent) throws WdkModelException {
     StringBuilder sql = new StringBuilder(stratsByUserSql).append(isSavedCondition);
     if (recent)
       sql.append(byLastViewedCondition);
@@ -1504,7 +1504,7 @@ public class StepFactory {
   // of answers
   // and steps tables is handled in other functions. Once the Step
   // object exists, all of this data is already in the db.
-  Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
+  public Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
       String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
     long strategyId = (root.getStrategyId() == null) ? getNewStrategyId() : root.getStrategyId();
     return createStrategy(user, strategyId, root, name, savedName, saved, description, hidden, isPublic);
@@ -2052,5 +2052,34 @@ public class StepFactory {
     catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
+  }
+  
+  public void setStrategyIdForThisAndUpstreamSteps(Step step, Long strategyId) throws WdkModelException {
+    try {
+      String stepIdSql = selectStepAndChildren(step.getStepId());
+    	  String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
+	               " WHERE step_id IN (" + stepIdSql + ")";
+      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-set-strategy-id-on-steps");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+  
+  public void patchAnswerParams(Step step) throws WdkModelException {
+	Param[] params = step.getQuestion().getParams();
+	boolean leftParamEmpty = true;
+	for(Param param : params) {
+	  if(param instanceof AnswerParam) {
+		if(leftParamEmpty) {
+		  step.setParamValue(param.getName(), Long.toString(step.getPreviousStepId()));
+		  leftParamEmpty = false;
+		}
+		else {
+		  step.setParamValue(param.getName(), Long.toString(step.getChildStepId()));
+		}
+	  }
+	}
+	step.saveParamFilters();
   }
 }

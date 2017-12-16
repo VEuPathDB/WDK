@@ -35,7 +35,7 @@ var Page = (function() {
   function loadPage(serviceUrl) {
     jQuery.ajax({
       type: "GET",
-      url: serviceUrl + "/question",
+      url: serviceUrl + "/questions",
       dataType: "json",
       success: function(data) {
         wireApplication(serviceUrl, data);
