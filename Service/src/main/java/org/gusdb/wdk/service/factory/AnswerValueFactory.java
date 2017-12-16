@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.factory;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -9,6 +8,11 @@ import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerDetails;
 import org.gusdb.wdk.service.request.answer.AnswerSpec;
@@ -28,9 +32,10 @@ public class AnswerValueFactory {
       // FIXME: looks like index starts at 1 and end index is inclusive;
       //   would much rather see 0-based start and have end index be exclusive
       //   (i.e. need to fix on AnswerValue)
+      CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(_user,
+          convertParams(request.getQuestion().getQuery(), request.getParamValues()), true);
       AnswerValue answerValue = request.getQuestion().makeAnswerValue(_user,
-          convertParams(request.getParamValues()), 1, -1,
-          null, request.getLegacyFilter(), true, request.getWeight());
+          validParams, 1, -1, null, request.getLegacyFilter(), request.getWeight());
       answerValue.setFilterOptions(request.getFilterValues());
       answerValue.setViewFilterOptions(request.getViewFilterValues());
       return answerValue;
@@ -49,8 +54,8 @@ public class AnswerValueFactory {
     return configuredAnswer;
   }
 
-  public static Map<String, String> convertParams(Map<String, ParamValue> params) {
-    Map<String, String> conversion = new HashMap<>();
+  public static StableValues convertParams(Query query, Map<String, ParamValue> params) {
+    WriteableStableValues conversion = new WriteableStableValues(query);
     for (ParamValue param : params.values()) {
       conversion.put(param.getName(), param.getObjectValue() == null ? null : param.getObjectValue().toString());
     }

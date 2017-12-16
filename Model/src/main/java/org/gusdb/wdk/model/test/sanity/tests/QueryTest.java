@@ -1,15 +1,19 @@
 package org.gusdb.wdk.model.test.sanity.tests;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.test.sanity.RangeCountTestUtil;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
@@ -37,7 +41,7 @@ public class QueryTest implements ElementTest {
   public String getTestName() {
     return getTestName(_querySet, _query);
   }
-  
+
   public static String getTestName(QuerySet querySet, Query query) {
     return querySet.getQueryTypeEnum() + " QUERY " + query.getFullName();
   }
@@ -64,7 +68,7 @@ public class QueryTest implements ElementTest {
   protected QuerySet getQuerySet() {
     return _querySet;
   }
-  
+
   protected ParamValuesSet getParamValuesSet() {
     return _paramValuesSet;
   }
@@ -87,6 +91,17 @@ public class QueryTest implements ElementTest {
     return result;
   }
 
+  protected static CompleteValidStableValues getValidatedParams(User user, Query query,
+      Map<String, String> paramValues) throws WdkUserException, WdkModelException {
+    return ValidStableValuesFactory.createFromCompleteValues(user,
+            new WriteableStableValues(query, paramValues), true);
+  }
+
+  protected static CompleteValidStableValues getValidatedEmptyParams(User user, Query query)
+      throws WdkUserException, WdkModelException {
+    return getValidatedParams(user, query, new HashMap<>());
+  }
+
   /**
    * Tests query
    * 
@@ -97,15 +112,10 @@ public class QueryTest implements ElementTest {
    * @return number of rows returned
    * @throws Exception if something goes wrong
    */
-  //TODO - CWL Verify
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
     int count = 0;
-    ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, paramValuesSet.getParamValues()));
-    QueryInstance<?> instance = query.makeInstance(user,
-        validatedParamStableValues, true, 0,
-        new LinkedHashMap<String, String>());
+    QueryInstance<?> instance = query.makeInstance(user, getValidatedParams(user, query, paramValuesSet.getParamValues()));
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
         count++;

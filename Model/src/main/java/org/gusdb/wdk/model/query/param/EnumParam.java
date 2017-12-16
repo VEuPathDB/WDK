@@ -11,6 +11,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -49,7 +50,7 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, ValidatedParamStableValues dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, ValidStableValues dependedParamValues)
       throws WdkModelException {
     LOG.trace("Entering createEnumParamCache(" + dependedParamValues.prettyPrint() + ")");
     Set<Param> dependedParams = getDependedParams();
@@ -91,11 +92,6 @@ public class EnumParam extends AbstractEnumParam {
     return cache;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -126,11 +122,6 @@ public class EnumParam extends AbstractEnumParam {
       throw new WdkModelException("No enum items available in enumParam " + getFullName());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -154,7 +145,7 @@ public class EnumParam extends AbstractEnumParam {
       setDefault(sb.toString());
     }
   }
-  
+
   /**
    * enum params can't get stale, because they can't actually be dependent (since they have no query)
    */
@@ -163,40 +154,26 @@ public class EnumParam extends AbstractEnumParam {
     return false;
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new EnumParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may
-    // be
-    // changed between versions, but we don't want to invalidate a query
-    // because
-    // of it.
+    // do nothing. do not add the enum list into the content, since they may be
+    // changed between versions, but we don't want to invalidate a query because of it.
   }
-  
+
   @Override
   public Set<String> getContainedQueryFullNames() {
     Set<String> names = new HashSet<String>();
     return names;
   }
-  
+
   @Override
   public List<Query> getQueries() {
-	return new ArrayList<Query>();
+    return new ArrayList<Query>();
   }
 
 }

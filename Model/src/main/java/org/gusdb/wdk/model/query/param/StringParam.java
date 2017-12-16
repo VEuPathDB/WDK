@@ -6,7 +6,8 @@ import java.util.List;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -176,8 +177,9 @@ public class StringParam extends Param {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
+    String stableValue = contextParamValues.get(getName());
     if (_isNumber) {
       try {
         // strip off the comma, if any
@@ -185,21 +187,25 @@ public class StringParam extends Param {
         Double.valueOf(value);
       }
       catch (NumberFormatException ex) {
-        throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
+        return contextParamValues.setInvalid(getName(), "Value must be numerical; '" + stableValue + "' is invalid.");
       }
     }
     if (_regex != null && !stableValue.matches(_regex)) {
       if (stableValue.equals("*"))
-        throw new WdkUserException("value '" + stableValue +
+        return contextParamValues.setInvalid(getName(), "Value '" + stableValue +
             "' cannot be used on its own; it needs to be part of a word.");
       else
-        throw new WdkUserException("value '" + stableValue + "' is " +
+        return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' is " +
             "invalid and probably contains illegal characters. " + "It must match the regular expression '" +
             _regex + "'");
     }
-    if (_length != 0 && stableValue.length() > _length)
-      throw new WdkUserException("value cannot be longer than " + _length + " characters (it is " +
+    if (_length != 0 && stableValue.length() > _length) {
+      return contextParamValues.setInvalid(getName(), "Value cannot be longer than " + _length + " characters (it is " +
           stableValue.length() + ").");
+    }
+
+    // passed validation
+    return contextParamValues.setValid(getName());
   }
 
   @Override

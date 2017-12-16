@@ -18,6 +18,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
@@ -48,10 +51,12 @@ public class DumperHelp {
   
       Map<String, String> params = new LinkedHashMap<String, String>();
       fillInParams(user, params, question);
+      CompleteValidStableValues validParams = ValidStableValuesFactory
+          .createFromCompleteValues(user, new WriteableStableValues(question.getQuery(), params), true);
   
       Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
   
-      AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
+      AnswerValue answer = question.makeAnswerValue(user, validParams, 0);
       Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
   
       System.out.println("Help for reporter: " + reporterName + NL);

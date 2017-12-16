@@ -19,8 +19,9 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 
@@ -229,17 +230,16 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
 
     // get alias from the alias query
-    Map<String, String> oldValues = new LinkedHashMap<String, String>();
+    WriteableStableValues oldValues = new WriteableStableValues(_aliasQuery);
     for (String param : pkValues.keySet()) {
       String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
       String value = Utilities.parseValue(pkValues.get(param));
       oldValues.put(oldParam, value);
     }
 
-    ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_aliasQuery, oldValues));
-    QueryInstance<?> instance = _aliasQuery.makeInstance(user, validatedParamStableValues, true, 0,
-        new LinkedHashMap<String, String>());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(user, oldValues, true);
+    QueryInstance<?> instance = _aliasQuery.makeInstance(user, validatedParamStableValues);
     
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {

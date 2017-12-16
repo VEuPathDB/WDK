@@ -9,7 +9,8 @@ import java.util.List;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,9 +87,9 @@ public class DateParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();  
-    if(defaultValue == null || defaultValue.isEmpty()) {	
+  public String getDefault(User user, PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(user, stableValues);
+    if(defaultValue == null || defaultValue.isEmpty()) {
       defaultValue = _minDate;
     } 
     return defaultValue;
@@ -138,29 +139,30 @@ public class DateParam extends Param {
   }
 
   /**
-   * Insure that the value provided by the user conforms to the parameter's requirements
+   * Ensure that the value provided by the user conforms to the parameter's requirements
    * 
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
 
+    String stableValue = contextParamValues.get(getName());
     LocalDate dateValue = null;  
 
     // Insure that the value provided is formatted as a proper iso1806 date.
     try {
       dateValue = LocalDate.parse(stableValue, DateTimeFormatter.ISO_DATE);
     }
-    catch(DateTimeParseException dtpe) {
-      throw new WdkUserException("value '" + stableValue + "' cannot be parsed " +
+    catch (DateTimeParseException dtpe) {
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' cannot be parsed " +
         "as an Iso1806 date.  Make sure the data is in the yyyy-mm-dd format");
     }
 
     // Insure that the value provided matches the regular expression provided.  This could be
     // more restrictive than the iso1806 date test.
     if(_regex != null && !stableValue.matches(_regex)) {
-      throw new WdkUserException("value '" + stableValue + "' is " +
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' is " +
             "invalid and probably contains illegal characters. " + "It must match the regular expression '" +
             _regex + "'");
     }
@@ -168,15 +170,17 @@ public class DateParam extends Param {
     // Check minimum allowed date
     if(_minDate != null &&
         dateValue.isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + stableValue + "' should not be earlier than '" + _minDate + "'");
+      return contextParamValues.setInvalid(getName(), "The date '" + stableValue + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Check maximum allowed date
     if(_maxDate != null && 
-     dateValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + stableValue + "' should not be after '" + _maxDate + "'");
+        dateValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
+      return contextParamValues.setInvalid(getName(), "The date '" + stableValue + "' should not be after '" + _maxDate + "'");
     }
-    
+
+    // validation passed
+    return contextParamValues.setValid(getName());
   }
 
   @Override

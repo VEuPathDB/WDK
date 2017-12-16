@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,8 +83,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   //TODO - CWL Verify
-   String validateSyntaxAndSemantics(User user, ValidatedParamStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
+   String validateSyntaxAndSemantics(User user, CompleteValidStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
     List<String> errors = new ArrayList<String>();
@@ -247,8 +247,7 @@ public class FilterParamNewStableValue {
    * @param user  
    * @param contextParamValues 
    */
-  //TODO - CWL Verify 
-  String getDisplayValue(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException {
+  String getDisplayValue(User user, CompleteValidStableValues contextParamValues) throws WdkModelException {
 
     initWithThrow();
     Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);

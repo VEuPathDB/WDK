@@ -4,7 +4,8 @@
 package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,21 +28,15 @@ import org.json.JSONObject;
  */
 public class TimestampParam extends Param {
 
-  private long interval = 1;
+  private long _interval = 1;
 
-  /**
-     * 
-     */
   public TimestampParam() {
     setHandler(new TimestampParamHandler());
   }
 
-  /**
-   * @param param
-   */
   public TimestampParam(TimestampParam param) {
     super(param);
-    this.interval = param.interval;
+    _interval = param._interval;
   }
 
   /**
@@ -50,7 +45,7 @@ public class TimestampParam extends Param {
    * @return the interval
    */
   public long getInterval() {
-    return interval;
+    return _interval;
   }
 
   /**
@@ -60,41 +55,26 @@ public class TimestampParam extends Param {
   public void setInterval(long interval) {
     if (interval <= 0)
       interval = 1;
-    this.interval = interval;
+    _interval = interval;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#appendJSONContent(org.json.JSONObject )
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
-      jsParam.put("interval", interval);
+      jsParam.put("interval", _interval);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#clone()
-   */
   @Override
   public Param clone() {
     return new TimestampParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
-  protected void validateValue(User user, String rawOrDependentValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException, WdkUserException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
     // nothing to validation. the value of timestamp can be any string
+    return contextParamValues.setValid(getName());
   }
 
   /**
@@ -108,9 +88,9 @@ public class TimestampParam extends Param {
   }
 
   @Override
-  public String getDefault() {
+  public String getDefault(User user, PartiallyValidatedStableValues contextParamValues) {
     long time = System.currentTimeMillis();
-    String value = Long.toString(time / (1000 * interval));
+    String value = Long.toString(time / (1000 * _interval));
     System.out.println(time + " - " + value);
     return value;
   }

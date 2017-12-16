@@ -5,6 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -49,12 +50,10 @@ public interface ParamHandler {
    * 
    * @param user
    * @param requestParams
-   * @param contextParamValues
    * @throws WdkUserException
    * @throws WdkModelException
    */
-   //TODO - CWL Verify
-   void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+   void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -80,20 +79,16 @@ public interface ParamHandler {
    * @return
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
   Object toRawValue(User user, String stableValue)
       throws WdkModelException;
 
-  //TODO - CWL Verify
-  String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
-  //TODO - CWL Verify
-  String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
-  
-  //TODO - CWL Verify
-  String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException;
+
+  String getDisplayValue(User user, CompleteValidStableValues contextParamValues) throws WdkModelException;
 }

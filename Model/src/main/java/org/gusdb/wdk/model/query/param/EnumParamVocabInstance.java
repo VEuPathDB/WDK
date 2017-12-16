@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -30,7 +31,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   // param this cache was created by
   // context values used to create this cache
   //TODO - CWL Verify
-  private ValidatedParamStableValues _dependedParamValues;
+  private ValidStableValues _dependedParamValues;
   // default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
   private String _defaultValue;
 
@@ -43,7 +44,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   private AbstractEnumParam _aeParam;
 
   //TODO - CWL Verify
-  public EnumParamVocabInstance(ValidatedParamStableValues dependedParamValues, AbstractEnumParam aeParam) {
+  public EnumParamVocabInstance(ValidStableValues dependedParamValues, AbstractEnumParam aeParam) {
     _dependedParamValues = dependedParamValues;
     _aeParam = aeParam;
   }
@@ -180,7 +181,7 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   }
 
   //TODO - CWL Verify
-  ValidatedParamStableValues getDependedValues() {
+  ValidStableValues getDependedValues() {
     return _dependedParamValues;
   }
 
@@ -214,12 +215,12 @@ public class EnumParamVocabInstance implements DependentParamInstance {
   }
 
   @Override
-  public String getValidStableValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String getValidStableValue(User user, ValidStableValues contextParamValues)
       throws WdkModelException {
-    return _aeParam.getValidStableValue(user, stableValue, this);
+    return _aeParam.getValidStableValue(user, contextParamValues.get(_aeParam.getName()), this);
   }
 
-  public String[] getTerms(User user, String stableValue) {
+  public String[] getTerms(User user, String stableValue) throws WdkModelException {
     return (String[]) _aeParam.getRawValue(user, stableValue);
   }
 

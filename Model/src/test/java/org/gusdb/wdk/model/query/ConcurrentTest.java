@@ -4,15 +4,15 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Test;
@@ -38,19 +38,13 @@ public class ConcurrentTest {
             this.user = UnitTestHelper.getRegisteredUser();
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Thread#run()
-         */
         @Override
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-            	    ValidatedParamStableValues validatedParamStableValues =
-            	    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, values));
-                QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true,
-                        0, new LinkedHashMap<String, String>());
+                CompleteValidStableValues validatedParamStableValues =
+                    ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, values), true);
+                QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
                 try (ResultList resultList = instance.getResults()) {
                   resultList.next();
                 }

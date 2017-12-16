@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,8 +64,7 @@ public abstract class QueryInstance<T extends Query> {
   private long _instanceId;
   protected T _query;
   protected WdkModel _wdkModel;
-  //TODO - CWL Verify
-  protected ValidatedParamStableValues _contextParamStableValues;
+  protected CompleteValidStableValues _contextParamStableValues;
   protected String _resultMessage;
 
   private String _checksum;
@@ -78,16 +77,18 @@ public abstract class QueryInstance<T extends Query> {
    * @param user user to execute query as
    * @param query query to create instance for
    * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values.  If set to true, then, for any missing param values in the context, use default.  Set to false only 
-   * known to have a complete and correct set of contextParamStableValues
    * @param assignedWeight weight of the query
    * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  //TODO - CWL Verify 
-  protected QueryInstance(User user, T query, ValidatedParamStableValues contextParamStableValues, boolean validate,
+  protected QueryInstance(User user, T query, CompleteValidStableValues contextParamStableValues,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
+    // make sure query for this instance is the same as the one in the values
+    // TODO: probably want to ensure this with API changes
+    if (query != contextParamStableValues.getQuery()) {
+      throw new WdkModelException("Tried to create query instance for query not present in passed valid stable values.");
+    }
     _user = user;
     _query = query;
     _wdkModel = query.getWdkModel();
@@ -97,8 +98,6 @@ public abstract class QueryInstance<T extends Query> {
 
     _context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
     _context.put(Utilities.QUERY_CTX_USER, String.valueOf(user.getUserId()));
-
-//    setContextParamStableValues(contextParamStableValues, validate);
   }
 
   public Query getQuery() {
@@ -241,8 +240,7 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
-  //TODO - CWL Verify
-  public ValidatedParamStableValues getValidatedParamStableValues() {
+  public CompleteValidStableValues getValidatedParamStableValues() {
     return _contextParamStableValues;
   }
 
@@ -256,18 +254,13 @@ public abstract class QueryInstance<T extends Query> {
     return resultFactory.getCachedSql(this, performSorting);
   }
 
-  //TODO - Verify CWL
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
-
-    if (_paramInternalValues == null) {
-    	  // _contextParaStableValues should already have the empty values filled in. 
+    if (_paramInternalValues == null) { // only generate once
       _paramInternalValues = new LinkedHashMap<String, String>();
       Map<String, Param> params = _query.getParamMap();
       for (String paramName : params.keySet()) {
         Param param = params.get(paramName);
-        //String internalValue, stableValue = stableValues.get(paramName);
-        String internalValue, stableValue = _contextParamStableValues.get(paramName);
-        internalValue = param.getInternalValue(_user, stableValue, _contextParamStableValues);
+        String internalValue = param.getInternalValue(_user, _contextParamStableValues);
         _paramInternalValues.put(paramName, internalValue);
       }
     }

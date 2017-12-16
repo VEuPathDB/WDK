@@ -31,6 +31,13 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -409,21 +416,23 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
-  public Map<String, OntologyItem> getOntology(User user, ValidatedParamStableValues contextParamValues)
+  public Map<String, OntologyItem> getOntology(User user, StableValues contextParamValues)
       throws WdkModelException {
-
-    //contextParamValues = ensureRequiredContext(user, contextParamValues);
-
-    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(_ontologyQuery, contextParamValues, user);
-    Map<String, OntologyItem> map = null;
     try {
-      map = CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
+      // apply incoming param values to the ontology query
+      CompleteValidStableValues ontologyStableValues = ValidStableValuesFactory.createFromCompleteValues(user,
+          new WriteableStableValues(_ontologyQuery, contextParamValues), false);
+
+      OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyStableValues, user);
+      return CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
     }
     catch (UnfetchableItemException ex) {
       decodeException(ex);
+      return null;
     }
-    return map;
+    catch (WdkUserException e) {
+      throw new WdkModelException("Incoming values did not contain all values needed by ontology query", e);
+    }
   }
 
   /**
@@ -437,20 +446,18 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    */
   //TODO - CWL Verify 
-  public FilterParamSummaryCounts getTotalsSummary(User user, ValidatedParamStableValues contextParamValues,
+  public FilterParamSummaryCounts getTotalsSummary(User user, StableValues contextParamValues,
       JSONObject appliedFilters) throws WdkModelException {
-
-    //contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     // use background query if provided, else use metadata query
 
     // get base background query
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
+    CompleteValidStableValues bgdStableValues = ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues, false);
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, bgdStableValues);
       bgdSql = queryInstance.getSql();
     }
     catch (WdkUserException e) {
@@ -517,7 +524,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   public <T> OntologyTermSummary<T> getOntologyTermSummary(User user,
-      ValidatedParamStableValues contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
+      CompleteValidStableValues contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
 
     //contextParamValues = ensureRequiredContext(user, contextParamValues);
@@ -531,8 +538,9 @@ public class FilterParamNew extends AbstractDependentParam {
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
+      CompleteValidStableValues bgdValues = ValidStableValuesFactory.createFromCompleteValues(
+          user, new WriteableStableValues(bgdQuery, contextParamValues), false);
+      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, bgdValues);
       bgdSql = queryInstance.getSql();
     }
     catch (WdkUserException e) {
@@ -696,7 +704,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
   //TODO - CWL Verify 
-  private <T> Map<String, List<T>> getMetaData(User user, ValidatedParamStableValues contextParamValues,
+  private <T> Map<String, List<T>> getMetaData(User user, CompleteValidStableValues contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
       throws WdkModelException {
 
@@ -740,7 +748,7 @@ public class FilterParamNew extends AbstractDependentParam {
   
   //TODO - CWL Verify
   public Map<String, Set<String>> getValuesMap(User user,
-      ValidatedParamStableValues contextParamValues) throws WdkModelException {
+      ValidStableValues contextParamValues) throws WdkModelException {
     
     //contextParamValues = ensureRequiredContext(user, contextParamValues);
 
@@ -760,7 +768,7 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   //TODO - CWL Verify 
   Map<String, Set<String>> getValuesMap(User user,
-      ValidatedParamStableValues contextParamValues, Set<String> ontologyTerms,
+      ValidStableValues contextParamValues, Set<String> ontologyTerms,
       Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
 
     //TODO: temporary till val map query is required
@@ -771,8 +779,9 @@ public class FilterParamNew extends AbstractDependentParam {
  
     String ontologyValuesSql;
     try {
-      QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
+      CompleteValidStableValues ontologyValues = ValidStableValuesFactory.createFromCompleteValues(
+          user, new WriteableStableValues(_ontologyValuesQuery, contextParamValues), false);
+      QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, ontologyValues);
       ontologyValuesSql = instance.getSql();
     }
     catch (WdkUserException e) {
@@ -815,12 +824,14 @@ public class FilterParamNew extends AbstractDependentParam {
 
    
    // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
-   String getFilteredValue(User user, FilterParamNewStableValue stableValue, ValidatedParamStableValues contextParamValues, Query metadataQuery)
+   String getFilteredValue(User user, FilterParamNewStableValue stableValue, ValidStableValues contextParamValues, Query metadataQuery)
        throws WdkModelException {
 
      try {
        String metadataSql;
-       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+       CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
+           user, new WriteableStableValues(metadataQuery, contextParamValues), false);
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, metadataValues);
        metadataSql = instance.getSql();
 
        Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
@@ -849,13 +860,9 @@ public class FilterParamNew extends AbstractDependentParam {
    
 
   //TODO - CWL Verify
-  public JSONObject getJsonValues(User user, ValidatedParamStableValues contextParamValues)
+  public JSONObject getJsonValues(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
-
-    //contextParamValues = ensureRequiredContext(user, contextParamValues);
-
     JSONObject jsParam = new JSONObject();
-
     try {
       // create json for the ontology
       JSONObject jsOntology = new JSONObject();
@@ -898,19 +905,12 @@ public class FilterParamNew extends AbstractDependentParam {
    * return jsStableValue.toString(); } catch (JSONException ex) { throw new WdkModelException(ex); } }
    */
 
-  @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = new JSONObject().put(FilterParamNewHandler.FILTERS_KEY, new JSONArray()).toString();
-    return defaultValue;
-  }
-
   /**
    * Default is always no filter... until there is pressure to change this.
    */
   @Override
-  public String getDefault(User user, ValidatedParamStableValues contextParamValues) {
-    String defaultValue = new JSONObject().toString();
-    return defaultValue;
+  public String getDefault(User user, PartiallyValidatedStableValues contextParamValues) {
+    return new JSONObject().put(FilterParamNewHandler.FILTERS_KEY, new JSONArray()).toString();
   }
 
   @Override
@@ -940,10 +940,10 @@ public class FilterParamNew extends AbstractDependentParam {
    * check each filter in stable value. add each invalid one to error message, and throw user exception.
    */
   @Override
-  protected void validateValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
       throws WdkModelException {
 
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(getName()), this);
 
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
@@ -993,12 +993,12 @@ public class FilterParamNew extends AbstractDependentParam {
 
   @Override
   protected DependentParamInstance createDependentParamInstance(User user,
-      ValidatedParamStableValues dependedParamValues) throws WdkModelException {
+      ValidStableValues dependedParamValues) throws WdkModelException {
     return createFilterParamNewInstance();
   }
 
   @Override
-  public String getSanityDefault(User user, ValidatedParamStableValues contextParamValues,
+  public String getSanityDefault(User user, ValidStableValues contextParamValues,
       SelectMode sanitySelectMode) {
     return getDefault(user, contextParamValues);
   }

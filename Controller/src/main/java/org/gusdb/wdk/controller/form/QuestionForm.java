@@ -20,9 +20,8 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.RequestParams;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 /**
  * form bean for showing a wdk question from a question set.
@@ -99,7 +98,7 @@ public class QuestionForm extends MapActionForm {
       }
     }
     try {
-    	  ValidatedParamStableValues.createFromCompleteValues(user.getUser(), new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+    	  ValidStableValueSet.createFromCompleteValues(user.getUser(), new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
     }
     catch(WdkUserException wue) {
     	  Map<String,String> errorMap = wue.getParamErrors();

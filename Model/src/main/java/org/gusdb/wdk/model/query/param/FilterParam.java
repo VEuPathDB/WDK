@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -24,6 +23,12 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -250,12 +255,13 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkUserException
    */
   //TODO - CWL Verify 
-  public Map<String, Map<String, String>> getMetadataSpec(User user, ValidatedParamStableValues contextParamValues)
+  public Map<String, Map<String, String>> getMetadataSpec(User user, StableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
-
-    OntologyItemFetcher fetcher = new OntologyItemFetcher(metadataSpecQuery, contextParamValues, user);
+    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
+        user, new WriteableStableValues(metadataSpecQuery, contextParamValues), false);
+    OntologyItemFetcher fetcher = new OntologyItemFetcher(metadataValues, user);
     Map<String, Map<String, String>> map = null;
     try {
       map = CacheMgr.get().getOntologyCache().getItem(fetcher.getCacheKey(), fetcher);
@@ -271,12 +277,14 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextParamValues)
+  public Map<String, Map<String, String>> getMetadata(User user, StableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
 
-    MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextParamValues, user);
+    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
+        user, new WriteableStableValues(metadataQuery, contextParamValues), false);
+    MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataValues, user);
     Map<String, Map<String, String>> map = null;
     try {
       map = CacheMgr.get().getMetadataCache().getItem(fetcher.getCacheKey(), fetcher);
@@ -296,7 +304,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   //TODO - CWL Verify
-  public Map<String, List<String>> getMetaData(User user, ValidatedParamStableValues contextParamValues, String property)
+  public Map<String, List<String>> getMetaData(User user, ValidStableValues contextParamValues, String property)
       throws WdkModelException, WdkUserException {
     EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
     return getMetaData(user, contextParamValues, property, cache);
@@ -313,16 +321,16 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  //TODO - CWL Verify 
-  public Map<String, List<String>> getMetaData(User user, ValidatedParamStableValues contextParamValues, String property,
+  public Map<String, List<String>> getMetaData(User user, ValidStableValues contextParamValues, String property,
       EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
-    
-    
+
+    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
+        user, new WriteableStableValues(metadataQuery, contextParamValues), true);
 
     // compose a wrapped sql
-    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String,String>());
+    QueryInstance<?> instance = metadataQuery.makeInstance(user, metadataValues);
     String sql = instance.getSql();
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 
@@ -360,7 +368,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public JSONObject getJsonValues(User user, ValidatedParamStableValues contextParamValues)
+  public JSONObject getJsonValues(User user, ValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
     JSONObject jsParam = super.getJsonValues(cache);
@@ -374,7 +382,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   //TODO - CWL Verify
-  private void appendJsonFilterValue(JSONObject jsParam, User user, ValidatedParamStableValues contextParamValues)
+  private void appendJsonFilterValue(JSONObject jsParam, User user, ValidStableValues contextParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return;
@@ -419,7 +427,7 @@ public class FilterParam extends FlatVocabParam {
       EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
-        JSONArray jsTerms = convert(getDefault());
+        JSONArray jsTerms = convert(getDefault(user, null));
         JSONObject jsNewStableValue = new JSONObject();
         jsNewStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
         jsNewStableValue.put(FilterParamHandler.FILTERS_KEY, new JSONArray());
@@ -444,7 +452,7 @@ public class FilterParam extends FlatVocabParam {
         }
       }
       else
-        jsNewTerms = convert(getDefault());
+        jsNewTerms = convert(_defaultValue);
 
       jsStableValue.put(FilterParamHandler.TERMS_KEY, jsNewTerms);
       return jsStableValue.toString();
@@ -484,13 +492,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
-    return fixDefaultValue(defaultValue);
-  }
-
-  @Override
-  public String getDefault(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException {
+  public String getDefault(User user, PartiallyValidatedStableValues contextParamValues) throws WdkModelException {
     String defaultValue = super.getDefault(user, contextParamValues);
     return fixDefaultValue(defaultValue);
   }

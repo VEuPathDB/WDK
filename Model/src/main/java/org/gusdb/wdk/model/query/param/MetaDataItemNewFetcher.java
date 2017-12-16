@@ -2,9 +2,8 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
-import org.gusdb.fgputil.cache.ItemFetcher;
+import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,38 +11,28 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, MetaDataItem>> {
+public class MetaDataItemNewFetcher extends NoUpdateItemFetcher<String, Map<String, MetaDataItem>> {
 
-  private Query query;
-  private Map<String, String> paramValues;
-  private User user;
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
-  public MetaDataItemNewFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
-    this.query = metaDataQuery;
-    this.paramValues = paramValues;
-    this.user = user;
+  private final CompleteValidStableValues _paramValues;
+  private final User _user;
+
+  public MetaDataItemNewFetcher(CompleteValidStableValues paramValues, User user) {
+    _paramValues = paramValues;
+    _user = user;
   }
 
   @Override
   public Map<String, MetaDataItem> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
-      // trim away param values not needed by query, to avoid warnings
-      Map<String, String> requiredParamValues = new HashMap<String, String>();
-      for (String paramName : paramValues.keySet())
-        if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-          requiredParamValues.put(paramName, paramValues.get(paramName));
-
-      //TODO CWL - Verify
-      ValidatedParamStableValues validatedParamStableValues = 
-    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, requiredParamValues));
-      QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> instance = _paramValues.getQuery().makeInstance(_user, _paramValues);
       Map<String, MetaDataItem> itemMap = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
@@ -70,24 +59,14 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
   }
 
   public String getCacheKey() throws JSONException {
+    Query query = _paramValues.getQuery();
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();
-    for (String paramName : paramValues.keySet())
+    for (String paramName : _paramValues.keySet())
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-        paramValuesJson.put(paramName, paramValues.get(paramName));
+        paramValuesJson.put(paramName, _paramValues.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
     return JsonUtil.serialize(cacheKeyJson);
-  }
-
-  @Override
-  public boolean itemNeedsUpdating(Map<String, MetaDataItem> item) {
-    return false;
-  }
-
-  @Override
-  public Map<String, MetaDataItem> updateItem(String key, Map<String, MetaDataItem> item) {
-    throw new UnsupportedOperationException(
-        "This method should never be called since itemNeedsUpdating() always returns false.");
   }
 }

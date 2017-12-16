@@ -17,6 +17,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -32,9 +34,9 @@ public abstract class AbstractDependentParam extends Param {
  
   protected static final String PARAM_SERVED_QUERY = "ServedQuery";
 
-  private String _dependedParamRef;
-  private Set<String> _dependedParamRefs; 
-  private Set<Param> _dependedParams;
+  private String _dependedParamRef; // comma-delimited list of param names
+  private Set<String> _dependedParamRefs; // split list of param names (unresolved)
+  private Set<Param> _dependedParams; // resolved depended parameters
  
   public AbstractDependentParam() {
     super();
@@ -43,7 +45,6 @@ public abstract class AbstractDependentParam extends Param {
 
   public AbstractDependentParam(AbstractDependentParam param) {
     super(param);
-
     this._dependedParamRef = param._dependedParamRef;
     this._dependedParamRefs = new LinkedHashSet<>(param._dependedParamRefs);
   }
@@ -70,6 +71,7 @@ public abstract class AbstractDependentParam extends Param {
    * @return
    * @throws WdkModelException
    */
+  @Override
   public Set<Param> getDependedParams() throws WdkModelException {
     if (!isDependentParam())
       return null;
@@ -272,7 +274,7 @@ public abstract class AbstractDependentParam extends Param {
    */
   //TODO - CWL Verify
   @Deprecated
-  public void fillContextParamValues(User user, ParamStableValues contextParamValues,
+  public void fillContextParamValues(User user, WriteableStableValues contextParamValues,
       Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
 //
 //    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
@@ -303,24 +305,17 @@ public abstract class AbstractDependentParam extends Param {
 //    }
   }
 
-
-  //TODO - CWL Verify
-  public abstract String getDefault(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException;
-  
   @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
-  
-  //TODO - CWL Verify
-  protected abstract DependentParamInstance createDependentParamInstance(User user, ValidatedParamStableValues dependedParamValues)
+
+  protected abstract DependentParamInstance createDependentParamInstance(User user, ValidStableValues dependedParamValues)
       throws WdkModelException, WdkUserException;
 
-  //TODO - CWL Verify
-  public abstract String getSanityDefault(User user, ValidatedParamStableValues contextParamValues,
+  public abstract String getSanityDefault(User user, ValidStableValues contextParamValues,
       SelectMode sanitySelectMode); 
 
-  //TODO - CWL Verify
   static JSONObject getDependedParamValuesJson(
-      ValidatedParamStableValues dependedParamValues, Set<Param> dependedParams) {
+      ValidStableValues dependedParamValues, Set<Param> dependedParams) {
     JSONObject dependedParamValuesJson = new JSONObject();
     if (dependedParams == null || dependedParams.isEmpty())
       return dependedParamValuesJson;

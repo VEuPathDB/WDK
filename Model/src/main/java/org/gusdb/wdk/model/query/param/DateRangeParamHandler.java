@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 
@@ -47,8 +48,8 @@ public class DateRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
-    return stableValue;
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues) {
+    return contextParamValues.get(_param.getName());
   }
 
   /**
@@ -58,8 +59,8 @@ public class DateRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
-    return stableValue;
+  public String toSignature(User user, CompleteValidStableValues contextParamValues) {
+    return contextParamValues.get(_param.getName());
   }
 
   @Override
@@ -81,11 +82,11 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
-      stableValue = _param.getDefault();
+      stableValue = _param.getDefault(user, null);
       if (stableValue != null)
         requestParams.setParam(_param.getName(), stableValue);
     }
@@ -97,9 +98,8 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue).replace("{", "").replace("}", "").replace("\"", "");
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName())).replace("{", "").replace("}", "").replace("\"", "");
   }
 
 }

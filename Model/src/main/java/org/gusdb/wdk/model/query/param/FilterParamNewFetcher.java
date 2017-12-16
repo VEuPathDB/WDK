@@ -8,6 +8,7 @@ import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +28,7 @@ public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterPar
   }
 
   //TODO - CWL Verify
-  public String getCacheKey(ValidatedParamStableValues dependedParamValues) throws WdkModelException, JSONException {
+  public String getCacheKey(ValidStableValues dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _param.getWdkModel().getProjectId());
     cacheKeyJson.put(ONTOLOGY_QUERY_REF_KEY, _param.getOntologyQuery().getFullName());

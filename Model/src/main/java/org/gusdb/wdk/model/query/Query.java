@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.User;
@@ -141,9 +141,14 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  //TODO - CWL Verify
-  public abstract QueryInstance<? extends Query> makeInstance(User user, ValidatedParamStableValues values, boolean validate,
+  public abstract QueryInstance<? extends Query> makeInstance(User user, CompleteValidStableValues values,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
+
+  // convenience method when caller does not have weight or context to pass
+  public QueryInstance<? extends Query> makeInstance(User user, CompleteValidStableValues values)
+      throws WdkModelException, WdkUserException {
+    return makeInstance(user, values, 0, new HashMap<>());
+  }
 
   @Override
   public abstract Query clone();
@@ -634,17 +639,18 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return buffer.toString();
   }
 
-  //TODO - CWL Verify
-  public Map<String, String> getSignatures(User user, ValidatedParamStableValues validatedParamStableValues)
+  public Map<String, String> getSignatures(User user, CompleteValidStableValues validatedParamStableValues)
       throws WdkModelException, WdkUserException {
+    if (this != validatedParamStableValues.getQuery()) {
+      throw new WdkModelException("Cannot execute getSignatures() on query different than the one inside passed valid stable values.");
+    }
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : validatedParamStableValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
          continue;
       }
-      String stableValue = validatedParamStableValues.get(paramName);
-      String signature = param.getSignature(user, stableValue, validatedParamStableValues);
+      String signature = param.getSignature(user, validatedParamStableValues);
       signatures.put(paramName, signature);
     }
     return signatures;

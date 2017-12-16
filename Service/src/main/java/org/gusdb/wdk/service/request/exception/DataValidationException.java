@@ -1,11 +1,17 @@
 package org.gusdb.wdk.service.request.exception;
 
+import java.util.Map;
+
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.wdk.model.WdkUserException;
+
 /**
  * Custom service exception to be thrown when the JSON received is syntactically 
  * correct but problems with the content preclude the successful completion of
  * the web service.
+ * 
  * @author crisl-adm
- *
  */
 public class DataValidationException extends Exception {
 
@@ -34,9 +40,18 @@ public class DataValidationException extends Exception {
    * @param t
    */
   public DataValidationException(Throwable t) {
-    super(DEFAULT_MESSAGE, t);
+    super(determineMessage(t), t);
   }
-  
+
+  private static String determineMessage(Throwable t) {
+    if (t instanceof WdkUserException) {
+      WdkUserException e = (WdkUserException)t;
+      Map<String,String> paramErrors = e.getParamErrors();
+      return (paramErrors == null ? e.getMessage() : FormatUtil.prettyPrint(paramErrors, Style.MULTI_LINE));
+    }
+    return DEFAULT_MESSAGE;
+  }
+
   /**
    * Passing both a message and the throwable into the superclass
    * @param message
@@ -45,4 +60,5 @@ public class DataValidationException extends Exception {
   public DataValidationException(String message, Throwable t) {
     super(message, t);
   }
+
 }

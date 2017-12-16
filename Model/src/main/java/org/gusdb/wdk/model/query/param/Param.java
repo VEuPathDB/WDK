@@ -20,6 +20,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -79,14 +82,19 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected abstract void applySuggestion(ParamSuggestion suggest);
 
   /**
-   * The input the method can be either raw data or dependent data
+   * Validates the value of this parameter only.  This method can assume that any depended/parent params are
+   * already present in contextParamValues; if not, a WdkModelException is thrown.  If fillIfEmpty is true,
+   * this method should add a default value to contextParamValues and validate it.  If validation fails, this
+   * method should not throw an exception, but call contextParamValues.setInvalid() with its parameter name
+   * and a reason for the failure.
    * 
-   * @param user
-   * @param rawOrDependentValue
+   * @param user user to be used to execute any queries needed for validation
+   * @param contextParamValues partially validated stable value set- to be appended to
+   * @return true if value successfully validated; else false
+   * @throws WdkModelException if application error happens while trying to validate
    */
-  //TODO - CWL Verify 
-  protected abstract void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException, WdkUserException;
+  protected abstract ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException;
 
   /**
    * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by 
@@ -274,10 +282,15 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   /**
-   * @throws WdkModelException
-   *           if unable to retrieve default value
+   * Determines a default value for this parameter given the passed stable values.  It can be assumed that
+   * any depended param values required for this param have already been filled in and validated.
+   * 
+   * @param user user to use to execute queries related to finding the correct default value
+   * @param stableValues depended values (guaranteed to be present and already valid)
+   * 
+   * @throws WdkModelException if unable to retrieve default value
    */
-  public String getDefault() throws WdkModelException {
+  protected String getDefault(User user, PartiallyValidatedStableValues stableValues) throws WdkModelException {
     return _defaultValue;
   }
 
@@ -385,11 +398,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return buf.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -493,26 +501,53 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String replaceSql(String sql, String internalValue) {
     String regex = "\\$\\$" + _name + "\\$\\$";
     // escape all single quotes in the value
-
-    //logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
-
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  //TODO - CWL Verify
-  public void validate(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException, WdkUserException {
-    // handle the empty case
-    if (stableValue == null || stableValue.isEmpty()) {
-      if (!_allowEmpty) {
-        throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
-        // otherwise, got empty value and is allowed, no need for further validation
+  public ParamValidity validate(User user, PartiallyValidatedStableValues stableValues, boolean fillIfEmpty)
+      throws WdkModelException {
+    if (stableValues.hasParamBeenValidated(getName())) {
+      return stableValues.getParamValidity(getName());
+    }
+    // first validate any parent (depended) params
+    boolean parentFailedValidation = false;
+    for (Param parent : getDependedParams()) {
+      parent.validate(user, stableValues, fillIfEmpty);
+      if (!stableValues.isParamValid(parent.getName())) {
+        parentFailedValidation = true;
       }
     }
-    else {
-      // value is not empty, the sub classes will complete further validation
-      validateValue(user, stableValue, contextParamValues);
+    if (parentFailedValidation) {
+      return stableValues.setInvalid(getName(), "At least one parameter '" + getName() + "' depends on is invalid or missing.");
     }
+    // all parents passed validation; handle case where empty value allowed
+    if (stableValues.get(getName()) == null && isAllowEmpty() && !fillIfEmpty) {
+      // make sure entry present (might have been missing); empty value will be filled in at query execution time
+      stableValues.put(getName(), null);
+      return stableValues.setValid(getName());
+    }
+    // fill with default value if fill is requested
+    if (stableValues.get(getName()) == null) {
+      if (fillIfEmpty) {
+        stableValues.put(getName(), getDefault(user, stableValues));
+      }
+      else {
+        return stableValues.setInvalid(getName(), "Parameter '" + getName() + "' cannot be empty.");
+      }
+    }
+
+    // sub classes will complete further validation
+    return validateValue(user, stableValues);
+  }
+
+  /**
+   * Returns list of parameters this parameter depends on.  AbstractDependentParam overrides this
+   * method to return any depended params for dependent params.
+   * 
+   * @throws WdkModelException  
+   */
+  public Set<Param> getDependedParams() throws WdkModelException {
+    return Collections.EMPTY_SET;
   }
 
   public void addNoTranslation(ParamConfiguration noTranslation) {
@@ -565,7 +600,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  //TODO - CWL Verify
   public String toStableValue(User user, Object rawValue)
       throws WdkModelException, WdkUserException {
     return _handler.toStableValue(user, rawValue);
@@ -586,7 +620,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
   public Object getRawValue(User user, String stableValue)
       throws WdkModelException {
     return _handler.toRawValue(user, stableValue);
@@ -605,14 +638,16 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
-  public String getInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String getInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
-    if (stableValue == null || stableValue.length() == 0)
-      if (isAllowEmpty())
-        stableValue = getEmptyValue();
-
-    return _handler.toInternalValue(user, stableValue, contextParamValues);
+    String stableValue = contextParamValues.get(getName());
+    if ((stableValue == null || stableValue.length() == 0) && isAllowEmpty()) {
+      // FIXME: RRD: need to determine if getEmptyValue really returns a stable value or internal.  In another
+      //   place (forget where- maybe QueryInstance?) we seem to be popping the empty value in at the last
+      //   moment as an internal value during param population (right before query execution).  Need to discuss with DD.
+      stableValue = getEmptyValue();
+    }
+    return _handler.toInternalValue(user, contextParamValues);
   }
 
   /**
@@ -624,11 +659,11 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  //TODO - CWL Verify 
-  public String getSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String getSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
+    String stableValue = contextParamValues.get(getName());
     if (stableValue == null) return "";
-    return _handler.toSignature(user, stableValue, contextParamValues);
+    return _handler.toSignature(user, contextParamValues);
   }
 
   @Override
@@ -664,14 +699,13 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
   public Set<String> getAllValues() throws WdkModelException {
     Set<String> values = new LinkedHashSet<>();
-    values.add(getDefault());
+    values.add(getDefault(_wdkModel.getSystemUser(), null));
     return values;
   }
 
-  //TODO - CWL Verify
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
-    _handler.prepareDisplay(user, requestParams, contextParamValues);
+    _handler.prepareDisplay(user, requestParams);
   }
 
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
@@ -692,12 +726,11 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public void addHandler(ParamHandlerReference handlerReference) {
     _handlerReferences.add(handlerReference);
   }
-  
-  //TODO - CWL Verify
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
-    return _handler.getDisplayValue(user, stableValue, contextParamValues);
+
+  public String getDisplayValue(User user, CompleteValidStableValues paramValueSet) throws WdkModelException {
+    return _handler.getDisplayValue(user, paramValueSet);
   }
-  
+
   /**
    * Backlink to dependent params, set by dependent params.
    * @param param
@@ -740,7 +773,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return getStaleDependentParams(ss);
   }
 
-
   /**
    * 
    * given an input list of changed or stale params, return a list of (recursively) dependent params that
@@ -777,4 +809,5 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public int compareTo(Param other) {
     return this.getFullName().compareTo(other.getFullName());
   }
+
 }

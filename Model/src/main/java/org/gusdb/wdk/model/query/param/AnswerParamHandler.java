@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
@@ -68,8 +69,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
+    String stableValue = contextParamValues.get(_param.getName());
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
 
     if (_param.isNoTranslation())
@@ -91,9 +93,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
-    long stepId = Long.valueOf(stableValue);
+    long stepId = Long.valueOf(contextParamValues.get(_param.getName()));
     Step step = StepUtilities.getStep(user, stepId);
     AnswerValue answerValue = step.getAnswerValue(false);
     String checksum= answerValue.getChecksum();
@@ -129,16 +131,16 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * @throws WdkModelException
    */
   public String validateStableValueSyntax(User user, String inputStableValue, boolean allowIncompleteSpec)
-		  throws WdkUserException, WdkModelException {
-    if(allowIncompleteSpec) {
-      if(inputStableValue != null) {
+      throws WdkUserException, WdkModelException {
+    if (allowIncompleteSpec) {
+      if (inputStableValue != null) {
         throw new WdkUserException("Unattached steps must have null answer param values.");
       }
-      return null;  
-  	}
+      return null;
+    }
     else return validateStableValueSyntax(user, inputStableValue);
   }
-  
+
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
   WdkModelException {
@@ -155,7 +157,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
 	}
   }
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) { // stable value is not set, choose a default stable value;
@@ -194,9 +196,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
     return new AnswerParamHandler(this, param);
   }
 
-  //TODO - CWL Verify
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) throws WdkModelException {
-    return toRawValue(user, stableValue).getCustomName();
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName())).getCustomName();
   }
+
 }

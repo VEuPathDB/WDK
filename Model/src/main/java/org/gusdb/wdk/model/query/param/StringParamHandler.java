@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
@@ -8,6 +5,7 @@ import java.util.Map;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -54,8 +52,9 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (stableValue == null || stableValue.length() == 0) return "";
     return EncryptionUtil.encrypt(stableValue);
   }
@@ -70,8 +69,9 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (_param.isNoTranslation())
       return stableValue;
 
@@ -82,8 +82,9 @@ public class StringParamHandler extends AbstractParamHandler {
       return stableValue;
     }
     else if (stringParam.getIsSql()) {
-	return stableValue;
-    } else {
+      return stableValue;
+    }
+    else {
       stableValue = stableValue.replaceAll("'", "''");
       return "'" + stableValue + "'";
     }
@@ -107,9 +108,9 @@ public class StringParamHandler extends AbstractParamHandler {
       stableValue = stableValue.trim();
     return stableValue;
   }
-  
+
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
@@ -124,11 +125,9 @@ public class StringParamHandler extends AbstractParamHandler {
     return new StringParamHandler(this, param);
   }
 
-  //TODO - CWL Verify
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue);
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName()));
   }
 
 }

@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.ClientRequest;
@@ -52,17 +52,14 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    * @param user user to execute query as
    * @param query query to create instance for
    * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values
    * @param assignedWeight weight of the query
    * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  //TODO - CWL Verify 
-  public ProcessQueryInstance(User user, ProcessQuery query, ValidatedParamStableValues contextParamStableValues, boolean validate,
+  public ProcessQueryInstance(User user, ProcessQuery query, CompleteValidStableValues contextParamStableValues,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, contextParamStableValues, validate, assignedWeight, context);
-    _query = query;
+    super(user, query, contextParamStableValues, assignedWeight, context);
   }
 
   @Override

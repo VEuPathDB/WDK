@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -82,9 +83,9 @@ public class SingleRecordQuestion extends Question {
 
   @Override
   public AnswerValue makeAnswerValue(User user,
-      Map<String, String> params, int pageStart, int pageEnd,
+      CompleteValidStableValues params, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     // can ignore nearly all these arguments; simply want a SingleRecordAnswerValue
     
     // build valid PK value list

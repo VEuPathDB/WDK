@@ -182,7 +182,7 @@ public class EnumItem extends WdkModelBase {
    * @return
    */
   //TODO - CWL Verify 
-  public boolean isValidFor(ValidatedParamStableValues dependedParamValues)
+  public boolean isValidFor(ValidStableValueSet dependedParamValues)
       throws WdkModelException {
     // convert the map into a JSON
     try {

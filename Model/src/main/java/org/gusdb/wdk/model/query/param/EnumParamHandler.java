@@ -10,6 +10,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -77,8 +78,9 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
@@ -112,12 +114,12 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
 
-    String[] terms = enumParam.convertToTerms(stableValue);
+    String[] terms = enumParam.convertToTerms(contextParamValues.get(_param.getName()));
     // jerric - we should use terms to generate signature, not internal value. I don't remember
     // when and why we switched to internal values. I will revert it back to term.
     // Furthermore, I will skip validating the terms here, otherwise, it breaks the deep clone
@@ -164,7 +166,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (rawValue == null || rawValue.length == 0) {
       if (!_param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
-      rawValue = _param.getDefault().split(",+");
+      rawValue = _param._defaultValue.split(",+");
     }
 
     return _param.toStableValue(user, rawValue);
@@ -178,7 +180,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
@@ -232,11 +234,10 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
-    Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);
-    String[] terms = toRawValue(user, stableValue);
+    Map<String, String> displays = aeParam.getDisplayMap(user, stableValues);
+    String[] terms = toRawValue(user, stableValues.get(_param.getName()));
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0) buffer.append(", ");

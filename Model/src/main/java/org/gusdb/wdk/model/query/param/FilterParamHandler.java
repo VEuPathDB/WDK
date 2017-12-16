@@ -14,6 +14,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,8 +72,9 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
@@ -119,9 +121,9 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
-    stableValue = normalizeStableValue(stableValue);
+    String stableValue = normalizeStableValue(contextParamValues.get(_param.getName()));
     try {
       JSONObject jsValue = new JSONObject(stableValue);
       JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
@@ -164,14 +166,14 @@ public class FilterParamHandler extends AbstractParamHandler {
       if (!_param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
 
-      stableValue = _param.getDefault();
+      stableValue = _param._defaultValue;
     }
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
@@ -221,13 +223,12 @@ public class FilterParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    stableValue = normalizeStableValue(stableValue);
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    String stableValue = normalizeStableValue(stableValues.get(_param.getName()));
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
     try {
-      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this._param).getMetadataSpec(user, contextParamValues);
+      Map<String, Map<String, String>> metadataSpec = ((FilterParam) this._param).getMetadataSpec(user, stableValues);
       if (jsFilters.length() == 0)
         return "All " + _param._prompt;
       else {

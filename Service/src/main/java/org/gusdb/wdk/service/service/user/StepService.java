@@ -23,8 +23,8 @@ import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -208,27 +208,30 @@ public class StepService extends UserService {
       throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-  
+
   /**
    * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
    * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
+   * 
    * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
    * @throws WdkModelException
    * @throws DataValidationException
    */
   protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
-	Question question = answerSpec.getQuestion();
-	if(question.hasAnswerParams() ? inStrategy : true) {
-	  Map<String, String> context = new LinkedHashMap<String, String>();
+    Question question = answerSpec.getQuestion();
+    if(question.hasAnswerParams() ? inStrategy : true) {
+      Map<String, String> context = new LinkedHashMap<String, String>();
       context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-	  try {  
-	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-	    Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
-	    	ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(question.getQuery(),params));
-	  }
+      try {  
+        User user = getUserBundle(Access.PRIVATE).getSessionUser();
+        StableValues params = AnswerValueFactory.convertParams(answerSpec.getQuestion().getQuery(), answerSpec.getParamValues());
+        // FIXME: should probably return this here; if we don't we'll have done the validation work but
+        //    someone will have to do it again from scratch
+        ValidStableValuesFactory.createFromCompleteValues(user, params, true);
+      }
       catch(WdkUserException wue) {
         throw new DataValidationException(wue);
       }
-	}
+    }
   }
 }

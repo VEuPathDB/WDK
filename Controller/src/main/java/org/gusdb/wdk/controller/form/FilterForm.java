@@ -21,8 +21,8 @@ import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 /**
  * form bean for holding the boolean expression string fro queryStep.jsp page
@@ -106,8 +106,8 @@ public class FilterForm extends QuestionForm {
     }
     
     try {
-      ValidatedParamStableValues.createFromCompleteValues(user.getUser(),
-          new ParamStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+      ValidStableValuesFactory.createFromCompleteValues(user.getUser(),
+          new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues), true);
   
 //
 //        String errMsg = null;

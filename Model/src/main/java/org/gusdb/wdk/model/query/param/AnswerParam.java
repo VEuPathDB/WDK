@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
@@ -131,11 +132,6 @@ public class AnswerParam extends Param {
     this._resolved = true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // add recordClass names
@@ -145,30 +141,39 @@ public class AnswerParam extends Param {
     jsParam.put("recordClass", jsArray);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException, WdkUserException {
-    long stepId = Long.valueOf(stableValue);
-    Step step = StepUtilities.getStep(user, stepId);
-
-    // make sure the input step is of the acceptable type
-    String rcName = step.getRecordClass().getFullName();
-    if (!recordClasses.containsKey(rcName))
-      throw new WdkUserException("The step of record type '" + rcName +
-          "' is not allowed in the answerParam " + this.getFullName());
+  protected String getDefault(User user, PartiallyValidatedStableValues stableValues) {
+    return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
+  @Override
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues stableValues)
+      throws WdkModelException {
+    String stableValue = stableValues.get(getName());
+    // null values allowed at this point for new step service and since no one can depend on AnswerParam
+    if (stableValue == null) {
+      return stableValues.setValid(getName());
+    }
+    try {
+      long stepId = Long.valueOf(stableValue);
+      Step step = StepUtilities.getStep(user, stepId);
+
+      // make sure the input step is of an acceptable type
+      String rcName = step.getRecordClass().getFullName();
+      if (!recordClasses.containsKey(rcName)) {
+        stableValues.setInvalid(getName(), "The step of record type '" + rcName +
+            "' is not allowed in the answerParam '" + getName() + "'.");
+      }
+      return stableValues.setValid(getName());
+    }
+    catch (NumberFormatException e) {
+      return stableValues.setInvalid(getName(), "Value of param '" + getName() + "', '" + stableValue + "' is not an integer.");
+    }
+    catch (WdkModelException e) {
+      return stableValues.setInvalid(getName(), "Value of param '" + getName() + "', '" + stableValue +"' is not a step ID.");
+    }
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -203,11 +208,16 @@ public class AnswerParam extends Param {
   /**
    * AnswerParam doesn't allow empty values since we cannot define user-independent empty values in the model.
    * 
+   * Correction for b36(?): we do allow null values since that will be how combiner steps are constructed
+   * prior to them being incorporated into a strategy.  However, once the step is incorporated into a
+   * strategy, AnswerParams MUST be filled in and null would be invalid.  Hoping to guarantee this in other
+   * ways.  For now, validation must pass null values in AnswerParams.
+   * 
    * @see org.gusdb.wdk.model.query.param.Param#isAllowEmpty()
    */
   @Override
   public boolean isAllowEmpty() {
-    return false;
+    return true;
   }
 
   @Override

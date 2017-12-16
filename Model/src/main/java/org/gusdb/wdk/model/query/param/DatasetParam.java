@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
@@ -92,11 +94,6 @@ public class DatasetParam extends Param {
     parserReferences = new ArrayList<>(references.values());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -123,21 +120,11 @@ public class DatasetParam extends Param {
     } 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new DatasetParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
@@ -145,18 +132,19 @@ public class DatasetParam extends Param {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
       throws WdkModelException {
-    // make sure the dataset exists
-    int datasetId = Integer.parseInt(stableValue);
-    _wdkModel.getDatasetFactory().getDataset(user, datasetId);
+    try {
+      // make sure the dataset exists
+      String stableValue = contextParamValues.get(getName());
+      int datasetId = Integer.parseInt(stableValue);
+      _wdkModel.getDatasetFactory().getDataset(user, datasetId);
+      return contextParamValues.setValid(getName());
+    }
+    catch (NumberFormatException | WdkModelException e) {
+      return contextParamValues.setInvalid(getName(), e.getMessage());
+    }
   }
 
   /**

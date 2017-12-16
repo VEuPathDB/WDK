@@ -6,7 +6,8 @@ import java.util.List;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -114,42 +115,46 @@ public class NumberParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
 
+    String stableValue = contextParamValues.get(getName());
     Double numericalValue = null; 
 
-	// Insure that the value provided can be converted into a proper number
+    // Insure that the value provided can be converted into a proper number
     try {
       numericalValue = Double.valueOf(stableValue);
     }
     catch (NumberFormatException ex) {
-      throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
+      return contextParamValues.setInvalid(getName(), "Value must be numerical; '" + stableValue + "' is invalid.");
     }
 
     // Insure that the value provided matches the regular expression provided.  This could be
     // more restrictive than the number test above.
     if (_regex != null && !stableValue.matches(_regex)) {
-      throw new WdkUserException("value '" + stableValue + "' is invalid. "
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' is invalid. "
          + "It must match the regular expression '" + _regex + "'");
     }
 
     // Verify the value provided is an integer if that property is specified.
     if(_isInteger && numericalValue.doubleValue() % 1 != 0) {
-      throw new WdkUserException("value '" + stableValue + "' must be an integer.");
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' must be an integer.");
     }
 
     // Verify the value provided is greater than the minimum allowed value, if that property
     // is specified.
     if(_min != null && numericalValue.doubleValue() < _min) {
-      throw new WdkUserException("value '" + stableValue + "' must be greater than or equal to '" + _min + "'" );
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' must be greater than or equal to '" + _min + "'" );
     }
 
     // Verify the value provided is no greater than the maximum allowed value, if that property
     // is specified.
     if(_max != null && numericalValue.doubleValue() > _max) {
-      throw new WdkUserException("value '" + stableValue + "' must be less than or equal to '" + _max + "'" );
+      return contextParamValues.setInvalid(getName(), "Value '" + stableValue + "' must be less than or equal to '" + _max + "'" );
     }
+
+    // passed validation
+    return contextParamValues.setValid(getName());
   }
 
   @Override
@@ -206,8 +211,8 @@ public class NumberParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
+  public String getDefault(User user, PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(user, stableValues);
     if(defaultValue == null || defaultValue.isEmpty()) {
       defaultValue = _min.toString();
     }

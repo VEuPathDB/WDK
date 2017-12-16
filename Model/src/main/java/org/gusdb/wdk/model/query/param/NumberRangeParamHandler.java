@@ -8,6 +8,7 @@ import java.util.Map;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -51,8 +52,9 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (stableValue == null || stableValue.length() == 0) return "";
     return EncryptionUtil.encrypt(stableValue);
   }
@@ -65,33 +67,35 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
-	  
-	// Something to do with the portal - left this alone  
-	if(_param.isNoTranslation()) {
-	  return stableValue;
-	}
 
-	// By now stableValue parses properly
-	JSONObject valueJson = new JSONObject(stableValue);
-	Double values[] = { valueJson.getDouble("min"), valueJson.getDouble("max") };
-	
-	// Modify both ends of the range as needed and reassemble as a JSONObject
-	for(Double value : values) {
-    
+    String stableValue = contextParamValues.get(_param.getName());
+
+    // Something to do with the portal - left this alone  
+    if(_param.isNoTranslation()) {
+      return stableValue;
+    }
+
+    // By now stableValue parses properly
+    JSONObject valueJson = new JSONObject(stableValue);
+    Double values[] = { valueJson.getDouble("min"), valueJson.getDouble("max") };
+
+    // Modify both ends of the range as needed and reassemble as a JSONObject
+    for(Double value : values) {
+
       // If the number is in exponential form, change to decimal form
       if(stableValue.matches("^.*(e|E).*$")) {
         value = new Double(new BigDecimal(value.doubleValue()).toPlainString());
       }
-    
+
       // If the number is not an integer, round it according to the number of decimal places
       // requested (or the default value).
       if(!((NumberRangeParam)_param).isInteger()) {
-    	MathContext mathContext = new MathContext(((NumberRangeParam)_param).getNumDecimalPlaces(), RoundingMode.HALF_UP);
-    	value = (new BigDecimal(value.doubleValue(), mathContext)).doubleValue();
+        MathContext mathContext = new MathContext(((NumberRangeParam)_param).getNumDecimalPlaces(), RoundingMode.HALF_UP);
+        value = (new BigDecimal(value.doubleValue(), mathContext)).doubleValue();
       }
-	}
+    }
     return new JSONObject().put("min", new Double(values[0])).put("max", new Double(values[1])).toString();
   }
 
@@ -113,9 +117,9 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
       stableValue = stableValue.trim();
     return stableValue;
   }
-  
+
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
@@ -131,10 +135,8 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  //TODO - CWL Verify
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue).replace("{", "").replace("}", "").replace("\"", "");
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName())).replace("{", "").replace("}", "").replace("\"", "");
   }
 
 }

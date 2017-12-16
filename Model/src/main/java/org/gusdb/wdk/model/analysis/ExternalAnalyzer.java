@@ -135,7 +135,8 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
-    writeLastRunFile(storageDir);
+    writeContentToFile(storageDir, LAST_RUN_FILE_NAME,
+        new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(new Date()) + NL);
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
@@ -174,14 +175,13 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     return ExecutionStatus.COMPLETE;
   }
 
-  private void writeLastRunFile(String storageDir) throws WdkModelException {
-    File lastRunFile = Paths.get(storageDir, LAST_RUN_FILE_NAME).toFile();
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(lastRunFile))) {
-      out.write(new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(new Date()));
-      out.newLine();
+  protected static void writeContentToFile(String storageDir, String fileName, String content) throws WdkModelException {
+    File file = Paths.get(storageDir, fileName).toFile();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+      out.write(content);
     }
     catch (IOException e) {
-      throw new WdkModelException("Could not write " + lastRunFile.getAbsolutePath(), e);
+      throw new WdkModelException("Could not write " + file.getAbsolutePath(), e);
     }
   }
 

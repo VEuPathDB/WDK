@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -83,7 +82,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public void setContextValues(ValidatedParamStableValues contextValues) {
+  public void setContextValues(ValidStableValueSet contextValues) {
     super.setContextValues(contextValues);
     if ((this._contextValues == null && contextValues != null) ||
         (this._contextValues != null && !compareValues(this._contextValues, contextValues))) {
@@ -93,7 +92,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   //TODO - CWL Verify
-  private boolean compareValues(ValidatedParamStableValues left, ValidatedParamStableValues right) {
+  private boolean compareValues(ValidStableValueSet left, ValidStableValueSet right) {
     if (left.size() != right.size())
       return false;
     for (String name : left.keySet()) {
@@ -282,7 +281,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public void validate(UserBean user, String rawOrDependentValue, ValidatedParamStableValues contextValues)
+  public void validate(UserBean user, String rawOrDependentValue, ValidStableValueSet contextValues)
       throws WdkModelException, WdkUserException {
     logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" +
         contextValues.prettyPrint());

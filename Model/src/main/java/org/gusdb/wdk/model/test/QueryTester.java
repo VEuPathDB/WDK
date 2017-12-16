@@ -26,10 +26,9 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTester {
@@ -47,8 +46,8 @@ public class QueryTester {
   //TODO - CWL Verify
   private String showSql(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-	ValidatedParamStableValues validatedParamStableValues =
-	    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, paramHash));
+	ValidStableValueSet validatedParamStableValues =
+	    	    ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
     QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
@@ -59,8 +58,8 @@ public class QueryTester {
   //TODO - CWL Verify
   private String showResultTable(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-	ValidatedParamStableValues validatedParamStableValues =
-	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, paramHash));
+	ValidStableValueSet validatedParamStableValues =
+	    ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
     QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
         new LinkedHashMap<String, String>());
     //ResultFactory resultFactory = wdkModel.getResultFactory();
@@ -199,8 +198,8 @@ public class QueryTester {
           String table = tester.showResultTable(query, stableValues);
           System.out.println(table);
         } else {
-        	  ValidatedParamStableValues validatedParamStableValues =
-        	    	    ValidatedParamStableValues.createFromCompleteValues(tester.user, new ParamStableValues(query, stableValues));
+        	  ValidStableValueSet validatedParamStableValues =
+        	    	    ValidStableValueSet.createFromCompleteValues(tester.user, new WriteableStableValues(query, stableValues));
           QueryInstance<?> instance = query.makeInstance(tester.user, validatedParamStableValues,
               true, 0, new LinkedHashMap<String, String>());
           try (ResultList rs = instance.getResults()) {

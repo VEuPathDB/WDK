@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -35,17 +35,14 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @param user user to execute query as
    * @param query query to create instance for
    * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values
    * @param assignedWeight weight of the query
    * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  //TODO - CWL Verify
-  protected SqlQueryInstance(User user, SqlQuery query, ValidatedParamStableValues contextParamStableValues, boolean validate,
+  protected SqlQueryInstance(User user, SqlQuery query, CompleteValidStableValues contextParamStableValues,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, contextParamStableValues, validate, assignedWeight, context);
-    _query = query;
+    super(user, query, contextParamStableValues, assignedWeight, context);
   }
 
   @Override

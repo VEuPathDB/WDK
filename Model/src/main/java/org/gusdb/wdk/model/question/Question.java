@@ -32,8 +32,9 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -341,8 +342,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @return
    * @throws WdkUserException 
    */
-  public AnswerValue makeAnswerValue(User user,
-      Map<String, String> dependentValues, boolean validate, int assignedWeight)
+  public AnswerValue makeAnswerValue(User user, CompleteValidStableValues dependentValues, int assignedWeight)
       throws WdkModelException, WdkUserException {
     LOG.debug("makeAnswerValue() with NO FILTERS applied:  FIRST page, (will also query.makeInstance() first)");
     int pageStart = 1;
@@ -351,7 +351,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         _defaultSortingMap);
     AnswerFilterInstance filter = _recordClass.getDefaultFilter();
     AnswerValue answerValue = makeAnswerValue(user, dependentValues, pageStart,
-        pageEnd, sortingMap, filter, validate, assignedWeight);
+        pageEnd, sortingMap, filter, assignedWeight);
     if (_fullAnswer) {
       int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
@@ -371,20 +371,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @throws WdkUserException 
    */
   public AnswerValue makeAnswerValue(User user,
-      Map<String, String> dependentValues, int pageStart, int pageEnd,
+      CompleteValidStableValues validatedParamStableValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     LOG.debug("makeAnswerValue() any page, (will also query.makeInstance() first)");
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
-
-    ValidatedParamStableValues validatedParamStableValues =
-      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_query, dependentValues));
-    
-    QueryInstance<?> qi = _query.makeInstance(user, validatedParamStableValues, validate,
-        assignedWeight, context);
-    AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
-        pageEnd, sortingAttributes, filter);
+    QueryInstance<?> qi = _query.makeInstance(user, validatedParamStableValues, assignedWeight, context);
+    AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart, pageEnd, sortingAttributes, filter);
 
     return answerValue;
   }

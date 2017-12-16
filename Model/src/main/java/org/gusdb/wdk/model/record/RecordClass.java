@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.record;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,10 +43,11 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
@@ -687,9 +687,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
-    	  ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(allRecordsQuery, new HashMap<>()));
-      String baseSql = allRecordsQuery.makeInstance(user, validatedParamStableValues, false, 0, new HashMap<>()).getSql();
+      CompleteValidStableValues validatedParamStableValues =
+          ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(allRecordsQuery), true);
+      String baseSql = allRecordsQuery.makeInstance(user, validatedParamStableValues).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),
           sql, fullName + "-all-records-count").executeQuery(new SingleLongResultSetHandler());

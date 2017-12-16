@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.answer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +23,10 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -50,14 +52,16 @@ public class AnswerFilterInstance extends WdkModelBase {
    */
   private boolean _isBooleanExpansion;
 
-  private List<WdkModelText> _displayNameList = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _displayNameList = new ArrayList<>();
   private String _displayName;
 
-  private List<WdkModelText> _descriptionList = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _descriptionList = new ArrayList<>();
   private String _description;
 
-  private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
-  private Map<String,String> _stableValues = new LinkedHashMap<String, String>();
+  private List<WdkModelText> _rawParamValueList = new ArrayList<>();
+  private Map<String,String> _rawParamValueMap = new HashMap<>();
+
+  private CompleteValidStableValues _stableValues;
 
   private RecordClass _recordClass;
   private SqlQuery _filterQuery;
@@ -139,7 +143,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   }
 
   public void addParamValue(WdkModelText param) {
-    _paramValueList.add(param);
+    _rawParamValueList.add(param);
   }
 
   /**
@@ -187,8 +191,8 @@ public class AnswerFilterInstance extends WdkModelBase {
     _answerParam = answerParam;
   }
 
-  public Map<String, Object> getParamValueMap() {
-    return new LinkedHashMap<String, Object>(_stableValues);
+  public StableValues getParamValueMap() {
+    return new WriteableStableValues(_stableValues);
   }
 
   @Override
@@ -220,20 +224,20 @@ public class AnswerFilterInstance extends WdkModelBase {
     _descriptionList = null;
 
     // exclude the param values
-    for (WdkModelText param : _paramValueList) {
+    for (WdkModelText param : _rawParamValueList) {
       if (param.include(projectId)) {
         param.excludeResources(projectId);
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        if (_stableValues.containsKey(paramName))
+        if (_rawParamValueMap.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
               + "] for answerFilterInstance [" + _name + "] of type "
               + _recordClass.getFullName() + "  is included more than once.");
-        _stableValues.put(paramName, paramValue);
+        _rawParamValueMap.put(paramName, paramValue);
       }
     }
-    _paramValueList = null;
+    _rawParamValueList = null;
   }
 
   @Override
@@ -243,9 +247,9 @@ public class AnswerFilterInstance extends WdkModelBase {
 
     _wdkModel = wdkModel;
 
-    // make sure the params provides match with those in the filter query
+    // make sure the params provided match with those in the filter query
     Map<String, Param> params = _filterQuery.getParamMap();
-    for (String paramName : _stableValues.keySet()) {
+    for (String paramName : _rawParamValueMap.keySet()) {
       if (!params.containsKey(paramName))
         throw new WdkModelException("The param [" + paramName
             + "] declared in answerFilterInstance [" + _name + "] of type "
@@ -258,15 +262,23 @@ public class AnswerFilterInstance extends WdkModelBase {
     for (String paramName : params.keySet()) {
       if (_answerParam.getName().equals(paramName))
         continue;
-      if (!_stableValues.containsKey(paramName))
+      if (!_rawParamValueMap.containsKey(paramName))
         throw new WdkModelException("The required param value of [" + paramName
             + "] is not assigned to filter [" + getName() + "]");
 
-      // validate the paramValue for now; however EuPathDB won't be able
-      // to pass it
+      // validate the paramValue for now; however EuPathDB won't be able to pass it
       // Param param = params.get(paramName);
       // String paramValue = paramValueMap.get(paramName);
       // param.validate(user, paramValue);
+    }
+
+    WriteableStableValues tmpValues = new WriteableStableValues(_filterQuery);
+    tmpValues.putAll(_rawParamValueMap);
+    try {
+      _stableValues = ValidStableValuesFactory.createFromCompleteValues(_wdkModel.getSystemUser(), tmpValues, true);
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Unable to validate configured answer filter params", e);
     }
 
     _resolved = true;
@@ -290,30 +302,17 @@ public class AnswerFilterInstance extends WdkModelBase {
 
   public String applyFilter(User user, String sql, int assignedWeight)
       throws WdkModelException, WdkUserException {
-    Map<String, Param> params = _filterQuery.getParamMap();
 
-    String filterSql = _filterQuery.getSql();
     // replace the answer param
-    String answerName = _answerParam.getName();
-    filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
-        + sql + ")");
+    String filterSql = _filterQuery.getSql()
+        .replaceAll("\\$\\$" + _answerParam.getName() + "\\$\\$", "(" + sql + ")");
 
-    // replace the rest of the params; the answer param has been replaced
-    // and will be ignored here.
-    for (Param param : params.values()) {
+    // replace the rest of the params; the answer param has been replaced and will be ignored here
+    for (Param param : _filterQuery.getParamMap().values()) {
       if (param.getFullName().equals(_answerParam.getFullName()))
         continue;
 
-      String stableValue = _stableValues.get(param.getName());
-      ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(_filterQuery, _stableValues));
-      try {
-        param.validate(user, stableValue, validatedParamStableValues);
-      }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
-      String internal = param.getInternalValue(user, stableValue, validatedParamStableValues);
+      String internal = param.getInternalValue(user, _stableValues);
       filterSql = param.replaceSql(filterSql, internal);
     }
 

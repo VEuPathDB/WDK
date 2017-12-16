@@ -1,8 +1,7 @@
 package org.gusdb.wdk.model.record;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -12,8 +11,9 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 public class SqlQueryResultSizePlugin implements ResultSize {
 
@@ -49,19 +49,16 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   }
 
   private QueryInstance<?> getQueryInstance(AnswerValue answerValue, String idSql) throws WdkModelException {
-    Map<String, String> params = new LinkedHashMap<String, String>();
+    WriteableStableValues params = new WriteableStableValues(_query);
     params.put(WDK_ID_SQL_PARAM, idSql);
-    QueryInstance<?> queryInstance;
     try {
-    	  ValidatedParamStableValues validatedParamStableValues =
-          ValidatedParamStableValues.createFromCompleteValues(answerValue.getUser(), new ParamStableValues(_query, params));
-      queryInstance = _query.makeInstance(answerValue.getUser(), validatedParamStableValues, true, 0,
-          new LinkedHashMap<String, String>());
+      CompleteValidStableValues validatedParamStableValues = ValidStableValuesFactory
+          .createFromCompleteValues(answerValue.getUser(), params, true);
+      return _query.makeInstance(answerValue.getUser(), validatedParamStableValues);
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
     }
-    return queryInstance;
   }
 
   private void validateQuery(Query query) throws WdkModelException {

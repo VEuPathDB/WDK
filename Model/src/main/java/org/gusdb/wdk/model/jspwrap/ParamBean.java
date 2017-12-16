@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.RequestParams;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for consumption by a view
@@ -24,7 +23,7 @@ public abstract class ParamBean<T extends Param> {
   protected T _param;
 
   //TODO - CWL Verify
-  protected ValidatedParamStableValues _contextValues;
+  protected ValidStableValueSet _contextValues;
 
   //TODO - CWL Verify
   public ParamBean(T param) {
@@ -103,7 +102,7 @@ public abstract class ParamBean<T extends Param> {
    * for controller
    */
   //TODO - CWL Verify 
-  public void validate(UserBean user, String rawOrDependentValue, ValidatedParamStableValues contextValues)
+  public void validate(UserBean user, String rawOrDependentValue, ValidStableValueSet contextValues)
       throws WdkModelException, WdkUserException {
     _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
@@ -144,7 +143,7 @@ public abstract class ParamBean<T extends Param> {
    *      java.lang.String)
    */
   //TODO - CWL Verify 
-  public String getSignature(UserBean user, String stableValue, ValidatedParamStableValues contextValues)
+  public String getSignature(UserBean user, String stableValue, ValidStableValueSet contextValues)
       throws WdkModelException, WdkUserException {
     return _param.getSignature(user.getUser(), stableValue, contextValues);
   }
@@ -170,10 +169,9 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  //TODO - CWL Verify 
   public String getStableValue(UserBean user, Object rawValue)
       throws WdkModelException, WdkUserException {
-    return _param.getStableValue(user.getUser(), rawValue);
+    return _param.toStableValue(user.getUser(), rawValue);
   }
 
   public UserBean getUser() {
@@ -192,7 +190,7 @@ public abstract class ParamBean<T extends Param> {
    * @return the contextValues
    */
   //TODO - CWL Verify 
-  public ValidatedParamStableValues getContextValues() {
+  public ValidStableValueSet getContextValues() {
     return _contextValues;
   }
 
@@ -201,7 +199,7 @@ public abstract class ParamBean<T extends Param> {
    *          the contextValues to set
    */
   //TODO - CWL Verify
-  public void setContextValues(ValidatedParamStableValues contextValues) {
+  public void setContextValues(ValidStableValueSet contextValues) {
     _contextValues = contextValues;
   }
 
@@ -211,7 +209,7 @@ public abstract class ParamBean<T extends Param> {
   }
 
   //TODO - CWL Verify
-  public void prepareDisplay(UserBean user, RequestParams requestParams, ValidatedParamStableValues contextValues)
+  public void prepareDisplay(UserBean user, RequestParams requestParams, ValidStableValueSet contextValues)
       throws WdkModelException, WdkUserException {
     _param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }

@@ -36,8 +36,9 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -245,7 +246,7 @@ public class AnswerValue {
    */
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-    ValidatedParamStableValues paramsMap = _idsQueryInstance.getValidatedParamStableValues();
+    CompleteValidStableValues paramsMap = _idsQueryInstance.getValidatedParamStableValues();
     Param[] params = _question.getParams();
     for (int i = 0; i < params.length; i++) {
       Param param = params[i];
@@ -373,10 +374,9 @@ public class AnswerValue {
     // attribute query is different from the attribute query held by the
     // recordClass.
     //Map<String, String> params = new LinkedHashMap<String, String>();
-    ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(tableQuery, new LinkedHashMap<String, String>()));
-    QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, validatedParamStableValues, true, 0,
-        new LinkedHashMap<String, String>());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(tableQuery), true);
+    QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, validatedParamStableValues);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
@@ -413,13 +413,12 @@ public class AnswerValue {
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
       // recordClass.
-    	  
+
       QueryInstance<?> attributeQueryInstance;
       try {
-    	    ValidatedParamStableValues validatedParamStableValues =
-    	    	    ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(attributeQuery, new LinkedHashMap<String, String>()));
-        attributeQueryInstance = attributeQuery.makeInstance(_user, validatedParamStableValues, true, 0,
-            new LinkedHashMap<String, String>());
+        CompleteValidStableValues validatedParamStableValues =
+            ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(attributeQuery), true);
+        attributeQueryInstance = attributeQuery.makeInstance(_user, validatedParamStableValues);
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
@@ -575,7 +574,7 @@ public class AnswerValue {
 
   }
 
-  private static String applyAnswerParams(String innerSql, Collection<Param> answerParams, ValidatedParamStableValues paramStableValues) {
+  private static String applyAnswerParams(String innerSql, Collection<Param> answerParams, CompleteValidStableValues paramStableValues) {
 
     // gather list of answer params for this question
     List<AnswerParam> cacheableParams = AnswerParam.getCacheableParams(answerParams);

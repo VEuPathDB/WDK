@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -103,8 +103,7 @@ public class AnswerValueBean {
         return answerValue.getParamDisplays();
     }
 
-    //TODO - CWL Verify
-    public ValidatedParamStableValues getInternalParams() {
+    public CompleteValidStableValues getInternalParams() {
         return answerValue.getIdsQueryInstance().getValidatedParamStableValues();
     }
 
@@ -115,13 +114,12 @@ public class AnswerValueBean {
     /**
      * @return opertation for boolean answer
      */
-    //TODO - CWL Verify 
     public String getBooleanOperation() {
         if (!getIsBoolean()) {
             throw new RuntimeException("getBooleanOperation can not be called"
                     + " on simple AnswerBean");
         }
-        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
+        CompleteValidStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         return params.get(BooleanQuery.OPERATOR_PARAM);
     }
 
@@ -130,7 +128,6 @@ public class AnswerValueBean {
      *         for a simple question.
      * @throws WdkUserException 
      */
-    //TODO - CWL Verify 
     public AnswerValueBean getFirstChildAnswer()
             throws WdkModelException, WdkUserException {
         if (!getIsCombined()) {
@@ -138,7 +135,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         AnswerParam param = null;
-        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
+        CompleteValidStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         if (getIsBoolean()) {
             BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
             param = query.getLeftOperandParam();
@@ -165,7 +162,6 @@ public class AnswerValueBean {
      *         for a simple question.
      * @throws WdkUserException 
      */
-    //TODO - CWL Verify 
     public AnswerValueBean getSecondChildAnswer()
             throws WdkModelException, WdkUserException {
         if (!getIsBoolean()) {
@@ -173,7 +169,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-        ValidatedParamStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
+        CompleteValidStableValues params = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
         AnswerParam param = query.getRightOperandParam();
         String stableValue = params.get(param.getName());
         User user = answerValue.getUser();

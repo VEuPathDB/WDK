@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.factory;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -14,8 +15,9 @@ public class WdkStepFactory {
     try {
       // new step must be created from raw spec
       AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-      Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
-          AnswerValueFactory.convertParams(answerSpec.getParamValues()),
+      Question question = answerSpec.getQuestion();
+      Step step = stepFactory.createStep(user, question,
+          AnswerValueFactory.convertParams(question.getQuery(), answerSpec.getParamValues()),
           answerSpec.getLegacyFilter(), 1, -1, false, true, answerSpec.getWeight(),
           answerSpec.getFilterValues(), stepRequest.getCustomName(),
           stepRequest.isCollapsible(), stepRequest.getCollapsedName());

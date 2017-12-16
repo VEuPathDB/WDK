@@ -55,6 +55,8 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -272,7 +274,7 @@ public class StepFactory {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Step createStep(User user, Question question, Map<String, String> dependentValues,
+  public Step createStep(User user, Question question, StableValues dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions, String customName, boolean isCollapsible,
       String collapsedName) throws WdkModelException, WdkUserException {
@@ -379,7 +381,7 @@ public class StepFactory {
   }
 
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
-  public Step createStep(User user, Long strategyId, Question question, Map<String, String> dependentValues,
+  public Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     LOG.debug("Creating step!");
@@ -391,7 +393,7 @@ public class StepFactory {
 
     // create answer
     AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
-        sortingAttributes, filter, validate, assignedWeight);
+        sortingAttributes, filter, assignedWeight);
     answerValue.setFilterOptions(filterOptions);
 
     QueryInstance<?> queryInstance = answerValue.getIdsQueryInstance();

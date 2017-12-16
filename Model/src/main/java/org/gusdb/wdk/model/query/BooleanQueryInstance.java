@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
@@ -35,12 +35,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    * @param values
    * @throws WdkUserException
    */
-  //TODO - CWL Verify 
-  protected BooleanQueryInstance(User user, BooleanQuery query,
-      ValidatedParamStableValues values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException, WdkUserException {
+  protected BooleanQueryInstance(User user, BooleanQuery query, CompleteValidStableValues values,
+      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     // boolean query doesn't use assigned weight
-    super(user, query, values, validate, assignedWeight, context);
+    super(user, query, values, assignedWeight, context);
     this.booleanQuery = query;
   }
 

@@ -167,7 +167,7 @@ public class AnswerSpecFactory {
         }
       }
       else {
-    	    stableValue = contextValues.get(paramName) == JSONObject.NULL ? null : (String)contextValues.get(paramName);
+        stableValue = contextValues.get(paramName) == JSONObject.NULL ? null : (String)contextValues.get(paramName);
         //stableValue = (String)contextValues.get(paramName);
       }
       if(expectedParam instanceof AnswerParam && allowIncompleteSpec) {

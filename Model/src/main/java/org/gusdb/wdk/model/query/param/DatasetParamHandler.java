@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -77,10 +78,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues) {
-    if (_param.isNoTranslation())
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues) {
+    String stableValue = contextParamValues.get(_param.getName());
+    if (_param.isNoTranslation()) {
       return stableValue;
-
+    }
     long datasetId = Long.valueOf(stableValue);
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     String dvSql = datasetFactory.getDatasetValueSql(datasetId);
@@ -109,9 +111,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
-    long datasetId = Long.valueOf(stableValue);
+    long datasetId = Long.valueOf(contextParamValues.get(_param.getName()));
     Dataset dataset = user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
     return dataset.getChecksum();
   }
@@ -231,7 +233,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     DatasetParam datasetParam = (DatasetParam) _param;
     // check if the stable value is available
@@ -249,7 +251,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     }
 
     // get data
-    String data = (dataset != null) ? dataset.getContent() : _param.getDefault();
+    String data = (dataset != null) ? dataset.getContent() : _param.getDefault(user, null);
     requestParams.setParam(datasetParam.getDataSubParam(), data);
 
     if (dataset != null) {
@@ -265,8 +267,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue).getContent();
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName())).getContent();
   }
 }

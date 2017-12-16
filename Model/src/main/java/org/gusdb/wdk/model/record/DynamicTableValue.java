@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.record;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -10,8 +9,9 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.user.User;
 
@@ -27,10 +27,10 @@ public class DynamicTableValue extends TableValue {
     super(tableField);
 
     // create query instance; TableValue will initialize rows by itself
-    ValidatedParamStableValues validatedParamStableValues =
-        ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(tableField.getWrappedQuery(), primaryKey.getValues()));
-    _queryInstance = tableField.getWrappedQuery().makeInstance(
-        user, validatedParamStableValues, true, 0, new LinkedHashMap<String, String>());
+    WriteableStableValues stableValues = new WriteableStableValues(tableField.getWrappedQuery(), primaryKey.getValues());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(user, stableValues, true);
+    _queryInstance = tableField.getWrappedQuery().makeInstance(user, validatedParamStableValues);
   }
 
   private void loadRowsFromQuery() {

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 
 
@@ -51,8 +52,9 @@ public class NumberParamHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toSignature(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
+    String stableValue = contextParamValues.get(_param.getName());
     if (stableValue == null || stableValue.length() == 0) return "";
     return EncryptionUtil.encrypt(stableValue);
   }
@@ -65,23 +67,23 @@ public class NumberParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
-	  
-	// Something to do with the portal - left this alone 
-	if(_param.isNoTranslation()) {
-	  return stableValue;
-	}
-	
-	// Set internalValue to stableValue and determine whether additional
-	// modifications are needed.
+    String stableValue = contextParamValues.get(_param.getName());
+
+    // Something to do with the portal - left this alone 
+    if(_param.isNoTranslation()) {
+      return stableValue;
+    }
+
+    // Set internalValue to stableValue and determine whether additional modifications are needed.
     String internalValue = stableValue;
-    
+
     // If the number is in exponential form, change to decimal form
     if(stableValue.matches("^.*(e|E).*$")) {
       internalValue = new BigDecimal(stableValue).toPlainString();
     }
-    
+
     // If the number is not an integer, round it according to the number of decimal places
     // requested (or the default value).
     if(!((NumberParam)_param).isInteger()) {
@@ -111,7 +113,7 @@ public class NumberParamHandler extends AbstractParamHandler {
   }
   
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
@@ -127,10 +129,8 @@ public class NumberParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  //TODO - CWL Verify
-  public String getDisplayValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue);
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
+    return toRawValue(user, stableValues.get(_param.getName()));
   }
 
 }

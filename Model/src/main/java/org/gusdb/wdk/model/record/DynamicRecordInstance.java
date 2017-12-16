@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.record;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -13,8 +12,9 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
@@ -78,14 +78,13 @@ public class DynamicRecordInstance extends StaticRecordInstance {
     if (query instanceof SqlQuery)
       logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
 
-    //Map<String, String> paramValues = _primaryKey.getValues();
-    ValidatedParamStableValues validatedParamStableValues =
-        ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(query, _primaryKey.getValues()));
+    WriteableStableValues pkValues = new WriteableStableValues(query, _primaryKey.getValues());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(_user, pkValues, true);
 
     try {
       // put user id in the attribute query
-      QueryInstance<?> instance = query.makeInstance(_user, validatedParamStableValues, true, 0,
-          new LinkedHashMap<String, String>());
+      QueryInstance<?> instance = query.makeInstance(_user, validatedParamStableValues);
 
       try (ResultList resultList = instance.getResults()) {
         if (!resultList.next()) {

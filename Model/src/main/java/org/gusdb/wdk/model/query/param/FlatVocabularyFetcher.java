@@ -17,6 +17,10 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -41,7 +45,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
   }
 
   //TODO - CWL Verify
-  public String getCacheKey(ValidatedParamStableValues dependedParamValues) throws WdkModelException, JSONException {
+  public String getCacheKey(ValidStableValues dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
@@ -57,22 +61,25 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
    * @throws UnfetchableItemException if unable to fetch item
    */
   @Override
-  //TODO - CWL Verify
-  public EnumParamVocabInstance fetchItem(String cacheKey) throws WdkUserException, UnfetchableItemException {
-    JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
-    JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    Map<String, String> dependedParamValues = new HashMap<String, String>();
-    for (String paramName : JsonUtil.getKeys(dependedParamValuesJson)) {
-      dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
+  public EnumParamVocabInstance fetchItem(String cacheKey) throws UnfetchableItemException {
+    try {
+      JSONObject cacheKeyJson = new JSONObject(cacheKey);
+      logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
+      JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
+      Map<String, String> dependedParamValues = new HashMap<String, String>();
+      for (String paramName : JsonUtil.getKeys(dependedParamValuesJson)) {
+        dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
+      }
+      CompleteValidStableValues validatedParamStableValues =
+          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, dependedParamValues), true);
+      return fetchItem(validatedParamStableValues);
     }
-    ValidatedParamStableValues validatedParamStableValues =
-    	    ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(_vocabQuery, dependedParamValues));
-    return fetchItem(validatedParamStableValues);
+    catch (WdkUserException | WdkModelException e) {
+      throw new UnfetchableItemException(e);
+    }
   }
 
-  //TODO - CWL Verify
-  public EnumParamVocabInstance fetchItem(ValidatedParamStableValues dependedParamValues) throws UnfetchableItemException {
+  public EnumParamVocabInstance fetchItem(CompleteValidStableValues dependedParamValues) throws UnfetchableItemException {
     // create and populate vocab instance
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
@@ -118,9 +125,9 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-      ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(_user, new ParamStableValues(_vocabQuery, values));
-      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, validatedParamStableValues, false, 0, context);
+      CompleteValidStableValues validatedParamStableValues =
+          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, values), true);
+      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, validatedParamStableValues, 0, context);
       try (ResultList result = instance.getResults()) {
         while (result.next()) {
           Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);

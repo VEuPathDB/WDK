@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,10 +9,12 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
+import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.user.User;
@@ -49,28 +50,18 @@ import org.json.JSONObject;
  */
 public class QuestionFormatter {
 
-  //TODO - CWL Verify
-  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams, User user, ValidatedParamStableValues dependedParamValues)
+  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams, User user)
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray json = new JSONArray();
     for (Question q : questions) {
       json.put(expandQuestions ?
-          getQuestionJson(q, expandParams, user, dependedParamValues) :
+          getQuestionJson(q, expandParams, user, ValidStableValuesFactory.createDefault(user, q.getQuery())) :
           q.getFullName());
     }
     return json;
   }
 
-  //TODO - CWL Verify
-  public static JSONObject getQuestionJson(Question q, boolean expandParams, 
-      User user, ValidatedParamStableValues dependedParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
-    return getQuestionJson(q, expandParams, user, dependedParamValues, q.getParamMap().values());
-  }
-
-  //TODO - CWL Verify
-  public static JSONObject getQuestionJson(Question q, boolean expandParams, 
-      User user, ValidatedParamStableValues dependedParamValues, Collection<Param> params)
+  public static JSONObject getQuestionJson(Question q, boolean expandParams, User user, CompleteValidStableValues paramValues)
       throws JSONException, WdkModelException, WdkUserException {
     return new JSONObject()
       .put(Keys.NAME, q.getFullName())
@@ -83,7 +74,7 @@ public class QuestionFormatter {
       .put(Keys.REVISE_BUILD, q.getReviseBuild())
       .put(Keys.URL_SEGMENT,  q.getUrlSegment())
       .put(Keys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
-      .put(Keys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
+      .put(Keys.PARAMETERS, getParamsJson(paramValues, expandParams, user))
       .put(Keys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(Keys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(Keys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
@@ -94,15 +85,14 @@ public class QuestionFormatter {
       .put(Keys.PROPERTIES, q.getPropertyLists());
   }
 
-  //TODO - CWL Verify
-  public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, ValidatedParamStableValues dependedParamValues)
+  public static JSONArray getParamsJson(ValidStableValues paramValueSet, boolean expandParams, User user)
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : params) {
+    for (Param param : paramValueSet.getParams()) {
       if (expandParams) {
         ParamFormatter<?> formatter = ParamFormatterFactory.getFormatter(param);
         paramsJson.put(formatter instanceof DependentParamProvider ?
-          ((DependentParamProvider)formatter).getJson(user, dependedParamValues) :
+          ((DependentParamProvider)formatter).getJson(user, paramValueSet) :
           formatter.getJson());
       }
       else {
@@ -111,7 +101,7 @@ public class QuestionFormatter {
     }
     return paramsJson;
   }
-  
+
   private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup) {
     JSONArray groups = new JSONArray();
     for (Group group: paramsByGroup.keySet()) {
@@ -120,7 +110,7 @@ public class QuestionFormatter {
     }
     return groups;
   }
-  
+
   private static JSONObject getGroupJson(Group group, Set<String> params) {
     JSONObject groupJson = new JSONObject();
     groupJson.put(Keys.NAME, group.getName());
@@ -159,9 +149,8 @@ public class QuestionFormatter {
     json.put("internalsCount", summary.getDistinctInternal());
     json.put("internalsFilteredCount", summary.getDistinctMatchingInternal());
     return json;
-  
   }
-  
+
   /*
    * { "filtered" : 123, "unfiltered" : 234}
    */

@@ -4,6 +4,9 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -50,8 +53,9 @@ public class QuestionTest implements ElementTest {
     result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     _question.getQuery().setIsCacheable(false);
-    AnswerValue answerValue = _question.makeAnswerValue(_user,
-        _paramValuesSet.getParamValues(), true, 0);
+    CompleteValidStableValues validValues = ValidStableValuesFactory.createFromCompleteValues(
+        _user, new WriteableStableValues(_question.getQuery(), _paramValuesSet.getParamValues()), true);
+    AnswerValue answerValue = _question.makeAnswerValue(_user, validValues, 0);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
 
     // get the summary attribute list

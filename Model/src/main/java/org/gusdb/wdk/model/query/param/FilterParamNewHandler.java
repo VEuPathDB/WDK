@@ -13,9 +13,14 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.apache.log4j.Logger;
 
 /**
@@ -94,14 +99,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  //TODO - CWL Verify
-  public String toInternalValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
+  public String toInternalValue(User user, CompleteValidStableValues contextParamValues)
       throws WdkModelException {
 
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
       //contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
-      FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
+      FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(_param.getName()), fpn);
       String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
       return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql): cachedSql;
@@ -119,11 +123,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself, and
        // transform flag
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
-       Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
-       //TODO CWL - Verify
-       ValidatedParamStableValues validatedParamStableValues =
-         ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(sqlQuery, paramValues));
-       SqlQueryInstance instance = sqlQuery.makeInstance(user, validatedParamStableValues, false, 0, Collections.emptyMap());
+       StableValues params = new WriteableStableValues(sqlQuery, new MapBuilder<String, String>("sql", filteredSql).toMap());
+       CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(user, params, true);
+       QueryInstance<?> instance = sqlQuery.makeInstance(user, validParams);
        return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
@@ -162,17 +164,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    *      java.lang.String, Map)
    */
   @Override
-  //TODO - CWL Verify
-  public String toSignature(User user, String stableValueString, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
-    FilterParamNew param = (FilterParamNew)_param;
-    //contextParamValues = param.ensureRequiredContext(user, contextParamValues);
-
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
+  public String toSignature(User user, CompleteValidStableValues contextParamValues) throws WdkModelException, WdkUserException {
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(_param.getName()), (FilterParamNew)_param);
     return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
 
-  //TODO - CWL Verify
-  private String dependedParamsSignature(User user, ValidatedParamStableValues contextParamValues) throws WdkModelException, WdkUserException {
+  private String dependedParamsSignature(User user, CompleteValidStableValues contextParamValues) throws WdkModelException, WdkUserException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
@@ -181,7 +178,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     for (Param dependedParam : dependedParamsList)  {
       String stableValue = contextParamValues.get(dependedParam.getName());
       if (stableValue == null) throw new WdkModelException("can't find value for param " + dependedParam.getName());
-      sb.append(dependedParam.getParamHandler().toSignature(user, stableValue, contextParamValues));
+      sb.append(dependedParam.getParamHandler().toSignature(user, contextParamValues));
     }
 
     return sb.toString();
@@ -217,7 +214,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, ValidatedParamStableValues contextParamValues)
+  public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     // do nothing
    }
@@ -228,14 +225,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  //TODO - CWL Verify
-  public String getDisplayValue(User user, String stableValueString, ValidatedParamStableValues contextParamValues)
-      throws WdkModelException {
-
+  public String getDisplayValue(User user, CompleteValidStableValues stableValues) throws WdkModelException {
     FilterParamNew param = (FilterParamNew)_param;
     //contextParamValues = param.ensureRequiredContext(user, contextParamValues);
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
-    return stableValue.getDisplayValue(user, contextParamValues);
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValues.get(_param.getName()), param);
+    return stableValue.getDisplayValue(user, stableValues);
   } 
 
 }

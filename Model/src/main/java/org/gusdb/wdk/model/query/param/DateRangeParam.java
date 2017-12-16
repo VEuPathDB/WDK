@@ -10,7 +10,8 @@ import java.util.regex.Matcher;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,8 +73,8 @@ public class DateRangeParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
+  public String getDefault(User user, PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(user, stableValues);
     try {
       return (defaultValue == null || defaultValue.isEmpty()) ?
           // if default not provided, default is the entire range
@@ -160,10 +161,11 @@ public class DateRangeParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
 
     LocalDate values[] = new LocalDate[2];
+    String stableValue = contextParamValues.get(getName());
     JSONObject stableValueJson = null;
 
     // Insure that the JSON Object format is valid.
@@ -173,7 +175,7 @@ public class DateRangeParam extends Param {
       values[1] = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
     }
     catch(JSONException je) {
-      throw new WdkUserException("Could not parse '" + stableValue + "'. "
+      return contextParamValues.setInvalid(getName(), "Could not parse '" + stableValue + "'. "
           + "The range should be is the format {'min':'min value','max':'max value'}");
     }
 
@@ -181,33 +183,35 @@ public class DateRangeParam extends Param {
     // more restrictive than LocalDate.
     if(_regex != null) {
      if(!stableValueJson.getString("min").matches(_regex)) {
-       throw new WdkUserException("value '" + stableValueJson.getString("min") + "' is invalid. " +
+       return contextParamValues.setInvalid(getName(), "Value '" + stableValueJson.getString("min") + "' is invalid. " +
          "It must match the regular expression '" + _regex + "'");
      }
      if(!stableValueJson.getString("max").matches(_regex)) {
-       throw new WdkUserException("value '" + stableValueJson.getString("max") + "' is invalid. " +
+       return contextParamValues.setInvalid(getName(), "Value '" + stableValueJson.getString("max") + "' is invalid. " +
          "It must match the regular expression '" + _regex + "'");
       }
     }
 
     // Ensure that the minimum date does not come after the maximum date
     if(values[0].isAfter(values[1])) {
-      throw new WdkUserException("The minimum date '" + values[0] + "' should " +
+      return contextParamValues.setInvalid(getName(), "The minimum date '" + values[0] + "' should " +
           "come before, or equal, the maximum date '" + values[1] + "'");
     }
 
     // Insure that the minimum date comes no earlier than the minimum allowed date
     if(_minDate != null &&
      values[0].isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + values[0] + "' should not be earlier than '" + _minDate + "'");
+      return contextParamValues.setInvalid(getName(), "The date '" + values[0] + "' should not be earlier than '" + _minDate + "'");
     }
     
     // Insure that the maximum data comes no earlier than the maximum allowed date
     if(_maxDate != null && 
      values[1].isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + values[1] + "' should not be after '" + _maxDate + "'");
+      return contextParamValues.setInvalid(getName(), "The date '" + values[1] + "' should not be after '" + _maxDate + "'");
     }
-    
+
+    // validation passed
+    return contextParamValues.setValid(getName());
   }
 
   /**

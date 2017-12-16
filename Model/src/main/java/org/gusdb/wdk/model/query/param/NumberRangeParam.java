@@ -7,7 +7,8 @@ import java.util.regex.Matcher;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -104,9 +105,10 @@ public class NumberRangeParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, ValidatedParamStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
+      throws WdkModelException {
 
+    String stableValue = contextParamValues.get(getName());
     Double values[] = new Double[2];
 
     // Insure that the JSON Object format is valid.
@@ -116,7 +118,7 @@ public class NumberRangeParam extends Param {
       values[1] = stableValueJson.getDouble("max");
     }
     catch(JSONException je) {
-      throw new WdkUserException("Could not parse '" + stableValue + "'. "
+      return contextParamValues.setInvalid(getName(), "Could not parse '" + stableValue + "'. "
           + "The range should be is the format {'min':'min value','max':'max value'}");
     }
 
@@ -125,31 +127,34 @@ public class NumberRangeParam extends Param {
     for(Double value : values) {
       String stringValue = String.valueOf(value);
       if (_regex != null && !stringValue.matches(_regex)) {
-        throw new WdkUserException("value '" + value + "' is invalid. " +
+        return contextParamValues.setInvalid(getName(), "Value '" + value + "' is invalid. " +
             "It must match the regular expression '" + _regex + "'");
       }
     }
 
     // By convention, the first value of the range should be less than or equal to the second value.
     if(values[0] > values[1]) {
-      throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
+      return contextParamValues.setInvalid(getName(), "The miniumum value, '" + values[0] +  "', in the range"
           + " must be less than the maximum value, '" + values[1] + "'");
     }
 
     // Verify both ends of the range are integers if such is specified.
     for(Double value : values) {
       if(_isInteger && value.doubleValue() % 1 != 0) {
-        throw new WdkUserException("value '" + value + "' must be an integer.");
+        return contextParamValues.setInvalid(getName(), "Value '" + value + "' must be an integer.");
       }
     }
 
     // Verify the given range in within any required limits
     if(_min != null && values[0] < new Double(_min)) {
-        throw new WdkUserException("value '" + values[0] + "' must be greater than or equal to '" + _min + "'" );
+      return contextParamValues.setInvalid(getName(), "Value '" + values[0] + "' must be greater than or equal to '" + _min + "'" );
     }
     if(_max != null && values[1] > new Double(_max)) {
-      throw new WdkUserException("value '" + values[1] + "' must be less than or equal to '" + _max + "'" );
+      return contextParamValues.setInvalid(getName(), "Value '" + values[1] + "' must be less than or equal to '" + _max + "'" );
     }
+
+    // passed validation
+    return contextParamValues.setValid(getName());
   }
 
   /**
@@ -225,8 +230,8 @@ public class NumberRangeParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
+  public String getDefault(User user, PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(user, stableValues);
     try {
       return (defaultValue == null || defaultValue.isEmpty()) ?
           // if default not provided, default is the entire range

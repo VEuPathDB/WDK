@@ -29,6 +29,8 @@ import org.gusdb.wdk.model.query.ParamValuesInvalidException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONArray;
@@ -907,11 +909,12 @@ public class Step {
   /**
    * @param paramValues
    *          the paramValues to set
+   * @throws WdkModelException 
    */
-  public void setParamValues(Map<String, String> paramValues) {
+  public void setParamValues(StableValues paramValues) throws WdkModelException {
     if (paramValues == null)
-      paramValues = new LinkedHashMap<>();
-    _paramValues = new LinkedHashMap<String, String>(paramValues);
+      paramValues = new WriteableStableValues(getQuestion().getQuery());
+    _paramValues = new WriteableStableValues(paramValues);
   }
 
   public FilterOptionList getFilterOptions() {

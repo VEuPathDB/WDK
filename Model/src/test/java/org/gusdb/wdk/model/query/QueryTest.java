@@ -14,9 +14,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.ParamStableValues;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.ValidatedParamStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
@@ -106,8 +105,8 @@ public class QueryTest {
       Map<String, String> stableValues = QueryTester.getStableValues(query, user, rawValues);
 
       // try to make a query instance
-      ValidatedParamStableValues validatedParamStableValues =
-    	      ValidatedParamStableValues.createFromCompleteValues(user, new ParamStableValues(query, stableValues));
+      ValidStableValueSet validatedParamStableValues =
+    	      ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, stableValues));
       QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
           new LinkedHashMap<String, String>());
       int rows = instance.getResultSize();
