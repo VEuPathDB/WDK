@@ -44,11 +44,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   }
 
   _handleActiveFieldChange(term: string) {
-    this.props.dispatch(ActiveFieldSetAction.create({
-      ...this.props.ctx,
-      activeField: term,
-      loadOntologyTermSummary: get(this.props.uiState.fieldStates, [ term, 'ontologyTermSummary' ]) == null
-    }));
+    this.props.dispatch(ActiveFieldSetAction.create({ ...this.props.ctx, activeField: term }));
   }
 
   _handleFilterChange(filters: Filter[]) {
@@ -69,7 +65,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
       const prevOtherFilters = prevFilters.filter(f => f.field != activeField);
       const otherFilters = filters.filter(f => f.field !== activeField);
       if (!isEqual(prevOtherFilters, otherFilters)) {
-        dispatch(ActiveFieldSetAction.create({ ...ctx, activeField, loadOntologyTermSummary: true }));
+        dispatch(ActiveFieldSetAction.create({ ...ctx, activeField }));
       }
     }
   }

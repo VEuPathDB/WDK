@@ -55,9 +55,7 @@ export default class LegacyParamController extends AbstractViewController<
   }
 
   loadData(prevProps?: Props) {
-    if (
-      this.state.questionStatus == null
-    ) {
+    if (this.state.questionStatus == null) {
       this.eventHandlers.setActiveQuestion({
         questionName: this.props.questionName,
         paramValues: this.props.paramValues
@@ -101,7 +99,7 @@ export default class LegacyParamController extends AbstractViewController<
 
   getContext<T extends Parameter>(parameter: T): Context<T> {
     return {
-      questionName: this.state.question.name,
+      questionName: this.state.question.urlSegment,
       parameter: parameter,
       paramValues: this.state.paramValues
     }

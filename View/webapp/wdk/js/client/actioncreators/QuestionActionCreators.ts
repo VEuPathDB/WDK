@@ -33,13 +33,6 @@ export const QuestionErrorAction = makeActionCreator('question/question-error', 
 
 export const QuestionNotFoundAction = makeActionCreator('question/question-not-found', payload<BasePayload>());
 
-export const ParamLoadedAction = makeActionCreator(
-  'param-loaded',
-  payload<{
-    ctx: Context<Parameter>
-  }>()
-);
-
 export const ParamValueUpdatedAction = makeActionCreator(
   'question/param-value-update',
   payload<BasePayload & {
@@ -67,11 +60,27 @@ export const ParamsUpdatedAction = makeActionCreator(
 
 export const ParamStateUpdatedAction = makeActionCreator(
   'question/param-state-updated',
-  payload<{
+  payload<BasePayload & {
     paramName: string;
     paramState: any
   }>()
 );
+
+export const GroupVisibilityChangedAction = makeActionCreator(
+  'question/group-visibility-change',
+  payload<BasePayload & {
+    groupName: string;
+    isVisible: boolean;
+  }>()
+)
+
+export const GroupStateUpdatedAction = makeActionCreator(
+  'question/group-state-update',
+  payload<BasePayload & {
+    groupName: string;
+    groupState: any;
+  }>()
+)
 
 
 // Epics
@@ -79,18 +88,10 @@ export const ParamStateUpdatedAction = makeActionCreator(
 
 export const questionEpic = combineEpics(loadQuestionEpic, updateDependentParamsEpic);
 
-function loadQuestionEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>): Observable<Action> {
+function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
   return action$
     .filter(ActiveQuestionUpdatedAction.isType)
-    .mergeMap(action =>
-      Observable.fromPromise(loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
-        .takeUntil(action$.filter(ActiveQuestionUpdatedAction.isType))
-        .mergeMap(action => QuestionLoadedAction.isType(action)
-          ? Observable.from([action, ...action.payload.question.parameters.map(parameter =>
-            ParamLoadedAction.create({ ctx: { questionName: action.payload.questionName, paramValues: action.payload.paramValues, parameter } }))])
-          : Observable.empty()
-        )
-    )
+    .mergeMap(action => loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
 }
 
 function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
