@@ -361,7 +361,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var nextValue = JSON.stringify({
         values: _.map(filteredData, entry => entry.term),
         ignored: _.map(ignored, entry => entry.term),
-        filters: filterService.filters
+        filters: filterService.filters.map(filter => _.omit(filter, 'selection'))
       });
 
       // trigger loading event on $param
