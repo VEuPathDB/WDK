@@ -6,7 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
@@ -20,8 +20,9 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-    return super.getJson()
+  public JSONObject getJson(User user, CompleteValidStableValues stableValues)
+      throws JSONException, WdkModelException, WdkUserException {
+    return super.getJson(user, stableValues)
         .put(Keys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
         .put(Keys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
         .put(Keys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
@@ -29,15 +30,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
         .put(Keys.DISPLAY_TYPE, _param.getDisplayType());
   }
 
-  /**
-   * Override so we don't unnecessarily calculate context-free default
-   */
-  @Override
-  protected String getDefault() {
-    return null;
-  }
-
-  protected EnumParamVocabInstance getVocabInstance(User user, ValidStableValues dependedParamValues) {
+  protected EnumParamVocabInstance getVocabInstance(User user, CompleteValidStableValues dependedParamValues) {
     return _param.getVocabInstance(user, dependedParamValues);
   }
 

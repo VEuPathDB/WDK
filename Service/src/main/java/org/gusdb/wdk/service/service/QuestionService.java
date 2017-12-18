@@ -159,7 +159,7 @@ public class QuestionService extends WdkService {
       StableValues incomingValues = parseContextParamValuesFromJson(new JSONObject(body), question);
 
       // confirm that we got all param values
-      CompleteValidStableValues validSet = ValidStableValuesFactory.createFromCompleteValues(getSessionUser(), incomingValues, true);
+      CompleteValidStableValues validSet = ValidStableValuesFactory.createFromCompleteValues(getSessionUser(), incomingValues);
 
       return Response.ok(QuestionFormatter.getQuestionJson(question, true, getSessionUser(), validSet).toString()).build();
     }
@@ -268,7 +268,7 @@ public class QuestionService extends WdkService {
       String ontologyId = jsonBody.getString("ontologyId");
       StableValues contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       CompleteValidStableValues validatedParamStableValues =
-          ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues, true);
+          ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues);
       OntologyItem ontologyItem = filterParam.getOntology(user, validatedParamStableValues).get(ontologyId);
       if (ontologyItem == null) {
         throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
@@ -323,7 +323,7 @@ public class QuestionService extends WdkService {
       JSONObject jsonBody = new JSONObject(body);
       StableValues contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
       CompleteValidStableValues validatedParamStableValues =
-          ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues, true);
+          ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues);
       FilterParamSummaryCounts counts = filterParam.getTotalsSummary(user, validatedParamStableValues, jsonBody);
       return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts).toString()).build();
     }

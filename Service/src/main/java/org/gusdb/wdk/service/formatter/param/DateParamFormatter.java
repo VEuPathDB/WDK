@@ -3,6 +3,8 @@ package org.gusdb.wdk.service.formatter.param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DateParam;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,11 +16,10 @@ public class DateParamFormatter extends ParamFormatter<DateParam> {
   }
 
   @Override
-  public JSONObject getJson()
+  public JSONObject getJson(User user, CompleteValidStableValues stableValues)
       throws JSONException, WdkModelException, WdkUserException {
-    return super.getJson()
-        .put(Keys.DEFAULT_VALUE, this._param.getDefault())
-        .put(Keys.MIN_DATE, this._param.getMinDate())
-        .put(Keys.MAX_DATE, this._param.getMaxDate());
+    return super.getJson(user, stableValues)
+        .put(Keys.MIN_DATE, _param.getMinDate())
+        .put(Keys.MAX_DATE, _param.getMaxDate());
   }
 }

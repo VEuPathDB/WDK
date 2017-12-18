@@ -375,7 +375,7 @@ public class AnswerValue {
     // recordClass.
     //Map<String, String> params = new LinkedHashMap<String, String>();
     CompleteValidStableValues validatedParamStableValues =
-        ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(tableQuery), true);
+        ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(tableQuery));
     QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, validatedParamStableValues);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
@@ -417,7 +417,7 @@ public class AnswerValue {
       QueryInstance<?> attributeQueryInstance;
       try {
         CompleteValidStableValues validatedParamStableValues =
-            ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(attributeQuery), true);
+            ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(attributeQuery));
         attributeQueryInstance = attributeQuery.makeInstance(_user, validatedParamStableValues);
       }
       catch (WdkUserException ex) {

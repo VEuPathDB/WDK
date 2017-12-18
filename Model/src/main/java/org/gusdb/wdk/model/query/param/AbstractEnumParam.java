@@ -183,8 +183,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @param contextParamValues
    * @return
    */
-  //TODO - CWL Verify 
-  public EnumParamVocabInstance getVocabInstance(User user, ValidStableValues contextParamValues) {
+  public EnumParamVocabInstance getVocabInstance(User user, CompleteValidStableValues contextParamValues) {
 
     // make sure context is populated with values we need (our depended params)
     //contextParamValues = ensureRequiredContext(user, contextParamValues);

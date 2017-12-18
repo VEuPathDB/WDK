@@ -4,6 +4,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,9 +18,9 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-
-    JSONObject pJson = super.getJson();
+  public JSONObject getJson(User user, CompleteValidStableValues stableValues)
+      throws JSONException, WdkModelException, WdkUserException {
+    JSONObject pJson = super.getJson(user, stableValues);
     JSONArray parsersJson = new JSONArray();
     pJson.put(Keys.PARSERS, parsersJson);
     for (DatasetParser parser : _param.getParsers()) {

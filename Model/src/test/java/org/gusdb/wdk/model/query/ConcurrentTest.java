@@ -43,7 +43,7 @@ public class ConcurrentTest {
             System.out.println("start test thread: #" + id);
             try {
                 CompleteValidStableValues validatedParamStableValues =
-                    ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, values), true);
+                    ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, values));
                 QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
                 try (ResultList resultList = instance.getResults()) {
                   resultList.next();

@@ -86,7 +86,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * already present in contextParamValues; if not, a WdkModelException is thrown.  If fillIfEmpty is true,
    * this method should add a default value to contextParamValues and validate it.  If validation fails, this
    * method should not throw an exception, but call contextParamValues.setInvalid() with its parameter name
-   * and a reason for the failure.
+   * and a reason for the failure. The only way to get a ParamValidity is by calling one of the setValid()
+   * methods on contextParamValues.
    * 
    * @param user user to be used to execute any queries needed for validation
    * @param contextParamValues partially validated stable value set- to be appended to

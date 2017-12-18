@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -182,7 +183,7 @@ public class EnumItem extends WdkModelBase {
    * @return
    */
   //TODO - CWL Verify 
-  public boolean isValidFor(ValidStableValueSet dependedParamValues)
+  public boolean isValidFor(ValidStableValues dependedParamValues)
       throws WdkModelException {
     // convert the map into a JSON
     try {

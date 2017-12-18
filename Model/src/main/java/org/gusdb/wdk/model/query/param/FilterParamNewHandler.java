@@ -124,7 +124,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        // transform flag
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        StableValues params = new WriteableStableValues(sqlQuery, new MapBuilder<String, String>("sql", filteredSql).toMap());
-       CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(user, params, true);
+       CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(user, params);
        QueryInstance<?> instance = sqlQuery.makeInstance(user, validParams);
        return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
      }

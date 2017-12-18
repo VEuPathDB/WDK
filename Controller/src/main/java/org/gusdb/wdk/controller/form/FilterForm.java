@@ -107,7 +107,7 @@ public class FilterForm extends QuestionForm {
     
     try {
       ValidStableValuesFactory.createFromCompleteValues(user.getUser(),
-          new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues), true);
+          new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
   
 //
 //        String errMsg = null;

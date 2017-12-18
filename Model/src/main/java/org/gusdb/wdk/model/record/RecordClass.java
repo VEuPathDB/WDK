@@ -688,7 +688,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
       CompleteValidStableValues validatedParamStableValues =
-          ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(allRecordsQuery), true);
+          ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(allRecordsQuery));
       String baseSql = allRecordsQuery.makeInstance(user, validatedParamStableValues).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),

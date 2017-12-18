@@ -275,7 +275,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     WriteableStableValues tmpValues = new WriteableStableValues(_filterQuery);
     tmpValues.putAll(_rawParamValueMap);
     try {
-      _stableValues = ValidStableValuesFactory.createFromCompleteValues(_wdkModel.getSystemUser(), tmpValues, true);
+      _stableValues = ValidStableValuesFactory.createFromCompleteValues(_wdkModel.getSystemUser(), tmpValues);
     }
     catch (WdkUserException e) {
       throw new WdkModelException("Unable to validate configured answer filter params", e);

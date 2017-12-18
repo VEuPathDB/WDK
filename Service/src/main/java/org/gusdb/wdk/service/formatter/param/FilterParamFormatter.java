@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -13,7 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.log4j.Logger;
 
-public class FilterParamFormatter extends AbstractEnumParamFormatter implements DependentParamProvider  {
+public class FilterParamFormatter extends AbstractEnumParamFormatter {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
@@ -26,9 +27,9 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
   }
 
   @Override
-  public JSONObject getJson(User user, ValidStableValues dependedParamValues)
+  public JSONObject getJson(User user, CompleteValidStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
-    JSONObject pJson = super.getJson();
+    JSONObject pJson = super.getJson(user, dependedParamValues);
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
     pJson.put(Keys.VOCABULARY, getVocabJson(vocabInstance));
     // pJson.put("metaData", getMetaDataJson(user, dependedParamValues));
@@ -36,7 +37,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
     return pJson;
   }
 
-  public JSONObject getMetaDataJson(User user, Map<String, String> dependedParamValues)
+  public JSONObject getMetaDataJson(User user, CompleteValidStableValues dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     Map<String, Map<String, String>> metaDataMap = filterParam.getMetadata(user, dependedParamValues);
     JSONObject metaDataJson = new JSONObject();

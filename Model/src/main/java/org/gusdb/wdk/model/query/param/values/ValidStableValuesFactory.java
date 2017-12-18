@@ -47,7 +47,7 @@ public class ValidStableValuesFactory {
         return _isValid;
       }
     }
-    
+
     private final HashMap<String,Boolean> _validationStatusMap = new HashMap<>();
     private final Map<String,String> _validationErrorMap = new HashMap<>();
 
@@ -118,15 +118,39 @@ public class ValidStableValuesFactory {
    * parameters might not be complete is if the query associated with the parameters requires a userId
    * parameter. Once added, if necessary, the object is validated.
    * 
+   * If extra parameters are provided, an exception is thrown (i.e. param values must exactly match those
+   * required by the query in unvalidatedValues).
+   * 
    * @param user
-   * @param query
-   * @param paramStableValues
-   * @param errorOnExtraParams 
+   * @param unvalidatedValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public static CompleteValidStableValues createFromCompleteValues(User user, StableValues unvalidatedValues,
+  public static CompleteValidStableValues createFromCompleteValues(User user, StableValues unvalidatedValues)
+      throws WdkUserException, WdkModelException {
+    return createFromFullValues(user, unvalidatedValues, true);
+  }
+
+  /**
+   * Creates a ValidatedParamStableValues from a possibly complete set of parameters. The one way the
+   * parameters might not be complete is if the query associated with the parameters requires a userId
+   * parameter. Once added, if necessary, the object is validated.
+   * 
+   * If extra parameters are provided, they are ignored.
+   * 
+   * @param user
+   * @param unvalidatedValues
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public static CompleteValidStableValues createFromSupersetValues(User user, StableValues unvalidatedValues)
+      throws WdkUserException, WdkModelException {
+    return createFromFullValues(user, unvalidatedValues, false);
+  }
+
+  private static CompleteValidStableValues createFromFullValues(User user, StableValues unvalidatedValues,
       boolean errorOnExtraParams) throws WdkUserException, WdkModelException {
     PartiallyValidatedStableValues validatedValues = new PartiallyValidatedStableValues(user, unvalidatedValues);
     trimExtraParams(validatedValues, errorOnExtraParams);

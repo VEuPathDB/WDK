@@ -52,7 +52,7 @@ public class DumperHelp {
       Map<String, String> params = new LinkedHashMap<String, String>();
       fillInParams(user, params, question);
       CompleteValidStableValues validParams = ValidStableValuesFactory
-          .createFromCompleteValues(user, new WriteableStableValues(question.getQuery(), params), true);
+          .createFromCompleteValues(user, new WriteableStableValues(question.getQuery(), params));
   
       Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
   

@@ -29,7 +29,7 @@ public class DynamicTableValue extends TableValue {
     // create query instance; TableValue will initialize rows by itself
     WriteableStableValues stableValues = new WriteableStableValues(tableField.getWrappedQuery(), primaryKey.getValues());
     CompleteValidStableValues validatedParamStableValues =
-        ValidStableValuesFactory.createFromCompleteValues(user, stableValues, true);
+        ValidStableValuesFactory.createFromCompleteValues(user, stableValues);
     _queryInstance = tableField.getWrappedQuery().makeInstance(user, validatedParamStableValues);
   }
 

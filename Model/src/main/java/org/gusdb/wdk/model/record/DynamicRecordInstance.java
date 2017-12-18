@@ -80,7 +80,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
     WriteableStableValues pkValues = new WriteableStableValues(query, _primaryKey.getValues());
     CompleteValidStableValues validatedParamStableValues =
-        ValidStableValuesFactory.createFromCompleteValues(_user, pkValues, true);
+        ValidStableValuesFactory.createFromCompleteValues(_user, pkValues);
 
     try {
       // put user id in the attribute query

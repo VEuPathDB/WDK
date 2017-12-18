@@ -79,7 +79,7 @@ public class Dumper {
           Map<String, String> params = parseListArgs("params", questionParams);
           fillInParams(user, params, question);
           CompleteValidStableValues validParams = ValidStableValuesFactory
-              .createFromCompleteValues(user, new WriteableStableValues(question.getQuery(), params), true);
+              .createFromCompleteValues(user, new WriteableStableValues(question.getQuery(), params));
 
           // load config
           Map<String, String> config = parseListArgs("config", reporterConfig);

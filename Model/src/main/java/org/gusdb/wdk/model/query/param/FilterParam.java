@@ -259,8 +259,8 @@ public class FilterParam extends FlatVocabParam {
       throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
-    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
-        user, new WriteableStableValues(metadataSpecQuery, contextParamValues), false);
+    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromSupersetValues(
+        user, new WriteableStableValues(metadataSpecQuery, contextParamValues));
     OntologyItemFetcher fetcher = new OntologyItemFetcher(metadataValues, user);
     Map<String, Map<String, String>> map = null;
     try {
@@ -282,8 +282,8 @@ public class FilterParam extends FlatVocabParam {
     if (metadataQuery == null)
       return null;
 
-    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
-        user, new WriteableStableValues(metadataQuery, contextParamValues), false);
+    CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromSupersetValues(
+        user, new WriteableStableValues(metadataQuery, contextParamValues));
     MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataValues, user);
     Map<String, Map<String, String>> map = null;
     try {
@@ -327,7 +327,7 @@ public class FilterParam extends FlatVocabParam {
       return null;
 
     CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
-        user, new WriteableStableValues(metadataQuery, contextParamValues), true);
+        user, new WriteableStableValues(metadataQuery, contextParamValues));
 
     // compose a wrapped sql
     QueryInstance<?> instance = metadataQuery.makeInstance(user, metadataValues);

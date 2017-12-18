@@ -238,7 +238,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     }
 
     CompleteValidStableValues validatedParamStableValues =
-        ValidStableValuesFactory.createFromCompleteValues(user, oldValues, true);
+        ValidStableValuesFactory.createFromCompleteValues(user, oldValues);
     QueryInstance<?> instance = _aliasQuery.makeInstance(user, validatedParamStableValues);
     
     try (ResultList resultList = instance.getResults()) {

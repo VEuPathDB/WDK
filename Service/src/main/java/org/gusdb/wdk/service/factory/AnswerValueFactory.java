@@ -33,7 +33,7 @@ public class AnswerValueFactory {
       //   would much rather see 0-based start and have end index be exclusive
       //   (i.e. need to fix on AnswerValue)
       CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(_user,
-          convertParams(request.getQuestion().getQuery(), request.getParamValues()), true);
+          convertParams(request.getQuestion().getQuery(), request.getParamValues()));
       AnswerValue answerValue = request.getQuestion().makeAnswerValue(_user,
           validParams, 1, -1, null, request.getLegacyFilter(), request.getWeight());
       answerValue.setFilterOptions(request.getFilterValues());

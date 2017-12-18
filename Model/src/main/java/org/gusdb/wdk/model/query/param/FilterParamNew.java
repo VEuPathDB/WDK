@@ -420,8 +420,8 @@ public class FilterParamNew extends AbstractDependentParam {
       throws WdkModelException {
     try {
       // apply incoming param values to the ontology query
-      CompleteValidStableValues ontologyStableValues = ValidStableValuesFactory.createFromCompleteValues(user,
-          new WriteableStableValues(_ontologyQuery, contextParamValues), false);
+      CompleteValidStableValues ontologyStableValues = ValidStableValuesFactory.createFromSupersetValues(user,
+          new WriteableStableValues(_ontologyQuery, contextParamValues));
 
       OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologyStableValues, user);
       return CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
@@ -454,7 +454,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get base background query
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
-    CompleteValidStableValues bgdStableValues = ValidStableValuesFactory.createFromCompleteValues(user, contextParamValues, false);
+    CompleteValidStableValues bgdStableValues = ValidStableValuesFactory.createFromSupersetValues(user, contextParamValues);
     String bgdSql;
     try {
       QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, bgdStableValues);
@@ -538,8 +538,8 @@ public class FilterParamNew extends AbstractDependentParam {
     Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-      CompleteValidStableValues bgdValues = ValidStableValuesFactory.createFromCompleteValues(
-          user, new WriteableStableValues(bgdQuery, contextParamValues), false);
+      CompleteValidStableValues bgdValues = ValidStableValuesFactory.createFromSupersetValues(
+          user, new WriteableStableValues(bgdQuery, contextParamValues));
       QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, bgdValues);
       bgdSql = queryInstance.getSql();
     }
@@ -779,8 +779,8 @@ public class FilterParamNew extends AbstractDependentParam {
  
     String ontologyValuesSql;
     try {
-      CompleteValidStableValues ontologyValues = ValidStableValuesFactory.createFromCompleteValues(
-          user, new WriteableStableValues(_ontologyValuesQuery, contextParamValues), false);
+      CompleteValidStableValues ontologyValues = ValidStableValuesFactory.createFromSupersetValues(
+          user, new WriteableStableValues(_ontologyValuesQuery, contextParamValues));
       QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, ontologyValues);
       ontologyValuesSql = instance.getSql();
     }
@@ -829,8 +829,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
      try {
        String metadataSql;
-       CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromCompleteValues(
-           user, new WriteableStableValues(metadataQuery, contextParamValues), false);
+       CompleteValidStableValues metadataValues = ValidStableValuesFactory.createFromSupersetValues(
+           user, new WriteableStableValues(metadataQuery, contextParamValues));
        QueryInstance<?> instance = metadataQuery.makeInstance(user, metadataValues);
        metadataSql = instance.getSql();
 

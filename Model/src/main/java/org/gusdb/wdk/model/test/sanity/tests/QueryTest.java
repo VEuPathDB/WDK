@@ -94,7 +94,7 @@ public class QueryTest implements ElementTest {
   protected static CompleteValidStableValues getValidatedParams(User user, Query query,
       Map<String, String> paramValues) throws WdkUserException, WdkModelException {
     return ValidStableValuesFactory.createFromCompleteValues(user,
-            new WriteableStableValues(query, paramValues), true);
+            new WriteableStableValues(query, paramValues));
   }
 
   protected static CompleteValidStableValues getValidatedEmptyParams(User user, Query query)

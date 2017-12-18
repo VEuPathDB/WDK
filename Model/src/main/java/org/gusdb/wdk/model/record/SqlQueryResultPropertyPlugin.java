@@ -68,7 +68,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
     params.put(WDK_ID_SQL_PARAM, answerValue.getIdSql());
     try {
       CompleteValidStableValues validatedParamStableValues = ValidStableValuesFactory
-          .createFromCompleteValues(answerValue.getUser(), params, true);
+          .createFromCompleteValues(answerValue.getUser(), params);
       return _query.makeInstance(answerValue.getUser(), validatedParamStableValues);
     }
     catch (WdkUserException ex) {

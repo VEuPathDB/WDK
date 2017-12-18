@@ -71,7 +71,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
         dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
       }
       CompleteValidStableValues validatedParamStableValues =
-          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, dependedParamValues), true);
+          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, dependedParamValues));
       return fetchItem(validatedParamStableValues);
     }
     catch (WdkUserException | WdkModelException e) {
@@ -126,7 +126,7 @@ public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParam
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
       CompleteValidStableValues validatedParamStableValues =
-          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, values), true);
+          ValidStableValuesFactory.createFromCompleteValues(_user, new WriteableStableValues(_vocabQuery, values));
       QueryInstance<?> instance = _vocabQuery.makeInstance(_user, validatedParamStableValues, 0, context);
       try (ResultList result = instance.getResults()) {
         while (result.next()) {

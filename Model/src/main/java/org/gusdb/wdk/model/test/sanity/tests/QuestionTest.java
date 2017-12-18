@@ -54,7 +54,7 @@ public class QuestionTest implements ElementTest {
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     _question.getQuery().setIsCacheable(false);
     CompleteValidStableValues validValues = ValidStableValuesFactory.createFromCompleteValues(
-        _user, new WriteableStableValues(_question.getQuery(), _paramValuesSet.getParamValues()), true);
+        _user, new WriteableStableValues(_question.getQuery(), _paramValuesSet.getParamValues()));
     AnswerValue answerValue = _question.makeAnswerValue(_user, validValues, 0);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
 

@@ -8,12 +8,13 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> implements DependentParamProvider {
+public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
@@ -26,13 +27,13 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   }
 
   @Override
-  public JSONObject getJson(User user, ValidStableValueSet dependedParamValues)
+  public JSONObject getJson(User user, CompleteValidStableValues stableValues)
       throws JSONException, WdkModelException, WdkUserException {
-    JSONObject pJson = super.getJson();
+    JSONObject pJson = super.getJson(user, stableValues);
 
     pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
-    pJson.put("ontology", getOntologyJson(user, dependedParamValues));
-    JSONObject valuesMap = getValuesJson(user, dependedParamValues);
+    pJson.put("ontology", getOntologyJson(user, stableValues));
+    JSONObject valuesMap = getValuesJson(user, stableValues);
     //TODO: remove the null test when val map query becomes required
     if (valuesMap != null) pJson.put("values", valuesMap);
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
@@ -40,8 +41,8 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return pJson;
   }
 
-  public JSONArray getOntologyJson(User user, ValidStableValueSet dependedParamValues) throws JSONException, WdkModelException {
-    Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, dependedParamValues);
+  public JSONArray getOntologyJson(User user, CompleteValidStableValues stableValues) throws JSONException, WdkModelException {
+    Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, stableValues);
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
       JSONObject itemJson = new JSONObject();
@@ -60,7 +61,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return ontologyJson; 
   }
 
-  public JSONObject getValuesJson(User user, ValidStableValueSet dependedParamValues) throws JSONException, WdkModelException {
+  public JSONObject getValuesJson(User user, CompleteValidStableValues dependedParamValues) throws JSONException, WdkModelException {
  
     Map<String, Set<String>>  valuesMap = filterParam.getValuesMap(user, dependedParamValues);
 

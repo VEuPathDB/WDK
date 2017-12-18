@@ -227,7 +227,7 @@ public class StepService extends UserService {
         StableValues params = AnswerValueFactory.convertParams(answerSpec.getQuestion().getQuery(), answerSpec.getParamValues());
         // FIXME: should probably return this here; if we don't we'll have done the validation work but
         //    someone will have to do it again from scratch
-        ValidStableValuesFactory.createFromCompleteValues(user, params, true);
+        ValidStableValuesFactory.createFromCompleteValues(user, params);
       }
       catch(WdkUserException wue) {
         throw new DataValidationException(wue);
