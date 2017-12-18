@@ -331,8 +331,10 @@ FieldList.propTypes = {
 function FieldFilter(props) {
   let FieldDetail = getFieldDetailComponent(props.field);
   let fieldDetailProps = {
-    filteredDataCount: props.filteredDataCount,
     dataCount: props.dataCount,
+    filteredDataCount: props.filteredDataCount,
+    distinctKnownCount: props.distinctKnownCount,
+    filteredDistinctKnownCount: props.filteredDistinctKnownCount,
     displayName: props.displayName,
     field: props.field,
     distribution: props.distribution,
@@ -374,6 +376,8 @@ FieldFilter.propTypes = {
   displayName: PropTypes.string,
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,
+  distinctKnownCount: PropTypes.number,
+  filteredDistinctKnownCount: PropTypes.number,
   field: PropTypes.object,
   fieldState: PropTypes.object,
   filter: PropTypes.object,
@@ -976,7 +980,9 @@ export class ServerSideAttributeFilter extends React.Component {
       invalidFilters,
       activeField,
       activeFieldState,
-      activeFieldDistribution
+      activeFieldDistribution,
+      activeFieldDistinctKnownCount,
+      activeFieldFilteredDistinctKnownCount
     } = this.props;
 
     var displayName = this.props.displayName;
@@ -1016,6 +1022,8 @@ export class ServerSideAttributeFilter extends React.Component {
             displayName={displayName}
             filteredDataCount={filteredDataCount}
             dataCount={dataCount}
+            distinctKnownCount={activeFieldDistinctKnownCount}
+            filteredDistinctKnownCount={activeFieldFilteredDistinctKnownCount}
             field={fields.get(activeField)}
             fieldState={activeFieldState}
             filter={selectedFilter}
@@ -1048,6 +1056,8 @@ ServerSideAttributeFilter.propTypes = {
   activeField: PropTypes.string,
   activeFieldState: PropTypes.object,
   activeFieldDistribution: PropTypes.array,
+  activeFieldDistinctKnownCount: PropTypes.number,
+  activeFieldFilteredDistinctKnownCount: PropTypes.number,
   // TODO Add activeFieldDataCount and activeFieldFilteredDataCount
   // These are counts of distinct data with values for the active field
 
@@ -1868,10 +1878,17 @@ class MembershipField extends React.Component {
                   <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     <div>Matching</div>
                     <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    {this.props.filteredDistinctKnownCount && (
+                      <div style={{ width: '100%' }}>
+                        <hr/>
+                        {this.props.distinctKnownCount.toLocaleString()}
+                        <small style={{ display: 'inline-block', width: '50%'}}>(100%)</small>
+                      </div>
+                    )}
                   </div>
                 ),
                 sortable: useSort,
-                width: '10em',
+                width: '12em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
@@ -1879,7 +1896,18 @@ class MembershipField extends React.Component {
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div> {value.toLocaleString()} </div>
+                  <div>
+                    {value.toLocaleString()}
+                    &nbsp;
+                    {this.props.filteredDistinctKnownCount && (
+                      <small style={{ 
+                        display: 'inline-block',
+                        width: '50%'
+                      }}>
+                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)} %)
+                      </small>
+                    )}
+                  </div>
                 )
               },
               {
@@ -1888,10 +1916,17 @@ class MembershipField extends React.Component {
                   <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     <div>All</div>
                     <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    {this.props.filteredDistinctKnownCount && (
+                      <div style={{ width: '100%'}}>
+                        <hr/>
+                        {this.props.filteredDistinctKnownCount.toLocaleString()}
+                        <small style={{ display: 'inline-block', width: '50%' }}>(100%)</small>
+                      </div>
+                    )}
                   </div>
                 ),
                 sortable: useSort,
-                width: '10em',
+                width: '12em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> with the
@@ -1899,7 +1934,18 @@ class MembershipField extends React.Component {
                   </div>
                 ),
                 renderCell: ({ value }) => (
-                  <div> {value.toLocaleString()} </div>
+                  <div>
+                    {value.toLocaleString()}
+                    &nbsp;
+                    {this.props.filteredDistinctKnownCount && (
+                      <small style={{ 
+                        display: 'inline-block',
+                        width: '50%'
+                      }}>
+                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)} %)
+                      </small>
+                    )}
+                  </div>
                 )
               },
               {
@@ -1909,8 +1955,12 @@ class MembershipField extends React.Component {
                 helpText: <FilterLegend {...this.props} />,
                 renderCell: ({ row }) => (
                   <div className="bar">
-                    <div className="fill" style={{ width: (row.count / this.props.dataCount * 100) + '%' }}/>
-                    <div className="fill filtered" style={{ width: (row.filteredCount / this.props.dataCount * 100) + '%' }}/>
+                    <div className="fill" style={{
+                      width: (row.count / (this.props.distinctKnownCount || this.props.dataCount) * 100) + '%'
+                    }}/>
+                    <div className="fill filtered" style={{
+                      width: (row.filteredCount / (this.props.distinctKnownCount || this.props.dataCount) * 100) + '%'
+                    }}/>
                   </div>
                 )
               },
@@ -1925,9 +1975,9 @@ class MembershipField extends React.Component {
                   </div>
                 ),
                 renderCell: ({ row }) => (
-                  <div style={{ fontSize: 'smaller' }} title={`Matching ${row.value} / All ${row.value}`}>
+                  <small title={`Matching ${row.value} / All ${row.value}`}>
                     ({Math.round(row.filteredCount / row.count * 100)}%)
-                  </div>
+                  </small>
                 )
               }
             ]}
