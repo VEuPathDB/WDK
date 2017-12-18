@@ -1,17 +1,22 @@
 import { Observable } from 'rxjs';
 
-import { EpicServices, combineEpics } from '../../utils/ActionCreatorUtils';
-import { ParamLoadedAction, ParamValueUpdatedAction } from '../../actioncreators/QuestionActionCreators';
+import {
+  GroupVisibilityChangedAction,
+  ParamValueUpdatedAction,
+  QuestionLoadedAction,
+} from '../../actioncreators/QuestionActionCreators';
 import { Action } from '../../dispatcher/Dispatcher';
+import QuestionStore, { QuestionState } from '../../stores/QuestionStore';
 import { makeActionCreator, payload } from '../../utils/ActionCreatorUtils';
+import { combineEpics, EpicServices } from '../../utils/ActionCreatorUtils';
 import { Filter } from '../../utils/FilterService';
-import { FilterParamNew, ParameterValues } from '../../utils/WdkModel';
-import { Context, isContextType } from '../Utils';
-import { FieldState, MemberFieldState } from './State';
+import { FilterParamNew } from '../../utils/WdkModel';
+import WdkService from '../../utils/WdkService';
+import { Context } from '../Utils';
+import { FieldState, MemberFieldState, State } from './State';
 import { isType } from './Utils';
 import { findFirstLeaf, getFilters, isMemberField, sortDistribution } from './Utils';
-import WdkService from '../../utils/WdkService';
-import QuestionStore from '../../stores/QuestionStore';
+import { groupBy, isEqual } from 'lodash';
 
 
 type Ctx = Context<FilterParamNew>
@@ -29,7 +34,6 @@ export const ActiveFieldSetAction = makeActionCreator(
   'filter-param-new/active-field-set',
   payload<Context<FilterParamNew> & {
     activeField: string;
-    loadOntologyTermSummary: boolean;
   }>()
 )
 
@@ -57,33 +61,99 @@ export const FiltersUpdatedAction = makeActionCreator(
   }>()
 )
 
+export const OntologyTermsInvalidated = makeActionCreator(
+  'filter-param-new/ontology-terms-invalidated',
+  payload<Context<FilterParamNew> & {
+    retainedFields: string[]
+  }>()
+)
+
 // Epics
 // -----
 
 export default combineEpics(initEpic, updateDependentParamsActiveFieldEpic);
 
+/**
+ * When a Question is loaded, listen for parameter-specific actions and load data as needed.
+ */
 function initEpic(action$: Observable<Action>, services: EpicServices<QuestionStore>): Observable<Action> {
   return action$
-    .filter(ParamLoadedAction.isType)
+    .filter(QuestionLoadedAction.isType)
     .mergeMap(action => {
-      if (!isContextType(action.payload.ctx, isType)) return Observable.empty();
+      const { questionName } = action.payload;
+      const { question, paramValues } = services.store.state.questions[questionName];
+      const isVisible = (parameter: FilterParamNew) => (
+        services.store.state.questions[questionName].groupUIState[parameter.group].isVisible
+      )
 
-      const { ctx } = action.payload;
-      const filters = getFiltersFromContext(ctx);
-      const activeField = filters.length === 0 ? findFirstLeaf(getOntologyFromContext(ctx)) : filters[0].field;
-      const paramAction$ = action$.filter(action => (
-        (ActiveFieldSetAction.isType(action) || FiltersUpdatedAction.isType(action)) &&
-        action.payload.questionName === ctx.questionName &&
-        action.payload.parameter.name === ctx.parameter.name
-      ));
+      // Create an observable per filter param to load ontology term summaries
+      // and counts when an active ontology term is changed, or when a param
+      // value changes, but only if its group is visible.
+      return Observable.from(question.parameters)
+        .filter(isType)
+        .mergeMap(parameter => {
+          // Create an Observable<FilterParamNew> based on actions
+          const valueChangedParameter$ = action$.filter(FiltersUpdatedAction.isType)
+            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
+            .map(action => {
+              const { activeOntologyTerm, fieldStates } = services.store.state.questions[questionName].paramUIState[parameter.name];
+              return {
+                parameter,
+                loadCounts: true,
+                loadSummary: fieldStates[activeOntologyTerm].ontologyTermSummary == null,
+              };
+            })
+            .debounceTime(1000)
 
-      // The order here is important. We want to first merge the child epics
-      // (updateActiveFieldEpic and ypdateSummaryCountsEpic), THEN we want to
-      // merge the Observable of ActiveFieldSetAction. This will ensure that
-      // updateActiveFieldEpic receives that action.
-      return updateActiveFieldEpic(paramAction$, services)
-        .merge(updateSummaryCountsEpic(paramAction$, services))
-        .merge(Observable.of(ActiveFieldSetAction.create({ ...ctx, activeField, loadOntologyTermSummary: true })));
+          const activeOntologyTermChangedParameter$ = action$.filter(ActiveFieldSetAction.isType)
+            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
+            .mapTo({ parameter, loadCounts: true, loadSummary: true })
+            .filter(({parameter}) => {
+              const { activeOntologyTerm, fieldStates }: State = services.store.state.questions[questionName].paramUIState[parameter.name];
+              return activeOntologyTerm != null && fieldStates[activeOntologyTerm].ontologyTermSummary == null;
+            })
+            .debounceTime(1000)
+
+          const groupVisibilityChangeParameter$ = action$.filter(GroupVisibilityChangedAction.isType)
+            .filter(action => action.payload.questionName === questionName && action.payload.groupName === parameter.group)
+            .mapTo({ parameter, loadCounts: true, loadSummary: true })
+            .filter(({parameter}) => {
+              const { activeOntologyTerm, fieldStates }: State = services.store.state.questions[questionName].paramUIState[parameter.name];
+              return activeOntologyTerm != null && fieldStates[activeOntologyTerm].ontologyTermSummary == null;
+            })
+
+          const parameter$ = Observable.merge(
+            valueChangedParameter$,
+            activeOntologyTermChangedParameter$,
+            groupVisibilityChangeParameter$
+          )
+          .filter(({ parameter }) => isVisible(parameter))
+          .switchMap(({parameter, loadCounts, loadSummary}) => {
+            return Observable.merge(
+              loadCounts
+                ? getSummaryCounts(services.wdkService, parameter, services.store.state.questions[questionName])
+                : Observable.empty(),
+              loadSummary
+                ? getOntologyTermSummary(services.wdkService, parameter, services.store.state.questions[questionName])
+                : Observable.empty()
+            ) as Observable<Action>;
+          });
+
+          const filters = getFilters(paramValues[parameter.name]);
+          const activeField = filters.length === 0 ? findFirstLeaf(parameter.ontology) : filters[0].field;
+
+          // The order here is important. We want to first merge the child epics
+          // (updateActiveFieldEpic and ypdateSummaryCountsEpic), THEN we want to
+          // merge the Observable of ActiveFieldSetAction. This will ensure that
+          // updateActiveFieldEpic receives that action.
+          return parameter$
+            .merge(Observable.of(ActiveFieldSetAction.create({
+              questionName,
+              parameter,
+              paramValues,
+              activeField
+            })))
+        });
     })
 }
 
@@ -92,41 +162,21 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
     .debounceTime(1000)
     .switchMap(action => {
       const { questionName, dependentParameters } = action.payload;
+      const { paramValues, paramUIState } = store.state.questions[questionName];
       return Observable.from(dependentParameters)
         .filter(isType)
         .mergeMap(parameter => {
-          const { paramUIState, paramValues } = store.getState().questions[questionName];
-          const filters = JSON.parse(paramValues[parameter.name]).filters as Filter[];
-          const { activeOntologyTerm } = paramUIState[parameter.name];
-          return Observable.merge(
-            getOntologyTermSummary(wdkService, activeOntologyTerm, questionName, parameter, filters, paramValues),
-            getSummaryCounts(wdkService, questionName, parameter, filters, paramValues)
+          const questionState = store.getState().questions[questionName];
+          return Observable.of(OntologyTermsInvalidated.create({
+            questionName,
+            parameter,
+            paramValues,
+            retainedFields: [paramUIState[parameter.name].activeOntologyTerm]
+          })).merge(
+            getOntologyTermSummary(wdkService, parameter, questionState),
+            getSummaryCounts(wdkService, parameter, questionState)
           );
         })
-    })
-}
-
-function updateActiveFieldEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>): Observable<Action> {
-  return action$
-    .filter(ActiveFieldSetAction.isType)
-    .filter(action => action.payload.loadOntologyTermSummary)
-    .debounceTime(1000)
-    .switchMap(action => {
-      const { questionName, paramValues, parameter, activeField } = action.payload;
-      const filters = getFiltersFromContext(action.payload);
-      return Observable.merge(
-        getOntologyTermSummary(wdkService, activeField, questionName, parameter, filters, paramValues),
-        getSummaryCounts(wdkService, questionName, parameter, filters, paramValues)
-      );
-    })
-}
-
-function updateSummaryCountsEpic(action$: Observable<Action>, { wdkService }: EpicServices<QuestionStore>) {
-  return action$.filter(FiltersUpdatedAction.isType)
-    .debounceTime(1000)
-    .switchMap(action => {
-      const { parameter, questionName, paramValues, filters } = action.payload;
-      return Observable.from(getSummaryCounts(wdkService, questionName, parameter, filters, paramValues));
     })
 }
 
@@ -136,30 +186,35 @@ function updateSummaryCountsEpic(action$: Observable<Action>, { wdkService }: Ep
 
 function getOntologyTermSummary(
   wdkService: WdkService,
-  activeField: string,
-  questionName: string,
   parameter: FilterParamNew,
-  filters: Filter[],
-  paramValues: ParameterValues
+  state: QuestionState
 ) {
-  return wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeField, paramValues).then(
+  const { question, paramValues, paramUIState } = state;
+  const questionName = question.urlSegment;
+  const { activeOntologyTerm } = paramUIState[parameter.name];
+  const filters = (JSON.parse(paramValues[parameter.name]).filters as Filter[])
+    .filter(filter => filter.field !== activeOntologyTerm);
+  return wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeOntologyTerm, paramValues).then(
     summary => {
-      let fieldState: FieldState = isMemberField(parameter, activeField) ? {
-        loading: false,
-        sort: defaultMemberFieldSort,
-        ontologyTermSummary: {
-          ...summary,
-          valueCounts: sortDistribution(summary.valueCounts, defaultMemberFieldSort)
+      const fieldState: FieldState = isMemberField(parameter, activeOntologyTerm)
+        ? {
+          loading: false,
+          sort: defaultMemberFieldSort,
+          ontologyTermSummary: {
+            ...summary,
+            valueCounts: sortDistribution(summary.valueCounts, defaultMemberFieldSort)
+          }
         }
-      } : {
+        : {
           loading: false,
           ontologyTermSummary: summary
         };
+
       return FieldStateUpdatedAction.create({
         questionName,
         parameter,
         paramValues,
-        field: activeField,
+        field: activeOntologyTerm,
         fieldState
       })
     },
@@ -169,10 +224,10 @@ function getOntologyTermSummary(
         questionName,
         parameter,
         paramValues,
-        field: activeField,
+        field: activeOntologyTerm,
         fieldState: {
           loading: false,
-          errorMessage: 'Unable to load ontologyTermSummary for "' + activeField + '".'
+          errorMessage: 'Unable to load ontologyTermSummary for "' + activeOntologyTerm + '".'
         }
       });
     }
@@ -181,11 +236,12 @@ function getOntologyTermSummary(
 
 function getSummaryCounts(
   wdkService: WdkService,
-  questionName: string,
   parameter: FilterParamNew,
-  filters: Filter[],
-  paramValues: ParameterValues
+  state: QuestionState
 ) {
+  const { question, paramValues, paramUIState } = state;
+  const questionName = question.urlSegment;
+  const filters = JSON.parse(paramValues[parameter.name]).filters;
   return wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
     counts => SummaryCountsLoadedAction.create({
       questionName,

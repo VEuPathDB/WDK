@@ -203,6 +203,8 @@ public class QuestionBean {
     return _question.getFullName();
   }
 
+  public String getUrlSegment() { return _question.getUrlSegment(); }
+
   /**
    * @return
    * @see org.gusdb.wdk.model.Question#getQuestionSetName()

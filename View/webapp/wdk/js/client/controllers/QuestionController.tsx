@@ -1,11 +1,14 @@
+import Icon from '../components/Icon';
 import { get } from 'lodash';
 import * as React from 'react';
 
 import {
   ActiveQuestionUpdatedAction,
-  ParamValueUpdatedAction
+  GroupStateUpdatedAction,
+  GroupVisibilityChangedAction,
+  ParamValueUpdatedAction,
 } from '../actioncreators/QuestionActionCreators';
-import ParamComponent from '../components/Parameter';
+import DefaultQuestionForm from '../components/DefaultQuestionForm';
 import QuestionStore, { State } from '../stores/QuestionStore';
 import { wrappable } from '../utils/componentUtils';
 import { Seq } from '../utils/IterableUtils';
@@ -15,8 +18,11 @@ import AbstractPageController from './AbstractPageController';
 type QuestionState = State['questions'][string];
 
 const ActionCreators = {
-  updateParamValue: ParamValueUpdatedAction.create
+  updateParamValue: ParamValueUpdatedAction.create,
+  setGroupVisibility: GroupVisibilityChangedAction.create
 }
+
+export type EventHandlers = typeof ActionCreators;
 
 class QuestionController extends AbstractPageController<QuestionState, QuestionStore, typeof ActionCreators> {
 
@@ -58,63 +64,13 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
       by ${this.state.question.displayName}`;
   }
 
-  getContext(parameter: Parameter) {
-    const { question, paramValues } = this.state;
-    return {
-      questionName: question.urlSegment,
-      parameter,
-      paramValues
-    };
-  }
-
-  getDependentParams(parameter: Parameter): Seq<Parameter> {
-    return Seq.from(parameter.dependentParams)
-      .map(name => this.state.question.parametersByName[name])
-      .flatMap(dependentParam =>
-        Seq.of(dependentParam).concat(this.getDependentParams(dependentParam)))
-  }
-
-  renderGroup(group: ParameterGroup) {
-    return (
-      <div key={group.name}>
-        <h2>{group.displayName}</h2>
-        {Seq.from(group.parameters)
-          .map(pName => this.state.question.parametersByName[pName])
-          .filter(p => p.isVisible)
-          .map(p => this.renderParameter(p))}
-      </div>
-    )
-  }
-
-  renderParameter(parameter: Parameter) {
-    const { paramValues, paramUIState } = this.state;
-    const ctx = this.getContext(parameter);
-    return (
-      <div key={parameter.name}>
-        <h3>{parameter.displayName}</h3>
-        <ParamComponent
-          ctx={ctx}
-          parameter={parameter}
-          value={paramValues[parameter.name]}
-          uiState={paramUIState[parameter.name]}
-          dispatch={this.dispatchAction}
-          onParamValueChange={paramValue => {
-            const dependentParameters = this.getDependentParams(parameter).toArray();
-            this.eventHandlers.updateParamValue({ ...ctx, paramValue, dependentParameters });
-          }}
-        />
-      </div>
-    );
-  }
-
   renderView() {
     return (
-      <div>
-        <h1>{this.getTitle()}</h1>
-        {this.state.question.groups
-         // .filter(g => g.isVisible)
-             .map(g => this.renderGroup(g))}
-      </div>
+      <DefaultQuestionForm
+        state={this.state}
+        eventHandlers={this.eventHandlers}
+        dispatchAction={this.dispatchAction}
+      />
     );
   }
 

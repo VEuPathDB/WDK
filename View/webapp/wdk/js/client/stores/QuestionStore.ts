@@ -11,13 +11,19 @@ import {
   QuestionErrorAction,
   QuestionLoadedAction,
   QuestionNotFoundAction,
+  GroupStateUpdatedAction,
+  GroupVisibilityChangedAction
 } from '../actioncreators/QuestionActionCreators';
 import { Action } from '../dispatcher/Dispatcher';
 import { paramEpic, reduce as paramReducer } from '../params';
 import { Parameter, ParameterGroup, Question, RecordClass } from '../utils/WdkModel';
 import WdkStore, { BaseState } from './WdkStore';
 
-type QuestionState = {
+interface GroupState {
+  isVisible: boolean;
+}
+
+export type QuestionState = {
   questionStatus: 'loading' | 'error' | 'not-found' | 'complete';
   question: Question & {
     parametersByName: Record<string, Parameter>;
@@ -26,6 +32,7 @@ type QuestionState = {
   recordClass: RecordClass;
   paramValues: Record<string, string>;
   paramUIState: Record<string, any>;
+  groupUIState: Record<string, GroupState>;
   paramErrors: Record<string, string | undefined>;
 }
 
@@ -69,13 +76,15 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
   if (QuestionLoadedAction.isType(action)) return {
     ...state,
     questionStatus: 'complete',
-    question: normalizeQuesiton(action.payload.question),
+    question: normalizeQuestion(action.payload.question),
     recordClass: action.payload.recordClass,
     paramValues: action.payload.paramValues,
     paramErrors: action.payload.question.parameters.reduce((paramValues, param) =>
       Object.assign(paramValues, { [param.name]: undefined }), {}),
     paramUIState: action.payload.question.parameters.reduce((paramUIState, param) =>
-      Object.assign(paramUIState, { [param.name]: paramReducer(param, undefined, { type: 'init' }) }), {})
+      Object.assign(paramUIState, { [param.name]: paramReducer(param, undefined, { type: 'init' }) }), {}),
+    groupUIState: action.payload.question.groups.reduce((groupUIState, group) =>
+      Object.assign(groupUIState, { [group.name]: { isVisible: group.isVisible }}), {})
   }
 
   if (QuestionErrorAction.isType(action)) return {
@@ -138,6 +147,25 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
     }
   };
 
+  if (GroupVisibilityChangedAction.isType(action)) return {
+    ...state,
+    groupUIState: {
+      ...state.groupUIState,
+      [action.payload.groupName]: {
+        ...state.groupUIState[action.payload.groupName],
+        isVisible: action.payload.isVisible
+      }
+    }
+  }
+
+  if (GroupStateUpdatedAction.isType(action)) return {
+    ...state,
+    groupUIState: {
+      ...state.groupUIState,
+      [action.payload.groupName]: action.payload.groupState
+    }
+  }
+
   // finally, handle parameter specific actions
   return reduceParamState(state, action);
 }
@@ -146,7 +174,7 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
  * Add parametersByName and groupsByName objects
  * @param question
  */
-function normalizeQuesiton(question: Question) {
+function normalizeQuestion(question: Question) {
   return {
     ...question,
     parametersByName: keyBy(question.parameters, 'name'),
