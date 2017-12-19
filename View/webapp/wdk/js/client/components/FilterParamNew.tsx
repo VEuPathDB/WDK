@@ -33,7 +33,12 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   }
 
   _getFieldMap = memoize((parameter: Props['parameter']) =>
-    new Map(parameter.ontology.map(o => [ o.term, o] as [string, Field])))
+    new Map(parameter.ontology.map(o => [
+      o.term,
+      parameter.values == null || parameter.values[o.term] == null
+        ? o
+        : { ...o, values: parameter.values[o.term].join(' ') }
+    ] as [string, Field])))
 
   _countLeaves = memoize((parameter: Props['parameter']) =>
     getLeaves(parameter.ontology).toArray().length);
@@ -107,6 +112,8 @@ export default class FilterParamNew extends React.PureComponent<Props> {
 
           activeField={uiState.activeOntologyTerm}
           activeFieldDistribution={activeFieldSummary && activeFieldSummary.valueCounts}
+          activeFieldDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsCount}
+          activeFieldFilteredDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsFilteredCount}
           activeFieldState={activeFieldState}
           fields={this._getFieldMap(parameter)}
           filters={filters}
