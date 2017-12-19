@@ -175,6 +175,8 @@ class FieldList extends React.PureComponent {
     this.handleExpansionChange = this.handleExpansionChange.bind(this);
     this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
     this.renderNode = this.renderNode.bind(this);
+    this.searchPredicate = this.searchPredicate.bind(this);
+    this.getFieldSearchString = memoize(this.getFieldSearchString);
 
     this.state = {
       searchTerm: '',
@@ -276,11 +278,20 @@ class FieldList extends React.PureComponent {
     );
   }
 
+  getFieldSearchString(field) {
+    return [
+      field.display,
+      field.description ? field.description : '',
+      field.values ? field.values : ''
+    ]
+    .join(' ')
+    .toLowerCase();
+  }
+
   searchPredicate(node, searchTerms) {
     // XXX Search description too?
     return searchTerms.every(searchTerm =>
-      node.field.display.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (node.field.description && node.field.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      this.getFieldSearchString(node.field).includes(searchTerm.toLowerCase())
     )
   }
 
