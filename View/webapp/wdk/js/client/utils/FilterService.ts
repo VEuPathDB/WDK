@@ -18,6 +18,7 @@ interface BaseField {
   leaf?: 'true';
   isRange?: boolean;
   filter?: 'range'|'membership';
+  values?: string;
 }
 
 export interface StringField extends BaseField {
