@@ -355,12 +355,10 @@ function FieldFilter(props) {
         <div>
           <h3>
             {props.field.display + ' '}
-            {props.field.description && (
-              <Tooltip content={props.field.description}>
-                <i className="fa fa-question-circle" style={{ color: 'blue', fontSize: '1rem' }}/>
-              </Tooltip>
-            )}
           </h3>
+          {props.field.description && (
+            <div className="field-description">{props.field.description}</div>
+          )}
           {(!props.distribution || !props.dataCount) ? (
             <Loading />
           ) : (

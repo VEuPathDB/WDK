@@ -160,6 +160,9 @@
   margin: 0;
   padding: 0;
 }
+.filter-param .field-description {
+  margin-bottom: 1em;
+}
 .filter-param .field-detail h4 {
   margin-top: 4em;
 }
@@ -219,10 +222,13 @@
 }
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
+  background-color: #f7f7f7;
+}
+.filter-param .membership-filter .MesaComponent th:first-child {
+  border-left: 1px solid #ccc;
 }
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
-  border-right: none;
   border-radius: 0;
 }
 .filter-param .membership-filter .MesaComponent th:nth-child(3) .HeadingCell-Content,
@@ -260,12 +266,15 @@
 
 .filter-param .membership-actions {
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row;
   padding: .2em;
 }
 .filter-param .membership-action__group-selected {
   display: flex;
   align-items: center;
+  padding: .3em;
+  font-weight: 300;
+  font-size: 1.1em;
 }
 .filter-param .membership-group-selected-button {
   border-radius: 4px;
@@ -311,10 +320,6 @@
 }
 .filter-param .membership-filter input[name="value"] {
   margin-right: .4em;
-}
-.filter-param .membership-filter label {
-  width: 100%;
-  font-weight: normal;
 }
 .filter-param .membership-filter .value {
   min-width: 8em;
