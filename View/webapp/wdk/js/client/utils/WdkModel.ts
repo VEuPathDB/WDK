@@ -57,7 +57,8 @@ export interface FilterParamNew extends ParameterBase {
     units: string;
     precision: string;
     isRange: boolean;
-  }>
+  }>;
+  values: Record<string, string[]>;
 }
 
 export interface EnumParam extends ParameterBase {
