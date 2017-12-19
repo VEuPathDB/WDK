@@ -237,21 +237,42 @@ public class FilterParamHandler extends AbstractParamHandler {
           JSONObject jsFilter = jsFilters.getJSONObject(i);
           Map<String, String> fieldSpec = metadataSpec.get(jsFilter.getString("field"));
           display += fieldSpec.get("display") + " is ";
+          String parsedValue = "";
+          boolean hasValue = jsFilter.has("value");
+          boolean includeUnknown = jsFilter.has("includeUnknown") ? jsFilter.getBoolean("includeUnknown") : true;
           switch(fieldSpec.get("filter")) {
           case "membership":
-            JSONArray values = jsFilter.getJSONArray("value");
-            for (int j = 0; j < values.length(); j++) {
-              if (values.get(j) == JSONObject.NULL) values.put(j, "uknown");
+            if (hasValue) {
+              JSONArray values = jsFilter.getJSONArray("value");
+              for (int j = 0; j < values.length(); j++) {
+                if (values.get(j) == JSONObject.NULL) values.put(j, "unspecified");
+              }
+              parsedValue = jsFilter.getJSONArray("value").join(", ");
             }
-            display += jsFilter.getJSONArray("value").join(", ");
+            else {
+              parsedValue = "any known value";
+            }
+            if (includeUnknown) {
+              parsedValue += ((parsedValue.length() == 0 ? "" : ", or is ") + "unspecified");
+            }
+            display += parsedValue;
             break;
           case "range":
-            JSONObject range = jsFilter.getJSONObject("value");
-            Object min = range.get("min");
-            Object max = range.get("max");
-            display += min == null ? "less than " + max.toString()
-                     : max == null ? "greater than " + min.toString()
-                     : "between " + min.toString() + " and " + max.toString();
+            if (hasValue) {
+              JSONObject range = jsFilter.getJSONObject("value");
+              Object min = range.get("min");
+              Object max = range.get("max");
+              parsedValue = min == null ? "less than " + max.toString()
+                       : max == null ? "greater than " + min.toString()
+                       : "between " + min.toString() + " and " + max.toString();
+            }
+            else {
+              parsedValue = "any known value";
+            }
+            if (includeUnknown) {
+              parsedValue += parsedValue.length() == 0 ? "" : ", or is " + "unspecified";
+            }
+            display += parsedValue;
             break;
           }
           if (i != jsFilters.length()) display += "\n";

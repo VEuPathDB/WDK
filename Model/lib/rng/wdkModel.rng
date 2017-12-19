@@ -693,6 +693,9 @@
         <attribute name="ontologyValuesQueryRef"/>
       </optional>
       <optional>
+        <attribute name="idTransformQueryRef"/>
+      </optional>
+      <optional>
         <element name="idTransformSql">
           <text/>
         </element>

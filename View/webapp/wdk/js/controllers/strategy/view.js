@@ -1025,7 +1025,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           $(space).addClass("medium param");
           $(space).html("&nbsp;:&nbsp;");
           $(value).addClass("medium param value");
-          $(value).html(this.display.replace(/\n/g, '<br/><br/>'));
+          if (this.display) $(value).html(this.display.replace(/\n/g, '<br/><br/>'));
           $(tr).append(prompt);
           $(tr).append(space);
           $(tr).append(value);
@@ -1046,28 +1046,6 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       });
     }
     return table;
-  }
-
-  function getParamDisplay(param) {
-    var display;
-
-    if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
-      var filters = JSON.parse(param.display);
-      if (!Array.isArray(filters)) {
-        console.error("Expected param.display to be a JSON array. Instead got ", param.display);
-        display = param.display;
-      }
-      else {
-        display = filters.length
-          ? filters.map(filter => filter.display).join(', <br>')
-          : 'All ' + param.prompt;
-      }
-    }
-    else {
-      display = param.display;
-    }
-
-    return display;
   }
 
   // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV

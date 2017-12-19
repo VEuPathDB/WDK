@@ -26,7 +26,6 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -113,8 +112,6 @@ public class FilterParamNew extends AbstractDependentParam {
   private String _metadataQueryRef;
   private Query _metadataQuery;
 
-  private WdkModelText _idTransformSql;
-
   private String _ontologyQueryRef;
   private Query _ontologyQuery;
 
@@ -123,6 +120,9 @@ public class FilterParamNew extends AbstractDependentParam {
   
   private String _ontologyValuesQueryRef;
   private Query _ontologyValuesQuery;
+
+  private String _idTransformQueryRef;
+  private Query _idTransformQuery;
 
   private String _filterDataTypeDisplayName;
 
@@ -150,8 +150,6 @@ public class FilterParamNew extends AbstractDependentParam {
     if (param._metadataQuery != null)
       _metadataQuery = param._metadataQuery.clone();
 
-    _idTransformSql = param._idTransformSql;
-
     _ontologyQueryRef = param._ontologyQueryRef;
     if (param._ontologyQuery != null)
       _ontologyQuery = param._ontologyQuery.clone();
@@ -163,6 +161,10 @@ public class FilterParamNew extends AbstractDependentParam {
     _ontologyValuesQueryRef = param._ontologyValuesQueryRef;
     if (param._ontologyValuesQuery != null)
       _ontologyValuesQuery = param._ontologyValuesQuery.clone();
+
+    _idTransformQueryRef = param._idTransformQueryRef;
+    if (param._idTransformQuery != null)
+      _idTransformQuery = param._idTransformQuery.clone();
 
     _trimMetadataTerms = param._trimMetadataTerms;
     _useIdTransformSqlForInternalValue = param._useIdTransformSqlForInternalValue;
@@ -176,8 +178,11 @@ public class FilterParamNew extends AbstractDependentParam {
     names.add(_ontologyQueryRef);
     names.add(_backgroundQueryRef);
     names.add(_ontologyValuesQueryRef);
+    names.add(_idTransformQueryRef);
+
     return names;
   }
+  public void setIdTransformSql(Object o) {}
 
   @Override
   public Param clone() {
@@ -208,14 +213,6 @@ public class FilterParamNew extends AbstractDependentParam {
 
   public void setMetadataQuery(Query metadataQuery) {
     _metadataQuery = metadataQuery;
-  }
-
-  public WdkModelText getIdTransformSql() {
-    return _idTransformSql;
-  }
-
-  public void setIdTransformSql(WdkModelText idTransformSql) {
-    _idTransformSql = idTransformSql;
   }
 
   /**
@@ -284,12 +281,16 @@ public class FilterParamNew extends AbstractDependentParam {
     _ontologyValuesQueryRef = ontologyValuesQueryRef;
   }
 
-  public Query getValuesMapQuery() {
-    return _ontologyValuesQuery;
+  public String getIdTransformQueryRef() {
+    return _idTransformQueryRef;
   }
 
-  public void setValuesMapQuery(Query ontologyValuesQuery) {
-    _ontologyValuesQuery = ontologyValuesQuery;
+  public void setIdTransformQueryRef(String idTransformQueryRef) {
+    _idTransformQueryRef = idTransformQueryRef;
+  }
+
+  public Query getValuesMapQuery() {
+    return _ontologyValuesQuery;
   }
 
   /**
@@ -398,14 +399,19 @@ public class FilterParamNew extends AbstractDependentParam {
           throw new WdkModelException("The metadata query " + _metadataQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
+    
+    // resolve id transform query
+    if (_idTransformQueryRef != null) {
 
-    // validate optional id transform sql
-    if (_idTransformSql != null) {
-      if (!_idTransformSql.getText().contains(FILTERED_IDS_MACRO)) {
-        throw new WdkModelException(
-            "The id transform sql, " + _idTransformSql.getText() + ", in filterParam " + getFullName() +
-                " must have SQL that contains the macro " + FILTERED_IDS_MACRO);
-      }
+      // validate dependent params
+      _idTransformQuery = resolveDependentQuery(model, _idTransformQueryRef, "idTransform query");
+      _idTransformQuery.setIsCacheable(false); // don't cache because we run this sql ourselves, manually, in this file.
+
+      // validate columns
+      Map<String, Column> columns = _idTransformQuery.getColumnMap();
+      if (columns.size() != 1 || !columns.containsKey(COLUMN_INTERNAL))
+          throw new WdkModelException("The idTransformQuery " + _idTransformQueryRef + " in filterParam " +
+              getFullName() + " must include have only one column, 'internal'");
     }
   }
 
@@ -479,7 +485,7 @@ public class FilterParamNew extends AbstractDependentParam {
     fpsc.untransformedUnfilteredCount = runCountSql(sql);
 
     // get transformed unfiltered count
-    sql = "select count(*) from (" + transformIdSql(distinctInternalsSql) + ")";
+    sql = "select count(*) from (" + transformIdSql(distinctInternalsSql, user, contextParamValues) + ")";
 
     fpsc.unfilteredCount = runCountSql(sql);
 
@@ -494,17 +500,28 @@ public class FilterParamNew extends AbstractDependentParam {
     fpsc.untransformedFilteredCount = runCountSql(sql);
 
     // get transformed count
-    sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql) + ")";
+    sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql, user, contextParamValues) + ")";
 
     fpsc.filteredCount = runCountSql(sql);
 
     return fpsc;
   }
 
-  String transformIdSql(String idSql) {
-    if (_idTransformSql == null)
+  String transformIdSql(String idSql, User user, Map<String, String> contextParamValues) throws WdkModelException {
+    if (_idTransformQuery == null)
       return idSql;
-    return _idTransformSql.getText().replace(FILTERED_IDS_MACRO, idSql);
+    
+    String idTransformSql;
+    try {
+      QueryInstance<?> instance = _idTransformQuery.makeInstance(user, contextParamValues, true, 0,
+          new HashMap<String, String>());
+      idTransformSql = instance.getSql();
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
+
+    return idTransformSql.replace(FILTERED_IDS_MACRO, idSql);
   }
 
   private long runCountSql(String sql) {

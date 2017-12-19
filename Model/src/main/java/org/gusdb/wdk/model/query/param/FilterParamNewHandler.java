@@ -108,7 +108,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(_param.getName()), fpn);
       String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql): cachedSql;
+      return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql, user, contextParamValues): cachedSql;
       
     }
     catch (JSONException ex) {

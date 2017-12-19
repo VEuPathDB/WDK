@@ -38,7 +38,7 @@ Provides form input element for a given FilterParamParam.
   <c:set var="props">
     {
       "paramName": "${qP.name}",
-      "questionName": "${requestScope.wdkQuestion.fullName}",
+      "questionName": "${requestScope.wdkQuestion.urlSegment}",
       "paramValues": ${questionParamValues}
     }
   </c:set>
