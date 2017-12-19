@@ -223,9 +223,11 @@
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
   background-color: #f7f7f7;
+  background-clip: padding-box; /* prevent firefox from clipping border */
 }
 .filter-param .membership-filter .MesaComponent th:first-child {
   border-left: 1px solid #ccc;
+  border-right: none;
 }
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
