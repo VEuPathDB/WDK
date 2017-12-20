@@ -5,7 +5,8 @@ import { lazy, safeHtml } from '../../utils/componentUtils';
 import {
   getFilterValueDisplay,
   getTree,
-  isRange
+  isRange,
+  isFilterField
 } from '../../utils/FilterServiceUtils';
 import {
   clamp,
@@ -36,6 +37,7 @@ import Tooltip from '../Tooltip';
 import Dialog from '../Dialog';
 import CheckboxTree from '../CheckboxTree';
 import DateSelector from '../DateSelector';
+import Toggle from "../Toggle";
 import { MesaController as Mesa, ModalBoundary } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
@@ -258,10 +260,8 @@ class FieldList extends React.PureComponent {
     let isActive = this.props.selectedField === node.field.term;
     return (
       <Tooltip content={node.field.description} hideDelay={0}>
-        {node.children.length > 0
+        {isFilterField(node.field)
         ? (
-          <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
-        ) : (
           <a
             className={'wdk-AttributeFilterFieldItem' +
               (isActive ? ' wdk-AttributeFilterFieldItem__active' : '')}
@@ -273,6 +273,8 @@ class FieldList extends React.PureComponent {
             }}>
             <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
           </a>
+        ) : (
+          <div className="wdk-Link wdk-AttributeFilterFieldParent">{node.field.display}</div>
         )}
       </Tooltip>
     );
@@ -289,7 +291,6 @@ class FieldList extends React.PureComponent {
   }
 
   searchPredicate(node, searchTerms) {
-    // XXX Search description too?
     return searchTerms.every(searchTerm =>
       this.getFieldSearchString(node.field).includes(searchTerm.toLowerCase())
     )
@@ -352,7 +353,8 @@ function FieldFilter(props) {
     filter: props.filter,
     fieldState: props.fieldState,
     onChange: props.onChange,
-    onSort: props.onMemberSort
+    onSort: props.onMemberSort,
+    selectByDefault: props.selectByDefault
   };
   let className = 'field-detail';
   if (props.useFullWidth) className += ' ' + className + '__fullWidth';
@@ -394,7 +396,8 @@ FieldFilter.propTypes = {
   onChange: PropTypes.func,
   onMemberSort: PropTypes.func,
   useFullWidth: PropTypes.bool,
-  addTopPadding: PropTypes.bool
+  addTopPadding: PropTypes.bool,
+  selectByDefault: PropTypes.bool.isRequired
 };
 
 FieldFilter.defaultProps = {
@@ -775,7 +778,7 @@ export class AttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution, this.props.selectByDefault)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -873,6 +876,7 @@ export class AttributeFilter extends React.Component {
                   distribution={activeFieldDistribution}
                   onChange={this.handleFieldFilterChange}
                   addTopPadding
+                  selectByDefault={this.props.selectByDefault}
                 />
               </div>
             </div>
@@ -907,6 +911,7 @@ AttributeFilter.propTypes = {
 
   displayName: PropTypes.string,
   collapsible: PropTypes.bool,
+  selectByDefault: PropTypes.bool,
 
   // state
   fields: PropTypes.instanceOf(Map).isRequired,
@@ -934,7 +939,8 @@ AttributeFilter.propTypes = {
 
 AttributeFilter.defaultProps = {
   displayName: 'Items',
-  collapsible: true
+  collapsible: true,
+  selectByDefault: true
 };
 
 /**
@@ -967,7 +973,7 @@ export class ServerSideAttributeFilter extends React.Component {
    */
   handleFieldFilterChange(field, value, includeUnknown) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution, this.props.selectByDefault)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -1040,6 +1046,7 @@ export class ServerSideAttributeFilter extends React.Component {
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
             useFullWidth={hideFieldPanel}
+            selectByDefault={this.props.selectByDefault}
           />
         </div>
       </div>
@@ -1056,6 +1063,7 @@ ServerSideAttributeFilter.propTypes = {
   hideFilterPanel: PropTypes.bool,
   hideFieldPanel: PropTypes.bool,
   renderSelectionInfo: PropTypes.func,
+  selectByDefault: PropTypes.bool,
 
   // state
   fields: PropTypes.instanceOf(Map).isRequired,
@@ -1084,7 +1092,8 @@ ServerSideAttributeFilter.propTypes = {
 ServerSideAttributeFilter.defaultProps = {
   displayName: 'Items',
   hideFilterPanel: false,
-  hideFieldPanel: false
+  hideFieldPanel: false,
+  selectByDefault: true
 };
 
 /**
@@ -1628,14 +1637,20 @@ class HistogramField extends React.Component {
   }
 
   render() {
-    var { field, filter, displayName, unknownCount } = this.props;
+    var { field, filter, displayName, unknownCount, selectByDefault } = this.props;
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
-    // if there is no filter value, then we want to select everything
     var filterValue = get(filter, 'value');
-    var min = filterValue == null ? distMin : filterValue.min;
-    var max = filterValue == null ? distMax : filterValue.max;
+
+    var min = filterValue == null
+      ? (selectByDefault ? distMin : null)
+      : filterValue.min;
+
+    var max = filterValue == null
+      ? (selectByDefault ? distMax : null)
+      : filterValue.max;
+
     var includeUnknown = get(filter, 'includeUnknown', this.state.includeUnknown);
 
     var selectedMin = min == null ? null : this.props.toHistogramValue(min);
@@ -1711,6 +1726,7 @@ HistogramField.propTypes = {
   distribution: PropTypes.array.isRequired,
   toFilterValue: PropTypes.func.isRequired,
   toHistogramValue: PropTypes.func.isRequired,
+  selectByDefault: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   field: PropTypes.object.isRequired,
   filter: PropTypes.object,
@@ -1774,10 +1790,9 @@ class MembershipField extends React.Component {
   }
 
   isItemSelected(value) {
-    let { filter } = this.props;
+    let { filter, selectByDefault } = this.props;
 
-    // no filter, so everything is selected
-    return filter == null ? true
+    return filter == null ? selectByDefault
       // value is null (ie, unknown) and includeUnknown selected
       : value == null ? filter.includeUnknown
       // filter.value is null (ie, all known values), or filter.value includes value
@@ -1785,12 +1800,15 @@ class MembershipField extends React.Component {
   }
 
   handleItemClick(item, addItem = !this.isItemSelected(item.value)) {
+    let { selectByDefault } = this.props;
     let { value } = item;
     if (value == null) {
       this.handleUnknownChange(addItem);
     }
     else {
-      const currentFilterValue = this.getValuesForFilter() || this.getKnownValues();
+      const currentFilterValue = this.getValuesForFilter() || (
+        selectByDefault ? this.getKnownValues() : []
+      );
       const filterValue = addItem
         ? currentFilterValue.concat(value)
         : currentFilterValue.filter(v => v !== value);
@@ -1836,17 +1854,23 @@ class MembershipField extends React.Component {
           { useSort ? (
             <div className="membership-actions">
               <div className="membership-action membership-action__group-selected">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={this.props.fieldState.sort.groupBySelected}
-                    onClick={() => {
-                      this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
-                        groupBySelected: !this.props.fieldState.sort.groupBySelected
-                      }));
-                    }}
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none'
+                  }}
+                  type="button"
+                  onClick={() => {
+                    this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
+                      groupBySelected: !this.props.fieldState.sort.groupBySelected
+                    }));
+                  }}
+                >
+                  <Toggle
+                    on={this.props.fieldState.sort.groupBySelected}
                   /> Keep selected values at top
-                </label>
+               </button>
+
               </div>
             </div>
           ) : null }
@@ -1883,25 +1907,32 @@ class MembershipField extends React.Component {
               },
               {
                 key: 'filteredCount',
-                name: (
-                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    <div>Matching</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                    {this.props.filteredDistinctKnownCount && (
-                      <div style={{ width: '100%' }}>
-                        <hr/>
-                        {this.props.distinctKnownCount.toLocaleString()}
-                        <small style={{ display: 'inline-block', width: '50%'}}>(100%)</small>
-                      </div>
-                    )}
-                  </div>
-                ),
                 sortable: useSort,
-                width: '12em',
+                width: '11em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
                     and that have the given <em>{this.props.field.display}</em> value.
+                  </div>
+                ),
+                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+                renderHeading: this.props.filteredDistinctKnownCount ? [
+                  () => (
+                    <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <div>Matching</div>
+                      <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    </div>
+                  ),
+                  () => (
+                    <div>
+                      {this.props.filteredDistinctKnownCount.toLocaleString()}
+                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>(100%)</small>
+                    </div>
+                  )
+                ] : () => (
+                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                    <div>Matching</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
                   </div>
                 ),
                 renderCell: ({ value }) => (
@@ -1909,11 +1940,8 @@ class MembershipField extends React.Component {
                     {value.toLocaleString()}
                     &nbsp;
                     {this.props.filteredDistinctKnownCount && (
-                      <small style={{ 
-                        display: 'inline-block',
-                        width: '50%'
-                      }}>
-                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)} %)
+                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
+                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)}%)
                       </small>
                     )}
                   </div>
@@ -1921,37 +1949,41 @@ class MembershipField extends React.Component {
               },
               {
                 key: 'count',
-                name: (
-                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    <div>All</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                    {this.props.filteredDistinctKnownCount && (
-                      <div style={{ width: '100%'}}>
-                        <hr/>
-                        {this.props.filteredDistinctKnownCount.toLocaleString()}
-                        <small style={{ display: 'inline-block', width: '50%' }}>(100%)</small>
-                      </div>
-                    )}
-                  </div>
-                ),
                 sortable: useSort,
-                width: '12em',
+                width: '11em',
                 helpText: (
                   <div>
                     The number of <em>{this.props.displayName}</em> with the
                     given <em>{this.props.field.display}</em> value.
                   </div>
                 ),
+                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+                renderHeading: this.props.distinctKnownCount ? [
+                  () => (
+                    <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <div>All</div>
+                      <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                    </div>
+                  ),
+                  () => (
+                    <div>
+                      {this.props.distinctKnownCount.toLocaleString()}
+                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center'}}>(100%)</small>
+                    </div>
+                  )
+                ] : () => (
+                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                    <div>All</div>
+                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+                  </div>
+                ),
                 renderCell: ({ value }) => (
                   <div>
                     {value.toLocaleString()}
                     &nbsp;
-                    {this.props.filteredDistinctKnownCount && (
-                      <small style={{ 
-                        display: 'inline-block',
-                        width: '50%'
-                      }}>
-                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)} %)
+                    {this.props.distinctKnownCount && (
+                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
+                        ({Math.round(value/this.props.distinctKnownCount * 100)}%)
                       </small>
                     )}
                   </div>
@@ -2198,7 +2230,13 @@ EmptyField.propTypes = FieldFilter.propTypes;
  * @param {boolean} includeUnknown
  * @param {SummaryCount[]} fieldSummary
  */
-function shouldAddFilter(field, value, includeUnknown, fieldSummary) {
+function shouldAddFilter(field, value, includeUnknown, fieldSummary, selectByDefault) {
+  if (selectByDefault == false) {
+    return isRange(field) && (value == null || (value.min == null && value.max == null)) ? false
+         : value == null ? true
+         : value.length == 0 ? false
+         : true;
+  }
 
   // user doesn't want unknowns
   if (!includeUnknown) return true;
