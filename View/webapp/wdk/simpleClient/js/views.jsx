@@ -79,7 +79,10 @@ var SearchPage = React.createClass({
             <QuestionJson data={store}/>
           </div>
         </div>
-        <AnswerResults results={store.results} resultStats={store.resultStats}/>
+        {store.type != "createStepAction" ?
+          <AnswerResults results={store.results} resultStats={store.resultStats}/> :
+          <StepResults results={store.results}/>
+        }
       </div>
     );
   }
@@ -123,6 +126,10 @@ var QuestionForm = React.createClass({
     else {
       this.props.ac.loadResults(store);
     }
+  },
+  createStep: function() {
+    var store = this.props.data;
+    this.props.ac.createStep(store);
   },
   render: function() {
     var store = this.props.data;
@@ -186,6 +193,7 @@ var QuestionForm = React.createClass({
         </div>
         <hr/>
         <input type="button" value="Submit Request" onClick={this.submitRequest}/>
+        <input type="button" value="Create a Step" onClick={this.createStep}/>
       </div>
     );
   }
@@ -269,6 +277,16 @@ var AnswerResults = React.createClass({
         </table>
       </div>
     );
+  }
+});
+
+var StepResults = React.createClass({
+  render: function() {
+    if (this.props.results == null) {
+      return ( <div></div> );
+    }
+    var id = this.props.results.id;
+    return(<div>step id is {id}</div>);
   }
 });
 
