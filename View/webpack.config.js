@@ -27,7 +27,7 @@ var scripts = [
 var alias = scripts.reduce(function(alias, script) {
   alias[script.alias + '$'] = script.path;
   return alias;
-}, {});
+}, { });
 
 // Create webpack script-loader configuration object
 var scriptLoaders = scripts.map(function(script) {
@@ -49,6 +49,7 @@ var exposeModules = [
   { module: 'react-addons-perf', expose : 'ReactPerf' },
   { module: 'react-dom',         expose : 'ReactDOM' },
   { module: 'react-router/es',   expose : 'ReactRouter' },
+  { module: 'mesa/dist/es6',     expose : 'Mesa' },
 ];
 
 var exposeLoaders = exposeModules.map(function(entry) {
