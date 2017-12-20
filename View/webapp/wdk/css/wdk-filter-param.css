@@ -206,9 +206,11 @@
   text-align: center;
   overflow: visible;
 }
-.filter-param .membership-filter .HeadingRow {
-  border-bottom: 1px solid #ccc;
+.filter-param .membership-filter .HeadingRow:first-child {
   border-top: 1px solid #ccc;
+}
+.filter-param .membership-filter .HeadingRow:last-child {
+  border-bottom: 1px solid #ccc;
 }
 .filter-param .membership-filter .DataRow,
 .filter-param .membership-filter .HeadingRow{
@@ -224,6 +226,7 @@
   border-right: 1px solid #ccc;
   background-color: #f7f7f7;
   background-clip: padding-box; /* prevent firefox from clipping border */
+  vertical-align: bottom;
 }
 .filter-param .membership-filter .MesaComponent th:first-child {
   border-left: 1px solid #ccc;
@@ -232,6 +235,9 @@
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
   border-radius: 0;
+}
+.filter-param .membership-filter .MesaComponent .HeadingCell-Content {
+  align-items: flex-end;
 }
 .filter-param .membership-filter .MesaComponent th:nth-child(3) .HeadingCell-Content,
 .filter-param .membership-filter .MesaComponent th:nth-child(4) .HeadingCell-Content {
@@ -242,11 +248,14 @@
   margin-left: auto;
   text-align: right;
 }
+/* Numeric columns (All and Matching) */
+.filter-param .membership-filter .MesaComponent .HeadingRow:last-child th:nth-child(3),
+.filter-param .membership-filter .MesaComponent .HeadingRow:last-child th:nth-child(4),
 .filter-param .membership-filter .MesaComponent td:nth-child(3),
 .filter-param .membership-filter .MesaComponent td:nth-child(4) {
   text-align: right;
-  padding-right: 2rem;
-  padding-left: 2rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
 }
 .filter-param .membership-filter .MesaComponent tr:hover td {
   background: #fafafa;
@@ -269,12 +278,11 @@
 .filter-param .membership-actions {
   display: flex;
   flex-direction: row;
-  padding: .2em;
+  padding: .2em 0;
 }
 .filter-param .membership-action__group-selected {
   display: flex;
   align-items: center;
-  padding: .3em;
   font-weight: 300;
   font-size: 1.1em;
 }
