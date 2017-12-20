@@ -189,7 +189,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     // create child step
     QuestionBean question = wdkModel.getQuestion(questionName);
-    return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
+    return user.createStep(strategy.getStrategyId(), question, params, null, false, weight);
   }
 
   public static StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, long importStrategyId)
@@ -197,7 +197,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     logger.debug("creating step from strategy: " + importStrategyId);
     StrategyBean importStrategy = user.getStrategy(importStrategyId);
     StepBean step = importStrategy.getLatestStep();
-    StepBean childStep = step.deepClone(newStrategy.getStrategyId(), new HashMap<Long, Long>());
+    StepBean childStep = step.deepClone(newStrategy.getStrategyId());
     childStep.setIsCollapsible(true);
     childStep.setCollapsedName("Copy of " + importStrategy.getName());
     childStep.update(false);

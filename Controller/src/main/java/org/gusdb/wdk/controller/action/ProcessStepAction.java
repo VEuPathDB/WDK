@@ -240,7 +240,7 @@ public class ProcessStepAction extends Action {
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, true, weight);
+    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);
@@ -258,8 +258,7 @@ public class ProcessStepAction extends Action {
       String filterName = step.getFilterName();
       weight = step.getAssignedWeight();
 
-      StepBean newParent = user.createStep(strategy.getStrategyId(), question, newStepParams, filterName, false,
-          true, weight);
+      StepBean newParent = user.createStep(strategy.getStrategyId(), question, newStepParams, filterName, false, weight);
 
       // then replace the current step with the newParent
       return strategy.insertStepBefore(newParent, step.getStepId());
@@ -302,7 +301,7 @@ public class ProcessStepAction extends Action {
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, true, weight);
+    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);

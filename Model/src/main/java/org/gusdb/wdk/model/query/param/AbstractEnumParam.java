@@ -183,7 +183,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @param contextParamValues
    * @return
    */
-  public EnumParamVocabInstance getVocabInstance(User user, CompleteValidStableValues contextParamValues) {
+  public EnumParamVocabInstance getVocabInstance(User user, ValidStableValues contextParamValues) {
 
     // make sure context is populated with values we need (our depended params)
     //contextParamValues = ensureRequiredContext(user, contextParamValues);
@@ -387,7 +387,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabMap(user, null);
   }
 
-  public Map<String, String> getVocabMap(User user, CompleteValidStableValues contextParamValues) {
+  public Map<String, String> getVocabMap(User user, ValidStableValues contextParamValues) {
     return getVocabInstance(user, contextParamValues).getVocabMap();
   }
 

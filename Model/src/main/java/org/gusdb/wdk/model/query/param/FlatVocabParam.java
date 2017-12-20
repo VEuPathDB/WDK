@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
@@ -145,7 +146,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   }
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, ValidStableValues dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, CompleteValidStableValues dependedParamValues)
       throws WdkModelException, WdkUserException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);

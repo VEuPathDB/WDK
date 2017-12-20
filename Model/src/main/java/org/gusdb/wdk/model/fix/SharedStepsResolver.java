@@ -16,13 +16,25 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
- * @author xingao
+ * RRD 12/19/17 Once upon a time WDK steps could be shared across strategies in an immutable-tree-style
+ * data structure.  For various reasons we abandoned this approach and when that happened, this script was
+ * used to duplicate shared steps so any referring step trees would each have their own copy.
  * 
+ * Since then we have significantly changed WDK; this script has been changed to comply with new APIs but
+ * has not been tested and is not expected to be used.  It may be broken.
+ * 
+ * @author xingao
  */
+@Deprecated
 public class SharedStepsResolver extends BaseCLI {
 
   private static final String TEMP_STEP_TABLE = "tmp_steps";
@@ -35,6 +47,7 @@ public class SharedStepsResolver extends BaseCLI {
     long leftId;
     long rightId;
     String content;
+    String questionName;
   }
 
   public static void main(String[] args) {
@@ -106,7 +119,7 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private void mapSharedRootSteps(WdkModel wdkModel, DataSource dataSource, String userSchema)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
 		LOG.debug("\n\nDealing with shared root steps");
     String strategyTable = userSchema + "strategies";
     String sqlSelect = "SELECT strategy_id, root_step_id FROM " + strategyTable +
@@ -150,12 +163,12 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private void mapSharedChildSteps(WdkModel wdkModel, DataSource dataSource, String userSchema, boolean left)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     LOG.debug("\n\nDealing with shared child steps, left child??? " + left);
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     String column = left ? "left_child_id" : "right_child_id";
     String stepTable = userSchema + "steps";
-    String sqlSelect = "SELECT step_id, " + column + ", display_params FROM            " + stepTable +
+    String sqlSelect = "SELECT step_id, " + column + ", question_name, display_params FROM            " + stepTable +
         "  WHERE " + column + " IN (SELECT " + column + " FROM " + stepTable +
         "                           WHERE " + column + " IS NOT NULL " +
         "                           GROUP BY " + column + " HAVING count(*) > 1)            " +
@@ -169,6 +182,7 @@ public class SharedStepsResolver extends BaseCLI {
       psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
       long previousStep = 0;
       int count = 0;
+      User systemUser = wdkModel.getSystemUser();
       while (resultSet.next()) {
         long stepId = resultSet.getLong("step_id");
         long childId = resultSet.getLong(column);
@@ -176,11 +190,12 @@ public class SharedStepsResolver extends BaseCLI {
           previousStep = childId;
         }
         else { // found the 2+ duplicate step, deep clone the step
+          String questionName = resultSet.getString("question_name");
           String content = platform.getClobData(resultSet, "display_params");
           long newId = cloneStep(wdkModel, dataSource, userSchema, childId);
           Map<Long, Long> ids = new HashMap<>();
           ids.put(childId, newId);
-          content = updateContent(content, ids);
+          content = updateContent(systemUser, questionName, content, ids);
 
           psUpdate.setLong(1, newId);
           platform.setClobData(psUpdate, 2, content, false);
@@ -204,7 +219,7 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private long cloneStep(WdkModel wdkModel, DataSource dataSource, String userSchema, long stepId)
-      throws SQLException, WdkModelException {
+      throws SQLException, WdkModelException, WdkUserException {
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     SqlUtils.executeUpdate(dataSource, "INSERT INTO                  " + TEMP_STEP_TABLE +
         "  SELECT * FROM " + userSchema + "steps START WITH step_id = " + stepId +
@@ -213,7 +228,7 @@ public class SharedStepsResolver extends BaseCLI {
     PreparedStatement psUpdate = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource,
-          "SELECT step_id, left_child_id, right_child_id, display_params FROM " + TEMP_STEP_TABLE,
+          "SELECT step_id, question_name, left_child_id, right_child_id, display_params FROM " + TEMP_STEP_TABLE,
           "select-tmp-steps", 100);
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + TEMP_STEP_TABLE +
           " SET step_id = ?, left_child_id = ?, right_child_id = ?, display_params = ? WHERE step_id = ?");
@@ -221,6 +236,7 @@ public class SharedStepsResolver extends BaseCLI {
       while (resultSet.next()) {
         StepInfo step = new StepInfo();
         step.oldId = resultSet.getInt("step_id");
+        step.questionName = resultSet.getString("question_name");
         Object left = resultSet.getObject("left_child_id");
         if (left != null)
           step.leftId = Long.valueOf(left.toString());
@@ -231,7 +247,7 @@ public class SharedStepsResolver extends BaseCLI {
         steps.put(step.oldId, step);
       }
 
-      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, stepId, steps);
+      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, stepId, steps, wdkModel.getSystemUser());
       psUpdate.executeBatch();
 
       // then copy back the new steps
@@ -248,24 +264,24 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private long cloneStep(DBPlatform platform, DataSource dataSource, PreparedStatement psUpdate,
-      String userSchema, long stepId, Map<Long, StepInfo> steps) throws SQLException, WdkModelException {
+      String userSchema, long stepId, Map<Long, StepInfo> steps, User systemUser) throws SQLException, WdkModelException, WdkUserException {
     StepInfo step = steps.get(stepId);
     if (step.newId != 0)
       return step.newId;
     // check if the step's children has been cloned
     Map<Long, Long> ids = new HashMap<>();
     if (step.leftId != 0) {
-      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, step.leftId, steps);
+      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, step.leftId, steps, systemUser);
       ids.put(step.leftId, newId);
       step.leftId = newId;
     }
     if (step.rightId != 0) {
-      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, step.rightId, steps);
+      long newId = cloneStep(platform, dataSource, psUpdate, userSchema, step.rightId, steps, systemUser);
       ids.put(step.rightId, newId);
       step.rightId = newId;
     }
     // update the param content
-    step.content = updateContent(step.content, ids);
+    step.content = updateContent(systemUser, step.questionName, step.content, ids);
     // get a new step id
     try {
       step.newId = platform.getNextId(dataSource, userSchema, "steps");
@@ -283,23 +299,27 @@ public class SharedStepsResolver extends BaseCLI {
     return step.newId;
   }
 
-  private String updateContent(String content, Map<Long, Long> ids) throws WdkModelException {
+  private String updateContent(User user, String questionName, String content, Map<Long, Long> ids) throws WdkModelException, WdkUserException {
     JSONObject jsContent = new JSONObject(content);
     Step step = new Step(null, 0, 0);
+    step.setQuestionName(questionName); // question must be assigned first
     step.setParamFilterJSON(jsContent);
-    Map<String, String> params = step.getParamValues();
+    CompleteValidStableValues oldParams = step.getParamValues();
+    WriteableStableValues newParams = new WriteableStableValues(oldParams);
 
     // update param values
-    String[] paramNames = params.keySet().toArray(new String[0]);
+    String[] paramNames = newParams.keySet().toArray(new String[0]);
     for (long oldId : ids.keySet()) {
       String old = Long.toString(oldId);
       for (String paramName : paramNames) {
-        String value = params.get(paramName);
+        String value = newParams.get(paramName);
         if (value.equals(old))
-          params.put(paramName, Long.toString(ids.get(oldId)));
+          newParams.put(paramName, Long.toString(ids.get(oldId)));
       }
     }
-    step.setParamValues(params);
+    // must revalidate
+    CompleteValidStableValues validNewParams = ValidStableValuesFactory.createFromCompleteValues(user, newParams);
+    step.setParamValues(validNewParams);
     jsContent = step.getParamFilterJSON();
     return jsContent.toString();
   }

@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONException;
@@ -17,7 +17,7 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter {
   }
 
   @Override
-  public JSONObject getJson(User user, CompleteValidStableValues stableValues)
+  public JSONObject getJson(User user, ValidStableValues stableValues)
       throws JSONException, WdkModelException, WdkUserException {
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, stableValues);
     return super.getJson(user, stableValues)

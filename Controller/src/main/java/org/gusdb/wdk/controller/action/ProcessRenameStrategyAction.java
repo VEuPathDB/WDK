@@ -1,9 +1,4 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action;
-
-import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -90,7 +85,7 @@ public class ProcessRenameStrategyAction extends Action {
                             && !customName.equals(strategy.getSavedName())) {
                         // clone the last step
                         long strategyId = wdkUser.getNewStrategyId();
-                        StepBean step = strategy.getLatestStep().deepClone(strategyId, new HashMap<Long, Long>());
+                        StepBean step = strategy.getLatestStep().deepClone(strategyId);
                         strategy = wdkUser.createStrategy(step, strategy.getIsSaved(), strategy.getIsDeleted());
                     }
 

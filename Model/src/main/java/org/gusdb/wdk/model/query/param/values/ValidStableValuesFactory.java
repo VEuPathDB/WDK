@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param.values;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.collection.WriteableMap;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -21,22 +24,33 @@ public class ValidStableValuesFactory {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(ValidStableValuesFactory.class);
 
-  // an AbstractStableValues that asserts its values have been validated
+  /** an AbstractStableValues that asserts its values (and any depended values) have been validated */
   public static class ValidStableValues extends AbstractStableValues {
     protected ValidStableValues(StableValues initialValues) {
       super(initialValues);
     }
+    /**
+     * No calling code should be asking for values that don't exist; override and throw exception
+     */
+    @Override
+    public String get(Object key) {
+      if (!containsKey(key)) {
+        throw new IllegalArgumentException("The specified key '" + key +
+            "' is not present in this " + ValidStableValues.class.getSimpleName());
+      }
+      return _values.get(key);
+    }
   }
 
-  // a ValidStableValues that asserts it has a complete set of values for its query
+  /** a ValidStableValues that asserts it has a complete set of values for its query */
   public static class CompleteValidStableValues extends ValidStableValues {
     protected CompleteValidStableValues(StableValues initialValues) {
       super(initialValues);
     }
   }
 
-  // used only for building a valid set
-  public static class PartiallyValidatedStableValues extends WriteableStableValues {
+  /** used only for building a valid set */
+  public static class PartiallyValidatedStableValues extends ValidStableValues implements WriteableMap<String,String> {
 
     public static class ParamValidity {
       private final boolean _isValid;
@@ -52,7 +66,7 @@ public class ValidStableValuesFactory {
     private final Map<String,String> _validationErrorMap = new HashMap<>();
 
     private PartiallyValidatedStableValues(User user, Query query) {
-      super(query);
+      super(new WriteableStableValues(query));
       addUser(user);
     }
     private PartiallyValidatedStableValues(User user, StableValues stableValues) {
@@ -91,10 +105,14 @@ public class ValidStableValuesFactory {
     public ParamValidity getParamValidity(String paramName) {
       return new ParamValidity(isParamValid(paramName));
     }
+    @Override
+    public Map<String, String> getUnderlyingMap() {
+      return _values;
+    }
   }
 
   /**
-   * Creates a ValidatedParamStableValues object that has parameters populated with defaults and validates it.
+   * Creates a CompleteValidStableValues object that has parameters populated with defaults and validates it.
    * 
    * @param user
    * @param query
@@ -114,7 +132,7 @@ public class ValidStableValuesFactory {
   }
 
   /**
-   * Creates a ValidatedParamStableValues from a possibly complete set of parameters. The one way the
+   * Creates a CompleteValidStableValues from a possibly complete set of parameters. The one way the
    * parameters might not be complete is if the query associated with the parameters requires a userId
    * parameter. Once added, if necessary, the object is validated.
    * 
@@ -133,7 +151,7 @@ public class ValidStableValuesFactory {
   }
 
   /**
-   * Creates a ValidatedParamStableValues from a possibly complete set of parameters. The one way the
+   * Creates a CompleteValidStableValues from a possibly complete set of parameters. The one way the
    * parameters might not be complete is if the query associated with the parameters requires a userId
    * parameter. Once added, if necessary, the object is validated.
    * 
@@ -182,6 +200,34 @@ public class ValidStableValuesFactory {
     if (!extraParamNames.isEmpty()) {
       throw new WdkUserException("The following parameters are not part of query '" +
           incomingValues.getQuery().getFullName() + "': ['" + FormatUtil.join(extraParamNames, "', '") + "']");
+    }
+  }
+
+  /**
+   * Creates a CompleteValidStableValues from a possibly complete set of parameters. The one way the
+   * parameters might not be complete is if the query associated with the parameters requires a userId
+   * parameter. Once added, if necessary, the object is validated.
+   * 
+   * This method differs from createFromCompleteValues() in that if invalid parameter values are found,
+   * their values will be replaced with defaults.  Any errors found will be collected into a map which is
+   * returned along with a complete set of validated values.
+   * 
+   * If extra parameters are provided, they are ignored.  If no validation errors occur, then no values are
+   * replaced with defaults and the second value in the tuple will be an empty map.
+   * 
+   * @param user
+   * @param unvalidatedValues
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public static TwoTuple<CompleteValidStableValues,Map<String,String>> createFromDatabaseValues(User user, StableValues unvalidatedValues) throws WdkModelException {
+    try {
+      CompleteValidStableValues validatedValues = createFromSupersetValues(user, unvalidatedValues);
+      return new TwoTuple<>(validatedValues, Collections.EMPTY_MAP);
+    }
+    catch (WdkUserException e) {
+      return new TwoTuple<>(createDefault(user, unvalidatedValues.getQuery()), e.getParamErrors());
     }
   }
 

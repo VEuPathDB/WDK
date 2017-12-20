@@ -343,8 +343,8 @@ public class StepBean {
      * @return
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
-        return new StepBean(user, step.deepClone(strategyId, stepIdMap));
+    public StepBean deepClone(Long strategyId) throws WdkModelException {
+        return new StepBean(user, step.deepClone(strategyId));
     }
 
     public QuestionBean getQuestion() throws WdkModelException {

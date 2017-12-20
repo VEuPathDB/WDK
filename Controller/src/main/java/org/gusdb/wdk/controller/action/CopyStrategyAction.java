@@ -56,7 +56,7 @@ public class CopyStrategyAction extends Action {
       boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
 
       StrategyBean copy = new StrategyBean(wdkUser,
-          wdkModel.getModel().getStepFactory().copyStrategy(strategy.getStrategy(), new HashMap<Long, Long>()));
+          wdkModel.getModel().getStepFactory().copyStrategy(strategy.getStrategy()));
 
       // forward to strategyPage.jsp
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);

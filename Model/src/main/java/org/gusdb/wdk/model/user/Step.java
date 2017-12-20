@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
@@ -30,6 +32,8 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -120,16 +124,19 @@ public class Step {
   // stores answer values for this step object and manages reuse of those objects
   private AnswerValueCache _answerValueCache;
 
-  // Map of param name (without set name) to stable value (always a string), which are:
+  // Validated map of param name (without set name) to stable value (always a string), which are:
   // StringParam: unquoted raw value
   // TimestampParam: millisecs since 1970 (or whatever)
-  // DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
+  // DatasetParam: Dataset ID (PK column in Datasets table in user DB)
   // AbstractEnumParam: unsorted string representation of term list (comma-delimited)
   // EnumParam: (inherited)
   // FlatVocabParam: (inherited)
-  // FilterParam: JSON string representing all filters applied (see FilterParam)
+  // FilterParam: JSON string representing all filters applied and the resulting values (see FilterParam)
+  // FilterParamNew: JSON string representing all filters applied (see FilterParamNew)
   // AnswerParam: Step ID
-  private Map<String, String> _paramValues = new LinkedHashMap<String, String>();
+  private CompleteValidStableValues _paramValues;
+
+  private Map<String,String> _paramValidationErrors;
 
   // filters applied to this step
   private FilterOptionList _filterOptions;
@@ -948,8 +955,8 @@ public class Step {
   /**
    * @return the paramErrors
    */
-  public Map<String, String> getParamValues() {
-    return new LinkedHashMap<String, String>(_paramValues);
+  public CompleteValidStableValues getParamValues() {
+    return _paramValues;
   }
 
   /**
@@ -957,10 +964,9 @@ public class Step {
    *          the paramValues to set
    * @throws WdkModelException 
    */
-  public void setParamValues(StableValues paramValues) throws WdkModelException {
-    if (paramValues == null)
-      paramValues = new WriteableStableValues(getQuestion().getQuery());
-    _paramValues = new WriteableStableValues(paramValues);
+  public void setParamValues(CompleteValidStableValues paramValues) throws WdkModelException {
+    // validate that query matches question
+    _paramValues = paramValues;
   }
 
   public FilterOptionList getFilterOptions() {
@@ -1014,10 +1020,6 @@ public class Step {
     getViewFilterOptions().removeFilterOption(filterName);
   }
 
-  public void setParamValue(String paramName, String paramValue) {
-    _paramValues.put(paramName, paramValue);
-  }
-
   public RecordClass getRecordClass() throws WdkModelException {
     return getQuestion().getRecordClass();
   }
@@ -1050,12 +1052,11 @@ public class Step {
 
     // create new steps
     Question question = getQuestion();
-    Map<String, String> params = getParamValues();
     try {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
-      Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, startIndex, endIndex, _isDeleted, false,
-          assignedWeight, getFilterOptions());
+      Step step = StepUtilities.createStep(_user, _strategyId, question, _paramValues, filter,
+          startIndex, endIndex, _isDeleted, assignedWeight, getFilterOptions());
       step._collapsedName = _collapsedName;
       step._customName = _customName;
       step._collapsible = _collapsible;
@@ -1096,7 +1097,7 @@ public class Step {
           paramValues.put(paramName, paramValue);
         }
         AnswerFilterInstance filter = getFilter();
-        step = StepUtilities.createStep(getUser(), strategyId, question, paramValues, filter, _isDeleted, false,
+        step = StepUtilities.createStep(getUser(), strategyId, question, paramValues, filter, _isDeleted,
             _assignedWeight, getFilterOptions());
       }
     }
@@ -1115,6 +1116,10 @@ public class Step {
         "Unable to execute all operations subsequent to step copy."));
 
     return step;
+  }
+
+  public Step deepClone(Long strategyId) throws WdkModelException {
+    return deepClone(strategyId, new HashMap<>());
   }
 
   public boolean isFiltered() throws WdkModelException {
@@ -1474,7 +1479,7 @@ public class Step {
   }
 
   void setParamsJSON(JSONObject jsParams) throws WdkModelException {
-    _paramValues = new LinkedHashMap<String, String>();
+    WriteableStableValues paramValues = new WriteableStableValues(getQuestion().getQuery());
     if (jsParams != null) {
       try {
         // read params;
@@ -1483,7 +1488,7 @@ public class Step {
           for (String paramName : paramNames) {
             String paramValue = jsParams.getString(paramName);
             LOG.trace("param '" + paramName + "' = '" + paramValue + "'");
-            _paramValues.put(paramName, paramValue);
+            paramValues.put(paramName, paramValue);
           }
         }
       }
@@ -1491,6 +1496,10 @@ public class Step {
         throw new WdkModelException(ex);
       }
     }
+    TwoTuple<CompleteValidStableValues, Map<String,String>> validationResult =
+        ValidStableValuesFactory.createFromDatabaseValues(_user, paramValues);
+    _paramValues = validationResult.getFirst();
+    _paramValidationErrors = validationResult.getSecond();
   }
 
   public JSONArray getFilterOptionsJSON() {

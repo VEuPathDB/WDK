@@ -1304,7 +1304,7 @@ public class StepFactory {
     Step newStep;
     try {
       newStep = StepUtilities.createStep(newUser, newStrategyId, question, paramValues, filter,
-          startIndex, endIndex, deleted, false, assignedWeight, oldStep.getFilterOptions());
+          startIndex, endIndex, deleted, assignedWeight, oldStep.getFilterOptions());
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
@@ -1691,6 +1691,10 @@ public class StepFactory {
     if (!name.toLowerCase().endsWith(", copy of"))
       name += ", Copy of";
     return copyStrategy(strategy, stepIdMap, name);
+  }
+
+  public Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
+    return copyStrategy(strategy, new HashMap<>());
   }
 
   /**

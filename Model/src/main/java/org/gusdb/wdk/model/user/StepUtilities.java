@@ -16,6 +16,9 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -34,13 +37,13 @@ public class StepUtilities {
   public static Step createStep(User user, Long strategyId, AnswerValue answerValue, boolean deleted, int assignedWeight)
       throws WdkModelException {
     Question question = answerValue.getQuestion();
-    ValidStableValueSet paramValues = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
+    CompleteValidStableValues paramValues = answerValue.getIdsQueryInstance().getValidatedParamStableValues();
     AnswerFilterInstance filter = answerValue.getFilter();
     int startIndex = answerValue.getStartIndex();
     int endIndex = answerValue.getEndIndex();
 
     try {
-      return createStep(user, strategyId, question, paramValues, filter, startIndex, endIndex, deleted, false,
+      return createStep(user, strategyId, question, paramValues, filter, startIndex, endIndex, deleted,
           assignedWeight, answerValue.getFilterOptions());
     }
     catch (WdkUserException ex) {
@@ -48,8 +51,8 @@ public class StepUtilities {
     }
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
+  public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException,
       WdkUserException {
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
@@ -58,30 +61,30 @@ public class StepUtilities {
     }
     else
       filter = recordClass.getDefaultFilter();
-    return createStep(user, strategyId, question, paramValues, filter, deleted, validate, assignedWeight);
+    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight);
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight)
+  public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
+      AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException, WdkUserException {
-    return createStep(user, strategyId, question, paramValues, filter, deleted, validate,
+    return createStep(user, strategyId, question, paramValues, filter, deleted,
         assignedWeight, null);
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight,
+  public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
+      AnswerFilterInstance filter, boolean deleted, int assignedWeight,
       FilterOptionList filterOptions)
       throws WdkModelException, WdkUserException {
     int endIndex = user.getPreferences().getItemsPerPage();
-    return createStep(user, strategyId, question, paramValues, filter, 1, endIndex, deleted, validate,
+    return createStep(user, strategyId, question, paramValues, filter, 1, endIndex, deleted,
         assignedWeight, filterOptions);
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
+  public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
+      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     Step step = user.getWdkModel().getStepFactory().createStep(user, strategyId, question, paramValues,
-        filter, pageStart, pageEnd, deleted, validate, assignedWeight, filterOptions);
+        filter, pageStart, pageEnd, deleted, assignedWeight, filterOptions);
     return step;
   }
 
@@ -407,7 +410,7 @@ public class StepUtilities {
     Question question = user.getWdkModel().getBooleanQuestion(leftRecordClass);
     BooleanQuery booleanQuery = (BooleanQuery) question.getQuery();
 
-    Map<String, String> params = new LinkedHashMap<String, String>();
+    WriteableStableValues params = new WriteableStableValues(booleanQuery);
 
     String leftName = booleanQuery.getLeftOperandParam().getName();
     String leftKey = Long.toString(leftStep.getStepId());
@@ -419,11 +422,12 @@ public class StepUtilities {
 
     String operatorString = operator.getBaseOperator();
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
-    //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
+    //params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
     Step booleanStep;
     try {
-      booleanStep = createStep(user, strategyId, question, params, filter, false, false, 0);
+      CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(user, params);
+      booleanStep = createStep(user, strategyId, question, validParams, filter, false, 0);
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);

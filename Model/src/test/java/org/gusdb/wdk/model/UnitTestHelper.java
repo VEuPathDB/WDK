@@ -112,7 +112,7 @@ public class UnitTestHelper {
         List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return StepUtilities.createStep(user, null, question, params, (String) null, false, false, 0);
+        return StepUtilities.createStep(user, null, question, params, (String) null, false, 0);
     }
 
     private static void loadQuestions() throws WdkModelException {

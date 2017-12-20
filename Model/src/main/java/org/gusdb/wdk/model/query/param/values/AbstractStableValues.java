@@ -65,12 +65,12 @@ public abstract class AbstractStableValues implements StableValues {
   }
 
   @Override
-  public boolean containsKey(String key) {
+  public boolean containsKey(Object key) {
     return _values.containsKey(key);
   }
 
   @Override
-  public String get(String key) {
+  public String get(Object key) {
     return _values.get(key);
   }
 

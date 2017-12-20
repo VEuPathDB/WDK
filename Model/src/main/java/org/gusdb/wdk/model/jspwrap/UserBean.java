@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -131,10 +132,10 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
-  public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
+  public StepBean createStep(Long strategyId, QuestionBean question, CompleteValidStableValues params,
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException,
       WdkUserException {
-    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted, validate,
+    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted,
         assignedWeight);
     return new StepBean(this, step);
   }
@@ -528,11 +529,6 @@ public class UserBean {
 
   public StepBean getStepByCachedId() throws WdkModelException {
     return new StepBean(this, StepUtilities.getStep(_user, _stepId));
-  }
-
-  public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap)
-      throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy, stepIdMap));
   }
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap, String name)
