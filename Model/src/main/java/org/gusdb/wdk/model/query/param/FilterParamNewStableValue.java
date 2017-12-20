@@ -571,9 +571,16 @@ public class FilterParamNewStableValue {
 
     @Override
     String getSignature() {
-      List<String> list = new ArrayList<String>(members);
-      Collections.sort(list);
-      return FormatUtil.join(list, ",") + " --" + includeUnknowns;
+      String membersSig;
+      if (members != null) {
+        List<String> list = new ArrayList<String>(members);
+        Collections.sort(list);
+        membersSig = FormatUtil.join(list, ",");
+      }
+      else {
+        membersSig = "NULL";
+      }
+      return  membersSig + " --" + includeUnknowns;
     }
 
     @Override
