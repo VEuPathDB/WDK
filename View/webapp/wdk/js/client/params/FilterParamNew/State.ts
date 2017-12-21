@@ -29,7 +29,9 @@ export type MemberFieldState = BaseFieldState & {
 }
 
 export type RangeFieldState = BaseFieldState & {
-  // TODO Store x- and y-axis settings
+  yaxisMax?: number;
+  xaxisMin?: number;
+  xaxisMax?: number;
 }
 
 export type FieldState = MemberFieldState | RangeFieldState;

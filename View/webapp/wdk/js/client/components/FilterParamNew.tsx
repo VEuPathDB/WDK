@@ -6,7 +6,7 @@ import {
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
 } from '../params/FilterParamNew/ActionCreators';
-import { MemberFieldState, State } from '../params/FilterParamNew/State';
+import { MemberFieldState, RangeFieldState, State } from '../params/FilterParamNew/State';
 import { getLeaves, sortDistribution } from '../params/FilterParamNew/Utils';
 import { Props as ParamProps } from '../params/Utils';
 import { Field, Filter, MemberFilter } from '../utils/FilterService';
@@ -30,6 +30,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     this._handleActiveFieldChange = this._handleActiveFieldChange.bind(this);
     this._handleFilterChange = this._handleFilterChange.bind(this);
     this._handleMemberSort = this._handleMemberSort.bind(this);
+    this._handleRangeScaleChange = this._handleRangeScaleChange.bind(this);
   }
 
   _getFieldMap = memoize((parameter: Props['parameter']) =>
@@ -91,6 +92,14 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     }));
   }
 
+  _handleRangeScaleChange(field: Field, fieldState: RangeFieldState) {
+    this.props.dispatch(FieldStateUpdatedAction.create({
+      ...this.props.ctx,
+      field: field.term,
+      fieldState: fieldState
+    }));
+  }
+
   render() {
     let { parameter, uiState } = this.props;
     let filters = this._getFiltersFromValue(this.props.value);
@@ -98,9 +107,8 @@ export default class FilterParamNew extends React.PureComponent<Props> {
       uiState.activeOntologyTerm &&
       uiState.fieldStates[uiState.activeOntologyTerm].ontologyTermSummary
     );
-    let activeFieldState = uiState.activeOntologyTerm != null
-        ? pick(uiState.fieldStates[uiState.activeOntologyTerm], 'sort') as Pick<MemberFieldState, 'sort'>
-        : undefined;
+    let activeFieldState = uiState.activeOntologyTerm == null ? undefined
+      : uiState.fieldStates[uiState.activeOntologyTerm] as FieldState;
     let numLeaves = this._countLeaves(parameter);
 
     return (
@@ -126,6 +134,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
           onFiltersChange={this._handleFilterChange}
           onActiveFieldChange={this._handleActiveFieldChange}
           onMemberSort={this._handleMemberSort}
+          onRangeScaleChange={this._handleRangeScaleChange}
         />
       </div>
     )

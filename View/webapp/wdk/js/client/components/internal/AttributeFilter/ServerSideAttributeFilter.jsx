@@ -22,6 +22,7 @@ export default class ServerSideAttributeFilter extends React.Component {
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
     this.handleMemberSort = this.handleMemberSort.bind(this);
+    this.handleRangeScaleChange = this.handleRangeScaleChange.bind(this);
   }
 
   handleSelectFieldClick(field, event) {
@@ -49,6 +50,10 @@ export default class ServerSideAttributeFilter extends React.Component {
 
   handleMemberSort(field, state) {
     this.props.onMemberSort(field, state);
+  }
+
+  handleRangeScaleChange(field, state) {
+    this.props.onRangeScaleChange(field, state);
   }
 
   render() {
@@ -113,6 +118,7 @@ export default class ServerSideAttributeFilter extends React.Component {
             distribution={activeFieldDistribution}
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
+            onRangeScaleChange={this.handleRangeScaleChange}
             useFullWidth={hideFieldPanel}
             selectByDefault={this.props.selectByDefault}
           />
@@ -153,7 +159,8 @@ ServerSideAttributeFilter.propTypes = {
   // event handlers
   onActiveFieldChange: PropTypes.func.isRequired,
   onFiltersChange: PropTypes.func.isRequired,
-  onMemberSort: PropTypes.func.isRequired
+  onMemberSort: PropTypes.func.isRequired,
+  onRangeScaleChange: PropTypes.func.isRequired
 
 };
 

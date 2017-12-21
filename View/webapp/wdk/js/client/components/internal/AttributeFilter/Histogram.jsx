@@ -2,7 +2,7 @@ import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { isEqual, noop, throttle } from 'lodash';
+import { debounce, isEqual, noop, throttle } from 'lodash';
 
 import { lazy } from '../../../utils/componentUtils';
 import DateSelector from '../../DateSelector';
@@ -22,7 +22,11 @@ var Histogram = (function() {
     constructor(props) {
       super(props);
       this.handleResize = throttle(this.handleResize.bind(this), 100);
-      this.state = this.getStateFromProps(props);
+      // this.updatePlotScale = debounce(this.updatePlotScale, 100);
+      this.emitStateChange = debounce(this.emitStateChange, 100);
+      this.state = {
+        uiState: this.getStateFromProps(props)
+      };
     }
 
     componentDidMount() {
@@ -39,26 +43,28 @@ var Histogram = (function() {
     }
 
     componentWillReceiveProps(nextProps) {
-      if (this.props.distribution !== nextProps.distribution) {
-        this.setState(this.getStateFromProps(nextProps));
+      if (nextProps.uiState !== this.state.uiState) {
+        this.setState({ uiState: nextProps.uiState });
       }
     }
 
     /**
-     * Conditionally update plot and selection based on props and state:
-     *  1. Call createPlot if distribution changed
+     * Conditionally update plot and selection based on props and state.
      */
     componentDidUpdate(prevProps) {
       if (!isEqual(this.props.distribution, prevProps.distribution)) {
         this.createPlot();
         this.drawPlotSelection();
       }
+
       if (
         prevProps.selectedMin !== this.props.selectedMin ||
         prevProps.selectedMax !== this.props.selectedMax
       ) {
         this.drawPlotSelection();
       }
+
+      this.updatePlotScale(this.props.uiState);
     }
 
     componentWillUnmount() {
@@ -71,12 +77,16 @@ var Histogram = (function() {
       var values = props.distribution
         .map(entry => entry.value)
         .filter(value => value != null);
-      var xaxisMin = Math.min(...values);
-      var xaxisMax = Math.max(...values);
+
+      var { xaxisMin, xaxisMax } = props.uiState;
+      if (xaxisMin == null) xaxisMin = Math.min(...values);
+      if (xaxisMax == null) xaxisMax = Math.max(...values);
       return { yaxisMax, xaxisMin, xaxisMax };
     }
 
     computeYAxisMax(props) {
+      if (props.uiState.yaxisMax != null) return props.uiState.yaxisMax;
+
       var counts = props.distribution.map(entry => entry.count);
       // Reverse sort, then pull out first and second highest values
       var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
@@ -133,6 +143,7 @@ var Histogram = (function() {
 
     createPlot() {
       var { distribution, chartType, timeformat } = this.props;
+      var { uiState } = this.state;
 
       var values = distribution.map(entry => entry.value);
       var min = Math.min(...values);
@@ -166,13 +177,13 @@ var Histogram = (function() {
           }
         },
         xaxis: Object.assign({
-          min: this.state.xaxisMin,
-          max: this.state.xaxisMax,
+          min: uiState.xaxisMin,
+          max: uiState.xaxisMax,
           tickLength: 0
         }, xaxisBaseOptions),
         yaxis: {
           min: 0,
-          max: this.state.yaxisMax
+          max: uiState.yaxisMax
         },
         grid: {
           clickable: true,
@@ -241,26 +252,51 @@ var Histogram = (function() {
       }
     }
 
-    setYAxisMax(yaxisMax) {
-      this.setState({ yaxisMax }, () => {
-        this.plot.getOptions().yaxes[0].max = yaxisMax;
+    updatePlotScale(partialUiState) {
+      const { yaxisMax, xaxisMin, xaxisMax } = partialUiState;
+
+      if (yaxisMax == null && xaxisMin == null && xaxisMax == null) return;
+
+      const plotOptions = this.plot.getOptions();
+
+      const {
+        yaxes: { 0: { max: currYaxisMax } },
+        xaxes: { 0: { min: currXaxisMin, max: currXaxisMax } }
+      } = plotOptions;
+
+      if (
+        (yaxisMax != null && yaxisMax !== currYaxisMax) ||
+        (xaxisMin != null && xaxisMin !== currXaxisMin) ||
+        (xaxisMax != null && xaxisMax !== currXaxisMax)
+      ) {
+        if (yaxisMax != null) plotOptions.yaxes[0].max = yaxisMax;
+        if (xaxisMin != null) plotOptions.xaxes[0].min = xaxisMin;
+        if (xaxisMax != null) plotOptions.xaxes[0].max = xaxisMax;
         this.plot.setupGrid();
         this.plot.draw();
-      });
+      }
+    }
+
+    updateUIState(uiState) {
+      this.setState({ uiState });
+      this.emitStateChange(uiState);
+    }
+
+    emitStateChange(uiState) {
+      this.props.onUiStateChange(uiState);
+    }
+
+    setYAxisMax(yaxisMax) {
+      this.updateUIState(Object.assign({}, this.state.uiState, { yaxisMax }));
     }
 
     setXAxisScale(xaxisMin, xaxisMax) {
-      this.setState({ xaxisMin, xaxisMax }, () => {
-        this.plot.getOptions().xaxes[0].min = xaxisMin;
-        this.plot.getOptions().xaxes[0].max = xaxisMax;
-        this.plot.setupGrid();
-        this.plot.draw();
-      });
+      this.updateUIState(Object.assign({}, this.state.uiState, { xaxisMin, xaxisMax }));
     }
 
     render() {
-      var { yaxisMax, xaxisMin, xaxisMax } = this.state;
       var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
+      var { yaxisMax, xaxisMin, xaxisMax } = this.state.uiState;
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
@@ -341,6 +377,14 @@ var Histogram = (function() {
     timeformat: PropTypes.string,
     xaxisLabel: PropTypes.string,
     yaxisLabel: PropTypes.string,
+
+    uiState: PropTypes.shape({
+      xaxisMin: PropTypes.number,
+      xaxisMax: PropTypes.number,
+      yaxixMax: PropTypes.number
+    }),
+
+    onUiStateChange: PropTypes.func,
 
     onSelected: PropTypes.func,
     onSelecting: PropTypes.func,
