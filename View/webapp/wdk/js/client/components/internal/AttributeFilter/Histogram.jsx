@@ -22,7 +22,6 @@ var Histogram = (function() {
     constructor(props) {
       super(props);
       this.handleResize = throttle(this.handleResize.bind(this), 100);
-      // this.updatePlotScale = debounce(this.updatePlotScale, 100);
       this.emitStateChange = debounce(this.emitStateChange, 100);
       this.state = {
         uiState: this.getStateFromProps(props)
@@ -43,7 +42,11 @@ var Histogram = (function() {
     }
 
     componentWillReceiveProps(nextProps) {
-      if (nextProps.uiState !== this.state.uiState) {
+      if (
+        nextProps.uiState.yaxisMax !== this.state.uiState.yaxisMax ||
+        nextProps.uiState.xaxisMin !== this.state.uiState.xaxisMin ||
+        nextProps.uiState.xaxisMax !== this.state.uiState.xaxisMax
+      ) {
         this.setState({ uiState: this.getStateFromProps(nextProps) });
       }
     }
@@ -51,7 +54,7 @@ var Histogram = (function() {
     /**
      * Conditionally update plot and selection based on props and state.
      */
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
       if (!isEqual(this.props.distribution, prevProps.distribution)) {
         this.createPlot();
         this.drawPlotSelection();
@@ -64,7 +67,9 @@ var Histogram = (function() {
         this.drawPlotSelection();
       }
 
-      this.updatePlotScale(this.state.uiState);
+      if (this.state.uiState !== prevState.uiState) {
+        this.updatePlotScale(this.state.uiState);
+      }
     }
 
     componentWillUnmount() {
@@ -381,7 +386,7 @@ var Histogram = (function() {
     uiState: PropTypes.shape({
       xaxisMin: PropTypes.number,
       xaxisMax: PropTypes.number,
-      yaxixMax: PropTypes.number
+      yaxisMax: PropTypes.number
     }),
 
     onUiStateChange: PropTypes.func,
