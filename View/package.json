@@ -66,6 +66,7 @@
     "rxjs": "^5.5.2",
     "sass-loader": "^6.0.6",
     "script-loader": "^0.7.2",
+    "source-map-loader": "^0.2.3",
     "spin.js": "^2.3.2",
     "style-loader": "^0.19.0",
     "ts-loader": "^2.3.0",
