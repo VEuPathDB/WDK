@@ -64,7 +64,7 @@ var Histogram = (function() {
         this.drawPlotSelection();
       }
 
-      this.updatePlotScale(this.props.uiState);
+      this.updatePlotScale(this.state.uiState);
     }
 
     componentWillUnmount() {
