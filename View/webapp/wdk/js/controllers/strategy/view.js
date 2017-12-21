@@ -25,6 +25,9 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       return "Show Results" + filterText + ".  Click Edit to make changes."; };
 
   //Popup messages
+  var ignore_popup = "<p>Ignore means:<ul class='cirbulletlist'>" +
+      "<li>bla1" +
+      "</li><li>bla2</li></ul>";
   var insert_popup = "Insert a new step to the left of this one, by either " +
       "running a new query or choosing an existing strategy";
   var delete_popup = "Delete this step from the strategy; if this step is " +
@@ -850,20 +853,20 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
     	  "  &nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
     	  "</td>";
       var left_only_html =
-    	  "<td class='opcheck'>" +
+    	  "<td title='ignore the step above' class='opcheck'>" +
           "  <input type='radio' name='boolean' value='LONLY'>" +
           "</td>" +
-          "<td class='operation LONLY'></td>" +
-          "<td>" +
-          "  <b>IGNORE</b>&nbsp;" + (modelstep.frontId) +
+          "<td title='ignore the step above' class='operation LONLY'></td>" +
+          "<td title='ignore the step above'>" +
+          "  <b>IGNORE current step</b>" +  //&nbsp;" + (modelstep.frontId) +
           "</td>";
       var right_only_html =
-    	  "<td class='opcheck'>" +
+    	  "<td title='ignore all the steps to the left' class='opcheck'>" +
           "  <input type='radio' name='boolean' value='RONLY'>" +
           "</td>" +
-          "<td class='operation RONLY'></td>" +
-          "<td>" +
-          "  <b>IGNORE</b>&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
+          "<td title='ignore all the steps to the left' class='operation RONLY'></td>" +
+          "<td title='ignore all the steps to the left'>" +
+          "  <b>IGNORE previous steps(s)</b>" +   //&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
           "</td>";
     
       params_table =
@@ -873,7 +876,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           "  </span>" +
           "  <div id='operations'>" +
           "    <br><table style='margin-left:auto; margin-right:auto;'>" +
-          "      <tr>" +
+          "      <tr title='choose a way to combine the IDs in the 2 input steps'>" +
                    intersect_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    union_html +
@@ -883,12 +886,13 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
                    right_minus_html +
           "      </tr><tr><td colspan=15><hr style='margin-top:1em;margin-bottom:1em'></td></tr></table>" +
           "      <table style='margin-left:auto; margin-right:auto;'>" +
-          "      <tr>" +
+          "      <tr" +
                    right_only_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    left_only_html +
-          "      </tr>" +
-          "    </table>" +
+          //"      <td><img class='help-link' style='cursor:pointer;width:18px;' title='blablabla' src='wdk/images/question.png'></td>" +
+          //"    </tr></table><span style='float:right;position:relative;bottom:2em'><img class='help-link' style='cursor:pointer;width:18px;' title='ignore all the steps to the left, or ignore the step above' src='wdk/images/question.png'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon' data-hasqtip='blabla'></i></span>" +
+          "      </tr></table><span style='float:right;position:relative;bottom:2.5em;right:1em'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='ignore all the steps to the left, or ignore the step above'></i></span>" +
           "  </div>" + 
           "</div>";
 
