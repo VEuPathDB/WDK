@@ -46,6 +46,7 @@ export default class HistogramField extends React.Component {
     this.handleMaxInputKeyPress = this.handleMaxInputKeyPress.bind(this);
     this.handleMaxInputChange = this.handleMaxInputChange.bind(this)
     this.handleUnknownCheckboxChange = this.handleUnknownCheckboxChange.bind(this)
+    this.handleRangeScaleChange = this.handleRangeScaleChange.bind(this);
     this.cacheDistributionOperations(this.props);
 
     this.state = {
@@ -108,6 +109,12 @@ export default class HistogramField extends React.Component {
     if (event.key === 'Enter') this.updateFilterValueFromState();
   }
 
+  handleRangeScaleChange(range) {
+    if (this.props.onRangeScaleChange != null) {
+      this.props.onRangeScaleChange(this.props.field, range);
+    }
+  }
+
   updateFilterValueFromState() {
     const min = this.formatRangeValue(this.state.minInputValue);
     const max = this.formatRangeValue(this.state.maxInputValue);
@@ -158,7 +165,15 @@ export default class HistogramField extends React.Component {
   }
 
   render() {
-    var { field, filter, displayName, unknownCount, selectByDefault } = this.props;
+    var {
+      field,
+      filter,
+      displayName,
+      unknownCount,
+      fieldState,
+      selectByDefault
+    } = this.props;
+
     var distMin = this.distributionRange.min;
     var distMax = this.distributionRange.max;
 
@@ -233,6 +248,8 @@ export default class HistogramField extends React.Component {
           timeformat={this.props.timeformat}
           xaxisLabel={field.display}
           yaxisLabel={displayName}
+          uiState={fieldState}
+          onUiStateChange={this.handleRangeScaleChange}
         />
 
         <FilterLegend {...this.props} />
@@ -254,5 +271,7 @@ HistogramField.propTypes = {
   overview: PropTypes.node.isRequired,
   displayName: PropTypes.string.isRequired,
   unknownCount: PropTypes.number.isRequired,
-  timeformat: PropTypes.string
+  timeformat: PropTypes.string,
+  fieldState: PropTypes.object,
+  onRangeScaleChange: PropTypes.func
 };

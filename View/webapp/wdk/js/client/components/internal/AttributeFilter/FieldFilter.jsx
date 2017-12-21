@@ -24,6 +24,7 @@ export default function FieldFilter(props) {
     fieldState: props.fieldState,
     onChange: props.onChange,
     onSort: props.onMemberSort,
+    onRangeScaleChange: props.onRangeScaleChange,
     selectByDefault: props.selectByDefault
   };
   let className = 'field-detail';
@@ -65,6 +66,7 @@ FieldFilter.propTypes = {
   distribution: PropTypes.array,
   onChange: PropTypes.func,
   onMemberSort: PropTypes.func,
+  onRangeScaleChange: PropTypes.func,
   useFullWidth: PropTypes.bool,
   addTopPadding: PropTypes.bool,
   selectByDefault: PropTypes.bool.isRequired
