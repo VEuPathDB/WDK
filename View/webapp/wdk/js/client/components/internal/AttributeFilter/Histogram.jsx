@@ -396,6 +396,7 @@ var Histogram = (function() {
     yaxisLabel: 'Y-Axis',
     selectedMin: null,
     selectedMax: null,
+    uiState: {},
     onSelected: noop,
     onSelecting: noop,
     onUnselected: noop
