@@ -161,6 +161,6 @@ ServerSideAttributeFilter.defaultProps = {
   displayName: 'Items',
   hideFilterPanel: false,
   hideFieldPanel: false,
-  selectByDefault: false
+  selectByDefault: true
 };
 
