@@ -44,7 +44,7 @@ var Histogram = (function() {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.uiState !== this.state.uiState) {
-        this.setState({ uiState: nextProps.uiState });
+        this.setState({ uiState: this.getStateFromProps(nextProps) });
       }
     }
 
