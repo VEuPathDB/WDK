@@ -1,3 +1,4 @@
+var path = require('path');
 var baseConfig = require('./base.webpack.config');
 
 // Shims for global style scripts
@@ -83,7 +84,16 @@ module.exports = baseConfig.merge({
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: [].concat(scriptLoaders, exposeLoaders),
+    rules: [
+      {
+        test: /\.(css|js)$/,
+        use: ['source-map-loader'],
+        enforce: 'pre',
+        include: [
+          path.resolve(__dirname, 'node_modules/mesa')
+        ]
+      }
+    ].concat(scriptLoaders, exposeLoaders),
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({
