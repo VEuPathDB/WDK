@@ -204,6 +204,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String name;
   private String fullName;
 
+  /** The name of the FontAwesome icon to use in various parts of the website */
+  private String iconName;
+
   /**
    * the native versions are the real name of the record class.  the non-native are potentially different,
    * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
@@ -313,6 +316,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void setName(String name) {
     this.name = name;
   }
+
+  public void setIconName(String iconName) { this.iconName = iconName; }
+
+  public String getIconName() { return this.iconName; }
 
   public String getDisplayName() {
     return (displayName == null) ? getName() : displayName;
