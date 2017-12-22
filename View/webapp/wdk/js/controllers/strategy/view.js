@@ -886,7 +886,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
                    right_minus_html +
           "      </tr><tr><td colspan=15><hr style='margin-top:1em;margin-bottom:1em'></td></tr></table>" +
           "      <table style='margin-left:auto; margin-right:auto;'>" +
-          "      <tr" +
+          "      <tr>" +
                    right_only_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    left_only_html +
