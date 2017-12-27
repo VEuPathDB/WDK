@@ -12,6 +12,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 public class CountQueryPlugin implements CountPlugin {
@@ -50,9 +52,6 @@ public class CountQueryPlugin implements CountPlugin {
     this._wdkModel = wdkModel;
   }
 
-
-
-  //TODO - CWL Verify
   @Override
   public int count(Step step) throws WdkModelException, WdkUserException {
     // prepare params, which has only one answerParam
@@ -61,9 +60,9 @@ public class CountQueryPlugin implements CountPlugin {
     paramValues.put(params[0].getName(), Long.toString(step.getStepId()));
 
     // create a queryInstance, and get count;
-    ValidStableValueSet validatedParamStableValues =
-    	    ValidStableValueSet.createFromCompleteValues(step.getUser(), new WriteableStableValues(_query, paramValues));
-    QueryInstance<?> queryInstance = _query.makeInstance(step.getUser(), validatedParamStableValues, false, 0, paramValues);
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(step.getUser(), new WriteableStableValues(_query, paramValues));
+    QueryInstance<?> queryInstance = _query.makeInstance(step.getUser(), validatedParamStableValues);
     try (ResultList resultList = queryInstance.getResults()) {
 
       // verify the result

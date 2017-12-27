@@ -28,6 +28,9 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -116,8 +119,12 @@ public class SummaryTester {
       // query.setIsCacheable(new Boolean(true));
       int pageCount = 1;
 
+      // validate params prior to creating answer values
+      CompleteValidStableValues validParamValues = ValidStableValuesFactory.createFromCompleteValues(user,
+          new WriteableStableValues(question.getQuery(), paramValues));
+
       if (toXml) {
-        writeSummaryAsXml(user, question, paramValues, xmlFileName, filter);
+        writeSummaryAsXml(user, question, validParamValues, xmlFileName, filter);
         return;
       }
 
@@ -127,8 +134,8 @@ public class SummaryTester {
         int nextStartRowIndex = Integer.parseInt(rows[i]);
         int nextEndRowIndex = Integer.parseInt(rows[i + 1]);
 
-        AnswerValue answerValue = question.makeAnswerValue(user, paramValues, nextStartRowIndex, nextEndRowIndex,
-            sortingMap, filter, true, 0);
+        AnswerValue answerValue = question.makeAnswerValue(user, validParamValues, nextStartRowIndex, nextEndRowIndex,
+            sortingMap, filter, 0);
 
         // this is wrong. it only shows one attribute query, not
         // all. Fix this in Answer by saving a list of attribute
@@ -199,14 +206,14 @@ public class SummaryTester {
     return config;
   }
 
-  private static void writeSummaryAsXml(User user, Question question, Map<String, String> paramValues,
+  private static void writeSummaryAsXml(User user, Question question, CompleteValidStableValues paramValues,
       String xmlFile, AnswerFilterInstance filter) throws WdkModelException, WdkUserException, IOException, JSONException {
 
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
-    AnswerValue answerValue = question.makeAnswerValue(user, paramValues, 1, 2, sortingMap, filter, true, 0);
+    AnswerValue answerValue = question.makeAnswerValue(user, paramValues, 1, 2, sortingMap, filter, 0);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
-    answerValue = question.makeAnswerValue(user, paramValues, 1, resultSize, sortingMap, filter, false, 0);
+    answerValue = question.makeAnswerValue(user, paramValues, 1, resultSize, sortingMap, filter, 0);
     FileWriter fw = new FileWriter(new File(xmlFile), false);
 
     String newline = System.getProperty("line.separator");

@@ -8,6 +8,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for consumption by a view
@@ -22,14 +24,11 @@ public abstract class ParamBean<T extends Param> {
   protected int _truncateLength;
   protected T _param;
 
-  //TODO - CWL Verify
-  protected ValidStableValueSet _contextValues;
+  protected CompleteValidStableValues _contextValues;
 
-  //TODO - CWL Verify
   public ParamBean(T param) {
     _param = param;
     _truncateLength = Utilities.TRUNCATE_DEFAULT;
-   //_contextValues = new LinkedHashMap<>();
   }
 
   public void setUser(UserBean user) {
@@ -60,15 +59,10 @@ public abstract class ParamBean<T extends Param> {
     return _param.getVisibleHelp();
   }
 
-  public String getDefault() throws WdkModelException {
-    return _param.getDefault();
+  public String getDefault() {
+    return _param.getXmlDefault();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#isReadonly()
-   */
   public boolean getIsReadonly() {
     return _param.isReadonly();
   }
@@ -81,30 +75,12 @@ public abstract class ParamBean<T extends Param> {
     return _param.getEmptyValue();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#isVisible()
-   */
   public boolean getIsVisible() {
     return _param.isVisible();
   }
 
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.Param#getGroup()
-   */
   public GroupBean getGroup() {
     return new GroupBean(_param.getGroup());
-  }
-
-  /**
-   * for controller
-   */
-  //TODO - CWL Verify 
-  public void validate(UserBean user, String rawOrDependentValue, ValidStableValueSet contextValues)
-      throws WdkModelException, WdkUserException {
-    _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   /**
@@ -142,10 +118,9 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  //TODO - CWL Verify 
-  public String getSignature(UserBean user, String stableValue, ValidStableValueSet contextValues)
+  public String getSignature(UserBean user, CompleteValidStableValues contextValues)
       throws WdkModelException, WdkUserException {
-    return _param.getSignature(user.getUser(), stableValue, contextValues);
+    return _param.getSignature(user.getUser(), contextValues);
   }
 
   /**
@@ -189,8 +164,7 @@ public abstract class ParamBean<T extends Param> {
   /**
    * @return the contextValues
    */
-  //TODO - CWL Verify 
-  public ValidStableValueSet getContextValues() {
+  public CompleteValidStableValues getContextValues() {
     return _contextValues;
   }
 
@@ -199,7 +173,7 @@ public abstract class ParamBean<T extends Param> {
    *          the contextValues to set
    */
   //TODO - CWL Verify
-  public void setContextValues(ValidStableValueSet contextValues) {
+  public void setContextValues(CompleteValidStableValues contextValues) {
     _contextValues = contextValues;
   }
 
@@ -215,7 +189,7 @@ public abstract class ParamBean<T extends Param> {
   }
 
   public String getDisplayValue() throws WdkModelException {
-    return _param.getDisplayValue(_userBean.getUser(), _stableValue, _contextValues);
+    return _param.getDisplayValue(_userBean.getUser(), _contextValues);
   }
 
 }

@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
-import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.user.User;
@@ -59,7 +59,7 @@ public class QuestionFormatter {
     return json;
   }
 
-  public static JSONObject getQuestionJson(Question q, boolean expandParams, User user, CompleteValidStableValues paramValues)
+  public static JSONObject getQuestionJson(Question q, boolean expandParams, User user, ValidStableValues paramValues)
       throws JSONException, WdkModelException, WdkUserException {
     return new JSONObject()
       .put(Keys.NAME, q.getFullName())
@@ -83,7 +83,7 @@ public class QuestionFormatter {
       .put(Keys.PROPERTIES, q.getPropertyLists());
   }
 
-  public static JSONArray getParamsJson(CompleteValidStableValues paramValueSet, boolean expandParams, User user)
+  public static JSONArray getParamsJson(ValidStableValues paramValueSet, boolean expandParams, User user)
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray paramsJson = new JSONArray();
     for (Param param : paramValueSet.getParams()) {

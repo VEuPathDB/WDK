@@ -114,7 +114,7 @@ public class StringParamHandler extends AbstractParamHandler {
       throws WdkModelException, WdkUserException {
     String stableValue = requestParams.getParam(_param.getName());
     if (stableValue == null) {
-      stableValue = _param.getDefault();
+      stableValue = _param.getXmlDefault();
       if (stableValue != null)
         requestParams.setParam(_param.getName(), stableValue);
     }

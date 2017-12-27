@@ -23,7 +23,10 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.StepUtilities;
+import org.gusdb.wdk.model.user.User;
 
 public class ProcessBooleanAction extends Action {
 
@@ -95,7 +98,7 @@ public class ProcessBooleanAction extends Action {
       String action = request.getParameter(PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
         // revise a boolean step
-        reviseBoolean(operator, step);
+        reviseBoolean(user.getUser(), operator, step);
         rootMap = new HashMap<>();
       }
       else if (action.equals(WizardForm.ACTION_INSERT)) {
@@ -132,7 +135,7 @@ public class ProcessBooleanAction extends Action {
     }
   }
 
-  private void reviseBoolean(String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException {
+  private void reviseBoolean(User user, String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException {
     logger.debug("Revising boolean...");
 
     // current step has to exist for revise
@@ -141,7 +144,9 @@ public class ProcessBooleanAction extends Action {
     if (operator == null)
       throw new WdkUserException("Required param " + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
-    step.setParamValue(BooleanQuery.OPERATOR_PARAM, operator);
+    WriteableStableValues revisedValues = new WriteableStableValues(step.getParams());
+    revisedValues.put(BooleanQuery.OPERATOR_PARAM, operator);
+    step.setParamValues(ValidStableValuesFactory.createFromCompleteValues(user, revisedValues));
     step.saveParamFilters();
 
     logger.debug("Revise step: " + step.getStepId() + ", boolean: " + operator);

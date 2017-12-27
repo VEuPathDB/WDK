@@ -28,6 +28,8 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.user.User;
 
@@ -43,25 +45,21 @@ public class QueryTester {
     user = wdkModel.getSystemUser();
   }
 
-  //TODO - CWL Verify
   private String showSql(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-	ValidStableValueSet validatedParamStableValues =
-	    	    ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
-    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
-        new LinkedHashMap<String, String>());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
+    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
     } else return instance.getSql();
   }
 
-  //TODO - CWL Verify
   private String showResultTable(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-	ValidStableValueSet validatedParamStableValues =
-	    ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
-    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
-        new LinkedHashMap<String, String>());
+    CompleteValidStableValues validatedParamStableValues =
+        ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, paramHash));
+    QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
     //ResultFactory resultFactory = wdkModel.getResultFactory();
     //CacheFactory cacheFactory = resultFactory.getCacheFactory();
     long instanceId = instance.getInstanceId();
@@ -198,10 +196,9 @@ public class QueryTester {
           String table = tester.showResultTable(query, stableValues);
           System.out.println(table);
         } else {
-        	  ValidStableValueSet validatedParamStableValues =
-        	    	    ValidStableValueSet.createFromCompleteValues(tester.user, new WriteableStableValues(query, stableValues));
-          QueryInstance<?> instance = query.makeInstance(tester.user, validatedParamStableValues,
-              true, 0, new LinkedHashMap<String, String>());
+          CompleteValidStableValues validatedParamStableValues =
+              ValidStableValuesFactory.createFromCompleteValues(tester.user, new WriteableStableValues(query, stableValues));
+          QueryInstance<?> instance = query.makeInstance(tester.user, validatedParamStableValues);
           try (ResultList rs = instance.getResults()) {
             print(query, rs);
           }

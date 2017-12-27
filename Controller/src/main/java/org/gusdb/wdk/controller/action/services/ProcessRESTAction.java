@@ -27,31 +27,35 @@ import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterFactory;
 import org.gusdb.wdk.model.report.StandardConfig;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepUtilities;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It 1) reads param values from
  * input form bean, 2) runs the query and saves the answer 3) forwards control to a jsp page that displays a
  * summary
  */
-
 public class ProcessRESTAction extends Action {
 
   private static final Logger LOG = Logger.getLogger(ProcessRESTAction.class);
@@ -76,8 +80,8 @@ public class ProcessRESTAction extends Action {
 
     String outputType = null;
     try {
-      WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-      UserBean wdkUser = ActionUtility.getUser(request);
+      WdkModel wdkModel = ActionUtility.getWdkModel(servlet).getModel();
+      User user = ActionUtility.getUser(request).getUser();
 
       // get question from URL
       String strutsParam = mapping.getParameter();
@@ -95,19 +99,26 @@ public class ProcessRESTAction extends Action {
 
       LOG.info("WebServices request for " + questionSetName + "/" + questionName + " (" + outputType + ")");
 
-      QuestionSetBean questionSet = wdkModel.getQuestionSetsMap().get(questionSetName);
-      if (questionSet == null)
+      QuestionSet questionSet;
+      try {
+        questionSet = wdkModel.getQuestionSet(questionSetName);
+      }
+      catch (WdkModelException e) {
         throw new WdkUserException("The question set '" + questionSetName + "' doesn't exist.");
+      }
 
       boolean allQuestions = false;
-      QuestionBean question = null;
+      Question question = null;
       if (questionName.equals("all")) {
         allQuestions = true;
       }
       else {
-        question = questionSet.getQuestionsMap().get(questionName);
-        if (question == null)
+        try {
+          question = questionSet.getQuestion(questionName);
+        }
+        catch (WdkModelException e) {
           throw new WdkUserException("The question '" + questionName + "' is not a member of question set '" + questionSetName + "'.");
+        }
       }
 
       if (outputType.equals("wadl")) {
@@ -128,17 +139,15 @@ public class ProcessRESTAction extends Action {
               return FormatUtil.arrayToString(obj);
             }}));
 
-      Map<String, String> outputConfig = new LinkedHashMap<String, String>();
+      Map<String, String> outputConfig = new LinkedHashMap<>();
 
       // prepare and get the param values
-      Map<String, ParamBean<?>> params = question.getParamsMap();
       LegacyRestServiceRequestParams requestParams = new LegacyRestServiceRequestParams(request);
-      Map<String, String> stableValues = new LinkedHashMap<>();
-      for (String paramName : params.keySet()) {
-        ParamBean<?> param = params.get(paramName);
-        String stableValue = param.getStableValue(wdkUser, requestParams);
-        stableValues.put(paramName, stableValue);
+      WriteableStableValues stableValues = new WriteableStableValues(question.getQuery());
+      for (Param param : question.getParams()) {
+        stableValues.put(param.getName(), param.getStableValue(user, requestParams));
       }
+      CompleteValidStableValues validValues = ValidStableValuesFactory.createFromCompleteValues(user, stableValues);
 
       // get other fields and validate
       for (String key : requestParams.paramNames()) {
@@ -154,10 +163,8 @@ public class ProcessRESTAction extends Action {
       outputConfig.put(StandardConfig.ATTACHMENT_TYPE, "plain");
       outputConfig.put(StandardConfig.INCLUDE_EMPTY_TABLES, "true");
 
-      StepBean step = wdkUser.createStep(null, question, stableValues, null, false, Utilities.DEFAULT_WEIGHT);
-      AnswerValueBean answerValue = step.getAnswerValue();
-
-      Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), outputType, outputConfig);
+      Step step = StepUtilities.createStep(user, null, question, validValues, null, false, Utilities.DEFAULT_WEIGHT);
+      Reporter reporter = ReporterFactory.getReporter(step.getAnswerValue(), outputType, outputConfig);
 
       response.setContentType(reporter.getHttpContentType());
       switch(reporter.getContentDisposition()) {
@@ -248,7 +255,7 @@ public class ProcessRESTAction extends Action {
   }
 
   private void createWADL(HttpServletRequest request, HttpServletResponse response,
-      QuestionSetBean questionSet, QuestionBean question, boolean isAllQuestions) throws IOException, WdkModelException {
+      QuestionSet questionSet, Question question, boolean isAllQuestions) throws IOException, WdkModelException {
     response.setHeader("Pragma", "Public");
     response.setContentType("text/xml");
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(response.getOutputStream()));
@@ -260,13 +267,14 @@ public class ProcessRESTAction extends Action {
       String base = request.getHeader("Host") + "/webservices/";
       writer.println("<resources base='http://" + base + "'>");
       writer.println("<resource path='" + questionSet.getName() + "'>");
+      User user = ActionUtility.getUser(request).getUser();
       if (isAllQuestions) {
-        for (QuestionBean ques : questionSet.getQuestions()) {
-          writeWADL(ques, writer);
+        for (Question ques : questionSet.getQuestions()) {
+          writeWADL(user, ques, writer);
         }
       }
       else {
-        writeWADL(question, writer);
+        writeWADL(user, question, writer);
       }
       writer.println("</resource>");
       writer.println("</resources>");
@@ -277,25 +285,27 @@ public class ProcessRESTAction extends Action {
     }
   }
 
-  private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws WdkModelException {
-    LOG.debug(wdkQuestion.getDisplayName());
+  private void writeWADL(User user, Question question, PrintWriter writer) throws WdkModelException {
+    LOG.debug(question.getDisplayName());
     String def_value = "";
     String repeating = "";
-    writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
-    writer.println("<method href='#" + wdkQuestion.getName().toLowerCase() + "'/>");
+    writer.println("<resource path='" + question.getName() + ".xml'>");
+    writer.println("<method href='#" + question.getName().toLowerCase() + "'/>");
     writer.println("</resource>");
-    writer.println("<resource path='" + wdkQuestion.getName() + ".json'>");
-    writer.println("<method href='#" + wdkQuestion.getName().toLowerCase() + "'/>");
+    writer.println("<resource path='" + question.getName() + ".json'>");
+    writer.println("<method href='#" + question.getName().toLowerCase() + "'/>");
     writer.println("</resource>");
-    writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
-    writer.println("<doc title='display_name'><![CDATA[" + wdkQuestion.getDisplayName() + "]]></doc>");
-    writer.println("<doc title='summary'><![CDATA[" + wdkQuestion.getSummary() + "]]></doc>");
-    writer.println("<doc title='description'><![CDATA[" + wdkQuestion.getDescription() + "]]></doc>");
+    writer.println("<method name='POST' id='" + question.getName().toLowerCase() + "'>");
+    writer.println("<doc title='display_name'><![CDATA[" + question.getDisplayName() + "]]></doc>");
+    writer.println("<doc title='summary'><![CDATA[" + question.getSummary() + "]]></doc>");
+    writer.println("<doc title='description'><![CDATA[" + question.getDescription() + "]]></doc>");
     writer.println("<request>");
+    CompleteValidStableValues defaultValues = ValidStableValuesFactory.createDefault(user, question.getQuery());
+    QuestionBean wdkQuestion = new QuestionBean(question);
     Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
     for (String key : params.keySet()) {
       ParamBean<?> param = params.get(key);
-      def_value = param.getDefault();
+      def_value = defaultValues.get(key);
       repeating = "";
       if (param instanceof EnumParamBean) {
         EnumParamBean ep = (EnumParamBean)param;

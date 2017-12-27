@@ -63,7 +63,7 @@ public class AnswerParamTest {
         paramValue = Long.toString(step.getStepId());
       }
       else
-        paramValue = param.getDefault();
+        paramValue = param.getXmlDefault();
       paramValues.put(param.getName(), paramValue);
     }
     AnswerValue answerValue = _question.makeAnswerValue(_user, paramValues, true, 0);

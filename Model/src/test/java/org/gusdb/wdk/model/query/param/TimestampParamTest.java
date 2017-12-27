@@ -30,15 +30,15 @@ public class TimestampParamTest {
         Thread.sleep(1000 - fraction);
       }
 
-      String value = param.getDefault();
+      String value = param.getXmlDefault();
       // duration is half of the interval, to make sure the first check returns the same value, but the second
       // check returns a different value.
       long duration = interval * 1000 / 2;
       Thread.sleep(duration);
-      Assert.assertEquals(value, param.getDefault());
+      Assert.assertEquals(value, param.getXmlDefault());
 
       Thread.sleep(duration);
-      Assert.assertFalse(param.getDefault().equals(value));
+      Assert.assertFalse(param.getXmlDefault().equals(value));
     }
     catch (InterruptedException ex) { // do nothing
     }

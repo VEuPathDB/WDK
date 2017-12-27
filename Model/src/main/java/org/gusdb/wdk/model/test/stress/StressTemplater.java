@@ -149,7 +149,7 @@ public class StressTemplater {
                         break;
                     } else { // add the param into the list
                         String paramName = param.getName();
-                        String paramValue = param.getDefault();
+                        String paramValue = param.getXmlDefault();
                         questionItem.addParamValue(paramName, paramValue);
                     }
                 }

@@ -52,19 +52,6 @@ public class StepUtilities {
   }
 
   public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
-      String filterName, boolean deleted, int assignedWeight) throws WdkModelException,
-      WdkUserException {
-    AnswerFilterInstance filter = null;
-    RecordClass recordClass = question.getRecordClass();
-    if (filterName != null) {
-      filter = recordClass.getFilterInstance(filterName);
-    }
-    else
-      filter = recordClass.getDefaultFilter();
-    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight);
-  }
-
-  public static Step createStep(User user, Long strategyId, Question question, CompleteValidStableValues paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException, WdkUserException {
     return createStep(user, strategyId, question, paramValues, filter, deleted,

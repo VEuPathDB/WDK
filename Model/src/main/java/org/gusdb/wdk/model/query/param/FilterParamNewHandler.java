@@ -204,7 +204,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       if (!_param.isAllowEmpty()) {
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
       }
-      stableValueString = _param.getDefault();
+      stableValueString = _param.getXmlDefault();
     }
     FilterParamNew filterParam = (FilterParamNew) _param;
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, filterParam);

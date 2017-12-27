@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,10 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It 1) reads param values from
@@ -37,7 +42,7 @@ public class ProcessQuestionAction extends Action {
 
   private static final Logger logger = Logger.getLogger(ProcessQuestionAction.class);
 
-  public static Map<String, String> prepareParams(UserBean user, HttpServletRequest request,
+  public static StableValues prepareParams(UserBean user, HttpServletRequest request,
       QuestionForm qform) throws WdkModelException, WdkUserException {
     RequestParams requestParams = new QuestionRequestParams(request, qform);
     QuestionBean question = qform.getQuestion();
@@ -49,7 +54,7 @@ public class ProcessQuestionAction extends Action {
       String stableValue = param.getStableValue(user, requestParams);
       stableValues.put(paramName, stableValue);
     }
-    return stableValues;
+    return new WriteableStableValues(question.getQuestion().getQuery(), stableValues);
   }
 
   @Override
@@ -69,7 +74,7 @@ public class ProcessQuestionAction extends Action {
 
       // the params has been validated, and now is parsed, and if the size
       // of the value is too long, it will be replaced is checksum
-      Map<String, String> params = prepareParams(wdkUser, request, qForm);
+      StableValues params = prepareParams(wdkUser, request, qForm);
 
       // get the assigned weight
       String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
@@ -87,7 +92,8 @@ public class ProcessQuestionAction extends Action {
       QuestionBean wdkQuestion = qForm.getQuestion();
       // the question is already validated in the question form, don't need to do it again.
       String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
-      StepBean step = wdkUser.createStep(null, wdkQuestion, params, filterName, false, weight);
+      CompleteValidStableValues validParams = ValidStableValuesFactory.createFromCompleteValues(wdkUser.getUser(), params);
+      StepBean step = wdkUser.createStep(null, wdkQuestion, validParams, filterName, false, weight);
       if (step.getException() != null) {
         // exception occurred loading initial results for this step
         throw step.getException();
@@ -116,9 +122,20 @@ public class ProcessQuestionAction extends Action {
       logger.error("Error while processing question", ex);
 
       ActionMessages messages = new ActionErrors();
-      ActionMessage message = new ActionMessage("mapped.properties", (qFullName == null ||
-          qFullName.isEmpty() ? "Unknown question name" : qFullName), ex.getMessage());
-      messages.add(ActionErrors.GLOBAL_MESSAGE, message);
+      Map<String,String> paramErrors = ex.getParamErrors();
+      // check to see if param errors are present
+      if (paramErrors == null) {
+        ActionMessage message = new ActionMessage("mapped.properties", (qFullName == null ||
+            qFullName.isEmpty() ? "Unknown question name" : qFullName), ex.getMessage());
+        messages.add(ActionErrors.GLOBAL_MESSAGE, message);
+      }
+      else {
+        // param validation probably failed
+        for (Entry<String,String> paramError : paramErrors.entrySet()) {
+          ActionMessage message = new ActionMessage("mapped.properties", paramError.getKey() + ": " + paramError.getValue(), null);
+          messages.add(ActionErrors.GLOBAL_MESSAGE, message);
+        }
+      }
       saveErrors(request, messages);
       ActionForward forward = mapping.getInputForward();
       logger.error("ProcessQuestionAction error forward = " + forward.getPath());

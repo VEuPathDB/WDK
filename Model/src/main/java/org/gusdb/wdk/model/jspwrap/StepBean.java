@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
@@ -250,7 +251,7 @@ public class StepBean {
         return step.isValid();
     }
 
-    public Map<String, String> getParams() {
+    public CompleteValidStableValues getParams() {
         return step.getParamValues();
     }
 
@@ -357,7 +358,7 @@ public class StepBean {
 
     public String getSummaryUrlParams() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getParamValues();
+        CompleteValidStableValues paramValues = step.getParamValues();
         Map<String, Param> params = step.getQuestion().getParamMap();
         for (String paramName : paramValues.keySet()) {
             Object value = paramValues.get(paramName);
@@ -386,7 +387,7 @@ public class StepBean {
             return "";
         }
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getParamValues();
+        CompleteValidStableValues paramValues = step.getParamValues();
         Map<String, Param> params = question.getParamMap();
         for (String paramName : paramValues.keySet()) {
             String paramValue = paramValues.get(paramName).toString();
@@ -504,12 +505,8 @@ public class StepBean {
     step.setQuestionName(questionName);
   }
 
-  public void setParamValues(Map<String, String> paramValues) {
+  public void setParamValues(CompleteValidStableValues paramValues) throws WdkModelException {
     step.setParamValues(paramValues);
-  }
-
-  public void setParamValue(String paramName, String paramValue) {
-    step.setParamValue(paramName, paramValue);
   }
 
   public void setFilterName(String filterName) {

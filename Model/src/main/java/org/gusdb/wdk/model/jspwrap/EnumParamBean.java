@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -82,7 +83,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public void setContextValues(ValidStableValueSet contextValues) {
+  public void setContextValues(ValidStableValues contextValues) {
     super.setContextValues(contextValues);
     if ((this._contextValues == null && contextValues != null) ||
         (this._contextValues != null && !compareValues(this._contextValues, contextValues))) {

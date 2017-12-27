@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -493,8 +494,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
     }
 
-  static private void outputParams(UserBean user, StepBean step, JSONObject jsStep) throws
-      WdkUserException, WdkModelException {
+  static private void outputParams(UserBean user, StepBean step, JSONObject jsStep) throws WdkModelException {
 
     JSONArray jsParams = new JSONArray();
     QuestionBean question;
@@ -514,12 +514,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     try {
       Map<GroupBean, Map<String, ParamBean<?>>> groups = question.getParamMapByGroups();
-      Map<String, String> paramValues = step.getParams();
+      CompleteValidStableValues paramValues = step.getParams();
       for (GroupBean group : groups.keySet()) {
         Map<String, ParamBean<?>> params = groups.get(group);
         for (String paramName : params.keySet()) {
           ParamBean<?> param = params.get(paramName);
-          String stableValue = getStableValue(paramValues, param);
+          String stableValue = paramValues.get(paramName);
           JSONObject jsParam = new JSONObject();
           jsParam.put("name", paramName);
           if (param != null) {
@@ -535,13 +535,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
               jsParam.put("display", param.getDisplayValue());
             }
             catch (Exception ex) {
-							// instead of throwing exception we print eception in logs. 
-							// the exception prevents WDK from loading the strategy (that needs to be revised)
-							// but the straegy is considered opened by WDK, and this prevents the user from using the strategy interface
+              // instead of throwing exception we print exception in logs. 
+              // the exception prevents WDK from loading the strategy (that needs to be revised)
+              // but the strategy is considered opened by WDK, and this prevents the user from using the strategy interface
 
-							// throw new WdkModelException(ex);
-							logger.error( ex.getMessage(),ex );
-							//step.setValid(false);
+              // throw new WdkModelException(ex);
+              logger.error(ex.getMessage(), ex);
+              //step.setValid(false);
             }
           }
           else {
@@ -558,44 +558,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
   }
 
-    private static String getRawValue(Map<String, String> paramValues, ParamBean<?> param)
-    		throws WdkUserException, WdkModelException {
-        if (param instanceof EnumParamBean) {
-        	EnumParamBean enumParam = (EnumParamBean)param;
-        	if (enumParam.isDependentParam()) {
-        	  Map<String, String> dependedValues = new LinkedHashMap<>();
-        	  for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-        	    String dependedValue = getStableValue(paramValues, dependedParam);
-        	    dependedValues.put(dependedParam.getName(), dependedValue);
-        	  }
-        	  enumParam.setContextValues(dependedValues);
-        	}
-            return enumParam.getRawDisplayValue();
+    private static String getRawValue(CompleteValidStableValues paramValues, ParamBean<?> param)
+        throws WdkModelException {
+      if (param instanceof EnumParamBean) {
+        EnumParamBean enumParam = (EnumParamBean)param;
+        if (enumParam.isDependentParam()) {
+          enumParam.setContextValues(paramValues);
         }
-        return param.getBriefRawValue();
-	}
+        return enumParam.getRawDisplayValue();
+      }
+      return param.getBriefRawValue();
+    }
 
-	private static String getStableValue(Map<String, String> paramValues, ParamBean<?> param)
-    		throws WdkUserException, WdkModelException {
-    	    if (paramValues.containsKey(param.getName())) {
-    	        return paramValues.get(param.getName());
-            } else {
-                if (param instanceof EnumParamBean) {
-                    EnumParamBean enumParam = (EnumParamBean)param;
-                    if (enumParam.isDependentParam()) {
-                      Map<String, String> dependedValues = new LinkedHashMap<>();
-                      for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-                        String dependedValue = getStableValue(paramValues, dependedParam);
-                        dependedValues.put(dependedParam.getName(), dependedValue);
-                      }
-                      enumParam.setContextValues(dependedValues);
-                    }
-                }
-                return param.getDefault();
-            }
-	}
-
-	static private void outputSubStrategy(WdkModelBean model, UserBean user,
+    static private void outputSubStrategy(WdkModelBean model, UserBean user,
             StepBean step, JSONObject jsStep, long strategyId, boolean updateResults)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {

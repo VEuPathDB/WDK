@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.Map;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
@@ -28,6 +26,6 @@ public class FilterParamNewInstance implements DependentParamInstance {
   public String getValidStableValue(User user, ValidStableValues contextParamValues)
       throws WdkModelException, WdkUserException {
     String stableValue = contextParamValues.get(_param.getName());
-    return (stableValue == null ? _param.getDefault() : stableValue);
+    return (stableValue == null ? _param.getXmlDefault() : stableValue);
   }
 }

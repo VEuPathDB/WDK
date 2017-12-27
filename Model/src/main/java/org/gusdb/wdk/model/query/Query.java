@@ -465,7 +465,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
-	 
     if (_resolved)
       return;
     _resolved = true;
@@ -497,12 +496,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     for (Param param : paramMap.values()) {
       param.resolveReferences(wdkModel);
     }
-
-    // FIXME - this cause problems with some params, need to investigate.
-    // comment out temporarily
-    // apply the default values to depended params
-    // Map<String, String> valueStub = new LinkedHashMap<String, String>();
-    // resolveDependedParams(valueStub)
 
     // resolve columns
     for (Column column : columnMap.values()) {
@@ -566,23 +559,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return userParam;
   }
 
-  public Param getUserParam() throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(_wdkModel.getProjectId());
-    userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
-  }
-
   /**
    * @return the combined
    */
@@ -607,11 +583,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return count;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer(getFullName());
@@ -696,7 +667,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
         // However, we cannot use default for datasetParam, which is just
         // sample, not a valid value (a valid value must be a dataset id)
         if (!contextParamValues.containsKey(param.getName())) {
-          contextParamValues.put(param.getName(), param.getDefault());
+          contextParamValues.put(param.getName(), param.getXmlDefault());
         }
       }
     }

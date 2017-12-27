@@ -12,6 +12,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -127,33 +128,24 @@ public class UserBean {
     StepUtilities.deleteSteps(_user);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
-   */
   public StepBean createStep(Long strategyId, QuestionBean question, CompleteValidStableValues params,
       String filterName, boolean deleted, int assignedWeight) throws WdkModelException,
       WdkUserException {
-    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted,
-        assignedWeight);
+    AnswerFilterInstance filter = null;
+    RecordClass recordClass = question.getRecordClass().getRecordClass();
+    if (filterName != null) {
+      filter = recordClass.getFilterInstance(filterName);
+    }
+    else
+      filter = recordClass.getDefaultFilter();
+    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filter, deleted, assignedWeight);
     return new StepBean(this, step);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#deleteHistory(int)
-   */
   public void deleteStep(int displayId) throws WdkModelException {
     _wdkModel.getStepFactory().deleteStep(displayId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#getHistories()
-   */
   public StepBean[] getSteps() throws WdkModelException {
     Step[] steps = StepUtilities.getSteps(_user);
     StepBean[] beans = new StepBean[steps.length];
@@ -163,11 +155,6 @@ public class UserBean {
     return beans;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#getHistories()
-   */
   public StepBean[] getInvalidSteps() throws WdkModelException {
     Step[] steps = StepUtilities.getInvalidSteps(_user);
     StepBean[] beans = new StepBean[steps.length];

@@ -100,7 +100,7 @@ public class AnswerValueCache {
     Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
         question.getFullName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
     AnswerValue answerValue = question.makeAnswerValue(user, step.getParamValues(), range[0],
-        range[1], sortingMap, step.getFilter(), validate, step.getAssignedWeight());
+        range[1], sortingMap, step.getFilter(), step.getAssignedWeight());
     answerValue.setFilterOptions(step.getFilterOptions());
     if (applyViewFilters) {
       answerValue.setViewFilterOptions(step.getViewFilterOptions());

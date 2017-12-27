@@ -41,7 +41,7 @@ public class ParamTest {
             Param clone = param.clone();
 
             // make sure everything is identical
-            Assert.assertEquals(param.getDefault(), clone.getDefault());
+            Assert.assertEquals(param.getXmlDefault(), clone.getXmlDefault());
             Assert.assertEquals(param.getEmptyValue(),
                     clone.getEmptyValue());
             Assert.assertEquals(param.getFullName(), clone.getFullName());
@@ -63,7 +63,7 @@ public class ParamTest {
     public void testReplaceSql() throws WdkModelException {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
-                String defaultValue = param.getDefault();
+                String defaultValue = param.getXmlDefault();
 
                 // skip the param if it doesn't have a default value
                 if (defaultValue == null) continue;

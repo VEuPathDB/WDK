@@ -214,6 +214,10 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return _id;
   }
 
+  public String getXmlDefault() {
+    return _defaultValue;
+  }
+
   /**
    * @param id
    *          the id to set

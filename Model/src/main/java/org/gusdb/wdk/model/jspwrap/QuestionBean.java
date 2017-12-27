@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.Field;
@@ -261,10 +262,10 @@ public class QuestionBean {
    * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
    */
   public AnswerValueBean makeAnswerValue(UserBean user,
-      Map<String, String> paramValues, boolean validate, int assignedWeight)
+      CompleteValidStableValues paramValues, int assignedWeight)
       throws WdkModelException, WdkUserException {
     return new AnswerValueBean(_question.makeAnswerValue(user.getUser(),
-        paramValues, validate, assignedWeight));
+        paramValues, assignedWeight));
   }
 
   /**
