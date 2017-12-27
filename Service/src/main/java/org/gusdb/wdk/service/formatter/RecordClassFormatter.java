@@ -58,6 +58,7 @@ public class RecordClassFormatter {
       .put(Keys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
       .put(Keys.SHORT_DISPLAY_NAME_PLURAL, recordClass.getShortDisplayNamePlural())
       .put(Keys.URL_SEGMENT,  recordClass.getUrlSegment())
+      .put(Keys.ICON_NAME, recordClass.getIconName())
       .put(Keys.USE_BASKET, recordClass.isUseBasket())
       .put(Keys.DESCRIPTION, recordClass.getDescription())
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))

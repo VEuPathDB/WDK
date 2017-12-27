@@ -1,1 +1,1 @@
-export { AttributeFilter as default } from './internal/AttributeFilter';
+export { default } from './internal/AttributeFilter/AttributeFilter';

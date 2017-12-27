@@ -43,6 +43,7 @@ public class Keys {
   public static final String SHORT_DISPLAY_NAME = "shortDisplayName";
   public static final String SHORT_DISPLAY_NAME_PLURAL = "shortDisplayNamePlural";
   public static final String URL = "url";
+  public static final String ICON_NAME = "iconName";
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
   public static final String DESCRIPTION = "description";
@@ -191,5 +192,4 @@ public class Keys {
   public static final String ROOT_STEP = "root";
   public static final String LEFT_STEP = "left";
   public static final String RIGHT_STEP = "right";
-
 }

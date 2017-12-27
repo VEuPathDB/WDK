@@ -14,7 +14,9 @@ var ActionType = {
   SET_ATTRIBUTES_VISIBLE:  "setAttributesVisible",
   SET_SELECTED_ATTRIBUTES: "setSelectedAttributes",
   CHANGE_RESULTS_ACTION:   "changeResultsAction",
-  SET_LOADING_ACTION:      "setLoadingAction"
+  SET_LOADING_ACTION:      "setLoadingAction",
+  CREATE_STEP_ACTION:      "createStepAction"
+
 };
 
 //**************************************************
@@ -27,7 +29,8 @@ var Util = (function() {
   var exports = {
     isPositiveInteger: isPositiveInteger,
     toggleArrayItem: toggleArrayItem,
-    getAnswerRequestJson: getAnswerRequestJson
+    getAnswerRequestJson: getAnswerRequestJson,
+    getStepRequestJson: getStepRequestJson
   };
 
   function isPositiveInteger(str) {
@@ -64,6 +67,28 @@ var Util = (function() {
     };
   }
 
+
+  function getStepRequestJson(question, paramMap, pagination, selectedAttributes) {
+    var paramPack = {};
+    Object.keys(paramMap).forEach(function(paramName) {
+     var paramValue = paramMap[paramName].value;
+     paramPack[paramName] = paramValue == undefined ? null : paramValue;
+    });
+    var offset = (pagination.pageNum - 1) * pagination.pageSize;
+    var numRecords = pagination.pageSize;
+    if (offset < 0) offset = 0;
+    if (numRecords < 1) numRecords = 10;
+    return {
+      answerSpec: {
+        questionName: question.name,
+        parameters: paramPack,
+        filters: []
+      },
+      formatting: {
+        formatConfig: {}
+      }
+    };
+  }
   return exports;
 
 })();
@@ -81,7 +106,8 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     setPagination: setPagination,
     setAttributesVisible: setAttributesVisible,
     setSelectedAttributes: setSelectedAttributes,
-    loadResults: loadResults
+    loadResults: loadResults,
+    createStep: createStep
   };
 
   // private data
@@ -182,6 +208,25 @@ var ActionCreator = function(serviceUrl, dispatcher) {
         // TODO: dispatch a CHANGE_RESULTS_ACTION with the specific error (i.e. probably user input problem)
         setLoading(false);
         alert("Error: Unable to load results");
+      }
+    });
+  }
+  
+  function createStep(data) {
+    setLoading(true);
+    jQuery.ajax({
+      type: "POST",
+      url: _serviceUrl + "/users/current/steps",
+      contentType: 'application/json; charset=UTF-8',
+      data: JSON.stringify(Util.getStepRequestJson(data.selectedQuestion, data.paramValues, data.pagination, data.selectedAttributes)),
+      dataType: "json",
+      success: function(data, textStatus, jqXHR) {
+        setLoading(false);
+        _dispatcher.dispatch({ actionType: ActionType.CREATE_STEP_ACTION, data: data });
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        setLoading(false);
+        alert("Error: Unable to create the step");
       }
     });
   }

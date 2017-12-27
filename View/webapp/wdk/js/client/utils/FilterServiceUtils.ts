@@ -215,11 +215,11 @@ export function getFilterValueDisplay(field: Field, filter: MemberFilter | Range
       return 'No ' + field.display + ' value selected';
     }
 
-    const displayValue = value == null && !includeUnknown? 'known'
-                       : value!.min == null && value!.max == null ? ''
-                       : value!.min == null ? `less than ${value!.max}`
-                       : value!.max == null ? `greater than ${value!.min}`
-                       : `between ${value!.min} and ${value!.max}`;
+    const displayValue = value == null ? 'known'
+                       : value.min == null && value!.max == null ? ''
+                       : value.min == null ? `less than ${value.max}`
+                       : value.max == null ? `greater than ${value.min}`
+                       : `between ${value!.min} and ${value.max}`;
     return field.display + ' is ' + displayValue +
       (includeUnknown ? ( displayValue ? ', or is unspecified' : 'unspecified') : '');
   }
@@ -242,4 +242,8 @@ export function getFilterValueDisplay(field: Field, filter: MemberFilter | Range
  */
 export function isRange(field: Field) {
   return field.isRange || field.filter === 'range';
+}
+
+export function isFilterField(field: Field) {
+  return field.type != null;
 }

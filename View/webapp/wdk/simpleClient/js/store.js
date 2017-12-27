@@ -23,7 +23,8 @@ var Store = function(dispatcher, initialValue) {
     isLoading: false,
     showAttributes: false,
     allAttributes: [],
-    selectedAttributes: []
+    selectedAttributes: [],
+    type: ""
   };
   var _registeredCallbacks = [];
 
@@ -85,12 +86,17 @@ var Store = function(dispatcher, initialValue) {
       case ActionType.CHANGE_RESULTS_ACTION:
         // data is { results: Any }
         _data.results = payload.data;
+        _data.type = payload.actionType;
         _data.resultStats = { pageNum: _data.pagination.pageNum };
         break;
       case ActionType.SET_LOADING_ACTION:
         // data is Boolean (true if loading)
         _data.isLoading = payload.data;
         break;
+      case ActionType.CREATE_STEP_ACTION:
+        // data is {results: Any }
+        _data.results = payload.data;
+        _data.type = payload.actionType;
       default:
         // this store does not support any other actions
     }
