@@ -278,6 +278,7 @@ var Histogram = (function() {
         if (xaxisMin != null) plotOptions.xaxes[0].min = xaxisMin;
         if (xaxisMax != null) plotOptions.xaxes[0].max = xaxisMax;
         this.plot.setupGrid();
+        this.drawPlotSelection();
         this.plot.draw();
       }
     }
