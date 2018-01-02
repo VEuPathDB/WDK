@@ -462,11 +462,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     // reduce it to a set of distinct internals
-    // we know that each ontology_term_id has a full set of internals, so we just need to query
-    // one ontology_term_id.
-    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + bgdSql + ") md" +
-        " WHERE md." + COLUMN_ONTOLOGY_ID + " IN (select " + COLUMN_ONTOLOGY_ID + " from (" + bgdSql +
-        ") where rownum = 1)";
+    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + bgdSql + ") md";
 
     // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
@@ -826,25 +822,34 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
    
-   // this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
+  /**
+   * this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
+   * @return sql that provides a filtered set of internal IDs
+   */
    String getFilteredValue(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery)
        throws WdkModelException {
 
      try {
+       
+       // get sql that selects the full set of distinct internals from the metadata query
        String metadataSql;
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
-
-       Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
-       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
        String metadataTableName = "md";
        String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
-
-       String filteredSql;
        
+       // get the applied filters and the ontology
+       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
+       Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
+      
+       // if no filters, return sql for the full set of internals
+       String filteredSql;
        if (filters.size() == 0) {
-	 filteredSql = filterSelectSql;
-       } else {
+         filteredSql = filterSelectSql;
+       } 
+       
+       // otherwise apply the filters
+       else {
         List<String> filterSqls = new ArrayList<String>();
         for (FilterParamNewStableValue.Filter filter : filters)
           filterSqls.add(filterSelectSql + filter.getFilterAsWhereClause(metadataTableName, ontology));
