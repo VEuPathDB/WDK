@@ -149,8 +149,6 @@ ServerSideAttributeFilter.propTypes = {
   activeFieldDistribution: PropTypes.array,
   activeFieldDistinctKnownCount: PropTypes.number,
   activeFieldFilteredDistinctKnownCount: PropTypes.number,
-  // TODO Add activeFieldDataCount and activeFieldFilteredDataCount
-  // These are counts of distinct data with values for the active field
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
