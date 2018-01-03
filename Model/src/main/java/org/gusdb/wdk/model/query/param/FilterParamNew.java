@@ -546,7 +546,11 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     // limit it to our ontology_id
-    String metadataSqlPerOntologyId = "SELECT mq.* FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+    List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
+    metadataCols.add(COLUMN_INTERNAL);
+    metadataCols.add(COLUMN_ONTOLOGY_ID);
+    String cols = metadataCols.stream().collect(Collectors.joining(", "));
+    String metadataSqlPerOntologyId = "SELECT distinct " + cols + " FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
         " = ?";
     
     // while we are here, format sql to find distinct internals in unfiltered
