@@ -882,6 +882,7 @@ public class StepFactory {
       psStep.setInt(5, step.getAssignedWeight());
       platform.setClobData(psStep, 6, JsonUtil.serialize(jsContent), false);
       psStep.setBoolean(7, true);
+      step.setValid(true);
       psStep.setLong(8, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-save-step-params", start);
