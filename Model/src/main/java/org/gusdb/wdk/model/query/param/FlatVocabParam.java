@@ -146,7 +146,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   }
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, CompleteValidStableValues dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, ValidStableValues dependedParamValues)
       throws WdkModelException, WdkUserException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);

@@ -121,7 +121,7 @@ public class StressTemplater {
         generateTemplate(file);
     }
 
-    private void loadFromModel() throws WdkModelException {
+    private void loadFromModel() {
         // get questions
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {

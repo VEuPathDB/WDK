@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +14,8 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
@@ -105,17 +106,14 @@ public class QueryTest {
       Map<String, String> stableValues = QueryTester.getStableValues(query, user, rawValues);
 
       // try to make a query instance
-      ValidStableValueSet validatedParamStableValues =
-    	      ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, stableValues));
-      QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues, true, 0,
-          new LinkedHashMap<String, String>());
+      CompleteValidStableValues validatedParamStableValues =
+          ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, stableValues));
+      QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
       int rows = instance.getResultSize();
 
       String qName = query.getFullName();
-      Assert.assertTrue(qName + " rows less than min (" + minRows + ")",
-          minRows <= rows);
-      Assert.assertTrue(qName + " rows more than max (" + maxRows + ")",
-          maxRows >= rows);
+      Assert.assertTrue(qName + " rows less than min (" + minRows + ")", minRows <= rows);
+      Assert.assertTrue(qName + " rows more than max (" + maxRows + ")", maxRows >= rows);
 
       setCount++;
     }

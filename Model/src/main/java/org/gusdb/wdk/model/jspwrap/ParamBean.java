@@ -183,7 +183,7 @@ public abstract class ParamBean<T extends Param> {
   }
 
   //TODO - CWL Verify
-  public void prepareDisplay(UserBean user, RequestParams requestParams, ValidStableValueSet contextValues)
+  public void prepareDisplay(UserBean user, RequestParams requestParams, CompleteValidStableValues contextValues)
       throws WdkModelException, WdkUserException {
     _param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }

@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 
 /**
@@ -98,19 +99,19 @@ public class QuestionForm extends MapActionForm {
       }
     }
     try {
-    	  ValidStableValueSet.createFromCompleteValues(user.getUser(), new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
+      ValidStableValuesFactory.createFromCompleteValues(user.getUser(), new WriteableStableValues(wdkQuestion.getQuestion().getQuery(), contextValues));
     }
     catch(WdkUserException wue) {
-    	  Map<String,String> errorMap = wue.getParamErrors();
-    	  for(String paramName : errorMap.keySet()) {
-    		ParamBean<?> param = params.get(paramName);
-    		ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), errorMap.get(paramName));
+      Map<String,String> errorMap = wue.getParamErrors();
+      for(String paramName : errorMap.keySet()) {
+        ParamBean<?> param = params.get(paramName);
+        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), errorMap.get(paramName));
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
         LOG.error("validation failed.", wue);
-    	  }
+      }
     }
     catch(WdkModelException wme) {
-    	  throw new WdkRuntimeException(wme);
+      throw new WdkRuntimeException(wme);
     }
 
 //    // assign context values to the param bean

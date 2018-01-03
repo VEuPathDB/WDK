@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.ValidStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -83,7 +84,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public void setContextValues(ValidStableValues contextValues) {
+  public void setContextValues(CompleteValidStableValues contextValues) {
     super.setContextValues(contextValues);
     if ((this._contextValues == null && contextValues != null) ||
         (this._contextValues != null && !compareValues(this._contextValues, contextValues))) {
@@ -93,7 +94,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   //TODO - CWL Verify
-  private boolean compareValues(ValidStableValueSet left, ValidStableValueSet right) {
+  private boolean compareValues(CompleteValidStableValues left, CompleteValidStableValues right) {
     if (left.size() != right.size())
       return false;
     for (String name : left.keySet()) {
@@ -109,12 +110,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
+  public String getDefault() {
     return getVocabInstance().getDefaultValue();
   }
 
-  // NOTE: not threadsafe! This class is expected only to be used in a single
-  // thread
+  // NOTE: not threadsafe! This class is expected only to be used in a single thread
   protected EnumParamVocabInstance getVocabInstance() {
     if (_cache == null || _dependedValueChanged) {
       _cache = _param.getVocabInstance(_userBean.getUser(), _contextValues);
@@ -281,8 +281,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     }
   }
 
-  @Override
-  public void validate(UserBean user, String rawOrDependentValue, ValidStableValueSet contextValues)
+  private void validate(UserBean user, String rawOrDependentValue, CompleteValidStableValues contextValues)
       throws WdkModelException, WdkUserException {
     logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" +
         contextValues.prettyPrint());

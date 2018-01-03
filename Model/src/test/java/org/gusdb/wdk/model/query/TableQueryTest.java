@@ -1,9 +1,5 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -11,6 +7,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
 import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -50,15 +48,13 @@ public class TableQueryTest {
                             continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
-                        ValidStableValueSet validatedParamStableValues =
-                        	    ValidStableValueSet.createFromCompleteValues(user, new WriteableStableValues(query, values));
-                        QueryInstance<?> instance = query.makeInstance(user,
-                                validatedParamStableValues, true, 0,
-                                new LinkedHashMap<String, String>());
+                        CompleteValidStableValues validatedParamStableValues =
+                            ValidStableValuesFactory.createFromCompleteValues(user, new WriteableStableValues(query, values));
+                        QueryInstance<?> instance = query.makeInstance(user, validatedParamStableValues);
                         int result = instance.getResultSize();
                         if (ASSERTION) {
-                        	Assert.assertTrue(result + " >= " + min, result >= min);
-                        	Assert.assertTrue(result + " <= " + max, result <= max);
+                          Assert.assertTrue(result + " >= " + min, result >= min);
+                          Assert.assertTrue(result + " <= " + max, result <= max);
                         }
                     }
                 }

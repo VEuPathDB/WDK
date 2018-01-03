@@ -91,7 +91,7 @@ public class FilterParamBean extends EnumParamBean {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
+  public String getDefault() {
     return filterParam.getDefault(_userBean.getUser(), _contextValues);
   }
 
