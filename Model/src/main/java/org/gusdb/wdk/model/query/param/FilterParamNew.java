@@ -97,7 +97,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
-
+  static final String COLUMN_GLOBAL_INTERNAL = "internal_for_counts"; // the type of ID as returned by the search, rather than the filter
+  
   private static final String FILTERED_IDS_MACRO = "##FILTERED_IDS##";
 
   private static final int FETCH_SIZE = 1000;
@@ -347,6 +348,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     metadataCols.add(COLUMN_INTERNAL);
+    metadataCols.add(COLUMN_GLOBAL_INTERNAL);
 
     // resolve background query
     if (_backgroundQueryRef != null) {
@@ -363,7 +365,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
 
     List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
-    metadataCols.add(COLUMN_ONTOLOGY_ID);
+    ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
 
     // resolve values map query
     if (_ontologyValuesQueryRef != null) {
@@ -461,19 +463,15 @@ public class FilterParamNew extends AbstractDependentParam {
       throw new WdkModelException(e);
     }
 
-    // reduce it to a set of distinct internals
-    String distinctInternalsSql = "SELECT distinct md." + COLUMN_INTERNAL + " FROM (" + bgdSql + ") md";
-
     // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
 
     // get untransformed unfiltered count
-    String sql = "select count(*) from (" + distinctInternalsSql + ")";
+    String sql = "SELECT count(distinct md." + COLUMN_INTERNAL + ") FROM (" + bgdSql + ") md";
     fpsc.untransformedUnfilteredCount = runCountSql(sql);
 
     // get transformed unfiltered count
-    sql = "select count(*) from (" + transformIdSql(distinctInternalsSql, user, contextParamValues) + ")";
-
+    sql = "SELECT count (distinct md." + COLUMN_GLOBAL_INTERNAL + ") FROM (" + bgdSql + ") md";
     fpsc.unfilteredCount = runCountSql(sql);
 
     /* GET FILTERED COUNTS */
@@ -482,13 +480,10 @@ public class FilterParamNew extends AbstractDependentParam {
     String filteredInternalsSql = getFilteredValue(user, stableValue, contextParamValues, _metadataQuery);
 
     // get untransformed filtered count
-    sql = "select count(*) as CNT from (" + filteredInternalsSql + ")";
-
+    sql = "select distinct count(" + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.untransformedFilteredCount = runCountSql(sql);
 
-    // get transformed count
-    sql = "select count(*) as CNT from (" + transformIdSql(filteredInternalsSql, user, contextParamValues) + ")";
-
+    sql = "select distinct count(" + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.filteredCount = runCountSql(sql);
 
     return fpsc;
@@ -555,7 +550,7 @@ public class FilterParamNew extends AbstractDependentParam {
         " = ?";
     
     // while we are here, format sql to find distinct internals in unfiltered
-    String internalsSqlPerOntologyId = "SELECT count (distinct internal) as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+    String internalsSqlPerOntologyId = "SELECT count (distinct " + COLUMN_INTERNAL + ") as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
         " = ?";
 
     // read into a map of internal -> value(s)
@@ -571,13 +566,13 @@ public class FilterParamNew extends AbstractDependentParam {
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
     String internalSql = getFilteredValue(user, stableValue, contextParamValues, getMetadataQuery());
 
+
     // use that set of ids to limit our ontology id's metadata
-    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + " AND internal in (" + internalSql +
-        ")";
+    String andClause = " AND " + COLUMN_INTERNAL + " in ( select internal from (" + internalSql + "))";
+    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + andClause;
 
     // while we are here, format sql to find distinct internals in filtered
-    String internalsSqlPerOntologyIdFiltered = internalsSqlPerOntologyId + " AND internal in (" + internalSql +
-        ")";
+    String internalsSqlPerOntologyIdFiltered = internalsSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
     Map<String, List<T>> filtered = getMetaData(user, contextParamValues, ontologyItem, paramInstance,
@@ -739,7 +734,7 @@ public class FilterParamNew extends AbstractDependentParam {
       }
     }
     catch (SQLException ex) {
-      throw new WdkModelException(ex);
+      throw new WdkModelException(sql, ex);
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, ps);
@@ -836,7 +831,7 @@ public class FilterParamNew extends AbstractDependentParam {
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
        String metadataTableName = "md";
-       String filterSelectSql = "SELECT distinct md.internal FROM (" + metadataSql + ") md";
+       String filterSelectSql = "SELECT distinct md." + FilterParamNew.COLUMN_INTERNAL + ", md." + FilterParamNew.COLUMN_GLOBAL_INTERNAL + " FROM (" + metadataSql + ") md";
        
        // get the applied filters and the ontology
        List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
