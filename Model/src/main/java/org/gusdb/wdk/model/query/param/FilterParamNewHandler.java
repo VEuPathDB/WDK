@@ -103,7 +103,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
       String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      return fpn.getUseIdTransformSqlForInternalValue()? fpn.transformIdSql(cachedSql, user, contextParamValues): cachedSql;
+      String internalColumn = fpn.getUseIdTransformSqlForInternalValue()? FilterParamNew.COLUMN_GLOBAL_INTERNAL : FilterParamNew.COLUMN_INTERNAL;
+      return "select distinct " + internalColumn + " from (" + cachedSql + ")";
       
     }
     catch (JSONException ex) {
@@ -120,7 +121,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
        SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.emptyMap());
-       return "select internal from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
+       return "select " + FilterParamNew.COLUMN_INTERNAL + ", " + FilterParamNew.COLUMN_GLOBAL_INTERNAL + " from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
        throw new WdkModelException(e);
@@ -133,7 +134,10 @@ public class FilterParamNewHandler extends AbstractParamHandler {
      sqlQuery.setName("InternalValue");
      sqlQuery.setSql("$$sql$$");  // the sql will be provided by the sql param
      Column column = new Column();
-     column.setName("internal");
+     column.setName(FilterParamNew.COLUMN_INTERNAL);
+     sqlQuery.addColumn(column);
+     column = new Column();
+     column.setName(FilterParamNew.COLUMN_GLOBAL_INTERNAL);
      sqlQuery.addColumn(column);
      sqlQuery.setDoNotTest(true);
      sqlQuery.setIsCacheable(true);
