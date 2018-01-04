@@ -23,6 +23,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -728,6 +729,7 @@ public class FilterParamNew extends AbstractDependentParam {
       ps.setFetchSize(FETCH_SIZE);
       ps.setString(1, ontologyItem.getOntologyId());
       ps.setString(2, ontologyItem.getOntologyId());
+      long start = System.currentTimeMillis();
       resultSet = ps.executeQuery();
       while (resultSet.next()) {
         String internal = resultSet.getString(COLUMN_INTERNAL);
@@ -743,6 +745,8 @@ public class FilterParamNew extends AbstractDependentParam {
         // add next value to the list
         values.add(value);
       }
+      QueryLogger.logEndStatementExecution(sql, "FilterParamNew-getMetaData", start);
+
     }
     catch (SQLException ex) {
       throw new WdkModelException(sql, ex);
