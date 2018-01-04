@@ -22,6 +22,7 @@ export default function FieldFilter(props) {
     fieldState: props.fieldState,
     onChange: props.onChange,
     onSort: props.onMemberSort,
+    onSearch: props.onMemberSearch,
     onRangeScaleChange: props.onRangeScaleChange,
     selectByDefault: props.selectByDefault
   };
@@ -75,6 +76,7 @@ FieldFilter.propTypes = {
 
   onChange: PropTypes.func,
   onMemberSort: PropTypes.func,
+  onMemberSearch: PropTypes.func,
   onRangeScaleChange: PropTypes.func,
   useFullWidth: PropTypes.bool,
 

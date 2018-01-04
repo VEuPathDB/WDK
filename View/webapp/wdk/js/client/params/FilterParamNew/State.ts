@@ -26,6 +26,7 @@ type BaseFieldState = {
 
 export type MemberFieldState = BaseFieldState & {
   sort: SortSpec;
+  searchTerm: string;
 }
 
 export type RangeFieldState = BaseFieldState & {
