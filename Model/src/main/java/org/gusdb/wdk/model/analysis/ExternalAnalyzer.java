@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model.analysis;
 
+import static java.util.Arrays.asList;
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,7 +13,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -154,25 +159,29 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     }
 
     // configure tabular reporter if attributes requested in config
-    String attributes = getProperty(EXTRACTED_ATTRIBS_PROP_KEY);
-    if (attributes != null && !attributes.trim().isEmpty()) {
+    List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
+    if (!attributes.isEmpty()) {
       Reporter reporter = new AttributesTabularReporter(answerValue);
-      reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, attributes.trim(), hasHeader));
+      reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
       writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
     }
 
     // get array of requested tables
-    String tablesStr = getProperty(EXTRACTED_TABLES_PROP_KEY);
-    if (tablesStr != null && !tablesStr.trim().isEmpty()) {
-      String[] tables = tablesStr.split(",");
-      for (String table : tables) {
-        Reporter reporter = new TableTabularReporter(answerValue);
-        reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
-        writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
-      }
+    List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
+    for (String table : tables) {
+      Reporter reporter = new TableTabularReporter(answerValue);
+      reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
+      writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
     }
 
     return ExecutionStatus.COMPLETE;
+  }
+
+  private List<String> getConfiguredFields(String propName) {
+    String propValue = getProperty(propName);
+    return (propValue == null ?
+      Collections.EMPTY_LIST :
+      mapToList(asList(propValue.split(",")), name -> name.trim()));
   }
 
   protected static void writeContentToFile(String storageDir, String fileName, String content) throws WdkModelException {
@@ -186,8 +195,8 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   }
 
   private void dumpHeaderDisplayMap(RecordClass recordClass, String storageDir) throws WdkModelException {
-    String[] attributeNames = getProperty(EXTRACTED_ATTRIBS_PROP_KEY).trim().split(",");
-    String[] tableNames = getProperty(EXTRACTED_TABLES_PROP_KEY).trim().split(",");
+    List<String> attributeNames = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
+    List<String> tableNames = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
     File mappingOutFile = Paths.get(storageDir, HEADER_MAPPING_FILE_NAME).toFile();
     try (BufferedWriter out = new BufferedWriter(new FileWriter(mappingOutFile))) {
       writeField(out, recordClass.getIdAttributeField(), "");
