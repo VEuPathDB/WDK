@@ -118,9 +118,10 @@ export default class AttributeFilter extends React.Component {
    * @param {any} value Filter value
    * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
    */
-  handleFieldFilterChange(field, value, includeUnknown) {
+  handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution, this.props.selectByDefault)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown,
+      valueCounts, this.props.selectByDefault)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -136,7 +137,7 @@ export default class AttributeFilter extends React.Component {
       filters,
       invalidFilters,
       activeField,
-      activeFieldDistribution,
+      activeFieldSummary,
       fieldMetadataMap
     } = this.props;
 
@@ -148,7 +149,7 @@ export default class AttributeFilter extends React.Component {
 
     var displayName = this.props.displayName;
     var selectedFilter = find(filters, filter => {
-      return filter.field === activeField;
+      return filter.field === activeField.term;
     });
 
     var filteredNotIgnored = filteredData.filter(datum => ignoredData.indexOf(datum) === -1);
@@ -211,11 +212,11 @@ export default class AttributeFilter extends React.Component {
 
                 <FieldFilter
                   displayName={displayName}
-                  field={this.props.fields.get(activeField)}
+                  field={activeField}
                   filter={selectedFilter}
                   filteredDataCount={filteredNotIgnored.length}
                   dataCount={dataCount}
-                  distribution={activeFieldDistribution}
+                  fieldSummary={activeFieldSummary}
                   onChange={this.handleFieldFilterChange}
                   addTopPadding
                   selectByDefault={this.props.selectByDefault}
@@ -262,8 +263,8 @@ AttributeFilter.propTypes = {
   filteredData: PropTypes.array.isRequired,
   ignoredData: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
-  activeField: PropTypes.string,
-  activeFieldDistribution: PropTypes.array,
+  activeField: PropTypes.object,
+  activeFieldSummary: PropTypes.array,
   fieldMetadataMap: PropTypes.object.isRequired,
   renderSelectionInfo: PropTypes.func,
 

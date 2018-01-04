@@ -8,9 +8,9 @@ import { isRange } from '../../../utils/FilterServiceUtils';
  * @param {Field} field Field term id
  * @param {any} value Filter value
  * @param {boolean} includeUnknown
- * @param {SummaryCount[]} fieldSummary
+ * @param {ValueCount[]} valueCounts
  */
-export function shouldAddFilter(field, value, includeUnknown, fieldSummary, selectByDefault) {
+export function shouldAddFilter(field, value, includeUnknown, valueCounts, selectByDefault) {
   if (selectByDefault == false) {
     return isRange(field) && (value == null || (value.min == null && value.max == null)) ? false
          : value == null ? true
@@ -25,7 +25,7 @@ export function shouldAddFilter(field, value, includeUnknown, fieldSummary, sele
   if (value == null) return !includeUnknown;
 
   if (isRange(field)) {
-    const values = fieldSummary
+    const values = valueCounts
       .filter(entry => entry.value != null)
       .map(entry => field.type === 'number' ? Number(entry.value) : entry.value);
     const summaryMin = min(values);
@@ -37,7 +37,7 @@ export function shouldAddFilter(field, value, includeUnknown, fieldSummary, sele
     );
   }
 
-  return value.length !== fieldSummary.filter(item => item.value != null).length;
+  return value.length !== valueCounts.filter(item => item.value != null).length;
 }
 
 const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;

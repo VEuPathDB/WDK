@@ -40,9 +40,10 @@ export default class ServerSideAttributeFilter extends React.Component {
    * @param {any} value Filter value
    * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
    */
-  handleFieldFilterChange(field, value, includeUnknown) {
+  handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
     let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown, this.props.activeFieldDistribution, this.props.selectByDefault)
+    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown,
+      valueCounts, this.props.selectByDefault)
       ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : filters
     );
@@ -68,14 +69,12 @@ export default class ServerSideAttributeFilter extends React.Component {
       invalidFilters,
       activeField,
       activeFieldState,
-      activeFieldDistribution,
-      activeFieldDistinctKnownCount,
-      activeFieldFilteredDistinctKnownCount
+      activeFieldSummary
     } = this.props;
 
     var displayName = this.props.displayName;
-    var selectedFilter = find(filters, filter => {
-      return filter.field === activeField;
+    var selectedFilter = activeField && find(filters, filter => {
+      return filter.field === activeField.term;
     });
 
     return (
@@ -110,12 +109,10 @@ export default class ServerSideAttributeFilter extends React.Component {
             displayName={displayName}
             filteredDataCount={filteredDataCount}
             dataCount={dataCount}
-            distinctKnownCount={activeFieldDistinctKnownCount}
-            filteredDistinctKnownCount={activeFieldFilteredDistinctKnownCount}
-            field={fields.get(activeField)}
+            field={activeField}
             fieldState={activeFieldState}
+            fieldSummary={activeFieldSummary}
             filter={selectedFilter}
-            distribution={activeFieldDistribution}
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
             onRangeScaleChange={this.handleRangeScaleChange}
@@ -144,11 +141,10 @@ ServerSideAttributeFilter.propTypes = {
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,
-  activeField: PropTypes.string,
-  activeFieldState: PropTypes.object,
-  activeFieldDistribution: PropTypes.array,
-  activeFieldDistinctKnownCount: PropTypes.number,
-  activeFieldFilteredDistinctKnownCount: PropTypes.number,
+
+  activeField: FieldFilter.propTypes.field,
+  activeFieldState: FieldFilter.propTypes.fieldState,
+  activeFieldSummary: FieldFilter.propTypes.fieldSummary,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,

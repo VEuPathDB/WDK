@@ -48,7 +48,7 @@ export default class FilterList extends React.Component {
         {this.props.renderSelectionInfo(this.props)}
         <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
           {map(filters, filter => {
-            var className = selectedField === filter.field ? 'selected' : '';
+            var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
             var handleSelectClick = partial(this.handleFilterSelectClick, filter);
             var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
             var field = fields.get(filter.field);
@@ -85,7 +85,7 @@ FilterList.propTypes = {
   onFilterRemove: PropTypes.func.isRequired,
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
-  selectedField: PropTypes.string,
+  selectedField: PropTypes.object,
   renderSelectionInfo: PropTypes.func
 };
 

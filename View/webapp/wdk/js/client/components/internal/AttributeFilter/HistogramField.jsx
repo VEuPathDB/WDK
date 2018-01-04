@@ -156,7 +156,8 @@ export default class HistogramField extends React.Component {
       range.max >= this.distributionRange.max
     ) ? undefined : range;
 
-    this.props.onChange(this.props.field, filterValue, includeUnknown);
+    this.props.onChange(this.props.field, filterValue, includeUnknown,
+      this.props.fieldSummary.valueCounts);
 
     this.setState({
       minInputValue: get(filterValue, 'min', this.distributionRange.min),
@@ -267,6 +268,7 @@ HistogramField.propTypes = {
   selectByDefault: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   field: PropTypes.object.isRequired,
+  fieldSummary: PropTypes.object.isRequired,
   filter: PropTypes.object,
   overview: PropTypes.node.isRequired,
   displayName: PropTypes.string.isRequired,
