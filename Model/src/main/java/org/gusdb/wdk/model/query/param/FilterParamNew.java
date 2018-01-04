@@ -26,6 +26,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -129,6 +130,9 @@ public class FilterParamNew extends AbstractDependentParam {
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
 
+  // TODO integrate
+  private String _idTransformSql;
+
   public FilterParamNew() {
     // register handlers
     setHandler(new FilterParamNewHandler());
@@ -176,7 +180,10 @@ public class FilterParamNew extends AbstractDependentParam {
 
     return names;
   }
-  public void setIdTransformSql(Object o) {}
+
+  public void setIdTransformSql(WdkModelText idTransformSql) {
+    _idTransformSql = idTransformSql.getText();
+  }
 
   @Override
   public Param clone() {
