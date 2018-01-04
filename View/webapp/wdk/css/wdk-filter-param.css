@@ -278,7 +278,7 @@
 .filter-param .membership-actions {
   display: flex;
   flex-direction: row;
-  padding: .2em 0;
+  padding: 1em 0;
 }
 .filter-param .membership-action__group-selected {
   display: flex;

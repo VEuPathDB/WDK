@@ -1,9 +1,10 @@
 import React from 'react';
-import { get, memoize } from 'lodash';
+import { get, has, isFunction, memoize } from 'lodash';
 import { MesaController as Mesa, ModalBoundary } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
 import { safeHtml } from '../../../utils/componentUtils';
+import RealTimeSearchBox from '../../RealTimeSearchBox';
 import Toggle from '../../Toggle';
 import FieldFilter from './FieldFilter';
 import FilterLegend from './FilterLegend';
@@ -62,6 +63,13 @@ export default class MembershipField extends React.Component {
     return get(this.props, 'filter.value');
   }
 
+  getFilteredRows(searchTerm) {
+    return searchTerm !== ''
+      ? this.props.fieldSummary.valueCounts.filter(entry =>
+        entry.value != null && entry.value.toLowerCase().startsWith(searchTerm.toLowerCase()))
+      : this.props.fieldSummary.valueCounts;
+  }
+
   isItemSelected(value) {
     let { filter, selectByDefault } = this.props;
 
@@ -70,6 +78,20 @@ export default class MembershipField extends React.Component {
       : value == null ? filter.includeUnknown
       // filter.value is null (ie, all known values), or filter.value includes value
       : filter.value == null || filter.value.includes(value);
+  }
+
+  isSortEnabled() {
+    return (
+      has(this.props, 'fieldState.sort') &&
+      isFunction(this.props.onSort)
+    );
+  }
+
+  isSearchEnabled() {
+    return (
+      has(this.props, 'fieldState.searchTerm') &&
+      isFunction(this.props.onSearch)
+    );
   }
 
   handleItemClick(item, addItem = !this.isItemSelected(item.value)) {
@@ -98,7 +120,10 @@ export default class MembershipField extends React.Component {
   }
 
   handleSelectAll() {
-    this.emitChange(undefined, true);
+    const value = this.isSearchEnabled()
+      ? this.getFilteredRows(this.props.fieldState.searchTerm).map(entry => entry.value)
+      : undefined;
+    this.emitChange(value, true);
   }
 
   handleRemoveAll() {
@@ -116,36 +141,50 @@ export default class MembershipField extends React.Component {
   }
 
   render() {
-    var useSort = (
-      this.props.fieldState &&
-      this.props.fieldState.sort &&
-      typeof this.props.onSort === 'function'
-    );
+    var useSort = this.isSortEnabled();
+    var useSearch = this.isSearchEnabled();
+
+    var rows = useSearch
+      ? this.getFilteredRows(this.props.fieldState.searchTerm)
+      : this.props.fieldSummary.valueCounts;
 
     return (
       <ModalBoundary>
         <div className="membership-filter">
-          { useSort ? (
+          { useSort || useSearch ? (
             <div className="membership-actions">
-              <div className="membership-action membership-action__group-selected">
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none'
-                  }}
-                  type="button"
-                  onClick={() => {
-                    this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
-                      groupBySelected: !this.props.fieldState.sort.groupBySelected
-                    }));
-                  }}
-                >
-                  <Toggle
-                    on={this.props.fieldState.sort.groupBySelected}
-                  /> Keep selected values at top
-               </button>
+              {useSearch && (
+                <div className="membership-action membership-action__search">
+                  <RealTimeSearchBox
+                    searchTerm={this.props.fieldState.searchTerm}
+                    placeholderText="Filter table by values"
+                    onSearchTermChange={searchTerm => {
+                      this.props.onSearch(this.props.field, searchTerm);
+                    }}
+                  />
+                </div>
+              )}
+              {useSort && (
+                <div className="membership-action membership-action__group-selected">
+                  <button
+                    style={{
+                      background: 'none',
+                      border: 'none'
+                    }}
+                    type="button"
+                    onClick={() => {
+                      this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
+                        groupBySelected: !this.props.fieldState.sort.groupBySelected
+                      }));
+                    }}
+                  >
+                    <Toggle
+                      on={this.props.fieldState.sort.groupBySelected}
+                    /> Keep selected values at top
+                 </button>
 
-              </div>
+                </div>
+              )}
             </div>
           ) : null }
 
@@ -169,7 +208,7 @@ export default class MembershipField extends React.Component {
               onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
             }}
             rows={this.props.fieldSummary.valueCounts}
-            filteredRows={this.props.fieldSummary.valueCounts}
+            filteredRows={rows}
             columns={[
               {
                 key: 'value',

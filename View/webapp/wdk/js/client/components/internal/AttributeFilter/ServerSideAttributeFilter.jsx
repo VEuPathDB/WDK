@@ -22,6 +22,7 @@ export default class ServerSideAttributeFilter extends React.Component {
     this.handleFilterRemove = this.handleFilterRemove.bind(this);
     this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
     this.handleMemberSort = this.handleMemberSort.bind(this);
+    this.handleMemberSearch = this.handleMemberSearch.bind(this);
     this.handleRangeScaleChange = this.handleRangeScaleChange.bind(this);
   }
 
@@ -49,8 +50,12 @@ export default class ServerSideAttributeFilter extends React.Component {
     );
   }
 
-  handleMemberSort(field, state) {
-    this.props.onMemberSort(field, state);
+  handleMemberSort(field, sort) {
+    this.props.onMemberSort(field, sort);
+  }
+
+  handleMemberSearch(field, searchTerm) {
+    this.props.onMemberSearch(field, searchTerm);
   }
 
   handleRangeScaleChange(field, state) {
@@ -115,6 +120,7 @@ export default class ServerSideAttributeFilter extends React.Component {
             filter={selectedFilter}
             onChange={this.handleFieldFilterChange}
             onMemberSort={this.handleMemberSort}
+            onMemberSearch={this.handleMemberSearch}
             onRangeScaleChange={this.handleRangeScaleChange}
             useFullWidth={hideFieldPanel}
             selectByDefault={this.props.selectByDefault}
@@ -154,6 +160,7 @@ ServerSideAttributeFilter.propTypes = {
   onActiveFieldChange: PropTypes.func.isRequired,
   onFiltersChange: PropTypes.func.isRequired,
   onMemberSort: PropTypes.func.isRequired,
+  onMemberSearch: PropTypes.func.isRequired,
   onRangeScaleChange: PropTypes.func.isRequired
 
 };
