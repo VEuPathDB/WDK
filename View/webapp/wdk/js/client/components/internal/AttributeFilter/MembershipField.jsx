@@ -89,6 +89,7 @@ export default class MembershipField extends React.Component {
 
   isSearchEnabled() {
     return (
+      this.props.fieldSummary.valueCounts.length > 10 &&
       has(this.props, 'fieldState.searchTerm') &&
       isFunction(this.props.onSearch)
     );
