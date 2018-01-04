@@ -37,7 +37,7 @@ export default class MembershipField extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.distribution !== nextProps.distribution) {
+    if (this.props.fieldSummary !== nextProps.fieldSummary) {
       this.getKnownValues.cache.clear();
     }
     if (this.props.filter !== nextProps.filter) {
@@ -53,7 +53,7 @@ export default class MembershipField extends React.Component {
   }
 
   getKnownValues() {
-    return this.props.distribution
+    return this.props.fieldSummary.valueCounts
       .filter(({ value }) => value != null)
       .map(({ value }) => value);
   }
@@ -79,9 +79,9 @@ export default class MembershipField extends React.Component {
       this.handleUnknownChange(addItem);
     }
     else {
-      const currentFilterValue = this.getValuesForFilter() || (
-        selectByDefault ? this.getKnownValues() : []
-      );
+      const currentFilterValue = this.props.filter == null
+        ? (selectByDefault ? this.getKnownValues() : [])
+        : this.getValuesForFilter() || this.getKnownValues();
       const filterValue = addItem
         ? currentFilterValue.concat(value)
         : currentFilterValue.filter(v => v !== value);
@@ -111,7 +111,8 @@ export default class MembershipField extends React.Component {
   }
 
   emitChange(value, includeUnknown) {
-    this.props.onChange(this.props.field, value, includeUnknown);
+    this.props.onChange(this.props.field, value, includeUnknown,
+      this.props.fieldSummary.valueCounts);
   }
 
   render() {
@@ -167,8 +168,8 @@ export default class MembershipField extends React.Component {
               onMultipleRowDeselect: () => this.handleRemoveAll(),
               onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
             }}
-            rows={this.props.distribution}
-            filteredRows={this.props.distribution}
+            rows={this.props.fieldSummary.valueCounts}
+            filteredRows={this.props.fieldSummary.valueCounts}
             columns={[
               {
                 key: 'value',
@@ -189,7 +190,7 @@ export default class MembershipField extends React.Component {
                   </div>
                 ),
                 wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.filteredDistinctKnownCount ? [
+                renderHeading: this.props.fieldSummary.internalsFilteredCount ? [
                   () => (
                     <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                       <div>Matching</div>
@@ -198,7 +199,7 @@ export default class MembershipField extends React.Component {
                   ),
                   () => (
                     <div>
-                      {this.props.filteredDistinctKnownCount.toLocaleString()}
+                      {this.props.fieldSummary.internalsFilteredCount.toLocaleString()}
                       <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>(100%)</small>
                     </div>
                   )
@@ -212,9 +213,9 @@ export default class MembershipField extends React.Component {
                   <div>
                     {value.toLocaleString()}
                     &nbsp;
-                    {this.props.filteredDistinctKnownCount && (
+                    {this.props.fieldSummary.internalsFilteredCount && (
                       <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
-                        ({Math.round(value/this.props.filteredDistinctKnownCount * 100)}%)
+                        ({Math.round(value/this.props.fieldSummary.internalsFilteredCount * 100)}%)
                       </small>
                     )}
                   </div>
@@ -231,7 +232,7 @@ export default class MembershipField extends React.Component {
                   </div>
                 ),
                 wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.distinctKnownCount ? [
+                renderHeading: this.props.fieldSummary.internalsCount ? [
                   () => (
                     <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                       <div>All</div>
@@ -240,7 +241,7 @@ export default class MembershipField extends React.Component {
                   ),
                   () => (
                     <div>
-                      {this.props.distinctKnownCount.toLocaleString()}
+                      {this.props.fieldSummary.internalsCount.toLocaleString()}
                       <small style={{ display: 'inline-block', width: '50%', textAlign: 'center'}}>(100%)</small>
                     </div>
                   )
@@ -254,9 +255,9 @@ export default class MembershipField extends React.Component {
                   <div>
                     {value.toLocaleString()}
                     &nbsp;
-                    {this.props.distinctKnownCount && (
+                    {this.props.fieldSummary.internalsCount && (
                       <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
-                        ({Math.round(value/this.props.distinctKnownCount * 100)}%)
+                        ({Math.round(value/this.props.fieldSummary.internalsCount * 100)}%)
                       </small>
                     )}
                   </div>
@@ -270,10 +271,10 @@ export default class MembershipField extends React.Component {
                 renderCell: ({ row }) => (
                   <div className="bar">
                     <div className="fill" style={{
-                      width: (row.count / (this.props.distinctKnownCount || this.props.dataCount) * 100) + '%'
+                      width: (row.count / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
                     }}/>
                     <div className="fill filtered" style={{
-                      width: (row.filteredCount / (this.props.distinctKnownCount || this.props.dataCount) * 100) + '%'
+                      width: (row.filteredCount / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
                     }}/>
                   </div>
                 )

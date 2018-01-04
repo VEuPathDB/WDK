@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { memoize, uniq } from 'lodash';
-import { isFilterField, isRange, getTree } from "../../../utils/FilterServiceUtils";
+import { isFilterField, isRange, isMulti, getTree } from "../../../utils/FilterServiceUtils";
 import { Seq } from '../../../utils/IterableUtils';
 import CheckboxTree from '../../CheckboxTree';
 import Icon from '../../IconAlt';
@@ -28,21 +28,20 @@ export default class FieldList extends React.PureComponent {
       searchTerm: '',
 
       // expand branch containing selected field
-      expandedNodes: this._getPathToField(this.props.fields.get(this.props.selectedField))
+      expandedNodes: this._getPathToField(this.props.selectedField)
     };
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.selectedField == null || this.props.selectedField === nextProps.selectedField) return;
 
-    const selectedField = nextProps.fields.get(nextProps.selectedField);
     if (
-      selectedField.parent != null &&
-      !this.state.expandedNodes.includes(selectedField.parent)
+      nextProps.selectedField.parent != null &&
+      !this.state.expandedNodes.includes(nextProps.selectedField.parent)
     ) {
       this.setState({
         expandedNodes: uniq(this.state.expandedNodes.concat(
-          this._getPathToField(selectedField)))
+          this._getPathToField(nextProps.selectedField)))
       });
     }
   }
@@ -97,11 +96,11 @@ export default class FieldList extends React.PureComponent {
   }
 
   getNodeChildren(node) {
-    return node.children;
+    return isMulti(node.field) ? [] : node.children;
   }
 
   renderNode({node}) {
-    let isActive = this.props.selectedField === node.field.term;
+    let isActive = this.props.selectedField === node.field;
     return (
       <Tooltip content={node.field.description} hideDelay={0}>
         {isFilterField(node.field)
@@ -177,5 +176,5 @@ FieldList.propTypes = {
   autoFocus: PropTypes.bool,
   fields: PropTypes.instanceOf(Map).isRequired,
   onFieldSelect: PropTypes.func.isRequired,
-  selectedField: PropTypes.string
+  selectedField: PropTypes.object
 };

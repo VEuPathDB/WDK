@@ -15,11 +15,9 @@ export default function FieldFilter(props) {
   let fieldDetailProps = {
     dataCount: props.dataCount,
     filteredDataCount: props.filteredDataCount,
-    distinctKnownCount: props.distinctKnownCount,
-    filteredDistinctKnownCount: props.filteredDistinctKnownCount,
+    fieldSummary: props.fieldSummary,
     displayName: props.displayName,
     field: props.field,
-    distribution: props.distribution,
     filter: props.filter,
     fieldState: props.fieldState,
     onChange: props.onChange,
@@ -33,17 +31,17 @@ export default function FieldFilter(props) {
 
   return (
     <div className={className}>
-      {!props.field ? (
-        <EmptyField displayName={props.displayName}/>
+      {!fieldDetailProps.field ? (
+        <EmptyField displayName={fieldDetailProps.displayName}/>
       ) : (
         <div>
           <h3>
-            {props.field.display + ' '}
+            {fieldDetailProps.field.display + ' '}
           </h3>
-          {props.field.description && (
-            <div className="field-description">{props.field.description}</div>
+          {fieldDetailProps.field.description && (
+            <div className="field-description">{fieldDetailProps.field.description}</div>
           )}
-          {(!props.distribution || !props.dataCount) ? (
+          {(!fieldDetailProps.fieldSummary || !fieldDetailProps.dataCount) ? (
             <Loading />
           ) : (
             <FieldDetail {...fieldDetailProps} />
@@ -54,20 +52,32 @@ export default function FieldFilter(props) {
   );
 }
 
+const FieldSummary = PropTypes.shape({
+  valueCounts: PropTypes.array.isRequired,
+  internalsCount: PropTypes.number.isRequired,
+  internalsFilteredCount: PropTypes.number.isRequired
+});
+
+const MultiFieldSummary = PropTypes.arrayOf(PropTypes.shape({
+  field: PropTypes.object.isRequired,
+  filter: PropTypes.object.isRequired,
+  summary: FieldSummary.isRequired
+}));
+
 FieldFilter.propTypes = {
   displayName: PropTypes.string,
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,
-  distinctKnownCount: PropTypes.number,
-  filteredDistinctKnownCount: PropTypes.number,
+  filter: PropTypes.object,
   field: PropTypes.object,
   fieldState: PropTypes.object,
-  filter: PropTypes.object,
-  distribution: PropTypes.array,
+  fieldSummary: PropTypes.oneOfType([FieldSummary, MultiFieldSummary]),
+
   onChange: PropTypes.func,
   onMemberSort: PropTypes.func,
   onRangeScaleChange: PropTypes.func,
   useFullWidth: PropTypes.bool,
+
   addTopPadding: PropTypes.bool,
   selectByDefault: PropTypes.bool.isRequired
 };

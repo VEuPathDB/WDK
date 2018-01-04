@@ -404,8 +404,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         filteredData={state.filteredData}
         ignoredData={state.ignoredData}
         columns={state.columns}
-        activeField={state.selectedField}
-        activeFieldDistribution={state.distributionMap[state.selectedField]}
+        activeField={state.selectedField && state.fields.get(state.selectedField)}
+        activeFieldSummary={state.distributionMap[state.selectedField]}
         fieldMetadataMap={state.fieldMetadataMap}
 
         isLoading={state.isLoading}

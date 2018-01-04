@@ -244,6 +244,10 @@ export function isRange(field: Field) {
   return field.isRange || field.filter === 'range';
 }
 
+export function isMulti(field: Field) {
+  return field.isMulti;
+}
+
 export function isFilterField(field: Field) {
   return field.type != null;
 }

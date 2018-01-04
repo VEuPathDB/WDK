@@ -76,6 +76,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     }
   }
 
+  // FIXME Move sorting into action creator or reducer and retain `groupBySelected` property value
   _handleMemberSort(field: Field, sort: MemberFieldState['sort']) {
     const filters = this._getFiltersFromValue(this.props.value);
     const { ontologyTermSummary } = this.props.uiState.fieldStates[field.term] as MemberFieldState
@@ -103,6 +104,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   render() {
     let { parameter, uiState } = this.props;
     let filters = this._getFiltersFromValue(this.props.value);
+    let fields = this._getFieldMap(parameter);
     let activeFieldSummary = (
       uiState.activeOntologyTerm &&
       uiState.fieldStates[uiState.activeOntologyTerm].ontologyTermSummary
@@ -118,12 +120,10 @@ export default class FilterParamNew extends React.PureComponent<Props> {
         <ServerSideAttributeFilter
           displayName={parameter.filterDataTypeDisplayName || parameter.displayName}
 
-          activeField={uiState.activeOntologyTerm}
-          activeFieldDistribution={activeFieldSummary && activeFieldSummary.valueCounts}
-          activeFieldDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsCount}
-          activeFieldFilteredDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsFilteredCount}
+          activeField={uiState.activeOntologyTerm && fields.get(uiState.activeOntologyTerm)}
+          activeFieldSummary={activeFieldSummary}
           activeFieldState={activeFieldState}
-          fields={this._getFieldMap(parameter)}
+          fields={fields}
           filters={filters}
           dataCount={uiState.unfilteredCount}
           filteredDataCount={uiState.filteredCount}

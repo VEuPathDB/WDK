@@ -17,6 +17,7 @@ interface BaseField {
   parent?: string;
   leaf?: 'true';
   isRange?: boolean;
+  isMulti?: boolean;
   filter?: 'range'|'membership';
   values?: string;
 }
@@ -92,7 +93,9 @@ export default class FilterService {
   filteredData: Datum[];
   columns: string[];
   distributionMap: {
-    [datum_term: string]: Distribution;
+    [datum_term: string]: {
+      valueCounts: Distribution;
+    }
   };
   fieldMetadataMap: {
     [field_term: string]: Metadata;
@@ -174,7 +177,9 @@ export default class FilterService {
 
     this.getFieldDistribution(field)
       .then(distribution => {
-        this.distributionMap[field] = distribution;
+        this.distributionMap[field] = {
+          valueCounts: distribution
+        };
         this.isLoading = false;
         this._emitChange();
       });
@@ -198,7 +203,9 @@ export default class FilterService {
 
     Promise.all(promises).then(([ filteredData, filterSelection, distribution ]) => {
       if (distribution) {
-        this.distributionMap[this.selectedField] = distribution;
+        this.distributionMap[this.selectedField] = {
+          valueCounts: distribution
+        };
       }
       if (filter) {
         filter.selection = filterSelection;
