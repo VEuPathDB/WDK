@@ -6,10 +6,12 @@
       "targets": {
         "browsers": ["last 2 versions", "ie >= 11"]
       }
-    }],
-    "stage-0"
+    }]
   ],
-  "plugins": ["syntax-dynamic-import"],
+  "plugins": [
+    "syntax-dynamic-import",
+    "syntax-object-rest-spread"
+  ],
 
   "env": {
     "test": {
