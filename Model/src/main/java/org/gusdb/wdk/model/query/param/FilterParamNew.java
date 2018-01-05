@@ -530,6 +530,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
+
   public <T> OntologyTermSummary<T> getOntologyTermSummary(User user,
       Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
       Class<T> ontologyItemClass) throws WdkModelException {
@@ -579,7 +580,6 @@ public class FilterParamNew extends AbstractDependentParam {
     String internalSql = getFilteredInternalsSql(user, stableValue, contextParamValues, getMetadataQuery(),
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'");
 
-
     // use that set of ids to limit our ontology id's metadata
     String andClause = " AND " + COLUMN_INTERNAL + " in ( select internal from (" + internalSql + "))";
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + andClause;
@@ -597,9 +597,10 @@ public class FilterParamNew extends AbstractDependentParam {
     OntologyTermSummary <T> summary = new OntologyTermSummary<T>(summaryCountsMap);
     
     getCountsOfInternals(summary, internalsSqlPerOntologyId, internalsSqlPerOntologyIdFiltered, ontologyItem.getOntologyId());
-     
+
     return summary;
   }
+
   
   /**
    * update the provided OntologyTermSummary with counts of internals.
@@ -617,12 +618,14 @@ public class FilterParamNew extends AbstractDependentParam {
     ResultSet resultSet = null;
 
     try {
+      long start = System.currentTimeMillis();
       ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyId);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctInternal(count.intValue());
+      QueryLogger.logEndStatementExecution(internalsSqlPerOntologyId, "FilterParamNew-getCountsOfInternals-unfiltered", start);
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
@@ -632,12 +635,14 @@ public class FilterParamNew extends AbstractDependentParam {
     }
   
     try {
+      long start = System.currentTimeMillis();
       ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyIdFiltered);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctMatchingInternal(count.intValue());
+      QueryLogger.logEndStatementExecution(internalsSqlPerOntologyIdFiltered, "FilterParamNew-getCountsOfInternals-filtered", start);
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
