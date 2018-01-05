@@ -44,6 +44,7 @@ public class Group extends WdkModelBase {
     if (empty == null) {
       empty = new Group();
       empty._displayType = DISPLAY_EMPTY;
+      empty._visible = true;
     }
     return empty;
   }
