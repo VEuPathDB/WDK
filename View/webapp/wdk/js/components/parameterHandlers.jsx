@@ -163,7 +163,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
               const prevProps = JSON.parse(propsAttrValue);
               const { value } = event.target;
 
-              if (prevProps.paramValues[name] === value) return;
+              // `prevProps.paramValues` may be undefined
+              if (_.get(prevProps, ['paramValues', name]) === value) return;
 
               const nextProps = Object.assign({}, prevProps, {
                 paramValues: Object.assign({}, prevProps.paramValues, {
