@@ -485,13 +485,14 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredInternalsSql = getFilteredValue(user, stableValue, contextParamValues, _metadataQuery);
 
     // get untransformed filtered count
+    String filteredInternalsSql = getFilteredInternalsSql(user, stableValue, contextParamValues, _metadataQuery, COLUMN_INTERNAL);
     sql = "select distinct count(" + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.untransformedFilteredCount = runCountSql(sql);
 
-    sql = "select distinct count(" + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
+    String filteredGlobalInternalsSql = getFilteredInternalsSql(user, stableValue, contextParamValues, _metadataQuery, COLUMN_GLOBAL_INTERNAL); 
+    sql = "select distinct count(" + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredGlobalInternalsSql + ")";
     fpsc.filteredCount = runCountSql(sql);
 
     return fpsc;
@@ -576,11 +577,12 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET FILTERED COUNTS */
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String internalSql = getFilteredValue(user, stableValue, contextParamValues, getMetadataQuery());
+    String internalSql = getFilteredInternalsSql(user, stableValue, contextParamValues, getMetadataQuery(),
+        COLUMN_INTERNAL, " where " + COLUMN_ONTOLOGY_ID + " = " + ontologyItem.getOntologyId());
 
 
     // use that set of ids to limit our ontology id's metadata
-    String andClause = " AND " + COLUMN_INTERNAL + " in ( select internal from (" + internalSql + "))";
+    String andClause = " AND " + COLUMN_INTERNAL + " in (" + internalSql + ")";
     String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + andClause;
 
     // while we are here, format sql to find distinct internals in filtered
@@ -836,7 +838,23 @@ public class FilterParamNew extends AbstractDependentParam {
    * this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
    * @return sql that provides a filtered set of internal IDs
    */
-   String getFilteredValue(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery)
+  String getFilteredInternalsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String desiredColumn)
+      throws WdkModelException {
+    return getFilteredInternalsSql(user, stableValue, contextParamValues, metadataQuery, desiredColumn, null);
+  }
+
+  /**
+   * Return sql that provides a filtered set of internal IDs.    
+   * @param user
+   * @param stableValue
+   * @param contextParamValues
+   * @param metadataQuery
+   * @param desiredColumn the name of the internal column to return.
+   * @param defaultFilterClause if there are no active filters, use this as a default.  if null, don't use a default filter.
+   * @return
+   * @throws WdkModelException
+   */
+  String getFilteredInternalsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String desiredColumn, String defaultFilterClause)
        throws WdkModelException {
 
      try {
@@ -846,7 +864,7 @@ public class FilterParamNew extends AbstractDependentParam {
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
        String metadataTableName = "md";
-       String filterSelectSql = "SELECT distinct md." + FilterParamNew.COLUMN_INTERNAL + ", md." + FilterParamNew.COLUMN_GLOBAL_INTERNAL + " FROM (" + metadataSql + ") md";
+       String filterSelectSql = "SELECT distinct md." + desiredColumn + " FROM (" + metadataSql + ") md";
        
        // get the applied filters and the ontology
        List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
@@ -856,6 +874,7 @@ public class FilterParamNew extends AbstractDependentParam {
        String filteredSql;
        if (filters.size() == 0) {
          filteredSql = filterSelectSql;
+         if (defaultFilterClause != null) filteredSql += defaultFilterClause;
        } 
        
        // otherwise apply the filters

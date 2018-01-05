@@ -101,9 +101,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String fvSql = fpn.getFilteredValue(user, stableValue, contextParamValues, fpn.getMetadataQuery());
-      String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
       String internalColumn = fpn.getUseIdTransformSqlForInternalValue()? FilterParamNew.COLUMN_GLOBAL_INTERNAL : FilterParamNew.COLUMN_INTERNAL;
+      String fvSql = fpn.getFilteredInternalsSql(user, stableValue, contextParamValues, fpn.getMetadataQuery(), internalColumn);
+      String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
       return "select distinct " + internalColumn + " from (" + cachedSql + ")";
       
     }
