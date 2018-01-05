@@ -42,7 +42,7 @@ export default function FieldFilter(props) {
           {fieldDetailProps.field.description && (
             <div className="field-description">{fieldDetailProps.field.description}</div>
           )}
-          {(!fieldDetailProps.fieldSummary || !fieldDetailProps.dataCount) ? (
+          {(fieldDetailProps.fieldSummary == null || fieldDetailProps.dataCount == null) ? (
             <Loading />
           ) : (
             <FieldDetail {...fieldDetailProps} />
