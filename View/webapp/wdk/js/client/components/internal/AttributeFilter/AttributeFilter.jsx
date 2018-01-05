@@ -283,5 +283,5 @@ AttributeFilter.propTypes = {
 AttributeFilter.defaultProps = {
   displayName: 'Items',
   collapsible: true,
-  selectByDefault: true
+  selectByDefault: false
 };
