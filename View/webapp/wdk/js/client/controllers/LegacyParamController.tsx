@@ -63,9 +63,11 @@ export default class LegacyParamController extends AbstractViewController<
     }
 
     else if (prevProps != null) {
-      let changedParams = Object.entries(this.props.paramValues)
+      let prevParamValues = prevProps.paramValues || {};
+      let paramValues = this.props.paramValues || {};
+      let changedParams = Object.entries(paramValues)
         .filter(([name, value]) => (
-          prevProps.paramValues[name] !== value &&
+          prevParamValues[name] !== value &&
           this.state.paramValues[name] !== value
         ));
       if (changedParams.length > 1) {
