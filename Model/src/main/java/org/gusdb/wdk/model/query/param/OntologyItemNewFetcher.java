@@ -118,14 +118,15 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
       throw new WdkModelException(message);
     }
 
-    List<TreeNode<OntologyItem>> badBranchNodes = root.findAll(
-        root.NONLEAF_PREDICATE, item -> !item.getType().equals(OntologyItemType.BRANCH));
-    if (!badBranchNodes.isEmpty()) {
-      for (TreeNode<OntologyItem> branchWithNonNullType : badBranchNodes) {
-        // FIXME: for now, warn and correct branch node types if non-null; should probably fix data in DB
-        branchWithNonNullType.getContents().setType(OntologyItemType.BRANCH);
-      }
-    }
+    // XXX Commenting out the block below as we now allow branch node to also be filters (e.g., have a type) - dmf.
+    // List<TreeNode<OntologyItem>> badBranchNodes = root.findAll(
+    //     root.NONLEAF_PREDICATE, item -> !item.getType().equals(OntologyItemType.BRANCH));
+    // if (!badBranchNodes.isEmpty()) {
+    //   for (TreeNode<OntologyItem> branchWithNonNullType : badBranchNodes) {
+    //     // FIXME: for now, warn and correct branch node types if non-null; should probably fix data in DB
+    //     branchWithNonNullType.getContents().setType(OntologyItemType.BRANCH);
+    //   }
+    // }
   }
 
   public String getCacheKey() throws JSONException {
