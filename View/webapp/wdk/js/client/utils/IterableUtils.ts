@@ -49,8 +49,14 @@ interface Collector<T, U> {
  */
 export class Seq<T> {
 
-  static of<T>(value: T) {
-    return new Seq([value]);
+  private static readonly EMPTY = new Seq([]);
+
+  static empty<T>() {
+    return Seq.EMPTY as Seq<T>;
+  }
+
+  static of<T>(value?: T) {
+    return (arguments.length === 0 ? Seq.empty() : new Seq([value])) as Seq<T>;
   }
 
   static from<T>(iterable: Iterable<T>) {
@@ -58,7 +64,7 @@ export class Seq<T> {
   }
 
   private _iterator?: Iterator<T>;
-  private _cache: T[] = [];
+  private readonly _cache: T[] = [];
 
   private constructor(private _iterable: Iterable<T>) { }
 
