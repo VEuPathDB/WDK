@@ -1,9 +1,9 @@
 import React from 'react';
-import { get, has, isFunction, memoize } from 'lodash';
+import { bindAll, get, has, isFunction, memoize } from 'lodash';
 import { MesaController as Mesa, ModalBoundary } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
-import { safeHtml } from '../../../utils/componentUtils';
+import { instrument, safeHtml } from '../../../utils/componentUtils';
 import RealTimeSearchBox from '../../RealTimeSearchBox';
 import Toggle from '../../Toggle';
 import FieldFilter from './FieldFilter';
@@ -14,7 +14,7 @@ const UNKNOWN_ELEMENT = <em>Not specified</em>;
 /**
  * Membership field component
  */
-export default class MembershipField extends React.Component {
+class MembershipField extends React.Component {
   static getHelpContent(props) {
     var displayName = props.displayName;
     var fieldDisplay = props.field.display;
@@ -29,10 +29,30 @@ export default class MembershipField extends React.Component {
 
   constructor(props) {
     super(props);
-    this.handleItemClick = this.handleItemClick.bind(this);
-    this.handleSelectAll = this.handleSelectAll.bind(this);
-    this.handleRemoveAll = this.handleRemoveAll.bind(this);
-    this.toFilterValue = this.toFilterValue.bind(this);
+    bindAll(this,
+      'deriveRowClassName',
+      'handleGroupBySelected',
+      'handleRemoveAll',
+      'handleRowClick',
+      'handleRowDeselect',
+      'handleRowSelect',
+      'handleSearchTermChange',
+      'handleSelectAll',
+      'handleSort',
+      'isItemSelected',
+      'renderDistributionCell',
+      'renderFilteredCountCell',
+      'renderFilteredCountHeading1',
+      'renderFilteredCountHeading2',
+      'renderPrecentageCell',
+      'renderUnfilteredCountCell',
+      'renderUnfilteredCountHeading1',
+      'renderUnfilteredCountHeading2',
+      'renderValueCell',
+      'renderValueHeading',
+      'renderValueHeadingSearch',
+      'toFilterValue',
+    );
     this.getKnownValues = memoize(this.getKnownValues);
     this.isItemSelected = memoize(this.isItemSelected);
   }
@@ -70,14 +90,20 @@ export default class MembershipField extends React.Component {
       : this.props.fieldSummary.valueCounts;
   }
 
-  isItemSelected(value) {
+  deriveRowClassName(item) {
+    return 'member' +
+      (item.filteredCount === 0 ? ' member__disabled' : '') +
+      (this.isItemSelected(item) ? ' member__selected' : '')
+  }
+
+  isItemSelected(item) {
     let { filter, selectByDefault } = this.props;
 
     return filter == null ? selectByDefault
       // value is null (ie, unknown) and includeUnknown selected
-      : value == null ? filter.includeUnknown
+      : item.value == null ? filter.includeUnknown
       // filter.value is null (ie, all known values), or filter.value includes value
-      : filter.value == null || filter.value.includes(value);
+      : filter.value == null || filter.value.includes(item.value);
   }
 
   isSortEnabled() {
@@ -89,13 +115,13 @@ export default class MembershipField extends React.Component {
 
   isSearchEnabled() {
     return (
-      this.props.fieldSummary.valueCounts.length > 10 &&
+      // this.props.fieldSummary.valueCounts.length > 10 &&
       has(this.props, 'fieldState.searchTerm') &&
       isFunction(this.props.onSearch)
     );
   }
 
-  handleItemClick(item, addItem = !this.isItemSelected(item.value)) {
+  handleItemClick(item, addItem = !this.isItemSelected(item)) {
     let { selectByDefault } = this.props;
     let { value } = item;
     if (value == null) {
@@ -116,6 +142,18 @@ export default class MembershipField extends React.Component {
     }
   }
 
+  handleRowClick(item) {
+    this.handleItemClick(item);
+  }
+
+  handleRowSelect(item) {
+    this.handleItemClick(item, true);
+  }
+
+  handleRowDeselect(item) {
+    this.handleItemClick(item, false);
+  }
+
   handleUnknownChange(addUnknown) {
     this.emitChange(this.getValuesForFilter(), addUnknown);
   }
@@ -131,14 +169,136 @@ export default class MembershipField extends React.Component {
     this.emitChange([], false);
   }
 
-  handleSort(nextSort) {
+  handleSort(rowData, direction) {
+    let nextSort = { key: rowData.columnKey, direction };
     let sort = Object.assign({}, this.props.fieldState.sort, nextSort);
     this.props.onSort(this.props.field, sort);
+  }
+
+  handleGroupBySelected() {
+    this.props.onSort(
+      this.props.field,
+      Object.assign({}, this.props.fieldState.sort, {
+        groupBySelected: !this.props.fieldState.sort.groupBySelected
+      })
+    );
+  }
+
+  handleSearchTermChange(searchTerm) {
+    this.props.onSearch(this.props.field, searchTerm);
   }
 
   emitChange(value, includeUnknown) {
     this.props.onChange(this.props.field, value, includeUnknown,
       this.props.fieldSummary.valueCounts);
+  }
+
+  renderValueHeading() {
+    return this.props.field.display;
+  }
+
+  renderValueHeadingSearch() {
+    return (
+      <div
+        style={{
+          width: '15em',
+          fontSize: '.8em',
+          fontWeight: 'normal',
+        }}
+        onMouseUp={event => {
+          event.stopPropagation();
+        }}
+      >
+        <RealTimeSearchBox
+          searchTerm={this.props.fieldState.searchTerm}
+          placeholderText="Filter values"
+          onSearchTermChange={this.handleSearchTermChange}
+        />
+      </div>
+    );
+  }
+
+  renderValueCell({ value }) {
+    return (
+      <div>{value == null ? UNKNOWN_ELEMENT : safeHtml(String(value))}</div>
+    );
+  }
+
+  renderCountHeading1(qualifier) {
+    return (
+      <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div>{qualifier}</div>
+        <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
+      </div>
+    );
+  }
+
+  renderCountHeading2(internalsCount) {
+    return (
+      <div>
+        {internalsCount.toLocaleString()}
+        <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>(100%)</small>
+      </div>
+    );
+  }
+
+  renderCountCell(value, internalsCount) {
+    return (
+      <div>
+        {value.toLocaleString()}
+        &nbsp;
+        {internalsCount && (
+          <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
+            ({Math.round(value/internalsCount * 100)}%)
+          </small>
+        )}
+      </div>
+    );
+  }
+
+  renderFilteredCountHeading1() {
+    return this.renderCountHeading1('Matching');
+  }
+
+  renderFilteredCountHeading2() {
+    return this.renderCountHeading2(this.props.fieldSummary.internalsFilteredCount);
+  }
+
+  renderFilteredCountCell({ value }) {
+    return this.renderCountCell(value, this.props.fieldSummary.internalsFilteredCount);
+  }
+
+  renderUnfilteredCountHeading1() {
+    return this.renderCountHeading1('All');
+  }
+
+  renderUnfilteredCountHeading2() {
+    return this.renderCountHeading2(this.props.fieldSummary.internalsCount);
+  }
+
+  renderUnfilteredCountCell({ value }) {
+    return this.renderCountCell(value, this.props.fieldSummary.internalsCount);
+  }
+
+  renderDistributionCell({ row }) {
+    return (
+      <div className="bar">
+        <div className="fill" style={{
+          width: (row.count / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
+        }}/>
+        <div className="fill filtered" style={{
+          width: (row.filteredCount / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
+        }}/>
+      </div>
+    );
+  }
+
+  renderPrecentageCell({ row }) {
+    return (
+      <small title={`Matching ${row.value} / All ${row.value}`}>
+        ({Math.round(row.filteredCount / row.count * 100)}%)
+      </small>
+    );
   }
 
   render() {
@@ -159,9 +319,7 @@ export default class MembershipField extends React.Component {
                   <RealTimeSearchBox
                     searchTerm={this.props.fieldState.searchTerm}
                     placeholderText="Filter table by values"
-                    onSearchTermChange={searchTerm => {
-                      this.props.onSearch(this.props.field, searchTerm);
-                    }}
+                    onSearchTermChange={this.handleSearchTermChange}
                   />
                 </div>
               )}
@@ -173,17 +331,12 @@ export default class MembershipField extends React.Component {
                       border: 'none'
                     }}
                     type="button"
-                    onClick={() => {
-                      this.handleSort(Object.assign(this.props.fieldState.sort, {}, {
-                        groupBySelected: !this.props.fieldState.sort.groupBySelected
-                      }));
-                    }}
+                    onClick={this.handleGroupBySelected}
                   >
                     <Toggle
                       on={this.props.fieldState.sort.groupBySelected}
                     /> Keep selected values at top
                  </button>
-
                 </div>
               )}
             </div>
@@ -191,22 +344,20 @@ export default class MembershipField extends React.Component {
 
           <Mesa
             options={{
-              isRowSelected: (item) => this.isItemSelected(item.value),
-              deriveRowClassName: (item) => 'member' +
-                (item.filteredCount === 0 ? ' member__disabled' : '') +
-                (this.isItemSelected(item.value) ? ' member__selected' : ''),
-              onRowClick: (item) => this.handleItemClick(item),
+              isRowSelected: this.isItemSelected,
+              deriveRowClassName: this.deriveRowClassName,
+              onRowClick: this.handleRowClick,
               useStickyHeader: true,
               tableBodyMaxHeight: '80vh'
             }}
             uiState={this.props.fieldState}
             actions={[]}
             eventHandlers={{
-              onRowSelect: (item) => this.handleItemClick(item, true),
-              onRowDeselect: (item) => this.handleItemClick(item, false),
-              onMultipleRowSelect: () => this.handleSelectAll(),
-              onMultipleRowDeselect: () => this.handleRemoveAll(),
-              onSort: ({key: columnKey}, direction) => useSort && this.handleSort({columnKey, direction})
+              onRowSelect: this.handleRowSelect,
+              onRowDeselect: this.handleRowDeselect,
+              onMultipleRowSelect: this.handleSelectAll,
+              onMultipleRowDeselect: this.handleRemoveAll,
+              onSort: this.handleSort
             }}
             rows={this.props.fieldSummary.valueCounts}
             filteredRows={rows}
@@ -214,10 +365,10 @@ export default class MembershipField extends React.Component {
               {
                 key: 'value',
                 inline: true,
-                name: this.props.field.display,
                 sortable: useSort,
-                renderCell: ({ value }) =>
-                  <div>{value == null ? UNKNOWN_ELEMENT : safeHtml(String(value))}</div>
+                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+                renderHeading: [ this.renderValueHeading, this.renderValueHeadingSearch ],
+                renderCell: this.renderValueCell
               },
               {
                 key: 'filteredCount',
@@ -230,36 +381,10 @@ export default class MembershipField extends React.Component {
                   </div>
                 ),
                 wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.fieldSummary.internalsFilteredCount ? [
-                  () => (
-                    <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      <div>Matching</div>
-                      <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                    </div>
-                  ),
-                  () => (
-                    <div>
-                      {this.props.fieldSummary.internalsFilteredCount.toLocaleString()}
-                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>(100%)</small>
-                    </div>
-                  )
-                ] : () => (
-                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    <div>Matching</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                  </div>
-                ),
-                renderCell: ({ value }) => (
-                  <div>
-                    {value.toLocaleString()}
-                    &nbsp;
-                    {this.props.fieldSummary.internalsFilteredCount && (
-                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
-                        ({Math.round(value/this.props.fieldSummary.internalsFilteredCount * 100)}%)
-                      </small>
-                    )}
-                  </div>
-                )
+                renderHeading: this.props.fieldSummary.internalsFilteredCount
+                  ? [ this.renderFilteredCountHeading1, this.renderFilteredCountHeading2 ]
+                  : this.renderFilteredCountHeading1,
+                renderCell: this.renderFilteredCountCell
               },
               {
                 key: 'count',
@@ -272,52 +397,17 @@ export default class MembershipField extends React.Component {
                   </div>
                 ),
                 wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.fieldSummary.internalsCount ? [
-                  () => (
-                    <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      <div>All</div>
-                      <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                    </div>
-                  ),
-                  () => (
-                    <div>
-                      {this.props.fieldSummary.internalsCount.toLocaleString()}
-                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center'}}>(100%)</small>
-                    </div>
-                  )
-                ] : () => (
-                  <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    <div>All</div>
-                    <div style={{marginLeft: '.6ex', maxWidth: '6em', overflow: 'hidden', textOverflow: 'ellipsis'}}>{this.props.displayName}</div>
-                  </div>
-                ),
-                renderCell: ({ value }) => (
-                  <div>
-                    {value.toLocaleString()}
-                    &nbsp;
-                    {this.props.fieldSummary.internalsCount && (
-                      <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
-                        ({Math.round(value/this.props.fieldSummary.internalsCount * 100)}%)
-                      </small>
-                    )}
-                  </div>
-                )
+                renderHeading: this.props.fieldSummary.internalsCount
+                  ? [ this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2 ]
+                  : this.renderUnfilteredCountHeading1,
+                renderCell: this.renderUnfilteredCountCell
               },
               {
                 key: 'distribution',
                 name: 'Distribution',
                 width: '30%',
                 helpText: <FilterLegend {...this.props} />,
-                renderCell: ({ row }) => (
-                  <div className="bar">
-                    <div className="fill" style={{
-                      width: (row.count / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
-                    }}/>
-                    <div className="fill filtered" style={{
-                      width: (row.filteredCount / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
-                    }}/>
-                  </div>
-                )
+                renderCell: this.renderDistributionCell
               },
               {
                 key: '%',
@@ -329,11 +419,7 @@ export default class MembershipField extends React.Component {
                     with the given <em>{this.props.field.display}</em> value.
                   </div>
                 ),
-                renderCell: ({ row }) => (
-                  <small title={`Matching ${row.value} / All ${row.value}`}>
-                    ({Math.round(row.filteredCount / row.count * 100)}%)
-                  </small>
-                )
+                renderCell: this.renderPrecentageCell
               }
             ]}
           >
@@ -345,3 +431,5 @@ export default class MembershipField extends React.Component {
 }
 
 MembershipField.propTypes = FieldFilter.propTypes
+
+export default instrument(MembershipField)
