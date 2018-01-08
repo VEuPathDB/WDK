@@ -476,11 +476,11 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get untransformed unfiltered count
     String sql = "SELECT count(distinct md." + COLUMN_INTERNAL + ") FROM (" + bgdSql + ") md";
-    fpsc.untransformedUnfilteredCount = runCountSql(sql);
+    fpsc.untransformedUnfilteredCount = runCountSql(sql, "untransformed-unfiltered");
 
     // get transformed unfiltered count
     sql = "SELECT count (distinct md." + COLUMN_GLOBAL_INTERNAL + ") FROM (" + bgdSql + ") md";
-    fpsc.unfilteredCount = runCountSql(sql);
+    fpsc.unfilteredCount = runCountSql(sql, "transformed-unfiltered");
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
@@ -489,10 +489,10 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get untransformed filtered count
     sql = "select distinct count(" + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
-    fpsc.untransformedFilteredCount = runCountSql(sql);
+    fpsc.untransformedFilteredCount = runCountSql(sql, "untransformed-filtered");
 
     sql = "select distinct count(" + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
-    fpsc.filteredCount = runCountSql(sql);
+    fpsc.filteredCount = runCountSql(sql, "transformed-filtered");
 
     return fpsc;
   }
@@ -514,8 +514,8 @@ public class FilterParamNew extends AbstractDependentParam {
     return idTransformSql.replace(FILTERED_IDS_MACRO, idSql);
   }
 
-  private long runCountSql(String sql) {
-    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts").executeQuery(
+  private long runCountSql(String sql, String qName) {
+    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts-" + qName).executeQuery(
         new SingleLongResultSetHandler()).getRetrievedValue();
   }
 
