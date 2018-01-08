@@ -60,10 +60,11 @@ export default class FieldList extends React.PureComponent {
     this.setState({ expandedNodes });
   }
 
-  handleFieldSelect(field) {
-    this.props.onFieldSelect(field.term);
+  handleFieldSelect(node) {
+    this.props.onFieldSelect(node.field.term);
     const expandedNodes = Seq.from(this.state.expandedNodes)
-      .concat(this._getPathToField(field))
+      .concat(this._getPathToField(node.field))
+      .concat(node.children.length > 0 ? Seq.of(node.field.term) : Seq.empty())
       .uniq()
       .toArray();
     this.setState({ expandedNodes });
@@ -111,7 +112,8 @@ export default class FieldList extends React.PureComponent {
             href={'#' + node.field.term}
             onClick={e => {
               e.preventDefault();
-              this.handleFieldSelect(node.field);
+              e.stopPropagation();
+              this.handleFieldSelect(node);
               this.selectedFieldDOMNode = e.target;
             }}>
             <Icon fa={isRange(node.field) ? 'bar-chart-o' : 'list'}/> {node.field.display}
