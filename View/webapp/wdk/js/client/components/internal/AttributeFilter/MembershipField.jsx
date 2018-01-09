@@ -1,5 +1,5 @@
 import React from 'react';
-import { bindAll, get, has, isFunction, memoize } from 'lodash';
+import { bindAll, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
 import { MesaController as Mesa, ModalBoundary } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
@@ -84,9 +84,9 @@ class MembershipField extends React.Component {
   }
 
   getFilteredRows(searchTerm) {
+    let re = new RegExp(escapeRegExp(searchTerm), 'i');
     return searchTerm !== ''
-      ? this.props.fieldSummary.valueCounts.filter(entry =>
-        entry.value != null && entry.value.toLowerCase().startsWith(searchTerm.toLowerCase()))
+      ? this.props.fieldSummary.valueCounts.filter(entry => re.test(entry.value))
       : this.props.fieldSummary.valueCounts;
   }
 
