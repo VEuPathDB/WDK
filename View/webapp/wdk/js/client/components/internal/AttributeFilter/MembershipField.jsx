@@ -115,7 +115,7 @@ class MembershipField extends React.Component {
 
   isSearchEnabled() {
     return (
-      // this.props.fieldSummary.valueCounts.length > 10 &&
+      this.props.fieldSummary.valueCounts.length > 10 &&
       has(this.props, 'fieldState.searchTerm') &&
       isFunction(this.props.onSearch)
     );
@@ -356,7 +356,9 @@ class MembershipField extends React.Component {
                 inline: true,
                 sortable: useSort,
                 wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: [ this.renderValueHeading, this.renderValueHeadingSearch ],
+                renderHeading: useSearch
+                  ? [ this.renderValueHeading, this.renderValueHeadingSearch ]
+                  : this.renderValueHeading,
                 renderCell: this.renderValueCell
               },
               {
