@@ -169,8 +169,8 @@ class MembershipField extends React.Component {
     this.emitChange([], false);
   }
 
-  handleSort(rowData, direction) {
-    let nextSort = { key: rowData.columnKey, direction };
+  handleSort({ key: columnKey }, direction) {
+    let nextSort = { columnKey, direction };
     let sort = Object.assign({}, this.props.fieldState.sort, nextSort);
     this.props.onSort(this.props.field, sort);
   }
