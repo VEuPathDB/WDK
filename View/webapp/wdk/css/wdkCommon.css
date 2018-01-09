@@ -1437,6 +1437,7 @@ div.step-analysis-pane table.dataTable th {
   display: flex;
   flex-direction: column;
   min-height: 150px;
+  position: relative;
 }
 
 .analysis-selector-container .analysis-selector:hover {
@@ -1518,8 +1519,8 @@ div.step-analysis-pane table.dataTable th {
 }
 .analysis-selection-banner {
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: 5px;
+  left: 5px;
 }
 .analysis-selection-banner.new-analysis {
   background-image: url(../images/new-feature.png);
