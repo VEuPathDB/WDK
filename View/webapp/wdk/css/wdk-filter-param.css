@@ -230,7 +230,6 @@
 }
 .filter-param .membership-filter .MesaComponent th:first-child {
   border-left: 1px solid #ccc;
-  border-right: none;
 }
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
