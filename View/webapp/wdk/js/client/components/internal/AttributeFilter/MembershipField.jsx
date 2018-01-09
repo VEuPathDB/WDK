@@ -312,33 +312,22 @@ class MembershipField extends React.Component {
     return (
       <ModalBoundary>
         <div className="membership-filter">
-          { useSort || useSearch ? (
+          { useSort ? (
             <div className="membership-actions">
-              {useSearch && (
-                <div className="membership-action membership-action__search">
-                  <RealTimeSearchBox
-                    searchTerm={this.props.fieldState.searchTerm}
-                    placeholderText="Filter table by values"
-                    onSearchTermChange={this.handleSearchTermChange}
-                  />
-                </div>
-              )}
-              {useSort && (
-                <div className="membership-action membership-action__group-selected">
-                  <button
-                    style={{
-                      background: 'none',
-                      border: 'none'
-                    }}
-                    type="button"
-                    onClick={this.handleGroupBySelected}
-                  >
-                    <Toggle
-                      on={this.props.fieldState.sort.groupBySelected}
-                    /> Keep selected values at top
-                 </button>
-                </div>
-              )}
+              <div className="membership-action membership-action__group-selected">
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none'
+                  }}
+                  type="button"
+                  onClick={this.handleGroupBySelected}
+                >
+                  <Toggle
+                    on={this.props.fieldState.sort.groupBySelected}
+                  /> Keep selected values at top
+               </button>
+              </div>
             </div>
           ) : null }
 
