@@ -488,10 +488,10 @@ public class FilterParamNew extends AbstractDependentParam {
     String filteredInternalsSql = getFilteredInternalsSql(user, stableValue, contextParamValues, _metadataQuery);
 
     // get untransformed filtered count
-    sql = "select distinct count(" + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
+    sql = "select count( distinct " + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.untransformedFilteredCount = runCountSql(sql, "untransformed-filtered");
 
-    sql = "select distinct count(" + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
+    sql = "select count( distinct " + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.filteredCount = runCountSql(sql, "transformed-filtered");
 
     return fpsc;
