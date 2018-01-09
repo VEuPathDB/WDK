@@ -1015,7 +1015,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     // create and add columns for answer param values
-    for (AnswerParam param : AnswerParam.getCacheableParams(getParamMap().values())) {
+    for (AnswerParam param : AnswerParam.getExposedParams(getParamMap().values())) {
       String paramName = param.getName();
       try {
         query.addColumn(createDynamicNumberColumn(paramName));

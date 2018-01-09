@@ -572,7 +572,7 @@ public class AnswerValue {
   private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, Map<String, String> paramStableValues) {
 
     // gather list of answer params for this question
-    List<AnswerParam> answerParams = AnswerParam.getCacheableParams(paramMap.values());
+    List<AnswerParam> answerParams = AnswerParam.getExposedParams(paramMap.values());
 
     // if no answer params, then return incoming SQL
     if (answerParams.isEmpty()) return innerSql;
