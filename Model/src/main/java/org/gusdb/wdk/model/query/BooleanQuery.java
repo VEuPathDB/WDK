@@ -26,7 +26,7 @@ import org.json.JSONObject;
  * operation to be performed on the input operands. The left and right operands
  * have to be of the same recordClass type, and the result of the boolean will
  * be that same type as well. Currently, we support four operations on boolean:
- * interset, union, left minus right, and right minus left.
+ * intersect, union, left minus right, and right minus left.
  * 
  * The weight for different operators are computed differently. In intersect and
  * Union, the weight is the sum of the same primary keys; in the case of minus,
@@ -65,20 +65,20 @@ public class BooleanQuery extends SqlQuery {
   private RecordClass _recordClass;
 
   public BooleanQuery(RecordClass recordClass) throws WdkModelException {
-	  setRecordClass(recordClass);
+    setRecordClass(recordClass);
   }
-  
+
  /**
   * Need a no-arg constructor for easy construction using newInstance()
   * @throws WdkModelException
   */
   public BooleanQuery() throws WdkModelException {
   }
-  
+
   public void setRecordClass(RecordClass recordClass) throws WdkModelException {
     this._recordClass = recordClass;
     this._wdkModel = recordClass.getWdkModel();
-    String rcName = recordClass.getUrlSegment().replace("-", "_");
+    String rcName = recordClass.getFullName();
 
     // create or get the historyParam for the query
     ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
@@ -150,6 +150,11 @@ public class BooleanQuery extends SqlQuery {
       operand = new AnswerParam();
       operand.setName(paramName);
       String rcName = recordClass.getFullName();
+      // False is the default so this is unneeded BUT a good reminder that you, future developer, cannot
+      //   change the value to true without altering the name of the answer params since the generated names
+      //   (with recordclass full name suffix) is too long to be an Oracle column.  If we want this feature
+      //   for WDK set booleans, we have to shorten the param names, which costs us a DB migration.
+      operand.setExposeAsAttribute(false);
       operand.addRecordClassRef(new RecordClassReference(rcName));
       paramSet.addParam(operand);
       operand.resolveReferences(_wdkModel);

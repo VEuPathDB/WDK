@@ -219,7 +219,7 @@ public class AnswerParam extends Param {
     return brief;
   }
 
-  public static List<AnswerParam> getCacheableParams(Collection<Param> params) {
+  public static List<AnswerParam> getExposedParams(Collection<Param> params) {
     return params.stream()
         .filter(param -> param instanceof AnswerParam)
         .map(param -> (AnswerParam)param)
