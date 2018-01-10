@@ -17,7 +17,10 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
   function showPanel(panel) {
 
     if (panel == 'strategy_results') {
-      if ($("div#Strategies").attr("newstrategy") == 'true') {
+      if (
+        $("div#strategies-panel").css("display") !== 'none' &&
+        $("div#Strategies").attr("newstrategy") == 'true'
+      ) {
         wdk.dyk.initDYK(true);
       } else {
         wdk.dyk.initDYK(false);
