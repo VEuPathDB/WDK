@@ -16,6 +16,10 @@ body.wdk-ModalOpen {
   flex-direction: column;
 }
 
+.wdk-Dialog__modal {
+  max-height: calc(100vh - 220px);
+}
+
 .wdk-Dialog__modal:before {
   content: ' ';
   position: fixed;
