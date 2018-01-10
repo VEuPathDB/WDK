@@ -135,10 +135,9 @@ class MembershipField extends React.Component {
         ? currentFilterValue.concat(value)
         : currentFilterValue.filter(v => v !== value);
 
-      this.emitChange(
-        filterValue.length === this.getKnownValues().length ? undefined : filterValue,
-        get(this.props, 'filter.includeUnknown', true)
-      );
+      this.emitChange(filterValue.length === this.getKnownValues().length
+        ? undefined
+        : filterValue);
     }
   }
 
@@ -162,11 +161,11 @@ class MembershipField extends React.Component {
     const value = this.isSearchEnabled()
       ? this.getFilteredRows(this.props.fieldState.searchTerm).map(entry => entry.value)
       : undefined;
-    this.emitChange(value, true);
+    this.emitChange(value);
   }
 
   handleRemoveAll() {
-    this.emitChange([], false);
+    this.emitChange([]);
   }
 
   handleSort({ key: columnKey }, direction) {
@@ -188,7 +187,7 @@ class MembershipField extends React.Component {
     this.props.onSearch(this.props.field, searchTerm);
   }
 
-  emitChange(value, includeUnknown) {
+  emitChange(value, includeUnknown = get(this.props, 'filter.includeUnknown', false)) {
     this.props.onChange(this.props.field, value, includeUnknown,
       this.props.fieldSummary.valueCounts);
   }
