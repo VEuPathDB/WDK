@@ -485,7 +485,10 @@ public class FilterParamNewStableValue {
      */
     String validateValues(Set<String> validValuesMap) {
       List<String> errList = new ArrayList<String>();
-      for (String value : getMembersAsStrings()) if (!validValuesMap.contains(value)) errList.add(value);
+      List<String> values = getMembersAsStrings();
+      if (values != null) {
+        for (String value : values) if (!validValuesMap.contains(value)) errList.add(value);
+      }
       if (errList.size() != 0) return FormatUtil.join(errList, ", ");
       return null;
     }

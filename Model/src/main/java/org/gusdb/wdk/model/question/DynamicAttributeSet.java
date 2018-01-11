@@ -155,7 +155,7 @@ public class DynamicAttributeSet extends WdkModelBase {
 
     // check if answer params exist; if so add their values as dynamic columns
     Set<String> rcAttributeNames = question.getRecordClass().getAttributeFieldMap().keySet();
-    List<AnswerParam> params = AnswerParam.getCacheableParams(question.getParamMap().values());
+    List<AnswerParam> params = AnswerParam.getExposedParams(question.getParamMap().values());
     for (AnswerParam param : params) {
       String paramName = param.getName();
       String errorMsgPrefix = "Question " + question.getFullName() + " contains answer param with name '" +

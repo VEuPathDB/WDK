@@ -805,8 +805,6 @@ public class ModelXmlParser extends XmlParser {
     // filterParamNew
     path = "wdkModel/paramSet/filterParamNew";
     configureNode(digester, path, FilterParamNew.class, "addParam");
-    configureNode(digester, path + "/idTransformSql", WdkModelText.class, "setIdTransformSql");
-    digester.addCallMethod(path + "/idTransformSql", "setText", 0);
     configureParamContent(digester, path, ParamSuggestion.class);
 
 

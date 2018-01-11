@@ -163,7 +163,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
               const prevProps = JSON.parse(propsAttrValue);
               const { value } = event.target;
 
-              if (prevProps.paramValues[name] === value) return;
+              // `prevProps.paramValues` may be undefined
+              if (_.get(prevProps, ['paramValues', name]) === value) return;
 
               const nextProps = Object.assign({}, prevProps, {
                 paramValues: Object.assign({}, prevProps.paramValues, {
@@ -404,8 +405,8 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         filteredData={state.filteredData}
         ignoredData={state.ignoredData}
         columns={state.columns}
-        activeField={state.selectedField}
-        activeFieldDistribution={state.distributionMap[state.selectedField]}
+        activeField={state.selectedField && state.fields.get(state.selectedField)}
+        activeFieldSummary={state.distributionMap[state.selectedField]}
         fieldMetadataMap={state.fieldMetadataMap}
 
         isLoading={state.isLoading}

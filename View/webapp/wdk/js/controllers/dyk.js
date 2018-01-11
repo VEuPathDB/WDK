@@ -21,7 +21,10 @@ wdk.namespace("window.wdk.dyk", function(ns, $) {
         });
         if($("div#strategy_results").css("display") == 'none') {
           initDYK(false);
-        } else if($("div#Strategies").attr("newstrategy") == 'true') {
+        } else if(
+          $("div#strategies-panel").css("display") !== 'none' &&
+          $("div#Strategies").attr("newstrategy") == 'true'
+        ) {
           initDYK(true);
         } else {
           initDYK(false);
@@ -148,6 +151,13 @@ wdk.namespace("window.wdk.dyk", function(ns, $) {
     initDYK(true, false);
   }
 
+  function dykOpenIfNotSeen() {
+    if ($.cookie("DYK") == null) {
+      // cookie not set, so init
+      initDYK(true);
+    }
+  }
+
   function dykClose(){
     var ex = $("div#dyk-box input#stay-closed-check").attr("checked");
     setDYKCookie(ex);
@@ -176,9 +186,12 @@ wdk.namespace("window.wdk.dyk", function(ns, $) {
     }
   }
 
-  ns.initDYK = initDYK;
-  ns.dykOpen = dykOpen;
-  ns.dykClose = dykClose;
-  ns.initHelp = initHelp;
+  Object.assign(ns, {
+    initDYK,
+    dykOpen,
+    dykOpenIfNotSeen,
+    dykClose,
+    initHelp
+  });
 
 });

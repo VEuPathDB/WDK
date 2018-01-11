@@ -24,7 +24,6 @@
 }
 .filter-param .filter-items-wrapper {
   min-height: 2em;
-  margin-bottom: .5em;
 }
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
@@ -230,7 +229,6 @@
 }
 .filter-param .membership-filter .MesaComponent th:first-child {
   border-left: 1px solid #ccc;
-  border-right: none;
 }
 .filter-param .membership-filter .MesaComponent th:first-child,
 .filter-param .membership-filter .MesaComponent th:last-child {
@@ -278,7 +276,7 @@
 .filter-param .membership-actions {
   display: flex;
   flex-direction: row;
-  padding: .2em 0;
+  padding: 1em 0;
 }
 .filter-param .membership-action__group-selected {
   display: flex;

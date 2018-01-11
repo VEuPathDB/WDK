@@ -30,6 +30,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     this._handleActiveFieldChange = this._handleActiveFieldChange.bind(this);
     this._handleFilterChange = this._handleFilterChange.bind(this);
     this._handleMemberSort = this._handleMemberSort.bind(this);
+    this._handleMemberSearch = this._handleMemberSearch.bind(this);
     this._handleRangeScaleChange = this._handleRangeScaleChange.bind(this);
   }
 
@@ -76,19 +77,30 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     }
   }
 
+  // FIXME Move sorting into action creator or reducer and retain `groupBySelected` property value
   _handleMemberSort(field: Field, sort: MemberFieldState['sort']) {
     const filters = this._getFiltersFromValue(this.props.value);
-    const { ontologyTermSummary } = this.props.uiState.fieldStates[field.term] as MemberFieldState
+    const fieldState = this.props.uiState.fieldStates[field.term] as MemberFieldState
     this.props.dispatch(FieldStateUpdatedAction.create({
       ...this.props.ctx,
       field: field.term,
       fieldState: {
+        ...fieldState,
         sort,
         ontologyTermSummary: {
-          ...ontologyTermSummary,
-          valueCounts: sortDistribution(ontologyTermSummary!.valueCounts, sort, filters.find(f => f.field === field.term) as MemberFilter)
+          ...fieldState.ontologyTermSummary,
+          valueCounts: sortDistribution(fieldState.ontologyTermSummary!.valueCounts, sort, filters.find(f => f.field === field.term) as MemberFilter)
         }
       }
+    }));
+  }
+
+  _handleMemberSearch(field: Field, searchTerm: string) {
+    const fieldState = this.props.uiState.fieldStates[field.term] as MemberFieldState
+    this.props.dispatch(FieldStateUpdatedAction.create({
+      ...this.props.ctx,
+      field: field.term,
+      fieldState: { ...fieldState, searchTerm }
     }));
   }
 
@@ -103,6 +115,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   render() {
     let { parameter, uiState } = this.props;
     let filters = this._getFiltersFromValue(this.props.value);
+    let fields = this._getFieldMap(parameter);
     let activeFieldSummary = (
       uiState.activeOntologyTerm &&
       uiState.fieldStates[uiState.activeOntologyTerm].ontologyTermSummary
@@ -118,12 +131,10 @@ export default class FilterParamNew extends React.PureComponent<Props> {
         <ServerSideAttributeFilter
           displayName={parameter.filterDataTypeDisplayName || parameter.displayName}
 
-          activeField={uiState.activeOntologyTerm}
-          activeFieldDistribution={activeFieldSummary && activeFieldSummary.valueCounts}
-          activeFieldDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsCount}
-          activeFieldFilteredDistinctKnownCount={activeFieldSummary && activeFieldSummary.internalsFilteredCount}
+          activeField={uiState.activeOntologyTerm && fields.get(uiState.activeOntologyTerm)}
+          activeFieldSummary={activeFieldSummary}
           activeFieldState={activeFieldState}
-          fields={this._getFieldMap(parameter)}
+          fields={fields}
           filters={filters}
           dataCount={uiState.unfilteredCount}
           filteredDataCount={uiState.filteredCount}
@@ -134,6 +145,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
           onFiltersChange={this._handleFilterChange}
           onActiveFieldChange={this._handleActiveFieldChange}
           onMemberSort={this._handleMemberSort}
+          onMemberSearch={this._handleMemberSearch}
           onRangeScaleChange={this._handleRangeScaleChange}
         />
       </div>

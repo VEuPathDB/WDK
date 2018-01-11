@@ -50,7 +50,7 @@ export default class HistogramField extends React.Component {
     this.cacheDistributionOperations(this.props);
 
     this.state = {
-      includeUnknown: get(props.filter, 'includeUnknown', true),
+      includeUnknown: get(props.filter, 'includeUnknown', false),
       minInputValue: get(props.filter, 'value.min', this.distributionRange.min),
       maxInputValue: get(props.filter, 'value.max', this.distributionRange.max)
     };
@@ -64,6 +64,7 @@ export default class HistogramField extends React.Component {
 
     if (distributionChanged || filterChanged) {
       this.setState({
+        includeUnknown: get(nextProps.filter, 'includeUnknown', false),
         minInputValue: get(nextProps.filter, 'value.min', this.distributionRange.min),
         maxInputValue: get(nextProps.filter, 'value.max', this.distributionRange.max)
       });
@@ -156,7 +157,8 @@ export default class HistogramField extends React.Component {
       range.max >= this.distributionRange.max
     ) ? undefined : range;
 
-    this.props.onChange(this.props.field, filterValue, includeUnknown);
+    this.props.onChange(this.props.field, filterValue, includeUnknown,
+      this.props.fieldSummary.valueCounts);
 
     this.setState({
       minInputValue: get(filterValue, 'min', this.distributionRange.min),
@@ -267,6 +269,7 @@ HistogramField.propTypes = {
   selectByDefault: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   field: PropTypes.object.isRequired,
+  fieldSummary: PropTypes.object.isRequired,
   filter: PropTypes.object,
   overview: PropTypes.node.isRequired,
   displayName: PropTypes.string.isRequired,

@@ -200,6 +200,7 @@ function getOntologyTermSummary(
         ? {
           loading: false,
           sort: defaultMemberFieldSort,
+          searchTerm: '',
           ontologyTermSummary: {
             ...summary,
             valueCounts: sortDistribution(summary.valueCounts, defaultMemberFieldSort)

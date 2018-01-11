@@ -351,7 +351,7 @@ var Histogram = (function() {
           <div className="chart"></div>
           <div className="chart-title x-axis">{xaxisLabel}</div>
           <div>
-            Display {xaxisLabel} between {xaxisMinSelector} and {xaxisMaxSelector} <button
+            Zoom: {xaxisMinSelector} and {xaxisMaxSelector} <button
               type="button"
               onClick={() => this.setXAxisScale(valuesMin, valuesMax)}
             >reset</button>

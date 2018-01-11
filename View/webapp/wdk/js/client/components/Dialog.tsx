@@ -40,6 +40,20 @@ class Dialog extends Component<Props> {
     this.headerNode = node;
   }
 
+  blockScrollingIfModalOpen() {
+    let classes = document.body.classList;
+    if (this.props.modal && this.props.open) classes.add('wdk-ModalOpen');
+    else classes.remove('wdk-ModalOpen');
+  }
+
+  componentDidMount() {
+    this.blockScrollingIfModalOpen();
+  }
+
+  componentDidUpdate() {
+    this.blockScrollingIfModalOpen();
+  }
+
   render () {
     let {
       onClose = () => {},

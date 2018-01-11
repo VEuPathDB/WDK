@@ -169,6 +169,10 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     // update button text
     var $button = $('button[data-action="toggle-strat-panel"]')
     $button.text($button.data(showPanel ? 'hide-text' : 'show-text'));
+
+    // open DYK if not seen before
+    if (showPanel) wdk.dyk.dykOpenIfNotSeen();
+    else wdk.dyk.initDYK(false);
   }
 
   function setupStepActionButtons($element) {

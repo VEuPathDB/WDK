@@ -1,3 +1,7 @@
+body.wdk-ModalOpen {
+  overflow: hidden;
+}
+
 .wdk-Dialog {
   padding: 0;
   border: 1px solid #999;
@@ -12,6 +16,10 @@
   flex-direction: column;
 }
 
+.wdk-Dialog__modal {
+  max-height: calc(100vh - 220px);
+}
+
 .wdk-Dialog__modal:before {
   content: ' ';
   position: fixed;
@@ -23,7 +31,7 @@
 }
 
 .wdk-DialogPopupWrapper {
-  position: absolute;
+  position: fixed;
   top: 200px;
   z-index: 100;
   left: 50vw;
