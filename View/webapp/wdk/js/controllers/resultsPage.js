@@ -17,7 +17,7 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
     var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
     // var currentTab = 0;
-    setupAddAttributes($element);
+    addAddAttributesListeners();
 
     $element.tabs({
       active : currentTab,
@@ -277,24 +277,26 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
 
   /**
    * Add event handlers for Add attributes form. This uses event delegation so
-   * that we can handle multiple such forms on a page (the event handlers are
-   * attached to the element that contains the tabs).
+   * that we can handle multiple such forms on a page. An event namespace is
+   * used so that prevent handlers can be removed (via .off).
    *
    * @param {jQuery} $container Root results container
    */
-  function setupAddAttributes($container) {
-    $container.on({
-      submit(e) {
+  function addAddAttributesListeners() {
+    var eventNamespace = '.addAttributes';
+    var childSelector = 'form[name="addAttributes"]';
+    $(document.body)
+      .off(eventNamespace)
+      .on('submit' + eventNamespace, childSelector, function(e) {
         e.preventDefault();
         updateAttrs($(e.target));
-      },
-      change(e, reason) {
+      })
+      .on('change' + eventNamespace, childSelector, function(e, reason) {
         // Update the command element: if reason is default, then we want to
         // reset everything in the table.
         $(e.target).find('[name=command]')
           .val(reason === 'default' ? 'reset' : 'update');
-      }
-    }, 'form[name="addAttributes"]');
+      });
   }
 
   function updatePageCount(element) {
@@ -324,32 +326,37 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
   }
 
   function openAttributeList(element, viewName){
+    var dialogId = getDialogId(element, "attributesList");
+    var $dialog = $("#" + dialogId);
     // first hack for apicommon (overridden addAttributes.tag), see second hack below
-    if ($(element).closest('.ui-tabs-panel').find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]').length > 0) {
+    if ($dialog.find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]').length > 0) {
       eupathdb.attributeCheckboxTree.mountCheckboxTree(viewName);
     }
-    var dialogId = getDialogId(element, "attributesList");
-    var element = $("#" + dialogId);
     openBlockingDialog("#" + dialogId);
-    // Removing re-sizing of Add Columns dialog because jQuery UI resizing is broken - crisl 23FEB2016
-    element.dialog({resizable : false});
-    // Very ugly kludge to reset checkbox tree to default
-    // values when dialog is closed.
-    element.dialog({width : 'auto'});
-    var viewportWidth = $(window).width();
-    element.dialog({maxWidth : viewportWidth * 0.75 });
-    $('#' + dialogId).on('dialogclose', function(e) {
-      var cbt = $(e.target).find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]');
-      if (cbt.length > 0) {
-        var cbtId = cbt.data('id');
-        wdk.checkboxTree.selectCurrentNodes(cbtId);
-      }
-      // second hack for apicommon (overridden addAttributes.tag), see first hack below
-      cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]');
-      if (cbt.length > 0) {
-        eupathdb.attributeCheckboxTree.unmountCheckboxTree(viewName);
-      }
-    });
+    $dialog
+      .dialog({
+        // Removing re-sizing of Add Columns dialog because jQuery UI resizing
+        // is broken - crisl 23FEB2016
+        resizable: false,
+        width: 'auto',
+        maxWidth: '75vw'
+      })
+      .one({
+        // Very ugly kludge to reset checkbox tree to default
+        // values when dialog is closed.
+        dialogclose(e) {
+          var cbt = $(e.target).find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]');
+          if (cbt.length > 0) {
+            var cbtId = cbt.data('id');
+            wdk.checkboxTree.selectCurrentNodes(cbtId);
+          }
+          // second hack for apicommon (overridden addAttributes.tag), see first hack below
+          cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]');
+          if (cbt.length > 0) {
+            eupathdb.attributeCheckboxTree.unmountCheckboxTree(viewName);
+          }
+        }
+      });
   }
 
   function openAdvancedPaging(element){
@@ -372,7 +379,7 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
       var id = "dialog" + Math.floor(Math.random() * 1000000000);
       $(element).attr("dialog", id);
       list.attr("id", id).dialog({
-        appendTo: "#" + containingTabId,
+        // appendTo: "#" + containingTabId,
         autoOpen: false,
         open: function() {
           var $this = $(this);
@@ -421,7 +428,6 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.closeAdvancedPaging = closeAdvancedPaging;
   ns.configureSummaryViews = configureSummaryViews;
   ns.createFlexigridFromTable = createFlexigridFromTable;
-  ns.setupAddAttributes = setupAddAttributes;
   ns.gotoPage = gotoPage;
   ns.invokeAttributePlugin = invokeAttributePlugin;
   ns.openAdvancedPaging = openAdvancedPaging;
