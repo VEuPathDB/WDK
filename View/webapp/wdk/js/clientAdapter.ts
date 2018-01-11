@@ -6,8 +6,6 @@ import { createDeferred } from './client/utils/PromiseUtils';
 import { Seq } from './client/utils/IterableUtils';
 import * as Wdk from './client/main';
 import AbstractViewController from './client/controllers/AbstractViewController';
-import { V4MAPPED } from 'dns';
-import { MultiGrid } from 'react-virtualized/dist/es/MultiGrid';
 
 export * from './client/index';
 
