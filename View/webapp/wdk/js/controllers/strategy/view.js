@@ -866,7 +866,7 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           "</td>" +
           "<td title='ignore all the steps to the left' class='operation RONLY'></td>" +
           "<td title='ignore all the steps to the left'>" +
-          "  <b>IGNORE previous steps(s)</b>" +   //&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
+          "  <b>IGNORE previous step(s)</b>" +   //&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
           "</td>";
     
       params_table =
