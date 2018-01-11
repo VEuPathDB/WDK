@@ -24,7 +24,6 @@
 }
 .filter-param .filter-items-wrapper {
   min-height: 2em;
-  margin-bottom: .5em;
 }
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
