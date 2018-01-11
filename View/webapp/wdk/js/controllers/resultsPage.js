@@ -26,8 +26,7 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
         var summaryViewName = ui.newTab.attr('id');
         var questionName = $element.attr('question');
         wdk.getWdkService().updateCurrentUserPreference("project","summary_view_" + questionName, summaryViewName)
-          .then(function() {})
-          .catch(function(error) { console.error.bind(console) });
+          .catch(error => console.error(error));
       },
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
