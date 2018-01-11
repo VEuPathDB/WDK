@@ -212,25 +212,24 @@ export function getFilterValueDisplay(field: Field, filter: MemberFilter | Range
   if (isRange(field)) {
     let { value, includeUnknown } = filter as RangeFilter;
     if (value != null && value.min == null && value.max == null && includeUnknown == false) {
-      return 'No ' + field.display + ' value selected';
+      return 'No value selected';
     }
 
-    const displayValue = value == null ? 'known'
+    const displayValue = value == null ? 'has a value'
                        : value.min == null && value!.max == null ? ''
                        : value.min == null ? `less than ${value.max}`
                        : value.max == null ? `greater than ${value.min}`
                        : `between ${value!.min} and ${value.max}`;
-    return field.display + ' is ' + displayValue +
+    return displayValue +
       (includeUnknown ? ( displayValue ? ', or is unspecified' : 'unspecified') : '');
   }
 
   else {
     let { value, includeUnknown } = filter as MemberFilter;
     if (value != null && value.length === 0 && includeUnknown === false) {
-      return 'No ' + field.display + ' selected'
+      return 'No value selected'
     }
-    return field.display + ' is ' +
-      (value == null ? 'known' : value.join(', ')) +
+    return (value == null ? 'has a value' : value.join(', ')) +
       (includeUnknown ? (value && value.length === 0 ? 'unspecified' : ', or is unspecified') : '');
   }
 }
