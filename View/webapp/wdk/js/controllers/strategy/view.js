@@ -886,13 +886,19 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
                    right_minus_html +
           "      </tr><tr><td colspan=15><hr style='margin-top:1em;margin-bottom:1em'></td></tr></table>" +
           "      <table style='margin-left:auto; margin-right:auto;'>" +
-          "      <tr>" +
+          "      <tr><td colspan = 8 style='padding-bottom:2em'>" +
+          "             <span class='form_subtitle' style='margin-left:4em'>" +
+          "              ...or temporarily ignore one of the input steps  " +
+          "                <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore all the steps to the left, or ignore the step above.'></i> " +
+          "             </span>" +
+          "      </td></tr><tr>" +
                    right_only_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    left_only_html +
           //"      <td><img class='help-link' style='cursor:pointer;width:18px;' title='blablabla' src='wdk/images/question.png'></td>" +
           //"    </tr></table><span style='float:right;position:relative;bottom:2em'><img class='help-link' style='cursor:pointer;width:18px;' title='ignore all the steps to the left, or ignore the step above' src='wdk/images/question.png'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon' data-hasqtip='blabla'></i></span>" +
-          "      </tr></table><span style='float:right;position:relative;bottom:2.5em;right:1em'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='ignore all the steps to the left, or ignore the step above'></i></span>" +
+          "      </tr></table> " +
+   //       "      <span style='float:right;position:relative;bottom:6.5em;right:1em'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore all the steps to the left, or ignore the step above.'></i></span>" +
           "  </div>" + 
           "</div>";
 
