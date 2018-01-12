@@ -1,6 +1,6 @@
 import React from 'react';
 import { bindAll, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
-import { MesaController as Mesa, ModalBoundary } from 'mesa';
+import { MesaController as Mesa } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
 import { instrument, safeHtml } from '../../../utils/componentUtils';
@@ -309,113 +309,111 @@ class MembershipField extends React.Component {
       : this.props.fieldSummary.valueCounts;
 
     return (
-      <ModalBoundary>
-        <div className="membership-filter">
-          { useSort ? (
-            <div className="membership-actions">
-              <div className="membership-action membership-action__group-selected">
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none'
-                  }}
-                  type="button"
-                  onClick={this.handleGroupBySelected}
-                >
-                  <Toggle
-                    on={this.props.fieldState.sort.groupBySelected}
-                  /> Keep selected values at top
-               </button>
-              </div>
+      <div className="membership-filter">
+        { useSort ? (
+          <div className="membership-actions">
+            <div className="membership-action membership-action__group-selected">
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none'
+                }}
+                type="button"
+                onClick={this.handleGroupBySelected}
+              >
+                <Toggle
+                  on={this.props.fieldState.sort.groupBySelected}
+                /> Keep selected values at top
+             </button>
             </div>
-          ) : null }
+          </div>
+        ) : null }
 
-          <Mesa
-            options={{
-              isRowSelected: this.isItemSelected,
-              deriveRowClassName: this.deriveRowClassName,
-              onRowClick: this.handleRowClick,
-              useStickyHeader: true,
-              tableBodyMaxHeight: '80vh'
-            }}
-            uiState={this.props.fieldState}
-            actions={[]}
-            eventHandlers={{
-              onRowSelect: this.handleRowSelect,
-              onRowDeselect: this.handleRowDeselect,
-              onMultipleRowSelect: this.handleSelectAll,
-              onMultipleRowDeselect: this.handleRemoveAll,
-              onSort: this.handleSort
-            }}
-            rows={this.props.fieldSummary.valueCounts}
-            filteredRows={rows}
-            columns={[
-              {
-                key: 'value',
-                inline: true,
-                sortable: useSort,
-                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: useSearch
-                  ? [ this.renderValueHeading, this.renderValueHeadingSearch ]
-                  : this.renderValueHeading,
-                renderCell: this.renderValueCell
-              },
-              {
-                key: 'filteredCount',
-                sortable: useSort,
-                width: '11em',
-                helpText: (
-                  <div>
-                    The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
-                    and that have the given <em>{this.props.field.display}</em> value.
-                  </div>
-                ),
-                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.fieldSummary.internalsFilteredCount
-                  ? [ this.renderFilteredCountHeading1, this.renderFilteredCountHeading2 ]
-                  : this.renderFilteredCountHeading1,
-                renderCell: this.renderFilteredCountCell
-              },
-              {
-                key: 'count',
-                sortable: useSort,
-                width: '11em',
-                helpText: (
-                  <div>
-                    The number of <em>{this.props.displayName}</em> with the
-                    given <em>{this.props.field.display}</em> value.
-                  </div>
-                ),
-                wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-                renderHeading: this.props.fieldSummary.internalsCount
-                  ? [ this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2 ]
-                  : this.renderUnfilteredCountHeading1,
-                renderCell: this.renderUnfilteredCountCell
-              },
-              {
-                key: 'distribution',
-                name: 'Distribution',
-                width: '30%',
-                helpText: <FilterLegend {...this.props} />,
-                renderCell: this.renderDistributionCell
-              },
-              {
-                key: '%',
-                name: '',
-                width: '4em',
-                helpText: (
-                  <div>
-                    <em>Matching {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
-                    with the given <em>{this.props.field.display}</em> value.
-                  </div>
-                ),
-                renderCell: this.renderPrecentageCell
-              }
-            ]}
-          >
-          </Mesa>
-        </div>
-      </ModalBoundary>
+        <Mesa
+          options={{
+            isRowSelected: this.isItemSelected,
+            deriveRowClassName: this.deriveRowClassName,
+            onRowClick: this.handleRowClick,
+            useStickyHeader: true,
+            tableBodyMaxHeight: '80vh'
+          }}
+          uiState={this.props.fieldState}
+          actions={[]}
+          eventHandlers={{
+            onRowSelect: this.handleRowSelect,
+            onRowDeselect: this.handleRowDeselect,
+            onMultipleRowSelect: this.handleSelectAll,
+            onMultipleRowDeselect: this.handleRemoveAll,
+            onSort: this.handleSort
+          }}
+          rows={this.props.fieldSummary.valueCounts}
+          filteredRows={rows}
+          columns={[
+            {
+              key: 'value',
+              inline: true,
+              sortable: useSort,
+              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+              renderHeading: useSearch
+                ? [ this.renderValueHeading, this.renderValueHeadingSearch ]
+                : this.renderValueHeading,
+              renderCell: this.renderValueCell
+            },
+            {
+              key: 'filteredCount',
+              sortable: useSort,
+              width: '11em',
+              helpText: (
+                <div>
+                  The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
+                  and that have the given <em>{this.props.field.display}</em> value.
+                </div>
+              ),
+              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+              renderHeading: this.props.fieldSummary.internalsFilteredCount
+                ? [ this.renderFilteredCountHeading1, this.renderFilteredCountHeading2 ]
+                : this.renderFilteredCountHeading1,
+              renderCell: this.renderFilteredCountCell
+            },
+            {
+              key: 'count',
+              sortable: useSort,
+              width: '11em',
+              helpText: (
+                <div>
+                  The number of <em>{this.props.displayName}</em> with the
+                  given <em>{this.props.field.display}</em> value.
+                </div>
+              ),
+              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+              renderHeading: this.props.fieldSummary.internalsCount
+                ? [ this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2 ]
+                : this.renderUnfilteredCountHeading1,
+              renderCell: this.renderUnfilteredCountCell
+            },
+            {
+              key: 'distribution',
+              name: 'Distribution',
+              width: '30%',
+              helpText: <FilterLegend {...this.props} />,
+              renderCell: this.renderDistributionCell
+            },
+            {
+              key: '%',
+              name: '',
+              width: '4em',
+              helpText: (
+                <div>
+                  <em>Matching {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
+                  with the given <em>{this.props.field.display}</em> value.
+                </div>
+              ),
+              renderCell: this.renderPrecentageCell
+            }
+          ]}
+        >
+        </Mesa>
+      </div>
     );
   }
 }
