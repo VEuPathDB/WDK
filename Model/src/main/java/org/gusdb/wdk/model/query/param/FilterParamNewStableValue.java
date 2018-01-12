@@ -86,11 +86,12 @@ public class FilterParamNewStableValue {
    String validateSyntaxAndSemantics(User user, CompleteValidStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
-    List<String> errors = new ArrayList<String>();
     String errmsg = validateSyntax();
 
-    if (errmsg != null) errors.add(errmsg);
-    
+    if (errmsg != null) return errmsg;  // syntax errors are non-recoverable
+
+    List<String> errors = new ArrayList<String>();
+
     // TODO: remove this test once values map query becomes required
     if (_param.getValuesMapQuery() == null) {
       if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '"));
@@ -123,7 +124,7 @@ public class FilterParamNewStableValue {
       }
     }
 
-    if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '"));
+    if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
     return null;
   }
    
@@ -236,7 +237,7 @@ public class FilterParamNewStableValue {
         Collections.sort(_filters);
       }
       catch (JSONException e) {
-        return "Invalid stable value. Can't parse JSON. " + e.getMessage();
+        return "Invalid stable value. Can't parse JSON. " + e.getMessage() + System.lineSeparator() + _stableValueJson;
       }
     }
     return null;
@@ -489,7 +490,7 @@ public class FilterParamNewStableValue {
       if (values != null) {
         for (String value : values) if (!validValuesMap.contains(value)) errList.add(value);
       }
-      if (errList.size() != 0) return FormatUtil.join(errList, ", ");
+      if (errList.size() != 0) return "Bad values for '" + field + "': " + FormatUtil.join(errList, ", ");
       return null;
     }
 

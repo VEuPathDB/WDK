@@ -6,7 +6,7 @@ import Dialog from './Dialog';
 import AnswerFilter from './AnswerFilter';
 import { wrappable } from '../utils/componentUtils';
 import AttributeSelector from './AnswerAttributeSelector';
-import { Mesa, MesaState, ModalBoundary, Utils as MesaUtils } from 'mesa';
+import { Mesa, MesaState, Utils as MesaUtils } from 'mesa';
 
 class Answer extends React.Component {
   constructor(props) {
@@ -187,9 +187,7 @@ class Answer extends React.Component {
               </button>
             </div>
           </div>
-	  <ModalBoundary>
-            <Mesa state={TableState} />
-	  </ModalBoundary>
+          <Mesa state={TableState} />
         </div>
       </div>
     );

@@ -693,12 +693,9 @@
         <attribute name="ontologyValuesQueryRef"/>
       </optional>
       <optional>
-        <attribute name="idTransformQueryRef"/>
-      </optional>
-      <optional>
-        <element name="idTransformSql">
-          <text/>
-        </element>
+        <attribute name="internalForCountsIsEqualToInternal">
+	  <data type="boolean" />
+        </attribute>
       </optional>
       <optional>
         <attribute name="filterDataTypeDisplayName"/>
