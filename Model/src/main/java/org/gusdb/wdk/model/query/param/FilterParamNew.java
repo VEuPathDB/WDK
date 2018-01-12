@@ -27,7 +27,6 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -101,8 +100,6 @@ public class FilterParamNew extends AbstractDependentParam {
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
   static final String COLUMN_GLOBAL_INTERNAL = "internal_for_counts"; // the type of ID as returned by the search, rather than the filter
   
-  private static final String FILTERED_IDS_MACRO = "##FILTERED_IDS##";
-
   private static final int FETCH_SIZE = 1000;
 
   private String _metadataQueryRef;
@@ -117,12 +114,10 @@ public class FilterParamNew extends AbstractDependentParam {
   private String _ontologyValuesQueryRef;
   private Query _ontologyValuesQuery;
 
-  private String _idTransformQueryRef;
-  private Query _idTransformQuery;
-
   private String _filterDataTypeDisplayName;
 
-  private boolean _useIdTransformSqlForInternalValue = false;
+  private boolean _useInternalForCountsForInternalValue = false;
+  private boolean _internalForCountsIsEqualToInternal = false;
   
   // the output count of this param can be used to predict the final search results count, if all downstream
   // params (in dependency tree) have default values
@@ -130,9 +125,6 @@ public class FilterParamNew extends AbstractDependentParam {
 
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
-
-  // TODO integrate
-  private String _idTransformSql;
 
   public FilterParamNew() {
     // register handlers
@@ -161,12 +153,9 @@ public class FilterParamNew extends AbstractDependentParam {
     if (param._ontologyValuesQuery != null)
       _ontologyValuesQuery = param._ontologyValuesQuery.clone();
 
-    _idTransformQueryRef = param._idTransformQueryRef;
-    if (param._idTransformQuery != null)
-      _idTransformQuery = param._idTransformQuery.clone();
-
     _trimMetadataTerms = param._trimMetadataTerms;
-    _useIdTransformSqlForInternalValue = param._useIdTransformSqlForInternalValue;
+    _useInternalForCountsForInternalValue = param._useInternalForCountsForInternalValue;
+    _internalForCountsIsEqualToInternal = param._internalForCountsIsEqualToInternal;
     _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
   }
 
@@ -177,13 +166,8 @@ public class FilterParamNew extends AbstractDependentParam {
     names.add(_ontologyQueryRef);
     names.add(_backgroundQueryRef);
     names.add(_ontologyValuesQueryRef);
-    names.add(_idTransformQueryRef);
-
+ 
     return names;
-  }
-
-  public void setIdTransformSql(WdkModelText idTransformSql) {
-    _idTransformSql = idTransformSql.getText();
   }
 
   @Override
@@ -283,16 +267,16 @@ public class FilterParamNew extends AbstractDependentParam {
     _ontologyValuesQueryRef = ontologyValuesQueryRef;
   }
 
-  public String getIdTransformQueryRef() {
-    return _idTransformQueryRef;
-  }
-
-  public void setIdTransformQueryRef(String idTransformQueryRef) {
-    _idTransformQueryRef = idTransformQueryRef;
-  }
-
   public Query getValuesMapQuery() {
     return _ontologyValuesQuery;
+  }
+
+  /**
+   * @param trimMetadataTerms
+   *          the metadataQuery to set
+   */
+  public void setTrimMetadataTerms(boolean trimMetadataTerms) {
+    _trimMetadataTerms = trimMetadataTerms;
   }
 
   /**
@@ -311,11 +295,11 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   public void setUseIdTransformSqlForInternalValue(boolean useIt) {
-    _useIdTransformSqlForInternalValue = useIt;
+    _useInternalForCountsForInternalValue = useIt;
   }
 
   public boolean getUseIdTransformSqlForInternalValue() {
-    return _useIdTransformSqlForInternalValue;
+    return _useInternalForCountsForInternalValue;
   }
   
   public boolean getCountPredictsAnswerCount() {
@@ -326,13 +310,12 @@ public class FilterParamNew extends AbstractDependentParam {
     countPredictsAnswerCount = canUse;
   }
 
-  /**
-   * @param trimMetadataTerms
-   *          the metadataQuery to set
-   */
-  public void setTrimMetadataTerms(boolean trimMetadataTerms) {
-    _trimMetadataTerms = trimMetadataTerms;
+  public void setInternalForCountsIsEqualToInternal(boolean b) {
+    _internalForCountsIsEqualToInternal = b;  
   }
+  
+  public boolean getInternalForCountsIsEqualToInternal() { return _internalForCountsIsEqualToInternal; }
+  
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -402,22 +385,8 @@ public class FilterParamNew extends AbstractDependentParam {
           throw new WdkModelException("The metadata query " + _metadataQueryRef + " in filterParam " +
               getFullName() + " must include column: " + col);
     }
-    
-    // resolve id transform query
-    if (_idTransformQueryRef != null) {
-
-      // validate dependent params
-      _idTransformQuery = resolveDependentQuery(model, _idTransformQueryRef, "idTransform query");
-      _idTransformQuery.setIsCacheable(false); // don't cache because we run this sql ourselves, manually, in this file.
-
-      // validate columns
-      Map<String, Column> columns = _idTransformQuery.getColumnMap();
-      if (columns.size() != 1 || !columns.containsKey(COLUMN_INTERNAL))
-          throw new WdkModelException("The idTransformQuery " + _idTransformQueryRef + " in filterParam " +
-              getFullName() + " must include have only one column, 'internal'");
-    }
   }
-
+    
   /**
    * We cache this because typically ontologies are sensitive only to the grossest dependent param (eg,
    * dataset), so will be reused across users.
@@ -479,8 +448,12 @@ public class FilterParamNew extends AbstractDependentParam {
     fpsc.untransformedUnfilteredCount = runCountSql(sql, "untransformed-unfiltered");
 
     // get transformed unfiltered count
-    sql = "SELECT count (distinct md." + COLUMN_GLOBAL_INTERNAL + ") FROM (" + bgdSql + ") md";
-    fpsc.unfilteredCount = runCountSql(sql, "transformed-unfiltered");
+    if (_internalForCountsIsEqualToInternal) {
+      fpsc.unfilteredCount = fpsc.untransformedUnfilteredCount;
+    } else {
+      sql = "SELECT count (distinct md." + COLUMN_GLOBAL_INTERNAL + ") FROM (" + bgdSql + ") md";
+      fpsc.unfilteredCount = runCountSql(sql, "transformed-unfiltered");
+    }
 
     /* GET FILTERED COUNTS */
     // sql to find the filtered count
@@ -491,27 +464,13 @@ public class FilterParamNew extends AbstractDependentParam {
     sql = "select count( distinct " + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
     fpsc.untransformedFilteredCount = runCountSql(sql, "untransformed-filtered");
 
-    sql = "select count( distinct " + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
-    fpsc.filteredCount = runCountSql(sql, "transformed-filtered");
-
+    if (_internalForCountsIsEqualToInternal) {
+      fpsc.filteredCount = fpsc.untransformedFilteredCount;
+    } else {
+      sql = "select count( distinct " + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
+      fpsc.filteredCount = runCountSql(sql, "transformed-filtered");
+    }
     return fpsc;
-  }
-
-  String transformIdSql(String idSql, User user, Map<String, String> contextParamValues) throws WdkModelException {
-    if (_idTransformQuery == null)
-      return idSql;
-    
-    String idTransformSql;
-    try {
-      QueryInstance<?> instance = _idTransformQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      idTransformSql = instance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
-
-    return idTransformSql.replace(FILTERED_IDS_MACRO, idSql);
   }
 
   private long runCountSql(String sql, String qName) {
