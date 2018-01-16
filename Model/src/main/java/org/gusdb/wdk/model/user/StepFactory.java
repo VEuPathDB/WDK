@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -1608,27 +1610,34 @@ public class StepFactory {
   }
 
   public int getStrategyCount(User user) throws WdkModelException {
-    PreparedStatement psStrategy = null;
-    ResultSet rsStrategy = null;
-    String sql = "SELECT count(*) AS num FROM " + _userSchema + TABLE_STRATEGY + " WHERE " +
-        Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_IS_DELETED + " = ? AND " + COLUMN_PROJECT_ID +
-        " = ? ";
     try {
-      long start = System.currentTimeMillis();
-      psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psStrategy.setLong(1, user.getUserId());
-      psStrategy.setBoolean(2, false);
-      psStrategy.setString(3, _wdkModel.getProjectId());
-      rsStrategy = psStrategy.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-strategy-count", start);
-      rsStrategy.next();
-      return rsStrategy.getInt("num");
+      String sql =
+        "SELECT st.question_name" +
+        " FROM " + _userSchema + TABLE_STEP + " st, " + _userSchema + TABLE_STRATEGY + " sr" +
+        " WHERE sr." + Utilities.COLUMN_USER_ID + " = ?" +
+        " AND sr." + COLUMN_IS_DELETED + " = " + _userDb.getPlatform().convertBoolean(false) +
+        " AND sr." + COLUMN_PROJECT_ID + " = ?" +
+        " AND st." + COLUMN_STEP_ID + " = sr.root_step_id";
+      Wrapper<Integer> result = new Wrapper<>();
+      new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
+        new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
+        new Integer[]{ Types.BIGINT, Types.VARCHAR },
+        rs -> {
+          int count = 0;
+          while (rs.next()) {
+            try {
+              _wdkModel.getQuestion(rs.getString(1));
+              count++;
+            }
+            catch (WdkModelException e) { /* invalid question; ignore */ }
+          }
+          result.set(count);
+        });
+      return result.get();
     }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not get strategy count for user " + user.getEmail(), e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rsStrategy, psStrategy);
+    catch (Exception e) {
+      WdkModelException.unwrap(e);
+      return 0;
     }
   }
 
