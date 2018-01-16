@@ -74,6 +74,11 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
         resultList.close();
       }
 
+      // make sure ontology is not empty
+      if (ontologyItemMap.isEmpty()) {
+        throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() + " returned zero rows.");
+      }
+
       // secondary validation: make sure node types are compatible with placement in the graph
       validateOntologyItems(ontologyItemMap);
 
