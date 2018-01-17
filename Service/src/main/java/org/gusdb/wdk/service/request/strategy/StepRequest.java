@@ -77,8 +77,8 @@ public class StepRequest {
       throws DataValidationException, RequestMisformatException, WdkModelException {
     if (patchSet.has(Keys.ANSWER_SPEC)) {
       JSONObject answerSpecJson = patchSet.getJSONObject(Keys.ANSWER_SPEC);
-      boolean allowIncompleteSpec = step.getStrategyId() == null;
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, allowIncompleteSpec);
+      boolean expectIncompleteSpec = step.getStrategyId() == null;
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, expectIncompleteSpec);
       // user cannot change question of an existing step
       if (!answerSpec.getQuestion().getFullName().equals(step.getQuestion().getFullName())) {
         throw new DataValidationException("Question of an existing step cannot be changed.");
@@ -86,14 +86,15 @@ public class StepRequest {
       Map<String, Param> updateParamMap = answerSpec.getQuestion().getParamMap();
       Map<String, org.gusdb.wdk.beans.ParamValue> updateParamValueMap = answerSpec.getParamValues();
       Map<String, String> currentParamValueMap = step.getParamValues();
-      for(Entry<String,Param> entry : updateParamMap.entrySet()) {
-    	    if(entry.getValue() instanceof AnswerParam) {
-    	    	  Object updateParamValue = updateParamValueMap.get(entry.getKey()).getObjectValue();
-    	    	  Object currentParamValue = currentParamValueMap.get(entry.getKey());
-    	    	  if(updateParamValue == null && currentParamValue != null ||
-    	    	     updateParamValue != null && !updateParamValue.equals(currentParamValue))
-    	    		  throw new DataValidationException("Changes to the answer param values are not allowed.");
-    	    }
+      for (Entry<String,Param> entry : updateParamMap.entrySet()) {
+        if (entry.getValue() instanceof AnswerParam) {
+          Object updateParamValue = updateParamValueMap.get(entry.getKey()).getObjectValue();
+          Object currentParamValue = currentParamValueMap.get(entry.getKey());
+          if (updateParamValue == null && currentParamValue != null ||
+              updateParamValue != null && !updateParamValue.equals(currentParamValue)) {
+            throw new DataValidationException("Changes to the answer param values are not allowed.");
+          }
+        }
       }
       return answerSpec;
     }

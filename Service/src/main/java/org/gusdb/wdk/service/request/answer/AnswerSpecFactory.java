@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,7 +16,6 @@ import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.AnswerParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
@@ -80,7 +80,7 @@ public class AnswerSpecFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean allowIncompleteSpec) throws DataValidationException, RequestMisformatException {
+  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
@@ -89,7 +89,7 @@ public class AnswerSpecFactory {
       Question question = model.getQuestion(questionName);
       AnswerSpec request = new AnswerSpec(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user, allowIncompleteSpec));
+      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user, expectIncompleteSpec));
       // all filter fields are optional
       if (json.has(Keys.LEGACY_FILTER_NAME)) {
         request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
@@ -147,52 +147,60 @@ public class AnswerSpecFactory {
   }
 
   private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
-      Question question, User user, boolean allowIncompleteSpec) throws WdkUserException, WdkModelException {
+      Question question, User user, boolean expectIncompleteSpec) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
-    Map<String, Object> contextValues = getContextValues(paramsJson);
+    Map<String, String> contextValues = getContextValues(paramsJson);
 
     // loop through expected params and build valid list of values from request
     Map<String, ParamValue> paramValues = new HashMap<>();
     for (Param expectedParam : expectedParams.values()) {
       String paramName = expectedParam.getName();
-      ParamValue paramValue;
-      String stableValue;
+      String stableValue = null;
       if (!contextValues.containsKey(paramName)) {
         if (!expectedParam.isAllowEmpty()) {
           throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
         }
         else {
+          // FIXME RRD: leaving this here for now, but have reason to believe emptyValue is an internal value
+          //      to be inserted into SQL at the last moment, NOT a stable value to be stored in the DB.
+          //      Not sure what that means for this code - probably that we should leave this param missing
+          //      but not throw an error.  However, it hoses our validation strategy on the branch since
+          //      we can only validate stable values- how can we validate the emptyValue?
           stableValue = expectedParam.getEmptyValue();
         }
       }
       else {
-    	    stableValue = contextValues.get(paramName) == JSONObject.NULL ? null : (String)contextValues.get(paramName);
-        //stableValue = (String)contextValues.get(paramName);
+        stableValue = contextValues.get(paramName);
       }
-      if(expectedParam instanceof AnswerParam && allowIncompleteSpec) {
-    	    paramValue = new ParamValue(expectedParam, ((AnswerParamHandler)expectedParam.getParamHandler()).validateStableValueSyntax(user, stableValue, allowIncompleteSpec)); 
+      // stableValue is now either a string or Java null
+      if (expectedParam instanceof AnswerParam && expectIncompleteSpec && stableValue != null) {
+        // null actually expected as parameter value; error if not the case
+        throw new WdkUserException("Unattached steps' answer params must have null values.");
       }
-      else {
-        paramValue = new ParamValue(expectedParam, expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue)); 
-      }  
-      paramValues.put(paramName, paramValue);
-
+      paramValues.put(paramName, new ParamValue(expectedParam,
+          expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue)));
     }
     return paramValues;
   }
 
-  // TODO: would like to return Map<String,JsonValue> here but need to upgrade to javax.json
-  private static Map<String, Object> getContextValues(
-      JSONObject contextObject) throws JSONException {
-    Map<String, Object> contextValues = new HashMap<>();
-    if (contextObject == null) return contextValues;
-    String[] names = JSONObject.getNames(contextObject);
-    if (names == null) return contextValues;
-    for (String name : names) {
-      contextValues.put(name, contextObject.get(name).toString());
-      LOG.info("Added request parameter '" + name +
-          "', value = " + contextValues.get(name).toString());
+  // TODO: Would like to return Map<String,JsonValue> here but need to upgrade to javax.json.
+  //       For now, return Map<String,String> where value might be null if incoming value is JSONObject.NULL
+  private static Map<String, String> getContextValues(
+      JSONObject contextObject) throws JSONException, WdkUserException {
+    Map<String, String> contextValues = new HashMap<>();
+    for (String name : JsonUtil.getKeys(contextObject)) {
+      Object value = contextObject.get(name);
+      if (JSONObject.NULL.equals(value)) {
+        contextValues.put(name, null);
+      }
+      else if (value instanceof String) {
+        contextValues.put(name, (String)value);
+      }
+      else {
+        throw new WdkUserException("Parameter '" + name + "' is not a string or null.");
+      }
+      LOG.debug("Added request parameter '" + name + "', value = " + contextValues.get(name));
     }
     return contextValues;
   }
