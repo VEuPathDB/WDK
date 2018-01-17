@@ -131,6 +131,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
+  @Deprecated // AnswerSpecFactory handles expectIncompleteSpec=true, 2-arg version below handles false
   private String validateStableValueSyntax(User user, String inputStableValue, boolean expectIncompleteSpec)
       throws WdkUserException, WdkModelException {
     if (expectIncompleteSpec) {
