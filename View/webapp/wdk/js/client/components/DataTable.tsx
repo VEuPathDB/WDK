@@ -224,7 +224,11 @@ class DataTable extends PureComponent<Props> {
           if (column.help != null) {
             $ths.eq(index + offset)
               .append('&nbsp;')
-              .append($('<i class="fa fa-question-circle wdk-Link wdk-DataTableHelp"></i>')
+              .append($(`
+                <div class="HelpTrigger">
+                  <i class="fa fa-question-circle"></i>
+                </div>
+              `.trim())
                 .attr('title', column.help)
                 .click(e => e.stopPropagation())
                 .qtip({

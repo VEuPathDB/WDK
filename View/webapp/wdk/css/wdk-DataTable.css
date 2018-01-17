@@ -16,12 +16,10 @@
   border-bottom: 1px solid lightgrey;
 }
 
-.wdk-DataTableHelp {
+.wdk-DataTable .HelpTrigger {
   position: absolute;
   right: .5em;
-  top: calc(50% - .5em);
-  font-size: 1.1em;
-  text-decoration: none;
+  top: calc(50% - .5rem);
 }
 
 .wdk-DataTable th {
