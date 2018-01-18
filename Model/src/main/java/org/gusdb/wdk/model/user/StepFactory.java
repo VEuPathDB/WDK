@@ -508,39 +508,22 @@ public class StepFactory {
   }
 
   public void deleteStep(long stepId) throws WdkModelException {
-    PreparedStatement psHistory = null;
-    String sql;
+    String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
+        _userDb.getPlatform().convertBoolean(true) + " WHERE " + COLUMN_STEP_ID + " = ?";
     try {
-      long start = System.currentTimeMillis();
-      // RRD 1/17/18 Always simply hide; orphan remover will clean up later
-      //if (!isStepDepended(stepId)) {
-        // remove step
-      //  sql = "DELETE FROM " + _userSchema + TABLE_STEP + " WHERE " + COLUMN_STEP_ID + " = ?";
-      //  psHistory = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      //}
-      //else { // hide the step
-        sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
-            _userDb.getPlatform().convertBoolean(true) + " WHERE " +
-            COLUMN_STEP_ID + " = ?";
-        psHistory = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      //}
-      psHistory.setLong(1, stepId);
-      int result = psHistory.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-delete-step", start);
-      if (result == 0)
+      int result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-delete-step")
+          .executeUpdate(new Object[]{ stepId }, new Integer[]{ Types.BIGINT });
+      if (result == 0) {
         throw new WdkModelException("The Step #" + stepId + " cannot be found.");
-
+      }
       // stepCache.removeStep(user.getUserId(), displayId);
     }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not delete step " + stepId, e);
-    }
-    finally {
-      SqlUtils.closeStatement(psHistory);
+    catch (Exception e) {
+      WdkModelException.unwrap(e, "Could not delete step " + stepId);
     }
   }
 
-  boolean isStepDepended(long stepId) throws WdkModelException {
+  public boolean isStepReferenced(long stepId) throws WdkModelException {
     try {
       String sql = "SELECT count(*) FROM (                                      " +
           "   SELECT step_id FROM " + _userSchema + "steps                       " +
