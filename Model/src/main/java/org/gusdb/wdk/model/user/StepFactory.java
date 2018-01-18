@@ -512,17 +512,18 @@ public class StepFactory {
     String sql;
     try {
       long start = System.currentTimeMillis();
-      if (!isStepDepended(stepId)) {
+      // RRD 1/17/18 Always simply hide; orphan remover will clean up later
+      //if (!isStepDepended(stepId)) {
         // remove step
-        sql = "DELETE FROM " + _userSchema + TABLE_STEP + " WHERE " + COLUMN_STEP_ID + " = ?";
-        psHistory = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      }
-      else { // hide the step
+      //  sql = "DELETE FROM " + _userSchema + TABLE_STEP + " WHERE " + COLUMN_STEP_ID + " = ?";
+      //  psHistory = SqlUtils.getPreparedStatement(_userDbDs, sql);
+      //}
+      //else { // hide the step
         sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
             _userDb.getPlatform().convertBoolean(true) + " WHERE " +
             COLUMN_STEP_ID + " = ?";
         psHistory = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      }
+      //}
       psHistory.setLong(1, stepId);
       int result = psHistory.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-delete-step", start);
