@@ -26,7 +26,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
@@ -50,11 +49,6 @@ import org.json.JSONException;
 public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
   private static final Logger LOG = Logger.getLogger(ExternalAnalyzer.class);
-
-  // this plugin can only be assigned to questions/recordClasses that
-  //   are configured with a tabular reporter
-  protected static final String TABULAR_REPORTER_NAME = "tabular";
-  protected static final String TABLE_TABULAR_REPORTER_NAME = "tableTabular";
 
   // properties determining what data to save into plugin output directory
   protected static final String DUMP_MODEL_PROPS_PROP_KEY = "dumpModelProps";
@@ -109,16 +103,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     checkPositiveIntegerIfPresent(IFRAME_WIDTH_PROP_KEY);
     checkPositiveIntegerIfPresent(IFRAME_LENGTH_PROP_KEY);
     checkBooleanIfPresent(ADD_HEADER_PROP_KEY);
-  }
-
-  @Override
-  public void validateQuestion(Question question) throws WdkModelException {
-    // make sure this question has a tabular reporter; needed to dump results
-    if (question.getRecordClass().getReporterMap().get(TABULAR_REPORTER_NAME) == null) {
-      throw new WdkModelException("A RecordClass using the " + getClass().getSimpleName() +
-          " must also be configured with a tabular reporter under the name '" +
-          TABULAR_REPORTER_NAME + "'.");
-    }
   }
 
   @Override
