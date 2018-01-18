@@ -125,27 +125,30 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * is validated as it normally would be.
    * @param user
    * @param inputStableValue
-   * @param allowIncompleteSpec
+   * @param expectIncompleteSpec
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String validateStableValueSyntax(User user, String inputStableValue, boolean allowIncompleteSpec)
+  @Deprecated // AnswerSpecFactory handles expectIncompleteSpec=true, 2-arg version below handles false
+  private String validateStableValueSyntax(User user, String inputStableValue, boolean expectIncompleteSpec)
       throws WdkUserException, WdkModelException {
-    if (allowIncompleteSpec) {
+    if (expectIncompleteSpec) {
       if (inputStableValue != null) {
         throw new WdkUserException("Unattached steps must have null answer param values.");
       }
       return null;
     }
-    else return validateStableValueSyntax(user, inputStableValue);
+    else {
+      return validateStableValueSyntax(user, inputStableValue);
+    }
   }
 
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
   WdkModelException {
     String stepId = inputStableValue;
-    if (stepId == null || stepId.length() == 0)
+    if (stepId == null || stepId.isEmpty())
       throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     try {
       Step step = StepUtilities.getStep(user, Long.valueOf(stepId));
@@ -153,9 +156,10 @@ public class AnswerParamHandler extends AbstractParamHandler {
     }
     catch (NumberFormatException ex) {
       throw new WdkUserException("Invalid input to parameter '" + _param.getPrompt() +
-          "'; the input must be a step id.", ex);
+          "'; the input must be an integer step id.", ex);
 	}
   }
+
   @Override
   public void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {

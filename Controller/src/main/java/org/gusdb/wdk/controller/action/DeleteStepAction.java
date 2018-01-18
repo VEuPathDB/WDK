@@ -116,8 +116,7 @@ public class DeleteStepAction extends ProcessFilterAction {
       return forward;
     }
     catch (Exception ex) {
-      logger.error(ex);
-      ex.printStackTrace();
+      logger.error("Error while deleting step", ex);
       ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
       return null;
     }

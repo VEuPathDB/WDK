@@ -16,6 +16,12 @@
   border-bottom: 1px solid lightgrey;
 }
 
+.wdk-DataTable .HelpTrigger {
+  position: absolute;
+  right: .5em;
+  top: calc(50% - .5rem);
+}
+
 .wdk-DataTable th {
   background-color: #ddd;
   border: 1px solid #aaa;
@@ -84,6 +90,7 @@
 .wdk-DataTableContainer table.dataTable thead th.sorting_desc {
   cursor: pointer;
   padding-left: 2em;
+  padding-right: 2em;
   position: relative;
 }
 

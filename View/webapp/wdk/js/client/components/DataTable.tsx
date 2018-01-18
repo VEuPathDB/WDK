@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { eq, uniqueId } from 'lodash';
+import { eq, uniqueId, once } from 'lodash';
 import React, {Component, PureComponent, ReactElement} from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
@@ -211,18 +211,38 @@ class DataTable extends PureComponent<Props> {
       order,
       searching: searchable,
       info: searchable,
-      headerCallback: (thead: HTMLTableHeaderCellElement) => {
+      headerCallback: once((thead: HTMLTableHeaderCellElement) => {
         const $ths = $(thead).find('th');
         const offset = childRow ? 1 : 0;
         if (childRow) {
           $ths.eq(0).attr('title', 'Show or hide all row details');
+
         }
         this.props.columns
         .filter(column => column.isDisplayable)
         .forEach((column, index) => {
-          if (column.help != null) $ths.eq(index + offset).attr('title', column.help);
+          if (column.help != null) {
+            $ths.eq(index + offset)
+              .append('&nbsp;')
+              .append($(`
+                <div class="HelpTrigger">
+                  <i class="fa fa-question-circle"></i>
+                </div>
+              `.trim())
+                .attr('title', column.help)
+                .click(e => e.stopPropagation())
+                .qtip({
+                  hide: {
+                    fixed: true,
+                    delay: 500
+                  },
+                  style: {
+                    classes: 'qtip-tipsy'
+                  }
+                }));
+          }
         });
-      },
+      }),
       createdRow: (row: HTMLTableRowElement) => {
         row.classList.add('wdk-DataTableRow');
         if (childRow) {
