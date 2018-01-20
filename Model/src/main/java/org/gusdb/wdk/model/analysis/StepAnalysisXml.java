@@ -11,7 +11,13 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
 public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
-  
+
+  // specify what at what WDK object level this analysis is configured
+  public static enum ContainerType {
+    QUESTION,
+    RECORD_CLASS;
+  }
+
   private static final String DEFAULT_FORM_VIEW = "/wdk/jsp/analysis/defaultAnalysisForm.jsp";
   private static final String DEFAULT_ANALYSIS_VIEW = "/wdk/jsp/analysis/defaultAnalysisResult.jsp";
 
@@ -33,6 +39,9 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   // for ui
   private String _customThumbnail; // path relative to WDK configured assetsUrl
 
+  // for context
+  private ContainerType _containerType;
+
   public StepAnalysisXml() { }
 
   public StepAnalysisXml(StepAnalysisXml obj) {
@@ -49,6 +58,11 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _hasParameters = obj._hasParameters;
     _properties = new HashMap<String,String>(obj._properties);
     _customThumbnail = obj._customThumbnail;
+    _containerType = obj._containerType;
+  }
+
+  public void setContainerType(ContainerType containerType) {
+    _containerType = containerType;
   }
 
   @Override

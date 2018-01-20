@@ -837,7 +837,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
-      ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
+      StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
+      stepAnalysisXml.setContainerType(StepAnalysisXml.ContainerType.RECORD_CLASS);
+      stepAnalysisXml.resolveReferences(model);
     }
 
     // resolve reporters
@@ -1615,10 +1617,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public void addStepAnalysis(StepAnalysisXml analysis) {
-    if (stepAnalysisList == null)
-      stepAnalysisMap.put(analysis.getName(), analysis);
-    else
-      stepAnalysisList.add(analysis);
+    stepAnalysisList.add(analysis);
   }
 
   public Map<String, RecordView> getRecordViews() {
