@@ -9,14 +9,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.question.Question;
 
 public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
 
   // specify what at what WDK object level this analysis is configured
-  public static enum ContainerType {
-    QUESTION,
-    RECORD_CLASS;
-  }
+  public static interface StepAnalysisContainer { }
 
   private static final String DEFAULT_FORM_VIEW = "/wdk/jsp/analysis/defaultAnalysisForm.jsp";
   private static final String DEFAULT_ANALYSIS_VIEW = "/wdk/jsp/analysis/defaultAnalysisResult.jsp";
@@ -33,14 +31,14 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _analyzerClass;
   private String _formViewName;     // form view name to be resolved by factory
   private String _analysisViewName; // analysis view name to be resolved by factory
-  private Boolean _hasParameters; // decides how analysis is initially viewed and whether to auto-run
+  private Boolean _hasParameters;   // decides how analysis is initially viewed and whether to auto-run
   private Map<String,String> _properties = new LinkedHashMap<>();
 
   // for ui
   private String _customThumbnail; // path relative to WDK configured assetsUrl
 
   // for context
-  private ContainerType _containerType;
+  private StepAnalysisContainer _containerReference;
 
   public StepAnalysisXml() { }
 
@@ -58,11 +56,11 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _hasParameters = obj._hasParameters;
     _properties = new HashMap<String,String>(obj._properties);
     _customThumbnail = obj._customThumbnail;
-    _containerType = obj._containerType;
+    _containerReference = obj._containerReference;
   }
 
-  public void setContainerType(ContainerType containerType) {
-    _containerType = containerType;
+  public void setContainer(StepAnalysisContainer containerReference) {
+    _containerReference = containerReference;
   }
 
   @Override
@@ -201,32 +199,48 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
           _name + ") that does not map to StepAnalysisPlugin.");
     }
 
-    // always use values from reference, then obj, then default
-    _analyzerClass = saObj._analyzerClass;
-    _displayName = chooseValue(_displayName, saObj._displayName, _name);
-    _shortDescription = chooseValue(_shortDescription, saObj._shortDescription, "");
-    _description = chooseValue(_description, saObj._description, "");
-    _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
-    _expirationMinutes = chooseValue(_expirationMinutes, saObj._expirationMinutes, null);
-    _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
-    _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
-    _customThumbnail = chooseValue(_customThumbnail, saObj._customThumbnail, null);
-    _hasParameters = chooseValue(_hasParameters, saObj._hasParameters, true);
-
-    // override properties, but retain non-conflicts from obj
-    for (Entry<String,String> entry : saObj._properties.entrySet()) {
-      // only add to this reference if doesn't already exist
-      if (!_properties.containsKey(entry.getKey())) {
-        _properties.put(entry.getKey(), entry.getValue());
+    // if container is Question, look up recordclass to see if there are inheritable values
+    StepAnalysisXml parent = new StepAnalysisXml(); // empty reference
+    if (_containerReference != null && _containerReference instanceof Question) {
+      // see if reference also exists on recordclass
+      StepAnalysis rcAnalysisRef = ((Question)_containerReference).getRecordClass().getStepAnalyses().get(_name);
+      if (rcAnalysisRef != null) {
+        parent = (StepAnalysisXml)rcAnalysisRef;
       }
     }
+    
+    // always use values from reference, then obj, then default
+    _analyzerClass = saObj._analyzerClass;
+    _displayName = chooseValue(_displayName, parent._displayName, saObj._displayName, _name);
+    _shortDescription = chooseValue(_shortDescription, parent._shortDescription, saObj._shortDescription, "");
+    _description = chooseValue(_description, parent._description, saObj._description, "");
+    _releaseVersion = chooseValue(_releaseVersion, parent._releaseVersion, saObj._releaseVersion, null);
+    _expirationMinutes = chooseValue(_expirationMinutes, parent._expirationMinutes, saObj._expirationMinutes, null);
+    _formViewName = chooseValue(_formViewName, parent._formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
+    _analysisViewName = chooseValue(_analysisViewName, parent._analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
+    _customThumbnail = chooseValue(_customThumbnail, parent._customThumbnail, saObj._customThumbnail, null);
+    _hasParameters = chooseValue(_hasParameters, parent._hasParameters, saObj._hasParameters, true);
+
+    // override properties, retaining non-conflicts from parent ref and obj
+    inheritParentProps(parent);
+    inheritParentProps(saObj);
  
     // test to make sure we can create instance
     getAnalyzerInstance();
   }
 
-  private static <T> T chooseValue(T refValue, T objValue, T defaultValue) {
+  private void inheritParentProps(StepAnalysisXml parent) {
+    for (Entry<String,String> entry : parent._properties.entrySet()) {
+      // only add to this reference if not already present
+      if (!_properties.containsKey(entry.getKey())) {
+        _properties.put(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  private static <T> T chooseValue(T refValue, T parentValue, T objValue, T defaultValue) {
     if (refValue != null) return refValue;
+    if (parentValue != null) return parentValue;
     if (objValue != null) return objValue;
     return defaultValue;
   }

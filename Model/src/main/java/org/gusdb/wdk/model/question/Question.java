@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -61,7 +62,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
  */
-public class Question extends WdkModelBase implements AttributeFieldContainer {
+public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer {
 
   public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
 
@@ -749,7 +750,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       // resolve step analysis refs
       for (StepAnalysis stepAnalysisRef : _stepAnalysisMap.values()) {
         StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
-        stepAnalysisXml.setContainerType(StepAnalysisXml.ContainerType.QUESTION);
+        stepAnalysisXml.setContainer(this);
         stepAnalysisXml.resolveReferences(model);
         // make sure each analysis plugin is appropriate for this question
         stepAnalysisRef.getAnalyzerInstance().validateQuestion(this);
