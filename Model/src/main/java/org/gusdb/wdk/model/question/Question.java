@@ -747,10 +747,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
       
       // resolve step analysis refs
-      for (StepAnalysis stepAnalysis : _stepAnalysisMap.values()) {
-        ((StepAnalysisXml)stepAnalysis).resolveReferences(model);
+      for (StepAnalysis stepAnalysisRef : _stepAnalysisMap.values()) {
+        StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
+        stepAnalysisXml.setContainerType(StepAnalysisXml.ContainerType.QUESTION);
+        stepAnalysisXml.resolveReferences(model);
         // make sure each analysis plugin is appropriate for this question
-        stepAnalysis.getAnalyzerInstance().validateQuestion(this);
+        stepAnalysisRef.getAnalyzerInstance().validateQuestion(this);
       }
 
       // generate URL segment for this question since optional in XML model
@@ -1154,16 +1156,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     return _recordClass.getStepAnalysis(name);
   }
-  
+
   public void addStepAnalysis(StepAnalysisXml analysis) {
-    if (_stepAnalysisList == null) {
-      // method called after model parsing
-      _stepAnalysisMap.put(analysis.getName(), analysis);
-    } else {
-      _stepAnalysisList.add(analysis);
-    }
+    _stepAnalysisList.add(analysis);
   }
-  
+
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = _wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
@@ -1176,7 +1173,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
     return map;
   }
-  
+
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + _recordClass.getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
