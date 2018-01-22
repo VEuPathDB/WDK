@@ -59,11 +59,13 @@ exports.merge = function merge(additionConfig) {
 
           {
             test: /\.scss$/,
-            use: [
-              { loader: 'style-loader' },
-              { loader: 'css-loader' },
-              { loader: 'sass-loader' }
-            ]
+            use: ExtractTextPlugin.extract({
+              use: [
+                { loader: 'css-loader', options: { sourceMap: true, minimize: !isDevelopment } },
+                { loader: 'sass-loader', options: { sourceMap: true, minimize: !isDevelopment } }
+              ],
+              fallback: 'style-loader'
+            })
           },
 
           {
@@ -71,10 +73,7 @@ exports.merge = function merge(additionConfig) {
             use: ExtractTextPlugin.extract({
               use: {
                 loader: 'css-loader',
-                options: {
-                  sourceMap: true,
-                  minimize: !isDevelopment
-                }
+                options: { sourceMap: true, minimize: !isDevelopment }
               },
               fallback: 'style-loader'
             })
