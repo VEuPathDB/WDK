@@ -92,7 +92,7 @@
 
         <%--------- PAGING TOP BAR ----------%>
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
-        <table  width="100%">
+        <table width="100%" data-controller="wdk.dataRestriction.pagingController" data-record-class="${recordClass.fullName}">
           <tr class="subheaderrow">
 
             <th style="text-align: left; white-space: nowrap; width: 33%;">
@@ -127,7 +127,13 @@
                   <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
                 </c:if>
 
-                <a class="step-download-link" style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
+                <a href="${downloadLink}"
+                  data-controller="wdk.dataRestriction.downloadLinkController"
+                  data-record-class="${recordClass.fullName}"
+                  class="step-download-link"
+                  style="padding-right: 1em;">
+                  <b>Download</b>
+                </a>
 
                 <c:if test="${recHasBasket && !isBasket}">
                   <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
@@ -157,7 +163,7 @@
 <%-- TABLE HEADER ROW --%>
                 <thead>
                   <tr class="headerrow">
-                    <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">  
+                    <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">
 <%--------- BASKET COLUMN  ----------%>
                       <th>
                         <c:choose>
@@ -176,13 +182,13 @@
                     </c:if>
 
                     <c:set var="j" value="0"/>
-                    <c:forEach items="${wdkViewAnswer.summaryAttributes}" var="sumAttrib">   
+                    <c:forEach items="${wdkViewAnswer.summaryAttributes}" var="sumAttrib">
 
 <%--------- OTHER COLUMNS  ----------%>
                     <%--------- SHOW Prim Key COLUMN (j=0) ONLY IF DISPLAYNAME is non empty (in model.xml) ----------%>
-                    <c:if test="${not empty sumAttrib.displayName || j != 0}">    
-                      <%-- FLAG for second loop when showing column values --%>   
-                      <c:if test="${j == 0}"><c:set var="showPrimKey" value="yes"/></c:if>  
+                    <c:if test="${not empty sumAttrib.displayName || j != 0}">
+                      <%-- FLAG for second loop when showing column values --%>
+                      <c:if test="${j == 0}"><c:set var="showPrimKey" value="yes"/></c:if>
 
                       <c:set var="attrName" value="${sumAttrib.name}" />
                       <th id="${attrName}" align="left" valign="middle">
@@ -300,12 +306,12 @@
 
 <%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
-                      <c:forEach items="${wdkViewAnswer.summaryAttributeNames}" var="sumAttrName">    
+                      <c:forEach items="${wdkViewAnswer.summaryAttributeNames}" var="sumAttrName">
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
-                        <c:if test="${not empty showPrimKey ||  j != 0}"> 
+                        <c:if test="${not empty showPrimKey ||  j != 0}">
                           <c:set value="${record.attributes[sumAttrName]}" var="recAttr"/>
                           <imp:wdkAttribute columnName = "${sumAttrName}" attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" />
-                        </c:if>    
+                        </c:if>
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
                     </tr>
@@ -323,7 +329,7 @@
 
 
         <%--------- PAGING BOTTOM BAR ----------%>
-        <table style="width:100%">
+        <table style="width:100%" data-controller="wdk.dataRestriction.pagingController" data-record-class="${recordClass.fullName}">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;">
               <c:if test="${not wdkAnswer.question.fullAnswer}">
