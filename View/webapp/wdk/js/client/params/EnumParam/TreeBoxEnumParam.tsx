@@ -145,7 +145,7 @@ export function TreeBoxEnumParam(props: TreeBoxProps) {
       <CheckboxTree
         isSelectable={true}
         isMultiPick={props.parameter.multiPick}
-        linkPlacement={CheckboxTree.LinkPlacement.Bottom}
+        linksPosition={CheckboxTree.LinkPlacement.Bottom}
         showRoot={false}
         tree={tree}
         getNodeId={getNodeId}
