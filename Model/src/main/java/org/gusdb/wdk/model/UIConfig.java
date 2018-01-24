@@ -19,14 +19,15 @@ public class UIConfig extends WdkModelBase {
     }
   }
 
-  private boolean _showStratPanelByDefault = true;
+  /** If set to null, do not show visibility controls in UI */
+  private Boolean _showStratPanelByDefault = null;
   private ExtraLogoutCookies _extraLogoutCookies = new ExtraLogoutCookies();
 
   public void setShowStratPanelByDefault(boolean showStratPanelByDefault) {
     _showStratPanelByDefault = showStratPanelByDefault;
   }
 
-  public boolean getShowStratPanelByDefault() {
+  public Boolean getShowStratPanelByDefault() {
     return _showStratPanelByDefault;
   }
 
