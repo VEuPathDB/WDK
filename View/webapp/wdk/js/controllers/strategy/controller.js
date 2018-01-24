@@ -155,6 +155,10 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     // get DOM objects we will manipulate
     var $stratPanel = $('#strategies-panel');
     var $togglePanel = $('#strategies-panel-toggle');
+
+    // exit if panel toggle does not exist
+    if ($togglePanel.length === 0) return;
+
     // set cookie to default value if not already set
     if ($.cookie("show-strat-panel") == undefined) {
       $.cookie("show-strat-panel", $togglePanel.data('default'));
