@@ -53,6 +53,7 @@ let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
 
     // set hard-coded values for searchable, selectable, expandable tree
     isSearchable: true, isSelectable, autoFocusSearchBox, name, noResultsComponent,
+    searchIconName: 'filter', linkPlacement: CheckboxTree.LinkPlacement.Top,
 
     // set values from category utils since we know tree is a category tree
     getNodeId, getNodeChildren, searchPredicate: nodeSearchPredicate, nodeComponent,

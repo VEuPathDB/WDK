@@ -1,6 +1,7 @@
 @import 'common/palette.scss';
 
 .HelpTrigger {
+	display: inline-block;
 	.fa {
 		cursor: default;
 		color: $blue;

@@ -7,9 +7,17 @@ import RealTimeSearchBox from './RealTimeSearchBox';
 import { addOrRemove, propsDiffer } from '../utils/componentUtils';
 import { isLeaf, getLeaves, getBranches, mapStructure } from '../utils/TreeUtils';
 import { parseSearchQueryString } from '../utils/SearchUtils';
+import { Seq } from '../utils/IterableUtils';
 
 const NODE_STATE_PROPERTY = '__expandableTreeState';
 const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
+
+enum LinksPosition {
+  None,
+  Top = 1 << 1,
+  Bottom = 1 << 2,
+  Both = Top | Bottom
+}
 
 type StatefulNode<T> = T & {
   __expandableTreeState: {
@@ -88,8 +96,11 @@ type Props<T> = {
   /** PlaceHolder text; shown in grey if searchTerm is empty */
   searchBoxPlaceholder: string;
 
+  /** Name of icon to show in search box */
+  searchIconName?: string;
+
   /** Search box help text: if present, a help icon will appear; mouseover the icon and a tooltip will appear with this text */
-  searchBoxHelp: string;
+  searchBoxHelp?: string;
 
   /** Current search term; if non-empty, expandability is disabled */
   searchTerm: string;
@@ -102,6 +113,11 @@ type Props<T> = {
 
   noResultsComponent?: React.ComponentClass<{ tree: T, searchTerm: string }>
                      | React.StatelessComponent<{ tree: T, searchTerm: string }>;
+
+  //%%%%%%%%%%% Miscellaneous UI %%%%%%%%%%%
+
+  /** Link placement */
+  linksPosition?: LinksPosition;
 };
 
 type TreeLinkHandler = MouseEventHandler<HTMLAnchorElement>;
@@ -117,6 +133,7 @@ type TreeLinksProps = {
   expandNone: TreeLinkHandler;
   selectCurrentList: TreeLinkHandler;
   selectDefaultList: TreeLinkHandler;
+  isFiltered: boolean;
 }
 
 /**
@@ -125,16 +142,19 @@ type TreeLinksProps = {
 let TreeLinks: StatelessComponent<TreeLinksProps> = props => {
   let {
     showSelectionLinks, showExpansionLinks, showCurrentLink, showDefaultLink,
-    selectAll, selectNone, expandAll, expandNone, selectCurrentList, selectDefaultList
+    selectAll, selectNone, expandAll, expandNone, selectCurrentList, selectDefaultList,
+    isFiltered
   } = props;
+
+  let quantifier = isFiltered ? 'these' : 'all';
   return (
     <div className="wdk-CheckboxTreeLinks">
       <div>
         { showSelectionLinks &&
           <span>
-            <a href="#" onClick={selectAll}>select all</a>
+            <a href="#" onClick={selectAll}>select {quantifier}</a>
             <Bar/>
-            <a href="#" onClick={selectNone}>clear all</a>
+            <a href="#" onClick={selectNone}>clear {quantifier}</a>
           </span> }
 
         { showExpansionLinks &&
@@ -429,6 +449,8 @@ type State<T> = {
  */
 export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
 
+  static LinkPlacement = LinksPosition;
+
   static defaultProps = {
     showRoot: false,
     expandedList: null,
@@ -442,7 +464,8 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
     searchBoxHelp: '',
     searchTerm: '',
     onSearchTermChange: () => {},
-    searchPredicate: () => true
+    searchPredicate: () => true,
+    linkPlacement: LinksPosition.Both
   };
 
   expandAll: TreeLinkHandler;
@@ -477,8 +500,21 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
     this.toggleExpansion = this.toggleExpansion.bind(this);
 
     // define event handlers related to selection
-    this.selectAll = createSelector(this, () => getLeaves(this.props.tree, getNodeChildren).map(node => getNodeId(node)));
-    this.selectNone = createSelector(this, () => []);
+
+    // add visible nodes to selectedList
+    this.selectAll = createSelector(this, () =>
+      Seq.from(this.props.selectedList)
+        .concat(getLeaves(this.props.tree, getNodeChildren)
+          .map(node => getNodeId(node))
+          .filter(this.state.isLeafVisible))
+        .uniq()
+        .toArray());
+
+    // remove visible nodes from selectedList
+    this.selectNone = createSelector(this, () =>
+      this.props.selectedList
+        .filter(nodeId => !this.state.isLeafVisible(nodeId)));
+
     this.selectCurrentList = createSelector(this, () => this.props.currentList);
     this.selectDefaultList = createSelector(this, () => this.props.defaultList);
     this.toggleSelection = this.toggleSelection.bind(this);
@@ -569,7 +605,9 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
     let {
       name, showRoot, getNodeId, nodeComponent, isSelectable, isMultiPick,
       isSearchable, currentList, defaultList, showSearchBox, searchTerm,
-      searchBoxPlaceholder, searchBoxHelp, onSearchTermChange, autoFocusSearchBox
+      searchBoxPlaceholder, searchBoxHelp, searchIconName,
+      linksPosition = LinksPosition.Both,
+      onSearchTermChange, autoFocusSearchBox
     } = this.props;
     let topLevelNodes = (showRoot ? [ this.state.generated.statefulTree ] :
       getStatefulChildren(this.state.generated.statefulTree));
@@ -580,6 +618,7 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
 
     let treeLinks = (
       <TreeLinks
+        isFiltered={Boolean(searchTerm)}
         selectAll={this.selectAll}
         selectNone={this.selectNone}
         expandAll={this.expandAll}
@@ -599,13 +638,14 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
     let CheckboxTreeNodeT = (CheckboxTreeNode as new () => CheckboxTreeNode<T>);
     return (
       <div className="wdk-CheckboxTree">
-        {treeLinks}
+        {linksPosition & LinksPosition.Top ? treeLinks : null}
         {!isSearchable || !showSearchBox ? "" : (
           <RealTimeSearchBox
             autoFocus={autoFocusSearchBox}
             searchTerm={searchTerm}
             onSearchTermChange={onSearchTermChange}
             placeholderText={searchBoxPlaceholder}
+            iconName={searchIconName}
             helpText={searchBoxHelp} />
         )}
         {noResultsMessage}
@@ -628,7 +668,7 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
               nodeComponent={myNodeComponent} />
           )}
         </ul>
-        {treeLinks}
+        {linksPosition & LinksPosition.Bottom ? treeLinks : null}
       </div>
     );
   }

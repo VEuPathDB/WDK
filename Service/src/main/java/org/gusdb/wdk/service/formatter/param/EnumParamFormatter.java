@@ -23,6 +23,8 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter implements De
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
     return super.getJson()
         .put(Keys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
-        .put(Keys.VOCABULARY, getVocabJson(vocabInstance));
+        .put(Keys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
+            ? getVocabTreeJson(vocabInstance)
+            : getVocabArrayJson(vocabInstance));
   }
 }

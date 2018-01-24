@@ -1,7 +1,21 @@
 import React from 'react';
 
-import { Parameter, EnumParam } from "../utils/WdkModel";
-import { Props } from "./Utils";
+import { Action } from '../dispatcher/Dispatcher';
+import { EnumParam, Parameter } from '../utils/WdkModel';
+import List from './EnumParam/ListEnumParam';
+import * as TreeBox from './EnumParam/TreeBoxEnumParam';
+import { isPropsType, Props } from './Utils';
+
+type State = TreeBox.State;
+
+export function reduce(state: State, action: Action): State {
+  const { parameter } = action.payload;
+  if (parameter == null || !isType(parameter)) return state;
+  if (TreeBox.isType(parameter)) {
+    return TreeBox.reduce(state, action);
+  }
+  return state;
+}
 
 // Use this for both EnumParam and FlatVocabParam.
 export function isType(parameter: Parameter): parameter is EnumParam {
@@ -12,16 +26,22 @@ export function isType(parameter: Parameter): parameter is EnumParam {
 }
 
 // TODO Handle various displayTypes (see WDK/Model/lib/rng/wdkModel.rng).
-export function ParamComponent(props: Props<EnumParam, void>) {
-  return (
-    <select
-      multiple={props.parameter.multiPick}
-      value={props.value}
-      onChange={e => props.onParamValueChange(e.target.value)}
-    >
-      {props.parameter.vocabulary.map(entry => (
-        <option key={entry[0]} value={entry[0]}>{entry[1]}</option>
-      ))}
-    </select>
-  );
+export function ParamComponent(props: Props<EnumParam, any>) {
+  if (isPropsType(props, TreeBox.isType)) {
+    return (
+      <TreeBox.TreeBoxEnumParam {...props} />
+    );
+  }
+
+  else if (isPropsType(props, List.isType)) {
+    return (
+      <List.ListEnumParam {...props} />
+    )
+  }
+
+  else {
+    return (
+      <div>Unknown enum param type: {props.parameter.displayType}</div>
+    )
+  }
 }

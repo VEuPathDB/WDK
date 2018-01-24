@@ -26,6 +26,12 @@
   <c:set var="isHidden" value="${qP.isVisible == false}"/>
   <c:set var="isReadonly" value="${qP.isReadonly == true}"/>
   <c:set var="paramType" value="${qP.type}" />
+  <c:set var="visibleHelp">
+    <c:if test="${not empty qP.visibleHelp}">
+      <div class="param-inline-help">${qP.visibleHelp}</div>
+    </c:if>
+  </c:set>
+
 
   <%-- hide invisible params --%>
   <c:choose>
@@ -46,45 +52,48 @@
           <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
 
           <div class="param-item">
-          <c:if test="${not empty qP.visibleHelp}">
-            <p>${qP.visibleHelp}</p>
-          </c:if>
 
             <label>
               <div class="param-item-label-wrapper">
+                <imp:helpIcon helpContent="${qP.help}" tooltipPlacement="left"/>
                 <span class="param-item-label-text">${qP.prompt}</span>
-                <imp:image class="param-item-label-help help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
               </div>
             </label>
               <c:choose>
                   <c:when test="${paramType eq 'FilterParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                         <imp:filterParamInput qp="${qP}" />
+                        ${visibleHelp}
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'FilterParamNew'}">
                       <div class="param-control" id="${qP.name}aaa">
                         <imp:filterParamNewInput qp="${qP}"/>
+                        ${visibleHelp}
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                           <imp:enumParamInput qp="${qP}" />
+                          ${visibleHelp}
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'AnswerParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                           <imp:answerParamInput qp="${qP}" />
+                          ${visibleHelp}
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'DatasetParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                           <imp:datasetParamInput qp="${qP}" />
+                          ${visibleHelp}
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'StringParam'}">
                       <div class="param-control" id="${qP.name}aaa">
                           <imp:stringParamInput qp="${qP}" />
+                          ${visibleHelp}
                       </div>
                   </c:when>
                   <c:otherwise>

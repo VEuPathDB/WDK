@@ -262,7 +262,7 @@ wdk.namespace("window.wdk", function(ns, $) {
 
       var $trigger = $this.children().first().addClass("collapsible-title");
       var $content = $trigger.next().addClass("collapsible-content");
-      var $arrowSpan = $("<span></span>").prependTo($trigger);
+      var $arrowSpan = $("<i></i>").css('margin-right', '.5em').prependTo($trigger);
 
       if (!$trigger.attr("title")) {
         $trigger.attr("title", "Click to expand or collapse");
@@ -271,18 +271,18 @@ wdk.namespace("window.wdk", function(ns, $) {
       if ($content.css("display") === "none") {
         $content.hide();
         $this.addClass("collapsed");
-        $arrowSpan.addClass("ui-icon wdk-icon-plus");
+        $arrowSpan.addClass("fa fa-caret-right");
       } else {
         $content.show();
-        $arrowSpan.addClass("ui-icon wdk-icon-minus");
+        $arrowSpan.addClass("fa fa-caret-down");
       }
 
       $trigger.on("click", function(e) {
         e.preventDefault();
         $this.toggleClass("collapsed", $content.css("display") === "block");
         $content.slideToggle();
-        $arrowSpan.toggleClass("wdk-icon-plus", $this.hasClass("collapsed"));
-        $arrowSpan.toggleClass("wdk-icon-minus", !$this.hasClass("collapsed"));
+        $arrowSpan.toggleClass("fa-caret-right", $this.hasClass("collapsed"));
+        $arrowSpan.toggleClass("fa-caret-down", !$this.hasClass("collapsed"));
       });
 
       $this.attr("rendered", true);

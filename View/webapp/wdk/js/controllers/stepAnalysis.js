@@ -382,9 +382,6 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
           wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
         }
 
-        // assign param tooltips if there are any
-        wdk.tooltips.assignParamTooltips('.step-analysis-form-pane .help-link');
-
         trigger('formload', $element, {
           name: analysisObj.analysisName,
           id: analysisId
@@ -422,9 +419,6 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
             name: $element.data('analysis-name'),
             id: analysisId
           };
-
-          // assign headings tooltips if there are any
-          wdk.tooltips.assignParamTooltips('.step-analysis-results-pane .help-link');
 
           trigger('resultsload', $element, eventData);
           trigger('statuschange', $element, eventData);

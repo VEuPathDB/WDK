@@ -63,11 +63,34 @@ export interface FilterParamNew extends ParameterBase {
 
 export interface EnumParam extends ParameterBase {
   type: 'EnumParam' | 'FlatVocabParam';
+  displayType: string;
   countOnlyLeaves: boolean;
   maxSelectedCount: number;
   minSelectedCount: number;
   multiPick: boolean;
-  vocabulary: [ string, string, string ][]; // this would be better as an object to clarify meaning of elements.
+  depthExpanded: number;
+}
+
+type VocabTerm = string;
+type VocabDisplay = string;
+type VocabParent = string;
+
+export interface ListEnumParam extends EnumParam {
+  displayType: 'select' | 'checkBox' | 'typeAhead';
+  vocabulary: [ VocabTerm, VocabDisplay, VocabParent | null ][];
+}
+
+export interface TreeBoxVocabNode {
+  data: {
+    term: string;
+    display: string;
+  };
+  children: TreeBoxVocabNode[]
+}
+
+export interface TreeBoxEnumParam extends EnumParam {
+  displayType: 'treeBox';
+  vocabulary: TreeBoxVocabNode;
 }
 
 export type Parameter = StringParam | EnumParam | FilterParamNew;
