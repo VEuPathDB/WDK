@@ -44,6 +44,13 @@ to access the MBeans with external applications like jconsole. Refer to
 documentation elsewhere for com.sun.management.jmxremote. Java 6 and later
 may not require jmxremote if you only need local access. I have not used this.
 
+Oracle Database Permissions
+
+The JMX MBean, `org.gusdb.wdk.jmx.mbeans.dbms` requires
+  - `select from dba_data_files, dba_temp_files`
+  - `UTL_INADDR` ACL, to run the query,
+    - `select UTL_INADDR.get_host_name as server_name, UTL_INADDR.get_host_address as server_ip from dual;`
+
 
 Recommended Reading
 http://tomcat.apache.org/tomcat-6.0-doc/monitoring.html
