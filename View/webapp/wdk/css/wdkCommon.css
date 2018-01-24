@@ -98,7 +98,6 @@ img[data-assets-src][src] {
 
 .h2center {
 	font-size: 150%;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;
 	margin-bottom: 11px;
@@ -107,7 +106,6 @@ img[data-assets-src][src] {
 }
 .h3center {
 	font-size: 120%;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;
 	margin-bottom: 5px;
@@ -116,25 +114,21 @@ img[data-assets-src][src] {
 
 .h3left {
 	font-size: 120%;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;
 	margin-bottom: 11px;
  	text-align: left;
-	margin-left: 5px;
   line-height: 1;
 }
 
 .h4left {
 /*	font-size: 130%; */
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;
  	text-align: left;
 }
 .h4center {
 /*	font-size: 130%; */
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;
  	text-align: center;
@@ -539,8 +533,18 @@ ul.menubar {
 }
 */
 /* temporary search page, look like old one */
-.content-pane.collapsible{
-	background:#EFEFEF;  /* #DEDEDE; */
+.content-pane.collapsible {
+  background:#fafafa;
+  border: 1px solid lightgray;
+  border-radius: 6px;
+}
+
+.content-pane.collapsible.collapsed {
+  background: #fefefe;
+}
+
+.content-pane.collapsible.collapsed:hover {
+  background:#fafafa;
 }
 
 /* kanged from Amazon */
@@ -605,27 +609,13 @@ ul.menubar {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       =WDK params
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-.param-group {
-  min-height: 0px; /* IE7 fix */
-  margin: 4px;
-}
-
-.param-group.empty {
-  padding: 0.5em 1em; /* add padding that collpsible regions get */
-
-}
-
 .param-group.hidden {
   display: none;
 }
 
 .group-title {
-/*	text-align: center;*/
-/*	padding: 0 0 5px;  */
-/*	padding: 3px;  */
-	font-weight: bold;
-  /*font-size: larger;*/
-/*	position: relative;  */
+  font-weight: 500;
+  font-size: 1.6em;
 }
 
 .group-title span{
@@ -647,16 +637,17 @@ ul.menubar {
 
 }
 
-.param-group .group-detail {
-  /* it caused problem on template site */
-  /* height: 100%; */ /* IE7 fix */
-  display: table;
-  width: 100%;
-  max-width: 1250px;
-}
-
 .param-group .group-detail.hidden {
   display: none;
+  padding: 0.5rem;
+}
+
+.param-group.ShowHide {
+  margin: 5em -0.5rem;
+}
+
+.param-group.ShowHide .group-title {
+  font-size: 1.4em;
 }
 
 div.param-group div#grp-descr{
@@ -664,9 +655,9 @@ div.param-group div#grp-descr{
 }
 
 .param-item {
-  padding-top: 0;  /* 5px; */
-  padding-bottom: 1em; /* 5px; */
-  display: table-row;
+  display: block;
+  margin-top: 1em;  /* 5px; */
+  margin-bottom: 2em; /* 5px; */
 }
 
 .param-item p {
@@ -676,21 +667,18 @@ div.param-group div#grp-descr{
 }
 
 .param-item > label {
-  display: table-cell;
-  padding: 4px;
-  width: 35%;
-  text-align: right;
-  vertical-align: top;
+  display: block;
+  margin: 1em 0 .5em 0;
+  padding: .5em 0;
+  border-bottom: 1px solid lightgray;
+  font-weight: 500;
+  font-size: 1.5em;
 }
 
 .param-item-label-wrapper {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
 }
 
 .param-item-label-text {
-  font-weight: bold;
   padding-right: 4px;
 }
 
@@ -700,11 +688,20 @@ div.param-group div#grp-descr{
 }
 
 .param-control {
-  display: table-cell;
-  padding: 4px;
-  vertical-align: middle;
+  display: flex;
+  margin-left: 1.5em;
+  justify-content: space-between;
 }
 
+.param-inline-help {
+  font-style: oblique;
+  margin: auto;
+  color: #525252;
+  font-weight: 400;
+  max-width: calc(50vw);
+}
+
+/*
 .move-left .param-item > label {
   width: 20%;
   min-width: 10em;
@@ -714,6 +711,7 @@ div.param-group div#grp-descr{
   min-width: 935px;
   max-width: 1140px;
 }
+*/
 
 .param-control td {
  /*  vertical-align: top; is messing up the datasetParam not sure where else these are used*/
@@ -799,6 +797,9 @@ img.plus-minus {
     font-size: smaller;
 }
 
+.search-section {
+  margin: 2em 0;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -947,10 +948,10 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-form[name=questionForm] .filter-button {
+/* form[name=questionForm] .filter-button {
 	text-align: center;
 	padding-top: 1em;
-}
+} */
 
 #text_strategy_number {
 	color:black;
@@ -1431,7 +1432,7 @@ div.step-analysis-pane table.dataTable th {
 .analysis-selector-container .analysis-selector {
   flex: 0 1 calc(50% - 24px);
   border-radius: 4px;
-  border: 1px solid $eee;
+  border: 1px solid #eee;
   box-shadow: 0px 0px 2px #AFAFAF;
   margin: 12px;
   display: flex;
@@ -1713,8 +1714,9 @@ table.dataTable tr.odd {
 
   /* styling block for plus/minus */
   display: inline-block;
-  height: 14px;
-  top: 0;
+  position: absolute;
+  top: .5em;
+  left: .2em;
 }
 .collapsible-title span.ui-icon.wdk-icon-plus {
   background-image: url(../images/plus.gif);
@@ -1723,7 +1725,7 @@ table.dataTable tr.odd {
   background-image: url(../images/minus.gif);
 }
 .collapsible-title, .collapsible-content, .notcollapsible  {
-  padding: 0.5em 1.5em;
+  padding: 0.5rem 1.5rem;
 }
 .collapsible-content {
 /*   border-top: 1px solid #DDD; */
@@ -1975,7 +1977,7 @@ color:darkred;font-style:italic;font-size:95%;
 	border:0;
 }
 .ui-tabs .ui-tabs-panel {
-	padding:0.5em 0.5em 0.5em;
+	/* padding:0.5em 0.5em 0.5em; */
 	border-width: 1px;
 }
 

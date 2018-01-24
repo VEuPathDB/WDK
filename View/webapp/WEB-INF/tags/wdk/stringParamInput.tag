@@ -1,4 +1,4 @@
-<%-- 
+<%--
 Provides form input element for a given StringParam.
 
 --%>
@@ -17,12 +17,9 @@ Provides form input element for a given StringParam.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="length" value="${qP.length}"/>
 
+<c:set var="size" value="${qP.number ? 15 : 45}"/>
+
 <div class="param stringParam" name="${pNam}">
-<%--
-  <c:if test="${not empty qP.visibleHelp}">
-    <p style="margin-top:3px">${qP.visibleHelp}</p>
-  </c:if>
---%>
 
 <script type="x-wdk/validation"><![CDATA[ ${qP.regex} ]]></script>
 
@@ -31,13 +28,13 @@ Provides form input element for a given StringParam.
     <html:hidden property="value(${pNam})"/>
   </c:when>
   <c:when test="${qP.isReadonly}">
-    <html:text styleId="${pNam}" property="value(${pNam})" size="35" readonly="true" />
+    <html:text styleId="${pNam}" property="value(${pNam})" size="${size}" readonly="true" />
   </c:when>
   <c:when test="${length > 50}">
-    <html:textarea styleId="${pNam}" property="value(${pNam})" cols="35" rows="10" />
+    <html:textarea styleId="${pNam}" property="value(${pNam})" cols="${size}" rows="2" />
   </c:when>
   <c:otherwise>
-    <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
+    <html:text styleId="${pNam}" property="value(${pNam})" size="${size}" />
   </c:otherwise>
 </c:choose>
 

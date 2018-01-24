@@ -30,7 +30,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
-    pJson.put(Keys.VOCABULARY, getVocabJson(vocabInstance));
+    pJson.put(Keys.VOCABULARY, getVocabArrayJson(vocabInstance));
     // pJson.put("metaData", getMetaDataJson(user, dependedParamValues));
     pJson.put("metaDataSpec", getMetaDataSpecJson(user, dependedParamValues));
     return pJson;

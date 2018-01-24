@@ -41,7 +41,7 @@ public class EnumParamTermNode {
   /**
    * @param child
    */
-  void addChild(EnumParamTermNode child) {
+  public void addChild(EnumParamTermNode child) {
     children.add(child);
   }
 

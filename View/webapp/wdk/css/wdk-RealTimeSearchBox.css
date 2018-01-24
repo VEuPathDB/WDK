@@ -5,10 +5,10 @@
 }
 
 .wdk-RealTimeSearchBox__withHelp {
-  width: calc(100% - 2em);
+  width: calc(100% - 1em);
 }
 
-input[type="search"].wdk-RealTimeSearchBoxInput {
+.wdk-RealTimeSearchBoxInput {
   width: calc(100% - 2em);
   vertical-align: middle;
   padding: 6px 2em 6px 6px;
@@ -16,8 +16,7 @@ input[type="search"].wdk-RealTimeSearchBoxInput {
 
 .wdk-RealTimeSearchBoxLabel {
   width: calc(100% - 10px);
-  display: inline-block;
-  margin-right: 10px;
+  display: inline-flex;
 }
 
 /** Lighten search box placeholder */
@@ -31,18 +30,15 @@ input.wdk-RealTimeSearchBoxInput:-moz-placeholder { color:#888; }
 .wdk-RealTimeSearchBoxSearchIcon,
 button.wdk-RealTimeSearchBoxCancelBtn {
   position: absolute;
-  right: 2px;
-  font-size: 1.4em;
-  color: #888;
+  right: 1.7em;
+  font-size: 1em;
+  color: #999999;
+  align-self: center;
 }
 
 .wdk-RealTimeSearchBox__active .wdk-RealTimeSearchBoxSearchIcon,
 .wdk-RealTimeSearchBox__inactive button.wdk-RealTimeSearchBoxCancelBtn {
   display: none;
-}
-
-.wdk-RealTimeSearchBoxSearchIcon {
-  padding: 6px;
 }
 
 button.wdk-RealTimeSearchBoxCancelBtn {
@@ -54,8 +50,6 @@ button.wdk-RealTimeSearchBoxCancelBtn {
   width: 2em;
 }
 
-.wdk-RealTimeSearchBoxInfoIcon {
-  color: blue;
+.wdk-RealTimeSearchBox .HelpTrigger {
   margin: 0 8px;
-  font-size: 1.4em;
 }

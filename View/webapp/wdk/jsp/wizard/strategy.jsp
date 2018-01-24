@@ -63,8 +63,8 @@
   <div style="text-align:center;font-weight:bold;font-size:120%">${importStrategy.name}</div>
   <br>
 </div>
-  
-  
+
+
 <%-- display operators section --%>
 
 <c:set var="type" value="${wdkStep.question.recordClass.shortDisplayName}" />
@@ -77,8 +77,8 @@
     </c:when>
 
     <c:otherwise>
-      <span class="h2center">Combine ${wdkStep.recordClass.displayNamePlural} in Step 
-      <span class="current_step_num">${currentStepId}</span> with ${importStrategy.latestStep.recordClass.displayNamePlural} in Step 
+      <span class="h2center">Combine ${wdkStep.recordClass.displayNamePlural} in Step
+      <span class="current_step_num">${currentStepId}</span> with ${importStrategy.latestStep.recordClass.displayNamePlural} in Step
       <span class="new_step_num">${newStepId}</span>:</span>
       <div style="text-align:center" id="operations">
                 <c:choose>

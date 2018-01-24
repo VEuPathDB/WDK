@@ -1,11 +1,13 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -26,7 +28,8 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
         .put(Keys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
         .put(Keys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
         .put(Keys.IS_MULTIPICK, _param.getMultiPick())
-        .put(Keys.DISPLAY_TYPE, _param.getDisplayType());
+        .put(Keys.DISPLAY_TYPE, _param.getDisplayType())
+        .put(Keys.DEPTH_EXPANDED, _param.getDepthExpanded());
   }
 
   /**
@@ -41,7 +44,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
     return _param.getVocabInstance(user, dependedParamValues);
   }
 
-  protected JSONArray getVocabJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
+  protected JSONArray getVocabArrayJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
     List<List<String>> vocabRows = vocabInstance.getFullVocab();
     JSONArray jsonRows = new JSONArray();
     for (List<String> row : vocabRows) {
@@ -53,6 +56,22 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
       jsonRows.put(jsonRow);
     }
     return jsonRows;
+  }
+
+  protected JSONObject getVocabTreeJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
+    EnumParamTermNode[] rootNodes = vocabInstance.getVocabTreeRoots();
+    if (rootNodes.length == 1) return nodeToJson(rootNodes[0]);
+    EnumParamTermNode root = new EnumParamTermNode("@@fake@@");
+    for (EnumParamTermNode child: rootNodes) {
+      root.addChild(child);
+    }
+    return nodeToJson(root);
+  }
+
+  protected JSONObject nodeToJson(EnumParamTermNode node) {
+    return new JSONObject()
+        .put("data", new JSONObject().put("term", node.getTerm()).put("display", node.getDisplay()))
+        .put("children", new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
   }
 
 }

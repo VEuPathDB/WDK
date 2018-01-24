@@ -84,19 +84,22 @@ Otherwise a standard select menu is used.
 
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}" prompt="${pPrompt}">
-          <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
-          <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
-            <imp:checkboxTree
-              id="${pNam}CBT${idgen.nextId}"
-              tree="${qP.paramTree}"
-              checkboxName="array(${pNam})"
-              depthExpanded="${qP.depthExpanded}"
-              buttonAlignment="left"
-              onchange="${updateCountFunc}"
-              onload="${updateCountFunc}"
-            />
-        </div>
+        <%-- Used by LegacyParamController. Only populate when in revise context --%>
+        <c:set var="props">
+          {
+            "paramName": "${qP.name}",
+            "questionName": "${requestScope.wdkQuestion.urlSegment}",
+            "paramValues": ${action eq 'revise' ? requestScope.wdkQuestion.paramValuesJson : 'null'}
+          }
+        </c:set>
+
+      <div class="param"
+          dependson="${dependedParam}"
+          name="${pNam}"
+          data-controller="wdk.clientAdapter"
+          data-name="LegacyParamController"
+          data-props="${fn:escapeXml(props)}"
+      > </div>
       </c:when>
 
       <%-- use a type ahead --%>

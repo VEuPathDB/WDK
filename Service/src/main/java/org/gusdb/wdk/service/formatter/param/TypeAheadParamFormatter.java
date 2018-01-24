@@ -23,6 +23,6 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter implemen
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
     return super.getJson()
         .put(Keys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
-        .put(Keys.VOCABULARY, getVocabJson(vocabInstance));
+        .put(Keys.VOCABULARY, getVocabArrayJson(vocabInstance));
   }
 }

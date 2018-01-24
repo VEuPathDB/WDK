@@ -105,7 +105,7 @@ ${Question_Header}
   </span>
   <br><br>
 
-<%--   ${Question_Details} 
+<%--   ${Question_Details}
 --%>
 
   <imp:questionForm />
@@ -116,7 +116,7 @@ ${Question_Header}
 
 <%-- display operators section --%>
 <c:set var="rcName" value="${wdkStep.question.recordClass.fullName}" />
-<c:set var="allowSpan" value="${rcName eq 'TranscriptRecordClasses.TranscriptRecordClass' 
+<c:set var="allowSpan" value="${rcName eq 'TranscriptRecordClasses.TranscriptRecordClass'
                                 || rcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
                                 || rcName eq 'SnpRecordClasses.SnpRecordClass'
@@ -139,7 +139,7 @@ ${Question_Header}
                 spanStage="span_from_question"
 />
 
-      </div>   
+      </div>
    </c:if>       <%--     <c:if test="${wdkStep.previousStep != null || action != 'revise'}">    --%>
 </div><%-- end of filter operators --%>
 
@@ -153,4 +153,4 @@ ${Question_Header}
 
 </html:form>
 
-${Question_Details} 
+${Question_Details}

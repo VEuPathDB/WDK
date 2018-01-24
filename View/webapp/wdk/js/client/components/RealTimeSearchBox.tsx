@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {debounce} from 'lodash';
-import Tooltip from './Tooltip';
+import HelpIcon from './HelpIcon';
 
 /** classNames used by component */
 const baseClassName = 'wdk-RealTimeSearchBox';
@@ -27,6 +27,9 @@ type Props = {
 
   /** The placeholder string if no search text is present; defaults to ''. */
   placeholderText?: string;
+
+  /** Icon name to show in input box. Defaults to "search". */
+  iconName?: string;
 
   /** Text to appear as tooltip of help icon, should describe how the search is performed. Defaults to empty (no icon) */
   helpText?: string;
@@ -58,7 +61,8 @@ export default class RealTimeSearchBox extends Component<Props, State> {
     onSearchTermChange: () => {},
     placeholderText: '',
     helpText: '',
-    delayMs: 250
+    delayMs: 250,
+    iconName: 'search'
   };
 
   emitSearchTermChange = debounce((searchTerm: string) => this.props.onSearchTermChange!(searchTerm));
@@ -119,12 +123,11 @@ export default class RealTimeSearchBox extends Component<Props, State> {
   }
 
   render() {
-    let { className, helpText, placeholderText, autoFocus } = this.props;
+    let { className, helpText, placeholderText, autoFocus, iconName } = this.props;
     let searchTerm = this.state.searchTerm;
     let isActiveSearch = searchTerm.length > 0;
-    let showHelpIcon = (helpText != null && helpText != '');
     let activeModifier = isActiveSearch ? 'active' : 'inactive';
-    let helpModifier = showHelpIcon ? 'withHelp' : '';
+    let helpModifier = helpText ? 'withHelp' : '';
     return (
       <div className={classname(baseClassName, activeModifier, helpModifier)
         + ' ' + classname(className!, activeModifier, helpModifier)}>
@@ -138,16 +141,14 @@ export default class RealTimeSearchBox extends Component<Props, State> {
             placeholder={placeholderText}
             value={searchTerm}
           />
-          <i className={"fa fa-search " + searchIconClassName}/>
+          <i className={`fa fa-${iconName} ${searchIconClassName}`}/>
           <button className={cancelBtnClassName}
             type="button" onClick={this.handleResetClick}>
             <i className={"fa fa-close " + cancelIconClassName}/>
           </button>
         </label>
-        {showHelpIcon &&
-          <Tooltip content={helpText!}>
-            <i className={"fa fa-question-circle " + infoIconClassName}/>
-          </Tooltip>
+        {helpText &&
+          <HelpIcon>{helpText}</HelpIcon>
         }
       </div>
     );
