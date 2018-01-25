@@ -686,17 +686,8 @@
       <ref name="DependentParamBaseProperties" />
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />
-      <optional>
-        <attribute name="backgroundQueryRef"/>
-      </optional>
-      <optional>
-        <attribute name="ontologyValuesQueryRef"/>
-      </optional>
-      <optional>
-        <attribute name="internalForCountsIsEqualToInternal">
-	  <data type="boolean" />
-        </attribute>
-      </optional>
+      <attribute name="backgroundQueryRef"/>
+
       <optional>
         <attribute name="filterDataTypeDisplayName"/>
       </optional>
@@ -710,11 +701,7 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <attribute name="useIdTransformSqlForInternalValue">
-          <data type="boolean" />
-        </attribute>
-      </optional>
+
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
