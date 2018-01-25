@@ -4,4 +4,3 @@ import './components/featureTooltip';
 import './components/parameterHandlers';
 import './components/tooltips';
 import './components/wdkAjax';
-import './components/dataRestriction';
