@@ -35,7 +35,7 @@ exports.merge = function merge(additionConfig) {
         path: __dirname + '/dist',
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle-[chunkhash].js',
-        hashDigestLength: 32
+        hashDigestLength: 20
       },
       module: {
         rules: [
