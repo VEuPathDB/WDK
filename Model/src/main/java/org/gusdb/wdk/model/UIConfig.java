@@ -19,15 +19,23 @@ public class UIConfig extends WdkModelBase {
     }
   }
 
-  /** If set to null, do not show visibility controls in UI */
-  private Boolean _showStratPanelByDefault = null;
+  private boolean _showStratPanelVisibilityControls = false;
+  private boolean _showStratPanelByDefault = true;
   private ExtraLogoutCookies _extraLogoutCookies = new ExtraLogoutCookies();
+
+  public void setShowStratPanelVisibilityControls(boolean showStratPanelVisibilityControls) {
+    _showStratPanelVisibilityControls = showStratPanelVisibilityControls;
+  }
+
+  public boolean getShowStratPanelVisibilityControls() {
+    return _showStratPanelVisibilityControls;
+  }
 
   public void setShowStratPanelByDefault(boolean showStratPanelByDefault) {
     _showStratPanelByDefault = showStratPanelByDefault;
   }
 
-  public Boolean getShowStratPanelByDefault() {
+  public boolean getShowStratPanelByDefault() {
     return _showStratPanelByDefault;
   }
 
