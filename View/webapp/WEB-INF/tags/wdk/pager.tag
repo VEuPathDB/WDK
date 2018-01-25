@@ -21,7 +21,7 @@
   <table border="0">
     <tr>
       <td nowrap style="padding-right:4px">
-      
+
 <pg:index>
   <pg:first>
     <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">First</a>
@@ -51,14 +51,14 @@
 
   <pg:last>
     <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">Last</a>
-    
   </pg:last>
+
 </pg:index>
 </td>
-     
+
 <%-- 'All' link to display all results, if the result set is not too big --%>
 	<td>
-	    <input class="paging-button" style="width:150px;font-weight:normal" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
+	    <input class="paging-button" style="width:150px;font-weight:normal" type="button" value="Advanced Paging" data-controller="wdk.dataRestriction.advancedPagingButtonController" />
 			<div class="advanced-paging" title="Advanced Paging">
         <input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
         <div class="text">Jump To page:</div>
@@ -81,7 +81,4 @@
       </div>
     </td>
   </tr>
-</table> 
-
-   
-  
+</table>
