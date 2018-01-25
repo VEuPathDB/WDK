@@ -12,7 +12,7 @@ function RecordAttributeSection(props) {
     <div id={name}
       className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`}>
       <div className="wdk-RecordAttributeName">
-        <strong>{attribute.displayName}</strong>
+        {attribute.displayName}
       </div>
       <div className="wdk-RecordAttributeValue">
         <RecordAttribute
