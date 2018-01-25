@@ -248,7 +248,6 @@
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
           <ref name="filterParam" />
-          <ref name="filterParamNew" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
           <ref name="timestampParam" />
@@ -657,32 +656,6 @@
  
   <define name="filterParam">
     <element name="filterParam">
-      <ref name="FlatVocabParamBaseProperties" />
-      <optional>
-        <attribute name="metadataSpecQueryRef" />
-        <attribute name="metadataQueryRef" />
-      </optional>
-      <optional>
-        <attribute name="defaultColumns" />
-      </optional>
-      <optional>
-        <attribute name="filterDataTypeDisplayName"/>
-      </optional>
-      <optional>
-        <attribute name="trimMetadataTerms">
-          <data type="boolean" />
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="FlatVocabParamBaseTags" />
-        </choice>
-      </zeroOrMore>
-    </element>
-  </define>
-
-  <define name="filterParamNew">
-    <element name="filterParamNew">
       <ref name="DependentParamBaseProperties" />
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />

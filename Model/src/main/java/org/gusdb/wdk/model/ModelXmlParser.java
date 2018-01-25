@@ -68,7 +68,6 @@ import org.gusdb.wdk.model.query.param.EnumItem;
 import org.gusdb.wdk.model.query.param.EnumItemList;
 import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamSuggestion;
-import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.NumberParam;
@@ -797,13 +796,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, path, FlatVocabParam.class, "addParam");
     configureParamContent(digester, path, EnumParamSuggestion.class);
 
-    // filterParam
-    path = "wdkModel/paramSet/filterParam";
-    configureNode(digester, path, FilterParam.class, "addParam");
-    configureParamContent(digester, path, EnumParamSuggestion.class);
-
     // filterParamNew
-    path = "wdkModel/paramSet/filterParamNew";
+    path = "wdkModel/paramSet/filterParam";
     configureNode(digester, path, FilterParamNew.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
 
