@@ -101,26 +101,24 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String fvSql = fpn.getFilteredInternalsSql(user, stableValue, contextParamValues, fpn.getMetadataQuery());
+      String fvSql = fpn.getFilteredIdsSql(user, stableValue, contextParamValues, fpn.getMetadataQuery(), FilterParamNew.COLUMN_INTERNAL);
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      String internalColumn = fpn.getUseIdTransformSqlForInternalValue()? FilterParamNew.COLUMN_GLOBAL_INTERNAL : FilterParamNew.COLUMN_INTERNAL;      return "select distinct " + internalColumn + " from (" + cachedSql + ")";
+      return "select distinct " + FilterParamNew.COLUMN_INTERNAL + " from (" + cachedSql + ")";
       
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
   }
-
    
-   private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
+  private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
 
      try {
-       // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself, and
-       // transform flag
+       // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
        SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.emptyMap());
-       return "select " + FilterParamNew.COLUMN_INTERNAL + ", " + FilterParamNew.COLUMN_GLOBAL_INTERNAL + " from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
+       return "select " + FilterParamNew.COLUMN_INTERNAL + " from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
        throw new WdkModelException(e);
@@ -131,12 +129,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
      SqlQuery sqlQuery = new SqlQuery();
      sqlQuery.setName("InternalValue");
-     sqlQuery.setSql("$$sql$$");  // the sql will be provided by the sql param
+     sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$)");  // the sql will be provided by the sql param
      Column column = new Column();
      column.setName(FilterParamNew.COLUMN_INTERNAL);
-     sqlQuery.addColumn(column);
-     column = new Column();
-     column.setName(FilterParamNew.COLUMN_GLOBAL_INTERNAL);
      sqlQuery.addColumn(column);
      sqlQuery.setDoNotTest(true);
      sqlQuery.setIsCacheable(true);
