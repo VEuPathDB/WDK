@@ -243,7 +243,6 @@ export function wrapComponents(componentWrappers) {
  * @param {Object} stores
  */
 function logActions(dispatcher, storeMap) {
-  return;
   let stores = Array.from(storeMap.values())
     .reduce(function(stores, store) {
       return Object.assign(stores, {[store.channel]: store});
