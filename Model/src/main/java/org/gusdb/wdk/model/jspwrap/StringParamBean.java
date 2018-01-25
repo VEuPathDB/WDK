@@ -25,4 +25,6 @@ public class StringParamBean extends ParamBean<StringParam> {
     public String getRegex() {
         return _param.getRegex();
     }
+
+    public boolean isNumber() { return _param.isNumber(); }
 }

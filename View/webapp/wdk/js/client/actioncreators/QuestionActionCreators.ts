@@ -58,6 +58,14 @@ export const ParamsUpdatedAction = makeActionCreator(
   }>()
 );
 
+export const ParamInitAction = makeActionCreator(
+  'question/param-init',
+  payload<BasePayload & {
+    parameter: Parameter;
+    paramValues: ParameterValues
+  }>()
+);
+
 export const ParamStateUpdatedAction = makeActionCreator(
   'question/param-state-updated',
   payload<BasePayload & {
@@ -95,11 +103,12 @@ function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: Ep
 }
 
 function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
-  return action$.filter(ParamValueUpdatedAction.isType)
+  return action$
+    .filter(ParamValueUpdatedAction.isType)
+    .filter(action => action.payload.parameter.dependentParams.length > 0)
     .debounceTime(1000)
     .mergeMap(action => {
       const { questionName, parameter, paramValues, paramValue } = action.payload;
-      const newParamValues = { ...paramValues, [parameter.name]: paramValue };
       return Observable.from(wdkService.getQuestionParamValues(
         questionName,
         parameter.name,
@@ -137,7 +146,7 @@ function loadQuestion(wdkService: WdkService, questionName: string, paramValues?
 }
 
 function makeDefaultParamValues(parameters: Parameter[]) {
-  return parameters.reduce(function(values, param) {
-    return Object.assign(values, { [param.name]: param.defaultValue });
+  return parameters.reduce(function(values, { name, defaultValue = ''}) {
+    return Object.assign(values, { [name]: defaultValue });
   }, {} as ParameterValues);
 }

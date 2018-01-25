@@ -182,6 +182,15 @@ export function isLeaf <T>(node: T, getNodeChildren: ChildrenGetter<T>) {
 }
 
 /**
+ * Determine if a node is a branch
+ * @param node
+ * @param getNodeChildren
+ */
+export function isBranch<T>(node: T, getNodeChildren: ChildrenGetter<T>) {
+  return !isLeaf(node, getNodeChildren);
+}
+
+/**
  * Using recursion to return all the leaf nodes for the given node.
  * @param {Object} node representing root of subtree
  * @param {Array} initial list of leaf nodes (optional)

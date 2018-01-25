@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
@@ -24,6 +25,7 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.json.JSONObject;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for
@@ -70,6 +72,14 @@ public class QuestionBean {
 
   public Map<String, ParamBean<?>> getParamsMap() {
     return _paramBeanMap;
+  }
+
+  public String getParamValuesJson() {
+    return new JSONObject(getParamsMap()
+        .values()
+        .stream()
+        .collect(Collectors.toMap(ParamBean::getName, ParamBean::getStableValue)))
+      .toString();
   }
 
   /**

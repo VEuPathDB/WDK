@@ -4,6 +4,7 @@ import { Epic } from '../utils/ActionCreatorUtils';
 import {
   ActiveQuestionUpdatedAction,
   ParamErrorAction,
+  ParamInitAction,
   ParamStateUpdatedAction,
   ParamsUpdatedAction,
   ParamValueUpdatedAction,
@@ -81,8 +82,18 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
     paramValues: action.payload.paramValues,
     paramErrors: action.payload.question.parameters.reduce((paramValues, param) =>
       Object.assign(paramValues, { [param.name]: undefined }), {}),
-    paramUIState: action.payload.question.parameters.reduce((paramUIState, param) =>
-      Object.assign(paramUIState, { [param.name]: paramReducer(param, undefined, { type: 'init' }) }), {}),
+    paramUIState: action.payload.question.parameters.reduce((paramUIState, parameter) =>
+      Object.assign(paramUIState, {
+        [parameter.name]: paramReducer(
+          parameter,
+          undefined,
+          ParamInitAction.create({
+            parameter,
+            questionName: action.payload.questionName,
+            paramValues: action.payload.paramValues
+          })
+        )
+      }), {}),
     groupUIState: action.payload.question.groups.reduce((groupUIState, group) =>
       Object.assign(groupUIState, { [group.name]: { isVisible: group.isVisible }}), {})
   }

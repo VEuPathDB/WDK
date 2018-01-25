@@ -31,15 +31,15 @@
 <ul id="strategy_tabs">
 <%-- wdk.addStepPopup.showPanel() is in addStepPopup.js --%>
 
-   <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
+   <li><span id="stratTitle" class="h4left">My Strategies:</span></li>
 
-   <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
+   <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"
       href="app/query-grid">New</a></li>
 
-   <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
+   <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner"
 	    onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('strategy_results')">Opened <font class="subscriptCount">(${openCount})</font></a></li>
 
-   <li><a id="tab_search_history" title="View and browse all your strategies" 
+   <li><a id="tab_search_history" title="View and browse all your strategies"
 	    onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>
 
    <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
@@ -77,23 +77,24 @@
 
 <!-- OPENED tab -->
 <div id="strategy_results" class="workspace_panel">
-  <div id="strategy_messages">
-  </div>
-  <c:set var="showStratPanel" value="${wdkModel.model.uiConfig.showStratPanelByDefault}"/>
-  <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
-  <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
-  <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
-  <button type="button" id="strategies-panel-toggle" class="wdk-Link" data-default="${showStratPanel}" style="display:flex;align-items:center;color:black;" data-action="toggle-strat-panel">
-    <img src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
-    <span style="font-weight:bold">
-      <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
-    </span>
-  </button>
+  <div id="strategy_messages"> </div>
+  <c:if test="${wdkModel.model.uiConfig.showStratPanelVisibilityControls}">
+    <c:set var="showStratPanel" value="${wdkModel.model.uiConfig.showStratPanelByDefault}"/>
+    <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
+    <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
+    <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
+    <button type="button" id="strategies-panel-toggle" class="wdk-Link" data-default="${showStratPanel}" style="display:flex;align-items:center;color:black;" data-action="toggle-strat-panel">
+      <img src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
+      <span style="font-weight:bold">
+        <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
+      </span>
+    </button>
+  </c:if>
   <div id="strategies-panel" class="resizable-wrapper" style="display:${currentDisplayCss}">
     <div class="scrollable-wrapper edit-step-pane">
       <div id="Strategies" ${newStrat}>
       </div>
-    </div> 
+    </div>
   </div>
 
   <br/>

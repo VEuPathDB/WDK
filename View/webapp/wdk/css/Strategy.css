@@ -136,11 +136,11 @@ padding:  0;
 }
 
 /* Rows, columns, heights, widths, and sizes. */
-.row1 { 
+.row1 {
   top: 0px;
 }
 
-.row2 { 
+.row2 {
   top: 48px;
 }
 
@@ -184,7 +184,7 @@ padding:  0;
 
 .arrow.down {
   top: 0.35em;
-  left: 4em;  
+  left: 4em;
 }
 
 .operation {
@@ -255,7 +255,7 @@ td.operation {
   position: absolute;
   left: 3.2em;
   top: -0.6em;
-  z-index: 1; 	
+  z-index: 1;
 }
 
 .operation {
@@ -453,7 +453,7 @@ div.transform a.crumb_name img{
 }
 
 .crumb_details div.crumb_menu {
-  background-image:url(../images/crumbMenu.png);  
+  background-image:url(../images/crumbMenu.png);
   position: relative;
   white-space: nowrap;
   border-bottom: 2px solid #000000;
@@ -480,7 +480,6 @@ div.transform a.crumb_name img{
 }
 
 .param {
-  margin: 0;
   font-size: 12px;
 }
 
@@ -507,7 +506,7 @@ div.transform a.crumb_name img{
 .diagram div#record_name {
   border: none;
   position: absolute;
-  padding: 0px 0px 0px 5px;   
+  padding: 0px 0px 0px 5px;
   text-align: left;
   /*  color: #08438F; */
   font-weight:bold;
@@ -708,17 +707,17 @@ b.strat_help_title > span {
   /*	right:140px; affects colocation */
   position: absolute;
   /* Position wrt viewport in js
-  left:140px; 
+  left:140px;
   top:140px;
   */
-  min-width: 600px; 
-  max-width: 78%; 
+  min-width: 600px;
+  max-width: 78%;
   background-color: #FFFFFF;
   background-repeat: repeat-x;
-  background-position: 0 26px;  
-  border: 1px solid #888888;	
+  background-position: 0 26px;
+  border: 1px solid #888888;
   padding: 0 8px 8px 8px;
-  z-index: 490; 
+  z-index: 490;
 }
 
 #query_form form {
@@ -751,7 +750,7 @@ b.strat_help_title > span {
 }
 
 #query_selection .top_nav ul {
-  position:absolute; 
+  position:absolute;
   display:none;
 }
 
@@ -773,7 +772,7 @@ b.strat_help_title > span {
 }
 
 #query_selection .top_nav li:hover {
-} 
+}
 
 #query_selection .top_nav li ul li {
   text-align:left;
@@ -841,7 +840,7 @@ b.strat_help_title > span {
 }
 
 #operations {
-  margin: 10px 20px 10px 10px; 
+  margin: 10px 20px 10px 10px;
 }
 
 #operations ul li {
@@ -868,7 +867,6 @@ b.strat_help_title > span {
   margin: 4px;
   margin-left: auto;
   margin-right: auto;
-  width: 100%;   /* 95%; refs #17752 */
   padding: 0;
 }
 
@@ -880,8 +878,8 @@ b.strat_help_title > span {
 }
 
 .filter-button {
-  padding-top: 10px;
   text-align: center;
+  margin: 4rem 1rem .5rem 1rem;
 }
 
 .filter_link {
@@ -982,7 +980,7 @@ div.bottom-close{
 }
 
 .history_panel table td {
-  padding: 0;    
+  padding: 0;
 }
 
 .unsaved-strategies-body {
@@ -1051,7 +1049,7 @@ table.history_controls {
 
 .diagram .stepBox .box {
   width: 8em;
-  height: 3em; 
+  height: 3em;
   margin-right: 0.3em;
 }
 
@@ -1150,7 +1148,7 @@ white-space: nowrap;
  ******* CSS for AddStep PopUp ********************
  *************************************************/
 .menu_section {
-  text-indent:-5px; 
+  text-indent:-5px;
   padding: 0;
   margin: 0 0 0 3px;
 }

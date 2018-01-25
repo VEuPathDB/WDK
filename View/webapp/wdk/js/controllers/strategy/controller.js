@@ -155,6 +155,10 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     // get DOM objects we will manipulate
     var $stratPanel = $('#strategies-panel');
     var $togglePanel = $('#strategies-panel-toggle');
+
+    // exit if panel toggle does not exist
+    if ($togglePanel.length === 0) return;
+
     // set cookie to default value if not already set
     if ($.cookie("show-strat-panel") == undefined) {
       $.cookie("show-strat-panel", $togglePanel.data('default'));
@@ -167,8 +171,10 @@ wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.cookie("show-strat-panel", (showPanel ? "true" : "false"));
 
     // update button text
-    var $button = $('button[data-action="toggle-strat-panel"]')
-    $button.text($button.data(showPanel ? 'hide-text' : 'show-text'));
+    $('button[data-action="toggle-strat-panel"]')
+      .each(function() {
+        $(this).text($(this).data(showPanel ? 'hide-text' : 'show-text'));
+      });
 
     // open DYK if not seen before
     if (showPanel) wdk.dyk.dykOpenIfNotSeen();

@@ -27,24 +27,11 @@ Provides form input element for a given FilterParamParam.
 </c:if>
 
   <%-- Used by LegacyParamController. Only populate when in revise context --%>
-  <c:set var="questionParamValues">
-    <c:choose>
-      <c:when test="${action eq 'revise'}">
-        {
-        <c:forEach items="${requestScope.wdkQuestion.params}" var="questionParam" varStatus="loop">
-          "${questionParam.name}": "${fn:replace(questionParam.stableValue, '"', '\\"')}" <c:if test="${loop.last eq false}">,</c:if>
-        </c:forEach>
-        }
-      </c:when>
-      <c:otherwise>null</c:otherwise>
-    </c:choose>
-  </c:set>
-
   <c:set var="props">
     {
       "paramName": "${qP.name}",
       "questionName": "${requestScope.wdkQuestion.urlSegment}",
-      "paramValues": ${questionParamValues}
+      "paramValues": ${action eq 'revise' ? requestScope.wdkQuestion.paramValuesJson : 'null'}
     }
   </c:set>
 

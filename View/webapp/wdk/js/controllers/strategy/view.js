@@ -795,32 +795,10 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
       var oform = "<form class='clear' enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
-   /*   params_table = "<div class='filter operators'>" +
-          "<span class='form_subtitle' style='padding-right:20px'>" +
-          "<b>Revise Operation</b></span><div id='operations'>" +
-          "<table style='margin-left:auto; margin-right:auto;'>" +
-          "<tr><td class='opcheck' valign='middle'><input type='radio' " +
-          "name='boolean' value='INTERSECT' /></td><td class='operation " +
-          "INTERSECT'></td><td valign='middle'>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'>" +
-          "<input type='radio' name='boolean' value='UNION'></td>" +
-          "<td class='operation UNION'></td><td>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>UNION</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'>" +
-          "<input type='radio' name='boolean' value='MINUS'></td>" +
-          "<td class='operation MINUS'></td><td>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "&nbsp;<b>MINUS</b>&nbsp;" +
-          (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-          "&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' " +
-          "name='boolean' value='RMINUS'></td><td class='operation RMINUS'>" +
-          "</td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" +
-          (parseInt(modelstep.frontId, 10)-1) + "</td></tr></table></div></div>";
-     */
+      var inputStepLeft = (parseInt(modelstep.frontId, 10)-1);
+      var inputStepTop = (modelstep.frontId);
 
-     var intersect_html = 
+      var intersect_html = 
     	  "<td class='opcheck' valign='middle'>" +
     	    "<input type='radio' " + "name='boolean' value='INTERSECT' />" +
     	  "</td>" +
@@ -858,23 +836,18 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           "</td>" +
           "<td title='ignore the step above' class='operation LONLY'></td>" +
           "<td title='ignore the step above'>" +
-          "  <b>IGNORE current step</b>" +  //&nbsp;" + (modelstep.frontId) +
+          "  <b>IGNORE step " +  inputStepTop + "</b>" +  //&nbsp;" + (modelstep.frontId) +
           "</td>";
       var right_only_html =
-    	  "<td title='ignore all the steps to the left' class='opcheck'>" +
+    	  "<td title='ignore the step to the left' class='opcheck'>" +
           "  <input type='radio' name='boolean' value='RONLY'>" +
           "</td>" +
-          "<td title='ignore all the steps to the left' class='operation RONLY'></td>" +
-          "<td title='ignore all the steps to the left'>" +
-          "  <b>IGNORE previous step(s)</b>" +   //&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
+          "<td title='ignore the step to the left' class='operation RONLY'></td>" +
+          "<td title='ignore the step to the left'>" +
+          "  <b>IGNORE step " +  inputStepLeft + "</b>" +   //&nbsp;" + (parseInt(modelstep.frontId, 10)-1) +
           "</td>";
-    
-      params_table =
-    	  "<div class='filter operators'>" +
-          "  <span class='form_subtitle' style='padding-right:20px'>" +
-          "    <b>Revise Operation</b>" +
-          "  </span>" +
-          "  <div id='operations'>" +
+
+      var fourBooleanTable = 
           "    <br><table style='margin-left:auto; margin-right:auto;'>" +
           "      <tr title='choose a way to combine the IDs in the 2 input steps'>" +
                    intersect_html +
@@ -884,28 +857,43 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
                    left_minus_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    right_minus_html +
-          "      </tr><tr><td colspan=15><hr style='margin-top:1em;margin-bottom:1em'></td></tr></table>" +
-          "      <table style='margin-left:auto; margin-right:auto;'>" +
-          "      <tr><td colspan = 8 style='padding-bottom:2em'>" +
-          "             <span class='form_subtitle' style='margin-left:4em'>" +
-          "              ...or temporarily ignore one of the input steps  " +
-          "                <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore all the steps to the left, or ignore the step above.'></i> " +
-          "             </span>" +
+          "      </tr></table>";
+
+      var twoIgnoreTable =
+          "      <table style='margin-left:auto; margin-right:auto;'><tr><td colspan=8><hr></td></tr>" +
+          "      <tr><td colspan=8  style='font-size:120%;padding:0 0 1em 1em' title='You may change the operation to temporarily ignore one of the input steps. Either ignore step 1 or step 2.'>" +
+          "              ...or temporarily ignore one of the input steps:  " +
+//          "                <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore step 1 or step 2.'></i> " +
           "      </td></tr><tr>" +
                    right_only_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    left_only_html +
-          //"      <td><img class='help-link' style='cursor:pointer;width:18px;' title='blablabla' src='wdk/images/question.png'></td>" +
-          //"    </tr></table><span style='float:right;position:relative;bottom:2em'><img class='help-link' style='cursor:pointer;width:18px;' title='ignore all the steps to the left, or ignore the step above' src='wdk/images/question.png'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon' data-hasqtip='blabla'></i></span>" +
-          "      </tr></table> " +
-   //       "      <span style='float:right;position:relative;bottom:6.5em;right:1em'><i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore all the steps to the left, or ignore the step above.'></i></span>" +
+          "      </tr></table> ";
+
+     var oneIgnoreTable =
+          "      <table style='margin-left:auto; margin-right:auto;'><tr><td colspan=4><hr></td></tr>" +
+          "      <tr><td  style='font-size:120%' title='You may change the operation to temporarily ignore the effect of the new step.'>" +
+       //   "            <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore the effect of the new step.'></i>  " +
+          "              ...or temporarily ignore the top step: &nbsp; &nbsp; &nbsp; &nbsp;" +
+                        left_only_html +
+          "      </td></tr></table> ";
+
+
+      var ignoreTable = twoIgnoreTable;
+      if (inputStepLeft == 1) { ignoreTable = twoIgnoreTable; } else { ignoreTable = oneIgnoreTable;};
+
+      params_table =
+    	  "<div class='filter operators'>" +
+          "  <span class='form_subtitle' style='padding-right:20px'>" +
+          "    <b>Revise Operation</b>" +
+          "  </span>" +
+          "  <div id='operations'>" + 
+               fourBooleanTable + 
+               ignoreTable +
           "  </div>" + 
           "</div>";
 
-
-
-
-       var button = "<div style='text-align:center'>" +
+      var button = "<div style='text-align:center'>" +
           "<input type='submit' value='Revise' /></div>";
       params_table = oform + stage_input + params_table + button + cform;
     } else if (jsonStep.isCollapsed) {

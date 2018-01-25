@@ -107,6 +107,7 @@ public class Keys {
   public static final String MIN_SELECTED_COUNT = "minSelectedCount";
   public static final String IS_MULTIPICK = "multiPick";
   public static final String DISPLAY_TYPE = "displayType";
+  public static final String DEPTH_EXPANDED = "depthExpanded";
   public static final String PARSERS = "parsers";
 
   // dataset-related keys

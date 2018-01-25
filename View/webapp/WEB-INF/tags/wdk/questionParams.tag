@@ -20,10 +20,6 @@
   <imp:script src="wdkCustomization/js/questions/${wdkQuestion.customJavascript}"/>
 </c:if>
 
-<script type="text/javascript">
-  $(function() { wdk.tooltips.assignParamTooltips('.help-link'); });
-</script>
-
 <c:set var="invalidParams" value="${requestScope.invalidParams}" />
 <c:if test="${fn:length(invalidParams) != 0}">
   <div class="invalid-params">

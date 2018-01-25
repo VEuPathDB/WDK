@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -62,7 +63,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
  */
-public class Question extends WdkModelBase implements AttributeFieldContainer {
+public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer {
 
   public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
 
@@ -744,10 +745,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
       
       // resolve step analysis refs
-      for (StepAnalysis stepAnalysis : _stepAnalysisMap.values()) {
-        ((StepAnalysisXml)stepAnalysis).resolveReferences(model);
+      for (StepAnalysis stepAnalysisRef : _stepAnalysisMap.values()) {
+        StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
+        stepAnalysisXml.setContainer(this);
+        stepAnalysisXml.resolveReferences(model);
         // make sure each analysis plugin is appropriate for this question
-        stepAnalysis.getAnalyzerInstance().validateQuestion(this);
+        stepAnalysisRef.getAnalyzerInstance().validateQuestion(this);
       }
 
       // generate URL segment for this question since optional in XML model
@@ -1151,16 +1154,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     return _recordClass.getStepAnalysis(name);
   }
-  
+
   public void addStepAnalysis(StepAnalysisXml analysis) {
-    if (_stepAnalysisList == null) {
-      // method called after model parsing
-      _stepAnalysisMap.put(analysis.getName(), analysis);
-    } else {
-      _stepAnalysisList.add(analysis);
-    }
+    _stepAnalysisList.add(analysis);
   }
-  
+
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = _wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
@@ -1173,7 +1171,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
     return map;
   }
-  
+
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + _recordClass.getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;

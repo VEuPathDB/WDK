@@ -29,13 +29,20 @@
 
 <c:choose>
   <%-- show classic --%>
-  <c:when test="${empty uiConfig.showStratPanelByDefault}">
+  <c:when test="${not uiConfig.showStratPanelVisibilityControls}">
     <div id="title-links" class="h3left">
       <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
       <span id="text_data_type">${recordName}</span>
 
       <c:if test="${strategy != null}">
         from Step <span id="text_step_number">${strategy.length}</span>
+        <button
+          class="wdk-StepActionButton wdk-StepActionButton__revise"
+          type="button"
+          title="Revise the parameters of this search"
+          data-action="revise-step"
+          data-step-id="${step.stepId}"
+        >Revise</button>
         <br/>Strategy:
         <span
           class="wdk-editable strategy-name"
@@ -74,7 +81,7 @@
           data-action="toggle-strat-panel"
           data-show-text="${showText}"
           data-hide-text="${hideText}"
-        >Combine with another search</button>
+        >${showText}</button>
         <c:if test="${advancedMode}">
           <br/>Strategy:
           <span

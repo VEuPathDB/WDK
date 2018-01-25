@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
 import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
@@ -91,7 +92,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * 
  * @author jerric
  */
-public class RecordClass extends WdkModelBase implements AttributeFieldContainer, OptionallyTestable {
+public class RecordClass extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, OptionallyTestable {
 
   private static final Logger logger = Logger.getLogger(RecordClass.class);
 
@@ -841,7 +842,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
-      ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
+      StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
+      stepAnalysisXml.setContainer(this);
+      stepAnalysisXml.resolveReferences(model);
     }
 
     // resolve reporters
@@ -1619,10 +1622,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public void addStepAnalysis(StepAnalysisXml analysis) {
-    if (stepAnalysisList == null)
-      stepAnalysisMap.put(analysis.getName(), analysis);
-    else
-      stepAnalysisList.add(analysis);
+    stepAnalysisList.add(analysis);
   }
 
   public Map<String, RecordView> getRecordViews() {

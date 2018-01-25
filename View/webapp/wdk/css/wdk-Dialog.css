@@ -11,7 +11,7 @@ body.wdk-ModalOpen {
   top: 0;
   background: white;
   box-sizing: content-box;
-  width: 300px;
+  min-width: 300px;
   display: flex;
   flex-direction: column;
 }
