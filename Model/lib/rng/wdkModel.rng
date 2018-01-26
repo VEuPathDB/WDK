@@ -247,7 +247,7 @@
           <ref name="dateRangeParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
-          <ref name="filterParam" />
+          <ref name="filterParamNew" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
           <ref name="timestampParam" />
@@ -654,8 +654,8 @@
     </element>
   </define>
  
-  <define name="filterParam">
-    <element name="filterParam">
+  <define name="filterParamNew">
+    <element name="filterParamNew">
       <ref name="DependentParamBaseProperties" />
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />
