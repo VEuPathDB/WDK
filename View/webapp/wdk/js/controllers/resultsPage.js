@@ -1,6 +1,4 @@
 /*
-
-});
 WDK Strategy System
 resultsPage.js
 
@@ -10,6 +8,7 @@ Provides functions to support results table
 import _ from 'lodash';
 
 wdk.namespace("window.wdk.resultsPage", function(ns, $) {
+
   "use strict";
 
   // Called when a step is selected and the tabs container is inserted in DOM
@@ -40,6 +39,20 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
     // if not a child of basket menu, configure analysis tabs
     if ($element.has('#add-analysis').length) {
       wdk.stepAnalysis.configureAnalysisViews($element);
+
+      // check URL for query param indicating a preferred tab
+      var preferredTabVals = wdk.util.parseUrlUtil("selectedTab", window.location);
+      var preferredTab = preferredTabVals == "" ? undefined : preferredTabVals[0];
+      if (preferredTab) {
+        var tabIndex = $element.children("ul").children("li").get()
+          .map(function(tab){ return tab.id; })
+          .filter(function(id){ return id != "choose-step-analysis" && id != "add-analysis"; })
+          .findIndex(function(id){ return id === preferredTab; });
+        if (tabIndex != -1) {
+          $('#Summary_Views').tabs('option', 'active', tabIndex);
+        }
+        window.history.replaceState("", null, location.pathname);
+      }
     }
 
   }

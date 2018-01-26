@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,13 +12,18 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ImportStrategyAction extends Action {
+
     private static final Logger logger = Logger.getLogger(ImportStrategyAction.class);
+
+    private static final String SELECTED_TAB = "selectedTab";
 
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -44,6 +51,10 @@ public class ImportStrategyAction extends Action {
         // Add any substrategies to the active strategies
         addActiveSubstrategies(wdkUser, strategy.getStrategyId(), strategy.getLatestStep());
 
+        // determine which result tab is preferred (if any)
+        String selectedTab = chooseSelectedTab(strategy, request.getParameter(SELECTED_TAB));
+        String tabParam = selectedTab == null ? "" : "?" + SELECTED_TAB + "=" + selectedTab;
+
         /*
          * Charles Treatman 4/23/09 Add code here to set the
          * current_application_tab cookie so that user will go to the Run
@@ -53,8 +64,21 @@ public class ImportStrategyAction extends Action {
         ShowApplicationAction.setStrategyPanelVisibilityCookie(response, true);
 
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
-        forward = new ActionForward(forward.getPath(), true);
+        forward = new ActionForward(forward.getPath() + tabParam, true);
         return forward;
+    }
+
+    private String chooseSelectedTab(StrategyBean strategy, String selectedTabParam) throws WdkModelException {
+      if (selectedTabParam == null || selectedTabParam.isEmpty()) {
+        return null;
+      }
+      switch(selectedTabParam) {
+        case "first_analysis":
+          Collection<StepAnalysisContext> analyses = strategy.getLatestStep().getAppliedAnalyses().values();
+          return (analyses.isEmpty() ? null : "step-analysis-" + analyses.iterator().next().getAnalysisId());
+        default:
+          return null;
+      }
     }
 
     private void addActiveSubstrategies(UserBean wdkUser, long strategyId,
