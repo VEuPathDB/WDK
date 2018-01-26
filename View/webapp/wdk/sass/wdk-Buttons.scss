@@ -21,6 +21,10 @@ button.btn {
   .fa {
     margin-right: 10px;
     font-size: 1.2em;
+    &.right-side {
+      margin-left: 10px;
+      margin-right: 0;
+    }
   }
 
   &.btn-error {
