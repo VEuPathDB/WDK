@@ -281,3 +281,16 @@ export type Favorite = {
   description: string;
   group: string;
 }
+
+export function getSingleRecordQuestionName(recordClassName: string): string {
+  return `__${recordClassName}__singleRecordQuestion__`;
+}
+
+export function getSingleRecordAnswerSpec(record: RecordInstance): AnswerSpec {
+  return {
+    questionName: getSingleRecordQuestionName(record.recordClassName),
+    parameters: {
+      "primaryKeys": record.id.map(pkCol => pkCol.value).join(",")
+    }
+  };
+}

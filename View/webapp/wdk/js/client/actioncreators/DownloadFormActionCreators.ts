@@ -1,8 +1,8 @@
-import { submitAsForm } from '../utils/FormSubmitter';
 import { getStepBundlePromise, getSingleRecordStepBundlePromise } from '../utils/stepUtils';
 import { ActionThunk } from '../utils/ActionCreatorUtils';
 import { Step } from '../utils/WdkUser';
-import {Question, RecordClass} from "../utils/WdkModel";
+import { Question, RecordClass } from '../utils/WdkModel';
+import { AnswerRequest } from '../utils/WdkService';
 
 export type LoadingAction = {
   type: 'downloadForm/loading'
@@ -139,23 +139,15 @@ export function submitForm(
   formState: any,
   target = '_blank'
 ): ActionThunk<never> {
-  return function run(dispatch, { wdkService }) {
-    // a submission must trigger a form download, meaning we must POST the form
-    let submissionJson = {
+  return (dispatch, { wdkService }) => {
+    let answerRequest: AnswerRequest = {
       answerSpec: step.answerSpec,
       formatting: {
         format: selectedReporter ? selectedReporter : 'wdk-service-json',
-        formatConfig: formState == null ?
-          { contentDisposition: 'attachment' } : formState
+        formatConfig: formState != null ? formState :
+            { contentDisposition: 'attachment' }
       }
     };
-    submitAsForm({
-      method: 'post',
-      action: wdkService.getAnswerServiceEndpoint(),
-      target: target,
-      inputs: {
-        data: JSON.stringify(submissionJson)
-      }
-    });
-  }
+    wdkService.downloadAnswer(answerRequest, target);
+  };
 }
