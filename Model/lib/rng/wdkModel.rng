@@ -247,7 +247,6 @@
           <ref name="dateRangeParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
-          <ref name="filterParam" />
           <ref name="filterParamNew" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
@@ -655,48 +654,13 @@
     </element>
   </define>
  
-  <define name="filterParam">
-    <element name="filterParam">
-      <ref name="FlatVocabParamBaseProperties" />
-      <optional>
-        <attribute name="metadataSpecQueryRef" />
-        <attribute name="metadataQueryRef" />
-      </optional>
-      <optional>
-        <attribute name="defaultColumns" />
-      </optional>
-      <optional>
-        <attribute name="filterDataTypeDisplayName"/>
-      </optional>
-      <optional>
-        <attribute name="trimMetadataTerms">
-          <data type="boolean" />
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="FlatVocabParamBaseTags" />
-        </choice>
-      </zeroOrMore>
-    </element>
-  </define>
-
   <define name="filterParamNew">
     <element name="filterParamNew">
       <ref name="DependentParamBaseProperties" />
       <attribute name="ontologyQueryRef" />
       <attribute name="metadataQueryRef" />
-      <optional>
-        <attribute name="backgroundQueryRef"/>
-      </optional>
-      <optional>
-        <attribute name="ontologyValuesQueryRef"/>
-      </optional>
-      <optional>
-        <attribute name="internalForCountsIsEqualToInternal">
-	  <data type="boolean" />
-        </attribute>
-      </optional>
+      <attribute name="backgroundQueryRef"/>
+
       <optional>
         <attribute name="filterDataTypeDisplayName"/>
       </optional>
@@ -710,11 +674,7 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <attribute name="useIdTransformSqlForInternalValue">
-          <data type="boolean" />
-        </attribute>
-      </optional>
+
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
