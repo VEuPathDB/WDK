@@ -28,6 +28,7 @@ import {
 } from './WdkModel';
 import { User, PreferenceScope, UserPreferences, Step, UserWithPrefs } from './WdkUser';
 import { pendingPromise, synchronized } from './PromiseUtils';
+import { submitAsForm } from '../utils/FormSubmitter';
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -45,6 +46,14 @@ interface RecordRequest {
   attributes: string[];
   tables: string[];
   primaryKey: PrimaryKey;
+}
+
+export interface AnswerRequest {
+  answerSpec: AnswerSpec;
+  formatting?: {
+    format?: string;
+    formatConfig?: any;
+  }
 }
 
 export class ServiceError extends Error {
@@ -377,8 +386,8 @@ export default class WdkService {
   getAnswer(answerSpec: AnswerSpec, formatting: AnswerFormatting) {
     let method = 'post';
     let url = '/answer';
-    let body = stringify({ answerSpec, formatting });
-    return this._fetchJson<Answer>(method, url, body);
+    let body: AnswerRequest = { answerSpec, formatting };
+    return this._fetchJson<Answer>(method, url, stringify(body));
   }
 
   /**
@@ -577,6 +586,18 @@ export default class WdkService {
       .then(([ recordClasses, questions, ontology ]) => {
         return resolveWdkReferences(recordClasses, questions, ontology);
       });
+  }
+
+  downloadAnswer(answerRequest: AnswerRequest, target = '_blank') {
+    // a submission must trigger a form download, meaning we must POST the form
+    submitAsForm({
+      method: 'post',
+      action: this.getAnswerServiceEndpoint(),
+      target: target,
+      inputs: {
+        data: JSON.stringify(answerRequest)
+      }
+    });
   }
 
   private _fetchJson<T>(method: string, url: string, body?: string) {

@@ -29,7 +29,7 @@
 
 <c:choose>
   <%-- show classic --%>
-  <c:when test="${not uiConfig.showStratPanelVisibilityControls}">
+  <c:when test="${uiConfig.showStratPanelByDefault}">
     <div id="title-links" class="h3left">
       <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
       <span id="text_data_type">${recordName}</span>

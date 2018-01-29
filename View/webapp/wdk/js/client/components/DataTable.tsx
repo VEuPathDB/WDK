@@ -443,7 +443,7 @@ class DataTable extends PureComponent<Props> {
   render() {
     let { searchable = true } = this.props;
     return (
-      <div>
+      <div className="MesaComponent">
         {searchable && (
           <RealTimeSearchBox
             searchTerm={this._searchTerm}
