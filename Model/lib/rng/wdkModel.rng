@@ -2020,11 +2020,6 @@
     <element name="uiConfig">
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="showStratPanelVisibilityControls">
-          <data type="boolean" />
-        </attribute>
-      </optional>
-      <optional>
         <attribute name="showStratPanelByDefault">
           <data type="boolean" />
         </attribute>

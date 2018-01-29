@@ -21,6 +21,7 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
@@ -75,7 +76,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
     startThreadPool();
-    Events.subscribe(this, StepResultsModifiedEvent.class, StepRevisedEvent.class, StepCopiedEvent.class);
+    Events.subscribe(this, StepResultsModifiedEvent.class,
+        StepRevisedEvent.class, StepCopiedEvent.class, StepImportedEvent.class);
   }
 
   /**
@@ -96,7 +98,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
     else if (event instanceof StepCopiedEvent) {
       StepCopiedEvent copyEvent = (StepCopiedEvent)event;
-      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep());
+      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep(), false);
+    }
+    else if (event instanceof StepImportedEvent) {
+      StepImportedEvent importEvent = (StepImportedEvent)event;
+      copyAnalysisInstances(importEvent.getFromStep(), importEvent.getToStep(), true);
     }
   }
 
@@ -203,7 +209,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     return copy;
   }
 
-  private void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException {
+  private void copyAnalysisInstances(Step fromStep, Step toStep, boolean alwaysNoResults)
+      throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Long, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {
@@ -212,7 +219,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
       toContext.setStep(toStep);
       // non-new steps copied during revise have invalid results until run again
-      toContext.setState(fromContext.getState().equals(StepAnalysisState.NO_RESULTS) ?
+      // non-new steps copied during import should always have no_results
+      toContext.setState(fromContext.getState().equals(StepAnalysisState.NO_RESULTS) || alwaysNoResults ?
           StepAnalysisState.NO_RESULTS : StepAnalysisState.INVALID_RESULTS);
       try {
         checkStepForValidity(toContext);

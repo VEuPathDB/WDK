@@ -1,17 +1,14 @@
 .wdk-CollapsibleSectionHeader {
   cursor: pointer;
-  margin: 10px 0;
   position: relative;
 }
 
 .wdk-CollapsibleSectionHeader:before {
-  display: inline-block;
   font-family: FontAwesome;
   content: '\f0d7';
-  line-height: 1.2;
   font-size: 1.2em;
-  width: 12px;
-  padding: 0 2px;
+  position: absolute;
+  left: -1rem;
 }
 
 .wdk-CollapsibleSectionHeader__collapsed:before {
@@ -19,7 +16,8 @@
 }
 
 .wdk-CollapsibleSectionContent {
-  padding-left: 16px;
+  padding-left: 1rem;
+  margin: 1em 0 2em 0;
 }
 
 .wdk-CollapsibleSectionContent__collapsed {

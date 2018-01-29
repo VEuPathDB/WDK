@@ -92,7 +92,7 @@
 
         <%--------- PAGING TOP BAR ----------%>
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
-        <table width="100%" data-controller="wdk.dataRestriction.pagingController" data-record-class="${recordClass.fullName}">
+        <table width="100%" class="paging-table">
           <tr class="subheaderrow">
 
             <th style="text-align: left; white-space: nowrap; width: 33%;">
@@ -128,8 +128,6 @@
                 </c:if>
 
                 <a href="${downloadLink}"
-                  data-controller="wdk.dataRestriction.downloadLinkController"
-                  data-record-class="${recordClass.fullName}"
                   class="step-download-link"
                   style="padding-right: 1em;">
                   <b>Download</b>
@@ -329,7 +327,7 @@
 
 
         <%--------- PAGING BOTTOM BAR ----------%>
-        <table style="width:100%" data-controller="wdk.dataRestriction.pagingController" data-record-class="${recordClass.fullName}">
+        <table style="width:100%" class="paging-table">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;">
               <c:if test="${not wdkAnswer.question.fullAnswer}">
