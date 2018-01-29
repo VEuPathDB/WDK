@@ -101,8 +101,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep(), false);
     }
     else if (event instanceof StepImportedEvent) {
-      StepCopiedEvent copyEvent = (StepCopiedEvent)event;
-      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep(), true);
+      StepImportedEvent importEvent = (StepImportedEvent)event;
+      copyAnalysisInstances(importEvent.getFromStep(), importEvent.getToStep(), true);
     }
   }
 
