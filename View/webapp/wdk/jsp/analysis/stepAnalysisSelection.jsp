@@ -12,7 +12,7 @@
         <div class="analysis-selector-container">
           <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
             <c:set var="analysis" value="${analysisEntry.value}"/>
-            <imp:stepAnalysisTile analysis="${analysis}"/>
+            <imp:stepAnalysisTile analysis="${analysis}" recordClassName="${question.recordClass.fullName}" />
           </c:forEach>
         </div>
       </div>
