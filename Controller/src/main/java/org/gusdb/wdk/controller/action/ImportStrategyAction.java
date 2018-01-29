@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 
 public class ImportStrategyAction extends Action {
 
@@ -51,15 +52,24 @@ public class ImportStrategyAction extends Action {
                     "No strategy key was specified for importing!");
         }
 
-        // load model, user
+        // load model, user, referenced strategy
         WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
         UserBean wdkUser = ActionUtility.getUser(request);
         Strategy oldStrategy = StepUtilities.getStrategyByStrategyKey(wdkModel, strategyKey);
-        StrategyBean newStrategy = new StrategyBean(wdkUser, StepUtilities.importStrategy(wdkUser.getUser(), oldStrategy, new HashMap<>()));
 
+        // import strategy to the current user
+        StrategyBean newStrategy = new StrategyBean(wdkUser,
+            StepUtilities.importStrategy(wdkUser.getUser(), oldStrategy, new HashMap<>()));
+
+        // run any associated analyses on the root step of the new strategy; user will probably want them run just as before
+        StepAnalysisFactory saFactory = wdkModel.getStepAnalysisFactory();
+        Collection<StepAnalysisContext> rootStepAnalyses =  saFactory.getAppliedAnalyses(newStrategy.getStrategy().getLatestStep()).values();
+        for (StepAnalysisContext saContext : rootStepAnalyses) {
+          saFactory.runAnalysis(saContext);
+        }
+
+        // Set new strategy to active and add any substrategies to the active strategies
         wdkUser.getUser().getSession().addActiveStrategy(Long.toString(newStrategy.getStrategyId()));
-
-        // Add any substrategies to the active strategies
         addActiveSubstrategies(wdkUser, newStrategy.getStrategyId(), newStrategy.getLatestStep());
 
         // determine which result tab is preferred (if any)
