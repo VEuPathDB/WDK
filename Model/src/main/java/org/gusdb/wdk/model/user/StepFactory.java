@@ -37,7 +37,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
-import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
@@ -1294,7 +1294,7 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
 
-    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
+    Events.triggerAndWait(new StepImportedEvent(oldStep, newStep), new WdkModelException(
         "Unable to execute all operations subsequent to step copy."));
 
     // create mapping from old step to new step
