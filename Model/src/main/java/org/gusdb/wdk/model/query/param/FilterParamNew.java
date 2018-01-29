@@ -149,6 +149,9 @@ public class FilterParamNew extends AbstractDependentParam {
     
     _trimMetadataTerms = param._trimMetadataTerms;
     _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
+    _filterItemIdColumn = param._filterItemIdColumn;
+    _recordIdColumn = param._recordIdColumn;
+    countPredictsAnswerCount = param.countPredictsAnswerCount;
   }
 
   @Override
