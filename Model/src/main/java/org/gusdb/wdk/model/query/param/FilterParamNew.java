@@ -80,10 +80,10 @@ public class FilterParamNew extends AbstractDependentParam {
   public static class FilterParamNewCache extends ItemCache<String, FilterParamNewInstance> {}
 
   public static class FilterParamSummaryCounts {
-    public long unfilteredCount = 0;
-    public long filteredCount = 0;
-    public long untransformedUnfilteredCount = 0;
-    public long untransformedFilteredCount = 0;
+    public long unfilteredFilterItemCount = 0;
+    public long filteredFilterItemCount = 0;
+    public long unfilteredRecordCount = 0;
+    public long filteredRecordCount = 0;
   }
 
   // ontology query columns
@@ -98,7 +98,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
-  static final String COLUMN_GLOBAL_INTERNAL = "internal_for_counts"; // the type of ID as returned by the search, rather than the filter
+  static final String COLUMN_FILTER_ITEM_ID = "filter_item_id"; // (optional) id to filter on, if different than internal
+  static final String COLUMN_RECORD_ID = "record_id"; // (optional) id to count records, if different than internal
   
   private static final int FETCH_SIZE = 1000;
 
@@ -111,17 +112,14 @@ public class FilterParamNew extends AbstractDependentParam {
   private String _backgroundQueryRef;
   private Query _backgroundQuery;
   
-  private String _ontologyValuesQueryRef;
-  private Query _ontologyValuesQuery;
-
   private String _filterDataTypeDisplayName;
 
-  private boolean _useInternalForCountsForInternalValue = false;
-  private boolean _internalForCountsIsEqualToInternal = false;
+  private String _filterItemIdColumn = COLUMN_INTERNAL;  // default to internal
+  private String _recordIdColumn = COLUMN_INTERNAL;  // default to internal
   
   // the output count of this param can be used to predict the final search results count, if all downstream
   // params (in dependency tree) have default values
-  private boolean countPredictsAnswerCount = false;
+  private boolean _countPredictsAnswerCount = false;
 
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
@@ -138,8 +136,8 @@ public class FilterParamNew extends AbstractDependentParam {
     super(param);
 
     _metadataQueryRef = param._metadataQueryRef;
-    if (param._metadataQuery != null)
-      _metadataQuery = param._metadataQuery.clone();
+     if (param._metadataQuery != null)
+       _metadataQuery = param._metadataQuery.clone();
 
     _ontologyQueryRef = param._ontologyQueryRef;
     if (param._ontologyQuery != null)
@@ -149,14 +147,11 @@ public class FilterParamNew extends AbstractDependentParam {
     if (param._backgroundQuery != null)
       _backgroundQuery = param._backgroundQuery.clone();
     
-    _ontologyValuesQueryRef = param._ontologyValuesQueryRef;
-    if (param._ontologyValuesQuery != null)
-      _ontologyValuesQuery = param._ontologyValuesQuery.clone();
-
     _trimMetadataTerms = param._trimMetadataTerms;
-    _useInternalForCountsForInternalValue = param._useInternalForCountsForInternalValue;
-    _internalForCountsIsEqualToInternal = param._internalForCountsIsEqualToInternal;
     _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
+    _filterItemIdColumn = param._filterItemIdColumn;
+    _recordIdColumn = param._recordIdColumn;
+    _countPredictsAnswerCount = param._countPredictsAnswerCount;
   }
 
   @Override
@@ -165,7 +160,6 @@ public class FilterParamNew extends AbstractDependentParam {
     names.add(_metadataQueryRef);
     names.add(_ontologyQueryRef);
     names.add(_backgroundQueryRef);
-    names.add(_ontologyValuesQueryRef);
  
     return names;
   }
@@ -259,18 +253,6 @@ public class FilterParamNew extends AbstractDependentParam {
     _backgroundQuery = backgroundQuery;
   }
   
-  public String getOntologyValuesQueryRef() {
-    return _ontologyValuesQueryRef;
-  }
-
-  public void setOntologyValuesQueryRef(String ontologyValuesQueryRef) {
-    _ontologyValuesQueryRef = ontologyValuesQueryRef;
-  }
-
-  public Query getValuesMapQuery() {
-    return _ontologyValuesQuery;
-  }
-
   /**
    * @param trimMetadataTerms
    *          the metadataQuery to set
@@ -293,100 +275,93 @@ public class FilterParamNew extends AbstractDependentParam {
   public String getFilterDataTypeDisplayName() {
     return _filterDataTypeDisplayName;
   }
-
-  public void setUseIdTransformSqlForInternalValue(boolean useIt) {
-    _useInternalForCountsForInternalValue = useIt;
-  }
-
-  public boolean getUseIdTransformSqlForInternalValue() {
-    return _useInternalForCountsForInternalValue;
-  }
   
   public boolean getCountPredictsAnswerCount() {
-    return countPredictsAnswerCount;
+    return _countPredictsAnswerCount;
   }
   
   public void setCountPredictsAnswerCount(boolean canUse) {
-    countPredictsAnswerCount = canUse;
+    _countPredictsAnswerCount = canUse;
   }
-
-  public void setInternalForCountsIsEqualToInternal(boolean b) {
-    _internalForCountsIsEqualToInternal = b;  
-  }
-  
-  public boolean getInternalForCountsIsEqualToInternal() { return _internalForCountsIsEqualToInternal; }
-  
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
 
+    ///////////////////////////
     // resolve ontology query
+    ///////////////////////////
+    
+    // for mysterious reasons, we need these tests for null, even though this is a required query ref.  some resolve res weirdness
     if (_ontologyQueryRef != null) {
+    // validate dependent params
+    _ontologyQuery = resolveDependentQuery(model, _ontologyQueryRef, "ontology query");
 
-      // validate dependent params
-      _ontologyQuery = resolveDependentQuery(model, _ontologyQueryRef, "ontology query");
-
-      // validate columns
-      Map<String, Column> columns = _ontologyQuery.getColumnMap();
-      String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME,
-          COLUMN_DESCRIPTION, COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION };
-      for (String col : cols)
-        if (!columns.containsKey(col))
-          throw new WdkModelException("The ontologyQuery " + _ontologyQueryRef + " in filterParam " +
-              getFullName() + " must include column: " + col);
+    // validate columns
+    String errMsgPrefix = "The ontologyQuery " + _ontologyQueryRef + " in filterParam " + getFullName();
+    Map<String, Column> columns = _ontologyQuery.getColumnMap();
+    String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME, COLUMN_DESCRIPTION,
+              COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION,COLUMN_IS_RANGE };
+    if (columns.size() != cols.length)
+      throw new WdkModelException(errMsgPrefix + " has the wrong number of columns (" + columns.size() + ").  It should have " + String.join(",", cols));
+    for (String col : cols)
+      if (!columns.containsKey(col))
+        throw new WdkModelException(errMsgPrefix + " must include column: " + col);
     }
+    ///////////////////////////
+    // resolve metadata query
+    ///////////////////////////
 
     List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     metadataCols.add(COLUMN_INTERNAL);
-    metadataCols.add(COLUMN_GLOBAL_INTERNAL);
+    metadataCols.add(COLUMN_ONTOLOGY_ID);
 
+    if (_metadataQueryRef != null) {
+    // validate dependent params
+    _metadataQuery = resolveDependentQuery(model, _metadataQueryRef, "metadata query");
+
+    // validate columns.
+    String errMsgPrefix = "The metadataQuery " + _metadataQueryRef + " in filterParam " + getFullName();
+
+    Map<String, Column> columns = _metadataQuery.getColumnMap();
+    if (columns.containsKey(COLUMN_FILTER_ITEM_ID)) { // if model includes this optional column, use it
+      metadataCols.add(COLUMN_FILTER_ITEM_ID);
+      _filterItemIdColumn = COLUMN_FILTER_ITEM_ID;
+    }
+    if (columns.containsKey(COLUMN_RECORD_ID)) { // if model includes this optional column, use it
+      metadataCols.add(COLUMN_RECORD_ID);
+      _recordIdColumn = COLUMN_RECORD_ID;
+    }
+    if (columns.size() != metadataCols.size())
+      throw new WdkModelException(errMsgPrefix + " has the wrong number of columns (" + columns.size() + ").  It should have " + String.join(",", metadataCols));
+
+    for (String col : metadataCols)
+      if (!columns.containsKey(col))
+        throw new WdkModelException(errMsgPrefix + " must include column: " + col);    
+    }
+    ////////////////////////////////////
     // resolve background query
+    ////////////////////////////////////
+
     if (_backgroundQueryRef != null) {
 
       // validate dependent params
       _backgroundQuery = resolveDependentQuery(model, _backgroundQueryRef, "background query");
 
       // validate columns
+      String errMsgPrefix = "The backgroundQuery " + _backgroundQueryRef + " in filterParam " + getFullName();
+
+      // required to have identical columns as metadata query
       Map<String, Column> columns = _backgroundQuery.getColumnMap();
+      if (columns.size() != metadataCols.size())
+        throw new WdkModelException(errMsgPrefix + " has the wrong number of columns (" + columns.size() + "). It should have " + String.join(",", metadataCols));
+
       for (String col : metadataCols)
         if (!columns.containsKey(col))
-          throw new WdkModelException("The backgroundQuery " + _backgroundQueryRef + " in filterParam " +
-              getFullName() + " must include column: " + col);
-    }
-
-    List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
-    ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
-
-    // resolve values map query
-    if (_ontologyValuesQueryRef != null) {
-
-      // validate dependent params
-      _ontologyValuesQuery = resolveDependentQuery(model, _ontologyValuesQueryRef, "ontologyValues query");
-
-      // validate columns
-      Map<String, Column> columns = _ontologyValuesQuery.getColumnMap();
-      for (String col : ontologyValuesCols)
-        if (!columns.containsKey(col))
-          throw new WdkModelException("The ontologyValuesQuery " + _ontologyValuesQueryRef + " in filterParam " +
-              getFullName() + " must include column: " + col);
-    }
-
-    // resolve metadata query
-    if (_metadataQueryRef != null) {
-
-      // validate dependent params
-      _metadataQuery = resolveDependentQuery(model, _metadataQueryRef, "metadata query");
-
-      // validate columns.
-      Map<String, Column> columns = _metadataQuery.getColumnMap();
-      for (String col : metadataCols)
-        if (!columns.containsKey(col))
-          throw new WdkModelException("The metadata query " + _metadataQueryRef + " in filterParam " +
-              getFullName() + " must include column: " + col);
+          throw new WdkModelException(errMsgPrefix + " must include column: " + col);
     }
   }
-    
+
   /**
    * We cache this because typically ontologies are sensitive only to the grossest dependent param (eg,
    * dataset), so will be reused across users.
@@ -425,14 +400,13 @@ public class FilterParamNew extends AbstractDependentParam {
 
     contextParamValues = ensureRequiredContext(user, contextParamValues);
 
+    ////////////////////////////////////////
     /* GET UNFILTERED (BACKGROUND) COUNTS */
-    // use background query if provided, else use metadata query
-
-    // get base background query
-    Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
+    ////////////////////////////////////////
+    
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
+      QueryInstance<?> queryInstance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
       bgdSql = queryInstance.getSql();
     }
@@ -443,32 +417,36 @@ public class FilterParamNew extends AbstractDependentParam {
     // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
 
-    // get untransformed unfiltered count
-    String sql = "SELECT count(distinct md." + COLUMN_INTERNAL + ") FROM (" + bgdSql + ") md";
-    fpsc.untransformedUnfilteredCount = runCountSql(sql, "untransformed-unfiltered");
+    // get unfiltered count of filter items
+    String sql = "SELECT count(distinct md." + _filterItemIdColumn + ") FROM (" + bgdSql + ") md";
+    fpsc.unfilteredFilterItemCount = runCountSql(sql, "filterItemIdsCount-unfiltered");
 
-    // get transformed unfiltered count
-    if (_internalForCountsIsEqualToInternal) {
-      fpsc.unfilteredCount = fpsc.untransformedUnfilteredCount;
+    // get unfiltered count of records, unless the record id column is the same as the filter item id column
+    if (_recordIdColumn.equals(_filterItemIdColumn)) {
+      fpsc.unfilteredRecordCount = fpsc.unfilteredFilterItemCount;
     } else {
-      sql = "SELECT count (distinct md." + COLUMN_GLOBAL_INTERNAL + ") FROM (" + bgdSql + ") md";
-      fpsc.unfilteredCount = runCountSql(sql, "transformed-unfiltered");
+      sql = "SELECT count (distinct md." + _recordIdColumn + ") FROM (" + bgdSql + ") md";
+      fpsc.unfilteredRecordCount = runCountSql(sql, "recordIds-unfiltered");
     }
 
+    /////////////////////////
     /* GET FILTERED COUNTS */
+    /////////////////////////
+    
     // sql to find the filtered count
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredInternalsSql = getFilteredInternalsSql(user, stableValue, contextParamValues, _metadataQuery);
+    
+    // get filtered   filter_item_ids  count
+    String filteredItemIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _filterItemIdColumn);
+    sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ")";
+    fpsc.filteredRecordCount = runCountSql(sql, "filterItemIds-filtered");
 
-    // get untransformed filtered count
-    sql = "select count( distinct " + COLUMN_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
-    fpsc.untransformedFilteredCount = runCountSql(sql, "untransformed-filtered");
-
-    if (_internalForCountsIsEqualToInternal) {
-      fpsc.filteredCount = fpsc.untransformedFilteredCount;
+    if (_filterItemIdColumn.equals(_recordIdColumn)) {
+      fpsc.filteredFilterItemCount = fpsc.filteredRecordCount;
     } else {
-      sql = "select count( distinct " + COLUMN_GLOBAL_INTERNAL + ") as CNT from (" + filteredInternalsSql + ")";
-      fpsc.filteredCount = runCountSql(sql, "transformed-filtered");
+      String filteredRecordIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _recordIdColumn);
+      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredRecordIdsSql + ")";
+      fpsc.filteredFilterItemCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;
   }
@@ -495,17 +473,15 @@ public class FilterParamNew extends AbstractDependentParam {
       Class<T> ontologyItemClass) throws WdkModelException {
 
     contextParamValues = ensureRequiredContext(user, contextParamValues);
-
     FilterParamNewInstance paramInstance = createFilterParamNewInstance();
 
-    /* GET UNFILTERED COUNTS */
-    // use background query if provided, else use metadata query
+    ////////////////////////////////////////////
+    /* GET UNFILTERED MAP AND POPULATE COUNTS */
+    ////////////////////////////////////////////
 
-    // get base bgd query
-    Query bgdQuery = _backgroundQuery == null ? _metadataQuery : _backgroundQuery;
     String bgdSql;
     try {
-      QueryInstance<?> queryInstance = bgdQuery.makeInstance(user, contextParamValues, true, 0,
+      QueryInstance<?> queryInstance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
       bgdSql = queryInstance.getSql();
     }
@@ -515,48 +491,52 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // limit it to our ontology_id
     List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
-    metadataCols.add(COLUMN_INTERNAL);
+    metadataCols.add(_filterItemIdColumn);
     metadataCols.add(COLUMN_ONTOLOGY_ID);
     String cols = metadataCols.stream().collect(Collectors.joining(", "));
-    String metadataSqlPerOntologyId = "SELECT distinct " + cols + " FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+    String unfilteredSqlPerOntologyId = "SELECT distinct " + cols + " FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
         " = ?";
     
-    // while we are here, format sql to find distinct internals in unfiltered
-    String internalsSqlPerOntologyId = "SELECT count (distinct " + COLUMN_INTERNAL + ") as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
-        " = ?";
-
-    // read into a map of internal -> value(s)
-    Map<String, List<T>> unfiltered = getMetaData(user, contextParamValues, ontologyItem, paramInstance,
-        metadataSqlPerOntologyId, ontologyItemClass);
+    // read into a map of filter_item_id -> value(s)
+    Map<String, List<T>> unfiltered = getMetaDataForOntologyTerm(user, contextParamValues, ontologyItem, paramInstance,
+        unfilteredSqlPerOntologyId, ontologyItemClass);
 
     // get histogram of those, stored in JSON
     Map<T, FilterParamSummaryCounts> summaryCountsMap = new HashMap<>();
     populateSummaryCounts(unfiltered, summaryCountsMap, false); // stuff in to 0th position in array
 
-    /* GET FILTERED COUNTS */
+    //////////////////////////////////////////
+    /* GET FILTERED MAP AND POPULATE COUNTS */
+    //////////////////////////////////////////
+    
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String internalSql = getFilteredInternalsSql(user, stableValue, contextParamValues, getMetadataQuery(),
+    String filteredFilterItemIdSql = getFilteredIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'");
 
     // use that set of ids to limit our ontology id's metadata
-    String andClause = " AND " + COLUMN_INTERNAL + " in ( select internal from (" + internalSql + "))";
-    String metadataSqlPerOntologyIdFiltered = metadataSqlPerOntologyId + andClause;
-
-    // while we are here, format sql to find distinct internals in filtered
-    String internalsSqlPerOntologyIdFiltered = internalsSqlPerOntologyId + andClause;
+    String andClause = " AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
+    String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
-    Map<String, List<T>> filtered = getMetaData(user, contextParamValues, ontologyItem, paramInstance,
-        metadataSqlPerOntologyIdFiltered, ontologyItemClass);
+    Map<String, List<T>> filtered = getMetaDataForOntologyTerm(user, contextParamValues, ontologyItem, paramInstance,
+        filteredSqlPerOntologyId, ontologyItemClass);
 
     // add the filtered set into the histogram
     populateSummaryCounts(filtered, summaryCountsMap, true); // stuff in to 1st position in array
 
     OntologyTermSummary <T> summary = new OntologyTermSummary<T>(summaryCountsMap);
     
-    getCountsOfInternals(summary, internalsSqlPerOntologyId, internalsSqlPerOntologyIdFiltered, ontologyItem.getOntologyId());
+    /////////////////////////////////////
+    /* GET DISTINCT FILTER ITEM COUNTS */
+    /////////////////////////////////////
+    
+    String unfilteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+        " = ?";
+    String filteredDistinctFilterItemsSql = unfilteredDistinctFilterItemsSql + andClause;
+    getCountsOfDistinctFilterItems(summary, unfilteredDistinctFilterItemsSql, filteredDistinctFilterItemsSql, ontologyItem.getOntologyId());
 
+    // return the whole bundle
     return summary;
   }
 
@@ -564,13 +544,13 @@ public class FilterParamNew extends AbstractDependentParam {
   /**
    * update the provided OntologyTermSummary with counts of internals.
    * @param summary
-   * @param internalsSqlPerOntologyId
-   * @param internalsSqlPerOntologyIdFiltered
+   * @param unfilteredDistinctFilterItemsSql
+   * @param filteredDistinctFilterItemsSql
    * @param ontologyId
    * @throws WdkModelException
    */
-  private <T> void getCountsOfInternals(OntologyTermSummary <T> summary, String internalsSqlPerOntologyId, 
-      String internalsSqlPerOntologyIdFiltered, String ontologyId) throws WdkModelException {
+  private <T> void getCountsOfDistinctFilterItems(OntologyTermSummary <T> summary, String unfilteredDistinctFilterItemsSql, 
+      String filteredDistinctFilterItemsSql, String ontologyId) throws WdkModelException {
  
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     PreparedStatement ps = null;
@@ -578,13 +558,13 @@ public class FilterParamNew extends AbstractDependentParam {
 
     try {
       long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyId);
+      ps = SqlUtils.getPreparedStatement(dataSource, unfilteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctInternal(count.intValue());
-      QueryLogger.logEndStatementExecution(internalsSqlPerOntologyId, "FilterParamNew-getCountsOfInternals-unfiltered", start);
+      QueryLogger.logEndStatementExecution(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", start);
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
@@ -595,13 +575,13 @@ public class FilterParamNew extends AbstractDependentParam {
   
     try {
       long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, internalsSqlPerOntologyIdFiltered);
+      ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctMatchingInternal(count.intValue());
-      QueryLogger.logEndStatementExecution(internalsSqlPerOntologyIdFiltered, "FilterParamNew-getCountsOfInternals-filtered", start);
+      QueryLogger.logEndStatementExecution(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", start);
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
@@ -648,9 +628,9 @@ public class FilterParamNew extends AbstractDependentParam {
           summary.put(value, counts);
         }
         if (filtered)
-          counts.filteredCount++;
+          counts.filteredFilterItemCount++;
         else
-          counts.unfilteredCount++;
+          counts.unfilteredFilterItemCount++;
       }
     }
   }
@@ -678,7 +658,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
-  private <T> Map<String, List<T>> getMetaData(User user, Map<String, String> contextParamValues,
+  private <T> Map<String, List<T>> getMetaDataForOntologyTerm(User user, Map<String, String> contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
       throws WdkModelException {
 
@@ -697,7 +677,7 @@ public class FilterParamNew extends AbstractDependentParam {
       long start = System.currentTimeMillis();
       resultSet = ps.executeQuery();
       while (resultSet.next()) {
-        String internal = resultSet.getString(COLUMN_INTERNAL);
+        String internal = resultSet.getString(_filterItemIdColumn);
         T value = OntologyItemType.resolveTypedValue(resultSet, ontologyItem, ontologyItemClass);
 
         // get list of values for this internal value, creating if not yet present
@@ -710,7 +690,7 @@ public class FilterParamNew extends AbstractDependentParam {
         // add next value to the list
         values.add(value);
       }
-      QueryLogger.logEndStatementExecution(sql, "FilterParamNew-getMetaData", start);
+      QueryLogger.logEndStatementExecution(sql, "FilterParamNew-getMetaDataForOntologyTerm", start);
 
     }
     catch (SQLException ex) {
@@ -742,82 +722,79 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
-  Map<String, Set<String>> getValuesMap(User user,
-      Map<String, String> contextParamValues, Set<String> ontologyTerms,
-      Map<String, OntologyItem> ontology, DataSource dataSource) throws WdkModelException {
+  Map<String, Set<String>> getValuesMap(User user, Map<String, String> contextParamValues,
+      Set<String> ontologyTerms, Map<String, OntologyItem> ontology, DataSource dataSource)
+      throws WdkModelException {
 
-    //TODO: temporary till val map query is required
-    if (_ontologyValuesQuery == null) return null;
-    
-    // TODO: restore the following line when the value map query becomes required.
-    //if (_ontologyValuesQuery == null) throw new WdkModelException("");
- 
-    String ontologyValuesSql;
+    List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
+    ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
+
+    String bgdQuerySql;
     try {
-      QueryInstance<?> instance = _ontologyValuesQuery.makeInstance(user, contextParamValues, true, 0,
+      QueryInstance<?> instance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
-      ontologyValuesSql = instance.getSql();
+      bgdQuerySql = instance.getSql();
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
-    
+
     String ontologyTermsWhereClause = "";
 
     if (ontologyTerms != null) {
-    // find ontology terms used in our set of member filters
+      // find ontology terms used in our set of member filters
       String ontologyTermsString = ontologyTerms.stream().collect(Collectors.joining("', '"));
-      ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID +
-          " IN ('"  + ontologyTermsString + "')";
+      ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID + " IN ('" +
+          ontologyTermsString + "')";
     }
 
-    String filterSelectSql = "SELECT * FROM (" + ontologyValuesSql + ") vm" +  ontologyTermsWhereClause;
+    String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQuerySql + ") bgd" + ontologyTermsWhereClause;
 
     // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
     try {
-      new SQLRunner(dataSource, filterSelectSql, getFullName() + "__values_map").executeQuery(
-          rs -> {
-            while (rs.next()) {
-              String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
-              OntologyItem ontologyItem = ontology.get(field);
-	      if (ontologyItem == null) continue;   // in the value map sql, but not in the ontology query.  skip
-              OntologyItemType type = ontologyItem.getType();
-              Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem, type.getJavaClass());
-              String valueString = value == null? "NULL" : value.toString();
-              if (!ontologyValues.containsKey(field)) ontologyValues.put(field, new HashSet<String>());
-              ontologyValues.get(field).add(valueString);
-            }
-          });
+      new SQLRunner(dataSource, filterSelectSql, getFullName() + "__values_map").executeQuery(rs -> {
+        while (rs.next()) {
+          String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
+          OntologyItem ontologyItem = ontology.get(field);
+          if (ontologyItem == null)
+            continue; // in the value map sql, but not in the ontology query. skip
+          OntologyItemType type = ontologyItem.getType();
+          Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem, type.getJavaClass());
+          String valueString = value == null ? "NULL" : value.toString();
+          if (!ontologyValues.containsKey(field))
+            ontologyValues.put(field, new HashSet<String>());
+          ontologyValues.get(field).add(valueString);
+        }
+      });
       return ontologyValues;
     }
     catch (SQLRunnerException e) {
       throw new WdkModelException(e.getCause());
     }
   }
-
    
   /**
    * this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
    * @return sql that provides a filtered set of internal IDs
    */
-  String getFilteredInternalsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery)
+  String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn)
       throws WdkModelException {
-    return getFilteredInternalsSql(user, stableValue, contextParamValues, metadataQuery, null);
+    return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, idColumn, null);
   }
 
   /**
-   * Return sql that provides a filtered set of internal IDs.    
+   * Return sql that provides a filtered set of IDs.    
    * @param user
    * @param stableValue
    * @param contextParamValues
    * @param metadataQuery
-   * @param desiredColumn the name of the internal column to return.
+   * @param idColumn  the id column in the metadata query to return
    * @param defaultFilterClause if there are no active filters, use this as a default.  if null, don't use a default filter.
    * @return
    * @throws WdkModelException
    */
-  String getFilteredInternalsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String defaultFilterClause)
+  String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn, String defaultFilterClause)
        throws WdkModelException {
 
      try {
@@ -827,7 +804,8 @@ public class FilterParamNew extends AbstractDependentParam {
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
        String metadataTableName = "md";
-       String filterSelectSql = "SELECT distinct md." + FilterParamNew.COLUMN_INTERNAL + ", md." + FilterParamNew.COLUMN_GLOBAL_INTERNAL + " FROM (" + metadataSql + ") md";
+       String filterSelectSql = "SELECT distinct md." + idColumn + " FROM (" + metadataSql + ") md";
+       
        // get the applied filters and the ontology
        List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
        Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
@@ -926,10 +904,8 @@ public class FilterParamNew extends AbstractDependentParam {
     super.setContextQuestion(question);
 
     // also set context question in the metadata & ontology queries
-    if (_metadataQuery != null)
-      _metadataQuery.setContextQuestion(question);
-    if (_ontologyQuery != null)
-      _ontologyQuery.setContextQuestion(question);
+    _metadataQuery.setContextQuestion(question);
+    _ontologyQuery.setContextQuestion(question);
   }
 
   /**
@@ -969,7 +945,7 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
-   * this param is stale if either its ontology or value map queries consumes any of the stale depended params
+   * this param is stale if either its ontology or background queries consumes any of the stale depended params
    */
   @Override
   public boolean isStale(Set<String> staleDependedParamsFullNames) {
@@ -985,8 +961,8 @@ public class FilterParamNew extends AbstractDependentParam {
         }
       }
 
-      if (_ontologyValuesQuery != null) {
-        for (Param param : _ontologyValuesQuery.getParams()) {
+      if (_backgroundQuery != null) {
+        for (Param param : _backgroundQuery.getParams()) {
           if (param.getFullName().equals(fullName)) {
             stale = true;
             break;
@@ -1016,12 +992,8 @@ public class FilterParamNew extends AbstractDependentParam {
     if (_backgroundQuery != null) {
       queries.add(_backgroundQuery);
     }
-    if (_metadataQuery != null) {
-      queries.add(_metadataQuery);
-    }
-    if (_ontologyQuery != null) {
-      queries.add(_ontologyQuery);
-    }
+    queries.add(_metadataQuery);
+    queries.add(_ontologyQuery);
     return queries;
   }
 
