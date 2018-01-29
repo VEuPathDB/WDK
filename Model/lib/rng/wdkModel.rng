@@ -829,12 +829,9 @@
         <data type="unsignedShort" />
       </attribute>
     </optional>
-
-    <!-- the sortingTable & sortingColumn will be removed, since they are no longer used -->
     <optional>
       <attribute name="sortingColumn" />
     </optional>
-
     <optional>
       <attribute name="ignoreCase">
         <data type="boolean" />
