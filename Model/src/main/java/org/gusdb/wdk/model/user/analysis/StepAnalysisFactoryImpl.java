@@ -76,7 +76,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
     startThreadPool();
-    Events.subscribe(this, StepResultsModifiedEvent.class, StepRevisedEvent.class, StepCopiedEvent.class);
+    Events.subscribe(this, StepResultsModifiedEvent.class,
+        StepRevisedEvent.class, StepCopiedEvent.class, StepImportedEvent.class);
   }
 
   /**
