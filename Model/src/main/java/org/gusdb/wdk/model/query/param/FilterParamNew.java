@@ -119,7 +119,7 @@ public class FilterParamNew extends AbstractDependentParam {
   
   // the output count of this param can be used to predict the final search results count, if all downstream
   // params (in dependency tree) have default values
-  private boolean countPredictsAnswerCount = false;
+  private boolean _countPredictsAnswerCount = false;
 
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
@@ -151,7 +151,7 @@ public class FilterParamNew extends AbstractDependentParam {
     _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
     _filterItemIdColumn = param._filterItemIdColumn;
     _recordIdColumn = param._recordIdColumn;
-    countPredictsAnswerCount = param.countPredictsAnswerCount;
+    _countPredictsAnswerCount = param._countPredictsAnswerCount;
   }
 
   @Override
@@ -277,11 +277,11 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   public boolean getCountPredictsAnswerCount() {
-    return countPredictsAnswerCount;
+    return _countPredictsAnswerCount;
   }
   
   public void setCountPredictsAnswerCount(boolean canUse) {
-    countPredictsAnswerCount = canUse;
+    _countPredictsAnswerCount = canUse;
   }
 
   @Override
