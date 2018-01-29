@@ -126,13 +126,16 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
           this.eventHandlers.addFavorite(user!, record);
         }
       }
-    },
-    {
-      label: 'Download ' + recordClass.displayName,
-      iconClassName: 'fa fa-lg fa-download',
-      href: '/record/' + recordClass.urlSegment + '/download/' +
-        record.id.map(pk => pk.value).join('/')
     });
+
+    if (recordClass.formats.some(format => format.scopes.includes('record'))) {
+      headerActions.push({
+        label: 'Download ' + recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        href: '/record/' + recordClass.urlSegment + '/download/' +
+          record.id.map(pk => pk.value).join('/')
+      });
+    }
 
     return (
       <CastRecordUI
