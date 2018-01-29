@@ -6,6 +6,10 @@
               type="org.gusdb.wdk.model.analysis.StepAnalysis"
               description="The Analysis To Display As Tile"
 %>
+<%@ attribute name="recordClassName"
+              required="false"
+              description="The parent question's RecordClassName"
+%>
 
 <!-- VAR ASSIGNMENT -->
 <c:set var="style">
