@@ -46,6 +46,7 @@ export type State = Readonly<{
   fieldStates: Readonly<Record<string, FieldState>>;
   filteredCount?: number;
   unfilteredCount?: number;
+  loadingFilteredCount: boolean;
 }>;
 
 export type Value = {
@@ -53,7 +54,8 @@ export type Value = {
 }
 
 const initialState: State = {
-  fieldStates: {}
+  fieldStates: {},
+  loadingFilteredCount: false
 }
 
 // FIXME Set loading and error statuses on ontologyTermSummaries entries
@@ -69,6 +71,7 @@ export function reduce(state: State = initialState, action: Action): State {
 
   if (SummaryCountsLoadedAction.isType(action)) return {
     ...state,
+    loadingFilteredCount: false,
     filteredCount: action.payload.filtered,
     unfilteredCount: action.payload.unfiltered
   }
@@ -86,6 +89,7 @@ export function reduce(state: State = initialState, action: Action): State {
 
   if (FiltersUpdatedAction.isType(action)) return {
     ...state,
+    loadingFilteredCount: true,
     fieldStates: handleFilterChange(state, action.payload.prevFilters, action.payload.filters)
   }
 

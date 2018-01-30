@@ -91,6 +91,7 @@ export default class ServerSideAttributeFilter extends React.Component {
             filters={filters}
             fields={fields}
             filteredDataCount={filteredDataCount}
+            loadingFilteredCount={this.props.loadingFilteredCount}
             dataCount={dataCount}
             selectedField={activeField}
             renderSelectionInfo={this.props.renderSelectionInfo}
