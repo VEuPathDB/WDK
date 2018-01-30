@@ -2,7 +2,7 @@ import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { debounce, isEqual, noop, throttle } from 'lodash';
+import { debounce, memoize, isEqual, noop, throttle } from 'lodash';
 
 import { lazy } from '../../../utils/componentUtils';
 import DateSelector from '../../DateSelector';
@@ -26,6 +26,8 @@ var Histogram = (function() {
       this.state = {
         uiState: this.getStateFromProps(props)
       };
+      this.getRange = memoize(this.getRange);
+      this.getSeriesData = memoize(this.getSeriesData);
     }
 
     componentDidMount() {
@@ -78,18 +80,29 @@ var Histogram = (function() {
 
     getStateFromProps(props) {
       // Set default yAxis max based on distribution
-      var yaxisMax = this.computeYAxisMax(props);
-      var values = props.distribution
-        .map(entry => entry.value)
-        .filter(value => value != null);
-
-      var { xaxisMin, xaxisMax } = props.uiState;
-      if (xaxisMin == null) xaxisMin = Math.min(...values);
-      if (xaxisMax == null) xaxisMax = Math.max(...values);
+      var yaxisMax = this.getYAxisMax(props);
+      var { xaxisMin, xaxisMax } = this.getXAxisMinMax(props);
       return { yaxisMax, xaxisMin, xaxisMax };
     }
 
-    computeYAxisMax(props) {
+    getRange(distribution) {
+      const values = distribution.map(entry => entry.value);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      return { min, max };
+    }
+
+    getXAxisMinMax(props) {
+      const { min, max } = this.getRange(props.distribution);
+      const barWidth = this.getBarWidth(props.distribution);
+
+      var { xaxisMin, xaxisMax } = props.uiState;
+      if (xaxisMin == null) xaxisMin = Math.floor(min - barWidth);
+      if (xaxisMax == null) xaxisMax = Math.ceil(max + barWidth);
+      return { xaxisMin, xaxisMax };
+    }
+
+    getYAxisMax(props) {
       if (props.uiState.yaxisMax != null) return props.uiState.yaxisMax;
 
       var counts = props.distribution.map(entry => entry.count);
@@ -99,6 +112,23 @@ var Histogram = (function() {
       // an outlier and use nextMax as the max
       var yaxisMax = max >= nextMax * 2 ? nextMax : max;
       return yaxisMax + yaxisMax * 0.1;
+    }
+
+    getBarWidth(distribution) {
+      const { min, max } = this.getRange(distribution);
+      return (max - min) * 0.005;
+    }
+
+    getSeriesData(distribution) {
+      return [{
+        data: distribution.map(entry => [ entry.value, entry.count ]),
+        color: '#AAAAAA'
+      },{
+        data: distribution.map(entry => [ entry.value, entry.filteredCount ]),
+        color: '#DA7272',
+        hoverable: false,
+        // points: { show: true }
+      }];
     }
 
     handleResize() {
@@ -125,9 +155,9 @@ var Histogram = (function() {
     }
 
     drawPlotSelection() {
-      var values = this.props.distribution.map(entry => entry.value);
       var currentSelection = unwrapXaxisRange(this.plot.getSelection());
       var { selectedMin, selectedMax } = this.props;
+      var { min, max } = this.getRange(this.props.distribution);
 
       // Selection already matches current state
       if (selectedMin === currentSelection.min && selectedMax === currentSelection.max) {
@@ -139,8 +169,8 @@ var Histogram = (function() {
       } else {
         this.plot.setSelection({
           xaxis: {
-            from: selectedMin === null ? Math.min(...values) : selectedMin,
-            to: selectedMax === null ? Math.max(...values) : selectedMax
+            from: selectedMin === null ? min : selectedMin,
+            to: selectedMax === null ? max : selectedMax
           }
         }, true);
       }
@@ -150,26 +180,14 @@ var Histogram = (function() {
       var { distribution, chartType, timeformat } = this.props;
       var { uiState } = this.state;
 
-      var values = distribution.map(entry => entry.value);
-      var min = Math.min(...values);
-      var max = Math.max(...values);
-
-      var barWidth = (max - min) * 0.005;
+      var barWidth = this.getBarWidth(distribution);
 
       var xaxisBaseOptions = chartType === 'date'
         ? { mode: 'time', timeformat: timeformat }
         : {};
 
 
-      var seriesData = [{
-        data: distribution.map(entry => [ entry.value, entry.count ]),
-        color: '#AAAAAA'
-      },{
-        data: distribution.map(entry => [ entry.value, entry.filteredCount ]),
-        color: '#DA7272',
-        hoverable: false,
-        // points: { show: true }
-      }];
+      var seriesData = this.getSeriesData(distribution);
 
       var plotOptions = {
         series: {
@@ -182,9 +200,9 @@ var Histogram = (function() {
           }
         },
         xaxis: Object.assign({
+          tickLength: 0,
           min: uiState.xaxisMin,
-          max: uiState.xaxisMax,
-          tickLength: 0
+          max: uiState.xaxisMax
         }, xaxisBaseOptions),
         yaxis: {
           min: 0,
@@ -259,6 +277,7 @@ var Histogram = (function() {
 
     updatePlotScale(partialUiState) {
       const { yaxisMax, xaxisMin, xaxisMax } = partialUiState;
+      const xaxisMargin = this.getBarWidth(this.props.distribution);
 
       if (yaxisMax == null && xaxisMin == null && xaxisMax == null) return;
 
@@ -303,14 +322,15 @@ var Histogram = (function() {
     render() {
       var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
       var { yaxisMax, xaxisMin, xaxisMax } = this.state.uiState;
+      var barWidth = this.getBarWidth(distribution);
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
       var countsMax = Math.max(...counts);
 
-      var values = distribution.map(entry => entry.value).filter(value => value != null);
-      var valuesMin = Math.min(...values);
-      var valuesMax = Math.max(...values);
+      var values = distribution.map(entry => entry.value);
+      var valuesMin = Math.floor(Math.min(...values) - barWidth);
+      var valuesMax = Math.ceil(Math.max(...values) + barWidth);
 
       var xaxisMinSelector = chartType === 'date' ? (
         <DateSelector
