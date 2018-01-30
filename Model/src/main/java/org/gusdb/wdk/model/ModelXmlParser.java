@@ -797,7 +797,7 @@ public class ModelXmlParser extends XmlParser {
     configureParamContent(digester, path, EnumParamSuggestion.class);
 
     // filterParamNew
-    path = "wdkModel/paramSet/filterParamNew";
+    path = "wdkModel/paramSet/filterParam";
     configureNode(digester, path, FilterParamNew.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
 
