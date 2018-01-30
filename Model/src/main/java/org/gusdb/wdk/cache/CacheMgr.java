@@ -7,7 +7,6 @@ import java.util.Map;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.param.FilterParam.MetadataCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyCache;
@@ -30,8 +29,7 @@ public class CacheMgr {
   private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   private final StepCache _stepCache = new StepCache();
   private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
-  private final MetadataCache _metadataCache = new MetadataCache();
-  private final MetadataCache _metadataSpecCache = new MetadataCache();
+
   private final ItemCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new ItemCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
@@ -42,8 +40,6 @@ public class CacheMgr {
       .put("Filter Size Cache", _filterSizeCache.getCache())
       .put("Step Cache", _stepCache)
       .put("Vocab Instance Cache", _vocabCache)
-      .put("FilterParam Metadata Cache", _metadataCache)
-      .put("FilterParam MetadataSpec Cache", _metadataSpecCache)
       .put("Dynamic Attribute Cache", _attributeMetaQueryCache)
       .put("FilterParamNew Metadata Cache", _metadataNewCache)
       .put("FilterParamNew Ontology Cache", _filterParamNewCache)
@@ -55,8 +51,6 @@ public class CacheMgr {
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
   public StepCache getStepCache() { return _stepCache; }
   public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
-  public MetadataCache getMetadataCache() { return _metadataCache; }
-  public MetadataCache getOntologyCache() { return _metadataSpecCache; }
   public ItemCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
