@@ -60,12 +60,6 @@
               </div>
             </label>
               <c:choose>
-                  <c:when test="${paramType eq 'FilterParam'}">
-                      <div class="param-control" id="${qP.name}aaa">
-                        <imp:filterParamInput qp="${qP}" />
-                        ${visibleHelp}
-                      </div>
-                  </c:when>
                   <c:when test="${paramType eq 'FilterParamNew'}">
                       <div class="param-control" id="${qP.name}aaa">
                         <imp:filterParamNewInput qp="${qP}"/>
