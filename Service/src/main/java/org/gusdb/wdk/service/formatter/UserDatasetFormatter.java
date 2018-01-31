@@ -130,7 +130,7 @@ public class UserDatasetFormatter {
     }
     json.put("datafiles", filesJson);
     
-    json.put("ancillaryData",datasetInfo.getAncillaryData());
+    json.put("trackSpecificData",datasetInfo.getTrackSpecificData());
 
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();

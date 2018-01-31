@@ -48,7 +48,9 @@ public abstract class UserDatasetTypeHandler {
 
   public abstract String[] getRelevantQuestionNames();
   
-  public abstract String getAncillaryData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException;
+  public String getTrackSpecificData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
+    return "";	  
+  }
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
