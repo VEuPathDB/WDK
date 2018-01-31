@@ -51,6 +51,7 @@ var exposeModules = [
   { module: 'react-dom',         expose : 'ReactDOM' },
   { module: 'react-router/es',   expose : 'ReactRouter' },
   { module: 'mesa/dist/es6',     expose : 'Mesa' },
+  { module: 'rxjs',              expose : 'Rx' }
 ];
 
 var exposeLoaders = exposeModules.map(function(entry) {
