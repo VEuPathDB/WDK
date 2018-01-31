@@ -27,7 +27,7 @@ public class UserDatasetInfo {
   private final int _ownerQuota;
   private final List<String> _relevantQuestionNames;
   private final List<UserDatasetShareUser> _shares;
-  private final String _ancillaryData;
+  private final String _trackSpecificData;
   
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
       UserDatasetSession session, final UserFactory userFactory, WdkModel wdkModel) {
@@ -42,7 +42,7 @@ public class UserDatasetInfo {
       _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
           new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
       UserDatasetTypeHandler handler = store.getTypeHandler(dataset.getType());
-      _ancillaryData = handler.getAncillaryData(wdkModel, dataset);
+      _trackSpecificData = handler.getTrackSpecificData(wdkModel, dataset);
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Could not collect user dataset information for dataset ID " + dataset.getUserDatasetId(), e);
@@ -83,8 +83,8 @@ public class UserDatasetInfo {
     return _relevantQuestionNames;
   }
   
-  public String getAncillaryData() {
-    return _ancillaryData;
+  public String getTrackSpecificData() {
+    return _trackSpecificData;
   }
 
   public List<UserDatasetShareUser> getShares() {

@@ -44,13 +44,6 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
     String[] empty = {};
     return empty;
   }
-  
-  @Override
-  public String getAncillaryData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
-	return "";
-  }
-
-
 
 
 }
