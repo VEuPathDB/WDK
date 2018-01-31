@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -46,6 +47,8 @@ public abstract class UserDatasetTypeHandler {
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
   public abstract String[] getRelevantQuestionNames();
+  
+  public abstract String getAncillaryData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException;
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
@@ -136,4 +139,5 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     }
   }
+  
 }
