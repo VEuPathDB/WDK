@@ -6,6 +6,9 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+
 public class ExampleTypeHandler extends UserDatasetTypeHandler {
 
   @Override
@@ -40,6 +43,11 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
   public String[] getRelevantQuestionNames() {
     String[] empty = {};
     return empty;
+  }
+  
+  @Override
+  public String getAncillaryData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
+	return "";
   }
 
 
