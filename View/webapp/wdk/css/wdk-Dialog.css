@@ -18,6 +18,7 @@ body.wdk-ModalOpen {
 
 .wdk-Dialog__modal {
   max-height: calc(100vh - 220px);
+  max-height: 100vh;
 }
 
 .wdk-Dialog__modal:before {
@@ -32,7 +33,7 @@ body.wdk-ModalOpen {
 
 .wdk-DialogPopupWrapper {
   position: fixed;
-  top: 200px;
+  top: 30%;
   z-index: 100;
   left: 50vw;
 }
@@ -63,6 +64,8 @@ body.wdk-ModalOpen {
 }
 
 .wdk-DialogContent {
+  display: flex;
+  justify-content: center;
   position: relative;
   background: white;
   padding: .8em;

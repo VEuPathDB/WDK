@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { map, partial } from 'lodash';
 
 import { getFilterValueDisplay } from '../../../utils/FilterServiceUtils';
+import Loading from '../../Loading';
 
 /**
  * List of filters configured by the user.
@@ -46,34 +47,37 @@ export default class FilterList extends React.Component {
     return (
       <div className="filter-items-wrapper">
         {this.props.renderSelectionInfo(this.props)}
-        <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
-          {map(filters, filter => {
-            var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
-            var handleSelectClick = partial(this.handleFilterSelectClick, filter);
-            var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
-            var field = fields.get(filter.field);
-            var display = getFilterValueDisplay(field, filter);
+        &nbsp;
+        {filters.length === 0
+          ? <strong><em>&nbsp;&nbsp;No filters applied.</em></strong>
+          : <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
+            {map(filters, filter => {
+              var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
+              var handleSelectClick = partial(this.handleFilterSelectClick, filter);
+              var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
+              var field = fields.get(filter.field);
+              var display = getFilterValueDisplay(field, filter);
 
-            return (
-              <li key={filter.field} className={className}>
-                <div className="ui-corner-all">
-                  <a className="select"
-                    onClick={handleSelectClick}
-                    href={'#' + filter.field}
-                    title={display}>{field.display}</a>
-                  {/* Use String.fromCharCode to avoid conflicts with
-                      character ecoding. Other methods detailed at
-                      http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
-                      cause JSX to encode. String.fromCharCode ensures that
-                      the encoding is done in the browser */}
-                  <span className="remove"
-                    onClick={handleRemoveClick}
-                    title="remove restriction">{String.fromCharCode(215)}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+              return (
+                <li key={filter.field} className={className}>
+                  <div className="ui-corner-all">
+                    <a className="select"
+                      onClick={handleSelectClick}
+                      href={'#' + filter.field}
+                      title={display}>{field.display}</a>
+                    {/* Use String.fromCharCode to avoid conflicts with
+                        character ecoding. Other methods detailed at
+                        http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
+                        cause JSX to encode. String.fromCharCode ensures that
+                        the encoding is done in the browser */}
+                    <span className="remove"
+                      onClick={handleRemoveClick}
+                      title="remove restriction">{String.fromCharCode(215)}</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>}
       </div>
     );
   }
@@ -91,12 +95,15 @@ FilterList.propTypes = {
 
 FilterList.defaultProps = {
   renderSelectionInfo(parentProps) {
-    const { filteredDataCount, dataCount } = parentProps;
-    return(
-      <span style={{ fontWeight: 'bold', padding: '.6em 0 .8em 0', display: 'inline-block' }}>
-        {filteredDataCount} of {dataCount} selected
-      </span>
-    );
+    const { filteredDataCount, dataCount, filters, loadingFilteredCount } = parentProps;
+    const filteredCount = loadingFilteredCount
+      ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
+        , <span className="sr-only">Loading...</span> ]
+      : filteredDataCount;
+
+    return dataCount == null ? null
+      : filters.length === 0 ? <strong>{dataCount} total</strong>
+      : <strong>{filteredCount} of {dataCount} selected</strong>;
   }
 };
 

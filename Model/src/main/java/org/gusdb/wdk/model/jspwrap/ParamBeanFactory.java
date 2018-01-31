@@ -7,7 +7,6 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DateParam;
 import org.gusdb.wdk.model.query.param.DateRangeParam;
-import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.NumberRangeParam;
@@ -25,10 +24,7 @@ public class ParamBeanFactory {
       // FIXME - need to get the actual user in the future.
       user = new UserBean(wdkModel.getSystemUser());
     }
-    if (param instanceof FilterParam) {
-      bean = (ParamBean<T>) new FilterParamBean((FilterParam)param);
-    }
-    else if (param instanceof FilterParamNew) {
+   if (param instanceof FilterParamNew) {
       bean = (ParamBean<T>) new FilterParamNewBean((FilterParamNew)param);
     }
     else if (param instanceof AbstractEnumParam) {

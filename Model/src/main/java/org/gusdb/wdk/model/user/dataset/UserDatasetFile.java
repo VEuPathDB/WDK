@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -18,7 +19,7 @@ public abstract class UserDatasetFile {
     this.userDatasetId = userDatasetId;
   }
   
-  protected Path getFilePath() {
+  public Path getFilePath() {
     return filePath;
   }
 
@@ -26,7 +27,7 @@ public abstract class UserDatasetFile {
    * Get the contents of the file as a stream
    * @return
    */
-  public abstract InputStream getFileContents(UserDatasetSession dsSession) throws WdkModelException;
+  public abstract InputStream getFileContents(UserDatasetSession dsSession, Path path) throws WdkModelException;
   
   /**
    * Get the size of the file

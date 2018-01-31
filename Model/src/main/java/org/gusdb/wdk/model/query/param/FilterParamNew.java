@@ -730,10 +730,14 @@ public class FilterParamNew extends AbstractDependentParam {
     ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
 
     String bgdQuerySql;
+    String ontologyQuerySql;
     try {
       QueryInstance<?> instance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
       bgdQuerySql = instance.getSql();
+      instance = _ontologyQuery.makeInstance(user, contextParamValues, true, 0,
+          new HashMap<String, String>());
+      ontologyQuerySql = instance.getSql();
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
@@ -745,10 +749,13 @@ public class FilterParamNew extends AbstractDependentParam {
       // find ontology terms used in our set of member filters
       String ontologyTermsString = ontologyTerms.stream().collect(Collectors.joining("', '"));
       ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID + " IN ('" +
-          ontologyTermsString + "')";
+          ontologyTermsString + "')"; 
     }
+    
+    String bgdQueryNotIsRangeSql = "select bgd.* from (" + bgdQuerySql + ") bgd, (" + ontologyQuerySql + ") onto where bgd." + COLUMN_ONTOLOGY_ID + " = onto." + COLUMN_ONTOLOGY_ID + " and onto." + COLUMN_IS_RANGE + " = 0";
+    
 
-    String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQuerySql + ") bgd" + ontologyTermsWhereClause;
+    String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQueryNotIsRangeSql + ") bgd" + ontologyTermsWhereClause;
 
     // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
