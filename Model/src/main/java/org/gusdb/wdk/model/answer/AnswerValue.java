@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.answer;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
@@ -500,8 +501,9 @@ public class AnswerValue {
       sql.append("idq.").append(column);
     }
 
-    LOG.debug("sorted id sql constructed.");
-    return sql.toString();
+    String outputSql = sql.toString();
+    LOG.debug("Constructed the following sorted ID SQL: " + NL + outputSql);
+    return outputSql;
   }
 
   public String getPagedIdSql() throws WdkModelException, WdkUserException {
