@@ -129,6 +129,9 @@ type TreeLinksProps = {
   showDefaultLink: boolean;
   selectAll: TreeLinkHandler;
   selectNone: TreeLinkHandler;
+  addVisible: TreeLinkHandler;
+  removeVisible: TreeLinkHandler;
+  selectOnlyVisible: TreeLinkHandler;
   expandAll: TreeLinkHandler;
   expandNone: TreeLinkHandler;
   selectCurrentList: TreeLinkHandler;
@@ -143,18 +146,28 @@ let TreeLinks: StatelessComponent<TreeLinksProps> = props => {
   let {
     showSelectionLinks, showExpansionLinks, showCurrentLink, showDefaultLink,
     selectAll, selectNone, expandAll, expandNone, selectCurrentList, selectDefaultList,
-    isFiltered
+    addVisible, removeVisible, selectOnlyVisible, isFiltered
   } = props;
 
-  let quantifier = isFiltered ? 'these' : 'all';
   return (
     <div className="wdk-CheckboxTreeLinks">
+
+      { isFiltered && showSelectionLinks &&
+        <div>
+          <a href="#" onClick={addVisible}>add these</a>
+          <Bar/>
+          <a href="#" onClick={removeVisible}>clear these</a>
+          <Bar/>
+          <a href="#" onClick={selectOnlyVisible}>select only these</a>
+        </div>
+      }
+
       <div>
         { showSelectionLinks &&
           <span>
-            <a href="#" onClick={selectAll}>select {quantifier}</a>
+            <a href="#" onClick={selectAll}>select all</a>
             <Bar/>
-            <a href="#" onClick={selectNone}>clear {quantifier}</a>
+            <a href="#" onClick={selectNone}>clear all</a>
           </span> }
 
         { showExpansionLinks &&
@@ -472,6 +485,9 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
   expandNone: TreeLinkHandler;
   selectAll: TreeLinkHandler;
   selectNone: TreeLinkHandler;
+  addVisible: TreeLinkHandler;
+  removeVisible: TreeLinkHandler;
+  selectOnlyVisible: TreeLinkHandler;
   selectCurrentList: TreeLinkHandler;
   selectDefaultList: TreeLinkHandler;
 
@@ -501,19 +517,33 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
 
     // define event handlers related to selection
 
-    // add visible nodes to selectedList
+    // add all nodes to selectedList
     this.selectAll = createSelector(this, () =>
+      getLeaves(this.props.tree, getNodeChildren).map(getNodeId))
+
+    // remove all nodes from selectedList
+    this.selectNone = createSelector(this, () => [])
+
+    // add visible nodes to selectedList
+    this.addVisible = createSelector(this, () =>
       Seq.from(this.props.selectedList)
         .concat(getLeaves(this.props.tree, getNodeChildren)
-          .map(node => getNodeId(node))
+          .map(getNodeId)
           .filter(this.state.isLeafVisible))
         .uniq()
         .toArray());
 
+    // set selected list to only visible nodes
+    this.selectOnlyVisible = createSelector(this, () =>
+      getLeaves(this.props.tree, getNodeChildren)
+      .map(getNodeId)
+      .filter(this.state.isLeafVisible));
+
     // remove visible nodes from selectedList
-    this.selectNone = createSelector(this, () =>
+    this.removeVisible = createSelector(this, () =>
       this.props.selectedList
         .filter(nodeId => !this.state.isLeafVisible(nodeId)));
+
 
     this.selectCurrentList = createSelector(this, () => this.props.currentList);
     this.selectDefaultList = createSelector(this, () => this.props.defaultList);
@@ -621,6 +651,9 @@ export default class CheckboxTree<T> extends Component<Props<T>, State<T>> {
         isFiltered={Boolean(searchTerm)}
         selectAll={this.selectAll}
         selectNone={this.selectNone}
+        addVisible={this.addVisible}
+        selectOnlyVisible={this.selectOnlyVisible}
+        removeVisible={this.removeVisible}
         expandAll={this.expandAll}
         expandNone={this.expandNone}
         selectCurrentList={this.selectCurrentList}
