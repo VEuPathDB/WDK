@@ -491,7 +491,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String bgdSql;
     try {
       CompleteValidStableValues bgdValues = ValidStableValuesFactory.createFromSupersetValues(
-          user, new WriteableStableValues(bgdQuery, contextParamValues));
+          user, new WriteableStableValues(_backgroundQuery, contextParamValues));
       QueryInstance<?> queryInstance = _backgroundQuery.makeInstance(user, bgdValues);
       bgdSql = queryInstance.getSql();
     }

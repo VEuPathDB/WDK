@@ -39,7 +39,8 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
   @Override
   public Map<String, OntologyItem> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
-      QueryInstance<?> instance = _paramValues.getQuery().makeInstance(_user, _paramValues);
+      Query query = _paramValues.getQuery();
+      QueryInstance<?> instance = query.makeInstance(_user, _paramValues);
       Map<String, OntologyItem> ontologyItemMap = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
@@ -59,7 +60,8 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
           if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
 
           if (ontologyItemMap.containsKey(oItem.getOntologyId()))
-            throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() + " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " + oItem.getOntologyId());
+            throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() +
+                " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " + oItem.getOntologyId());
  
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
         }

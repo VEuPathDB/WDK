@@ -579,13 +579,13 @@ public class AnswerValue {
   private static String applyAnswerParams(String innerSql, Collection<Param> answerParams, CompleteValidStableValues paramStableValues) {
 
     // gather list of answer params for this question
-    List<AnswerParam> answerParams = AnswerParam.getExposedParams(answerParams);
+    List<AnswerParam> exposedParams = AnswerParam.getExposedParams(answerParams);
 
     // if no answer params, then return incoming SQL
-    if (cacheableParams.isEmpty()) return innerSql;
+    if (exposedParams.isEmpty()) return innerSql;
 
     // build list of columns to add, then join into string
-    String extraCols = join(mapToList(cacheableParams, param ->
+    String extraCols = join(mapToList(exposedParams, param ->
       ", " + paramStableValues.get(param.getName()) + " as " + param.getName()), "");
 
     // return wrapped innerSql including new columns
