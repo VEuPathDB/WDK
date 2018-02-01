@@ -1,21 +1,24 @@
-// Collection param reducers and action creators into an object that is consumed by LegacyParamController
 import * as React from 'react';
 
 import { DispatchAction, ActionThunk, ActionCreatorRecord, combineEpics, Epic } from '../utils/ActionCreatorUtils';
 import { Action } from '../dispatcher/Dispatcher';
 import { Parameter, ParameterValues } from '../utils/WdkModel';
+import { Seq } from '../utils/IterableUtils';
+import { Context, isContextType, isPropsType, ParamModule, Props } from './Utils';
 
 import * as FilterParamNew from './FilterParamNew';
 import * as EnumParam from './EnumParam';
-import { Seq } from '../utils/IterableUtils';
-import { Context, isContextType, isPropsType, ParamModule, Props } from './Utils';
+import * as NumberParam from './NumberParam';
+import * as NumberRangeParam from './NumberRangeParam';
 
 
 // Param modules
 // -------------
 const paramModules: ParamModule<Parameter, any>[] = [
   EnumParam,
-  FilterParamNew
+  FilterParamNew,
+  NumberParam,
+  NumberRangeParam
 ];
 
 

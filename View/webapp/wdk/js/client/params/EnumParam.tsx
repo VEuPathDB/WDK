@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Action } from '../dispatcher/Dispatcher';
 import { EnumParam, Parameter } from '../utils/WdkModel';
-import List from './EnumParam/ListEnumParam';
+import * as List from './EnumParam/ListEnumParam';
 import * as TreeBox from './EnumParam/TreeBoxEnumParam';
 import { isPropsType, Props } from './Utils';
 

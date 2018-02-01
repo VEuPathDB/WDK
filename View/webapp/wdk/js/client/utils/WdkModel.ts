@@ -93,7 +93,33 @@ export interface TreeBoxEnumParam extends EnumParam {
   vocabulary: TreeBoxVocabNode;
 }
 
-export type Parameter = StringParam | EnumParam | FilterParamNew;
+export interface NumberParam extends ParameterBase {
+  type: 'NumberParam';
+  min: number;
+  max: number;
+  step: number;
+}
+
+export interface NumberRangeParam extends ParameterBase {
+  type: 'NumberRangeParam';
+  min: number;
+  max: number;
+  step: number;
+}
+
+export interface DateParam extends ParameterBase {
+  type: 'DateParam';
+  minDate: string;
+  maxDate: string;
+}
+
+export interface DateRangeParam extends ParameterBase {
+  type: 'DateRangeParam';
+  minDate: string;
+  maxDate: string;
+}
+
+export type Parameter = StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
 
 export interface ParameterGroup {
   description: string;

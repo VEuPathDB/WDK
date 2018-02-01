@@ -3,18 +3,44 @@ import PropTypes from 'prop-types';
 
 import NumberSelector from './NumberSelector';
 
+type Value = {
+  min: number;
+  max: number;
+}
+
+type Props = {
+  start: number;
+  end: number;
+  value: Value;
+  onChange: (value: Value) => void;
+  step: number;
+};
+
+
 /**
  * Widget for selecting a numeric range.
  */
-class NumberRangeSelector extends React.Component {
-  constructor (props) {
+class NumberRangeSelector extends React.Component<Props> {
+
+  static propTypes = {
+    start: PropTypes.number,
+    end: PropTypes.number,
+    value: PropTypes.shape({
+      min: PropTypes.number,
+      max: PropTypes.number
+    }),
+    onChange: PropTypes.func,
+    step: PropTypes.number
+  };
+
+  constructor (props: Props) {
     super(props);
 
     this.handleMinChange = this.handleMinChange.bind(this);
     this.handleMaxChange = this.handleMaxChange.bind(this);
   }
 
-  handleMinChange (min) {
+  handleMinChange (min: number) {
     let { value, onChange } = this.props;
     let { max } = value;
     max = max * 1;
@@ -24,7 +50,7 @@ class NumberRangeSelector extends React.Component {
     if (onChange) onChange({ min, max });
   }
 
-  handleMaxChange (max) {
+  handleMaxChange (max: number) {
     let { value, onChange } = this.props;
     let { min } = value;
     max = max * 1;
@@ -48,16 +74,5 @@ class NumberRangeSelector extends React.Component {
     );
   }
 }
-
-NumberRangeSelector.propTypes = {
-  start: PropTypes.number,
-  end: PropTypes.number,
-  value: PropTypes.shape({
-    min: PropTypes.number,
-    max: PropTypes.number
-  }),
-  onChange: PropTypes.func,
-  step: PropTypes.number
-};
 
 export default NumberRangeSelector;
