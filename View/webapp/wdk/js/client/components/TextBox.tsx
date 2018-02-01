@@ -5,10 +5,15 @@
  * modified to render a password input by passing a type="password" property.
  */
 
+import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let TextBox = function(props) {
-  let onChange = function(event) {
+type Props = React.InputHTMLAttributes<HTMLInputElement> & {
+  onChange: (value: string) => void;
+}
+
+let TextBox = function(props: Props) {
+  let onChange = function(event: React.ChangeEvent<HTMLInputElement>) {
     props.onChange(event.target.value);
   };
   return ( <input type="text" {...props} onChange={onChange}/> );
