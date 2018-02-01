@@ -1,6 +1,6 @@
 import React from 'react';
 
-import DateUtils from '../utils/DateUtils';
+import * as DateUtils from '../utils/DateUtils';
 import DateSelector from './DateSelector';
 
 class DateRangeSelector extends React.Component {

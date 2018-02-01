@@ -1,5 +1,5 @@
 import React from 'react';
-import DateUtils from '../utils/DateUtils';
+import * as DateUtils from '../utils/DateUtils';
 
 import TextBox from './TextBox';
 import Select from './SingleSelect';
@@ -11,7 +11,7 @@ class DateSelector extends React.Component {
 
     let { year, month, day } = DateUtils.isValidDateString(value)
       ? DateUtils.parseDate(value)
-      : DateUtils.getDefaults();
+      : { year: currentYear, month: 1, day: 1 };
 
     start = DateUtils.isValidDateString(start)
       ? DateUtils.parseDate(start)
@@ -132,6 +132,6 @@ class DateSelector extends React.Component {
       </div>
     );
   };
-}
+};
 
 export default DateSelector;
