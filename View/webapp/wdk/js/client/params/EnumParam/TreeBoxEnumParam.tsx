@@ -106,7 +106,6 @@ export function reduce(state: State, action: Action): State {
     ParamInitAction.isType(action) &&
     isType(action.payload.parameter)
   ) return {
-    // FIXME Use depthExpanded instead
     expandedList: findBranchTermsUpToDepth(
       action.payload.parameter.vocabulary,
       action.payload.parameter.depthExpanded
@@ -137,11 +136,12 @@ export function TreeBoxEnumParam(props: TreeBoxProps) {
   const selectedNodes = props.value.split(/\s*,\s*/);
   const selectedLeaves = removeBranches(tree, selectedNodes);
   const selectedCount = props.parameter.countOnlyLeaves
-  ? selectedLeaves.length
-  : selectedNodes.length;
+    ? selectedLeaves.length
+    : selectedNodes.length;
+
   return (
     <div className="wdk-TreeBoxParam">
-      <SelectionInfo parameter={props.parameter} selectedCount={selectedCount}/>
+      <SelectionInfo parameter={props.parameter} selectedCount={selectedCount} alwaysShowCount />
       <CheckboxTree
         isSelectable={true}
         isMultiPick={props.parameter.multiPick}
