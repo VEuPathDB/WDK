@@ -5,7 +5,6 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DateParam;
 import org.gusdb.wdk.model.query.param.DateRangeParam;
-import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.NumberRangeParam;
@@ -16,9 +15,6 @@ public class ParamFormatterFactory {
 
   public static ParamFormatter<?> getFormatter(Param param) throws IllegalArgumentException {
 
-    if (param instanceof FilterParam) {
-      return new FilterParamFormatter((FilterParam)param);
-    }
     if (param instanceof FilterParamNew) {
       return new FilterParamNewFormatter((FilterParamNew)param);
     }

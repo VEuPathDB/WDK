@@ -1,10 +1,6 @@
 /* global wdk */
 import _ from 'lodash';
-import * as ReactDOM from 'react-dom';
-import LazyFilterService from '../client/utils/LazyFilterService';
-import { getTree } from '../client/utils/FilterServiceUtils';
 import { Seq } from '../client/utils/IterableUtils';
-import AttributeFilter from '../client/components/AttributeFilter';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
@@ -19,14 +15,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
     attachLoadingListener(element);
     initDependentParamHandlers(element);
     initTypeAhead(element);
-    initFilterParam(element);
     initLegacyParamControllers(element);
-
-
-    if (element.find('[data-type="filter-param"],[data-type="filter-param-new"]').length > 0) {
-      // add class to move prompts to left
-      element.addClass('move-left');
-    }
 
 
     // need to trigger the click event so that the stage is set correctly on revise.
@@ -236,189 +225,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
   }
 
-  //==============================================================================
-  function initFilterParam(element) {
-    var form = element.closest('form');
-    var filterParams = element.find('[data-type="filter-param"]');
-    var keepPreviousValue = element.closest('form').is('.is-revise');
-
-    filterParams.each(function(i, node) {
-      var $param = $(node);
-      if ($param.hasClass('dependentParam')) {
-        updateDependentParam($param, element, keepPreviousValue);
-      }
-      else {
-        var questionName = form.find('input[name="questionFullName"]').val();
-        var paramName = $param.attr('name');
-        var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
-
-        getParamJson($param, sendReqUrl)
-        .then(createFilterParam.bind(null, $param, questionName, {}));
-      }
-
-      // add loading event handling
-      $param.on(PARAM_LOADING_EVENT, (event, isLoading) => $param.find('.loading').toggle(isLoading));
-    });
-  }
-
-  //==============================================================================
-  function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
-    var filterParamContainer = $param.find('.filter-param-container')[0];
-    var $data = $param.data();
-    var $loading = $param.find('.loading').remove();
-    $param.one(PARAM_DESTROY_EVENT, () => {
-      ReactDOM.unmountComponentAtNode(filterParamContainer)
-      $param.append($loading);
-    });
-
-    var form = $param.closest('form');
-    var title = $data.title;
-    var filterDataTypeDisplayName = $data.filterDataTypeDisplayName;
-    // var isAllowEmpty = $param.data('isAllowEmpty');
-    var minSelectedCount = $data.minSelectedCount;
-    var maxSelectedCount = $data.maxSelectedCount;
-    var name = $param.attr('name');
-    console.time('intialize render :: ' + name);
-    // var defaultColumns = $data.defaultColumns ? $data.defaultColumns.split(/\s+/) : [];
-    var trimMetadataTerms = $data.trimMetadataTerms;
-    var input = $param.find('input');
-    var previousValue;
-
-    // get previous values
-    if (keepPreviousValue) {
-      try {
-        previousValue = JSON.parse(input.val());
-        if (!( _.isArray(previousValue.filters) &&
-               _.isArray(previousValue.values)  &&
-               _.isArray(previousValue.ignored) )) {
-          previousValue = undefined;
-          throw new Error('Previous value is malformed.');
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-    }
-
-    var fields = new Map(Seq.from(filterData.metadataSpec || [])
-      .filter(field => field.term != null)
-      .map(field =>
-        [field.term, Object.assign({ display: field.term }, field)]));
-
-    var [ validFilters, invalidFilters ] = _(_.get(previousValue, 'filters'))
-      .partition(filter => fields.has(filter.field))
-      .value();
-
-    var filterParamOptions = { title, filterDataTypeDisplayName, trimMetadataTerms };
-
-    var filterService = new LazyFilterService({
-      name,
-      fields,
-      data: filterData.values,
-      questionName,
-      dependedValue,
-      metadataUrl: wdk.webappUrl('getMetadata.do')
-    });
-
-    filterService.updateFilters(validFilters);
-    filterService.updateIgnoredData(_.get(previousValue, 'ignoredData', []));
-    filterService.selectField(_.get(validFilters, '0.field', _.get(findLeaf(getTree(fields.values())), 'term')));
-
-    // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
-    // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
-    $param.data('filterService', filterService);
-    $param.trigger('filterParamDidMount');
-
-    form.on('submit', function(e) {
-      var filteredData = JSON.parse(input.val()).values;
-      var filteredDataCount = filteredData.length;
-      var min = minSelectedCount === -1 ? 1 : minSelectedCount;
-      var max = maxSelectedCount === -1 ? Infinity : minSelectedCount;
-      var condition = max === Infinity
-        ? 'at least <b>' + min + '</b>'
-        : 'between <b>' + min + '</b> and <b>' + max + '</b>';
-
-      //if (!isAllowEmpty && filteredDataCount === 0) {
-      if (filteredDataCount < min || filteredDataCount > max) {
-        e.preventDefault();
-        $param.find('.ui-state-error').remove();
-        $param.prepend([
-          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">',
-           'You have selected <b>', filteredDataCount, '</b>', title + '.',
-           'Please select', condition, title, 'to continue.',
-           '</div>'
-        ].join(' '));
-        var sub = filterService.addListener(function() {
-          $param.find('.ui-state-error').remove();
-          sub.remove();
-        });
-        $('html, body').animate({ scrollTop: $param.offset().top - 100 }, 200);
-      }
-    });
-
-    function updateInputFromFilterService({ triggerChange = true } = {}) {
-      var ignored = filterService.data.filter(datum => datum.isIgnored);
-      var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
-      var prevValue = input.val();
-      var nextValue = JSON.stringify({
-        values: _.map(filteredData, entry => entry.term),
-        ignored: _.map(ignored, entry => entry.term),
-        filters: filterService.filters.map(filter => _.omit(filter, 'selection'))
-      });
-
-      // trigger loading event on $param
-      triggerLoading($param, filterService.isLoading);
-      renderFilterParam(filterService, filterParamOptions, invalidFilters, filterParamContainer);
-
-      if (prevValue === nextValue) return;
-
-      // set the value
-      input.val(nextValue);
-
-      // trigger change event
-      if (triggerChange) input.change();
-    }
-
-    updateInputFromFilterService({ triggerChange: false });
-    filterService.addListener(updateInputFromFilterService);
-
-    console.timeEnd('intialize render :: ' + name);
-
-    /**
-     * Find first leaf of tree
-     * @param {TreeNode<Field>} fields
-     * @param {string?} parentTerm
-     */
-    function findLeaf(node) {
-      return node.children.length === 0 ? node.field : findLeaf(node.children[0]);
-    }
-  }
-
-  function renderFilterParam(filterService, options, invalidFilters, el) {
-    let state = filterService.getState();
-    ReactDOM.render(
-      <AttributeFilter
-        displayName={options.filterDataTypeDisplayName || options.title}
-
-        fields={state.fields}
-        filters={state.filters}
-        dataCount={state.data.length}
-        filteredData={state.filteredData}
-        ignoredData={state.ignoredData}
-        columns={state.columns}
-        activeField={state.selectedField && state.fields.get(state.selectedField)}
-        activeFieldSummary={state.distributionMap[state.selectedField]}
-        fieldMetadataMap={state.fieldMetadataMap}
-
-        isLoading={state.isLoading}
-        invalidFilters={invalidFilters}
-
-        onActiveFieldChange={filterService.selectField}
-        onFiltersChange={filterService.updateFilters}
-        onColumnsChange={filterService.updateColumns}
-        onIgnoredDataChange={filterService.updateIgnoredData}
-      />, el);
-  }
-
   function createFilteredSelect(vocab, paramName, $param, keepPreviousValue) {
     var $input = $param.find('input[name="value(' + paramName + ')"]'),
         format = function(item) { return item.display; },
@@ -562,19 +368,6 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
           .find('input').removeAttr('disabled');
       });
 
-    } else if (dependentParam.is('[data-type="filter-param"]')) {
-
-      // Hide current param and show loading
-      dependentParam
-        .find('.filter-param').hide();
-
-      sendReqUrl = sendReqUrl + '&json=true';
-      xhr = $.getJSON(sendReqUrl, function(data) {
-        createFilterParam(dependentParam, questionName, dependedValues, data, keepPreviousValue);
-        dependentParam
-          .find('input').removeAttr('disabled');
-        element.find(".param[name='" + paramName + "']").attr("ready", "");
-      });
     } else {
       xhr = $.ajax({
         url: sendReqUrl,

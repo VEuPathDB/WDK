@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +87,7 @@ public class LinkAttributeField extends DerivedAttributeField {
 
   @Override
   protected Collection<AttributeField> getDependencies() throws WdkModelException {
-    Map<String, AttributeField> dependents = new HashMap<>();
+    Map<String, AttributeField> dependents = new LinkedHashMap<>();
     if (_displayText != null) dependents.putAll(parseFields(_displayText));
     if (_url != null) dependents.putAll(parseFields(_url));
     return dependents.values();

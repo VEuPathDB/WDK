@@ -37,7 +37,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.CacheMgr;
-import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
@@ -1296,7 +1296,7 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
 
-    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
+    Events.triggerAndWait(new StepImportedEvent(oldStep, newStep), new WdkModelException(
         "Unable to execute all operations subsequent to step copy."));
 
     // create mapping from old step to new step
@@ -2043,40 +2043,40 @@ public class StepFactory {
     try {
       String stepIdSql = selectStepAndParents(step.getStepId());
       String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_ESTIMATE_SIZE + " = -1 " +
-	               " WHERE step_id IN (" + stepIdSql + ")";
+                   " WHERE step_id IN (" + stepIdSql + ")";
       SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
   }
-  
+
   public void setStrategyIdForThisAndUpstreamSteps(Step step, Long strategyId) throws WdkModelException {
     try {
       String stepIdSql = selectStepAndChildren(step.getStepId());
-    	  String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
-	               " WHERE step_id IN (" + stepIdSql + ")";
+      String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
+                   " WHERE step_id IN (" + stepIdSql + ")";
       SqlUtils.executeUpdate(_userDbDs, sql, "wdk-set-strategy-id-on-steps");
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
   }
-  
+
   public void patchAnswerParams(Step step) throws WdkModelException {
-	Param[] params = step.getQuestion().getParams();
-	boolean leftParamEmpty = true;
-	for(Param param : params) {
-	  if(param instanceof AnswerParam) {
-		if(leftParamEmpty) {
-		  step.setParamValue(param.getName(), Long.toString(step.getPreviousStepId()));
-		  leftParamEmpty = false;
-		}
-		else {
-		  step.setParamValue(param.getName(), Long.toString(step.getChildStepId()));
-		}
-	  }
-	}
-	step.saveParamFilters();
+    Param[] params = step.getQuestion().getParams();
+    boolean leftParamEmpty = true;
+    for(Param param : params) {
+      if(param instanceof AnswerParam) {
+        if(leftParamEmpty) {
+          step.setParamValue(param.getName(), Long.toString(step.getPreviousStepId()));
+          leftParamEmpty = false;
+        }
+        else {
+          step.setParamValue(param.getName(), Long.toString(step.getChildStepId()));
+        }
+      }
+    }
+    step.saveParamFilters();
   }
 }

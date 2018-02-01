@@ -138,6 +138,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
           filters={filters}
           dataCount={uiState.unfilteredCount}
           filteredDataCount={uiState.filteredCount}
+          loadingFilteredCount={uiState.loadingFilteredCount}
 
           hideFilterPanel={numLeaves === 1}
           hideFieldPanel={numLeaves === 1}

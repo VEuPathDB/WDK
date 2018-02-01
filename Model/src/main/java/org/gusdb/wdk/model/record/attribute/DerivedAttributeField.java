@@ -122,7 +122,7 @@ public abstract class DerivedAttributeField extends AttributeField {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
     // check for dependency loops
-    traverseDependeny(this, new Stack<String>());
+    traverseDependency(this, new Stack<String>());
   }
 
   /**
@@ -132,7 +132,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    * @param attribute the attribute to be checked
    * @param path the path from root to the attribute (attribute is not included)
    */
-  private static void traverseDependeny(DerivedAttributeField attribute, Stack<String> path)
+  private static void traverseDependency(DerivedAttributeField attribute, Stack<String> path)
       throws WdkModelException {
     checkBranch(path, attribute);
     // add this attribute and traverse branches
@@ -143,7 +143,7 @@ public abstract class DerivedAttributeField extends AttributeField {
         checkBranch(path, dependency);
       }
       else if (dependency instanceof DerivedAttributeField) {
-        traverseDependeny((DerivedAttributeField)dependency, path);
+        traverseDependency((DerivedAttributeField)dependency, path);
       }
       else {
         throw new WdkModelException("A derived attribute can only depend on a column or another derived " +

@@ -3,7 +3,7 @@ import { bindAll, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
 import { MesaController as Mesa } from 'mesa';
 import 'mesa/dist/css/mesa.css';
 
-import { instrument, safeHtml } from '../../../utils/componentUtils';
+import { safeHtml } from '../../../utils/componentUtils';
 import RealTimeSearchBox from '../../RealTimeSearchBox';
 import Toggle from '../../Toggle';
 import FieldFilter from './FieldFilter';
@@ -420,4 +420,4 @@ class MembershipField extends React.Component {
 
 MembershipField.propTypes = FieldFilter.propTypes
 
-export default instrument(MembershipField)
+export default MembershipField

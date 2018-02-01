@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
@@ -26,9 +27,10 @@ public class UserDatasetInfo {
   private final int _ownerQuota;
   private final List<String> _relevantQuestionNames;
   private final List<UserDatasetShareUser> _shares;
+  private final String _trackSpecificData;
   
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-      UserDatasetSession session, final UserFactory userFactory) {
+      UserDatasetSession session, final UserFactory userFactory, WdkModel wdkModel) {
     try {
       long ownerId = dataset.getOwnerId();
       final Map<Long,User> userCache = new HashMap<>();
@@ -39,6 +41,8 @@ public class UserDatasetInfo {
       _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames());
       _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
           new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
+      UserDatasetTypeHandler handler = store.getTypeHandler(dataset.getType());
+      _trackSpecificData = handler.getTrackSpecificData(wdkModel, dataset);
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Could not collect user dataset information for dataset ID " + dataset.getUserDatasetId(), e);
@@ -77,6 +81,10 @@ public class UserDatasetInfo {
 
   public List<String> getRelevantQuestionNames() {
     return _relevantQuestionNames;
+  }
+  
+  public String getTrackSpecificData() {
+    return _trackSpecificData;
   }
 
   public List<UserDatasetShareUser> getShares() {

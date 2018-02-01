@@ -78,18 +78,16 @@
 <!-- OPENED tab -->
 <div id="strategy_results" class="workspace_panel">
   <div id="strategy_messages"> </div>
-  <c:if test="${wdkModel.model.uiConfig.showStratPanelVisibilityControls}">
-    <c:set var="showStratPanel" value="${wdkModel.model.uiConfig.showStratPanelByDefault}"/>
-    <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
-    <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
-    <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
-    <button type="button" id="strategies-panel-toggle" class="wdk-Link" data-default="${showStratPanel}" style="display:flex;align-items:center;color:black;" data-action="toggle-strat-panel">
-      <img src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
-      <span style="font-weight:bold">
-        <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
-      </span>
-    </button>
-  </c:if>
+  <c:set var="showStratPanel" value="${wdkModel.model.uiConfig.showStratPanelByDefault}"/>
+  <c:set var="currentImgName" value="${showStratPanel ? 'minus' : 'plus'}"/>
+  <c:set var="currentToggleCmd" value="${showStratPanel ? 'Hide' : 'Show'}"/>
+  <c:set var="currentDisplayCss" value="${showStratPanel ? 'block' : 'none'}"/>
+  <button type="button" id="strategies-panel-toggle" class="wdk-Link" data-default="${showStratPanel}" style="display:flex;align-items:center;color:black;" data-action="toggle-strat-panel">
+    <img src="${baseUrl}/wdk/images/${currentImgName}.gif"/>
+    <span style="font-weight:bold">
+      <span class="toggle-command">${currentToggleCmd}</span> search strategy panel
+    </span>
+  </button>
   <div id="strategies-panel" class="resizable-wrapper" style="display:${currentDisplayCss}">
     <div class="scrollable-wrapper edit-step-pane">
       <div id="Strategies" ${newStrat}>

@@ -6,6 +6,7 @@ import java.sql.Types;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.WdkModel;
@@ -40,5 +41,24 @@ public class UserDatasetFactory {
               datasetIds.add(rs.getLong(1));
             }}});
     return datasetIds;
+  }
+  
+  /**
+   * Determine whether the dataset, given by its datasetId, is installed.
+   * @param datasetId
+   * @return - true if installed and false otherwise
+   * @throws WdkModelException
+   */
+  public boolean isUserDatasetInstalled(long datasetId) throws WdkModelException {
+	String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
+	Wrapper<Boolean> wrapper = new Wrapper<>();
+	wrapper.set(false);
+	new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
+    .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, new ResultSetHandler() {
+      @Override public void handleResult(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+          wrapper.set(true);
+        }}});
+	return wrapper.get();
   }
 }

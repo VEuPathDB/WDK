@@ -83,4 +83,13 @@
     text-align: center;
   }
 
+  & .wdk-RealTimeSearchBox__withHelp {
+    width: calc(100% - 2rem);
+  }
+
+  & .wdk-RealTimeSearchBox,
+  &Links {
+    margin-left: 1rem;
+  }
+
 }

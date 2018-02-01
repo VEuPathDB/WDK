@@ -17,7 +17,7 @@ import org.json.JSONObject;
 public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
+  private static final Logger LOG = Logger.getLogger(FilterParamNewFormatter.class);
 
   protected FilterParamNew filterParam; 
 

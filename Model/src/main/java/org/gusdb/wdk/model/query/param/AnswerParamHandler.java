@@ -117,32 +117,6 @@ public class AnswerParamHandler extends AbstractParamHandler {
       WdkModelException {
     return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
-  
-  /**
-   * Validation method intended for use when whether the param belongs to a
-   * step in a strategy or not is determined by the allowIncompleteSpec flag.  If
-   * not part of a strategy, the answer param value must be null.  Otherwise, it
-   * is validated as it normally would be.
-   * @param user
-   * @param inputStableValue
-   * @param expectIncompleteSpec
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
-   */
-  @Deprecated // AnswerSpecFactory handles expectIncompleteSpec=true, 2-arg version below handles false
-  private String validateStableValueSyntax(User user, String inputStableValue, boolean expectIncompleteSpec)
-      throws WdkUserException, WdkModelException {
-    if (expectIncompleteSpec) {
-      if (inputStableValue != null) {
-        throw new WdkUserException("Unattached steps must have null answer param values.");
-      }
-      return null;
-    }
-    else {
-      return validateStableValueSyntax(user, inputStableValue);
-    }
-  }
 
   @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,

@@ -322,16 +322,21 @@ public class StepUtilities {
    * @throws WdkUserException
    */
   public static Strategy importStrategy(User user, String strategyKey) throws WdkModelException, WdkUserException {
+    return importStrategy(user, getStrategyByStrategyKey(user.getWdkModel(), strategyKey), null);
+  }
+
+  public static Strategy getStrategyByStrategyKey(WdkModel wdkModel, String strategyKey)
+      throws WdkModelException, WdkUserException {
     Strategy oldStrategy;
     String[] parts = strategyKey.split(":");
     if (parts.length == 1) {
       // new strategy export url
       String strategySignature = parts[0];
-      oldStrategy = user.getWdkModel().getStepFactory().loadStrategy(strategySignature);
+      oldStrategy = wdkModel.getStepFactory().loadStrategy(strategySignature);
     }
     else {
       // get user from user signature
-      User owner = user.getWdkModel().getUserFactory().getUserBySignature(parts[0]);
+      User owner = wdkModel.getUserFactory().getUserBySignature(parts[0]);
       // make sure strategy id is an integer
       String strategyIdStr = parts[1];
       if (!FormatUtil.isInteger(strategyIdStr)) {
@@ -340,7 +345,7 @@ public class StepUtilities {
       int strategyId = Integer.parseInt(strategyIdStr);
       oldStrategy = StepUtilities.getStrategy(owner, strategyId, true);
     }
-    return importStrategy(user, oldStrategy, null);
+    return oldStrategy;
   }
 
   public static Strategy importStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)

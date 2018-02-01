@@ -136,8 +136,8 @@ public class QuestionFormatter {
       FilterParamSummaryCounts fpsc = entry.getValue();
       JSONObject c = new JSONObject();
       c.put("value", termValue == null ? JSONObject.NULL : termValue);
-      c.put("count", fpsc.unfilteredCount);
-      c.put("filteredCount", fpsc.filteredCount);
+      c.put("count", fpsc.unfilteredFilterItemCount);
+      c.put("filteredCount", fpsc.filteredFilterItemCount);
       jsonarray.put(c);
     }
     
@@ -152,10 +152,10 @@ public class QuestionFormatter {
    */
   public static JSONObject getFilterParamSummaryJson(FilterParamSummaryCounts counts) {
     JSONObject json = new JSONObject();
-    json.put("filtered", counts.filteredCount);
-    json.put("nativeFiltered", counts.untransformedFilteredCount);
-    json.put("unfiltered", counts.unfilteredCount);
-    json.put("nativeUnfiltered", counts.untransformedUnfilteredCount); 
+    json.put("filtered", counts.filteredFilterItemCount);
+    json.put("nativeFiltered", counts.filteredRecordCount);
+    json.put("unfiltered", counts.unfilteredFilterItemCount);
+    json.put("nativeUnfiltered", counts.unfilteredRecordCount); 
     return json;
   }
 

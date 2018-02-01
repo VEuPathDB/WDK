@@ -27,9 +27,7 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.fix.table.TableRowUpdater;
-import org.gusdb.wdk.model.query.param.FilterParamHandler;
 import org.gusdb.wdk.model.user.Step;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -264,31 +262,7 @@ public class StepParamExpander extends BaseCLI {
         continue;
       }
       String value = rawValue.getString();
-      try {
-        JsonType jsonValue = JsonType.parse(value);
-        if (jsonValue.getType().equals(ValueType.OBJECT)) {
-          // may be filter param; look for values array
-          JSONObject filterParamValue = jsonValue.getJSONObject();
-          if (filterParamValue.has(FilterParamHandler.TERMS_KEY)) {
-            JSONArray terms = filterParamValue.getJSONArray(FilterParamHandler.TERMS_KEY);
-            Set<String> termSet = new HashSet<>();
-            for (JsonType termObj : JsonIterators.arrayIterable(terms)) {
-              if (!termObj.getType().equals(ValueType.STRING)) {
-                logger.warn("Step " + stepId + ": Likely FilterParam [" + paramName +
-                    "] has term " + termObj.toString() + " which is not a string.");
-                continue;
-              }
-              termSet.add(truncateTerm(termObj.getString()));
-            }
-            newValues.put(paramName, termSet);
-            continue; // to next param
-          }
-        }
-      }
-      catch (Exception e) {
-        // problem parsing out filter param; probably just not a filter param
-      }
-      String[] terms = value.split(",");
+       String[] terms = value.split(",");
       Set<String> termSet = new HashSet<>();
       for (String term : terms) {
         termSet.add(truncateTerm(term));

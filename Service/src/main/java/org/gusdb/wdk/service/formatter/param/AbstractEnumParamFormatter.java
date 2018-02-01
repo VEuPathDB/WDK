@@ -51,7 +51,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
     return jsonRows;
   }
 
-  protected JSONObject getVocabTreeJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
+  protected JSONObject getVocabTreeJson(EnumParamVocabInstance vocabInstance) {
     EnumParamTermNode[] rootNodes = vocabInstance.getVocabTreeRoots();
     if (rootNodes.length == 1) return nodeToJson(rootNodes[0]);
     EnumParamTermNode root = new EnumParamTermNode("@@fake@@");

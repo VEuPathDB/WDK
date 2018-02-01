@@ -92,12 +92,6 @@ public class FilterParamNewStableValue {
 
     List<String> errors = new ArrayList<String>();
 
-    // TODO: remove this test once values map query becomes required
-    if (_param.getValuesMapQuery() == null) {
-      if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '"));
-      return null;
-    }
-    
     // validate fields against ontology; collect fields that are not isRange
     Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
     Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();

@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -46,6 +47,10 @@ public abstract class UserDatasetTypeHandler {
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
   public abstract String[] getRelevantQuestionNames();
+  
+  public String getTrackSpecificData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
+    return "";	  
+  }
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
@@ -59,13 +64,21 @@ public abstract class UserDatasetTypeHandler {
       Path tmpFile = udf.getLocalCopy(dsSession, workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
-    runCommand(getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId), workingDir);
+    String[] command = getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId);
+    // For the case where no user dataset file data is installed into the DB
+    if(command.length > 0) {
+      runCommand(command, workingDir);
+    }  
     deleteWorkingDir(workingDir);
    }
 
   public void uninstallInAppDb(Long userDatasetId, Path tmpDir, String projectId) throws WdkModelException {
     Path workingDir = createWorkingDir(tmpDir, userDatasetId);
-    runCommand(getUninstallInAppDbCommand(userDatasetId, projectId), workingDir);    
+    String[] command = getUninstallInAppDbCommand(userDatasetId, projectId);
+    // For the case where no user dataset data was stored in the DB
+    if(command.length > 0) {
+      runCommand(command, workingDir); 
+    }
     deleteWorkingDir(workingDir);
   }
 
@@ -128,4 +141,5 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     }
   }
+  
 }

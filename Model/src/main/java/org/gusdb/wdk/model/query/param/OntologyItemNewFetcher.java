@@ -58,6 +58,9 @@ public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<Stri
           BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
           if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
 
+          if (ontologyItemMap.containsKey(oItem.getOntologyId()))
+            throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() + " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " + oItem.getOntologyId());
+ 
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
         }
       }

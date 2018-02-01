@@ -26,6 +26,7 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileReader;
 import org.irods.jargon.core.pub.io.IRODSFileWriter;
+import org.irods.jargon.core.pub.io.IRODSRandomAccessFile;
 import org.irods.jargon.core.query.IRODSGenQuery;
 import org.irods.jargon.core.query.IRODSQueryResultRow;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
@@ -169,6 +170,20 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	}
   }
   
+  public IRODSRandomAccessFile getIrodsRandomAccessFile(IRODSFileFactory fileFactory, String pathName) throws WdkModelException {
+    try {
+    	  if(fileFactory != null) {
+        return fileFactory.instanceIRODSRandomAccessFile(pathName);
+    	  }
+    	  else {
+    	    throw new WdkModelException("The IRODS file factory cannot be null");
+    	  }
+    }
+    catch(JargonException je) {
+    	  throw new WdkModelException(je);
+    }
+  }
+  
   /**
    * Convenience method to close the IRODSFile.  This class does not implement Autoclosable.
    * @param file - IRODSFile object
@@ -184,7 +199,6 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       }
     }  
   }
-  
   
   /**
    * Convenience method to close the Jargon session.  Note that the Jargon connection must be
@@ -592,6 +606,10 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	catch(JargonException | JargonQueryException je) {
 	  throw new WdkModelException(je);
 	}
+  }
+  
+  public String getWdkTempDirName() {
+    return _wdkTempDirName;
   }
   
 }

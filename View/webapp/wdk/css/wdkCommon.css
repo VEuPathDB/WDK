@@ -1419,7 +1419,8 @@ div.step-analysis-pane table.dataTable th {
 }
 
 .analysis-selector-container {
-  max-width: 600px;
+  /* max-width: 600px; */
+  max-width: 100%;
   display: flex;
   position: relative;
   margin: 0 auto;
@@ -1430,7 +1431,8 @@ div.step-analysis-pane table.dataTable th {
 }
 
 .analysis-selector-container .analysis-selector {
-  flex: 0 1 calc(50% - 24px);
+  /* flex: 0 1 calc(50% - 24px); */
+  flex: 1 0 auto;
   border-radius: 4px;
   border: 1px solid #eee;
   box-shadow: 0px 0px 2px #AFAFAF;
