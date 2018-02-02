@@ -323,7 +323,7 @@ class MembershipField extends React.Component {
               >
                 <Toggle
                   on={this.props.fieldState.sort.groupBySelected}
-                /> Keep selected values at top
+                /> Keep checked values at top
              </button>
             </div>
           </div>
