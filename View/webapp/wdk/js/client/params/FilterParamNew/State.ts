@@ -1,7 +1,7 @@
 import { keyBy, mapValues, groupBy, isEqual } from 'lodash';
 
 import { Action } from '../../dispatcher/Dispatcher';
-import { Filter } from '../../utils/FilterService';
+import { Filter, MemberFilter } from '../../utils/FilterService';
 import { OntologyTermSummary } from '../../utils/WdkModel';
 import {
   ActiveFieldSetAction,
@@ -10,12 +10,13 @@ import {
   SummaryCountsLoadedAction,
   OntologyTermsInvalidated
 } from './ActionCreators';
+import { sortDistribution } from './Utils';
 
 
 export type SortSpec = {
   groupBySelected: boolean;
-  columnKey: string;
-  direction: string;
+  columnKey: keyof OntologyTermSummary['valueCounts'][number];
+  direction: 'asc' | 'desc';
 };
 
 type BaseFieldState = {
@@ -125,12 +126,16 @@ function handleFilterChange(state: State, prevFilters: Filter[], filters: Filter
         ontologyTermSummary: undefined
       }
     }
-    if (isMemberFieldState(fieldState) && fieldState.sort.groupBySelected) {
+    if (isMemberFieldState(fieldState) && fieldState.ontologyTermSummary && fieldState.sort.groupBySelected) {
       fieldState = {
         ...fieldState,
-        sort: {
-          ...fieldState.sort,
-          groupBySelected: false
+        ontologyTermSummary: {
+          ...fieldState.ontologyTermSummary,
+          valueCounts: sortDistribution(
+            fieldState.ontologyTermSummary.valueCounts,
+            fieldState.sort,
+            filters.find(filter => filter.field === fieldTerm) as MemberFilter
+          )
         }
       }
     }

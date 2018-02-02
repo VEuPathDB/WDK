@@ -19,13 +19,12 @@
   font-size: smaller;
   margin: 0;
 }
-.filter-param .membership-filter .toggle-links {
-  /* position: absolute; */
-}
 .filter-param .filter-items-wrapper {
   min-height: 2em;
   display: flex;
   align-items: center;
+  font-size: 1.2em;
+  margin-bottom: 1em;
 }
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
@@ -147,10 +146,11 @@
 .filter-param .wdk-AttributeFilterFieldItem__active {
   background: #eaeaea;
 }
+.filter-param .filter-items-wrapper,
 .filter-param .field-detail {
   width: 75%;
   margin-left: 25%;
-  padding: 0 2em;
+  padding: 0 1rem;
   position: relative;
 }
 .filter-param .field-detail__topPadding {
@@ -445,6 +445,7 @@
 }
 .filter-param .filter-items {
   line-height: 14px;
+  margin-left: 0;
 }
 .filter-param .filter-items * {
   vertical-align: middle;
@@ -470,7 +471,7 @@
 }
 .filter-param .filter-items .remove {
   display: inline-block;
-  vertical-align: text-bottom;
+  vertical-align: text-top;
   cursor: pointer;
   font-size: 20px;
   padding-left: 4px;
