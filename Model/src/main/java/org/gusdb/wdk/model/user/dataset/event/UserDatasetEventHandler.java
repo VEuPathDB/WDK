@@ -9,6 +9,7 @@ import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
@@ -41,15 +42,23 @@ public class UserDatasetEventHandler {
       else {
         UserDataset userDataset = dsSession.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
 
-        String sql = "insert into " + userDatasetSchemaName + installedTable +
+        // Weeding out obsolete user datasets - skipped but completed.
+        UserDatasetCompatibility compatibility = typeHandler.getCompatibility(userDataset, appDbDataSource);
+        if(compatibility.isCompatible()) {
+        
+          String sql = "insert into " + userDatasetSchemaName + installedTable +
           " (user_dataset_id, name) values (?, ?)";
-        SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
-        Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
-        sqlRunner.executeUpdate(args);
+          SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
+          Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
+          sqlRunner.executeUpdate(args);
 
-        typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
-        grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
+          typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
+          grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
           "UserDatasetOwner");
+        }
+        else {
+        	  logger.info("User dataset " + event.getUserDatasetId() + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
+        }
       }
     }  
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);

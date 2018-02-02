@@ -32,7 +32,7 @@ public abstract class UserDatasetTypeHandler {
    * @param userDataset
    * @return
    */
-  public abstract UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource);
+  public abstract UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource) throws WdkModelException;
 
   /**
    * The user dataset type this handler handles.
