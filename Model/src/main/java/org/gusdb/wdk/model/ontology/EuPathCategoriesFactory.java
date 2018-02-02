@@ -82,10 +82,14 @@ public class EuPathCategoriesFactory {
   };
 
   private String[][] clinepiRecordClassInfo = {
+      // GEMS
+      { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
+      // PRISM
       { "Participants", "DS_0ad509829eParticipantRecordClasses.DS_0ad509829eParticipantRecordClass" },
       { "Households", "DS_0ad509829eHouseholdRecordClasses.DS_0ad509829eHouseholdRecordClass" },
       { "Observations", "DS_0ad509829eObservationRecordClasses.DS_0ad509829eObservationRecordClass" },
       { "CDC Light Traps", "DS_0ad509829eLightTrapRecordClasses.DS_0ad509829eLightTrapRecordClass" },
+      // Generic
       { "Participants", "ParticipantRecordClasses.ParticipantRecordClass" },
       { "Dwellings", "DwellingRecordClasses.DwellingRecordClass" },
       { "Clinical Visits", "ClinicalVisitRecordClasses.ClinicalVisitRecordClass" }

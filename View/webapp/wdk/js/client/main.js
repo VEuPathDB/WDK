@@ -249,9 +249,11 @@ function logActions(dispatcher, storeMap) {
     }, {});
   dispatcher.register(action => {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
-    console.group(action.type);
-    console.info("dispatching", action);
-    console.info("state", mapValues(stores, store => store.getState()));
-    console.groupEnd(action.type);
+    const state = mapValues(stores, store => store.getState());
+    console.debug(
+      '%c' + action.type,
+      'font-weight: bold;',
+      { action, state }
+    );
   });
 }

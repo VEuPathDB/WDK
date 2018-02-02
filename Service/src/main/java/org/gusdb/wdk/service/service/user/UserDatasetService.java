@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -34,6 +35,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
@@ -306,13 +308,17 @@ public class UserDatasetService extends UserService {
   }
 
   /**
-   * In addition to returning the target user's id.  This identifies whether the session
-   * user must be the target user.
+   * In addition to returning the target user's id, this identifies whether the session
+   * user must be the target user.  Regardless of session user access, the target user
+   * cannot be a guest.
    * @return
    * @throws WdkModelException
    */
   private Long getUserId(Access access) throws WdkModelException {
-    return getUserBundle(access).getTargetUser().getUserId();
+	if(access == Access.PRIVATE) return getPrivateRegisteredUser().getUserId();
+	User user = getUserBundle(access).getTargetUser();
+	if(user.isGuest()) throw new NotFoundException("The user " + user.getUserId() + " has no datasets.");
+	return user.getUserId();
   }
 
   /**
