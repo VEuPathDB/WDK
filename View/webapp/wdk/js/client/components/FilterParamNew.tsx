@@ -60,21 +60,12 @@ export default class FilterParamNew extends React.PureComponent<Props> {
       dispatch,
       onParamValueChange,
       value,
-      uiState: { activeOntologyTerm: activeField }
+      uiState: { activeOntologyTerm: activeField, fieldStates }
     } = this.props;
     const prevFilters = this._getFiltersFromValue(this.props.value);
 
     onParamValueChange(JSON.stringify({ filters }));
     dispatch(FiltersUpdatedAction.create({...ctx, prevFilters, filters}));
-
-    if (activeField != null) {
-      // Update summary counts for active field if other field filters have been modified
-      const prevOtherFilters = prevFilters.filter(f => f.field != activeField);
-      const otherFilters = filters.filter(f => f.field !== activeField);
-      if (!isEqual(prevOtherFilters, otherFilters)) {
-        dispatch(ActiveFieldSetAction.create({ ...ctx, activeField }));
-      }
-    }
   }
 
   // FIXME Move sorting into action creator or reducer and retain `groupBySelected` property value
