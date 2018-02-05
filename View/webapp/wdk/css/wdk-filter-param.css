@@ -26,6 +26,15 @@
   font-size: 1.2em;
   margin-bottom: 1em;
 }
+.filter-list-total,
+.filter-list-selected {
+  font-weight: 500;
+}
+.filter-list-total {
+  width: 25%;
+  padding-left: 2em;
+  margin-right: 1em;
+}
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -146,7 +155,6 @@
 .filter-param .wdk-AttributeFilterFieldItem__active {
   background: #eaeaea;
 }
-.filter-param .filter-items-wrapper,
 .filter-param .field-detail {
   width: 75%;
   margin-left: 25%;
