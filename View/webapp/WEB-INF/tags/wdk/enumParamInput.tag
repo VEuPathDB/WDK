@@ -84,22 +84,7 @@ Otherwise a standard select menu is used.
 
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <%-- Used by LegacyParamController. Only populate when in revise context --%>
-        <c:set var="props">
-          {
-            "paramName": "${qP.name}",
-            "questionName": "${requestScope.wdkQuestion.urlSegment}",
-            "paramValues": ${action eq 'revise' ? requestScope.wdkQuestion.paramValuesJson : 'null'}
-          }
-        </c:set>
-
-      <div class="param"
-          dependson="${dependedParam}"
-          name="${pNam}"
-          data-controller="wdk.clientAdapter"
-          data-name="LegacyParamController"
-          data-props="${fn:escapeXml(props)}"
-      > </div>
+        <imp:legacyParamAdapterInput qp="${qP}" />
       </c:when>
 
       <%-- use a type ahead --%>
@@ -192,7 +177,7 @@ Otherwise a standard select menu is used.
           <html:select property="array(${pNam})" styleId="${pNam}">
             <c:set var="opt" value="${opt+1}"/>
             <c:set var="sel" value=""/>
-            <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+            <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>
             <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
           </html:select>
         </div>

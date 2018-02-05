@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,6 +81,11 @@ public abstract class ParamBean<T extends Param> {
   public String getEmptyValue() {
     return _param.getEmptyValue();
   }
+
+  public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
+    return null;
+  }
+
 
   /*
    * (non-Javadoc)
