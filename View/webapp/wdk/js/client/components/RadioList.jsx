@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { wrappable, getValueOrDefault } from '../utils/componentUtils';
-import Tooltip from './Tooltip';
+import HelpIcon from './HelpIcon';
 
 const baseClassName = "wdk-RadioList";
-const helpClassName = baseClassName + 'InfoIcon';
 
 class RadioList extends React.Component {
 
@@ -32,11 +31,11 @@ class RadioList extends React.Component {
                 value={item.value}
                 checked={item.value === this.props.value}
                 onChange={this.onChange}/>
-              {' ' + item.display}
-              {item.description != null && 
-                <Tooltip content={item.description}>
-                  <i className={"fa fa-question-circle " + helpClassName}/>
-                </Tooltip>
+              {' ' + item.display + ' '}
+              {item.description != null &&
+                <HelpIcon tooltipPosition={{ my: 'center left', at: 'center right' }}>
+                  {item.description}
+                </HelpIcon>
               }
             </label>
           </li>
