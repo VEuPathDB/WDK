@@ -303,7 +303,7 @@ class MembershipField extends React.Component {
   }
 
   renderFilteredCountHeading1() {
-    return this.renderCountHeading1('Matching');
+    return this.renderCountHeading1('Remaining');
   }
 
   renderFilteredCountHeading2() {
@@ -341,7 +341,7 @@ class MembershipField extends React.Component {
 
   renderPrecentageCell({ row }) {
     return (
-      <small title={`Matching ${row.value} / All ${row.value}`}>
+      <small title={`Remaining "${row.value}" / All "${row.value}"`}>
         ({Math.round(row.filteredCount / row.count * 100)}%)
       </small>
     );
@@ -466,7 +466,7 @@ class MembershipField extends React.Component {
               width: '4em',
               helpText: (
                 <div>
-                  <em>Matching {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
+                  <em>Remaining {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
                   with the given <em>{this.props.field.display}</em> value.
                 </div>
               ),
