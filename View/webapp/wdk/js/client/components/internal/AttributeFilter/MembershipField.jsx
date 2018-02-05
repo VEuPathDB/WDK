@@ -1,7 +1,8 @@
-import React from 'react';
-import { bindAll, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
-import { MesaController as Mesa } from 'mesa';
 import 'mesa/dist/css/mesa.css';
+
+import { bindAll, difference, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
+import { MesaController as Mesa } from 'mesa';
+import React from 'react';
 
 import { safeHtml } from '../../../utils/componentUtils';
 import RealTimeSearchBox from '../../RealTimeSearchBox';
@@ -40,6 +41,8 @@ class MembershipField extends React.Component {
       'handleSelectAll',
       'handleSort',
       'isItemSelected',
+      'renderCheckboxCell',
+      'renderCheckboxHeading',
       'renderDistributionCell',
       'renderFilteredCountCell',
       'renderFilteredCountHeading1',
@@ -91,9 +94,15 @@ class MembershipField extends React.Component {
   }
 
   deriveRowClassName(item) {
-    return 'member' +
-      (item.filteredCount === 0 ? ' member__disabled' : '') +
-      (this.isItemSelected(item) ? ' member__selected' : '')
+    const selectedClassName = (
+      item.filteredCount > 0 &&
+      (this.props.filter == null || this.isItemSelected(item))
+    ) ? 'member__selected' : '';
+
+    const disabledClassName = item.filteredCount === 0
+      ? 'member__disabled' : '';
+
+    return `member ${selectedClassName} ${disabledClassName}`;
   }
 
   isItemSelected(item) {
@@ -123,7 +132,13 @@ class MembershipField extends React.Component {
 
   handleItemClick(item, addItem = !this.isItemSelected(item)) {
     let { selectByDefault } = this.props;
-    let { value } = item;
+    let { value, filteredCount } = item;
+
+    if (filteredCount === 0) {
+      // Don't do anything since item is "disabled"
+      return;
+    }
+
     if (value == null) {
       this.handleUnknownChange(addItem);
     }
@@ -158,9 +173,20 @@ class MembershipField extends React.Component {
   }
 
   handleSelectAll() {
+    const allValues = this.getKnownValues();
+
+    const disabledValues = this.props.fieldSummary.valueCounts
+      .filter(entry => entry.filteredCount === 0)
+      .map(entry => entry.value);
+
     const value = this.isSearchEnabled()
-      ? this.getFilteredRows(this.props.fieldState.searchTerm).map(entry => entry.value)
-      : undefined;
+      ? difference(
+        this.getFilteredRows(this.props.fieldState.searchTerm)
+          .map(entry => entry.value),
+        disabledValues
+      )
+      : disabledValues.length === 0 ? undefined : difference(allValues, disabledValues);
+
     this.emitChange(value);
   }
 
@@ -190,6 +216,27 @@ class MembershipField extends React.Component {
   emitChange(value, includeUnknown = get(this.props, 'filter.includeUnknown', false)) {
     this.props.onChange(this.props.field, value, includeUnknown,
       this.props.fieldSummary.valueCounts);
+  }
+
+  renderCheckboxHeading() {
+    const allAvailableChecked = this.props.fieldSummary.valueCounts
+      .filter(member => member.filteredCount > 0)
+      .every(member => this.isItemSelected(member));
+    const onClick = () =>
+      allAvailableChecked ? this.handleRemoveAll() : this.handleSelectAll()
+    return (
+      <input type="checkbox" checked={allAvailableChecked} onChange={onClick} />
+    );
+  }
+
+  renderCheckboxCell({ row }) {
+    const isChecked = this.isItemSelected(row);
+    const isDisabled = row.filteredCount === 0;
+    const onClick = () =>
+      isChecked ? this.handleRowDeselect(row) : this.handleRowSelect(row);
+    return (
+      <input type="checkbox" checked={isChecked} onChange={onClick} disabled={isDisabled} />
+    );
   }
 
   renderValueHeading() {
@@ -310,13 +357,21 @@ class MembershipField extends React.Component {
 
     return (
       <div className="membership-filter">
-        { useSort ? (
+        { this.props.filter == null ? (
+          <div className="membership-actions">
+            <div className="membership-action">
+              <em>Check items below to refine {this.props.displayName}</em>
+            </div>
+          </div>
+        )
+        : useSort ? (
           <div className="membership-actions">
             <div className="membership-action membership-action__group-selected">
               <button
                 style={{
                   background: 'none',
-                  border: 'none'
+                  border: 'none',
+                  padding: 0
                 }}
                 type="button"
                 onClick={this.handleGroupBySelected}
@@ -331,7 +386,7 @@ class MembershipField extends React.Component {
 
         <Mesa
           options={{
-            isRowSelected: this.isItemSelected,
+            // isRowSelected: this.isItemSelected,
             deriveRowClassName: this.deriveRowClassName,
             onRowClick: this.handleRowClick,
             useStickyHeader: true,
@@ -340,15 +395,22 @@ class MembershipField extends React.Component {
           uiState={this.props.fieldState}
           actions={[]}
           eventHandlers={{
-            onRowSelect: this.handleRowSelect,
-            onRowDeselect: this.handleRowDeselect,
-            onMultipleRowSelect: this.handleSelectAll,
-            onMultipleRowDeselect: this.handleRemoveAll,
+            // onRowSelect: this.handleRowSelect,
+            // onRowDeselect: this.handleRowDeselect,
+            // onMultipleRowSelect: this.handleSelectAll,
+            // onMultipleRowDeselect: this.handleRemoveAll,
             onSort: this.handleSort
           }}
           rows={this.props.fieldSummary.valueCounts}
           filteredRows={rows}
           columns={[
+            {
+              key: 'checked',
+              sortable: false,
+              width: '32px',
+              renderHeading: this.renderCheckboxHeading,
+              renderCell: this.renderCheckboxCell
+            },
             {
               key: 'value',
               inline: true,

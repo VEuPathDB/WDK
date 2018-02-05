@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { map, partial } from 'lodash';
 
 import { getFilterValueDisplay } from '../../../utils/FilterServiceUtils';
-import Loading from '../../Loading';
 
 /**
  * List of filters configured by the user.
@@ -89,21 +88,22 @@ FilterList.propTypes = {
   onFilterRemove: PropTypes.func.isRequired,
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
+  displayName: PropTypes.string.isRequired,
   selectedField: PropTypes.object,
   renderSelectionInfo: PropTypes.func
 };
 
 FilterList.defaultProps = {
   renderSelectionInfo(parentProps) {
-    const { filteredDataCount, dataCount, filters, loadingFilteredCount } = parentProps;
+    const { filteredDataCount, dataCount, displayName, filters, loadingFilteredCount } = parentProps;
     const filteredCount = loadingFilteredCount
       ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
         , <span className="sr-only">Loading...</span> ]
       : filteredDataCount;
 
     return dataCount == null ? null
-      : filters.length === 0 ? <strong>{dataCount} total</strong>
-      : <strong>{filteredCount} of {dataCount} selected</strong>;
+      : filters.length === 0 ? <strong>{dataCount} total {displayName}</strong>
+      : <strong>{filteredCount} of {dataCount} selected {displayName}</strong>;
   }
 };
 
