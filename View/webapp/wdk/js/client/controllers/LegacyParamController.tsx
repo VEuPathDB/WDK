@@ -114,6 +114,17 @@ export default class LegacyParamController extends AbstractViewController<
 
     const ctx = this.getContext(parameter);
 
+    if (this.state.paramErrors[parameter.name]) {
+      return (
+        <div>
+          <div style={{ color: 'red', fontSize: '2em', fontStyle: 'italic', margin: '1em 0' }}>
+            Oops... something went wrong.
+          </div>
+          <p>Not all of the data could be loaded. Support staff have been notified of the problem and are looking into it.</p>
+        </div>
+      )
+    }
+
     return (
       <div>
         <this.paramModules.ParamComponent
