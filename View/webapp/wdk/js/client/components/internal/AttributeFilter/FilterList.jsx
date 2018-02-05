@@ -41,14 +41,19 @@ export default class FilterList extends React.Component {
   }
 
   render() {
-    var { fields, filters, selectedField } = this.props;
+    var { fields, filters, selectedField, filteredDataCount, dataCount, displayName, loadingFilteredCount } = this.props;
+
+    const filteredCount = loadingFilteredCount
+      ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
+        , <span className="sr-only">Loading...</span> ]
+      : filteredDataCount;
 
     return (
       <div className="filter-items-wrapper">
-        {this.props.renderSelectionInfo(this.props)}
-        &nbsp;
+        <div className="filter-list-total">{dataCount} {displayName} Total</div>
+        {filters.length === 0 ? null : <div className="filter-list-selected">{filteredCount} {displayName} Selected</div>}
         {filters.length === 0
-          ? <strong><em>&nbsp;&nbsp;No filters applied.</em></strong>
+          ? <strong><em>No filters applied.</em></strong>
           : <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
             {map(filters, filter => {
               var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
@@ -101,9 +106,12 @@ FilterList.defaultProps = {
         , <span className="sr-only">Loading...</span> ]
       : filteredDataCount;
 
-    return dataCount == null ? null
-      : filters.length === 0 ? <strong>{dataCount} total {displayName}</strong>
-      : <strong>{filteredCount} of {dataCount} selected {displayName}</strong>;
+    return (
+      <div className="filter-list-selection-info">
+        <div className="filter-list-total">{dataCount} {displayName} Total</div>
+        {filters.length === 0 ? null : <div className="filter-list-selected">{filteredCount} {displayName} Selected</div>}
+      </div>
+    )
   }
 };
 
