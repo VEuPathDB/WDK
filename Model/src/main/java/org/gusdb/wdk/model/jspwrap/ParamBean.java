@@ -86,6 +86,11 @@ public abstract class ParamBean<T extends Param> {
     return null;
   }
 
+  public String getDependedParamNames() throws WdkModelException {
+    return null;
+  }
+
+
 
   /*
    * (non-Javadoc)
