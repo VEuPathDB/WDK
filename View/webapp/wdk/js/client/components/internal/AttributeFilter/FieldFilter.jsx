@@ -42,7 +42,9 @@ export default function FieldFilter(props) {
           {fieldDetailProps.field.description && (
             <div className="field-description">{fieldDetailProps.field.description}</div>
           )}
-          {(fieldDetailProps.fieldSummary == null || fieldDetailProps.dataCount == null) ? (
+          {props.fieldState.errorMessage ? (
+            <div style={{ color: 'darkred' }}>{props.fieldState.errorMessage}</div>
+          ) : (fieldDetailProps.fieldSummary == null || fieldDetailProps.dataCount == null) ? (
             <Loading />
           ) : (
             <FieldDetail {...fieldDetailProps} />

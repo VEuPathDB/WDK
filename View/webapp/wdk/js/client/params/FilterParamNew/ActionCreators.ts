@@ -4,6 +4,7 @@ import {
   GroupVisibilityChangedAction,
   ParamValueUpdatedAction,
   QuestionLoadedAction,
+  ParamErrorAction
 } from '../../actioncreators/QuestionActionCreators';
 import { Action } from '../../dispatcher/Dispatcher';
 import QuestionStore, { QuestionState } from '../../stores/QuestionStore';
@@ -250,13 +251,19 @@ function getSummaryCounts(
 ) {
   const { question, paramValues, paramUIState } = state;
   const questionName = question.urlSegment;
+  const paramName = parameter.name;
   const filters = JSON.parse(paramValues[parameter.name]).filters;
-  return wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
+  return wdkService.getFilterParamSummaryCounts(questionName, paramName, filters, paramValues).then(
     counts => SummaryCountsLoadedAction.create({
       questionName,
       parameter,
       paramValues,
       ...counts
+    }),
+    error => ParamErrorAction.create({
+      questionName,
+      error,
+      paramName
     })
   )
 }

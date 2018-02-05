@@ -1,4 +1,4 @@
-import { keyBy } from 'lodash';
+import { keyBy, mapValues } from 'lodash';
 
 import { Epic } from '../utils/ActionCreatorUtils';
 import {
@@ -130,16 +130,18 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
 
   if (ParamsUpdatedAction.isType(action)) {
     const newParamsByName = keyBy(action.payload.parameters, 'name');
-    const newParamValuesByName = keyBy(
-      action.payload.parameters.map(p => p.defaultValue),
-      'name'
-    );
+    const newParamValuesByName = mapValues(newParamsByName, param => param.defaultValue);
+    const newParamErrors = mapValues(newParamsByName, () => undefined);
     // merge updated parameters into quesiton and reset their values
     return {
       ...state,
       paramValues: {
         ...state.paramValues,
         ...newParamValuesByName
+      },
+      paramErrors: {
+        ...state.paramErrors,
+        ...newParamErrors
       },
       question: {
         ...state.question,
