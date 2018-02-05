@@ -79,26 +79,26 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
     if (contentType == null)
       contentType = MediaType.APPLICATION_JSON; // assume JSON input if unspecified
     switch (contentType) {
-      case MediaType.APPLICATION_JSON:
-        return getJsonRequestBody(requestContext);
       case MediaType.APPLICATION_FORM_URLENCODED:
         return FORM_ENTITY;
+      case MediaType.APPLICATION_JSON:
+        return formatJson(getRequestBodyText(requestContext));
+      case MediaType.TEXT_PLAIN:
+      case MediaType.TEXT_XML:
+        return getRequestBodyText(requestContext);
       default:
+        // assume JSON
         return "Indeterminant data of type " + contentType;
     }
   }
 
-  private static String getJsonRequestBody(ContainerRequestContext requestContext) {
+  private static String getRequestBodyText(ContainerRequestContext requestContext) {
     ContainerRequest context = (ContainerRequest) requestContext;
     try {
       if (context.bufferEntity()) {
         String entity = context.readEntity(String.class);
-        try {
-          return toJsonBodyString(entity);
-        }
-        finally {
-          requestContext.setEntityStream(new ByteArrayInputStream(entity.getBytes()));
-        }
+        requestContext.setEntityStream(new ByteArrayInputStream(entity.getBytes()));
+        return entity;
       }
       else {
         return EMPTY_ENTITY;
@@ -110,7 +110,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
     }
   }
 
-  public static String toJsonBodyString(String entity) {
+  public static String formatJson(String entity) {
     if (entity != null && !entity.isEmpty()) {
       try {
         if (entity.startsWith("{")) {
@@ -120,11 +120,11 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
           return new JSONArray(entity).toString(2);
         }
         else {
-          return "JSON specified, but not legal JSON structure";
+          return entity;
         }
       }
       catch (JSONException e) {
-        return "JSON specified, but not legal JSON structure";
+        return entity;
       }
     }
     return EMPTY_ENTITY;
