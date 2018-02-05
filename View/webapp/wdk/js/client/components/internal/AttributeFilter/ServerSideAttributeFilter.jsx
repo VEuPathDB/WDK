@@ -68,6 +68,7 @@ export default class ServerSideAttributeFilter extends React.Component {
       hideFilterPanel,
       hideFieldPanel,
       dataCount,
+      displayName,
       filteredDataCount,
       fields,
       filters,
@@ -77,7 +78,6 @@ export default class ServerSideAttributeFilter extends React.Component {
       activeFieldSummary
     } = this.props;
 
-    var displayName = this.props.displayName;
     var selectedFilter = activeField && find(filters, filter => {
       return filter.field === activeField.term;
     });
@@ -95,6 +95,7 @@ export default class ServerSideAttributeFilter extends React.Component {
             dataCount={dataCount}
             selectedField={activeField}
             renderSelectionInfo={this.props.renderSelectionInfo}
+            displayName={displayName}
           />
         )}
 

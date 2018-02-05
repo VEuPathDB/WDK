@@ -199,14 +199,6 @@
   max-width: 100%;
   font-size: 1em;
 }
-/* Prevent checkbox cell of table from having scrollbar */
-.filter-param .membership-filter .MesaComponent th.SelectionCell,
-.filter-param .membership-filter .MesaComponent td.SelectionCell {
-  width: 22px;
-  padding: 4px;
-  text-align: center;
-  overflow: visible;
-}
 .filter-param .membership-filter .HeadingRow:first-child {
   border-top: 1px solid #ccc;
 }
@@ -222,6 +214,7 @@
   background: transparent;
   padding: 4px;
   border: none;
+  position: relative;
 }
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
@@ -280,7 +273,7 @@
   flex-direction: row;
   padding: 1em 0;
 }
-.filter-param .membership-action__group-selected {
+.filter-param .membership-action {
   display: flex;
   align-items: center;
   font-weight: 300;
@@ -408,8 +401,29 @@
   font-weight: bold;
   /*background-color: #66A4E7;*/
 }
-.filter-param .membership-filter .member.member__disabled {
+.filter-param .membership-filter .member.member__disabled td > * {
   opacity: .4;
+}
+.filter-param .membership-filter .HeadingRow th:first-child,
+.filter-param .membership-filter .member td:first-child {
+  /* Prevent checkbox cell of table from having scrollbar */
+  padding: 4px;
+  text-align: center;
+  overflow: visible;
+}
+.filter-param .membership-filter .member.member__disabled:hover td:first-child:before {
+  content: "Remove other filters to add or remove this value.";
+  color: black;
+  position: absolute;
+  display: block;
+  left: 2em;
+  background-color: #fffceb;
+  padding: 4px;
+  z-index: 1;
+  bottom: .5em;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  width: 22em;
 }
 .filter-param .results {
   padding: 1em;
