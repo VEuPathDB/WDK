@@ -857,12 +857,12 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
                    left_minus_html +
           "        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>" +
                    right_minus_html +
-          "      </tr></table>";
+          "      </tr><tr><td colspan=16><hr></td></tr></table>";
 
       var twoIgnoreTable =
-          "      <table style='margin-left:auto; margin-right:auto;'><tr><td colspan=8><hr></td></tr>" +
-          "      <tr><td colspan=8  style='font-size:120%;padding:0 0 1em 1em' title='You may change the operation to temporarily ignore one of the input steps. Either ignore step 1 or step 2.'>" +
-          "              ...or temporarily ignore one of the input steps:  " +
+          "      <table style='margin-left:auto; margin-right:auto;'>" +
+          "      <tr><td colspan=8  style='font-size:120%;padding:0 0 1em 1em' title='You may change the operation to ignore one of the input steps. Either ignore step 1 or step 2.'>" +
+          "              ...or ignore one of the input steps:  " +
 //          "                <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore one of the input steps. Either ignore step 1 or step 2.'></i> " +
           "      </td></tr><tr>" +
                    right_only_html +
@@ -871,10 +871,9 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
           "      </tr></table> ";
 
      var oneIgnoreTable =
-          "      <table style='margin-left:auto; margin-right:auto;'><tr><td colspan=4><hr></td></tr>" +
-          "      <tr><td  style='font-size:120%' title='You may change the operation to temporarily ignore the effect of the new step.'>" +
+          "      <table style='margin-left:auto; margin-right:auto;'>" +
+          "      <tr><td  style='font-size:120%' title='You may change the operation to ignore the effect of the top step.'>" +
        //   "            <i class='fa fa-question-circle wdk-RealTimeSearchBoxInfoIcon wdk-tooltip' title='You may change the operation to temporarily ignore the effect of the new step.'></i>  " +
-          "              ...or temporarily ignore the top step: &nbsp; &nbsp; &nbsp; &nbsp;" +
                         left_only_html +
           "      </td></tr></table> ";
 
