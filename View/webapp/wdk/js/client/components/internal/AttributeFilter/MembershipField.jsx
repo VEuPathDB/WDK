@@ -179,13 +179,17 @@ class MembershipField extends React.Component {
       .filter(entry => entry.filteredCount === 0)
       .map(entry => entry.value);
 
+    const filterValues = this.getValuesForFilter();
+
     const value = this.isSearchEnabled()
       ? difference(
         this.getFilteredRows(this.props.fieldState.searchTerm)
           .map(entry => entry.value),
         disabledValues
-      )
-      : disabledValues.length === 0 ? undefined : difference(allValues, disabledValues);
+      ).concat(filterValues || [])
+      : ( disabledValues.length === 0 && filterValues == null
+        ? undefined
+        : difference(allValues, disabledValues).concat(filterValues || []));
 
     this.emitChange(value);
   }
