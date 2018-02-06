@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
@@ -27,7 +28,9 @@ public class UserDatasetFormatter {
   private static void putDatasetsIntoJsonArray(UserDatasetSession dsSession, JSONArray datasetsJson, List<UserDatasetInfo> datasets,
       boolean expand, boolean includeSharingData) throws WdkModelException {
     for (UserDatasetInfo dataset : datasets) {
-      datasetsJson.put(expand ? getUserDatasetJson(dsSession, dataset, includeSharingData) : dataset.getDataset().getUserDatasetId());
+      datasetsJson.put(expand ?
+          getUserDatasetJson(dsSession, dataset, includeSharingData, false) :
+          dataset.getDataset().getUserDatasetId());
     }
   }
 
@@ -60,7 +63,7 @@ public class UserDatasetFormatter {
    * @return json object representing the dataset and associated information
    * @throws WdkModelException
    */
-  public static JSONObject getUserDatasetJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData) throws WdkModelException {
+  public static JSONObject getUserDatasetJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData, boolean detailedData) throws WdkModelException {
     UserDataset dataset = datasetInfo.getDataset();
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
@@ -129,8 +132,10 @@ public class UserDatasetFormatter {
       filesJson.put(fileJson);
     }
     json.put("datafiles", filesJson);
-    
-    json.put("trackSpecificData",datasetInfo.getTrackSpecificData());
+
+    JsonType trackSpecificData = detailedData ?
+        datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
+    json.put("trackSpecificData", trackSpecificData.get());
 
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
