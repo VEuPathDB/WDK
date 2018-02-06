@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.filter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Priority;
 import javax.servlet.ServletContext;
@@ -31,7 +32,7 @@ public class ClientCacheExpirationFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) throws IOException {
 
     // get incoming client timestamp
-    String incomingTimestamp = getClientTimestamp(requestContext);
+    String incomingTimestamp = getClientTimestamp(requestContext.getHeaders());
 
     // if client did not send a WDK timestamp, then don't filter request
     if (incomingTimestamp == null) return;
@@ -48,8 +49,8 @@ public class ClientCacheExpirationFilter implements ContainerRequestFilter {
     }
   }
 
-  private String getClientTimestamp(ContainerRequestContext requestContext) {
-    List<String> clientWdkTimestamps = requestContext.getHeaders().get(CLIENT_WDK_TIMESTAMP_HEADER);
+  public static String getClientTimestamp(Map<String,List<String>> headers) {
+    List<String> clientWdkTimestamps = headers.get(CLIENT_WDK_TIMESTAMP_HEADER);
     // if no headers with this name are found, return null
     if (clientWdkTimestamps == null || clientWdkTimestamps.isEmpty()) return null;
     // if >1 header is found, return the last one
