@@ -63,10 +63,13 @@ function addScrollAnchor__loop(
 
   function containerHasResized(): boolean {
     const newContainerRect = container.getBoundingClientRect();
-    return (
-      containerRect.height != newContainerRect.height ||
-      containerRect.width != newContainerRect.width
-    );
+    const heightDiff = Math.abs(containerRect.height - newContainerRect.height);
+    const widthDiff = Math.abs(containerRect.width - newContainerRect.width);
+    if (heightDiff > 10 || widthDiff > 10) {
+      console.log({ heightDiff, widthDiff });
+      return true;
+    }
+    return false;
   }
 
   function scrollToAnchor() {
