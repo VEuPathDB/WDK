@@ -15,7 +15,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.wdk.errors.ErrorBundle;
+import org.gusdb.wdk.errors.JavaErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkModel;
@@ -85,7 +85,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       WdkModel wdkModel = ((WdkModelBean) context.getAttribute("wdkModel")).getModel();
       ErrorContext errorContext = WdkService.getErrorContext(context, req, wdkModel);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
-      Events.trigger(new ErrorEvent(new ErrorBundle(other), errorContext));
+      Events.trigger(new ErrorEvent(new JavaErrorBundle(other), errorContext));
       return Response.serverError()
           .type(MediaType.TEXT_PLAIN).entity("Internal Error").build();
     }
