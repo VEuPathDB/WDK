@@ -49,8 +49,8 @@ export default class FilterList extends React.Component {
         , <span className="sr-only">Loading...</span> ]
       : filteredDataCount;
 
-    const total = hideCounts ? null : `${dataCount} ${displayName} Total`;
-    const filtered = hideCounts ? null : `${filteredCount} ${displayName} Selected`;
+    const total = hideCounts ? null : <span>{dataCount} {displayName} Total</span>
+    const filtered = hideCounts ? null : <span>{filteredCount} {displayName} Selected</span>;
 
 
     return (
