@@ -163,7 +163,7 @@ export default class FieldList extends React.PureComponent {
           isSelectable={false}
           nodeComponent={this.renderNode}
           isSearchable={true}
-          searchBoxPlaceholder="Find a quality..."
+          searchBoxPlaceholder="Find a filter"
           searchBoxHelp="Find a quality by searching names and descriptions"
           searchTerm={this.state.searchTerm}
           onSearchTermChange={this.handleSearchTermChange}

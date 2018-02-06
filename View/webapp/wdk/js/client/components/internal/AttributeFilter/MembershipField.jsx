@@ -261,7 +261,7 @@ class MembershipField extends React.Component {
       >
         <RealTimeSearchBox
           searchTerm={this.props.fieldState.searchTerm}
-          placeholderText="Filter values"
+          placeholderText="Find items"
           onSearchTermChange={this.handleSearchTermChange}
         />
       </div>
@@ -364,7 +364,7 @@ class MembershipField extends React.Component {
         { this.props.filter == null ? (
           <div className="membership-actions">
             <div className="membership-action">
-              <em>Check items below to refine {this.props.displayName}</em>
+              <em>Check items below to apply this filter</em>
             </div>
           </div>
         )
