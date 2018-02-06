@@ -41,17 +41,22 @@ export default class FilterList extends React.Component {
   }
 
   render() {
-    var { fields, filters, selectedField, filteredDataCount, dataCount, displayName, loadingFilteredCount } = this.props;
+    var { fields, filters, selectedField, filteredDataCount, dataCount, displayName, loadingFilteredCount, hideCounts } = this.props;
 
-    const filteredCount = loadingFilteredCount
-      ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
+    const filteredCount = hideCounts ? null
+      : loadingFilteredCount ? [
+        <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
         , <span className="sr-only">Loading...</span> ]
       : filteredDataCount;
 
+    const total = hideCounts ? null : `${dataCount} ${displayName} Total`;
+    const filtered = hideCounts ? null : `${filteredCount} ${displayName} Selected`;
+
+
     return (
       <div className="filter-items-wrapper">
-        <div className="filter-list-total">{dataCount} {displayName} Total</div>
-        {filters.length === 0 ? null : <div className="filter-list-selected">{filteredCount} {displayName} Selected</div>}
+        <div className="filter-list-total">{total}</div>
+        {filters.length === 0 ? null : <div className="filter-list-selected">{filtered}</div>}
         {filters.length === 0
           ? <strong><em>No filters applied.</em></strong>
           : <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
@@ -94,24 +99,6 @@ FilterList.propTypes = {
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   displayName: PropTypes.string.isRequired,
-  selectedField: PropTypes.object,
-  renderSelectionInfo: PropTypes.func
+  hideCounts: PropTypes.func.isRequired,
+  selectedField: PropTypes.object
 };
-
-FilterList.defaultProps = {
-  renderSelectionInfo(parentProps) {
-    const { filteredDataCount, dataCount, displayName, filters, loadingFilteredCount } = parentProps;
-    const filteredCount = loadingFilteredCount
-      ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
-        , <span className="sr-only">Loading...</span> ]
-      : filteredDataCount;
-
-    return (
-      <div className="filter-list-selection-info">
-        <div className="filter-list-total">{dataCount} {displayName} Total</div>
-        {filters.length === 0 ? null : <div className="filter-list-selected">{filteredCount} {displayName} Selected</div>}
-      </div>
-    )
-  }
-};
-
