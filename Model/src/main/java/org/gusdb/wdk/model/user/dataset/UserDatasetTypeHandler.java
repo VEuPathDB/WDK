@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.user.dataset;
 
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -7,12 +10,14 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -47,9 +52,30 @@ public abstract class UserDatasetTypeHandler {
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
   public abstract String[] getRelevantQuestionNames();
-  
-  public String getTrackSpecificData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
-    return "";	  
+
+  /**
+   * Returns detailed type-specific data for a single user dataset for use in a detailed display page
+   * 
+   * @param wdkModel
+   * @param userDataset
+   * @return
+   * @throws WdkModelException
+   */
+  public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
+    return null;
+  }
+
+  /**
+   * Returns small-scale type-specific data for a collection of user datasets for use in a non-detailed
+   * user dataset listing page
+   * 
+   * @param wdkModel
+   * @param userDatasets
+   * @return
+   * @throws WdkModelException
+   */
+  public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets) throws WdkModelException {
+    return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud)));
   }
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
@@ -141,5 +167,5 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     }
   }
-  
+
 }

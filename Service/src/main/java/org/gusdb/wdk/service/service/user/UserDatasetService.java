@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -89,10 +88,13 @@ public class UserDatasetService extends UserService {
     return Response.ok(responseJson).build();
   }
 
-  private static List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
-      final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession, final UserFactory userFactory, final WdkModel wdkModel) {
-    return mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
+  private List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
+      final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession,
+      final UserFactory userFactory, final WdkModel wdkModel) throws WdkModelException {
+    List<UserDatasetInfo> list = mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
         installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory, wdkModel));
+    getWdkModel().getUserDatasetFactory().addTypeSpecificData(wdkModel, list);
+    return list;
   }
 
   @GET
@@ -114,8 +116,9 @@ public class UserDatasetService extends UserService {
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
       UserDatasetInfo dsInfo = new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId),
         dsStore, dsSession, getWdkModel().getUserFactory(), getWdkModel());
+      dsInfo.loadDetailedTypeSpecificData();
       responseJson = UserDatasetFormatter.getUserDatasetJson(dsSession, dsInfo,
-          userDataset.getOwnerId().equals(userId)).toString();
+          userDataset.getOwnerId().equals(userId), true).toString();
     }
     return Response.ok(responseJson).build();
   }
