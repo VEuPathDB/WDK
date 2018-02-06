@@ -52,7 +52,7 @@ public class OAuthClient {
     _googleSpecific = _oauthServerBase.contains("google");
     _clientId = config.getOauthClientId();
     _clientSecret = config.getOauthClientSecret();
-    _redirectUri = config.getWebAppUrl() + "processLogin.do";
+    _redirectUri = config.getWebAppUrl();
     _userFactory = userFactory;
     _trustManager = getTrustManager(config);
   }
