@@ -8,20 +8,20 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 
-public class JavaErrorBundle implements ErrorBundle {
+public class ServerErrorBundle implements ErrorBundle {
 
-  private static final Logger LOG = Logger.getLogger(JavaErrorBundle.class);
+  private static final Logger LOG = Logger.getLogger(ServerErrorBundle.class);
 
   private Exception _pageException;
   private Exception _requestException;
   private Exception _passedException;
   private List<String> _actionErrors;
 
-  public JavaErrorBundle(Exception requestException) {
+  public ServerErrorBundle(Exception requestException) {
       this(requestException, null, null, Collections.EMPTY_LIST);
   }
 
-  public JavaErrorBundle(Exception requestException, Exception pageException,
+  public ServerErrorBundle(Exception requestException, Exception pageException,
           Exception actionException, List<String> actionErrors) {
       _requestException = requestException;
       _pageException = pageException;
