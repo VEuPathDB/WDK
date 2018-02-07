@@ -58,8 +58,8 @@ export default class FilterList extends React.Component {
         <div className="filter-list-total">{total}</div>
         {filters.length === 0 ? null : <div className="filter-list-selected">{filtered}</div>}
         {filters.length === 0
-          ? <strong><em>No filters applied.</em></strong>
-          : <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
+          ? ( hideCounts ? null : <strong><em>No filters applied</em></strong> )
+          : <ul style={{display: 'inline-block'}} className="filter-items">
             {map(filters, filter => {
               var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
               var handleSelectClick = partial(this.handleFilterSelectClick, filter);
