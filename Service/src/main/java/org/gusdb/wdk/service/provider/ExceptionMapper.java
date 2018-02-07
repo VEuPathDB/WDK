@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.errors.ServerErrorBundle;
+import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkModel;
@@ -70,7 +71,6 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     }
 
     catch (WebApplicationException eApp) {
-      // Per 06May2016  scrum
       if(eApp.getCause() != null && eApp.getCause() instanceof Exception ) {
         return this.toResponse((Exception) eApp.getCause());
       }
@@ -83,7 +83,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
       WdkModel wdkModel = ((WdkModelBean) context.getAttribute("wdkModel")).getModel();
-      ErrorContext errorContext = WdkService.getErrorContext(context, req, wdkModel);
+      ErrorContext errorContext = WdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
       return Response.serverError()
