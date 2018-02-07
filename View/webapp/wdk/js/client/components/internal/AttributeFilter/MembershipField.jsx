@@ -1,10 +1,11 @@
 import 'mesa/dist/css/mesa.css';
 
-import { bindAll, difference, escapeRegExp, get, has, isFunction, memoize } from 'lodash';
+import { bindAll, difference, escapeRegExp, get, has, isFunction, memoize, debounce } from 'lodash';
 import { MesaController as Mesa } from 'mesa';
 import React from 'react';
 
 import { safeHtml } from '../../../utils/componentUtils';
+import { findAncestorNode } from '../../../utils/DomUtils';
 import RealTimeSearchBox from '../../RealTimeSearchBox';
 import Toggle from '../../Toggle';
 import FieldFilter from './FieldFilter';
@@ -12,10 +13,113 @@ import FilterLegend from './FilterLegend';
 
 const UNKNOWN_ELEMENT = <em>Not specified</em>;
 
+class MembershipField extends React.PureComponent {
+
+  constructor(props) {
+    super(props);
+    this.handleMouseOver = this.handleMouseOver.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
+    this.handleGroupBySelected = this.handleGroupBySelected.bind(this);
+    this.mapMouseTargetToTooltipState = debounce(this.mapMouseTargetToTooltipState, 250);
+    this.state = { showDisabledTooltip: false };
+
+  }
+
+  handleMouseOver(event) {
+    const { target, originalTarget } = event;
+    this.mapMouseTargetToTooltipState(target, originalTarget);
+  }
+
+  handleMouseLeave() {
+    this.setState({ showDisabledTooltip: false, top: undefined, left: undefined })
+    this.mapMouseTargetToTooltipState.cancel();
+  }
+
+  handleGroupBySelected() {
+    this.props.onSort(
+      this.props.field,
+      Object.assign({}, this.props.fieldState.sort, {
+        groupBySelected: !this.props.fieldState.sort.groupBySelected
+      })
+    );
+  }
+
+  isSortEnabled() {
+    return (
+      has(this.props, 'fieldState.sort') &&
+      isFunction(this.props.onSort)
+    );
+  }
+
+  mapMouseTargetToTooltipState(element, root) {
+    const disabledRow = findAncestorNode(
+      element,
+      isDisabledRow,
+      root
+    );
+    const showDisabledTooltip = disabledRow != null;
+    const { top, left } = disabledRow == null ? {} : disabledRow.getBoundingClientRect();
+
+    this.setState({
+      showDisabledTooltip,
+      tooltipTop: top + 20,
+      tooltipLeft: left + 40
+    })
+  }
+
+  render() {
+    return (
+      <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
+        {this.props.filter == null ? (
+          <div className="membership-actions">
+            <div className="membership-action">
+              <em>Check items below to apply this filter</em>
+            </div>
+          </div>
+        )
+          : this.isSortEnabled() ? (
+            <div className="membership-actions">
+              <div className="membership-action membership-action__group-selected">
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0
+                  }}
+                  type="button"
+                  onClick={this.handleGroupBySelected}
+                >
+                  <Toggle
+                    on={this.props.fieldState.sort.groupBySelected}
+                  /> Keep checked values at top
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+        {this.state.showDisabledTooltip &&
+          <div
+            className="disabled-tooltip"
+            style={{
+              left: this.state.tooltipLeft,
+              top: this.state.tooltipTop
+            }}
+          >
+            This item is unavailable because your previous filters have removed these {this.props.displayName}.
+          </div>
+        }
+
+        <MembershipTable {...this.props} />
+      </div>
+    )
+  }
+
+}
+
 /**
  * Membership field component
  */
-class MembershipField extends React.Component {
+class MembershipTable extends React.PureComponent {
   static getHelpContent(props) {
     var displayName = props.displayName;
     var fieldDisplay = props.field.display;
@@ -32,7 +136,6 @@ class MembershipField extends React.Component {
     super(props);
     bindAll(this,
       'deriveRowClassName',
-      'handleGroupBySelected',
       'handleRemoveAll',
       'handleRowClick',
       'handleRowDeselect',
@@ -204,15 +307,6 @@ class MembershipField extends React.Component {
     this.props.onSort(this.props.field, sort);
   }
 
-  handleGroupBySelected() {
-    this.props.onSort(
-      this.props.field,
-      Object.assign({}, this.props.fieldState.sort, {
-        groupBySelected: !this.props.fieldState.sort.groupBySelected
-      })
-    );
-  }
-
   handleSearchTermChange(searchTerm) {
     this.props.onSearch(this.props.field, searchTerm);
   }
@@ -360,126 +454,97 @@ class MembershipField extends React.Component {
       : this.props.fieldSummary.valueCounts;
 
     return (
-      <div className="membership-filter">
-        { this.props.filter == null ? (
-          <div className="membership-actions">
-            <div className="membership-action">
-              <em>Check items below to apply this filter</em>
-            </div>
-          </div>
-        )
-        : useSort ? (
-          <div className="membership-actions">
-            <div className="membership-action membership-action__group-selected">
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0
-                }}
-                type="button"
-                onClick={this.handleGroupBySelected}
-              >
-                <Toggle
-                  on={this.props.fieldState.sort.groupBySelected}
-                /> Keep checked values at top
-             </button>
-            </div>
-          </div>
-        ) : null }
-
-        <Mesa
-          options={{
-            // isRowSelected: this.isItemSelected,
-            deriveRowClassName: this.deriveRowClassName,
-            onRowClick: this.handleRowClick,
-            useStickyHeader: true,
-            tableBodyMaxHeight: '80vh'
-          }}
-          uiState={this.props.fieldState}
-          actions={[]}
-          eventHandlers={{
-            // onRowSelect: this.handleRowSelect,
-            // onRowDeselect: this.handleRowDeselect,
-            // onMultipleRowSelect: this.handleSelectAll,
-            // onMultipleRowDeselect: this.handleRemoveAll,
-            onSort: this.handleSort
-          }}
-          rows={this.props.fieldSummary.valueCounts}
-          filteredRows={rows}
-          columns={[
-            {
-              key: 'checked',
-              sortable: false,
-              width: '32px',
-              renderHeading: this.renderCheckboxHeading,
-              renderCell: this.renderCheckboxCell
-            },
-            {
-              key: 'value',
-              inline: true,
-              sortable: useSort,
-              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-              renderHeading: useSearch
-                ? [ this.renderValueHeading, this.renderValueHeadingSearch ]
-                : this.renderValueHeading,
-              renderCell: this.renderValueCell
-            },
-            {
-              key: 'filteredCount',
-              sortable: useSort,
-              width: '11em',
-              helpText: (
-                <div>
-                  The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br/>
-                  and that have the given <em>{this.props.field.display}</em> value.
+      <Mesa
+        options={{
+          // isRowSelected: this.isItemSelected,
+          deriveRowClassName: this.deriveRowClassName,
+          onRowClick: this.handleRowClick,
+          useStickyHeader: true,
+          tableBodyMaxHeight: '80vh'
+        }}
+        uiState={this.props.fieldState}
+        actions={[]}
+        eventHandlers={{
+          // onRowSelect: this.handleRowSelect,
+          // onRowDeselect: this.handleRowDeselect,
+          // onMultipleRowSelect: this.handleSelectAll,
+          // onMultipleRowDeselect: this.handleRemoveAll,
+          onSort: this.handleSort
+        }}
+        rows={this.props.fieldSummary.valueCounts}
+        filteredRows={rows}
+        columns={[
+          {
+            key: 'checked',
+            sortable: false,
+            width: '32px',
+            renderHeading: this.renderCheckboxHeading,
+            renderCell: this.renderCheckboxCell
+          },
+          {
+            key: 'value',
+            inline: true,
+            sortable: useSort,
+            wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+            renderHeading: useSearch
+              ? [this.renderValueHeading, this.renderValueHeadingSearch]
+              : this.renderValueHeading,
+            renderCell: this.renderValueCell
+          },
+          {
+            key: 'filteredCount',
+            sortable: useSort,
+            width: '11em',
+            helpText: (
+              <div>
+                The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br />
+                and that have the given <em>{this.props.field.display}</em> value.
                 </div>
-              ),
-              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-              renderHeading: this.props.fieldSummary.internalsFilteredCount
-                ? [ this.renderFilteredCountHeading1, this.renderFilteredCountHeading2 ]
-                : this.renderFilteredCountHeading1,
-              renderCell: this.renderFilteredCountCell
-            },
-            {
-              key: 'count',
-              sortable: useSort,
-              width: '11em',
-              helpText: (
-                <div>
-                  The number of <em>{this.props.displayName}</em> with the
+            ),
+            wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+            renderHeading: this.props.fieldSummary.internalsFilteredCount
+              ? [this.renderFilteredCountHeading1, this.renderFilteredCountHeading2]
+              : this.renderFilteredCountHeading1,
+            renderCell: this.renderFilteredCountCell
+          },
+          {
+            key: 'count',
+            sortable: useSort,
+            width: '11em',
+            helpText: (
+              <div>
+                The number of <em>{this.props.displayName}</em> with the
                   given <em>{this.props.field.display}</em> value.
                 </div>
-              ),
-              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-              renderHeading: this.props.fieldSummary.internalsCount
-                ? [ this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2 ]
-                : this.renderUnfilteredCountHeading1,
-              renderCell: this.renderUnfilteredCountCell
-            },
-            {
-              key: 'distribution',
-              name: 'Distribution',
-              width: '30%',
-              helpText: <FilterLegend {...this.props} />,
-              renderCell: this.renderDistributionCell
-            },
-            {
-              key: '%',
-              name: '',
-              width: '4em',
-              helpText: (
-                <div>
-                  <em>Remaining {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br/>
-                  with the given <em>{this.props.field.display}</em> value.
+            ),
+            wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+            renderHeading: this.props.fieldSummary.internalsCount
+              ? [this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2]
+              : this.renderUnfilteredCountHeading1,
+            renderCell: this.renderUnfilteredCountCell
+          },
+          {
+            key: 'distribution',
+            name: 'Distribution',
+            width: '30%',
+            helpText: <FilterLegend {...this.props} />,
+            renderCell: this.renderDistributionCell
+          },
+          {
+            key: '%',
+            name: '',
+            width: '4em',
+            helpText: (
+              <div>
+                <em>Remaining {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br />
+                with the given <em>{this.props.field.display}</em> value.
                 </div>
-              ),
-              renderCell: this.renderPrecentageCell
-            }
-          ]}
-        >
-        </Mesa>
-      </div>
+            ),
+            renderCell: this.renderPrecentageCell
+          }
+        ]}
+      >
+      </Mesa>
     );
   }
 }
@@ -487,3 +552,8 @@ class MembershipField extends React.Component {
 MembershipField.propTypes = FieldFilter.propTypes
 
 export default MembershipField
+
+/** @param {HTMLElement} element */
+function isDisabledRow(element) {
+  return element.classList.contains('member__disabled');
+}

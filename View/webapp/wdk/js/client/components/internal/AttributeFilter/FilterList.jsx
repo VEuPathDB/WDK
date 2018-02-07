@@ -50,7 +50,7 @@ export default class FilterList extends React.Component {
       : filteredDataCount;
 
     const total = hideCounts ? null : <span>{dataCount} {displayName} Total</span>
-    const filtered = hideCounts ? null : <span>{filteredCount} {displayName} Selected</span>;
+    const filtered = hideCounts ? null : <span>{filteredCount} {displayName} selected</span>;
 
 
     return (
