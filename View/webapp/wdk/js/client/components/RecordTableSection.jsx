@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { includes } from 'lodash';
-import { wrappable } from '../utils/componentUtils';
+import { safeHtml, wrappable } from '../utils/componentUtils';
 import RecordTable from './RecordTable';
 import CollapsibleSection from './CollapsibleSection';
 
@@ -21,7 +21,7 @@ function RecordTableSection(props) {
       isCollapsed={isCollapsed}
       onCollapsedChange={onCollapsedChange}
     >
-      {description && <p>{description}</p>}
+      {description && <p>{safeHtml(description)}</p>}
       { isError ? <p style={{ color: 'darkred', fontStyle: 'italic' }}>Unable to load data due to a server error.</p>
       : isLoading ? <p>Loading...</p>
       : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/> }
