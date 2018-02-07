@@ -24,7 +24,6 @@
   display: flex;
   align-items: center;
   font-size: 1.2em;
-  margin-bottom: 1em;
 }
 .filter-list-total,
 .filter-list-selected {
@@ -464,6 +463,7 @@
 .filter-param .filter-items {
   line-height: 14px;
   margin-left: 0;
+  font-size: .8em;
 }
 .filter-param .filter-items * {
   vertical-align: middle;
@@ -475,23 +475,22 @@
 }
 .filter-param .filter-items li {
   display: inline-block;
-  margin-left: .2em;
   margin-right: .2em;
 }
 .filter-param .filter-items li > div {
   padding: 2px 4px;
-  background-color: #fafafa;
+  background-color: #ececec;
   border: 1px solid #c8c8c8;
 }
 .filter-param .filter-items li.selected > div {
-  background-color: #ececec;
-  font-weight: bold;
+  border: 1px solid #909090;
+  font-weight: 500;
 }
 .filter-param .filter-items .remove {
   display: inline-block;
-  vertical-align: text-top;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.5em;
+  font-weight: normal;
   padding-left: 4px;
   opacity: .4;
   -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
