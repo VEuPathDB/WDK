@@ -22,7 +22,7 @@ import javax.ws.rs.core.UriInfo;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
-import org.gusdb.wdk.errors.JavaErrorBundle;
+import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.RequestType;
 import org.gusdb.wdk.errors.ValueMaps;
@@ -162,7 +162,7 @@ public abstract class WdkService {
   protected void triggerErrorEvents(List<Exception> errors) {
     ErrorContext context = getErrorContext();
     for (Exception e : errors) {
-      Events.trigger(new ErrorEvent(new JavaErrorBundle(e), context));
+      Events.trigger(new ErrorEvent(new ServerErrorBundle(e), context));
     }
   }
 
