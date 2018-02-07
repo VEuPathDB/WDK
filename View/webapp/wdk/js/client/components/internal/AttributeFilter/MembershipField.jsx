@@ -391,9 +391,9 @@ class MembershipTable extends React.PureComponent {
       <div>
         {value.toLocaleString()}
         &nbsp;
-        {internalsCount && (
+        {internalsCount != null && (
           <small style={{ display: 'inline-block', width: '50%', textAlign: 'center' }}>
-            ({Math.round(value/internalsCount * 100)}%)
+            ({value === 0 || internalsCount ===  0 ? 0 : Math.round(value/internalsCount * 100)}%)
           </small>
         )}
       </div>
@@ -502,7 +502,7 @@ class MembershipTable extends React.PureComponent {
                 </div>
             ),
             wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: this.props.fieldSummary.internalsFilteredCount
+            renderHeading: this.props.fieldSummary.internalsFilteredCount != null
               ? [this.renderFilteredCountHeading1, this.renderFilteredCountHeading2]
               : this.renderFilteredCountHeading1,
             renderCell: this.renderFilteredCountCell
@@ -518,7 +518,7 @@ class MembershipTable extends React.PureComponent {
                 </div>
             ),
             wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: this.props.fieldSummary.internalsCount
+            renderHeading: this.props.fieldSummary.internalsCount != null
               ? [this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2]
               : this.renderUnfilteredCountHeading1,
             renderCell: this.renderUnfilteredCountCell
