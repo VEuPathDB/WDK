@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.user.dataset;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
+
 import org.gusdb.wdk.model.WdkModelException;
 
 /**

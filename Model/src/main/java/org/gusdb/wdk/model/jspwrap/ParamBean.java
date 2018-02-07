@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,29 +81,28 @@ public abstract class ParamBean<T extends Param> {
     return _param.getEmptyValue();
   }
 
+  /**
+   * Returns a set of ParamBeans representing params this param depends on
+   * @return depended param beans
+   * @throws WdkModelException
+   */
   public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
     return null;
   }
 
+  /**
+   * Returns a comma-delimited list of names of params this param depends on
+   * @return depended param names as string
+   * @throws WdkModelException
+   */
   public String getDependedParamNames() throws WdkModelException {
     return null;
   }
 
-
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#isVisible()
-   */
   public boolean getIsVisible() {
     return _param.isVisible();
   }
 
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.Param#getGroup()
-   */
   public GroupBean getGroup() {
     return new GroupBean(_param.getGroup());
   }

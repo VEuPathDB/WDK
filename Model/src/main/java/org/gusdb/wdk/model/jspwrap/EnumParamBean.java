@@ -150,6 +150,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return _param.getInternalValue(user, dependentValue, _contextValues);
   }
 
+  @Override
   public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
     Set<Param> dependedParams = _param.getDependedParams();
     if (dependedParams != null) {
@@ -162,6 +163,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return null;
   }
 
+  @Override
   public String getDependedParamNames() throws WdkModelException {
     Set<Param> dependedParams = _param.getDependedParams();
     if (dependedParams == null)
