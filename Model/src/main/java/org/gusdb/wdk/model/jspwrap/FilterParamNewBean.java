@@ -13,6 +13,7 @@ public class FilterParamNewBean extends ParamBean<FilterParamNew> {
     super(param);
   }
 
+  @Override
   public String getDependedParamNames() throws WdkModelException {
     Set<Param> dependedParams = _param.getDependedParams();
     if (dependedParams == null) return null;

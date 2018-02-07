@@ -24,7 +24,7 @@ public class ParamBeanFactory {
       // FIXME - need to get the actual user in the future.
       user = new UserBean(wdkModel.getSystemUser());
     }
-   if (param instanceof FilterParamNew) {
+    if (param instanceof FilterParamNew) {
       bean = (ParamBean<T>) new FilterParamNewBean((FilterParamNew)param);
     }
     else if (param instanceof AbstractEnumParam) {
@@ -46,14 +46,14 @@ public class ParamBeanFactory {
       bean = (ParamBean<T>) new NumberParamBean((NumberParam)param);
     }
     else if (param instanceof DateParam) {
-        bean = (ParamBean<T>) new DateParamBean((DateParam)param);
-      }
+      bean = (ParamBean<T>) new DateParamBean((DateParam)param);
+    }
     else if (param instanceof NumberRangeParam) {
-        bean = (ParamBean<T>) new NumberRangeParamBean((NumberRangeParam)param);
-      }
-      else if (param instanceof DateRangeParam) {
-          bean = (ParamBean<T>) new DateRangeParamBean((DateRangeParam)param);
-        }
+      bean = (ParamBean<T>) new NumberRangeParamBean((NumberRangeParam)param);
+    }
+    else if (param instanceof DateRangeParam) {
+      bean = (ParamBean<T>) new DateRangeParamBean((DateRangeParam)param);
+    }
     else {
       throw new WdkModelException("Unknown param type: " + param.getClass().getCanonicalName());
     }
