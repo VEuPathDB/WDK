@@ -24,7 +24,7 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
 import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
-import org.gusdb.wdk.errors.ErrorContext.RequestType;
+import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ValueMaps;
 import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
@@ -160,7 +160,7 @@ public abstract class WdkService {
    * @param errors list of errors for which to trigger error events
    */
   protected void triggerErrorEvents(List<Exception> errors) {
-    ErrorContext context = getErrorContext();
+    ErrorContext context = getErrorContext(ErrorLocation.WDK_SERVICE);
     for (Exception e : errors) {
       Events.trigger(new ErrorEvent(new ServerErrorBundle(e), context));
     }
@@ -171,8 +171,8 @@ public abstract class WdkService {
    * 
    * @return error context for the current request
    */
-  public ErrorContext getErrorContext() {
-    return getErrorContext(_servletContext, _request, _wdkModelBean.getModel());
+  public ErrorContext getErrorContext(ErrorLocation errorLocation) {
+    return getErrorContext(_servletContext, _request, _wdkModelBean.getModel(), errorLocation);
   }
 
   /**
@@ -184,14 +184,14 @@ public abstract class WdkService {
    * @return context data for this error
    */
   public static ErrorContext getErrorContext(ServletContext context,
-          HttpServletRequest request, WdkModel wdkModel) {
+          HttpServletRequest request, WdkModel wdkModel, ErrorLocation errorLocation) {
     return new ErrorContext(
       wdkModel,
       new HttpRequestData(request),
       ValueMaps.toMap(new ServletContextValueMap(context)),
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
-      RequestType.WDK_SERVICE);
+      errorLocation);
   }
 
   /**

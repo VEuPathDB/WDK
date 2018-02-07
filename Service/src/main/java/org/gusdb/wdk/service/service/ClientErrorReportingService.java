@@ -8,6 +8,7 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.errors.ClientErrorBundle;
+import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -22,7 +23,7 @@ public class ClientErrorReportingService extends WdkService {
   public Response reportError(String body) throws RequestMisformatException {
     try {
       if (requestValid()) {
-        Events.trigger(new ErrorEvent(new ClientErrorBundle(new JSONObject(body)), getErrorContext()));
+        Events.trigger(new ErrorEvent(new ClientErrorBundle(new JSONObject(body)), getErrorContext(ErrorLocation.WDK_CLIENT)));
         return Response.noContent().build();
       }
       else {
