@@ -2,6 +2,18 @@ import { flow, debounce } from 'lodash';
 import { preorder } from './TreeUtils';
 import { find } from './IterableUtils';
 
+export function findAncestorNode(
+  targetNode: Node | null,
+  predicate: (node: Node) => boolean,
+  rootNode: Node = document
+): Node | undefined {
+  if (targetNode == null || targetNode == rootNode) return undefined;
+
+  return predicate(targetNode)
+    ? targetNode
+    : findAncestorNode(targetNode.parentNode, predicate, rootNode);
+}
+
 /**
  * Check if a targetNode has an ancestor node that satisfies a predicate function.
  */
@@ -10,11 +22,8 @@ export function containsAncestorNode(
   predicate: (node: Node) => boolean,
   rootNode: Node = document
 ): boolean {
-  if (targetNode == null || targetNode == rootNode) return false;
-  return (
-    predicate(targetNode) ||
-    containsAncestorNode(targetNode.parentNode, predicate, rootNode)
-  );
+  const ancestorNode = findAncestorNode(targetNode, predicate, rootNode);
+  return ancestorNode != null;
 }
 
 /**
