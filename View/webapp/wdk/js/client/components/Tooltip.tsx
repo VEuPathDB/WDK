@@ -101,7 +101,7 @@ class Tooltip extends React.PureComponent<Props> {
       showDelay = defaultOptions.show.delay,
       hideEvent,
       hideDelay = defaultOptions.hide.delay,
-      classes = 'qtip-tipsy',
+      classes = 'qtip-wdk',
       position = defaultOptions.position,
       solo = true,
       showTip = true

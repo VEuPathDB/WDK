@@ -90,6 +90,6 @@ $.fn.wdkTooltip.defaults = {
     solo: true
   },
   style: {
-    classes: 'qtip-tipsy'
+    classes: 'qtip-wdk'
   }
 };

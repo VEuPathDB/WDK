@@ -242,7 +242,7 @@ var Histogram = (function() {
             fixed: true
           },
           style: {
-            classes: 'qtip-tipsy'
+            classes: 'qtip-wdk'
           }
         });
     }

@@ -237,7 +237,7 @@ class DataTable extends PureComponent<Props> {
                     delay: 500
                   },
                   style: {
-                    classes: 'qtip-tipsy'
+                    classes: 'qtip-wdk'
                   }
                 }));
           }
