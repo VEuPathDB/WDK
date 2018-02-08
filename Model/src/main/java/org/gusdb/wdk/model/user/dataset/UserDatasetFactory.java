@@ -17,6 +17,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 
 public class UserDatasetFactory {
 
@@ -72,14 +73,14 @@ public class UserDatasetFactory {
    * @param userDatasets
    * @throws WdkModelException 
    */
-  public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets)
+  public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets, User user)
       throws WdkModelException{
     UserDatasetStore store = wdkModel.getUserDatasetStore();
     Function<UserDatasetInfo,UserDatasetType> f = toJavaFunction(fSwallow(ud -> ud.getDataset().getType()));
     Set<UserDatasetType> types = userDatasets.stream().map(f).collect(Collectors.toSet());
     for (UserDatasetType type : types) {
       List<UserDatasetInfo> typedUdis = userDatasets.stream().filter(ud -> type.equals(f.apply(ud))).collect(Collectors.toList());
-      List<JsonType> typeSpecificInfo = store.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(typedUdis, udi -> udi.getDataset()));
+      List<JsonType> typeSpecificInfo = store.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(typedUdis, udi -> udi.getDataset()), user);
       zipToList(typedUdis, typeSpecificInfo, (udi, json) -> { udi.setTypeSpecificData(json); return udi; }, false);
     }
   }
