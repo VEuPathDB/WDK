@@ -238,7 +238,7 @@
 }
 
 .wdk-RecordAttributeValue {
-  padding: 0 4px;
+  padding: 0 .5em;
   word-break: break-word;
   top: 1px;
 }
