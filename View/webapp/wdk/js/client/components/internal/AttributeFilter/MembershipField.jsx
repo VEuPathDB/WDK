@@ -317,13 +317,18 @@ class MembershipTable extends React.PureComponent {
   }
 
   renderCheckboxHeading() {
-    const allAvailableChecked = this.props.fieldSummary.valueCounts
-      .filter(member => member.filteredCount > 0)
+    const availableItems = this.props.fieldSummary.valueCounts
+      .filter(member => member.filteredCount > 0);
+    const allAvailableChecked = availableItems
       .every(member => this.isItemSelected(member));
     const onClick = () =>
       allAvailableChecked ? this.handleRemoveAll() : this.handleSelectAll()
     return (
-      <input type="checkbox" checked={allAvailableChecked} onChange={onClick} />
+      <input
+        type="checkbox"
+        disabled={availableItems.length === 0}
+        checked={availableItems.length > 0 && allAvailableChecked}
+        onChange={onClick} />
     );
   }
 
