@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * A handler for a particular type of dataset.  These are plugged in to the wdk.
@@ -61,7 +62,7 @@ public abstract class UserDatasetTypeHandler {
    * @return
    * @throws WdkModelException
    */
-  public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset) throws WdkModelException {
+  public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset, User user) throws WdkModelException {
     return null;
   }
 
@@ -74,8 +75,8 @@ public abstract class UserDatasetTypeHandler {
    * @return
    * @throws WdkModelException
    */
-  public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets) throws WdkModelException {
-    return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud)));
+  public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets, User user) throws WdkModelException {
+    return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud, user)));
   }
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
