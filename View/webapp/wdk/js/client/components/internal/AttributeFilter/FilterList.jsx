@@ -47,9 +47,9 @@ export default class FilterList extends React.Component {
       : loadingFilteredCount ? [
         <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
         , <span className="sr-only">Loading...</span> ]
-      : filteredDataCount;
+      : filteredDataCount && filteredDataCount.toLocaleString();
 
-    const total = hideCounts ? null : <span>{dataCount} {displayName} Total</span>
+    const total = hideCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
     const filtered = hideCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} {displayName} selected</span>;
 
 
