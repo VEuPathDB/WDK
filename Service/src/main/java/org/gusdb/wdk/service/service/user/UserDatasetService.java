@@ -72,16 +72,17 @@ public class UserDatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     expandDatasets = getFlag(expandDatasets, false);
-    long userId = getUserId(Access.PRIVATE);
+    User user = getUser(Access.PRIVATE);
+    long userId = user.getUserId();
     UserFactory userFactory = getWdkModel().getUserFactory();
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
       List<UserDatasetInfo> userDatasets = getDatasetInfo(dsSession.getUserDatasets(userId).values(),
-          installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel());
+          installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel(), user);
       List<UserDatasetInfo> sharedDatasets = getDatasetInfo(dsSession.getExternalUserDatasets(userId).values(),
-          installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel());
+          installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel(), user);
       responseJson = UserDatasetFormatter.getUserDatasetsJson(dsSession, userDatasets,
           sharedDatasets, expandDatasets).toString();
     }        
@@ -90,10 +91,10 @@ public class UserDatasetService extends UserService {
 
   private List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
       final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession,
-      final UserFactory userFactory, final WdkModel wdkModel) throws WdkModelException {
+      final UserFactory userFactory, final WdkModel wdkModel, User user) throws WdkModelException {
     List<UserDatasetInfo> list = mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
         installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory, wdkModel));
-    getWdkModel().getUserDatasetFactory().addTypeSpecificData(wdkModel, list);
+    getWdkModel().getUserDatasetFactory().addTypeSpecificData(wdkModel, list, user);
     return list;
   }
 
@@ -101,8 +102,9 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
-	long userId = getUserId(Access.PRIVATE);  
-    long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
+	User user = getUser(Access.PRIVATE); 
+	long userId = user.getUserId();
+	long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
@@ -116,7 +118,7 @@ public class UserDatasetService extends UserService {
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
       UserDatasetInfo dsInfo = new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId),
         dsStore, dsSession, getWdkModel().getUserFactory(), getWdkModel());
-      dsInfo.loadDetailedTypeSpecificData();
+      dsInfo.loadDetailedTypeSpecificData(user);
       responseJson = UserDatasetFormatter.getUserDatasetJson(dsSession, dsInfo,
           userDataset.getOwnerId().equals(userId), true).toString();
     }
@@ -135,7 +137,7 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
-	long userId = getUserId(Access.PUBLIC);
+	long userId = getUser(Access.PUBLIC).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     java.nio.file.Path temporaryDirPath = null;
@@ -187,7 +189,7 @@ public class UserDatasetService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
-	long userId = getUserId(Access.PRIVATE);
+	long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
@@ -218,7 +220,7 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException {
-	long userId = getUserId(Access.PRIVATE);
+	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
     UserDatasetStore dsStore = getUserDatasetStore();
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
@@ -275,7 +277,7 @@ public class UserDatasetService extends UserService {
   @DELETE
   @Path("user-datasets/{datasetId}")
   public Response deleteById(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
-	long userId = getUserId(Access.PRIVATE);
+	long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
@@ -317,11 +319,11 @@ public class UserDatasetService extends UserService {
    * @return
    * @throws WdkModelException
    */
-  private Long getUserId(Access access) throws WdkModelException {
-	if(access == Access.PRIVATE) return getPrivateRegisteredUser().getUserId();
+  private User getUser(Access access) throws WdkModelException {
+	if(access == Access.PRIVATE) return getPrivateRegisteredUser();
 	User user = getUserBundle(access).getTargetUser();
 	if(user.isGuest()) throw new NotFoundException("The user " + user.getUserId() + " has no datasets.");
-	return user.getUserId();
+	return user;
   }
 
   /**
