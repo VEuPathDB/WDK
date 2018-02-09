@@ -1,11 +1,6 @@
-import _test from 'ava';
-import * as TreeUtils from '../../webapp/wdk/js/client/utils/TreeUtils';
+import * as TreeUtils from '../webapp/wdk/js/client/utils/TreeUtils';
 
-const test = (label, testFn) => {
-  _test('TreeUtils#' + label, testFn);
-}
-
-test('preorderSeq', function(t) {
+test('preorderSeq', function() {
   let tree = {
     id: 1,
     children: [
@@ -20,11 +15,11 @@ test('preorderSeq', function(t) {
     .map(n => n.id)
     .toArray();
 
-  t.deepEqual(ids, [ 1, 2, 3, 4]);
+  expect(ids).toEqual([ 1, 2, 3, 4]);
 
 });
 
-test('postorderSeq', function(t) {
+test('postorderSeq', function() {
   let tree = {
     id: 1,
     children: [
@@ -39,11 +34,11 @@ test('postorderSeq', function(t) {
     .map(n => n.id)
     .toArray();
 
-  t.deepEqual(ids, [ 2, 4, 3, 1 ]);
+  expect(ids).toEqual([ 2, 4, 3, 1 ]);
 
 });
 
-test('mapStructure', function(t) {
+test('mapStructure', function() {
   let tree = {
     id: 1,
     children: [
@@ -70,10 +65,15 @@ test('mapStructure', function(t) {
       };
     },
     node => node.children, tree);
-  t.deepEqual(mappedStructure, expectedStructure, 'mappedStructure does not match expectedStructure');
+  expect(mappedStructure).toEqual(expectedStructure);
 });
 
-test('foldStructure', t => {
+test('foldStructure', () => {
+
+  type Node = {
+    id: number;
+    children: Node[];
+  }
   /*
    *          (id: 1)
    *         /       \
@@ -94,12 +94,16 @@ test('foldStructure', t => {
     ]
   };
   let expected = [ 1, 3, 4, 6 ]
-  let fold = (path, node) => node.id === 6 || path.length ? [ node, ...path ] :  path;
+  let fold = (path: Node[], node: Node) => node.id === 6 || path.length ? [ node, ...path ] :  path;
   let result = TreeUtils.foldStructure(fold, [], tree).map(node => node.id)
-  t.deepEqual(result, expected);
+  expect(result).toEqual(expected);
 })
 
-test('compactRootNodes', function(t) {
+test('compactRootNodes', function() {
+  type Node = {
+    id: number;
+    children: Node[];
+  }
   let tree = {
     id: 1,
     children: [
@@ -119,13 +123,13 @@ test('compactRootNodes', function(t) {
     ]
   };
 
-  let compactedTree = TreeUtils.compactRootNodes(tree);
+  let compactedTree = TreeUtils.compactRootNodes(tree) as Node;
 
-  t.is(compactedTree.id, 4, 'compactedTree does not have expected root.');
+  expect(compactedTree.id).toBe(4);
 
 });
 
-test('pruneDescendantNodes', function(t) {
+test('pruneDescendantNodes', function() {
   let tree = {
     id: 1,
     children: [
@@ -157,7 +161,7 @@ test('pruneDescendantNodes', function(t) {
 
   let prunedTree = TreeUtils.pruneDescendantNodes(n => n.id !== 3 && n.id !== 2, tree);
 
-  t.deepEqual(prunedTree, expectedTree, 'prunedTree does not have expected shape.');
+  expect(prunedTree).toEqual(expectedTree);
 
 
   // Generate a tree where leaves have certain properties
@@ -174,12 +178,12 @@ test('pruneDescendantNodes', function(t) {
 
   let prunedTree2 = TreeUtils.pruneDescendantNodes(n => n.children.length > 0 || n.id === 2, tree2);
 
-  t.deepEqual(prunedTree2, {
+  expect(prunedTree2).toEqual({
     id: 1,
     children: [
       { id: 2, children: [] }
     ]
-  }, 'prunedTree2 does not have expected shape.');
+  });
 
 });
 

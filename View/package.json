@@ -2,8 +2,7 @@
   "name": "wdk",
   "version": "0.1.0",
   "scripts": {
-    "test": "nyc ava",
-    "report": "nyc report --reporter=html && open coverage/index.html",
+    "test": "jest",
     "build": "webpack",
     "check-ts": "tsc --noEmit --pretty",
     "examples": "cd client-examples && webpack-dev-server --content-base public/"
@@ -78,36 +77,27 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
-    "ava": "^0.23.0",
+    "@types/jest": "^22.1.1",
     "babel-eslint": "^8.0.1",
     "eslint": "^4.10.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-react": "^7.4.0",
-    "nyc": "^11.3.0",
+    "jest": "^22.2.1",
+    "ts-jest": "^22.0.3",
     "ts-node": "^3.2.0"
   },
-  "nyc": {
-    "exclude": [
-      "tests/**"
-    ],
-    "extension": [
-      ".js",
-      ".jsx",
-      ".ts",
-      ".tsx"
-    ]
-  },
-  "ava": {
-    "files": [
-      "tests/**"
-    ],
-    "source": [
-      "webapp/**/*.{js,jsx,ts,tsx}"
-    ],
-    "require": [
-      "ts-node/register",
-      "babel-core/register",
-      "babel-polyfill"
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
     ]
   }
 }
