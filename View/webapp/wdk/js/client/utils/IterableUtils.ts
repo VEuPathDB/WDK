@@ -157,7 +157,9 @@ export class Seq<T> {
     return includes(item, this);
   }
 
-  reduce<U>(fn: Reducer<T, U>, value?: U) {
+  reduce(fn: Reducer<T, T>): T;
+  reduce<U>(fn: Reducer<T, U>, value: U): U;
+  reduce(fn: any, value?: any) {
     return value === undefined ? reduce(fn, this)
     : reduce(fn, value, this);
   }

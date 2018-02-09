@@ -13,12 +13,12 @@ export class Task<T, E> {
 
   _operation: Operation<T, E>;
 
-  static of<T>(t: T) {
-    return new Task<T, void>(fulfill => void fulfill(t));
+  static of<T, E>(t: T) {
+    return new Task<T, E>(fulfill => void fulfill(t));
   }
 
-  static reject<E>(e: E) {
-    return new Task<void, E>((fulfill, reject) => void reject(e));
+  static reject<E, T>(e: E) {
+    return new Task<T, E>((fulfill, reject) => void reject(e));
   }
 
   static fromPromise<T, E>(p: Promise<T>) {

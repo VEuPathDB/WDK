@@ -195,7 +195,7 @@ function mapBy<T, S>(iter: Iterable<T>, keyAccessor: (item: T) => S) {
       itemArray.push(item);
       map.set(key, itemArray);
       return map;
-    }, new Map);
+    }, new Map<S, T[]>());
 }
 
 
