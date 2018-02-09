@@ -97,5 +97,9 @@
       "json",
       "node"
     ]
+  },
+  "optionalDependencies": {
+    "jest": "^22.2.2",
+    "ts-jest": "^22.0.3"
   }
 }
