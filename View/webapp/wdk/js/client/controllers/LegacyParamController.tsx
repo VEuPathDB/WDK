@@ -107,6 +107,26 @@ export default class LegacyParamController extends AbstractViewController<
     }
   }
 
+  renderDataLoadError() {
+    const isProbablyRevise = this.props.paramValues != null;
+    const errorMessage = 'Data for this parameter could not be loaded.' +
+      (isProbablyRevise ? ' This value is most likely no longer valid:' : '');
+
+    return (
+      <div>
+        <div style={{ color: 'red', fontSize: '1.4em', fontWeight: 500 }}>
+          {errorMessage}
+        </div>
+
+        {isProbablyRevise &&
+          <div style={{ maxHeight: 300, overflow: 'auto', background: '#f3f3f3' }}>
+            <pre>{prettyPrintRawValue(this.props.paramValues[this.props.paramName])}</pre>
+          </div>
+        }
+      </div>
+    );
+  }
+
   renderView() {
     const parameter = this.state.question.parameters.find(p => p.name === this.props.paramName);
 
@@ -193,4 +213,13 @@ class ParamterInput extends React.Component<ParameterInputProps> {
     );
   }
 
+}
+
+function prettyPrintRawValue(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 4);
+  }
+  catch (e) {
+    return value;
+  }
 }
