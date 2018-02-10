@@ -83,6 +83,34 @@ export default abstract class AbstractViewController<
     return ( <span>Page for View Controller: {this.constructor.name}</span> );
   }
 
+  /**
+   * Renders data load error message
+   */
+  renderDataLoadError() {
+    return ( <LoadError/> );
+  }
+
+  /**
+   * Renders data not found message
+   */
+  renderDataNotFound() {
+    return ( <NotFound/> );
+  }
+
+  /**
+   * Renders data permission denied
+   */
+  renderDataPermissionDenied() {
+    return ( <PermissionDenied/> );
+  }
+
+  /**
+   * Renders data loading message
+   */
+  renderDataLoading() {
+    return ( <Loading/> );
+  }
+
 
   /*-------- Methods to override to call ACs and load initial data --------*/
 
@@ -207,16 +235,16 @@ export default abstract class AbstractViewController<
    */
   render() {
     if (this.isRenderDataLoadError()) {
-      return ( <LoadError/> );
+      return this.renderDataLoadError();
     }
     else if (this.isRenderDataNotFound()) {
-      return ( <NotFound/> );
+      return this.renderDataNotFound();
     }
     else if (this.isRenderDataPermissionDenied()) {
-      return ( <PermissionDenied/> );
+      return this.renderDataPermissionDenied();
     }
     else if (!this.isRenderDataLoaded()) {
-      return ( <Loading/> );
+      return this.renderDataLoading();
     }
     else {
       return this.renderView();
