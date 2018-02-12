@@ -64,7 +64,15 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     } = this.props;
     const prevFilters = this._getFiltersFromValue(this.props.value);
 
-    onParamValueChange(JSON.stringify({ filters }));
+    const fieldMap = this._getFieldMap(this.props.parameter);
+
+    const filtersWithDisplay = filters.map(filter => {
+      const field = fieldMap.get(filter.field);
+      const fieldDisplayName = field ? field.display : undefined;
+      return { ...filter, fieldDisplayName };
+    });
+
+    onParamValueChange(JSON.stringify({ filters: filtersWithDisplay }));
     dispatch(FiltersUpdatedAction.create({...ctx, prevFilters, filters}));
   }
 
