@@ -1,61 +1,61 @@
 /*
-DROP SEQUENCE wdkuser.categories_pkseq;
-DROP SEQUENCE wdkuser.datasets_pkseq;
-DROP SEQUENCE wdkuser.dataset_values_pkseq;
-DROP SEQUENCE wdkuser.favorites_pkseq;
-DROP SEQUENCE wdkuser.user_baskets_pkseq;
-DROP SEQUENCE wdkuser.migration_pkseq;
-DROP SEQUENCE wdkuser.steps_pkseq;
-DROP SEQUENCE wdkuser.strategies_pkseq;
-DROP SEQUENCE wdkuser.users_pkseq;
-DROP SEQUENCE wdkuser.step_analysis_pkseq;
+DROP SEQUENCE userlogins5.categories_pkseq;
+DROP SEQUENCE userlogins5.datasets_pkseq;
+DROP SEQUENCE userlogins5.dataset_values_pkseq;
+DROP SEQUENCE userlogins5.favorites_pkseq;
+DROP SEQUENCE userlogins5.user_baskets_pkseq;
+DROP SEQUENCE userlogins5.migration_pkseq;
+DROP SEQUENCE userlogins5.steps_pkseq;
+DROP SEQUENCE userlogins5.strategies_pkseq;
+DROP SEQUENCE userlogins5.users_pkseq;
+DROP SEQUENCE userlogins5.step_analysis_pkseq;
 
-DROP TABLE wdkuser.categories;
-DROP TABLE wdkuser.favorites;
-DROP TABLE wdkuser.user_baskets;
-DROP TABLE wdkuser.strategies;
-DROP TABLE wdkuser.step_analysis;
-DROP TABLE wdkuser.steps;
-DROP TABLE wdkuser.dataset_values;
-DROP TABLE wdkuser.datasets;
-DROP TABLE wdkuser.preferences;
-DROP TABLE wdkuser.user_roles;
-DROP TABLE wdkuser.users;
-DROP TABLE wdkuser.config;
+DROP TABLE userlogins5.categories;
+DROP TABLE userlogins5.favorites;
+DROP TABLE userlogins5.user_baskets;
+DROP TABLE userlogins5.strategies;
+DROP TABLE userlogins5.step_analysis;
+DROP TABLE userlogins5.steps;
+DROP TABLE userlogins5.dataset_values;
+DROP TABLE userlogins5.datasets;
+DROP TABLE userlogins5.preferences;
+DROP TABLE userlogins5.user_roles;
+DROP TABLE userlogins5.users;
+DROP TABLE userlogins5.config;
 */
 
 
 /* =========================================================================
    create sequences
    ========================================================================= */
-CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.users_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.migration_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.strategies_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.steps_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.datasets_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.dataset_values_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.dataset_values_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins5.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
 
 
 
@@ -63,7 +63,7 @@ CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
    tables in user schema
    ========================================================================= */
 
-CREATE TABLE wdkuser.config
+CREATE TABLE userlogins5.config
 (
   config_name VARCHAR(100) NOT NULL,
   config_value VARCHAR(255),
@@ -71,10 +71,10 @@ CREATE TABLE wdkuser.config
   CONSTRAINT "config_pk" PRIMARY KEY (config_name)
 );
 
-INSERT INTO wdkuser.config(config_name, config_value) VALUES('wdk.user.schema.version', '5');
+INSERT INTO userlogins5.config(config_name, config_value) VALUES('wdk.user.schema.version', '5');
 
    
-CREATE TABLE wdkuser.users
+CREATE TABLE userlogins5.users
 (
   user_id NUMBER(12) NOT NULL,
   email VARCHAR(255) NOT NULL,
@@ -103,22 +103,22 @@ CREATE TABLE wdkuser.users
 );
 
 
-CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (is_guest);
-CREATE INDEX wdkuser.users_idx02 ON wdkuser.users (prev_user_id);
+CREATE INDEX userlogins5.users_idx01 ON userlogins5.users (is_guest);
+CREATE INDEX userlogins5.users_idx02 ON userlogins5.users (prev_user_id);
 
 
-CREATE TABLE wdkuser.user_roles
+CREATE TABLE userlogins5.user_roles
 (
   user_id NUMBER(12) NOT NULL,
   user_role VARCHAR(50) NOT NULL,
   migration_id NUMBER(12),
   CONSTRAINT "user_roles_pk" PRIMARY KEY (user_id, user_role),
   CONSTRAINT "user_roles_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id) 
+      REFERENCES userlogins5.users (user_id) 
 );
 
 
-CREATE TABLE wdkuser.preferences
+CREATE TABLE userlogins5.preferences
 (
   user_id NUMBER(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
@@ -127,11 +127,11 @@ CREATE TABLE wdkuser.preferences
   migration_id NUMBER(12),
   CONSTRAINT "preferences_pk" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "preferences_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id) 
+      REFERENCES userlogins5.users (user_id) 
 );
 
 
-CREATE TABLE wdkuser.steps
+CREATE TABLE userlogins5.steps
 (
   step_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
@@ -157,21 +157,21 @@ CREATE TABLE wdkuser.steps
   migration_id NUMBER(12),
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id),
+      REFERENCES userlogins5.users (user_id),
   CONSTRAINT "steps_ux01" UNIQUE (left_child_id),
   CONSTRAINT "steps_ux02" UNIQUE (right_child_id)
 );
 
-CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (left_child_id, right_child_id, user_id);
-CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (project_id, question_name, user_id);
-CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (is_valid, project_id, user_id);
-CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx07 ON wdkuser.steps (user_id, step_id);
+CREATE INDEX userlogins5.steps_idx01 ON userlogins5.steps (left_child_id, right_child_id, user_id);
+CREATE INDEX userlogins5.steps_idx02 ON userlogins5.steps (project_id, question_name, user_id);
+CREATE INDEX userlogins5.steps_idx03 ON userlogins5.steps (is_deleted, user_id, project_id);
+CREATE INDEX userlogins5.steps_idx04 ON userlogins5.steps (is_valid, project_id, user_id);
+CREATE INDEX userlogins5.steps_idx05 ON userlogins5.steps (last_run_time, user_id, project_id);
+CREATE INDEX userlogins5.steps_idx06 ON userlogins5.steps (strategy_id, user_id, project_id);
+CREATE INDEX userlogins5.steps_idx07 ON userlogins5.steps (user_id, step_id);
 
 
-CREATE TABLE wdkuser.strategies
+CREATE TABLE userlogins5.strategies
 (
      strategy_id NUMBER(12) NOT NULL,
      user_id NUMBER(12) NOT NULL,
@@ -192,20 +192,20 @@ CREATE TABLE wdkuser.strategies
      migration_id NUMBER(12),
      CONSTRAINT "strategies_pk" PRIMARY KEY (strategy_id),
      CONSTRAINT "strategies_fk01" FOREIGN KEY (root_step_id)
-         REFERENCES wdkuser.steps (step_id),
+         REFERENCES userlogins5.steps (step_id),
      CONSTRAINT "strategies_fk02" FOREIGN KEY (user_id)
-         REFERENCES wdkuser.users (user_id),
+         REFERENCES userlogins5.users (user_id),
      CONSTRAINT "strategies_ux01" UNIQUE (root_step_id)
 );
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
-CREATE INDEX wdkuser.strategies_idx02 ON wdkuser.strategies (user_id, project_id, is_deleted, is_saved);
-CREATE INDEX wdkuser.strategies_idx03 ON wdkuser.strategies (root_step_id, project_id, user_id, is_saved, is_deleted);
-CREATE INDEX wdkuser.strategies_idx04 ON wdkuser.strategies (is_deleted, is_saved, name, project_id, user_id);
-CREATE INDEX wdkuser.strategies_idx05 ON wdkuser.strategies (project_id, is_public, is_saved, is_deleted);
+CREATE INDEX userlogins5.strategies_idx01 ON userlogins5.strategies (signature, project_id);
+CREATE INDEX userlogins5.strategies_idx02 ON userlogins5.strategies (user_id, project_id, is_deleted, is_saved);
+CREATE INDEX userlogins5.strategies_idx03 ON userlogins5.strategies (root_step_id, project_id, user_id, is_saved, is_deleted);
+CREATE INDEX userlogins5.strategies_idx04 ON userlogins5.strategies (is_deleted, is_saved, name, project_id, user_id);
+CREATE INDEX userlogins5.strategies_idx05 ON userlogins5.strategies (project_id, is_public, is_saved, is_deleted);
 
 
-CREATE TABLE wdkuser.datasets (
+CREATE TABLE userlogins5.datasets (
   dataset_id NUMBER(12) NOT NULL,
   user_id NUMBER(12),
   dataset_name VARCHAR(100) NOT NULL,
@@ -221,11 +221,11 @@ CREATE TABLE wdkuser.datasets (
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
 --  CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
   CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id)
+      REFERENCES userlogins5.users (user_id)
 );
 
 
-CREATE TABLE wdkuser.dataset_values
+CREATE TABLE userlogins5.dataset_values
 (
   dataset_value_id NUMBER(12) NOT NULL,
   dataset_id NUMBER(12) NOT NULL,
@@ -253,13 +253,13 @@ CREATE TABLE wdkuser.dataset_values
   migration_id NUMBER(12),
   CONSTRAINT "dataset_values_pk" PRIMARY KEY (dataset_value_id),
   CONSTRAINT "dataset_values_fk01" FOREIGN KEY (dataset_id)
-      REFERENCES wdkuser.datasets (dataset_id)
+      REFERENCES userlogins5.datasets (dataset_id)
 );
 
-CREATE INDEX wdkuser.dataset_values_idx01 ON wdkuser.dataset_values (dataset_id, data1);
+CREATE INDEX userlogins5.dataset_values_idx01 ON userlogins5.dataset_values (dataset_id, data1);
 
 
-CREATE TABLE wdkuser.user_baskets
+CREATE TABLE userlogins5.user_baskets
 (
   basket_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
@@ -276,13 +276,13 @@ CREATE TABLE wdkuser.user_baskets
   CONSTRAINT "user_baskets_pk" PRIMARY KEY (basket_id),
   CONSTRAINT "user_baskets_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "user_baskets_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id)
+      REFERENCES userlogins5.users (user_id)
 );
 
-CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (project_id, record_class);
+CREATE INDEX userlogins5.user_baskets_idx01 ON userlogins5.user_baskets (project_id, record_class);
 
 
-CREATE TABLE wdkuser.favorites
+CREATE TABLE userlogins5.favorites
 (
   favorite_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
@@ -298,13 +298,13 @@ CREATE TABLE wdkuser.favorites
   CONSTRAINT "favorites_pk" PRIMARY KEY (favorite_id),
   CONSTRAINT "favorites_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "favorites_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id)
+      REFERENCES userlogins5.users (user_id)
 );
 
-CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (record_class, project_id);
+CREATE INDEX userlogins5.favorites_idx01 ON userlogins5.favorites (record_class, project_id);
 
 
-CREATE TABLE wdkuser.categories
+CREATE TABLE userlogins5.categories
 (
   category_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
@@ -317,11 +317,11 @@ CREATE TABLE wdkuser.categories
   CONSTRAINT "categories_pk" PRIMARY KEY (category_id),
   CONSTRAINT "categories_uq01" UNIQUE (user_id, category_type, parent_id, category_name),
   CONSTRAINT "categories_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id)
+      REFERENCES userlogins5.users (user_id)
 );
 
 
-CREATE TABLE wdkuser.step_analysis
+CREATE TABLE userlogins5.step_analysis
 (
   analysis_id          NUMBER(12) NOT NULL,
   step_id              NUMBER(12) NOT NULL,
@@ -333,7 +333,7 @@ CREATE TABLE wdkuser.step_analysis
   context              CLOB,
   CONSTRAINT "step_analysis_pk" PRIMARY KEY (analysis_id),
   CONSTRAINT "step_analysis_fk01" FOREIGN KEY (step_id)
-      REFERENCES wdkuser.steps (step_id)
+      REFERENCES userlogins5.steps (step_id)
 );
 
-CREATE INDEX wdkuser.step_analysis_idx01 ON wdkuser.step_analysis (step_id);
+CREATE INDEX userlogins5.step_analysis_idx01 ON userlogins5.step_analysis (step_id);
