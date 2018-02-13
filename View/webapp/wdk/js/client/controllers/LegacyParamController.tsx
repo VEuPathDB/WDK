@@ -110,7 +110,7 @@ export default class LegacyParamController extends AbstractViewController<
   renderDataLoadError() {
     const isProbablyRevise = this.props.paramValues != null;
     const errorMessage = 'Data for this parameter could not be loaded.' +
-      (isProbablyRevise ? ' This value is most likely no longer valid:' : '');
+      (isProbablyRevise ? ' The strategy this search belongs to will have to recreated.' : '');
 
     return (
       <div>
@@ -118,11 +118,12 @@ export default class LegacyParamController extends AbstractViewController<
           {errorMessage}
         </div>
 
-        {isProbablyRevise &&
+        {isProbablyRevise && [
+          <div style={{ fontWeight: 'bold', padding: '1em 0' }}>Current value:</div>,
           <div style={{ maxHeight: 300, overflow: 'auto', background: '#f3f3f3' }}>
             <pre>{prettyPrintRawValue(this.props.paramValues[this.props.paramName])}</pre>
           </div>
-        }
+        ]}
       </div>
     );
   }
