@@ -277,7 +277,7 @@ wdk.namespace("window.wdk.history", function(ns, $) {
         strat = row.data(),
         dialog_container = $("#wdk-dialog-update-strat"),
         title = (save) ? "Save your Search Strategy" : "Update your Search Strategy",
-        submitValue = (save) ? "Save search strategy" : "Update search strategy",
+        submitValue = (save) ? "Save" : "Update",
         form;
 
     dialog_container.dialog("option", "title", title)
