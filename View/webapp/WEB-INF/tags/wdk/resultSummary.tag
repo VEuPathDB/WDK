@@ -82,6 +82,16 @@
           data-show-text="${showText}"
           data-hide-text="${hideText}"
         >${showText}</button>
+        <button
+          class="wdk-StepActionButton"
+          type="button"
+          onclick="$('#strategies-panel').find('[data-back-id=${strategy.strategyId}] [href=#save]').click()"
+        >Save</button>
+        <button
+          class="wdk-StepActionButton"
+          type="button"
+          onclick="$('#strategies-panel').find('[data-back-id=${strategy.strategyId}] [href=#share]').click()"
+        >Share</button>
         <c:if test="${advancedMode}">
           <br/>Strategy:
           <span
