@@ -33,44 +33,28 @@ DROP SEQUENCE userlogins5.external_databases_pkseq;
  *============================================================================*/
 
 CREATE SEQUENCE userlogins5.user_baskets_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.user_baskets_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.user_baskets_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.user_baskets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.favorites_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.favorites_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.favorites_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.categories_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.categories_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.categories_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.datasets_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.datasets_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.datasets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.dataset_values_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.dataset_values_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.dataset_values_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.dataset_values_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.strategies_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.strategies_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.strategies_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.strategies_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.steps_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.steps_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.steps_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.steps_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.step_analysis_pkseq INCREMENT BY 10 START WITH 100000003;
-
-GRANT SELECT ON userlogins5.step_analysis_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.step_analysis_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.step_analysis_pkseq TO COMM_WDK_W;
 
 --==============================================================================
 exit
@@ -78,34 +62,26 @@ exit
 
 /* Save for api-specific script
 CREATE SEQUENCE userlogins5.comments_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.comments_pkseq to GUS_W;
-GRANT select on userlogins5.comments_pkseq to GUS_R;
+GRANT select on userlogins5.comments_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.locations_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.locations_pkseq to GUS_W;
-GRANT select on userlogins5.locations_pkseq to GUS_R;
+GRANT select on userlogins5.locations_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.external_databases_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.external_databases_pkseq to GUS_W;
-GRANT select on userlogins5.external_databases_pkseq to GUS_R;
+GRANT select on userlogins5.external_databases_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.commentTargetCategory_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.commentTargetCategory_pkseq to GUS_W;
-GRANT select on userlogins5.commentTargetCategory_pkseq to GUS_R;
+GRANT select on userlogins5.commentTargetCategory_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.commentReference_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.commentReference_pkseq to GUS_W;
-GRANT select on userlogins5.commentReference_pkseq to GUS_R;
+GRANT select on userlogins5.commentReference_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.commentSequence_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.commentSequence_pkseq to GUS_W;
-GRANT select on userlogins5.commentSequence_pkseq to GUS_R;
+GRANT select on userlogins5.commentSequence_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.commentFile_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.commentFile_pkseq to GUS_W;
-GRANT select on userlogins5.commentFile_pkseq to GUS_R;
+GRANT select on userlogins5.commentFile_pkseq to COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.commentStableId_pkseq START WITH 100000000 INCREMENT BY 10;
-GRANT select on userlogins5.commentStableId_pkseq to GUS_W;
-GRANT select on userlogins5.commentStableId_pkseq to GUS_R;
+GRANT select on userlogins5.commentStableId_pkseq to COMM_WDK_W;
 */

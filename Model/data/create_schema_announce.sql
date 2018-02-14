@@ -9,8 +9,6 @@ CREATE USER announce
   DEFAULT TABLESPACE gus
   TEMPORARY TABLESPACE temp;
 
-GRANT GUS_R TO announce;
-GRANT GUS_W TO announce;
 GRANT CREATE VIEW TO announce;
 GRANT CREATE MATERIALIZED VIEW TO announce;
 GRANT CREATE TABLE TO announce;
@@ -31,11 +29,22 @@ CREATE TABLE announce.projects
   CONSTRAINT "PROJECTS_PKEY" PRIMARY KEY (PROJECT_ID)
 );
 
--- TODO: insert project IDs for all relevant DBs (see apicommN)
+-- existing projects
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(10, 'CryptoDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(20, 'GiardiaDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(30, 'PlasmoDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(40, 'ToxoDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(50, 'TrichDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(60, 'TriTrypDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(70, 'EuPathDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(80, 'MicrosporidiaDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(90, 'AmoebaDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(3, 'PiroplasmaDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(13, 'FungiDB');
+INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(23, 'OrthoMCL');
 INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(33, 'ClinEpiDB');
 
-GRANT SELECT ON announce.projects TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON announce.projects TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON announce.projects TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -51,8 +60,7 @@ INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(20, 'Degraded')
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(30, 'Down');
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(230, 'Event');
 
-GRANT SELECT ON announce.category TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON announce.category TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON announce.category TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -68,8 +76,7 @@ CREATE TABLE announce.messages
   CONSTRAINT "MESSAGES_PKEY" PRIMARY KEY (MESSAGE_ID)
 );
 
-GRANT SELECT ON announce.messages TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON announce.messages TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON announce.messages TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -86,27 +93,19 @@ CREATE TABLE announce.message_projects
 
 CREATE INDEX announce.message_projects_idx01 ON announce.message_projects (project_id);
 
-GRANT SELECT ON announce.message_projects TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON announce.message_projects TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON announce.message_projects TO COMM_WDK_W;
 
 /*==============================================================================
  * create sequences
  * ApiCommN for 100000000, ApiCommS for 100000003
  *============================================================================*/
 
-CREATE SEQUENCE announce.projects_id_pkseq INCREMENT BY 10 START WITH 100000000;
+CREATE SEQUENCE announce.projects_id_pkseq INCREMENT BY 10 START WITH 100;
+GRANT SELECT ON announce.projects_id_pkseq TO COMM_WDK_W;
 
-GRANT SELECT ON announce.projects_id_pkseq TO GUS_R;
-GRANT SELECT ON announce.projects_id_pkseq TO GUS_W;
+CREATE SEQUENCE announce.category_id_pkseq INCREMENT BY 10 START WITH 40;
+GRANT SELECT ON announce.category_id_pkseq TO COMM_WDK_W;
 
-
-CREATE SEQUENCE announce.category_id_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON announce.category_id_pkseq TO GUS_R;
-GRANT SELECT ON announce.category_id_pkseq TO GUS_W;
-
-CREATE SEQUENCE announce.messages_id_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON announce.messages_id_pkseq TO GUS_R;
-GRANT SELECT ON announce.messages_id_pkseq TO GUS_W;
+CREATE SEQUENCE announce.messages_id_pkseq INCREMENT BY 10 START WITH 10;
+GRANT SELECT ON announce.messages_id_pkseq TO COMM_WDK_W;
 

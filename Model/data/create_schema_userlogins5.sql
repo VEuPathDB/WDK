@@ -9,8 +9,6 @@ CREATE USER userlogins5
   DEFAULT TABLESPACE users
   TEMPORARY TABLESPACE temp;
 
-GRANT GUS_R TO userlogins5;
-GRANT GUS_W TO userlogins5;
 GRANT CREATE VIEW TO userlogins5;
 GRANT CREATE MATERIALIZED VIEW TO userlogins5;
 GRANT CREATE TABLE TO userlogins5;
@@ -32,8 +30,7 @@ CREATE TABLE userlogins5.config
   CONSTRAINT "config_pk" PRIMARY KEY (config_name)
 );
 
-GRANT SELECT ON userlogins5.config TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.config TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.config TO COMM_WDK_W;
 
 -- special metadata insert to declare WDK schema version
 INSERT INTO userlogins5.config(config_name, config_value) VALUES('wdk.user.schema.version', '5');
@@ -50,8 +47,7 @@ CREATE TABLE userlogins5.users
 
 CREATE INDEX userlogins5.users_idx01 ON userlogins5.users (is_guest);
 
-GRANT SELECT ON userlogins5.users TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.users TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.users TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -65,8 +61,7 @@ CREATE TABLE userlogins5.user_roles
       REFERENCES userlogins5.users (user_id) 
 );
 
-GRANT SELECT ON userlogins5.user_roles TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.user_roles TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.user_roles TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -82,8 +77,7 @@ CREATE TABLE userlogins5.preferences
       REFERENCES userlogins5.users (user_id) 
 );
 
-GRANT SELECT ON userlogins5.preferences TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.preferences TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.preferences TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -108,8 +102,7 @@ CREATE TABLE userlogins5.user_baskets (
 
 CREATE INDEX userlogins5.user_baskets_idx01 ON userlogins5.user_baskets (project_id, record_class);
 
-GRANT SELECT ON userlogins5.user_baskets TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.user_baskets TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.user_baskets TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -134,8 +127,7 @@ CREATE TABLE userlogins5.favorites (
 
 CREATE INDEX userlogins5.favorites_idx01 ON userlogins5.favorites (record_class, project_id);
 
-GRANT SELECT ON userlogins5.favorites TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.favorites TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.favorites TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -154,8 +146,7 @@ CREATE TABLE userlogins5.categories (
       REFERENCES userlogins5.users (user_id)
 );
 
-GRANT SELECT ON userlogins5.categories TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.categories TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.categories TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -177,8 +168,7 @@ CREATE TABLE userlogins5.datasets (
       REFERENCES userlogins5.users (user_id)
 );
 
-GRANT SELECT ON userlogins5.datasets TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.datasets TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.datasets TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -214,8 +204,7 @@ CREATE TABLE userlogins5.dataset_values (
 
 CREATE INDEX userlogins5.dataset_values_idx01 ON userlogins5.dataset_values (dataset_id, data1);
 
-GRANT SELECT ON userlogins5.dataset_values TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.dataset_values TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.dataset_values TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -254,8 +243,7 @@ CREATE INDEX userlogins5.steps_idx04 ON userlogins5.steps (is_valid, project_id,
 CREATE INDEX userlogins5.steps_idx05 ON userlogins5.steps (last_run_time, user_id, project_id);
 CREATE INDEX userlogins5.steps_idx06 ON userlogins5.steps (strategy_id, user_id, project_id);
 
-GRANT SELECT ON userlogins5.steps TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.steps TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.steps TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -290,8 +278,7 @@ CREATE INDEX userlogins5.strategies_idx03 ON userlogins5.strategies (root_step_i
 CREATE INDEX userlogins5.strategies_idx04 ON userlogins5.strategies (is_deleted, is_saved, name, project_id, user_id);
 CREATE INDEX userlogins5.strategies_idx05 ON userlogins5.strategies (project_id, is_public, is_saved, is_deleted);
 
-GRANT SELECT ON userlogins5.strategies TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.strategies TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.strategies TO COMM_WDK_W;
 
 --==============================================================================
 
@@ -311,54 +298,33 @@ CREATE TABLE userlogins5.step_analysis (
 
 CREATE INDEX userlogins5.step_analysis_idx01 ON userlogins5.step_analysis (step_id);
 
-GRANT SELECT ON userlogins5.step_analysis TO GUS_R;
-GRANT INSERT, UPDATE, DELETE ON userlogins5.step_analysis TO GUS_W;
+GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.step_analysis TO COMM_WDK_W;
 
-/*==============================================================================
- * create sequences
- * ApiCommN for 100000000, ApiCommS for 100000003
- *============================================================================*/
+--==============================================================================
+-- create sequences
+-- ApiCommN for 100000000, ApiCommS for 100000003
+--==============================================================================
 
 CREATE SEQUENCE userlogins5.user_baskets_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.user_baskets_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.user_baskets_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.user_baskets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.favorites_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.favorites_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.favorites_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.categories_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.categories_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.categories_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.datasets_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.datasets_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.datasets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.dataset_values_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.dataset_values_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.dataset_values_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.dataset_values_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.strategies_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.strategies_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.strategies_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.strategies_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.steps_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.steps_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.steps_pkseq TO GUS_W;
+GRANT SELECT ON userlogins5.steps_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.step_analysis_pkseq INCREMENT BY 10 START WITH 100000000;
-
-GRANT SELECT ON userlogins5.step_analysis_pkseq TO GUS_R;
-GRANT SELECT ON userlogins5.step_analysis_pkseq TO GUS_W;
-
---==============================================================================
-exit
---==============================================================================
+GRANT SELECT ON userlogins5.step_analysis_pkseq TO COMM_WDK_W;
