@@ -127,7 +127,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   private String _displayType = null;
   private int _minSelectedCount = -1;
   private int maxSelectedCount = -1;
-  private boolean countOnlyLeaves = false;
+  private boolean countOnlyLeaves = true;
 
   /**
    * this property is only used by abstractEnumParams, but have to be initialized from suggest.

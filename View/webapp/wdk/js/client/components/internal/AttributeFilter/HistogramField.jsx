@@ -208,7 +208,7 @@ export default class HistogramField extends React.Component {
         </div>
 
         <div>
-          {'Select ' + field.display + ' between '}
+          {'Select ' + field.display + ' from '}
           <input
             type="text"
             size="6"
@@ -218,7 +218,7 @@ export default class HistogramField extends React.Component {
             onKeyPress={this.handleMinInputKeyPress}
             onBlur={this.handleMinInputBlur}
           />
-          {' and '}
+          {' to '}
           <input
             type="text"
             size="6"

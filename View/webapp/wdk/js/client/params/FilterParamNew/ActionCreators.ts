@@ -4,6 +4,7 @@ import {
   GroupVisibilityChangedAction,
   ParamValueUpdatedAction,
   QuestionLoadedAction,
+  ParamErrorAction
 } from '../../actioncreators/QuestionActionCreators';
 import { Action } from '../../dispatcher/Dispatcher';
 import QuestionStore, { QuestionState } from '../../stores/QuestionStore';
@@ -96,11 +97,19 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
           const valueChangedParameter$ = action$.filter(FiltersUpdatedAction.isType)
             .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
             .map(action => {
-              const { activeOntologyTerm, fieldStates } = services.store.state.questions[questionName].paramUIState[parameter.name];
+              const { prevFilters, filters } = action.payload;
+              const { activeOntologyTerm, fieldStates } =
+                services.store.state.questions[questionName].paramUIState[parameter.name];
+              const loadSummary = activeOntologyTerm != null && (
+                fieldStates[activeOntologyTerm].ontologyTermSummary == null ||
+                !isEqual( prevFilters.filter(f => f.field != activeOntologyTerm)
+                        , filters.filter(f => f.field !== activeOntologyTerm) )
+              );
+
               return {
                 parameter,
                 loadCounts: true,
-                loadSummary: fieldStates[activeOntologyTerm].ontologyTermSummary == null,
+                loadSummary
               };
             })
             .debounceTime(1000)
@@ -242,13 +251,19 @@ function getSummaryCounts(
 ) {
   const { question, paramValues, paramUIState } = state;
   const questionName = question.urlSegment;
+  const paramName = parameter.name;
   const filters = JSON.parse(paramValues[parameter.name]).filters;
-  return wdkService.getFilterParamSummaryCounts(questionName, parameter.name, filters, paramValues).then(
+  return wdkService.getFilterParamSummaryCounts(questionName, paramName, filters, paramValues).then(
     counts => SummaryCountsLoadedAction.create({
       questionName,
       parameter,
       paramValues,
       ...counts
+    }),
+    error => ParamErrorAction.create({
+      questionName,
+      error,
+      paramName
     })
   )
 }

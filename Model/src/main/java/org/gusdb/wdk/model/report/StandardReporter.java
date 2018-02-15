@@ -239,11 +239,11 @@ public abstract class StandardReporter extends AbstractReporter {
   @Override
   public ContentDisposition getContentDisposition() {
     switch (_standardConfig.getAttachmentType()) {
-      case "text": // "Text File"
-        return ContentDisposition.ATTACHMENT;
       case "plain": // "Show in Browser"
-      default:
         return ContentDisposition.INLINE;
+      case "text": // "Text File"
+      default:
+        return ContentDisposition.ATTACHMENT;
     }
   }
 }

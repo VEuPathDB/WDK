@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 
 /**
  * An object representation of the {@code model-config.xml} file. It holds all the configuration information
@@ -26,85 +27,85 @@ public class ModelConfig implements OAuthConfig {
       return name();
     }
   }
-  
-  private String modelName;
-  private String webServiceUrl;
+
+  private String _modelName;
+  private String _webServiceUrl;
 
   // the information for registration email
 
   /**
    * the SMTP server used to send registration & recover password emails.
    */
-  private String smtpServer;
+  private String _smtpServer;
 
   /**
    * the reply of the registration & recover password emails.
    */
-  private String supportEmail;
+  private String _supportEmail;
 
   /**
    * the relative or absolute url to find assets
    */
-  private String assetsUrl;
+  private String _assetsUrl;
 
   /**
    * the absolute url to this site's webapp
    */
-  private String webAppUrl;
+  private String _webAppUrl;
 
   /**
    * the recipient of the super slow query log.
    */
-  private List<String> adminEmails = Collections.EMPTY_LIST;
+  private List<String> _adminEmails = Collections.EMPTY_LIST;
 
   /**
    * the subject of the registration email.
    */
-  private String emailSubject;
+  private String _emailSubject;
 
   /**
    * the content of the registration email.
    */
-  private String emailContent;
+  private String _emailContent;
 
-  private ModelConfigUserDB userDB;
-  private ModelConfigAppDB appDB;
-  private ModelConfigAccountDB accountDB;
+  private ModelConfigUserDB _userDB;
+  private ModelConfigAppDB _appDB;
+  private ModelConfigAccountDB _accountDB;
 
-  private ModelConfigUserDatasetStore userDatasetStoreConfig;
+  private ModelConfigUserDatasetStore _userDatasetStoreConfig;
 
-  private QueryMonitor queryMonitor = new QueryMonitor();
+  private QueryMonitor _queryMonitor = new QueryMonitor();
 
   /**
    * The projectId is not part of the config file content, it is input by the user
    */
-  private String projectId;
-  private String gusHome;
+  private String _projectId;
+  private String _gusHome;
 
   /**
    * location of secret key file
    */
-  private String secretKeyFile;
+  private String _secretKeyFile;
 
   /**
    * enable/disable weight feature in the steps. default enabled.
    */
-  private boolean useWeights = true;
+  private boolean _useWeights = true;
 
   /**
    * default regex used by all the stringParams
    */
-  private String paramRegex;
+  private String _paramRegex;
 
   /**
    * turn on thread monitor process if set to true
    */
-  private boolean monitorBlockedThreads = true;
+  private boolean _monitorBlockedThreads = true;
 
   /**
    * if blocked
    */
-  private int blockedThreshold = 20;
+  private int _blockedThreshold = 20;
 
   /**
    * enable or disable global caching. default enabled, and then each individual sqlQuery can control their
@@ -112,7 +113,7 @@ public class ModelConfig implements OAuthConfig {
    * regardless of the individual setting on the query. Please note that this flag has no effect on
    * processQueries, which is always cached.
    */
-  private boolean caching = true;
+  private boolean _caching = true;
 
   /**
    * Authentication can be performed either the traditional way (i.e. directly
@@ -120,34 +121,34 @@ public class ModelConfig implements OAuthConfig {
    * remotely.  The OAuth server must provide access to a user id resource (a la
    * OpenID Connect).
    */
-  private AuthenticationMethod authenticationMethod = AuthenticationMethod.USER_DB;
-  private String oauthUrl = "";          // needed if method is OAUTH2
-  private String oauthClientId = "";     // needed if method is OAUTH2
-  private String oauthClientSecret = ""; // needed if method is OAUTH2
-  private String changePasswordUrl = ""; // probably needed if method is OAUTH2
+  private AuthenticationMethod _authenticationMethod = AuthenticationMethod.USER_DB;
+  private String _oauthUrl = "";          // needed if method is OAUTH2
+  private String _oauthClientId = "";     // needed if method is OAUTH2
+  private String _oauthClientSecret = ""; // needed if method is OAUTH2
+  private String _changePasswordUrl = ""; // probably needed if method is OAUTH2
 
   /**
    * Specify keystore file and pass phrase if SSL security checking is desired
    */
-  private String keyStoreFile = "";
-  private String keyStorePassPhrase = "";
-  
+  private String _keyStoreFile = "";
+  private String _keyStorePassPhrase = "";
+
   /**
    * Specifies the directory within which the wdk will house temporary files.
    */
-  private String wdkTempDir;
-  
+  private String _wdkTempDir;
+
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
    * 
    * @return
    */
   public boolean isMonitorBlockedThreads() {
-    return monitorBlockedThreads;
+    return _monitorBlockedThreads;
   }
 
   public void setMonitorBlockedThreads(boolean monitorBlockedThreads) {
-    this.monitorBlockedThreads = monitorBlockedThreads;
+    _monitorBlockedThreads = monitorBlockedThreads;
   }
 
   /**
@@ -156,18 +157,18 @@ public class ModelConfig implements OAuthConfig {
    * @return
    */
   public int getBlockedThreshold() {
-    return blockedThreshold;
+    return _blockedThreshold;
   }
 
   public void setBlockedThreshold(int blockedThreshold) {
-    this.blockedThreshold = blockedThreshold;
+    _blockedThreshold = blockedThreshold;
   }
 
   /**
    * @return the projectId
    */
   public String getProjectId() {
-    return this.projectId;
+    return _projectId;
   }
 
   /**
@@ -175,14 +176,14 @@ public class ModelConfig implements OAuthConfig {
    *          the projectId to set
    */
   public void setProjectId(String projectId) {
-    this.projectId = projectId;
+    _projectId = projectId;
   }
 
   /**
    * @return the gusHome
    */
   public String getGusHome() {
-    return this.gusHome;
+    return _gusHome;
   }
 
   /**
@@ -190,14 +191,14 @@ public class ModelConfig implements OAuthConfig {
    *          the gusHome to set
    */
   public void setGusHome(String gusHome) {
-    this.gusHome = gusHome;
+    _gusHome = gusHome;
   }
 
   /**
    * @return the modelName
    */
   public String getModelName() {
-    return this.modelName;
+    return _modelName;
   }
 
   /**
@@ -205,22 +206,22 @@ public class ModelConfig implements OAuthConfig {
    *          the modelName to set
    */
   public void setModelName(String modelName) {
-    this.modelName = modelName;
+    _modelName = modelName;
   }
 
   public String getWebServiceUrl() {
-    return webServiceUrl;
+    return _webServiceUrl;
   }
 
   public void setWebServiceUrl(String urlString) {
-    webServiceUrl = urlString;
+    _webServiceUrl = urlString;
   }
 
   /**
    * @return Returns the smtpServer.
    */
   public String getSmtpServer() {
-    return smtpServer;
+    return _smtpServer;
   }
 
   /**
@@ -228,14 +229,14 @@ public class ModelConfig implements OAuthConfig {
    *          The smtpServer to set.
    */
   public void setSmtpServer(String smtpServer) {
-    this.smtpServer = smtpServer;
+    _smtpServer = smtpServer;
   }
 
   /**
    * @return Returns the emailContent.
    */
   public String getEmailContent() {
-    return emailContent;
+    return _emailContent;
   }
 
   /**
@@ -243,14 +244,14 @@ public class ModelConfig implements OAuthConfig {
    *          The emailContent to set.
    */
   public void setEmailContent(String emailContent) {
-    this.emailContent = emailContent;
+    _emailContent = emailContent;
   }
 
   /**
    * @return Returns the emailSubject.
    */
   public String getEmailSubject() {
-    return emailSubject;
+    return _emailSubject;
   }
 
   /**
@@ -258,39 +259,57 @@ public class ModelConfig implements OAuthConfig {
    *          The emailSubject to set.
    */
   public void setEmailSubject(String emailSubject) {
-    this.emailSubject = emailSubject;
+    _emailSubject = emailSubject;
   }
 
   public String getSupportEmail() {
-    return supportEmail;
+    return _supportEmail;
   }
 
   public void setSupportEmail(String supportEmail) {
-    this.supportEmail = supportEmail;
+    _supportEmail = supportEmail;
   }
 
   public String getAssetsUrl() {
-    return (assetsUrl != null ? assetsUrl : webAppUrl);
+    return (_assetsUrl != null ? _assetsUrl : _webAppUrl);
   }
 
   public void setAssetsUrl(String assetsUrl) {
-    this.assetsUrl = assetsUrl;
+    _assetsUrl = assetsUrl;
   }
 
   @Override
   public String getWebAppUrl() {
-    return webAppUrl;
+    return _webAppUrl;
+  }
+
+  public String getApplicationBaseUrl() {
+    return getWebAppUrlParts().getFirst();
+  }
+
+  public String getWebAppName() {
+    return getWebAppUrlParts().getSecond();
+  }
+
+  private TwoTuple<String,String> getWebAppUrlParts() {
+    // trim trailing slash
+    String trimmedUrl = _webAppUrl;
+    if (trimmedUrl.endsWith("/")) {
+      trimmedUrl = trimmedUrl.substring(0, trimmedUrl.length() - 1);
+    }
+    int splitIndex = trimmedUrl.lastIndexOf("/");
+    return new TwoTuple<>(trimmedUrl.substring(0, splitIndex), trimmedUrl.substring(splitIndex + 1));
   }
 
   public void setWebAppUrl(String webAppUrl) {
-    this.webAppUrl = webAppUrl;
+    _webAppUrl = webAppUrl;
   }
 
   /**
    * @return the userDB
    */
   public ModelConfigUserDB getUserDB() {
-    return userDB;
+    return _userDB;
   }
 
   /**
@@ -298,14 +317,14 @@ public class ModelConfig implements OAuthConfig {
    *          the userDB to set
    */
   public void setUserDB(ModelConfigUserDB userDB) {
-    this.userDB = userDB;
+    _userDB = userDB;
   }
 
   /**
    * @return the appDB
    */
   public ModelConfigAppDB getAppDB() {
-    return appDB;
+    return _appDB;
   }
 
   /**
@@ -313,14 +332,14 @@ public class ModelConfig implements OAuthConfig {
    *          the appDB to set
    */
   public void setAppDB(ModelConfigAppDB appDB) {
-    this.appDB = appDB;
+    _appDB = appDB;
   }
 
   /**
    * @return the accountDB
    */
   public ModelConfigAccountDB getAccountDB() {
-    return accountDB;
+    return _accountDB;
   }
 
   /**
@@ -328,14 +347,14 @@ public class ModelConfig implements OAuthConfig {
    *          the accountDB to set
    */
   public void setAccountDB(ModelConfigAccountDB accountDB) {
-    this.accountDB = accountDB;
+    _accountDB = accountDB;
   }
 
   /**
    * @return the secretKeyFile
    */
   public String getSecretKeyFile() {
-    return secretKeyFile;
+    return _secretKeyFile;
   }
 
   /**
@@ -343,14 +362,14 @@ public class ModelConfig implements OAuthConfig {
    *          the secretKeyFile to set
    */
   public void setSecretKeyFile(String secretKeyFile) {
-    this.secretKeyFile = secretKeyFile;
+    _secretKeyFile = secretKeyFile;
   }
 
   /**
    * @return configured authentication method
    */
   public AuthenticationMethod getAuthenticationMethodEnum() {
-    return authenticationMethod;
+    return _authenticationMethod;
   }
 
   /**
@@ -367,7 +386,7 @@ public class ModelConfig implements OAuthConfig {
    */
   public void setAuthenticationMethod(String authenticationMethod) {
     LOG.debug("Setting authentication method: " + authenticationMethod);
-    this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
+    _authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
   }
 
   /**
@@ -376,7 +395,7 @@ public class ModelConfig implements OAuthConfig {
    */
   @Override
   public String getOauthUrl() {
-    return oauthUrl;
+    return _oauthUrl;
   }
 
   /**
@@ -384,7 +403,7 @@ public class ModelConfig implements OAuthConfig {
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthUrl(String oauthUrl) {
-    this.oauthUrl = oauthUrl;
+    _oauthUrl = oauthUrl;
   }
 
   /**
@@ -393,15 +412,15 @@ public class ModelConfig implements OAuthConfig {
    */
   @Override
   public String getOauthClientId() {
-    return oauthClientId;
+    return _oauthClientId;
   }
 
   /**
-   * @param oauthUrl OAuth2 client ID to use for authentication
+   * @param _oauthUrl OAuth2 client ID to use for authentication
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthClientId(String oauthClientId) {
-    this.oauthClientId = oauthClientId;
+    _oauthClientId = oauthClientId;
   }
 
   /**
@@ -410,22 +429,22 @@ public class ModelConfig implements OAuthConfig {
    */
   @Override
   public String getOauthClientSecret() {
-    return oauthClientSecret;
+    return _oauthClientSecret;
   }
 
   /**
-   * @param oauthUrl OAuth2 client secret to use for authentication
+   * @param _oauthUrl OAuth2 client secret to use for authentication
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthClientSecret(String oauthClientSecret) {
-    this.oauthClientSecret = oauthClientSecret;
+    _oauthClientSecret = oauthClientSecret;
   }
 
   /**
    * @return custom change password URL if specified
    */
   public String getChangePasswordUrl() {
-    return changePasswordUrl;
+    return _changePasswordUrl;
   }
 
   /**
@@ -433,7 +452,7 @@ public class ModelConfig implements OAuthConfig {
    */
   public void setChangePasswordUrl(String changePasswordUrl) {
     LOG.debug("Overriding Change Password Page URL: " + changePasswordUrl);
-    this.changePasswordUrl = changePasswordUrl;
+    _changePasswordUrl = changePasswordUrl;
   }
 
   /**
@@ -442,7 +461,7 @@ public class ModelConfig implements OAuthConfig {
    */
   @Override
   public String getKeyStoreFile() {
-    return keyStoreFile;
+    return _keyStoreFile;
   }
 
   /**
@@ -450,7 +469,7 @@ public class ModelConfig implements OAuthConfig {
    * (used only if authentication method is OAUTH2)
    */
   public void setKeyStoreFile(String keyStoreFile) {
-    this.keyStoreFile = keyStoreFile;
+    _keyStoreFile = keyStoreFile;
   }
 
   /**
@@ -459,7 +478,7 @@ public class ModelConfig implements OAuthConfig {
    */
   @Override
   public String getKeyStorePassPhrase() {
-    return keyStorePassPhrase;
+    return _keyStorePassPhrase;
   }
 
   /**
@@ -467,29 +486,29 @@ public class ModelConfig implements OAuthConfig {
    * (used only if authentication method is OAUTH2)
    */
   public void setKeyStorePassPhrase(String keyStorePassPhrase) {
-    this.keyStorePassPhrase = keyStorePassPhrase;
+    _keyStorePassPhrase = keyStorePassPhrase;
   }
 
   /**
    * @return the useWeights
    */
   public boolean getUseWeights() {
-    return useWeights;
+    return _useWeights;
   }
 
   /**
-   * @param secretKeyFile
+   * @param _secretKeyFile
    *          the secretKeyFile to set
    */
   public void setUseWeights(boolean useWeights) {
-    this.useWeights = useWeights;
+    _useWeights = useWeights;
   }
 
   /**
    * @return the adminEmails as a list of individual addresses
    */
   public List<String> getAdminEmails() {
-    return adminEmails;
+    return _adminEmails;
   }
 
   /**
@@ -497,7 +516,7 @@ public class ModelConfig implements OAuthConfig {
    * original value contained in the XML file but possibly slightly different
    */
   public String getAdminEmail() {
-    return FormatUtil.join(adminEmails.toArray(), ",");
+    return FormatUtil.join(_adminEmails.toArray(), ",");
   }
   
 
@@ -505,7 +524,7 @@ public class ModelConfig implements OAuthConfig {
    * @param adminEmail comma-delimited list of admin email addresses
    */
   public void setAdminEmail(String adminEmail) {
-    adminEmails = (adminEmail == null || adminEmail.trim().isEmpty() ?
+    _adminEmails = (adminEmail == null || adminEmail.trim().isEmpty() ?
       Collections.EMPTY_LIST : Arrays.asList(adminEmail.trim().split("[,\\s]+")));
   }
 
@@ -513,7 +532,7 @@ public class ModelConfig implements OAuthConfig {
    * @return the paramRegex
    */
   public String getParamRegex() {
-    return paramRegex;
+    return _paramRegex;
   }
 
   /**
@@ -521,14 +540,14 @@ public class ModelConfig implements OAuthConfig {
    *          the paramRegex to set
    */
   public void setParamRegex(String paramRegex) {
-    this.paramRegex = paramRegex;
+    _paramRegex = paramRegex;
   }
 
   /**
    * @return the queryMonitor
    */
   public QueryMonitor getQueryMonitor() {
-    return queryMonitor;
+    return _queryMonitor;
   }
 
   /**
@@ -536,7 +555,7 @@ public class ModelConfig implements OAuthConfig {
    *          the queryMonitor to set
    */
   public void setQueryMonitor(QueryMonitor queryMonitor) {
-    this.queryMonitor = queryMonitor;
+    _queryMonitor = queryMonitor;
   }
 
   /**
@@ -548,31 +567,31 @@ public class ModelConfig implements OAuthConfig {
    * @return whether global caching is turned on or not.
    */
   public boolean isCaching() {
-    return caching;
+    return _caching;
   }
 
   public void setCaching(boolean caching) {
-    this.caching = caching;
+    _caching = caching;
   }
 
   public void setUserDatasetStore(ModelConfigUserDatasetStore udsConfig) {
-    this.userDatasetStoreConfig = udsConfig;
+    _userDatasetStoreConfig = udsConfig;
   }
-  
+
   /**
    * The config for a user dataset store. Optional.  Might be null.
    * @return
    */
   public ModelConfigUserDatasetStore getUserDatasetStoreConfig() {
-    return userDatasetStoreConfig;
+    return _userDatasetStoreConfig;
   }
 
   public String getWdkTempDir() {
-	return wdkTempDir;
+    return _wdkTempDir;
   }
 
   public void setWdkTempDir(String wdkTempDir) {
-	this.wdkTempDir = wdkTempDir;
+    _wdkTempDir = wdkTempDir;
   }
 
 }

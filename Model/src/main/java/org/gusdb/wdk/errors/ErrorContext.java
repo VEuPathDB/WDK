@@ -12,12 +12,13 @@ import org.gusdb.wdk.model.WdkModel;
 
 public class ErrorContext {
 
-    public static enum RequestType {
+    public static enum ErrorLocation {
       WDK_SITE("Site"),
-      WDK_SERVICE("Service");
+      WDK_SERVICE("Service"),
+      WDK_CLIENT("Client");
 
       private final String _label;
-      private RequestType(String label) { _label = label; }
+      private ErrorLocation(String label) { _label = label; }
       public String getLabel() { return _label; }
     }
 
@@ -26,7 +27,7 @@ public class ErrorContext {
     private final Map<String, Object> _servletContextAttributes;
     private final Map<String, Object> _requestAttributeMap;
     private final Map<String, Object> _sessionAttributeMap;
-    private final RequestType _requestType;
+    private final ErrorLocation _errorLocation;
     private final MdcBundle _mdcBundle;
     private final String _logMarker;
     private final Date _date;
@@ -35,13 +36,13 @@ public class ErrorContext {
             Map<String, Object> servletContextAttributes,
             Map<String, Object> requestAttributeMap,
             Map<String, Object> sessionAttributeMap,
-            RequestType requestType) {
+            ErrorLocation errorLocation) {
         _wdkModel = wdkModel;
         _requestData = requestData;
         _servletContextAttributes = servletContextAttributes;
         _requestAttributeMap = requestAttributeMap;
         _sessionAttributeMap = sessionAttributeMap;
-        _requestType = requestType;
+        _errorLocation = errorLocation;
         _mdcBundle = MDCUtil.getMdcBundle();
         _logMarker = UUID.randomUUID().toString();
         _date = new Date();
@@ -71,10 +72,13 @@ public class ErrorContext {
     }
 
     /**
-     * @return whether this error was caused during a site (i.e. struts action) or service (i.e. jersey) request
+     * @return where this error was generated.
+     *   - during a site (i.e. struts action) request
+     *   - during a service (i.e. jersey) request
+     *   - from the client
      */
-    public RequestType getRequestType() {
-      return _requestType;
+    public ErrorLocation getErrorLocation() {
+      return _errorLocation;
     }
 
     /**

@@ -64,28 +64,28 @@
     </record>
 
     <record id="dialog.update-strat">
-        <attribute name="title">Update Strategy</attribute>
+        <attribute name="title">Update your Search Strategy</attribute>
         <attribute name="content">
             <![CDATA[
 <p class="important">Important!</p>
 <ul>
-    <li>You are saving/sharing this strategy, not the IDs in your result.</li>
-    <li>Results might change with subsequent releases of the site if the underlying data have changed.</li>
-    <li>To keep a copy of your current result, please <a class="download" href="#">download your IDs</a>.</li>
+    <li>You are saving the <em>configuration</em> of this search strategy, not the data in the result.</li>
+    <li>Re-running the saved search strategy could possibly yield different results in subsequent releases of the site, if the underlying data have changed.</li>
+    <li>To store the exact data in this result, please <a class="download" href="#">download the result</a>.</li>
 </ul>
             ]]>
         </attribute>
     </record>
 
     <record id="dialog.share-strat">
-        <attribute name="title">Share Your Strategy Using The URL Below</attribute>
+        <attribute name="title">Share your Search Strategy Using The URL Below</attribute>
         <attribute name="content">
             <![CDATA[
 <p class="important">Important!</p>
 <ul>
-    <li>You are saving/sharing this strategy, not the IDs in your result.</li>
-    <li>Results might change with subsequent releases of the site if the underlying data has changed.</li>
-    <li>To keep a copy of your current result, please <a class="download" href="#">download your IDs</a>.</li>
+    <li>You are sharing the <em>configuration</em> of this search strategy, not the data in the result.</li>
+    <li>Re-running the shared search strategy could possibly yield different results in subsequent releases of the site, if the underlying data have changed.</li>
+    <li>To store the exact data in this result, please <a class="download" href="#">download the result</a>.</li>
     <li>The following URL allows you to share your strategy with individuals.  If you'd like to share<br/>
       your strategy with the entire community, visit the 'All' tab and click the 'Public' checkbox.</li>
 </ul>

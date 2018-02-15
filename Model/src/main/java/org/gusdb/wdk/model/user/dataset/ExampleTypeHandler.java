@@ -6,9 +6,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-
 public class ExampleTypeHandler extends UserDatasetTypeHandler {
 
   @Override

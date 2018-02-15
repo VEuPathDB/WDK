@@ -565,7 +565,11 @@ public class FilterParamNewStableValue {
     @Override
     protected String getValueSqlClause(String columnName, String metadataTableName) {
       if (members.size() == 0) return "1 != 1";
-      return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(members, "', '") + "') ";
+
+      List<String> membersEscaped = members.stream().map( member -> member.replaceAll("'", "''") ).collect( Collectors.toList() );
+
+      return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(membersEscaped, "', '") + "') ";
+
     }
 
     @Override

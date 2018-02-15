@@ -233,7 +233,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       }
       toContext = writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
-          " for revised step " + toContext.getStep().getStepId());
+          " for revised step " + toContext.getStep().getStepId() + ".  Copying properties...");
+      // copy properties of old context to new
+      setProperties(toContext.getAnalysisId(), getProperties(fromContext.getAnalysisId()));
+      LOG.info("Properties copied.");
     }
     LOG.info("Completed copy.");
   }

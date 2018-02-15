@@ -59,7 +59,7 @@ function WdkServiceJsonReporterForm<T, U>(props: Props<T, U>) {
       />
 
       <div style={{width:'30em',textAlign:'center', margin:'0.6em 0'}}>
-        <input type="button" value="Submit" onClick={onSubmit}/>
+        <button className="btn" type="submit" onClick={onSubmit}>Get {recordClass.displayNamePlural}</button>
       </div>
     </div>
   );

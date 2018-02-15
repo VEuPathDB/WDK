@@ -2,7 +2,11 @@ package org.gusdb.wdk.service.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -18,9 +22,9 @@ import javax.ws.rs.core.UriInfo;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
-import org.gusdb.wdk.errors.ErrorBundle;
+import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
-import org.gusdb.wdk.errors.ErrorContext.RequestType;
+import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ValueMaps;
 import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
@@ -85,6 +89,21 @@ public abstract class WdkService {
     return _request.getCookies();
   }
 
+  protected Map<String,List<String>> getHeaders() {
+    Map<String, List<String>> headers = new HashMap<>();
+    Enumeration<String> headerNames = _request.getHeaderNames();
+    while (headerNames.hasMoreElements()) {
+      String headerName = headerNames.nextElement();
+      Enumeration<String> headerValues = _request.getHeaders(headerName);
+      List<String> values = new ArrayList<>();
+      while (headerValues.hasMoreElements()) {
+        values.add(headerValues.nextElement());
+      }
+      headers.put(headerName, values);
+    }
+    return headers;
+  }
+
   protected HttpSession getSession() {
     return _request.getSession();
   }
@@ -141,10 +160,19 @@ public abstract class WdkService {
    * @param errors list of errors for which to trigger error events
    */
   protected void triggerErrorEvents(List<Exception> errors) {
+    ErrorContext context = getErrorContext(ErrorLocation.WDK_SERVICE);
     for (Exception e : errors) {
-      Events.trigger(new ErrorEvent(new ErrorBundle(e),
-          getErrorContext(_servletContext, _request, _wdkModelBean.getModel())));
+      Events.trigger(new ErrorEvent(new ServerErrorBundle(e), context));
     }
+  }
+
+  /**
+   * Returns an error context for the current request
+   * 
+   * @return error context for the current request
+   */
+  public ErrorContext getErrorContext(ErrorLocation errorLocation) {
+    return getErrorContext(_servletContext, _request, _wdkModelBean.getModel(), errorLocation);
   }
 
   /**
@@ -156,14 +184,14 @@ public abstract class WdkService {
    * @return context data for this error
    */
   public static ErrorContext getErrorContext(ServletContext context,
-          HttpServletRequest request, WdkModel wdkModel) {
+          HttpServletRequest request, WdkModel wdkModel, ErrorLocation errorLocation) {
     return new ErrorContext(
       wdkModel,
       new HttpRequestData(request),
       ValueMaps.toMap(new ServletContextValueMap(context)),
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
-      RequestType.WDK_SERVICE);
+      errorLocation);
   }
 
   /**

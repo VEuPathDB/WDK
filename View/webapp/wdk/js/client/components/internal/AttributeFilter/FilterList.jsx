@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { map, partial } from 'lodash';
 
 import { getFilterValueDisplay } from '../../../utils/FilterServiceUtils';
-import Loading from '../../Loading';
 
 /**
  * List of filters configured by the user.
@@ -42,15 +41,25 @@ export default class FilterList extends React.Component {
   }
 
   render() {
-    var { fields, filters, selectedField } = this.props;
+    var { fields, filters, selectedField, filteredDataCount, dataCount, displayName, loadingFilteredCount, hideCounts } = this.props;
+
+    const filteredCount = hideCounts ? null
+      : loadingFilteredCount ? [
+        <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
+        , <span className="sr-only">Loading...</span> ]
+      : filteredDataCount && filteredDataCount.toLocaleString();
+
+    const total = hideCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
+    const filtered = hideCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} {displayName} selected</span>;
+
 
     return (
       <div className="filter-items-wrapper">
-        {this.props.renderSelectionInfo(this.props)}
-        &nbsp;
+        <div className="filter-list-total">{total}</div>
+        {filters.length === 0 ? null : <div className="filter-list-selected">{filtered}</div>}
         {filters.length === 0
-          ? <strong><em>&nbsp;&nbsp;No filters applied.</em></strong>
-          : <ul style={{display: 'inline-block', paddingLeft: '.2em'}} className="filter-items">
+          ? ( hideCounts ? null : <strong><em>No filters applied</em></strong> )
+          : <ul style={{display: 'inline-block'}} className="filter-items">
             {map(filters, filter => {
               var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
               var handleSelectClick = partial(this.handleFilterSelectClick, filter);
@@ -89,21 +98,7 @@ FilterList.propTypes = {
   onFilterRemove: PropTypes.func.isRequired,
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
-  selectedField: PropTypes.object,
-  renderSelectionInfo: PropTypes.func
+  displayName: PropTypes.string.isRequired,
+  hideCounts: PropTypes.func.isRequired,
+  selectedField: PropTypes.object
 };
-
-FilterList.defaultProps = {
-  renderSelectionInfo(parentProps) {
-    const { filteredDataCount, dataCount, filters, loadingFilteredCount } = parentProps;
-    const filteredCount = loadingFilteredCount
-      ? [ <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
-        , <span className="sr-only">Loading...</span> ]
-      : filteredDataCount;
-
-    return dataCount == null ? null
-      : filters.length === 0 ? <strong>{dataCount} total</strong>
-      : <strong>{filteredCount} of {dataCount} selected</strong>;
-  }
-};
-

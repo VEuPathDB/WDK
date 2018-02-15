@@ -1706,7 +1706,8 @@ public class StepFactory {
     long strategyId = getNewStrategyId();
     Step newRootStep = strategy.getLatestStep().deepClone(strategyId, stepIdMap);
     name = getNextName(user, name, false);
-    Strategy copy = createStrategy(user, strategyId, newRootStep, name, null, false, null, false, false);
+    // we want the unsaved strat to save the description #21855
+    Strategy copy = createStrategy(user, strategyId, newRootStep, name, null, false, strategy.getDescription(), false, false);
     LOG.info("Copy Strategy #" + strategy.getStrategyId() + " -> " + copy.getStrategyId());
     return copy;
   }

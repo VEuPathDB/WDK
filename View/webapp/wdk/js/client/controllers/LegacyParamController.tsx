@@ -107,12 +107,44 @@ export default class LegacyParamController extends AbstractViewController<
     }
   }
 
+  renderDataLoadError() {
+    const isProbablyRevise = this.props.paramValues != null;
+    const errorMessage = 'Data for this parameter could not be loaded.' +
+      (isProbablyRevise ? ' The strategy this search belongs to will have to recreated.' : '');
+
+    return (
+      <div>
+        <div style={{ color: 'red', fontSize: '1.4em', fontWeight: 500 }}>
+          {errorMessage}
+        </div>
+
+        {isProbablyRevise && [
+          <div style={{ fontWeight: 'bold', padding: '1em 0' }}>Current value:</div>,
+          <div style={{ maxHeight: 300, overflow: 'auto', background: '#f3f3f3' }}>
+            <pre>{prettyPrintRawValue(this.props.paramValues[this.props.paramName])}</pre>
+          </div>
+        ]}
+      </div>
+    );
+  }
+
   renderView() {
     const parameter = this.state.question.parameters.find(p => p.name === this.props.paramName);
 
     if (parameter == null) return null;
 
     const ctx = this.getContext(parameter);
+
+    if (this.state.paramErrors[parameter.name]) {
+      return (
+        <div>
+          <div style={{ color: 'red', fontSize: '2em', fontStyle: 'italic', margin: '1em 0' }}>
+            Oops... something went wrong.
+          </div>
+          <p>Not all of the data could be loaded. Support staff have been notified of the problem and are looking into it.</p>
+        </div>
+      )
+    }
 
     return (
       <div>
@@ -182,4 +214,13 @@ class ParamterInput extends React.Component<ParameterInputProps> {
     );
   }
 
+}
+
+function prettyPrintRawValue(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 4);
+  }
+  catch (e) {
+    return value;
+  }
 }

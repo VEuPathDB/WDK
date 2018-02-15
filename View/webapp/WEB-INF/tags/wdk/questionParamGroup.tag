@@ -60,9 +60,21 @@
               </div>
             </label>
               <c:choose>
+                  <c:when test="${paramType eq 'NumberParam'}">
+                      <div class="param-control" id="${qP.name}aaa">
+                        <imp:legacyParamAdapterInput qp="${qP}" />
+                        ${visibleHelp}
+                      </div>
+                  </c:when>
+                  <c:when test="${paramType eq 'NumberRangeParam'}">
+                      <div class="param-control" id="${qP.name}aaa">
+                        <imp:legacyParamAdapterInput qp="${qP}" />
+                        ${visibleHelp}
+                      </div>
+                  </c:when>
                   <c:when test="${paramType eq 'FilterParamNew'}">
                       <div class="param-control" id="${qP.name}aaa">
-                        <imp:filterParamNewInput qp="${qP}"/>
+                        <imp:legacyParamAdapterInput qp="${qP}" className="filter-param"/>
                         ${visibleHelp}
                       </div>
                   </c:when>

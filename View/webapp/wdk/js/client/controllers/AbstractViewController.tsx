@@ -59,7 +59,7 @@ export default abstract class AbstractViewController<
   /*-------------- Abstract methods to implement to receive store data --------------*/
 
   // These are methods are abstract, rather than concrete with a default
-  // implementation, becuase the type system cannot ensure that the generic
+  // implementation, because the type system cannot ensure that the generic
   // type argument `State` is compatible with `BaseState`. Since this aims to
   // be type safe, we leave these to the implementor to define.
 
@@ -81,6 +81,34 @@ export default abstract class AbstractViewController<
    */
   renderView(): JSX.Element | null {
     return ( <span>Page for View Controller: {this.constructor.name}</span> );
+  }
+
+  /**
+   * Renders data load error message
+   */
+  renderDataLoadError() {
+    return ( <LoadError/> );
+  }
+
+  /**
+   * Renders data not found message
+   */
+  renderDataNotFound() {
+    return ( <NotFound/> );
+  }
+
+  /**
+   * Renders data permission denied
+   */
+  renderDataPermissionDenied() {
+    return ( <PermissionDenied/> );
+  }
+
+  /**
+   * Renders data loading message
+   */
+  renderDataLoading() {
+    return ( <Loading/> );
   }
 
 
@@ -207,16 +235,16 @@ export default abstract class AbstractViewController<
    */
   render() {
     if (this.isRenderDataLoadError()) {
-      return ( <LoadError/> );
+      return this.renderDataLoadError();
     }
     else if (this.isRenderDataNotFound()) {
-      return ( <NotFound/> );
+      return this.renderDataNotFound();
     }
     else if (this.isRenderDataPermissionDenied()) {
-      return ( <PermissionDenied/> );
+      return this.renderDataPermissionDenied();
     }
     else if (!this.isRenderDataLoaded()) {
-      return ( <Loading/> );
+      return this.renderDataLoading();
     }
     else {
       return this.renderView();

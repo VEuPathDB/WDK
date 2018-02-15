@@ -15,6 +15,7 @@ import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ApiService;
+import org.gusdb.wdk.service.service.ClientErrorReportingService;
 import org.gusdb.wdk.service.service.OAuthService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.ProjectService;
@@ -76,6 +77,7 @@ public class WdkServiceApplication extends Application {
     .add(SessionService.class)
     .add(StrategyService.class)
     .add(StepAnalysisService.class)
+    .add(ClientErrorReportingService.class)
 
     // test
     .add(SampleService.class)

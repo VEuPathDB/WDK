@@ -79,7 +79,7 @@ public class BooleanQuery extends SqlQuery {
   public void setRecordClass(RecordClass recordClass) throws WdkModelException {
     this._recordClass = recordClass;
     this._wdkModel = recordClass.getWdkModel();
-    String rcName = recordClass.getFullName();
+    String rcName = recordClass.getFullName().replace('.', '_');
 
     // create or get the historyParam for the query
     ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);

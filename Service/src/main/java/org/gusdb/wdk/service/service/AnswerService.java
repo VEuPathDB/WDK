@@ -74,7 +74,7 @@ public class AnswerService extends WdkService {
     // log this request's JSON here since filter will not log form data
     if (RequestLoggingFilter.isLogEnabled()) {
       RequestLoggingFilter.logRequest("POST", getUriInfo(),
-          RequestLoggingFilter.toJsonBodyString(data));
+          RequestLoggingFilter.formatJson(data));
     }
     return buildResult(data);
   }

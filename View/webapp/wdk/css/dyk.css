@@ -3,7 +3,7 @@
 	position:absolute;
 	width:467px;
 	height:107px; /*dyk.js also contains these values */
-	top:65px;
+	top:75px;
 	left:313px;
 	z-index:98;
 	border:1px solid #888888;
@@ -21,7 +21,7 @@ div#dyk-shadow{
 	background-color:#000000;
 	left:319px;
 	opacity:0.2;
-	top:71px;
+	top:81px;
 	z-index:97;
 }
 

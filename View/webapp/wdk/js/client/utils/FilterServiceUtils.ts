@@ -195,7 +195,7 @@ function mapBy<T, S>(iter: Iterable<T>, keyAccessor: (item: T) => S) {
       itemArray.push(item);
       map.set(key, itemArray);
       return map;
-    }, new Map);
+    }, new Map<S, T[]>());
 }
 
 
@@ -219,7 +219,7 @@ export function getFilterValueDisplay(field: Field, filter: MemberFilter | Range
                        : value.min == null && value!.max == null ? ''
                        : value.min == null ? `less than ${value.max}`
                        : value.max == null ? `greater than ${value.min}`
-                       : `between ${value!.min} and ${value.max}`;
+                       : `from ${value!.min} to ${value.max}`;
     return displayValue +
       (includeUnknown ? ( displayValue ? ', or is unspecified' : 'unspecified') : '');
   }

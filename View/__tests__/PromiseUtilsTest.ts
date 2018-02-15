@@ -1,9 +1,8 @@
-import test from 'ava';
 import {
   latest,
   synchronized,
   Mutex
-} from '../../webapp/wdk/js/client/utils/PromiseUtils';
+} from '../webapp/wdk/js/client/utils/PromiseUtils';
 
 // helpers
 
@@ -15,17 +14,17 @@ function timeout(ms: number): Promise<number> {
   });
 }
 
-test('latest', function(t) {
+test('latest', function() {
   let latestTimeout = latest(timeout);
   return Promise.race([
-    latestTimeout(100).then(ms => t.is(ms, 400)),
-    latestTimeout(200).then(ms => t.is(ms, 400)),
-    latestTimeout(300).then(ms => t.is(ms, 400)),
-    latestTimeout(400).then(ms => t.is(ms, 400))
+    latestTimeout(100).then(ms => expect(ms).toBe(400)),
+    latestTimeout(200).then(ms => expect(ms).toBe(400)),
+    latestTimeout(300).then(ms => expect(ms).toBe(400)),
+    latestTimeout(400).then(ms => expect(ms).toBe(400))
   ]);
 });
 
-test('synchronized', function(t) {
+test('synchronized', function() {
   const synchronizedTimeout = synchronized(timeout);
   const called: number[] = [];
   return Promise.all([
@@ -34,13 +33,13 @@ test('synchronized', function(t) {
     synchronizedTimeout(200).then(ms => called.push(ms)),
     synchronizedTimeout(100).then(ms => {
       called.push(ms);
-      t.is(ms, 100);
-      t.deepEqual(called, [400, 300, 200, 100]);
+      expect(ms).toBe(100);
+      expect(called).toEqual([400, 300, 200, 100]);
     })
   ]);
 })
 
-test('Mutex', function(t) {
+test('Mutex', function() {
   const mutex = new Mutex();
   const called: number[] = [];
   const error = new Error("Inside synchronize.");
@@ -48,8 +47,7 @@ test('Mutex', function(t) {
 
   mss.forEach((ms, index) => {
     mutex.synchronize(() => {
-      t.is(index, called.length,
-        "synchronize callback should be called only when previous callback resolved.")
+      expect(index).toBe(called.length)
       return timeout(ms).then(ms => {
         called.push(ms)
       });
@@ -57,11 +55,11 @@ test('Mutex', function(t) {
   })
 
   mutex.synchronize(() => { throw error; }).catch(err => {
-    t.is(err, error, "Errors should be handled by consumer");
+    expect(err).toBe(error);
   });
 
   return mutex.synchronize(() => Promise.resolve()).then(() => {
-    t.deepEqual(called, [400,300,200,100], "Promises should resolve in order added");
+    expect(called).toEqual([400,300,200,100]);
   });
 
 });

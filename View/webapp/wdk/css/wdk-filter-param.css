@@ -19,13 +19,20 @@
   font-size: smaller;
   margin: 0;
 }
-.filter-param .membership-filter .toggle-links {
-  /* position: absolute; */
-}
 .filter-param .filter-items-wrapper {
   min-height: 2em;
   display: flex;
   align-items: center;
+  font-size: 1.2em;
+}
+.filter-list-total,
+.filter-list-selected {
+  font-weight: 500;
+}
+.filter-list-total {
+  width: 25%;
+  padding-left: 2em;
+  margin-right: 1em;
 }
 .filter-param, .filter-param * {
   -webkit-box-sizing: border-box;
@@ -150,7 +157,7 @@
 .filter-param .field-detail {
   width: 75%;
   margin-left: 25%;
-  padding: 0 2em;
+  padding: 0 1rem;
   position: relative;
 }
 .filter-param .field-detail__topPadding {
@@ -199,14 +206,6 @@
   max-width: 100%;
   font-size: 1em;
 }
-/* Prevent checkbox cell of table from having scrollbar */
-.filter-param .membership-filter .MesaComponent th.SelectionCell,
-.filter-param .membership-filter .MesaComponent td.SelectionCell {
-  width: 22px;
-  padding: 4px;
-  text-align: center;
-  overflow: visible;
-}
 .filter-param .membership-filter .HeadingRow:first-child {
   border-top: 1px solid #ccc;
 }
@@ -222,6 +221,7 @@
   background: transparent;
   padding: 4px;
   border: none;
+  position: relative;
 }
 .filter-param .membership-filter .MesaComponent th {
   border-right: 1px solid #ccc;
@@ -280,7 +280,7 @@
   flex-direction: row;
   padding: 1em 0;
 }
-.filter-param .membership-action__group-selected {
+.filter-param .membership-action {
   display: flex;
   align-items: center;
   font-weight: 300;
@@ -408,8 +408,25 @@
   font-weight: bold;
   /*background-color: #66A4E7;*/
 }
-.filter-param .membership-filter .member.member__disabled {
+.filter-param .membership-filter .member.member__disabled td > * {
   opacity: .4;
+}
+.filter-param .membership-filter .HeadingRow th:first-child,
+.filter-param .membership-filter .member td:first-child {
+  /* Prevent checkbox cell of table from having scrollbar */
+  padding: 4px;
+  text-align: center;
+  overflow: visible;
+}
+.filter-param .membership-filter .disabled-tooltip {
+  position: fixed;
+  color: black;
+  background-color: #fffceb;
+  padding: 4px;
+  z-index: 1;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  width: 22em;
 }
 .filter-param .results {
   padding: 1em;
@@ -445,6 +462,8 @@
 }
 .filter-param .filter-items {
   line-height: 14px;
+  margin-left: 0;
+  font-size: .8em;
 }
 .filter-param .filter-items * {
   vertical-align: middle;
@@ -456,23 +475,22 @@
 }
 .filter-param .filter-items li {
   display: inline-block;
-  margin-left: .2em;
   margin-right: .2em;
 }
 .filter-param .filter-items li > div {
   padding: 2px 4px;
-  background-color: #fafafa;
+  background-color: #ececec;
   border: 1px solid #c8c8c8;
 }
 .filter-param .filter-items li.selected > div {
-  background-color: #ececec;
-  font-weight: bold;
+  border: 1px solid #909090;
+  font-weight: 500;
 }
 .filter-param .filter-items .remove {
   display: inline-block;
-  vertical-align: text-bottom;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.5em;
+  font-weight: normal;
   padding-left: 4px;
   opacity: .4;
   -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";

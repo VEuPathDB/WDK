@@ -68,6 +68,7 @@ export default class ServerSideAttributeFilter extends React.Component {
       hideFilterPanel,
       hideFieldPanel,
       dataCount,
+      displayName,
       filteredDataCount,
       fields,
       filters,
@@ -77,7 +78,6 @@ export default class ServerSideAttributeFilter extends React.Component {
       activeFieldSummary
     } = this.props;
 
-    var displayName = this.props.displayName;
     var selectedFilter = activeField && find(filters, filter => {
       return filter.field === activeField.term;
     });
@@ -94,7 +94,8 @@ export default class ServerSideAttributeFilter extends React.Component {
             loadingFilteredCount={this.props.loadingFilteredCount}
             dataCount={dataCount}
             selectedField={activeField}
-            renderSelectionInfo={this.props.renderSelectionInfo}
+            hideCounts={this.props.hideGlobalCounts}
+            displayName={displayName}
           />
         )}
 
@@ -140,7 +141,7 @@ ServerSideAttributeFilter.propTypes = {
   autoFocus: PropTypes.bool,
   hideFilterPanel: PropTypes.bool,
   hideFieldPanel: PropTypes.bool,
-  renderSelectionInfo: PropTypes.func,
+  hideGlobalCounts: PropTypes.bool,
   selectByDefault: PropTypes.bool, // affects UI state for when no filter is applied
 
   // state
@@ -170,6 +171,7 @@ ServerSideAttributeFilter.defaultProps = {
   displayName: 'Items',
   hideFilterPanel: false,
   hideFieldPanel: false,
+  hideGlobalCounts: false,
   selectByDefault: false
 };
 

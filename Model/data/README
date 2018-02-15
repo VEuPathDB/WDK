@@ -1,0 +1,12 @@
+The EuPathDB project now has a variety of apicomm/userDb setups.  These setups
+can be created in an empty database with a set of SQL files.  Which files to
+run and on which DBs depends on your Project.  In addition, if your DB is
+replicated, you will have to run supplemental scripts to reset sequences on one
+mirror to values that will not interfere with the other.  The following is a
+listing of what scripts should be run against which DBs to recreate the proper
+schema.
+
+Basic WDK site with no replication:
+
+create_userlogins5.sql
+

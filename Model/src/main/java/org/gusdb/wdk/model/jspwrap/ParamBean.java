@@ -75,6 +75,24 @@ public abstract class ParamBean<T extends Param> {
     return _param.getEmptyValue();
   }
 
+  /**
+   * Returns a set of ParamBeans representing params this param depends on
+   * @return depended param beans
+   * @throws WdkModelException
+   */
+  public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
+    return null;
+  }
+
+  /**
+   * Returns a comma-delimited list of names of params this param depends on
+   * @return depended param names as string
+   * @throws WdkModelException
+   */
+  public String getDependedParamNames() throws WdkModelException {
+    return null;
+  }
+
   public boolean getIsVisible() {
     return _param.isVisible();
   }

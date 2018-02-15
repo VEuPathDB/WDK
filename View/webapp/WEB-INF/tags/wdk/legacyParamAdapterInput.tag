@@ -8,16 +8,8 @@
 Provides form input element for a given FilterParamParam.
 --%>
 
-<%@ attribute name="qp"
-              type="org.gusdb.wdk.model.jspwrap.FilterParamNewBean"
-              required="true"
-              description="parameter name"
-%>
-
-<%@ attribute name="layout"
-              required="false"
-              description="parameter name"
-%>
+<%@ attribute name="qp" type="org.gusdb.wdk.model.jspwrap.ParamBean" required="true" description="parameter" %>
+<%@ attribute name="className" required="false" description="class name for container div" %>
 
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
@@ -38,7 +30,7 @@ Provides form input element for a given FilterParamParam.
 
 <%-- FIXME change data-name to data-display-name --%>
 <%-- display the param as an advanced filter param --%>
-<div class="param filter-param"
+<div class="param ${className}"
     dependson="${dependedParam}"
     name="${pNam}"
     data-type="filter-param-new"

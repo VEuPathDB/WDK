@@ -1,4 +1,4 @@
-import { memoize } from 'lodash';
+import { memoize, sortBy, stubTrue as T } from 'lodash';
 import natsort from 'natural-sort';
 
 import { Filter, MemberFilter } from '../../utils/FilterService';
@@ -41,13 +41,12 @@ function compareDistributionValues(valueA: any, valueB: any) {
   );
 }
 
-function makeSelectionComparator(values: any) {
-  let set = new Set(values);
-  return function compareValuesBySelection(a: any, b: any) {
-    return set.has(a.value) && !set.has(b.value) ? -1
-      : set.has(b.value) && !set.has(a.value) ? 1
-      : 0;
-  }
+
+type Distribution = OntologyTermSummary['valueCounts'];
+type Entry = Distribution[number];
+
+function filteredCountIsZero(entry: Entry) {
+  return entry.filteredCount === 0;
 }
 
 /**
@@ -57,21 +56,25 @@ function makeSelectionComparator(values: any) {
  * @param {Distribution} distribution
  * @param {SortSpec} sort
  */
-export function sortDistribution(distribution: OntologyTermSummary['valueCounts'], sort: SortSpec, filter?: MemberFilter) {
-  let { columnKey, direction, groupBySelected } = sort;
+export function sortDistribution(distribution: Distribution, sort: SortSpec, filter?: MemberFilter) {
+  const { columnKey, direction, groupBySelected } = sort;
+  const selectedSet = new Set(filter ? filter.value : [] as Array<string|number> );
+  const selectionPred = groupBySelected
+    ? (a: Entry) => !selectedSet.has(a.value)
+    : T
 
-  let sortedDist = distribution.slice().sort(function compare(a: any, b: any) {
-    let order =
-      // if a and b are equal, fall back to comparing `value`
+  // first sort by specified column
+  const primarySorted = distribution.slice().sort(function (a: Entry, b: Entry) {
+    const order =
+      // when column values are equal, sort by value
       columnKey === 'value' || a[columnKey] === b[columnKey]
         ? compareDistributionValues(a.value, b.value)
         : a[columnKey] > b[columnKey] ? 1 : -1;
     return direction === 'desc' ? -order : order;
   });
 
-  return groupBySelected && filter && filter.value && filter.value.length > 0
-    ? sortedDist.sort(makeSelectionComparator(filter.value))
-    : sortedDist;
+  // then perform secondary sort based on filtered count and selection
+  return sortBy(primarySorted, [ filteredCountIsZero, selectionPred ]);
 }
 
 export function isMemberField(parameter: FilterParamNew, fieldName: string) {
