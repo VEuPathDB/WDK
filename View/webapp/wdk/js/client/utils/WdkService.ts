@@ -66,6 +66,12 @@ export class ServiceError extends Error {
   }
 }
 
+export interface ClientError {
+  message: string;
+  // stack trace?
+  // context info?
+}
+
 export interface ServiceConfig {
   assetsUrl: string;
   authentication: {
@@ -204,6 +210,10 @@ export default class WdkService {
       JSON.stringify({ email, password, redirectUrl }));
   }
 
+  submitError(error: ClientError) {
+    return this._fetchJson<never>('post', '/client-errors', JSON.stringify(error));
+  }
+
   /**
    * Get all Questions defined in WDK Model.
    *
@@ -236,7 +246,6 @@ export default class WdkService {
     let url = `/questions/${identifier}?expandParams=true`;
     return this._getFromCache(url, () => this._fetchJson<Question>('get', url));
   }
-
 
   /**
    * Fetch question information (e.g. vocabularies) given the passed param values; never cached
