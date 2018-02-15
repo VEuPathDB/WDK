@@ -703,6 +703,7 @@ div.param-group div#grp-descr{
   display: flex;
   margin-left: 1.5em;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .param-inline-help {
@@ -786,6 +787,14 @@ div.param-group div#grp-descr{
 .params .invalid-values { padding:5px; font-weight: bold; }
 .params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
 .params .invalid-values li.invalid { color:red; }
+
+.params .invalid-values__filter-param {
+  align-self: flex-start;
+  justify-self: flex-start;
+  order: -1;
+  color: red;
+  word-break: break-all;
+}
 
 /* ======= Needed in treeParams, when param value is so long that it wraps (plasmo mass spec) ========*/
 .checkbox-tree .jstree-icon {
@@ -1971,10 +1980,6 @@ color:darkred;font-style:italic;font-size:95%;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jQuery
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-.ui-front {
-  z-index: 10000000000;
-}
 
 .ui-tabs > .ui-widget-header {
     background: none;
