@@ -59,7 +59,7 @@ export default abstract class AbstractViewController<
   /*-------------- Abstract methods to implement to receive store data --------------*/
 
   // These are methods are abstract, rather than concrete with a default
-  // implementation, becuase the type system cannot ensure that the generic
+  // implementation, because the type system cannot ensure that the generic
   // type argument `State` is compatible with `BaseState`. Since this aims to
   // be type safe, we leave these to the implementor to define.
 
