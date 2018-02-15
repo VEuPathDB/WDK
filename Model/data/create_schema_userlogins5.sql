@@ -291,6 +291,7 @@ CREATE TABLE userlogins5.step_analysis (
   invalid_step_reason  VARCHAR2(1024),
   context_hash         VARCHAR2(96),
   context              CLOB,
+  properties           CLOB,
   CONSTRAINT "step_analysis_pk" PRIMARY KEY (analysis_id),
   CONSTRAINT "step_analysis_fk01" FOREIGN KEY (step_id)
       REFERENCES userlogins5.steps (step_id)
