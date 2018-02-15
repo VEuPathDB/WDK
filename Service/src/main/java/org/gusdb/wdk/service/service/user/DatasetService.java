@@ -8,6 +8,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -136,6 +137,22 @@ public class DatasetService extends UserService {
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
         .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
     return factory.getDataset(user, Long.parseLong(datasetId));
+  }
+
+  @POST
+  @Path("datasets-from-basket")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response createDatasetFromBasket(@QueryParam("rc") String recordClassName) throws WdkModelException, WdkUserException {
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    WdkModel wdkModel = getWdkModel();
+    RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
+    String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
+    Question question = wdkModel.getQuestion(questionName);
+    DatasetParam param = (DatasetParam) question.getParamMap().get(BasketFactory.getDatasetParamName(recordClass));
+    DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
+    String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
+        .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
+    return Response.ok(datasetId).build();
   }
 
   @POST
