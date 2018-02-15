@@ -160,13 +160,18 @@ function setActiveRecord(recordClassName: string, primaryKeyValues: string[]): A
           type: 'record-view/error-received',
           payload: { error }
         });
-        // Calls dispatch on the array of promises in the provided order
-        // even if they resolve out of order.
-        seq([baseAction$].concat(tableActions), dispatch, dispatchError)
-          .catch(error => {
-            console.error(error);
-            if (process.env.NODE_ENV === 'development')
-              alert('Render error. See browser console for details.')
+
+        baseAction$
+          .then((action: LoadRecordAction) => { dispatch(action) }, (error: Error) => { dispatchError(error) })
+          .then(() => {
+            // Calls dispatch on the array of promises in the provided order
+            // even if they resolve out of order.
+            seq(tableActions, dispatch, dispatchError)
+              .catch(error => {
+                console.error(error);
+                if (process.env.NODE_ENV === 'development')
+                  alert('Render error. See browser console for details.')
+              });
           });
 
         return baseAction$;
