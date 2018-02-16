@@ -11,12 +11,14 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 /**
  * @author jerric
@@ -37,7 +39,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   public static final String FILTERS_MIN = "min";
   public static final String FILTERS_MAX = "max";
   public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
-
   public FilterParamNewHandler() {}
 
   public FilterParamNewHandler(FilterParamNewHandler handler, Param param) {
@@ -211,8 +212,29 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
+    String stableValue = requestParams.getParam(_param.getName());
+
+    // If the request doesn't include a stableValue for the param,
+    // we don't have to do anything.
+    if (stableValue == null) return;
+
+    // Validate stableValue. If there are errors, we will set a request
+    // attribute with the error string below.
+    FilterParamNewStableValue fpnStableValue = new FilterParamNewStableValue(stableValue, (FilterParamNew) _param);
+    String errors = fpnStableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+
     // do nothing
-   }
+    if (errors == null) return;
+
+    // Since there is an error, set the stable and raw value on the request to
+    // an empty filters JSON, and set the errors string on the request.
+    String empty = new JSONObject().put("filters", new JSONArray()).toString();
+    requestParams.setParam(_param.getName(), empty);
+    requestParams.setAttribute(_param.getName(), empty);
+    requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, empty);
+    requestParams.setAttribute(_param.getName() + Param.INVALID_VALUE_SUFFIX, errors);
+
+  }
 
   @Override
   public ParamHandler clone(Param param) {
