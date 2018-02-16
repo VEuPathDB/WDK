@@ -981,9 +981,12 @@ public class FilterParamNew extends AbstractDependentParam {
     return stale;
   }
   
-  protected String getValidStableValue(User user, String stableValue) throws WdkModelException, WdkUserException {
-    return (stableValue == null || _handler.validateStableValueSyntax(user, stableValue) != null) ? getDefault()
-        : stableValue;
+  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+    if (stableValueString == null) return getDefault();
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+
+    return (stableValue == null || err != null) ? getDefault() : stableValueString;
   }
 
 
