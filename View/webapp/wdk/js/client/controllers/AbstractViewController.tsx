@@ -202,7 +202,7 @@ export default abstract class AbstractViewController<
     this.loadData();
   }
 
-  componentDidUpdate(prevProps: Readonly<ViewControllerProps<Store> & Props>): void {
+  componentDidUpdate(prevProps: Readonly<ViewControllerProps<Store> & Props>, state: State): void {
     this.loadData(prevProps);
   }
 

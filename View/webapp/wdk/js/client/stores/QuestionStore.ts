@@ -35,6 +35,7 @@ export type QuestionState = {
   paramUIState: Record<string, any>;
   groupUIState: Record<string, GroupState>;
   paramErrors: Record<string, string | undefined>;
+  stepId: number | undefined;
 }
 
 export type State = BaseState & {
@@ -71,6 +72,7 @@ function reduceQuestionState(state: QuestionState, action: Action): QuestionStat
   if (ActiveQuestionUpdatedAction.isType(action)) return {
     ...state,
     paramValues: action.payload.paramValues || {},
+    stepId: action.payload.stepId,
     questionStatus: 'loading'
   }
 

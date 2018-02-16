@@ -76,6 +76,17 @@
                       <div class="param-control" id="${qP.name}aaa">
                         <imp:legacyParamAdapterInput qp="${qP}" className="filter-param"/>
                         ${visibleHelp}
+                        <%-- display invalid terms, if any. --%>
+                        <c:set var="invalidKey" value="${qP.name}_invalid" />
+                        <c:set var="invalidTerms" value="${requestScope[invalidKey]}" />
+
+                        <c:if test="${fn:length(invalidTerms) gt 0}">
+                          <div class="invalid-values invalid-values__filter-param">
+                            <p>Some of the option(s) you previously selected are no longer available:</p>
+                            <div class="invalid">${invalidTerms}</div>
+                          </div>
+                        </c:if>
+
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
