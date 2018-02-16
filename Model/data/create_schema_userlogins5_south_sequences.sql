@@ -1,10 +1,11 @@
 /*==============================================================================
- * This SQL script should be run on SOUTH instances AFTER create_userlogins5.sql
- * is run.  It will drop the sequences created by that script and create new
- * sequences with proper start values for south instances.
+ * This SQL script should be run on SOUTH instances AFTER
+ * create_schema_userlogins5.sql is run.  It will drop the sequences created by
+ * that script and create new sequences with proper start values for south
+ * instances.
  *============================================================================*/
 
--- drop sequences created by create_userlogins5.sql
+-- drop sequences created by schema creation script
 --   they have incorrect initial values for south instances
 DROP SEQUENCE userlogins5.users_pkseq;
 DROP SEQUENCE userlogins5.strategies_pkseq;
