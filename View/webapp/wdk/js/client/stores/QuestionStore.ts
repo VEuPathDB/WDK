@@ -3,6 +3,7 @@ import { keyBy, mapValues } from 'lodash';
 import { Epic } from '../utils/ActionCreatorUtils';
 import {
   ActiveQuestionUpdatedAction,
+  UnloadQuestionAction,
   ParamErrorAction,
   ParamInitAction,
   ParamStateUpdatedAction,
@@ -68,7 +69,10 @@ export default class QuestionStore extends WdkStore<State> {
 
 }
 
-function reduceQuestionState(state: QuestionState, action: Action): QuestionState {
+function reduceQuestionState(state: QuestionState, action: Action): QuestionState | undefined {
+
+  if (UnloadQuestionAction.isType(action)) return undefined;
+
   if (ActiveQuestionUpdatedAction.isType(action)) return {
     ...state,
     paramValues: action.payload.paramValues || {},
