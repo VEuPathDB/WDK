@@ -100,9 +100,11 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON announce.message_projects TO COMM_WDK_W;
  * ApiCommN for 100000000, ApiCommS for 100000003
  *============================================================================*/
 
+-- note start value may change depending on initial project list: see above
 CREATE SEQUENCE announce.projects_id_pkseq INCREMENT BY 10 START WITH 100;
 GRANT SELECT ON announce.projects_id_pkseq TO COMM_WDK_W;
 
+-- note start value may change depending on initial project list; see above
 CREATE SEQUENCE announce.category_id_pkseq INCREMENT BY 10 START WITH 40;
 GRANT SELECT ON announce.category_id_pkseq TO COMM_WDK_W;
 
