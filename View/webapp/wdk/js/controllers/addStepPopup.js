@@ -321,7 +321,7 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
               zIndex: 100,
               top: Math.max($(window).scrollTop() + 50,
                             $("#strategy_results").offset().top),
-              left: ($(window).width() - $("#query_form").width()) / 2
+              left: ($(window).width() - $("#query_form").width()) / 8
             });
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
