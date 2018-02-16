@@ -23,7 +23,8 @@ Provides form input element for a given FilterParamParam.
     {
       "paramName": "${qP.name}",
       "questionName": "${requestScope.wdkQuestion.urlSegment}",
-      "paramValues": ${action eq 'revise' ? requestScope.wdkQuestion.paramValuesJson : 'null'}
+      "paramValues": ${action eq 'revise' ? requestScope.wdkQuestion.paramValuesJson : 'null'},
+      "stepId": ${action eq 'revise' ? step : 'null'}
     }
   </c:set>
 
