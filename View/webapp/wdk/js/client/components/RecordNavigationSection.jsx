@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import {includes, memoize, throttle} from 'lodash';
 import { Seq } from '../utils/IterableUtils';
 import { preorderSeq, pruneDescendantNodes } from '../utils/TreeUtils';
-import { wrappable, PureComponent } from '../utils/componentUtils';
+import { wrappable } from '../utils/componentUtils';
 import { getId, isIndividual } from '../utils/CategoryUtils';
 import RecordNavigationItem from './RecordNavigationItem';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 
 /** Navigation panel for record page */
-class RecordNavigationSection extends PureComponent {
+class RecordNavigationSection extends React.PureComponent {
 
   constructor(props) {
     super(props);
