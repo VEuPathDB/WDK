@@ -16,7 +16,8 @@ type BasePayload = {
 export const ActiveQuestionUpdatedAction = makeActionCreator(
   'quesiton/active-question-updated',
   payload<BasePayload & {
-    paramValues?: ParameterValues
+    paramValues?: ParameterValues;
+    stepId: number | undefined;
   }>()
 );
 

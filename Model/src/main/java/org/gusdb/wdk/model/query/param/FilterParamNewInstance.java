@@ -26,7 +26,6 @@ public class FilterParamNewInstance implements DependentParamInstance {
   @Override
   public String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    if (stableValue == null) return _param.getDefault();
-    return stableValue;
+    return _param.getValidStableValue(user, stableValue);
   }
 }
