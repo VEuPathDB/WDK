@@ -212,6 +212,13 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
+
+    // hardcode to skip vaildation for ClinEpiDB
+    if (_wdkModel.getModelConfig().getModelName().equals("clinEpiModel")) {
+      LOG.info("Skipping validation for clinEpiModel");
+      return;
+    }
+
     String stableValue = requestParams.getParam(_param.getName());
 
     // If the request doesn't include a stableValue for the param,

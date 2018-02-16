@@ -982,6 +982,13 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   protected String getValidStableValue(User user, String stableValue) throws WdkModelException, WdkUserException {
+
+    // hardcode to skip vaildation for ClinEpiDB
+    if (_wdkModel.getModelConfig().getModelName().equals("clinEpiModel")) {
+      LOG.info("Skipping validation for clinEpiModel");
+      return stableValue == null ? getDefault() : stableValue;
+    }
+
     return (stableValue == null || _handler.validateStableValueSyntax(user, stableValue) != null) ? getDefault()
         : stableValue;
   }
