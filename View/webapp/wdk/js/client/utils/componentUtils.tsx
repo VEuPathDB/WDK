@@ -1,5 +1,4 @@
 import React from 'react';
-import shallowCompare from 'react-addons-shallow-compare';
 import {AttributeValue} from './WdkModel';
 
 /**
@@ -10,22 +9,13 @@ interface AnyObject {
   [key: string]: any;
 }
 
-/**
- * Implements a shallow-equals algorithm for incoming props and state.
- * If they are shallowly equal, the component update will be skipped.
- */
-export class PureComponent<P, S> extends React.Component<P, S> {
-  shouldComponentUpdate(nextProps: P, nextState: S): boolean {
-    return shallowCompare(this, nextProps, nextState);
-  }
-}
 
 /**
  * Stateless function component decorator that prevents rerendering
  * when props are equal use shallow comparison.
  */
 export function pure<P>(Component: React.StatelessComponent<P>) {
-  return class PureWrapper extends PureComponent<P, void> {
+  return class PureWrapper extends React.PureComponent<P, void> {
     static get displayName() {
       return `PureWrapper(${Component.displayName || Component.name})`;
     }
