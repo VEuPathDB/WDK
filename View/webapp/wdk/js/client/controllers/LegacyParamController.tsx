@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 
 import {
   ActiveQuestionUpdatedAction,
+  UnloadQuestionAction,
   ParamValueUpdatedAction,
   QuestionErrorAction
 } from '../actioncreators/QuestionActionCreators';
@@ -56,6 +57,12 @@ export default class LegacyParamController extends AbstractViewController<
       .map(name => this.state.question.parametersByName[name])
       .flatMap(dependentParam =>
         Seq.of(dependentParam).concat(this.getDependentParams(dependentParam)));
+  }
+
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    const { questionName } = this.props;
+    this.dispatchAction(UnloadQuestionAction.create({ questionName }));
   }
 
   loadData(prevProps?: Props, prevState?: QuestionState) {
