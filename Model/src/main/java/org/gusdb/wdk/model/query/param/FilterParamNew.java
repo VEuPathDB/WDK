@@ -981,16 +981,18 @@ public class FilterParamNew extends AbstractDependentParam {
     return stale;
   }
   
-  protected String getValidStableValue(User user, String stableValue) throws WdkModelException, WdkUserException {
-
+  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     // hardcode to skip vaildation for ClinEpiDB
     if (_wdkModel.getModelConfig().getModelName().equals("clinEpiModel")) {
       LOG.info("Skipping validation for clinEpiModel");
-      return stableValue == null ? getDefault() : stableValue;
+      return stableValueString == null ? getDefault() : stableValueString;
     }
 
-    return (stableValue == null || _handler.validateStableValueSyntax(user, stableValue) != null) ? getDefault()
-        : stableValue;
+    if (stableValueString == null) return getDefault();
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+
+    return (stableValue == null || err != null) ? getDefault() : stableValueString;
   }
 
 
