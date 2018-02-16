@@ -148,6 +148,7 @@ public class Keys {
   public static final String CHANGE_PASSWORD_URL = "changePasswordUrl";
   public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
   public static final String USER_PROFILE_PROPERTIES = "userProfileProperties";
+  public static final String USER_DATASETS_ENABLED = "userDatasetsEnabled";
 
   // authentication keys
   public static final String AUTHENTICATION = "authentication";
