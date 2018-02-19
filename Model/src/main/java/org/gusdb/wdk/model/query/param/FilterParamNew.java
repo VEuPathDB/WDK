@@ -512,7 +512,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
     String filteredFilterItemIdSql = getFilteredIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
-        " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'");
+        " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
     String andClause = " AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
