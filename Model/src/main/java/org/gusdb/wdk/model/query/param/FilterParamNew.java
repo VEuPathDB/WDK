@@ -747,7 +747,10 @@ public class FilterParamNew extends AbstractDependentParam {
 
     if (ontologyTerms != null) {
       // find ontology terms used in our set of member filters
-      String ontologyTermsString = ontologyTerms.stream().collect(Collectors.joining("', '"));
+      String ontologyTermsString = ontologyTerms
+        .stream()
+        .map(term -> term.replaceAll("'", "''"))
+        .collect(Collectors.joining("', '"));
       ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID + " IN ('" +
           ontologyTermsString + "')"; 
     }
