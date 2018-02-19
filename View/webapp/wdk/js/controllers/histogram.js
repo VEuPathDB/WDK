@@ -155,7 +155,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
 
 
   function convertCategoryData(data, binSize, logarithm) {
-    if (binSize == 1 && !logarithm) return data; // no need to convert
+    //if (binSize == 1 && !logarithm) return data; // no need to convert
 
     var bins = [];
     var labels = [];
@@ -163,15 +163,15 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     for (var i = 0; i < data.length; i += binSize) {
       bin = [];
       var count = 0;
-      var upper = Math.max(i + binSize, data.length);
+      var upper = Math.min(i + binSize, data.length);
       for (var j = i; j < upper; j++) {
         bin.push(data[j][0]);
         count += data[j][1];
       }
 
       // now compute new label;
-      var label;
-      if (bin.length === 0) label = bin[0];
+      var label = "";
+      if (bin.length === 1) label = bin[0];
       else {
         for (var k = 0; k < bin.length; k++) {
           label += (k === 0) ? "[" : ", ";
@@ -185,7 +185,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
       bins.push([ i, count ]);
       labels.push([ i, label ]);
     }
-    return bin;
+    return [bins,labels];
   }
 
 
