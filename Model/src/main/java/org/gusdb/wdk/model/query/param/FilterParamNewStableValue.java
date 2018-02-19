@@ -297,7 +297,7 @@ public class FilterParamNewStableValue {
       OntologyItemType type = ontologyItem.getType();
       String columnName = type.getMetadataQueryColumn();
 
-      String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'";
+      String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'";
 
       String unknownClause = includeUnknowns ? metadataTableName + "." + columnName + " is NULL OR " : " 1=0 OR ";
 
