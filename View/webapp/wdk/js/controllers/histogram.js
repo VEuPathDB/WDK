@@ -171,7 +171,12 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
 
       // now compute new label;
       var label = "";
-      if (bin.length === 1) label = bin[0];
+      if (bin.length === 1) {
+    	    label = bin[0];
+    	    if(label.length > 20) {
+    	    	  label = label.substring(0,20) + "...";
+    	    }
+      }
       else {
         for (var k = 0; k < bin.length; k++) {
           label += (k === 0) ? "[" : ", ";
