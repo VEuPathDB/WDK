@@ -3,8 +3,11 @@ import * as React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import AbstractPageController from './AbstractPageController';
 import * as ActionCreators from '../actioncreators/FavoritesActionCreators';
-import FavoritesList from '../components/FavoritesList';
+import _FavoritesList from '../components/FavoritesList';
 import FavoritesListStore, { State as StoreState } from "../stores/FavoritesListStore";
+
+// FIXME Convert FavoritesList to TypeScript
+const FavoritesList: any = _FavoritesList;
 
 type State = Pick<StoreState,
   'tableState' |

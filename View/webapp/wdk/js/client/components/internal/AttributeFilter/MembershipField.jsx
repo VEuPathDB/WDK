@@ -1,5 +1,3 @@
-import 'mesa/dist/css/mesa.css';
-
 import { bindAll, difference, escapeRegExp, get, has, isFunction, memoize, debounce } from 'lodash';
 import { MesaController as Mesa } from 'mesa';
 import React from 'react';
@@ -17,12 +15,18 @@ class MembershipField extends React.PureComponent {
 
   constructor(props) {
     super(props);
+    this.state = {};
     this.handleMouseOver = this.handleMouseOver.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleGroupBySelected = this.handleGroupBySelected.bind(this);
     this.mapMouseTargetToTooltipState = debounce(this.mapMouseTargetToTooltipState, 250);
     this.state = { showDisabledTooltip: false };
 
+  }
+
+  componentDidCatch(error, info) {
+    this.setState({ hasError: true });
+    console.log({ error, info });
   }
 
   handleMouseOver(event) {
@@ -68,6 +72,8 @@ class MembershipField extends React.PureComponent {
   }
 
   render() {
+    if (this.state.hasError) return <div>Something when wrong (check the console)</div>
+
     return (
       <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
         {this.props.filter == null ? (
