@@ -54,7 +54,9 @@ public class UserDatasetInfo {
   }
 
   public void loadDetailedTypeSpecificData(User user) throws WdkModelException {
-    _detailedTypeSpecificData = _handler.getDetailedTypeSpecificData(_wdkModel, _userDataset, user);
+	if(_isInstalled) {  
+      _detailedTypeSpecificData = _handler.getDetailedTypeSpecificData(_wdkModel, _userDataset, user);
+	}
   }
 
   public void setTypeSpecificData(JsonType typeSpecificData) {

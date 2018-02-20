@@ -135,7 +135,7 @@ public class UserDatasetFormatter {
 
     JsonType trackSpecificData = detailedData ?
         datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-    json.put("trackSpecificData", trackSpecificData.get());
+    json.put("trackSpecificData", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
 
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
