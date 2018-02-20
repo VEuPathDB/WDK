@@ -1,5 +1,5 @@
 import React from 'react';
-import { CSSTransitionGroup } from 'react-transition-group';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 import Banner from './Banner';
 
@@ -17,21 +17,23 @@ class BannerList extends React.Component {
     const { banners } = this.props;
 
     const list = banners.map((banner, index) => (
-      <Banner
+      <CSSTransition
         key={index}
-        banner={banner}
-        onClose={() => this.onBannerClose(index)}
-      />
+        classNames="banner-list"
+        timeout={300}
+      >
+        <Banner
+          banner={banner}
+          onClose={() => this.onBannerClose(index)}
+        />
+      </CSSTransition>
     ));
 
     return !banners.length ? null : (
       <div className="wdk-BannerList">
-        <CSSTransitionGroup
-          transitionName="banner-list"
-          transitionEnterTimeout={300}
-          transitionLeaveTimeout={300}>
-            {list}
-        </CSSTransitionGroup>
+        <TransitionGroup>
+          {list}
+        </TransitionGroup>
       </div>
     )
   }

@@ -67,7 +67,7 @@ function addScrollAnchor__loop(
 
   function updateAnchor() {
     anchorNode = findAnchorNode(container);
-    console.log('updating anchorNode', anchorNode);
+    console.debug('updating anchorNode', anchorNode);
   }
 
   function containerHasResized(): boolean {
@@ -75,7 +75,7 @@ function addScrollAnchor__loop(
     const heightDiff = Math.abs(containerRect.height - newContainerRect.height);
     const widthDiff = Math.abs(containerRect.width - newContainerRect.width);
     if (heightDiff > 10 || widthDiff > 10) {
-      console.log({ heightDiff, widthDiff });
+      console.debug({ heightDiff, widthDiff });
       return true;
     }
     return false;
@@ -84,7 +84,7 @@ function addScrollAnchor__loop(
   function scrollToAnchor() {
     if (anchorNode != null) {
       anchorNode.scrollIntoView();
-      console.log('scrolling to anchorNode', anchorNode);
+      console.debug('scrolling to anchorNode', anchorNode);
     }
   }
 
@@ -104,14 +104,14 @@ function addScrollAnchor__events(element: Element, anchorNode = findAnchorNode(e
   let anchorNodeRect = anchorNode && anchorNode.getBoundingClientRect();
   let scrollingToAnchor = false;
 
-  console.log(Date.now(), 'updated anchorNode', anchorNode);
+  console.debug(Date.now(), 'updated anchorNode', anchorNode);
 
   function scrollHandler() {
     if (scrollingToAnchor) return;
 
     anchorNode = findAnchorNode(element);
     anchorNodeRect = anchorNode && anchorNode.getBoundingClientRect();
-    console.log(Date.now(), 'updated anchorNode', anchorNode);
+    console.debug(Date.now(), 'updated anchorNode', anchorNode);
   }
 
   function rectHandler() {
@@ -120,7 +120,7 @@ function addScrollAnchor__events(element: Element, anchorNode = findAnchorNode(e
     scrollingToAnchor = true;
     anchorNode.scrollIntoView();
     window.scrollBy(0, (anchorNodeRect.top * -1) + 1);
-    console.log(Date.now(), 'scrolled to anchorNode', anchorNode);
+    console.debug(Date.now(), 'scrolled to anchorNode', anchorNode);
     setTimeout(() => { scrollingToAnchor = false });
   }
 

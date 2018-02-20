@@ -76,10 +76,9 @@ export default class Popup extends React.Component<Props> {
     draggable: false,
   };
 
-  containerNode: HTMLElement;
+  containerNode = document.createElement('div');
 
   componentDidMount() {
-    this.containerNode = document.createElement('div');
     this._callJqueryWithProps();
   }
 
@@ -89,7 +88,6 @@ export default class Popup extends React.Component<Props> {
 
   componentWillUnmount() {
     $(this.containerNode).draggable('destroy');
-    ReactDOM.unmountComponentAtNode(this.containerNode);
     this.containerNode.remove();
   }
 
@@ -97,7 +95,6 @@ export default class Popup extends React.Component<Props> {
     this.containerNode.className = this.props.className || '';
     const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
     if (parent !== this.containerNode.parentNode) parent.appendChild(this.containerNode);
-    ReactDOM.unstable_renderSubtreeIntoContainer(this, this.props.children, this.containerNode);
     const $node = $(this.containerNode)
       .draggable({
         addClasses: false,
@@ -119,7 +116,7 @@ export default class Popup extends React.Component<Props> {
   }
 
   render() {
-    return null;
+    return ReactDOM.createPortal(this.props.children, this.containerNode);
   }
 
 }
