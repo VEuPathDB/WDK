@@ -1,3 +1,4 @@
+import { Seq } from "./IterableUtils";
 import {flattenDeep, partial, pick, values} from 'lodash';
 import { filterItems } from './SearchUtils';
 import { RecordInstance, AttributeValue, TableValue } from './WdkModel';
@@ -44,13 +45,13 @@ function stripHTML(str: string): string {
  */
 function getSearchableString(filterAttributes: string[], filterTables: string[], record: RecordInstance): string {
   let useAllTablesAndAttributes = filterAttributes.length === 0 && filterTables.length === 0;
-  let attributes = useAllTablesAndAttributes ? record.attributes : pick<AttributeValueDict, AttributeValueDict>(record.attributes, filterAttributes);
-  let tables = useAllTablesAndAttributes ? record.tables : pick<TableValueDict, TableValueDict>(record.tables, filterTables);
-  let attributeValues = Object.keys(attributes).map(name => attributes[name]);
-  let tableValues = flattenDeep<AttributeValue>(values(tables)
-      .map(function(table: TableValue) {
-        return table.map(row => values<AttributeValue>(row));
-      }));
-
-  return stripHTML(attributeValues.concat(tableValues).join('\0'));
+  let attributes = useAllTablesAndAttributes ? record.attributes : pick(record.attributes, filterAttributes);
+  let tables = useAllTablesAndAttributes ? record.tables : pick(record.tables, filterTables);
+  return Seq.from(values(tables))
+    .flatMap(rows => rows)
+    .flatMap(row => Object.values(row))
+    .concat(values(attributes))
+    .map(value => typeof value === 'object' ? (value.displayText || value.url) : value)
+    .map(stripHTML)
+    .reduce((compositeStr, nextStr) => `${compositeStr}\0${nextStr}`);
 }
