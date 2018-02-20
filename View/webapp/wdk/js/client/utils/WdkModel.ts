@@ -289,7 +289,7 @@ export type UserDataset = {
   owner: string;
   ownerUserId: number;
   percentQuotaUsed: number;
-  sharedWith: UserDatasetShare[];
+  sharedWith: UserDatasetShare[] | undefined;
   questions: string[];
   size: number;
   type: {
