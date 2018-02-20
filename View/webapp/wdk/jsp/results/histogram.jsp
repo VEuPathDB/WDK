@@ -28,10 +28,18 @@
     <div class="plot"> </div>
 
     <div class="bin-control control-panel">
-      <span>Set bin size: </span>
-      <input class="bin-size" type="number" value="${binSize}" />
-      <div class="bin-slider"></div>
+      <c:choose>
+        <c:when test="${type != 'category'}">
+          <span>Set bin size: </span>
+          <input class="bin-size" type="number" value="${binSize}" />
+          <div class="bin-slider"></div>
+        </c:when>
+        <c:otherwise>
+          <input class="bin-size" type="hidden" value="${binSize}" />
+        </c:otherwise>
+      </c:choose>  
     </div>
+    
 
     <div class="value-control control-panel">
       Choose column display:
