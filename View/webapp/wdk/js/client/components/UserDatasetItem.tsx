@@ -116,11 +116,13 @@ class UserDatasetItem extends Component<Props, State> {
                 Edit details <i className="fa fa-pencil"/>
               </a>
             </div>
-            <div className={makeClassName('ActionItem')}>
-              <a href="#" onClick={this.handleEditSharesClick}>
-                Manage sharing ({userDataset.sharedWith.length}) <i className="fa fa-share-alt"/>
-              </a>
-            </div>
+            {userDataset.sharedWith &&
+              <div className={makeClassName('ActionItem')}>
+                <a href="#" onClick={this.handleEditSharesClick}>
+                  Manage sharing ({userDataset.sharedWith.length}) <i className="fa fa-share-alt"/>
+                </a>
+              </div>
+            }
             <div className={makeClassName('ActionItem')}>
               <a href="#" title="Delete this data set and all associated files" onClick={todo}>
                 Remove data set <i className="fa fa-trash"/>
@@ -150,15 +152,17 @@ class UserDatasetItem extends Component<Props, State> {
           <UserDatasetDetailForm details={userDataset.meta} onSubmit={this.handleDetailFormSubmit}/>
         </Dialog>
 
-        <Dialog
-          title="Manage Sharing"
-          open={edit === 'shares'}
-          modal={true}
-          onClose={this.handleDialogClose}
-          className={makeClassName('EditDialog')}
-        >
-          <UserDatasetSharing shares={userDataset.sharedWith}/>
-        </Dialog>
+        {userDataset.sharedWith &&
+          <Dialog
+            title="Manage Sharing"
+            open={edit === 'shares'}
+            modal={true}
+            onClose={this.handleDialogClose}
+            className={makeClassName('EditDialog')}
+          >
+            <UserDatasetSharing shares={userDataset.sharedWith}/>
+          </Dialog>
+        }
 
         <h1 className={makeClassName('Heading')}>
           User Data Set: {userDataset.meta.name}
