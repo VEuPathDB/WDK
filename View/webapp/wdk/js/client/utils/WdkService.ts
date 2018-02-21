@@ -635,7 +635,7 @@ export default class WdkService {
             this._store.clear(),
             alert('Reload Page', 'This page is no longer valid and will be reloaded when you click "OK"')
           ])
-          .then(() => location.reload());
+          .then(() => location.reload(true));
           return pendingPromise as Promise<T>;
         }
 
