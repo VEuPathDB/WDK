@@ -31,6 +31,9 @@ public class UserDatasetShareRequest {
   public static final List<String> SHARE_TYPES = new ArrayList<>(Arrays.asList("add","delete"));
 			
   private Map<String, Map<Long, Set<Long>>> _userDatasetShareMap;
+  private List<Object> _unrecognizedActions;
+  private List<Object> _malformedDatasetIds;
+  private Map<Object, String> _unparseableUserIds;
 	
   public Map<String, Map<Long, Set<Long>>> getUserDatasetShareMap() {
 	return _userDatasetShareMap;
@@ -38,6 +41,24 @@ public class UserDatasetShareRequest {
 
   public void setUserDatasetShareMap(Map<String, Map<Long, Set<Long>>> userDatasetShareMap) {
     _userDatasetShareMap = userDatasetShareMap;
+  }
+  
+  public JSONObject getErrors() {
+	JSONObject jsonErrors = new JSONObject();  
+    if(!_unrecognizedActions.isEmpty()) {
+      jsonErrors.put("unrecognized actions", FormatUtil.join(_unrecognizedActions.toArray(), ","));
+	}
+	if(!_malformedDatasetIds.isEmpty()) {
+      jsonErrors.put("malformed dataset ids", FormatUtil.join(_malformedDatasetIds.toArray(), ","));
+	}
+	if(!_unparseableUserIds.isEmpty()) {
+	  JSONArray jsonArray = new JSONArray();	
+	  for(Object dataset : _unparseableUserIds.keySet()) {
+	    jsonArray.put(new JSONObject().put("dataset", dataset).put("user id list", _unparseableUserIds.get(dataset)));
+	  }
+	  jsonErrors.put("unparseable user id lists", jsonArray);
+	}
+	return jsonErrors;
   }
 	
   /**
@@ -53,7 +74,6 @@ public class UserDatasetShareRequest {
    *	  }
    *	}	
    *
-   * 
    * @param json
    * @return
    * @throws RequestMisformatException
@@ -61,7 +81,7 @@ public class UserDatasetShareRequest {
   public static UserDatasetShareRequest createFromJson(JSONObject json) throws RequestMisformatException {
     try {
 	  UserDatasetShareRequest request = new UserDatasetShareRequest();
-	  request.setUserDatasetShareMap(parseUserDatasetShare(json));
+	  request.setUserDatasetShareMap(request.parseUserDatasetShare(json));
 	  return request;
 	}
 	catch (JSONException e) {
@@ -77,10 +97,11 @@ public class UserDatasetShareRequest {
    * @return - the Java map representing this JSON object
    * @throws JSONException
    */
-  protected static Map<String, Map<Long, Set<Long>>> parseUserDatasetShare(JSONObject userDatasetShare) throws JSONException {
+  protected Map<String, Map<Long, Set<Long>>> parseUserDatasetShare(JSONObject userDatasetShare) throws JSONException {
     List<String> shareTypes = SHARE_TYPES;
-    List<Object> unrecognizedActions = new ArrayList<>();
-    List<Object> improperDatasets = new ArrayList<>();
+    _unrecognizedActions = new ArrayList<>();
+    _malformedDatasetIds = new ArrayList<>();
+    _unparseableUserIds = new HashMap<Object,String>();
     Map<String, Map<Long, Set<Long>>> map = new HashMap<>();
     for(Object shareType : userDatasetShare.keySet()) {
       if(shareTypes.contains(((String)shareType).trim())) {
@@ -92,7 +113,8 @@ public class UserDatasetShareRequest {
             dataset = new Long(((String)userDataset).trim());
           }
           catch(NumberFormatException nfe) {
-            improperDatasets.add(userDataset);
+            _malformedDatasetIds.add(userDataset);
+            continue;
           }
           JSONArray usersJsonArray = userDatasets.getJSONArray(dataset.toString()); 
           ObjectMapper mapper = new ObjectMapper();
@@ -103,26 +125,27 @@ public class UserDatasetShareRequest {
             Set<Long> users = mapper.readValue(usersJson, setType);
             innerMap.put(dataset, users);  
           }
-          catch(IOException jpe) {
+          catch(IOException ioe) {
+        	    _unparseableUserIds.put(dataset, usersJson);
             LOG.warn("The user array associated with dataset id " + dataset
                 + " is not parseable (they may not all be integers: " + usersJson + "). "
-                + " Skipping this dataset for " + shareType);
+                + " Skipping this dataset for " + shareType, ioe);
             continue;
           }
         }
         map.put(((String)shareType).trim(), innerMap);
       }
       else {
-        unrecognizedActions.add(shareType);
+        _unrecognizedActions.add(shareType);
       }
     }
-    if(!unrecognizedActions.isEmpty()) {
-      String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ",");
-      LOG.warn("This user service request contains the following unrecognized sharing actions: " + unrecognized);
+    if(!_unrecognizedActions.isEmpty()) {
+      String unrecognized = FormatUtil.join(_unrecognizedActions.toArray(), ",");
+      LOG.warn("This user datset share service request contains the following unrecognized sharing actions: " + unrecognized);
     }
-    if(!improperDatasets.isEmpty()) {
-      String improper = FormatUtil.join(improperDatasets.toArray(), ",");
-      LOG.warn("This user dataset share service request contains the following improper datasets: " + improper);
+    if(!_malformedDatasetIds.isEmpty()) {
+      String malformedDatasetIds = FormatUtil.join(_malformedDatasetIds.toArray(), ",");
+      LOG.warn("This user dataset share service request contains the following malformed dataset ids: " + malformedDatasetIds);
     }
     return map;
   }

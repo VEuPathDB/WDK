@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -219,31 +220,39 @@ public class UserDatasetService extends UserService {
   @PATCH
   @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException {
 	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
     UserDatasetStore dsStore = getUserDatasetStore();
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    	  Set<Long> ownedDatasetIds = dsSession.getUserDatasets(userId).keySet();
       UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
       Map<String, Map<Long, Set<Long>>> userDatasetShareMap = request.getUserDatasetShareMap();
-      Set<Long> installedDatasetIds = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
+      Set<Long> unprocessedDatasetIds = new HashSet<>();
       for (String key : userDatasetShareMap.keySet()) {
         // Find datasets to share  
         if ("add".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+          Set<Long> badDatasetIds = new HashSet<>(targetDatasetIds);
+          badDatasetIds.removeAll(ownedDatasetIds);
+          unprocessedDatasetIds.addAll(badDatasetIds);
           // Ignore any provided dataset ids not owned by this user.
-          targetDatasetIds.retainAll(installedDatasetIds);
+          targetDatasetIds.retainAll(ownedDatasetIds);
           for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may be shared with different users, we share datasets one by one
             dsSession.shareUserDataset(userId, targetDatasetId, targetUserIds);
           }
         }
-        // Fine datasets to unshare
+        // Find datasets to unshare
         if ("delete".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+          Set<Long> badDatasetIds = new HashSet<>(targetDatasetIds);
+          badDatasetIds.removeAll(ownedDatasetIds);
+          unprocessedDatasetIds.addAll(badDatasetIds);
           // Ignore any provided dataset ids not owned by this user.
-          targetDatasetIds.retainAll(installedDatasetIds);
+          targetDatasetIds.retainAll(ownedDatasetIds);
           for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may unshared with different users, we unshare datasets one by one.
@@ -251,7 +260,13 @@ public class UserDatasetService extends UserService {
           }
         }
       }
-      return Response.noContent().build();
+      // If the input list contains dataset ids for datasets that are not owned by this user,
+      // they are added to the existing errors list as 'unprocessed'.
+      JSONObject errors = request.getErrors();
+      if(!unprocessedDatasetIds.isEmpty()) {
+        errors.put("unprocessed dataset ids", FormatUtil.join(unprocessedDatasetIds.toArray(),","));
+      }  
+      return Response.ok(errors.toString()).build();
     }
     catch(JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
