@@ -31,6 +31,7 @@ function RecordTableSection(props) {
 
 RecordTableSection.propTypes = {
   table: PropTypes.object.isRequired,
+  ontologyProperties: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
   record: PropTypes.object.isRequired,
   recordClass: PropTypes.object.isRequired,
   isCollapsed: PropTypes.bool.isRequired,
