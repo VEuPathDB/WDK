@@ -209,18 +209,17 @@ public class UserDatasetService extends UserService {
    * other WDK users.  The JSON object accepted by the service should have the following form:
    *    {
    *	  "add": {
-   *	    "dataset_id1": [ "user1", "user2" ]
-   *	    "dataset_id2": [ "user1" ]
+   *	    "dataset_id1": [ "user_id1", "user_id2" ]
+   *	    "dataset_id2": [ "user_id2" ]
    *	  },
    *	  "delete" {
-   *	    "dataset_id3": [ "user1", "user3" ]
+   *	    "dataset_id3": [ "user_id1", "user_id3" ]
    *	  }
    *	}
    */	
   @PATCH
   @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException, DataValidationException {
 	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
