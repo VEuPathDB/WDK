@@ -66,7 +66,6 @@ public class SessionService extends WdkService {
   private static final String EMAIL_KEY = "email";
 
   // redirect URLs
-  private static final String HOME_URL = "/home.do";
   private static final String ALREADY_LOGGED_IN_URL = "/showApplicaton.do";
   private static final String OAUTH_ERROR_URL = "/app/user/message/login-error?requestUrl=";
 
@@ -85,7 +84,7 @@ public class SessionService extends WdkService {
     }
 
     String appUrl = modelConfig.getWebAppUrl();
-    String redirectUrl = isEmpty(originalUrl) ? appUrl + HOME_URL : originalUrl;
+    String redirectUrl = isEmpty(originalUrl) ? appUrl : originalUrl;
 
     // Is the user already logged in?
     User user = getSessionUser();
@@ -149,7 +148,7 @@ public class SessionService extends WdkService {
       LoginRequest request = LoginRequest.createFromJson(new JSONObject(body));
       String appUrl = modelConfig.getWebAppUrl();
       String originalUrl = request.getRedirectUrl();
-      String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl + HOME_URL;
+      String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl;
 
       // Is the user already logged in?
       User user = getSessionUser();
@@ -225,7 +224,7 @@ public class SessionService extends WdkService {
       extraCookie.setMaxAge(-1);
       logoutCookies.add(extraCookie);
     }
-    ResponseBuilder builder = createRedirectResponse(getWdkModel().getModelConfig().getWebAppUrl() + HOME_URL);
+    ResponseBuilder builder = createRedirectResponse(getWdkModel().getModelConfig().getWebAppUrl());
     for (Cookie logoutCookie : logoutCookies) {
       builder.cookie(CookieConverter.toJaxRsCookie(logoutCookie));
     }
