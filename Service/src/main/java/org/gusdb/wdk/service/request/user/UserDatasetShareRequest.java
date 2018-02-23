@@ -133,7 +133,7 @@ public class UserDatasetShareRequest {
 	  request.setUserDatasetShareMap(request.parseUserDatasetShare(json, ownedDatasetIds));
 	  JSONObject errors = request.getErrors();
 	  if(errors.length() != 0) {
-        throw new DataValidationException(errors.toString());
+        throw new DataValidationException(errors.toString(2));
 	  }
 	  return request;
 	}
