@@ -17,21 +17,17 @@ import org.irods.jargon.core.pub.io.IRODSRandomAccessFile;
 
 /**
  * @author steve
- *
  */
 public class IrodsUserDatasetFile extends UserDatasetFile {
 
   public IrodsUserDatasetFile(Path filePath, Long userDatasetId) {
-	super(filePath, userDatasetId);
+    super(filePath, userDatasetId);
   }
 
-  /* (non-Javadoc)
-   * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileContents()
-   */
   @Override
   public InputStream getFileContents(UserDatasetSession dsSession, Path temporaryDirPath) throws WdkModelException {
     long start = System.currentTimeMillis();
-    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
+    //IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
     try {
       Path localPath = getLocalCopy(dsSession, temporaryDirPath);
       return Files.newInputStream(localPath);
@@ -42,85 +38,75 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
     finally {
       QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileContents-irods: " + getFilePath().toString(),start);
     }
-  }  
-  
-  public IRODSRandomAccessFile getRandomAccessFile(UserDatasetSession dsSession, long offset) throws WdkModelException {
-	long start = System.currentTimeMillis();
-    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
-	IRODSRandomAccessFile irodsRandomAccessFile = null;
-	try {
-	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
-	  irodsRandomAccessFile = adaptor.getIrodsRandomAccessFile(fileFactory, getFilePath().toString());
-	  irodsRandomAccessFile.seek(offset,SeekWhenceType.SEEK_START);
-	  return irodsRandomAccessFile;
-	}
-	catch (IOException ioe) {
-	  throw new WdkModelException("Unable to access the file " + getFilePath().toString(), ioe);
-	}
-	finally {
-	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileContents (RA)-irods: " + getFilePath().toString(), start);
-	}
   }
 
-  /* (non-Javadoc)
-   * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileSize()
-   */
+  public IRODSRandomAccessFile getRandomAccessFile(UserDatasetSession dsSession, long offset) throws WdkModelException {
+    long start = System.currentTimeMillis();
+    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
+    IRODSRandomAccessFile irodsRandomAccessFile = null;
+    try {
+      IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+      irodsRandomAccessFile = adaptor.getIrodsRandomAccessFile(fileFactory, getFilePath().toString());
+      irodsRandomAccessFile.seek(offset,SeekWhenceType.SEEK_START);
+      return irodsRandomAccessFile;
+    }
+    catch (IOException ioe) {
+      throw new WdkModelException("Unable to access the file " + getFilePath().toString(), ioe);
+    }
+    finally {
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileContents (RA)-irods: " + getFilePath().toString(), start);
+    }
+  }
+
   @Override
   public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
-	long start = System.currentTimeMillis();
+    long start = System.currentTimeMillis();
     IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
-	IRODSFile irodsFile = null;
-	try {
-	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
-	  irodsFile = adaptor.getIrodsFile(fileFactory, getFilePath().toString());
-	  return irodsFile.length();
-	}
-	finally {
-	  adaptor.closeFile(irodsFile);
-	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileSize-irods: " + getFilePath().toString(),start);
-	}
+    IRODSFile irodsFile = null;
+    try {
+      IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+      irodsFile = adaptor.getIrodsFile(fileFactory, getFilePath().toString());
+      return irodsFile.length();
+    }
+    finally {
+      adaptor.closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileSize-irods: " + getFilePath().toString(),start);
+    }
   }
 
-  /* (non-Javadoc)
-   * @see org.gusdb.wdk.model.user.dataset.UserDatasetFile#getFileName()
-   */
   @Override
   public String getFileName(UserDatasetSession dsSession) throws WdkModelException {
-	long start = System.currentTimeMillis();
-	IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
-	IRODSFile irodsFile = null;
-	try {
-	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
-	  irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
+    long start = System.currentTimeMillis();
+    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
+    IRODSFile irodsFile = null;
+    try {
+      IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+      irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
       return irodsFile.getName();
-	}
-	finally {
-	  adaptor.closeFile(irodsFile);
-	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileName-irods: " + getFilePath().toString(),start);
-	}
+    }
+    finally {
+      adaptor.closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileName-irods: " + getFilePath().toString(),start);
+    }
   }
 
-  /**
-   * @see
-   * org.gusdb.wdk.model.user.dataset.UserDatasetFile#createLocalCopy(Path)
-   */
   @Override
   protected void createLocalCopy(UserDatasetSession dsSession, Path tmpFile) throws WdkModelException {
-	long start = System.currentTimeMillis();
+    long start = System.currentTimeMillis();
     IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
-	IRODSFile irodsFile = null;
-	try {
-	  IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
-	  irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
-	  adaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, null);
-	}
-	catch(JargonException je) {
-	  throw new WdkModelException("Unable to copy " + getFilePath().toString() + " to " + tmpFile.toString() + ". - ", je);
-	}
-	finally {
-	  adaptor.closeFile(irodsFile);
-	  QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","createLocalCopy-irods:" + getFilePath().toString(),start);
-	}
+    IRODSFile irodsFile = null;
+    try {
+      IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
+      irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
+      adaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, null);
+    }
+    catch(JargonException je) {
+      throw new WdkModelException("Unable to copy " + getFilePath().toString() + " to " + tmpFile.toString() + ". - ", je);
+    }
+    finally {
+      adaptor.closeFile(irodsFile);
+      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","createLocalCopy-irods:" + getFilePath().toString(),start);
+    }
   }
 
 }

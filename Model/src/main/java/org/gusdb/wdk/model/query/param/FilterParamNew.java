@@ -983,15 +983,13 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     return stale;
   }
-  
-  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+
+  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
     if (stableValueString == null) return getDefault();
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
-
-    return (stableValue == null || err != null) ? getDefault() : stableValueString;
+    return err != null ? getDefault() : stableValueString;
   }
-
 
   @Override
   protected DependentParamInstance createDependentParamInstance(User user,
