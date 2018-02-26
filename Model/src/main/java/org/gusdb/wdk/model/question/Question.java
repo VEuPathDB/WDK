@@ -263,7 +263,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   public void setName(String name) {
-    _name = name;
+    _name = name.trim();
   }
 
   public void setUrlName(String urlName) {
