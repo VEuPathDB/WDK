@@ -1468,7 +1468,8 @@ div.step-analysis-pane table.dataTable th {
   border-color: #bbb;
 }
 .analysis-selector-container .analysis-selector .analysis-selector-image {
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-image: url('../images/analysis-background.png');
   background-position: center center;
   flex: 1 0 140px;
