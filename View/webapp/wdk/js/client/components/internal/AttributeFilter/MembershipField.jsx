@@ -8,6 +8,7 @@ import RealTimeSearchBox from '../../RealTimeSearchBox';
 import Toggle from '../../Toggle';
 import FieldFilter from './FieldFilter';
 import FilterLegend from './FilterLegend';
+import StackedBar from './StackedBar';
 
 const UNKNOWN_ELEMENT = <em>Not specified</em>;
 
@@ -437,14 +438,11 @@ class MembershipTable extends React.PureComponent {
 
   renderDistributionCell({ row }) {
     return (
-      <div className="bar">
-        <div className="fill" style={{
-          width: (row.count / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
-        }}/>
-        <div className="fill filtered" style={{
-          width: (row.filteredCount / (this.props.fieldSummary.internalsCount || this.props.dataCount) * 100) + '%'
-        }}/>
-      </div>
+      <StackedBar
+        count={row.count}
+        filteredCount={row.filteredCount}
+        populationSize={this.props.fieldSummary.internalsCount || this.props.dataCount}
+      />
     );
   }
 

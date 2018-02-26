@@ -28,26 +28,26 @@ export default class FieldList extends React.PureComponent {
       searchTerm: '',
 
       // expand branch containing selected field
-      expandedNodes: this._getPathToField(this.props.selectedField)
+      expandedNodes: this._getPathToField(this.props.activeField)
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.selectedField == null || this.props.selectedField === nextProps.selectedField) return;
+    if (nextProps.activeField == null || this.props.activeField === nextProps.activeField) return;
 
     if (
-      nextProps.selectedField.parent != null &&
-      !this.state.expandedNodes.includes(nextProps.selectedField.parent)
+      nextProps.activeField.parent != null &&
+      !this.state.expandedNodes.includes(nextProps.activeField.parent)
     ) {
       this.setState({
         expandedNodes: uniq(this.state.expandedNodes.concat(
-          this._getPathToField(nextProps.selectedField)))
+          this._getPathToField(nextProps.activeField)))
       });
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.selectedField !== this.props.selectedField) {
+    if (prevProps.activeField !== this.props.activeField) {
       this._scrollSelectedFieldIntoView();
     }
   }
@@ -61,7 +61,7 @@ export default class FieldList extends React.PureComponent {
   }
 
   handleFieldSelect(node) {
-    this.props.onFieldSelect(node.field.term);
+    this.props.onActiveFieldChange(node.field.term);
     const expandedNodes = Seq.from(this.state.expandedNodes)
       .concat(this._getPathToField(node.field))
       .concat(node.children.length > 0 ? Seq.of(node.field.term) : Seq.empty())
@@ -101,7 +101,7 @@ export default class FieldList extends React.PureComponent {
   }
 
   renderNode({node}) {
-    let isActive = this.props.selectedField === node.field;
+    let isActive = this.props.activeField === node.field;
     return (
       <Tooltip content={node.field.description} hideDelay={0}>
         {isFilterField(node.field)
@@ -177,6 +177,6 @@ export default class FieldList extends React.PureComponent {
 FieldList.propTypes = {
   autoFocus: PropTypes.bool,
   fields: PropTypes.instanceOf(Map).isRequired,
-  onFieldSelect: PropTypes.func.isRequired,
-  selectedField: PropTypes.object
+  onActiveFieldChange: PropTypes.func.isRequired,
+  activeField: PropTypes.object
 };

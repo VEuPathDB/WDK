@@ -551,3 +551,16 @@
 .filter-param .wdk-DateSelector {
   display: inline-block;
 }
+
+.filter-param .wdk-MultiFieldFilter .MesaComponent th,
+.filter-param .wdk-MultiFieldFilter .MesaComponent td {
+  padding: .5em 1em;
+}
+
+.filter-param .wdk-MultiFieldFilterDisplayCell {
+  vertical-align: middle;
+}
+
+.filter-param .wdk-MultiFieldFilterValueCell {
+  text-align: right;
+}

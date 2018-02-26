@@ -1,137 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { find } from 'lodash';
-
-import { isRange } from '../../../utils/FilterServiceUtils';
-
-import { shouldAddFilter } from './Utils';
 
 import FieldFilter from './FieldFilter';
 import FieldList from './FieldList';
 import FilterList from './FilterList';
-import InvalidFilterList from './InvalidFilterList';
 
 /**
  * Filtering UI for server-side filtering.
  */
-export default class ServerSideAttributeFilter extends React.Component {
+export default function ServerSideAttributeFilter(props) {
+  var { hideFilterPanel, hideFieldPanel, } = props;
 
-  constructor(props) {
-    super(props);
-    this.handleSelectFieldClick = this.handleSelectFieldClick.bind(this);
-    this.handleFilterRemove = this.handleFilterRemove.bind(this);
-    this.handleFieldFilterChange = this.handleFieldFilterChange.bind(this);
-    this.handleMemberSort = this.handleMemberSort.bind(this);
-    this.handleMemberSearch = this.handleMemberSearch.bind(this);
-    this.handleRangeScaleChange = this.handleRangeScaleChange.bind(this);
-  }
+  return (
+    <div>
+      {hideFilterPanel || <FilterList {...props} /> }
 
-  handleSelectFieldClick(field, event) {
-    event.preventDefault();
-    this.props.onActiveFieldChange(field);
-  }
-
-  handleFilterRemove(filter) {
-    let filters = this.props.filters.filter(f => f !== filter);
-    this.props.onFiltersChange(filters);
-  }
-
-  /**
-   * @param {Field} field Field term id
-   * @param {any} value Filter value
-   * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
-   */
-  handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
-    let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown,
-      valueCounts, this.props.selectByDefault)
-      ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
-      : filters
-    );
-  }
-
-  handleMemberSort(field, sort) {
-    this.props.onMemberSort(field, sort);
-  }
-
-  handleMemberSearch(field, searchTerm) {
-    this.props.onMemberSearch(field, searchTerm);
-  }
-
-  handleRangeScaleChange(field, state) {
-    this.props.onRangeScaleChange(field, state);
-  }
-
-  render() {
-    var {
-      autoFocus,
-      hideFilterPanel,
-      hideFieldPanel,
-      dataCount,
-      displayName,
-      filteredDataCount,
-      fields,
-      filters,
-      invalidFilters,
-      activeField,
-      activeFieldState,
-      activeFieldSummary
-    } = this.props;
-
-    var selectedFilter = activeField && find(filters, filter => {
-      return filter.field === activeField.term;
-    });
-
-    return (
-      <div>
-        {hideFilterPanel || (
-          <FilterList
-            onFilterSelect={this.props.onActiveFieldChange}
-            onFilterRemove={this.handleFilterRemove}
-            filters={filters}
-            fields={fields}
-            filteredDataCount={filteredDataCount}
-            loadingFilteredCount={this.props.loadingFilteredCount}
-            dataCount={dataCount}
-            selectedField={activeField}
-            hideCounts={this.props.hideGlobalCounts}
-            displayName={displayName}
-          />
-        )}
-
-        <InvalidFilterList filters={invalidFilters}/>
-
-        {/* Main selection UI */}
-        <div className="filters ui-helper-clearfix">
-          {hideFieldPanel || (
-            <FieldList
-              autoFocus={autoFocus}
-              fields={fields}
-              onFieldSelect={this.props.onActiveFieldChange}
-              selectedField={activeField}
-            />
-          )}
-
-          <FieldFilter
-            displayName={displayName}
-            filteredDataCount={filteredDataCount}
-            dataCount={dataCount}
-            field={activeField}
-            fieldState={activeFieldState}
-            fieldSummary={activeFieldSummary}
-            filter={selectedFilter}
-            onChange={this.handleFieldFilterChange}
-            onMemberSort={this.handleMemberSort}
-            onMemberSearch={this.handleMemberSearch}
-            onRangeScaleChange={this.handleRangeScaleChange}
-            useFullWidth={hideFieldPanel}
-            selectByDefault={this.props.selectByDefault}
-          />
-        </div>
+      {/* Main selection UI */}
+      <div className="filters ui-helper-clearfix">
+        {hideFieldPanel || <FieldList {...props} /> }
+        <FieldFilter {...props } />
       </div>
-    );
-  }
-
+    </div>
+  );
 }
 
 ServerSideAttributeFilter.propTypes = {
@@ -149,14 +39,14 @@ ServerSideAttributeFilter.propTypes = {
   filters: PropTypes.array.isRequired,
   dataCount: PropTypes.number,
   filteredDataCount: PropTypes.number,
+  loadingFilteredCount: PropTypes.bool,
 
-  activeField: FieldFilter.propTypes.field,
-  activeFieldState: FieldFilter.propTypes.fieldState,
-  activeFieldSummary: FieldFilter.propTypes.fieldSummary,
+  activeField: FieldFilter.propTypes.activeField,
+  activeFieldState: FieldFilter.propTypes.activeFieldState,
+  activeFieldSummary: FieldFilter.propTypes.activeFieldSummary,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
-  invalidFilters: PropTypes.array,  // derivable?
 
   // event handlers
   onActiveFieldChange: PropTypes.func.isRequired,
