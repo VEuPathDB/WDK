@@ -4,7 +4,9 @@ import ReactDOM from 'react-dom';
 
 import {
   ActiveQuestionUpdatedAction,
-  ParamValueUpdatedAction
+  UnloadQuestionAction,
+  ParamValueUpdatedAction,
+  QuestionErrorAction
 } from '../actioncreators/QuestionActionCreators';
 import * as ParamModules from '../params';
 import QuestionStore, { State } from '../stores/QuestionStore';
@@ -12,6 +14,8 @@ import { Seq } from '../utils/IterableUtils';
 import { Parameter } from '../utils/WdkModel';
 import AbstractViewController from './AbstractViewController';
 import { Context } from '../params/Utils';
+
+export const UNRECOVERABLE_PARAM_ERROR_EVENT = 'unrecoverable-param-error';
 
 const ActionCreators = {
   setActiveQuestion: ActiveQuestionUpdatedAction.create,
@@ -22,6 +26,7 @@ type Props = {
   questionName: string;
   paramName: string;
   paramValues: Record<string, string>;
+  stepId: number | undefined;
 }
 
 type QuestionState = State['questions'][string];
@@ -54,11 +59,21 @@ export default class LegacyParamController extends AbstractViewController<
         Seq.of(dependentParam).concat(this.getDependentParams(dependentParam)));
   }
 
-  loadData(prevProps?: Props) {
-    if (this.state.questionStatus == null) {
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    const { questionName } = this.props;
+    this.dispatchAction(UnloadQuestionAction.create({ questionName }));
+  }
+
+  loadData(prevProps?: Props, prevState?: QuestionState) {
+    if (
+      this.state.questionStatus == null ||
+      this.state.stepId !== this.props.stepId
+    ) {
       this.eventHandlers.setActiveQuestion({
         questionName: this.props.questionName,
-        paramValues: this.props.paramValues
+        paramValues: this.props.paramValues,
+        stepId: this.props.stepId
       });
     }
 
@@ -84,6 +99,17 @@ export default class LegacyParamController extends AbstractViewController<
           });
         }
       });
+    }
+
+    // Trigger event in case of question error
+    if (
+      get(prevState, 'questionStatus') !== get(this.state, 'questionStatus') &&
+      this.state.questionStatus === 'error' &&
+      this.props.paramValues != null
+    ) {
+      const node = ReactDOM.findDOMNode(this);
+      const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
+      node.dispatchEvent(event);
     }
   }
 

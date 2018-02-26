@@ -49,7 +49,7 @@ class Tooltip extends React.PureComponent<Props> {
 
   api?: QTip2.Api;
 
-  contentContainer: HTMLDivElement;
+  contentContainer = document.createElement('div');
 
   componentDidMount() {
     this._setupTooltip(this.props);
@@ -59,10 +59,6 @@ class Tooltip extends React.PureComponent<Props> {
     if (this.api == null) {
       this._setupTooltip(nextProps);
       return;
-    }
-
-    if (this.props.content !== nextProps.content) {
-      this._setContent(nextProps.content);
     }
 
     if (nextProps.open != null) {
@@ -114,8 +110,6 @@ class Tooltip extends React.PureComponent<Props> {
         'Since `open` was provided, `showEvent` and `hideEvent` will be ignored.');
     }
 
-    this.contentContainer = document.createElement('div');
-
     this.api = $(ReactDOM.findDOMNode(this)).qtip({
       content: { text: $(this.contentContainer) },
       style: { classes, tip: { corner: showTip } },
@@ -132,8 +126,6 @@ class Tooltip extends React.PureComponent<Props> {
       }
     }).qtip('api');
 
-    this._setContent(content);
-
     if (open != null) this.api.toggle(open);
   }
 
@@ -141,21 +133,13 @@ class Tooltip extends React.PureComponent<Props> {
     $(ReactDOM.findDOMNode(this)).qtip('destroy');
   }
 
-  _setContent(content: Props['content']) {
-    if (typeof content === 'string') {
-      $(this.contentContainer).empty().append(content);
-    }
-    else {
-      ReactDOM.unstable_renderSubtreeIntoContainer(
-        this,
-        content,
-        this.contentContainer
-      );
-    }
-  }
-
   render() {
-    return React.Children.only(this.props.children);
+    return (
+      <React.Fragment>
+        {React.Children.only(this.props.children)}
+        {ReactDOM.createPortal(this.props.content, this.contentContainer)}
+      </React.Fragment>
+    )
   }
 
 }

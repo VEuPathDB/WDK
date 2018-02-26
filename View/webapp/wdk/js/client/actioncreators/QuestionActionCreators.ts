@@ -16,7 +16,8 @@ type BasePayload = {
 export const ActiveQuestionUpdatedAction = makeActionCreator(
   'quesiton/active-question-updated',
   payload<BasePayload & {
-    paramValues?: ParameterValues
+    paramValues?: ParameterValues;
+    stepId: number | undefined;
   }>()
 );
 
@@ -28,6 +29,8 @@ export const QuestionLoadedAction = makeActionCreator(
     paramValues: ParameterValues;
   }>()
 )
+
+export const UnloadQuestionAction = makeActionCreator('question/unload-question', payload<BasePayload>());
 
 export const QuestionErrorAction = makeActionCreator('question/question-error', payload<BasePayload>());
 
@@ -99,7 +102,13 @@ export const questionEpic = combineEpics(loadQuestionEpic, updateDependentParams
 function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
   return action$
     .filter(ActiveQuestionUpdatedAction.isType)
-    .mergeMap(action => loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
+    .mergeMap(action =>
+      Observable.from(loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
+      .takeUntil(action$.filter(killAction => (
+        UnloadQuestionAction.isType(killAction) &&
+        killAction.payload.questionName === action.payload.questionName
+      )))
+    )
 }
 
 function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
@@ -119,6 +128,10 @@ function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: Ep
         error => ParamErrorAction.create({ questionName, error: error.message, paramName: parameter.name })
       ))
       .takeUntil(action$.filter(ParamValueUpdatedAction.isType))
+      .takeUntil(action$.filter(killAction => (
+        UnloadQuestionAction.isType(killAction) &&
+        killAction.payload.questionName === action.payload.questionName
+      )))
     });
 }
 

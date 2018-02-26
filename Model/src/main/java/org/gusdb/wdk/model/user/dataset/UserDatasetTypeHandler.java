@@ -21,7 +21,6 @@ import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONObject;
 
 /**
  * A handler for a particular type of dataset.  These are plugged in to the wdk.
@@ -60,6 +59,7 @@ public abstract class UserDatasetTypeHandler {
    * 
    * @param wdkModel
    * @param userDataset
+   * @param user
    * @return
    * @throws WdkModelException
    */

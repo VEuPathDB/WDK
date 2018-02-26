@@ -54,6 +54,10 @@ class Dialog extends Component<Props> {
     this.blockScrollingIfModalOpen();
   }
 
+  componentWillUnmount() {
+    document.body.classList.remove('wdk-ModalOpen');
+  }
+
   render () {
     let {
       onClose = () => {},

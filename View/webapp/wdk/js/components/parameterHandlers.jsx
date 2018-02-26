@@ -2,6 +2,9 @@
 import _ from 'lodash';
 import { Seq } from '../client/utils/IterableUtils';
 
+// eslint-disable-next-line no-unused-vars
+import { UNRECOVERABLE_PARAM_ERROR_EVENT } from '../client/controllers/LegacyParamController';
+
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
@@ -165,6 +168,27 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
             });
           });
       });
+
+
+    // We don't need the following, since we can handle validation concerns on
+    // the back end, but keeping it around in case we find a case where this is
+    // useful.
+    /*
+    $element
+      .closest('#qf_content')
+      .one(UNRECOVERABLE_PARAM_ERROR_EVENT, event => {
+        let paramValues;
+        try {
+          paramValues = JSON.parse(event.target.parentElement.dataset.props).paramValues
+        }
+        catch(error) {
+          console.warn('Bailing on replace param instructions');
+          return;
+        }
+
+        $(event.currentTarget).append(makeOverlayHtml({ paramValues }))
+      });
+      */
   }
 
   function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
@@ -494,3 +518,50 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   ns.adjustEnumCountTree = adjustEnumCountTree;
 
 });
+
+// eslint-disable-next-line no-unused-vars
+function makeOverlayHtml({ paramValues }) {
+  const style = `
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 72px 9px 0;
+    padding: 2em;
+    font-size: 1.4em;
+    background: #ffffff;
+  `;
+  return `
+    <div style="${style}">
+      <div>
+        This search is no longer valid and must be recreated. You can do so by following these steps:
+      </div>
+      <ol>
+        <li>Copy these steps into a text document for future reference. Also, make note of the search name above.</li>
+        <li>Close this popup by clicking the X in the top right corner.</li>
+        <li>Add a new search to the left of this one:
+          <ol>
+            <li>Put your mouse cursor over the search box in the strategy panel, and click "Edit".
+            <li>In the menu of the box that comes up, click "Insert step before".</li>
+            <li>In the table of searches that comes up, click on the search name that matches the search name above.</li>
+            <li>In the search form, fill in the values, using the values below as a reference.</li>
+            <li>Once the values are filled in, click on "Get Answer".</li>
+          </ol>
+        </li>
+        <li>Finally, delete the search to the right of the newly created search:
+          <ol>
+            <li>Put your mouse cursor over the search box in the strategy panel, and click "Edit".</li>
+            <li>In the menu of the box that comes up, click "Delete".</li>
+          </ol>
+        </li>
+        <li>
+          You should now be able to view the results of your search.
+        </li>
+      </ol>
+      <div>
+        <pre>${JSON.stringify(paramValues, null, 4)}</pre>
+      </div>
+    </div>
+  `;
+}

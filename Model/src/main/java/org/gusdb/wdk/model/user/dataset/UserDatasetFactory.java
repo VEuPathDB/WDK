@@ -6,6 +6,7 @@ import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
 import static org.gusdb.fgputil.functional.Functions.zipToList;
 
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,8 +81,12 @@ public class UserDatasetFactory {
     Set<UserDatasetType> types = userDatasets.stream().map(f).collect(Collectors.toSet());
     for (UserDatasetType type : types) {
       List<UserDatasetInfo> typedUdis = userDatasets.stream().filter(ud -> type.equals(f.apply(ud))).collect(Collectors.toList());
-      List<JsonType> typeSpecificInfo = store.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(typedUdis, udi -> udi.getDataset()), user);
-      zipToList(typedUdis, typeSpecificInfo, (udi, json) -> { udi.setTypeSpecificData(json); return udi; }, false);
+      List<UserDatasetInfo> installedTypedUdis = typedUdis.stream().filter(tudi -> tudi.isInstalled()).collect(Collectors.toList());
+      List<JsonType> typeSpecificInfo = new ArrayList<>();
+      if(!installedTypedUdis.isEmpty()) {
+        typeSpecificInfo = store.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(installedTypedUdis, udi -> udi.getDataset()), user);
+      }
+      zipToList(installedTypedUdis, typeSpecificInfo, (udi, json) -> { udi.setTypeSpecificData(json); return udi; }, false);
     }
   }
 }

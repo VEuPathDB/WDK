@@ -64,7 +64,7 @@ class RecordUI extends Component {
       return rect.top <= 50 && rect.bottom > 50;
     });
     let activeSection = get(activeElement, 'id');
-    console.log(Date.now(), 'updated activeSection', activeSection);
+    console.debug(Date.now(), 'updated activeSection', activeSection);
     let newUrl = location.pathname + location.search + (activeSection ? '#' + activeSection : '');
     history.replaceState(null, null, newUrl);
   }
@@ -74,7 +74,7 @@ class RecordUI extends Component {
     let domNode = document.getElementById(location.hash.slice(1));
     if (domNode != null) {
       domNode.scrollIntoView(true);
-      console.log(Date.now(), 'scrolled to active section', domNode, domNode.getBoundingClientRect().top);
+      console.debug(Date.now(), 'scrolled to active section', domNode, domNode.getBoundingClientRect().top);
     }
     this.monitorActiveSection();
   }

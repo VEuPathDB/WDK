@@ -8,13 +8,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {zipWith} from 'lodash';
-import {wrappable, PureComponent} from '../utils/componentUtils';
-
-let {Component} = React;
+import {wrappable} from '../utils/componentUtils';
 
 let defaultClassName = 'wdk-CollapsibleSection';
 
-class CollapsibleSection extends PureComponent {
+class CollapsibleSection extends React.PureComponent {
   constructor(...args) {
     super(...args);
     // don't render initially if collpased
@@ -32,7 +30,7 @@ class CollapsibleSection extends PureComponent {
   }
 
   render() {
-    let { className, id, isCollapsed, headerContent, onCollapsedChange, children } = this.props;
+    let { className, id, isCollapsed, headerContent, children } = this.props;
     let [ containerClassName, headerClassName, contentClassName ] =
       makeClassNames(isCollapsed, defaultClassName, className);
     let Header = this.props.headerComponent;

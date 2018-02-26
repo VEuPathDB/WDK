@@ -40,7 +40,7 @@ const mapUserDatasets = (userDatasets: UserDataset[], history: History, user: Us
     type: `${ud.type.name} ${ud.type.version}`,
     installed: ud.isInstalled ? 'Yes' : 'No',
     owner: user.id === ud.ownerUserId ? na : ud.owner,
-    shared: user.id === ud.ownerUserId ? (ud.sharedWith.length ? 'Yes' : 'No') : na,
+    shared: user.id === ud.ownerUserId ? (ud.sharedWith && ud.sharedWith.length ? 'Yes' : 'No') : na,
     created: new Date(ud.created).toLocaleDateString(),
     modified: new Date(ud.modified).toLocaleDateString(),
     size: bytesToHuman(ud.size),

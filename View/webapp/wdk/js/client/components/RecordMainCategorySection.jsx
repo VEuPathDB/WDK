@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types';
+import React from 'react';
 import RecordAttributeSection from './RecordAttributeSection';
 import RecordTableSection from './RecordTableSection';
 import CollapsibleSection from './CollapsibleSection';
-import { PureComponent, wrappable } from '../utils/componentUtils';
+import { wrappable } from '../utils/componentUtils';
 import { getId, getTargetType, getDisplayName } from '../utils/CategoryUtils';
 
 /**
  * Content for a node of a record category tree, or a record field.
  */
-class RecordMainCategorySection extends PureComponent {
+class RecordMainCategorySection extends React.PureComponent {
   constructor(props) {
     super(props);
     this.toggleCollapse = this.toggleCollapse.bind(this);
@@ -42,6 +43,7 @@ class RecordMainCategorySection extends PureComponent {
       case 'attribute': return (
         <RecordAttributeSection
           attribute={category.wdkReference}
+          ontologyProperties={category.properties}
           record={record}
           recordClass={recordClass}
           isCollapsed={isCollapsed}
@@ -52,6 +54,7 @@ class RecordMainCategorySection extends PureComponent {
       case 'table': return (
         <RecordTableSection
           table={category.wdkReference}
+          ontologyProperties={category.properties}
           record={record}
           recordClass={recordClass}
           isCollapsed={isCollapsed}

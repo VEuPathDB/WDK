@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 
 import {
   GroupVisibilityChangedAction,
+  UnloadQuestionAction,
   ParamValueUpdatedAction,
   QuestionLoadedAction,
   ParamErrorAction
@@ -162,7 +163,11 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               paramValues,
               activeField
             })))
-        });
+        })
+        .takeUntil(action$.filter(killAction => (
+          UnloadQuestionAction.isType(killAction) &&
+          killAction.payload.questionName === action.payload.questionName
+        )));
     })
 }
 
@@ -186,6 +191,10 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
             getSummaryCounts(wdkService, parameter, questionState)
           );
         })
+        .takeUntil(action$.filter(killAction => (
+          UnloadQuestionAction.isType(killAction) &&
+          killAction.payload.questionName === action.payload.questionName
+        )))
     })
 }
 

@@ -522,7 +522,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
     String filteredFilterItemIdSql = getFilteredIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
-        " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId() + "'");
+        " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
     String andClause = " AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
@@ -762,7 +762,10 @@ public class FilterParamNew extends AbstractDependentParam {
 
     if (ontologyTerms != null) {
       // find ontology terms used in our set of member filters
-      String ontologyTermsString = ontologyTerms.stream().collect(Collectors.joining("', '"));
+      String ontologyTermsString = ontologyTerms
+        .stream()
+        .map(term -> term.replaceAll("'", "''"))
+        .collect(Collectors.joining("', '"));
       ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID + " IN ('" +
           ontologyTermsString + "')"; 
     }
@@ -938,13 +941,13 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   @Override
   protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
-      throws WdkModelException {
+      throws WdkUserException, WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(getName()), this);
 
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
-    if (err != null) throw new WdkModelException(err);
+    if (err != null) throw new WdkUserException(err);
   }
 
   @Override
@@ -986,6 +989,13 @@ public class FilterParamNew extends AbstractDependentParam {
 
     }
     return stale;
+  }
+
+  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
+    if (stableValueString == null) return getDefault();
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    return err != null ? getDefault() : stableValueString;
   }
 
   @Override

@@ -44,6 +44,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.json.JSONException;
@@ -208,49 +209,45 @@ public class UserDatasetService extends UserService {
    * other WDK users.  The JSON object accepted by the service should have the following form:
    *    {
    *	  "add": {
-   *	    "dataset_id1": [ "user1", "user2" ]
-   *	    "dataset_id2": [ "user1" ]
+   *	    "dataset_id1": [ "user_id1", "user_id2" ]
+   *	    "dataset_id2": [ "user_id2" ]
    *	  },
    *	  "delete" {
-   *	    "dataset_id3": [ "user1", "user3" ]
+   *	    "dataset_id3": [ "user_id1", "user_id3" ]
    *	  }
    *	}
    */	
   @PATCH
   @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response manageShares(String body) throws WdkModelException {
+  public Response manageShares(String body) throws WdkModelException, DataValidationException {
 	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
     UserDatasetStore dsStore = getUserDatasetStore();
     try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
-      UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj);
+    	  Set<Long> ownedDatasetIds = dsSession.getUserDatasets(userId).keySet();
+      UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj, getWdkModel(), ownedDatasetIds);
       Map<String, Map<Long, Set<Long>>> userDatasetShareMap = request.getUserDatasetShareMap();
-      Set<Long> installedDatasetIds = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
       for (String key : userDatasetShareMap.keySet()) {
         // Find datasets to share  
         if ("add".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
-          // Ignore any provided dataset ids not owned by this user.
-          targetDatasetIds.retainAll(installedDatasetIds);
           for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may be shared with different users, we share datasets one by one
             dsSession.shareUserDataset(userId, targetDatasetId, targetUserIds);
           }
         }
-        // Fine datasets to unshare
+        // Find datasets to unshare
         if ("delete".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
-          // Ignore any provided dataset ids not owned by this user.
-          targetDatasetIds.retainAll(installedDatasetIds);
           for (Long targetDatasetId : targetDatasetIds) {
             Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
             // Since each dataset may unshared with different users, we unshare datasets one by one.
             dsSession.unshareUserDataset(userId, targetDatasetId, targetUserIds);
           }
         }
-      }
+      } 
       return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException e) {

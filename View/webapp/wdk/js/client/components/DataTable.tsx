@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { eq, uniqueId, once } from 'lodash';
 import React, {Component, PureComponent, ReactElement} from 'react';
-import {render, unmountComponentAtNode} from 'react-dom';
+import {unstable_renderSubtreeIntoContainer, unmountComponentAtNode} from 'react-dom';
 import {formatAttributeValue, lazy, wrappable} from '../utils/componentUtils';
 import { containsAncestorNode } from '../utils/DomUtils';
 import RealTimeSearchBox from './RealTimeSearchBox';
@@ -166,7 +166,7 @@ class DataTable extends PureComponent<Props> {
 
       if (expandedRowsChanged) {
         this._updateExpandedRows();
-        needsRedraw = true;
+        // needsRedraw = true;
       }
 
       if (needsRedraw) {
@@ -384,15 +384,15 @@ class DataTable extends PureComponent<Props> {
     if (childRow == null) return;
     let row = this._dataTable.row(tableRowNode);
     let childRowContainer = this._getChildRowContainer(tableRowNode);
-    row.child(childRowContainer);
+    if (row.child() == null) row.child(childRowContainer);
     if (typeof childRow === 'string') {
       childRowContainer.innerHTML = childRow;
     }
     else {
       let props = { rowIndex: row.index(), rowData: row.data() };
-      render(childRow(props), childRowContainer);
+      unstable_renderSubtreeIntoContainer(this, React.createElement(childRow, props), childRowContainer);
     }
-    if (openRow) {
+    if (openRow && !row.child.isShown()) {
       row.child.show();
       tableRowNode.setAttribute('aria-expanded', 'true');
     }

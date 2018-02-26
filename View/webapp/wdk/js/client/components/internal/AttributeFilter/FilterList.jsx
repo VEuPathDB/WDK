@@ -99,6 +99,6 @@ FilterList.propTypes = {
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   displayName: PropTypes.string.isRequired,
-  hideCounts: PropTypes.func.isRequired,
+  hideCounts: PropTypes.bool.isRequired,
   selectedField: PropTypes.object
 };

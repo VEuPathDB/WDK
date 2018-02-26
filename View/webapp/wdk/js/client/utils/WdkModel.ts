@@ -224,7 +224,7 @@ export interface LinkAttributeValue {
   displayText: string;
 }
 
-export interface TableValue extends Array<AttributeValue> { }
+export interface TableValue extends Array<Record<string, AttributeValue>> { }
 
 export interface Answer {
   records: RecordInstance[];
@@ -289,7 +289,7 @@ export type UserDataset = {
   owner: string;
   ownerUserId: number;
   percentQuotaUsed: number;
-  sharedWith: UserDatasetShare[];
+  sharedWith: UserDatasetShare[] | undefined;
   questions: string[];
   size: number;
   type: {

@@ -35,7 +35,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI<Question>, Op
   private boolean _internal = false;
 
   public void setName(String name) {
-    _name = name;
+    _name = name.trim();
   }
 
   @Override

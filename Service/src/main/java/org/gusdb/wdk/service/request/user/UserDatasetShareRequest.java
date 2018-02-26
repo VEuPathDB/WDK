@@ -4,12 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.accountdb.AccountManager;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigAccountDB;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,8 +37,21 @@ public class UserDatasetShareRequest {
 	
   public static final List<String> SHARE_TYPES = new ArrayList<>(Arrays.asList("add","delete"));
 			
+  private AccountManager _accountManager;
   private Map<String, Map<Long, Set<Long>>> _userDatasetShareMap;
-	
+  private List<Object> _invalidActions;
+  private List<Object> _malformedDatasetIds;
+  private Map<Object, String> _malformedUserIds;
+  private List<Long> _invalidUserIds;
+  private List<Long> _invalidDatasetIds;
+
+  public UserDatasetShareRequest(WdkModel wdkModel) {
+	ModelConfig modelConfig = wdkModel.getModelConfig();
+	ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
+    _accountManager = new AccountManager(wdkModel.getAccountDb(),
+	   accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
+  }
+  
   public Map<String, Map<Long, Set<Long>>> getUserDatasetShareMap() {
 	return _userDatasetShareMap;
   }
@@ -39,29 +59,82 @@ public class UserDatasetShareRequest {
   public void setUserDatasetShareMap(Map<String, Map<Long, Set<Long>>> userDatasetShareMap) {
     _userDatasetShareMap = userDatasetShareMap;
   }
+  
+  public void verifyUserIds(JSONObject userDatasetShare) {
+	Set<Long> userIds = new HashSet<>();  
+	_invalidUserIds = new ArrayList<>();
+    for(Object shareType : userDatasetShare.keySet()) {
+      JSONObject userDatasets = userDatasetShare.getJSONObject((String)shareType);
+      for(Object userDataset : userDatasets.keySet()) {
+        JSONArray userIdsJsonArray = userDatasets.getJSONArray(userDataset.toString()); 
+        ObjectMapper mapper = new ObjectMapper();
+        String userIdsJson = null;
+        try {
+          userIdsJson = userIdsJsonArray.toString();
+          CollectionType setType = mapper.getTypeFactory().constructCollectionType(Set.class, Long.class);
+          userIds.addAll(mapper.readValue(userIdsJson, setType));
+        }
+        catch(IOException ioe) {
+        	  // Will catch these later in second pass
+          continue;
+        }
+      }
+    }
+    Map<Long,Boolean> _userIdMap = _accountManager.verifyUserids(userIds);
+    _invalidUserIds = _userIdMap.keySet().stream().filter(userId -> !_userIdMap.get(userId)).collect(Collectors.toList());
+  }
+  
+  public JSONObject getErrors() {
+	JSONObject jsonErrors = new JSONObject();  
+    if(!_invalidActions.isEmpty()) {
+      jsonErrors.put("invalid actions", FormatUtil.join(_invalidActions.toArray(), ","));
+	}
+	if(!_malformedDatasetIds.isEmpty()) {
+      jsonErrors.put("malformed dataset ids", FormatUtil.join(_malformedDatasetIds.toArray(), ","));
+	}
+	if(!_malformedUserIds.isEmpty()) {
+	  JSONArray jsonArray = new JSONArray();	
+	  for(Object dataset : _malformedUserIds.keySet()) {
+	    jsonArray.put(new JSONObject().put("dataset", dataset).put("user id list", _malformedUserIds.get(dataset)));
+	  }
+	  jsonErrors.put("malformed user id lists", jsonArray);
+	}
+	if(!_invalidUserIds.isEmpty()) {
+      jsonErrors.put("invalid user ids", FormatUtil.join(_invalidUserIds.toArray(), ","));
+	}
+	if(!_invalidDatasetIds.isEmpty()) {
+      jsonErrors.put("invalid dataset ids", FormatUtil.join(_invalidDatasetIds.toArray(), ","));
+	}
+	LOG.error(jsonErrors.toString());
+	return jsonErrors;
+  }
 	
   /**
    * Input Format:
    *
    *    {
    *	  "add": {
-   *	    "dataset_id1": [ "user1", "user2" ]
-   *	    "dataset_id2": [ "user1" ]
+   *	    "dataset_id1": [ "userEmail1", "userEmail2" ]
+   *	    "dataset_id2": [ "userEmail1" ]
    *	  },
    *	  "delete" {
-   *	    "dataset_id3": [ "user1", "user2" ]
+   *	    "dataset_id3": [ "userEmail1", "userEmail3" ]
    *	  }
    *	}	
    *
-   * 
    * @param json
    * @return
    * @throws RequestMisformatException
    */
-  public static UserDatasetShareRequest createFromJson(JSONObject json) throws RequestMisformatException {
+  public static UserDatasetShareRequest createFromJson(JSONObject json, WdkModel wdkModel, Set<Long> ownedDatasetIds) throws RequestMisformatException, DataValidationException {
     try {
-	  UserDatasetShareRequest request = new UserDatasetShareRequest();
-	  request.setUserDatasetShareMap(parseUserDatasetShare(json));
+	  UserDatasetShareRequest request = new UserDatasetShareRequest(wdkModel);
+	  request.verifyUserIds(json);
+	  request.setUserDatasetShareMap(request.parseUserDatasetShare(json, ownedDatasetIds));
+	  JSONObject errors = request.getErrors();
+	  if(errors.length() != 0) {
+        throw new DataValidationException(errors.toString(2));
+	  }
 	  return request;
 	}
 	catch (JSONException e) {
@@ -77,52 +150,49 @@ public class UserDatasetShareRequest {
    * @return - the Java map representing this JSON object
    * @throws JSONException
    */
-  protected static Map<String, Map<Long, Set<Long>>> parseUserDatasetShare(JSONObject userDatasetShare) throws JSONException {
+  protected Map<String, Map<Long, Set<Long>>> parseUserDatasetShare(JSONObject userDatasetShare, Set<Long> ownedDatasetIds) throws JSONException {
     List<String> shareTypes = SHARE_TYPES;
-    List<Object> unrecognizedActions = new ArrayList<>();
-    List<Object> improperDatasets = new ArrayList<>();
+    _invalidActions = new ArrayList<>();
+    _malformedDatasetIds = new ArrayList<>();
+    _invalidDatasetIds = new ArrayList<>();
+    _malformedUserIds = new HashMap<Object,String>();
     Map<String, Map<Long, Set<Long>>> map = new HashMap<>();
     for(Object shareType : userDatasetShare.keySet()) {
       if(shareTypes.contains(((String)shareType).trim())) {
         JSONObject userDatasets = userDatasetShare.getJSONObject((String)shareType);
         Map<Long, Set<Long>> innerMap = new HashMap<>();
         for(Object userDataset : userDatasets.keySet()) {
-          Long dataset = 0L;
+          Long datasetId = 0L;
           try {
-            dataset = new Long(((String)userDataset).trim());
+            datasetId = new Long(((String)userDataset).trim());
           }
           catch(NumberFormatException nfe) {
-            improperDatasets.add(userDataset);
+            _malformedDatasetIds.add(userDataset);
+            continue;
           }
-          JSONArray usersJsonArray = userDatasets.getJSONArray(dataset.toString()); 
+          if(!ownedDatasetIds.contains(datasetId)) {
+        	    _invalidDatasetIds.add(datasetId);
+        	    continue;
+          }
+          JSONArray userIdsJsonArray = userDatasets.getJSONArray(datasetId.toString()); 
           ObjectMapper mapper = new ObjectMapper();
-          String usersJson = null;
+          String userIdsJson = null;
           try {
-            usersJson = usersJsonArray.toString();
+            userIdsJson = userIdsJsonArray.toString();
             CollectionType setType = mapper.getTypeFactory().constructCollectionType(Set.class, Long.class);
-            Set<Long> users = mapper.readValue(usersJson, setType);
-            innerMap.put(dataset, users);  
+            Set<Long> userIds = mapper.readValue(userIdsJson, setType);
+            innerMap.put(datasetId, userIds);  
           }
-          catch(IOException jpe) {
-            LOG.warn("The user array associated with dataset id " + dataset
-                + " is not parseable (they may not all be integers: " + usersJson + "). "
-                + " Skipping this dataset for " + shareType);
+          catch(IOException ioe) {
+        	    _malformedUserIds.put(datasetId, userIdsJson);
             continue;
           }
         }
         map.put(((String)shareType).trim(), innerMap);
       }
       else {
-        unrecognizedActions.add(shareType);
+        _invalidActions.add(shareType);
       }
-    }
-    if(!unrecognizedActions.isEmpty()) {
-      String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ",");
-      LOG.warn("This user service request contains the following unrecognized sharing actions: " + unrecognized);
-    }
-    if(!improperDatasets.isEmpty()) {
-      String improper = FormatUtil.join(improperDatasets.toArray(), ",");
-      LOG.warn("This user dataset share service request contains the following improper datasets: " + improper);
     }
     return map;
   }

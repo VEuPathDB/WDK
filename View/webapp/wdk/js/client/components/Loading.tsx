@@ -41,7 +41,7 @@ class Loading extends React.Component<Props> {
       top: '50%', // Top position relative to parent
       left: '50%' // Left position relative to parent
     };
-    const node: HTMLElement = findDOMNode(this);
+    const node = findDOMNode(this) as HTMLElement;
     this.spinner = new Spinner(opts).spin(node);
   }
 

@@ -41,6 +41,7 @@ class QuestionController extends AbstractPageController<QuestionState, QuestionS
   loadData() {
     if (this.state.questionStatus == null) {
       this.dispatchAction(ActiveQuestionUpdatedAction.create({
+        stepId: undefined,
         questionName: this.props.match.params.question
       }));
     }
