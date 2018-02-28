@@ -8,9 +8,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -37,7 +35,7 @@ import io.jsonwebtoken.impl.TextCodec;
 
 public class OAuthClient {
 
-  private final Logger LOG = Logger.getLogger(OAuthClient.class);
+  private static final Logger LOG = Logger.getLogger(OAuthClient.class);
 
   private final String _oauthServerBase;
   private final boolean _googleSpecific;
@@ -57,7 +55,7 @@ public class OAuthClient {
     _trustManager = getTrustManager(config);
   }
 
-  private TrustManager getTrustManager(OAuthConfig config) throws WdkModelException {
+  private static TrustManager getTrustManager(OAuthConfig config) throws WdkModelException {
     String keyStoreFile = config.getKeyStoreFile();
     return (keyStoreFile.isEmpty() ? new WdkTrustManager() :
       new WdkTrustManager(Paths.get(keyStoreFile), config.getKeyStorePassPhrase()));
@@ -76,18 +74,16 @@ public class OAuthClient {
       formData.add("client_id", _clientId);
       formData.add("client_secret", _clientSecret);
 
-      HostnameVerifier hostnameVerifier = getHostnameVerifier();
       SSLContext sslContext = SSLContext.getInstance("SSL");
       sslContext.init(null, new TrustManager[]{ _trustManager }, null);
 
-      LOG.debug("Building token request with the following URL: " + oauthUrl +
+      LOG.info("Building token request with the following URL: " + oauthUrl +
           " and params: " + dumpMultiMap(formData));
 
       // build request and get token response
       Response response = ClientBuilder.newBuilder()
           .withConfig(new ClientConfig())
           .sslContext(sslContext)
-          .hostnameVerifier(hostnameVerifier)
           .build()
           .target(oauthUrl)
           .request(MediaType.APPLICATION_JSON)
@@ -136,7 +132,7 @@ public class OAuthClient {
     }
   }
 
-  private long getUserIdFromIdToken(String idToken, String clientSecret) throws WdkModelException {
+  private static long getUserIdFromIdToken(String idToken, String clientSecret) throws WdkModelException {
     try {
       LOG.debug("Attempting parse of id token [" + idToken + "] using client secret '" + clientSecret +"'");
       String encodedKey = TextCodec.BASE64.encode(clientSecret);
@@ -154,22 +150,12 @@ public class OAuthClient {
     }
   }
 
-  private String dumpMultiMap(MultivaluedMap<String, String> formData) {
+  private static String dumpMultiMap(MultivaluedMap<String, String> formData) {
     StringBuilder str = new StringBuilder("{").append(NL);
     for (Entry<String,List<String>> entry : formData.entrySet()) {
       str.append("  ").append(entry.getKey()).append(": ")
          .append(FormatUtil.arrayToString(entry.getValue().toArray())).append(NL);
     }
     return str.append("}").append(NL).toString();
-  }
-
-  private HostnameVerifier getHostnameVerifier() {
-    return new HostnameVerifier() {
-      @Override
-      public boolean verify(String hostname, SSLSession session) {
-        LOG.info("Call to HostnameVerifier.verify('" + hostname + "')");
-        return true;
-      }
-    };
   }
 }
