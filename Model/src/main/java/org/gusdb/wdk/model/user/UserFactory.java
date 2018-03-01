@@ -50,7 +50,8 @@ public class UserFactory {
   // sql and sql macro definitions
   // -------------------------------------------------------------------------
 
-  protected static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+  static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+  private static final String IS_GUEST_VALUE_MACRO = "$$IS_GUEST$$";
 
   private static final String COUNT_USER_REF_BY_ID_SQL =
       "select count(*)" +
@@ -61,14 +62,13 @@ public class UserFactory {
   private static final String INSERT_USER_REF_SQL =
       "insert into " + USER_SCHEMA_MACRO + TABLE_USERS +
       "  (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
-      "  values (?, ?, ?)";
-  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.INTEGER, Types.TIMESTAMP };
+      "  values (?, " + IS_GUEST_VALUE_MACRO + ", ?)";
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.TIMESTAMP };
 
-  private static final String IS_GUEST_MACRO = "$$IS_GUEST$$";
   private static final String SELECT_GUEST_USER_REF_BY_ID_SQL =
       "select " + COL_FIRST_ACCESS +
       "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  where " + COL_IS_GUEST + " = " + IS_GUEST_MACRO + " and " + COL_USER_ID + " = ?";
+      "  where " + COL_IS_GUEST + " = " + IS_GUEST_VALUE_MACRO + " and " + COL_USER_ID + " = ?";
   private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
   // -------------------------------------------------------------------------
@@ -169,9 +169,11 @@ public class UserFactory {
 
   private void addUserReference(Long userId, boolean isGuest) {
     Timestamp insertedOn = new Timestamp(new Date().getTime());
-    String sql = INSERT_USER_REF_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+    String sql = INSERT_USER_REF_SQL
+        .replace(USER_SCHEMA_MACRO, _userSchema)
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest));
     new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-      .executeStatement(new Object[]{ userId, isGuest, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+      .executeStatement(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
   }
 
   private boolean hasUserReference(long userId) {
@@ -193,7 +195,7 @@ public class UserFactory {
   private Date getGuestUserRefFirstAccess(long userId) {
     String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
         .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_MACRO, _userDb.getPlatform().convertBoolean(true));
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true));
     Wrapper<Date> resultWrapper = new Wrapper<>();
     new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
       .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
