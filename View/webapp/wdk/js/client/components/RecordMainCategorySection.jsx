@@ -42,6 +42,7 @@ class RecordMainCategorySection extends PureComponent {
       case 'attribute': return (
         <RecordAttributeSection
           attribute={category.wdkReference}
+          ontologyProperties={category.properties}
           record={record}
           recordClass={recordClass}
           isCollapsed={isCollapsed}
@@ -52,6 +53,7 @@ class RecordMainCategorySection extends PureComponent {
       case 'table': return (
         <RecordTableSection
           table={category.wdkReference}
+          ontologyProperties={category.properties}
           record={record}
           recordClass={recordClass}
           isCollapsed={isCollapsed}
