@@ -137,9 +137,10 @@ public class UserFactory {
       // add user to this user DB (will be added to other user DBs as needed during login)
       addUserReference(profile.getUserId(), false);
 
-      // create new user object
+      // create new user object and add profile properties
       RegisteredUser user = new RegisteredUser(_wdkModel, profile.getUserId(),
           profile.getEmail(), profile.getSignature(), profile.getStableId());
+      user.setProfileProperties(profile.getProperties());
 
       // set and save preferences
       UserPreferences prefs = new UserPreferences(user);
