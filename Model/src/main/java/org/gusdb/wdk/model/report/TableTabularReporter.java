@@ -12,8 +12,10 @@ import java.util.Set;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.answer.stream.SingleRecordStream;
 import org.gusdb.wdk.model.answer.stream.SingleTableRecordStream;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -58,6 +60,14 @@ public class TableTabularReporter extends AbstractTabularReporter {
    */
   @Override
   public RecordStream getRecords() throws WdkModelException {
+    if (_baseAnswer instanceof SingleRecordAnswerValue) {
+      try {
+        return new SingleRecordStream((SingleRecordAnswerValue)_baseAnswer);
+      }
+      catch (WdkUserException e) {
+        throw new WdkModelException(e.getMessage(), e);
+      }
+    }
     RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     if (idAttributeContainsNonPkFields(recordClass)) {
       // need to use FileBasedRecordStream to support both this table and any needed attributes
