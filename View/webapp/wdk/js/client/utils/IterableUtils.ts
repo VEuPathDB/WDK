@@ -164,6 +164,10 @@ export class Seq<T> {
     : reduce(fn, value, this);
   }
 
+  join(separator: string) {
+    return join(separator, this);
+  }
+
   toArray() {
     return this.reduce((arr: T[], item: T) => (arr.push(item), arr), []);
   }
@@ -404,3 +408,8 @@ export function reduce<T, U>(fn: any, value: any, iterable?: any) {
   }
   return result;
 }
+
+export function join<T>(separator: string, iterable: Iterable<T>): string {
+  return reduce((a, b) => String(a) + separator + String(b), iterable);
+}
+

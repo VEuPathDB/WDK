@@ -28,7 +28,7 @@ export default class FilterList extends React.Component {
    */
   handleFilterSelectClick(filter, event) {
     event.preventDefault();
-    this.props.onFilterSelect(filter.field);
+    this.props.onActiveFieldChange(filter.field);
   }
 
 /**
@@ -37,20 +37,20 @@ export default class FilterList extends React.Component {
  */
   handleFilterRemoveClick(filter, event) {
     event.preventDefault();
-    this.props.onFilterRemove(filter);
+    this.props.onFiltersChange(this.props.filters.filter(f => f !== filter));
   }
 
   render() {
-    var { fields, filters, selectedField, filteredDataCount, dataCount, displayName, loadingFilteredCount, hideCounts } = this.props;
+    var { fields, filters, activeField, filteredDataCount, dataCount, displayName, loadingFilteredCount, hideGlobalCounts } = this.props;
 
-    const filteredCount = hideCounts ? null
+    const filteredCount = hideGlobalCounts ? null
       : loadingFilteredCount ? [
         <i className="fa fa-circle-o-notch fa-spin fa-fw margin-bottom"></i>
         , <span className="sr-only">Loading...</span> ]
       : filteredDataCount && filteredDataCount.toLocaleString();
 
-    const total = hideCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
-    const filtered = hideCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} {displayName} selected</span>;
+    const total = hideGlobalCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
+    const filtered = hideGlobalCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} {displayName} selected</span>;
 
 
     return (
@@ -58,10 +58,10 @@ export default class FilterList extends React.Component {
         <div className="filter-list-total">{total}</div>
         {filters.length === 0 ? null : <div className="filter-list-selected">{filtered}</div>}
         {filters.length === 0
-          ? ( hideCounts ? null : <strong><em>No filters applied</em></strong> )
+          ? ( hideGlobalCounts ? null : <strong><em>No filters applied</em></strong> )
           : <ul style={{display: 'inline-block'}} className="filter-items">
             {map(filters, filter => {
-              var className = selectedField && selectedField.term === filter.field ? 'selected' : '';
+              var className = activeField && activeField.term === filter.field ? 'selected' : '';
               var handleSelectClick = partial(this.handleFilterSelectClick, filter);
               var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
               var field = fields.get(filter.field);
@@ -94,11 +94,14 @@ export default class FilterList extends React.Component {
 }
 
 FilterList.propTypes = {
-  onFilterSelect: PropTypes.func.isRequired,
-  onFilterRemove: PropTypes.func.isRequired,
+  onActiveFieldChange: PropTypes.func.isRequired,
+  onFiltersChange: PropTypes.func.isRequired,
   fields: PropTypes.instanceOf(Map).isRequired,
   filters: PropTypes.array.isRequired,
   displayName: PropTypes.string.isRequired,
-  hideCounts: PropTypes.bool.isRequired,
-  selectedField: PropTypes.object
+  dataCount: PropTypes.number,
+  filteredDataCount: PropTypes.number,
+  hideGlobalCounts: PropTypes.bool.isRequired,
+  loadingFilteredCount: PropTypes.bool,
+  activeField: PropTypes.object
 };
