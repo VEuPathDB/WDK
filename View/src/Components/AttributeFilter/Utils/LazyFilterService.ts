@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import _ from 'lodash';
-import FilterService from 'Components/AttributeFilter/FilterService';
+import FilterService from './FilterService';
 import {
   FilterServiceAttrs,
   Field,
