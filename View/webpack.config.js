@@ -19,7 +19,9 @@ var scripts = [
   { alias: 'lib/jquery-flot-selection',                 path : __dirname + '/webapp/wdk/lib/flot/jquery.flot.selection.min.js' },
   { alias: 'lib/jquery-flot-time',                      path : __dirname + '/webapp/wdk/lib/flot/jquery.flot.time.min.js' },
   { alias: 'lib/jquery-datatables',                     path : __dirname + '/webapp/wdk/lib/datatables.min.js' },
-  { alias: 'lib/jquery-datatables-natural-type-plugin', path : __dirname + '/webapp/wdk/lib/datatables-natural-type-plugin.js' }
+  { alias: 'lib/jquery-datatables-natural-type-plugin', path : __dirname + '/webapp/wdk/lib/datatables-natural-type-plugin.js' },
+  { alias: 'fixed-data-table',                          path : __dirname + '/node_modules/fixed-data-table/main.js' },
+  { alias: 'zynga-scroller',                            path : __dirname + '/lib/zynga-scroller/src' }
 ];
 
 // Create webpack alias configuration object
@@ -63,12 +65,12 @@ var primaryConfig = {
     'wdk-client': [
       'whatwg-fetch',
       './webapp/wdk/css/wdk.css',
-      './webapp/wdk/sass/index.scss',
-      './webapp/wdk/js/client/index.js'
+      './src/Core/Style/index.scss',
+      './src/Core/index.js'
     ],
     'wdk': [
       './webapp/wdk/css/wdk.css',
-      './webapp/wdk/sass/index.scss',
+      './src/Core/Style/index.scss',
       './webapp/wdk/js/index.js'
     ]
   },
@@ -76,6 +78,11 @@ var primaryConfig = {
     library: 'Wdk'
   },
   resolve: {
+    modules: [
+      path.resolve(__dirname, 'lib'),
+      path.resolve(__dirname, 'src'),
+      path.resolve(__dirname, 'node_modules')
+    ],
     alias: alias
   },
   externals: [

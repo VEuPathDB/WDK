@@ -1,0 +1,2 @@
+import ServerSideAttributeFilter from 'Components/AttributeFilter/internal/AttributeFilter/ServerSideAttributeFilter';
+export default ServerSideAttributeFilter;

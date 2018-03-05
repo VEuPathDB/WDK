@@ -1,6 +1,6 @@
 /* global wdk, wdkConfig */
-import * as AuthUtil from './client/utils/AuthUtil';
-import { confirm } from './client/utils/Platform';
+import { confirm } from 'Utils/Platform';
+import * as AuthUtil from 'Views/User/AuthUtil';
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.
