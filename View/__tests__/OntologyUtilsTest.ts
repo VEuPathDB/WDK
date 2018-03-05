@@ -1,5 +1,5 @@
 import {
   getTree
-} from '../webapp/wdk/js/client/utils/OntologyUtils';
+} from 'Utils/OntologyUtils';
 
 test('TODO: getTree');

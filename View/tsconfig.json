@@ -18,7 +18,8 @@
     "baseUrl": "./src"
   },
   "include": [
-    "webapp/wdk/js",
-    "src/**/*"
+    "webapp/wdk/js/**/*",
+    "src/**/*",
+    "__tests__/**/*"
   ]
 }
