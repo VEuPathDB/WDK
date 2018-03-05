@@ -1,8 +1,8 @@
 import { memoize, sortBy, stubTrue as T } from 'lodash';
 import natsort from 'natural-sort';
 
-import { Filter, MemberFilter } from 'Components/AttributeFilter/FilterService';
-import { getTree } from 'Components/AttributeFilter/FilterServiceUtils';
+import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
+import { getTree } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 import { filter, Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
 import { FilterParamNew, Parameter, OntologyTermSummary } from 'Utils/WdkModel';

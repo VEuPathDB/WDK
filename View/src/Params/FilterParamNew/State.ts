@@ -1,7 +1,7 @@
 import { keyBy, mapValues, groupBy, isEqual } from 'lodash';
 
 import { Action } from 'Core/State/Dispatcher';
-import { Filter, MemberFilter } from 'Components/AttributeFilter/FilterService';
+import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
 import { OntologyTermSummary } from 'Utils/WdkModel';
 import {
   ActiveFieldSetAction,

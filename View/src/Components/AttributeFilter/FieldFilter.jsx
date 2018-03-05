@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Loading from 'Components/Loading/Loading';
-import EmptyField from 'Components/AttributeFilter/internal/AttributeFilter/EmptyField';
-import MultiFieldFilter from 'Components/AttributeFilter/internal/AttributeFilter/MultiFieldFilter';
-import SingleFieldFilter from 'Components/AttributeFilter/internal/AttributeFilter/SingleFieldFilter';
+import EmptyField from './EmptyField';
+import MultiFieldFilter from './MultiFieldFilter';
+import SingleFieldFilter from './SingleFieldFilter';
 
 /**
  * Main interactive filtering interface for a particular field.

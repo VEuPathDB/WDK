@@ -1,9 +1,9 @@
 import React from 'react';
-import { isRange } from 'Components/AttributeFilter/FilterServiceUtils';
-import DateField from 'Components/AttributeFilter/internal/AttributeFilter/DateField';
-import NumberField from 'Components/AttributeFilter/internal/AttributeFilter/NumberField';
-import { shouldAddFilter } from 'Components/AttributeFilter/internal/AttributeFilter/Utils';
-import MembershipField from 'Components/AttributeFilter/internal/AttributeFilter/MembershipField';
+import { isRange } from './Utils/FilterServiceUtils';
+import DateField from './DateField';
+import NumberField from './NumberField';
+import { shouldAddFilter } from './Utils';
+import MembershipField from './MembershipField';
 
 export default class SingleFieldFilter extends React.Component {
   constructor(props) {

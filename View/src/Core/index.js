@@ -2,8 +2,7 @@ import 'babel-polyfill';
 import 'Core/vendor';
 
 import * as Components from 'Components';
-import LazyFilterService from 'Components/AttributeFilter/LazyFilterService';
-import * as FilterServiceUtils from 'Components/AttributeFilter/FilterServiceUtils';
+import * as FilterServiceUtils from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 
 import * as AuthUtil from 'Views/User/AuthUtil';
 import * as ReporterUtils from 'Views/ReporterForm/reporterUtils';
@@ -47,6 +46,5 @@ export {
   ComponentUtils,
   ActionCreators,
   StaticDataUtils,
-  LazyFilterService,
   FilterServiceUtils
 };

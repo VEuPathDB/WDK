@@ -12,4 +12,4 @@ export default function EmptyField(props) {
         default, all values are selected.</p>
     </div>
   );
-};
+}
