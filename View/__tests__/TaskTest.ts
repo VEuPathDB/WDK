@@ -1,7 +1,7 @@
 /**
  * Created by dfalke on 9/28/16.
  */
-import { Task } from '../webapp/wdk/js/client/utils/Task';
+import { Task } from 'Utils/Task';
 const noop = () => {};
 
 test('Task.of', () => {

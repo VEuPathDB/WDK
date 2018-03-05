@@ -1,4 +1,4 @@
-import * as i from '../webapp/wdk/js/client/utils/IterableUtils';
+import * as i from 'Utils/IterableUtils';
 
 /**
  * generate list of natural numbers

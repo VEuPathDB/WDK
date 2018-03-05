@@ -2,7 +2,7 @@ import {
   latest,
   synchronized,
   Mutex
-} from '../webapp/wdk/js/client/utils/PromiseUtils';
+} from 'Utils/PromiseUtils';
 
 // helpers
 
