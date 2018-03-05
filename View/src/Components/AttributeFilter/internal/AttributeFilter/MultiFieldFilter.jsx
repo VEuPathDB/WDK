@@ -1,24 +1,24 @@
-import { curry, get, includes, keyBy, uniq } from 'lodash';
+import { curry, get, keyBy } from 'lodash';
 import React from 'react';
 import { MesaController as Mesa } from 'mesa';
 
-import { Seq } from 'Utils/IterableUtils';
-import Tooltip from 'Components/Overlays/Tooltip';
 import { isRange } from 'Components/AttributeFilter/FilterServiceUtils';
+import { Seq } from 'Utils/IterableUtils';
+import { makeClassNameHelper } from 'Utils/ComponentUtils';
 
-import StackedBar from 'Components/AttributeFilter/internal/AttributeFilter/StackedBar';
-import { shouldAddFilter } from 'Components/AttributeFilter/internal/AttributeFilter/Utils';
+import FieldFilter from './FieldFilter';
+import StackedBar from './StackedBar';
+import { shouldAddFilter } from './Utils';
+
+const cx = makeClassNameHelper('wdk-MultiFieldFilter');
 
 const getCountType = curry((countType, summary, value) =>
   get(summary.valueCounts.find(count => count.value === value), countType, NaN))
 const getCount = getCountType('count');
 const getFilteredCount = getCountType('filteredCount');
+const toPercentage = (num, denom) => Math.round(num / denom * 100)
 
 export default class MultiFieldFilter extends React.Component {
-
-  constructor(props) {
-    super(props);
-  }
 
   // Invoke callback with filters array
   handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
@@ -34,164 +34,165 @@ export default class MultiFieldFilter extends React.Component {
       : nextFilters;
   }
 
+  renderRowValue(row) {
+    const { value, filter, summary, isSelected } = row;
+    if (value == null) return null;
+    const filterValue = get(filter, 'value', []);
+    const fieldValues = summary.valueCounts.map(count => count.value);
+    const isDisabled = !fieldValues.includes(value) || getFilteredCount(summary, value) <= 0;
+    const handleChange = event =>
+      this.handleFieldFilterChange(
+        this.props.fields.get(summary.term),
+        ( event.target.checked
+          ? [value].concat(filterValue)
+          : filterValue.filter(item => item !== value)
+        ),
+        false,
+        summary.valueCounts
+      );
+    return (
+      <label>
+        <input
+          type="checkbox"
+          disabled={isDisabled}
+          checked={isSelected && !isDisabled}
+          onChange={handleChange}
+        /> {value}
+      </label>
+    )
+  }
+
   render() {
+    const { values } = this.props.activeField;
     const filtersByField = keyBy(this.props.filters, 'field');
-    const values = Seq.from(this.props.activeFieldSummary)
-      .flatMap(summary => summary.valueCounts)
-      .map(valueCountsEntry => valueCountsEntry.value)
-      .uniq()
+
+    const rows = Seq.from(this.props.activeFieldSummary)
+      .flatMap(summary => [
+        {
+          summary,
+          filter: filtersByField[summary.term]
+        },
+        ...values.map(value => ({
+          summary,
+          value,
+          filter: filtersByField[summary.term],
+          isSelected: get(filtersByField, [ summary.term, 'value' ], []).includes(value)
+        }))
+      ])
       .toArray();
 
-    return <div className="wdk-MultiFieldFilter">
+    return <div className={cx()}>
       <Mesa
         options={{
           useStickyHeader: true,
-          tableBodyMaxHeight: '80vh'
+          tableBodyMaxHeight: '80vh',
+          deriveRowClassName: row => cx(
+            'Row',
+            row.value == null ? 'summary' : 'value',
+            row.isSelected && 'selected',
+            (row.value == null
+              ? row.summary.internalsFilteredCount
+              : get(row.summary.valueCounts.find(count => count.value === row.value), 'filteredCount', 0)
+            ) > 0 ? 'enabled' : 'disabled'
+          )
+        }}
+        uiState={{
+          sort: this.props.activeFieldState.sort
         }}
         eventHandlers={{
-          onSort: () => {}
+          onSort: (column, direction) =>
+            this.props.onMemberSort(this.props.activeField, { columnKey: column.key, direction })
         }}
-        rows={this.props.activeFieldSummary}
-        filteredRows={this.props.activeFieldSummary}
+        rows={rows}
+        filteredRows={rows}
         columns={[
           {
             key: 'display',
+            sortable: true,
+            width: '22em',
             name: this.props.activeField.display,
-            className: 'wdk-MultiFieldFilterDisplayCell',
-            renderCell: ({ row }) => this.props.fields.get(row.term).display
+            renderCell: ({ row }) =>
+              <div className={cx('ValueContainer')}>
+                <div>
+                  {row.value == null && this.props.fields.get(row.summary.term).display}
+                </div>
+                <div>
+                  {this.renderRowValue(row)}
+                </div>
+              </div>
           },
-          ...values.map((value, index) => ({
-            key: value,
-            className: 'wdk-MultiFieldFilterValueCell',
-            renderHeading: () => {
-              // checked if all child fields include value in associated filter
-              const checked = this.props.activeFieldSummary.every(childSummary => {
-                const childFilter = filtersByField[childSummary.term];
-                return (
-                  childFilter != null &&
-                  childFilter.value != null &&
-                  childFilter.value.includes(value)
-                );
-              });
-              const handleChange = event => {
-                // add value to all child filters
-                const filters = this.props.activeFieldSummary
-                  .reduce((prevFilters, childSummary) => {
-                    const childField = this.props.fields.get(childSummary.term);
-                    const childFilter = prevFilters.find(filter => filter.field === childSummary.term);
-                    const childFilterValue = childFilter && childFilter.value
-                      ? ( event.target.checked
-                        ? uniq(childFilter.value.concat(value))
-                        : childFilter.value.filter(v => v !== value)
-                      )
-                      : ( event.target.checked
-                        ? [ value ]
-                        : []
-                      );
-                    return this.updateFilter(prevFilters, {
-                      field: childField,
-                      value: childFilterValue,
-                      includeUnknown: false,
-                      valueCounts: childSummary.valueCounts
-                    });
-                  }, this.props.filters);
-                this.props.onFiltersChange(filters)
-              }
-              return (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>{value}&nbsp;</div>
-                  <Tooltip
-                    content={`All ${this.props.activeField.display} = ${value}`}
-                    showDelay={0}
-                    hideDelay={0}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={handleChange}
-                    />
-                  </Tooltip>
-                </div>
-              );
-            },
+          {
+            key: 'internalsFilteredCount',
+            className: cx('CountCell'),
+            sortable: true,
+            width: '11em',
+            name: <div>Remaining {this.props.displayName}</div>,
             renderCell: ({ row }) => {
-              const field = this.props.fields.get(row.term);
-              const filter = filtersByField[row.term];
-              const filterValue = filter ? filter.value : [];
-              const fieldValues = row.valueCounts.map(count => count.value);
-              const checked = includes(filterValue, value);
-              const disabled = !fieldValues.includes(value);
-              const handleChange = event =>
-                this.handleFieldFilterChange(
-                  this.props.fields.get(row.term),
-                  ( event.target.checked
-                    ? [value].concat(filterValue)
-                    : filterValue.filter(item => item !== value)
-                  ),
-                  false,
-                  row.valueCounts
-                );
+              const filteredCount = row.value == null
+                ? row.summary.internalsFilteredCount
+                : getFilteredCount(row.summary, row.value);
               return (
-                <div style={{ marginTop: index * 2 + 'em', lineHeight: '2em' }}>
-                  <Tooltip
-                    content={`${field.display} = ${value}`}
-                    position={{ at: 'left center', my: 'right center' }}
-                    showDelay={0}
-                    hideDelay={0}
-                  >
-                    <input
-                      type="checkbox"
-                      disabled={disabled}
-                      checked={checked && !disabled}
-                      onChange={handleChange}
-                    />
-                  </Tooltip>
-                </div>
+                <React.Fragment>
+                  <div>
+                    {filteredCount.toLocaleString()}
+                  </div>
+                  <div>
+                    <small>({Math.round(filteredCount/(row.summary.internalsCount || this.props.dataCount) * 100)}%)</small>
+                  </div>
+                </React.Fragment>
+              );
+            }
+          },
+          {
+            key: 'internalsCount',
+            className: cx('CountCell'),
+            sortable: true,
+            width: '11em',
+            name: <div>All {this.props.displayName}</div>,
+            renderCell: ({ row }) => {
+              const count = row.value == null
+                ? row.summary.internalsCount
+                : getCount(row.summary, row.value);
+              return (
+                <React.Fragment>
+                  <div>
+                    {count.toLocaleString()}
+                  </div>
+                  <div>
+                    <small>({toPercentage(count, row.summary.internalsCount || this.props.dataCount)}%)</small>
+                  </div>
+                </React.Fragment>
               )
             }
-          })),
-          {
-            key: 'filtered',
-            name: <div>Remaining {this.props.displayName}</div>,
-            renderCell: ({ row }) => values.map(value =>
-              <div style={{ lineHeight: '2em' }} key={value}>
-                {getFilteredCount(row, value).toLocaleString()} <small>({Math.round(getFilteredCount(row, value)/(row.internalsCount || this.props.dataCount) * 100)}%)</small>
-              </div>
-            )
-          },
-          {
-            key: 'total',
-            name: <div>All {this.props.displayName}</div>,
-            renderCell: ({ row }) => values.map(value =>
-              <div style={{ lineHeight: '2em' }} key={value}>
-                {getCount(row, value).toLocaleString()} <small>({Math.round(getCount(row, value)/(row.internalsCount || this.props.dataCount) * 100)}%)</small>
-              </div>
-            )
           },
           {
             key: 'distribution',
             name: 'Distribution',
-            renderCell: ({ row }) => values.map(value =>
-              <div style={{ height: '2em', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            renderCell: ({ row }) => row.value != null && (
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <StackedBar
-                  count={getCount(row, value)}
-                  filteredCount={getFilteredCount(row, value)}
-                  populationSize={row.internalsCount || this.props.dataCount}
+                  count={getCount(row.summary, row.value)}
+                  filteredCount={getFilteredCount(row.summary, row.value)}
+                  populationSize={row.summary.internalsCount || this.props.dataCount}
                 />
               </div>
             )
           },
           {
             key: '%',
+            width: '4em',
             name: '%',
-            renderCell: ({ row }) => values.map(value =>
-              <div style={{ lineHeight: '2em' }} key={value}>
-                {String(getFilteredCount(row, value) / getCount(row, value) * 100)}%
-              </div>
+            renderCell: ({ row }) => row.value != null && (
+              <small>
+                ({toPercentage(getFilteredCount(row.summary, row.value), getCount(row.summary, row.value))}%)
+              </small>
             )
           }
         ]}
       />
     </div>
   }
-};
+
+}
+
+MultiFieldFilter.propTypes = FieldFilter.propTypes;
