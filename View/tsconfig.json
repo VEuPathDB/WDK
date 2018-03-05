@@ -14,7 +14,8 @@
     "strictNullChecks": true,
     "lib": [ "dom", "dom.iterable", "esnext" ],
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "./src"
   },
   "include": [
     "webapp/wdk/js/**/*"
