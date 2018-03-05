@@ -6,7 +6,6 @@ import { isRange } from './Utils/FilterServiceUtils';
 import { Seq } from 'Utils/IterableUtils';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
 
-import FieldFilter from './FieldFilter';
 import StackedBar from './StackedBar';
 import { shouldAddFilter } from './Utils';
 
@@ -194,5 +193,3 @@ export default class MultiFieldFilter extends React.Component {
   }
 
 }
-
-MultiFieldFilter.propTypes = FieldFilter.propTypes;
