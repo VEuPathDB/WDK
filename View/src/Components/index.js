@@ -30,7 +30,6 @@ import AccordionButton from 'Components/CheckboxTree/AccordionButton';
 import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
 import CollapsibleSection from 'Components/Display/CollapsibleSection';
 import CheckboxTreeNode from 'Components/CheckboxTree/CheckboxTreeNode';
-import AttributeFilter from 'Components/AttributeFilter/AttributeFilter';
 import DateRangeSelector from 'Components/InputControls/DateRangeSelector';
 import NativeCheckboxList from 'Components/InputControls/NativeCheckboxList';
 import NumberRangeSelector from 'Components/InputControls/NumberRangeSelector';
@@ -78,7 +77,6 @@ export {
   DateSelector,
   CheckboxTree,
   NumberSelector,
-  AttributeFilter,
   AccordionButton,
   CheckboxTreeNode,
   RealTimeSearchBox,
