@@ -202,7 +202,8 @@
   min-height: 20em;
   clear: both;
 }
-.filter-param .membership-filter .MesaComponent .DataTable {
+.filter-param .membership-filter .MesaComponent .DataTable,
+.filter-param .wdk-MultiFieldFilter .MesaComponent .DataTable {
   max-width: 100%;
   font-size: 1em;
 }
@@ -552,15 +553,54 @@
   display: inline-block;
 }
 
-.filter-param .wdk-MultiFieldFilter .MesaComponent th,
-.filter-param .wdk-MultiFieldFilter .MesaComponent td {
+.filter-param .wdk-MultiFieldFilterRow > td {
   padding: .5em 1em;
 }
 
-.filter-param .wdk-MultiFieldFilterDisplayCell {
-  vertical-align: middle;
+.filter-param .wdk-MultiFieldFilter .HeadingRow > th,
+.filter-param .wdk-MultiFieldFilterRow__summary > td {
+  padding: .5em 1em;
+  font-weight: 500;
+  color: #444;
+  border-top: 1px solid #dcdcdc;
+  border-right: 1px solid #dcdcdc;
+  border-bottom: 1px solid #dcdcdc;
+  background: #f1f1f1;
+  background-clip: padding-box;
 }
 
-.filter-param .wdk-MultiFieldFilterValueCell {
+.filter-param .wdk-MultiFieldFilterRow__selected {
+  font-weight: bold;
+}
+
+.filter-param .wdk-MultiFieldFilterRow__value > td {
+  border: none;
+  background: white;
+  background-clip: padding-box;
+  padding: 4px;
+}
+
+.filter-param .wdk-MultiFieldFilterRow__disabled > td {
+  opacity: .4;
+}
+
+.filter-param .wdk-MultiFieldFilterRow__value > td:last-of-type {
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+.filter-param .wdk-MultiFieldFilterValueContainer > div {
+  display: inline-block;
+  width: 50%;
+}
+
+.filter-param .wdk-MultiFieldFilterCountCell > div {
+  display: inline-block;
+  width: 50%;
+  padding: 0 .35em;
+}
+.filter-param .wdk-MultiFieldFilterCountCell > div:first-child {
   text-align: right;
+}
+.filter-param .wdk-MultiFieldFilterCountCell > div:last-child {
+  text-align: left;
 }
