@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { map, partial } from 'lodash';
 
-import { getFilterValueDisplay } from 'Components/AttributeFilter/FilterServiceUtils';
+import { getFilterValueDisplay } from './Utils/FilterServiceUtils';
 
 /**
  * List of filters configured by the user.

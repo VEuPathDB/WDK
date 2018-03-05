@@ -2,7 +2,7 @@ import { curry, get, keyBy } from 'lodash';
 import React from 'react';
 import { MesaController as Mesa } from 'mesa';
 
-import { isRange } from 'Components/AttributeFilter/FilterServiceUtils';
+import { isRange } from './Utils/FilterServiceUtils';
 import { Seq } from 'Utils/IterableUtils';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
 

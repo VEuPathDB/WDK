@@ -6,7 +6,7 @@ import { debounce, memoize, isEqual, noop, throttle } from 'lodash';
 
 import { lazy } from 'Utils/ComponentUtils';
 import DateSelector from 'Components/InputControls/DateSelector';
-import { formatDate } from 'Components/AttributeFilter/internal/AttributeFilter/Utils';
+import { formatDate } from './Utils';
 
 var distributionEntryPropType = PropTypes.shape({
   value: PropTypes.number.isRequired,
@@ -277,7 +277,6 @@ var Histogram = (function() {
 
     updatePlotScale(partialUiState) {
       const { yaxisMax, xaxisMin, xaxisMax } = partialUiState;
-      const xaxisMargin = this.getBarWidth(this.props.distribution);
 
       if (yaxisMax == null && xaxisMin == null && xaxisMax == null) return;
 

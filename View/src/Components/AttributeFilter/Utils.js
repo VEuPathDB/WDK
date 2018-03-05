@@ -1,6 +1,6 @@
 import { max, min, padStart } from 'lodash';
 
-import { isRange } from 'Components/AttributeFilter/FilterServiceUtils';
+import { isRange } from './Utils/FilterServiceUtils';
 
 /**
  * Determine if a filter should be created, or if the values represent the default state.

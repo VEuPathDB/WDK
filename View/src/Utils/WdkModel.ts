@@ -2,7 +2,7 @@
  * Type definitions for WDK Model entities
  */
 
-import { Field } from "Components/AttributeFilter/FilterService";
+import { Field } from "Components/AttributeFilter/Utils/FilterService";
 
 interface ModelEntity {
   name: string;

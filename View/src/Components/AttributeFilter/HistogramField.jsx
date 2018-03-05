@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { clamp, debounce, get } from 'lodash';
 
-import Histogram from 'Components/AttributeFilter/internal/AttributeFilter/Histogram';
-import FilterLegend from 'Components/AttributeFilter/internal/AttributeFilter/FilterLegend';
+import Histogram from './Histogram';
+import FilterLegend from './FilterLegend';
 
 /**
  * Generic Histogram field component

@@ -5,9 +5,9 @@ import React from 'react';
 import { safeHtml } from 'Utils/ComponentUtils';
 import { findAncestorNode } from 'Utils/DomUtils';
 import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
-import Toggle from 'Components/AttributeFilter/internal/Toggle';
-import StackedBar from 'Components/AttributeFilter/internal/AttributeFilter/StackedBar';
-import FilterLegend from 'Components/AttributeFilter/internal/AttributeFilter/FilterLegend';
+import Toggle from 'Components/Icon/Toggle';
+import StackedBar from './StackedBar';
+import FilterLegend from './FilterLegend';
 
 const UNKNOWN_ELEMENT = <em>Not specified</em>;
 

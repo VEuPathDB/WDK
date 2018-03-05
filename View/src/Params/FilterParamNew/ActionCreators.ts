@@ -11,7 +11,7 @@ import { Action } from 'Core/State/Dispatcher';
 import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
 import { makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
 import { combineEpics, EpicServices } from 'Utils/ActionCreatorUtils';
-import { Filter } from 'Components/AttributeFilter/FilterService';
+import { Filter } from 'Components/AttributeFilter/Utils/FilterService';
 import { FilterParamNew } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
 import { Context } from 'Params/Utils';
