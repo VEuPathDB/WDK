@@ -70,6 +70,9 @@ public class UserDatasetFormatter {
     UserDatasetType type = dataset.getType();
     typeJson.put("name", type.getName());
     typeJson.put("version", type.getVersion());
+    JsonType trackSpecificData = detailedData ?
+            datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
+    typeJson.put("data", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     json.put("isInstalled", datasetInfo.isInstalled());
@@ -133,9 +136,9 @@ public class UserDatasetFormatter {
     }
     json.put("datafiles", filesJson);
 
-    JsonType trackSpecificData = detailedData ?
-        datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-    json.put("trackSpecificData", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
+//    JsonType trackSpecificData = detailedData ?
+//        datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
+//    json.put("trackSpecificData", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
 
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
