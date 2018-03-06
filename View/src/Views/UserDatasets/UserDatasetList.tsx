@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { escape } from 'lodash';
 import { History } from 'history';
 import { wrappable } from 'Utils/ComponentUtils';
@@ -47,13 +47,23 @@ const mapUserDatasets = (userDatasets: UserDataset[], history: History, user: Us
     quota: ud.percentQuotaUsed == null ? '' : `${ud.percentQuotaUsed}%`
   }));
 
-const UserDatasetList = (props: Props) => (
-  <div>
-    <h1>User Data Sets</h1>
-    <DataTable columns={columns}
-               data={mapUserDatasets(props.userDatasets, props.history, props.user)}
-               getRowId={getRowId} />
-  </div>
-)
+class UserDatasetList extends Component <Props> {
+  constructor (props: Props) {
+    super(props);
+  }
+
+  render () {
+    const { userDatasets, history, user } = this.props;
+    return (
+      <div>
+        <DataTable
+          columns={columns}
+          getRowId={getRowId}
+          data={mapUserDatasets(userDatasets, history, user)}
+        />
+      </div>
+    );
+  }
+};
 
 export default wrappable(UserDatasetList);

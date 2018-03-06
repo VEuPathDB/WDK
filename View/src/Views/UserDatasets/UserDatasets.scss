@@ -1,0 +1,22 @@
+.UserDatasetList-Controller {
+  .UserDatasetList-Content {
+
+  }
+
+  .UserDatasetList-NotLoggedIn {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    p {
+      font-size: 1.3em;
+      font-weight: 400;
+    }
+    .wdk-Icon {
+      font-size: 60px;
+      margin: 5px auto;
+      opacity: 0.3;
+    }
+  }
+}
