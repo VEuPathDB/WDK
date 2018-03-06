@@ -569,6 +569,10 @@
   background-clip: padding-box;
 }
 
+.filter-param .wdk-MultiFieldFilterRow__summary > td {
+  background: #f9f9f9;
+}
+
 .filter-param .wdk-MultiFieldFilterRow__selected {
   font-weight: bold;
 }
@@ -584,8 +588,12 @@
   opacity: .4;
 }
 
-.filter-param .wdk-MultiFieldFilterRow__value > td:last-of-type {
-  border-right: 1px solid rgba(0,0,0,0.08);
+.filter-param .wdk-MultiFieldFilterRow__value > td:first-child {
+  border-left: none;
+}
+
+.filter-param .wdk-MultiFieldFilterRow__value > td:last-child {
+  border-right: none;
 }
 
 .filter-param .wdk-MultiFieldFilterValueContainer > div {

@@ -6,6 +6,8 @@ import { isRange } from './Utils/FilterServiceUtils';
 import { Seq } from 'Utils/IterableUtils';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
 
+import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
+
 import StackedBar from './StackedBar';
 import { shouldAddFilter } from './Utils';
 
@@ -63,6 +65,7 @@ export default class MultiFieldFilter extends React.Component {
 
   render() {
     const { values } = this.props.activeField;
+    const { searchTerm = '' } = this.props.activeFieldState;
     const filtersByField = keyBy(this.props.filters, 'field');
 
     const rows = Seq.from(this.props.activeFieldSummary)
@@ -78,7 +81,9 @@ export default class MultiFieldFilter extends React.Component {
           isSelected: get(filtersByField, [ summary.term, 'value' ], []).includes(value)
         }))
       ])
-      .toArray();
+
+    const filteredRows = rows.filter(({ summary }) =>
+      this.props.fields.get(summary.term).display.toLowerCase().startsWith(searchTerm.toLowerCase()))
 
     return <div className={cx()}>
       <Mesa
@@ -102,14 +107,34 @@ export default class MultiFieldFilter extends React.Component {
           onSort: (column, direction) =>
             this.props.onMemberSort(this.props.activeField, { columnKey: column.key, direction })
         }}
-        rows={rows}
-        filteredRows={rows}
+        rows={rows.toArray()}
+        filteredRows={filteredRows.toArray()}
         columns={[
           {
             key: 'display',
             sortable: true,
             width: '22em',
-            name: this.props.activeField.display,
+            wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+            renderHeading: [
+              () => this.props.activeField.display,
+              () =>
+                <div
+                  style={{
+                    width: '15em',
+                    fontSize: '.8em',
+                    fontWeight: 'normal',
+                  }}
+                  onMouseUp={event => {
+                    event.stopPropagation();
+                  }}
+                >
+                  <RealTimeSearchBox
+                    searchTerm={this.props.activeFieldState.searchTerm}
+                    placeholderText="Find items"
+                    onSearchTermChange={searchTerm => this.props.onMemberSearch(this.props.activeField, searchTerm)}
+                  />
+                </div>
+            ],
             renderCell: ({ row }) =>
               <div className={cx('ValueContainer')}>
                 <div>
