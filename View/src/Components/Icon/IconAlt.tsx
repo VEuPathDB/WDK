@@ -8,7 +8,7 @@ type Props = {
 
 export default function Icon(props: Props) {
   let { className, fa, onClick } = props;
-  className = `fa fa-${fa} ${className || ''}`;
+  className = `fa fa-${fa} ${className || ''} wdk-Icon`;
   let clickHandler = (onClick ? onClick : (e: React.MouseEvent<HTMLElement>) => {});
   return (
     <i className={className} onClick={onClick}> </i>
