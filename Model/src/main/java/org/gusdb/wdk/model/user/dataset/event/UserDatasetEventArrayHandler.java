@@ -88,8 +88,10 @@ public class UserDatasetEventArrayHandler {
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
           if (typeHandler == null) {
-            throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration");
+            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+            	  "Skipping the install.");
+            continue;
           }    
           UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
