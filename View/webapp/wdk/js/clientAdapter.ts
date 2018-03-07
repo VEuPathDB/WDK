@@ -2,12 +2,13 @@ import $ from 'jquery';
 import React from 'react';
 import { get } from 'lodash';
 import ReactDOM from 'react-dom';
-import { createDeferred } from './client/utils/PromiseUtils';
-import { Seq } from './client/utils/IterableUtils';
-import * as Wdk from './client/main';
-import AbstractViewController from './client/controllers/AbstractViewController';
 
-export * from './client/index';
+import * as Wdk from 'Core/main';
+import { Seq } from 'Utils/IterableUtils';
+import { createDeferred } from 'Utils/PromiseUtils';
+import AbstractViewController from 'Core/Controllers/AbstractViewController';
+
+export * from 'Core/index';
 
 type ViewControllerResolver = (id: string) => Promise<AbstractViewController> | AbstractViewController;
 
@@ -58,6 +59,7 @@ wdk.namespace('wdk', ns => {
       if (name == null) {
         throw new Error("The attribute `data-name` must be specified.");
       }
+      console.info('Looking for resolver ' + resolverName);
       let resolver: ViewControllerResolver =
         resolverName == null ? defaultResolver : get(window, resolverName);
       let [ ViewController, context ] =
@@ -79,8 +81,8 @@ wdk.namespace('wdk', ns => {
   }
 
   /** Default `ViewControllerResolver`.  */
-  async function defaultResolver(id: string) {
-    let module = await import(`./client/controllers/${id}`);
+  async function defaultResolver (id: string) {
+    let module = await import(`Core/Controllers/${id}`);
     return module.default;
   }
 

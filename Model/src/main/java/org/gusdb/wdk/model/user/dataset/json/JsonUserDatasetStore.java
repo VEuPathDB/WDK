@@ -1,11 +1,14 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UnsupportedTypeHandler;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
@@ -57,6 +60,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected UserDatasetStoreAdaptor _adaptor;
   protected String _id;
   protected String _wdkTempDirName;
+  protected UserDatasetTypeHandler _unsupportedTypeHandler;
 
   @Override
   public Path getUsersRootDir() {
@@ -71,11 +75,33 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     _usersRootDir = Paths.get(pathName);
     _wdkTempDirName = wdkTempDirName;
     typeHandlersMap = typeHandlers;
+    createUnsupportedTypeHandler();
+  }
+  
+  /**
+   * This creates a user dataset type handler to substitute for type handlers that are
+   * no longer supported by the website.
+   * @throws WdkModelException
+   */
+  protected void createUnsupportedTypeHandler() throws WdkModelException {
+    Class<?> implClass = UnsupportedTypeHandler.class;
+    try {
+      Constructor<?> constructor = implClass.getConstructor();
+      _unsupportedTypeHandler = (UserDatasetTypeHandler) constructor.newInstance();
+    }
+    catch(NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+    	  throw new WdkModelException("No proper unsupported type handler implementation exists.", e);
+    }
   }
 
+  /**
+   * Return the user dataset type handler that matches the type and version of the given user dataset type.
+   * Otherwise return a very generic type handler (intended for types/versions that are no longer supported).
+   */
   @Override
   public UserDatasetTypeHandler getTypeHandler(UserDatasetType type) {
-    return typeHandlersMap.get(type);
+    UserDatasetTypeHandler handler = typeHandlersMap.get(type);
+    return handler == null ? _unsupportedTypeHandler : handler;
   }
 
   @Override

@@ -82,13 +82,18 @@ public class EuPathCategoriesFactory {
   };
 
   private String[][] clinepiRecordClassInfo = {
+      //old ... deprecated?
+      { "Participants", "ParticipantRecordClasses.ParticipantRecordClass" },
+      { "Dwellings", "DwellingRecordClasses.DwellingRecordClass" },
+      { "Clinical Visits", "ClinicalVisitRecordClasses.ClinicalVisitRecordClass" },
+      //PRISM
       { "Participants", "DS_0ad509829eParticipantRecordClasses.DS_0ad509829eParticipantRecordClass" },
       { "Households", "DS_0ad509829eHouseholdRecordClasses.DS_0ad509829eHouseholdRecordClass" },
       { "Observations", "DS_0ad509829eObservationRecordClasses.DS_0ad509829eObservationRecordClass" },
       { "CDC Light Traps", "DS_0ad509829eLightTrapRecordClasses.DS_0ad509829eLightTrapRecordClass" },
-      { "Participants", "ParticipantRecordClasses.ParticipantRecordClass" },
-      { "Dwellings", "DwellingRecordClasses.DwellingRecordClass" },
-      { "Clinical Visits", "ClinicalVisitRecordClasses.ClinicalVisitRecordClass" }
+      //Maled DCC phase1
+      { "Participants", "DS_121f2c2f02ParticipantRecordClasses.DS_121f2c2f02ParticipantRecordClass" },
+      { "Observations", "DS_121f2c2f02ObservationRecordClasses.DS_121f2c2f02ObservationRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu

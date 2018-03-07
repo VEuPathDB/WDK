@@ -80,6 +80,10 @@ public class UserDatasetEventArrayHandler {
       Long lastHandledEventId = findLastHandledEvent(appDbDataSource, getUserDatasetSchemaName());
       int count = 0;
 
+      // If the subject user dataset does not have a currently supported type handler the install
+      // or uninstall command will be skipped.  In theory, no user dataset with an unsupported
+      // type handler should ever be installed on the system as type handlers should only be added
+      // and removed at release time when the UD database is emptied.
       for (UserDatasetEvent event : eventList) {
 
         if ((lastHandledEventId != null && event.getEventId() <= lastHandledEventId)
@@ -88,8 +92,10 @@ public class UserDatasetEventArrayHandler {
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
           if (typeHandler == null) {
-            throw new WdkModelException("Install event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration");
+            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+            	  "Skipping the install.");
+            continue;
           }    
           UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
@@ -98,8 +104,10 @@ public class UserDatasetEventArrayHandler {
         else if (event instanceof UserDatasetUninstallEvent) {
           UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
           if (typeHandler == null) {
-            throw new WdkModelException("Uninstall event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration");
+            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+              "Skipping the install.");
+            continue;
           }  
           UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());

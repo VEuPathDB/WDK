@@ -1,9 +1,9 @@
 /* global wdk */
 import _ from 'lodash';
-import { Seq } from '../client/utils/IterableUtils';
+import { Seq } from 'Utils/IterableUtils';
 
 // eslint-disable-next-line no-unused-vars
-import { UNRECOVERABLE_PARAM_ERROR_EVENT } from '../client/controllers/LegacyParamController';
+import { UNRECOVERABLE_PARAM_ERROR_EVENT } from 'Core/Controllers/LegacyParamController';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
