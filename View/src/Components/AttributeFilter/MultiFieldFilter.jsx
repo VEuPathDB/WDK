@@ -1,4 +1,4 @@
-import { curry, get, keyBy } from 'lodash';
+import { curry, escapeRegExp, get, keyBy } from 'lodash';
 import React from 'react';
 import { MesaController as Mesa } from 'mesa';
 
@@ -64,8 +64,14 @@ export default class MultiFieldFilter extends React.Component {
   }
 
   render() {
-    const { values } = this.props.activeField;
+    const {
+      values = Seq.from(this.props.activeFieldSummary)
+        .flatMap(summary => summary.valueCounts)
+        .map(count => count.value)
+        .uniq()
+    } = this.props.activeField;
     const { searchTerm = '' } = this.props.activeFieldState;
+    const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
     const filtersByField = keyBy(this.props.filters, 'field');
 
     const rows = Seq.from(this.props.activeFieldSummary)
@@ -83,7 +89,7 @@ export default class MultiFieldFilter extends React.Component {
       ])
 
     const filteredRows = rows.filter(({ summary }) =>
-      this.props.fields.get(summary.term).display.toLowerCase().startsWith(searchTerm.toLowerCase()))
+      searchRe.test(this.props.fields.get(summary.term).display))
 
     return <div className={cx()}>
       <Mesa
