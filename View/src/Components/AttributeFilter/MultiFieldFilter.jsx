@@ -1,4 +1,4 @@
-import { curry, escapeRegExp, get, keyBy } from 'lodash';
+import { bindAll, curry, escapeRegExp, get, keyBy } from 'lodash';
 import React from 'react';
 import { MesaController as Mesa } from 'mesa';
 
@@ -21,9 +21,29 @@ const toPercentage = (num, denom) => Math.round(num / denom * 100)
 
 export default class MultiFieldFilter extends React.Component {
 
+  constructor(props) {
+    super(props);
+    bindAll(this, [
+      'deriveRowClassName',
+      'handleTableSort',
+      'renderDisplayHeadingName',
+      'renderDisplayHeadingSearch',
+      'renderDisplayCell',
+      'renderCountCell',
+      'renderDistributionCell',
+      'renderPercentCell'
+    ]);
+  }
+
+  // Event handlers
+
   // Invoke callback with filters array
   handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
     this.props.onFiltersChange(this.updateFilter(this.props.filters, { field, value, includeUnknown, valueCounts }));
+  }
+
+  handleTableSort(column, direction) {
+    this.props.onMemberSort(this.props.activeField, { columnKey: column.key, direction });
   }
 
   // Returns a new filters array with the provided filter details included
@@ -33,6 +53,92 @@ export default class MultiFieldFilter extends React.Component {
       valueCounts, this.props.selectByDefault)
       ? nextFilters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
       : nextFilters;
+  }
+
+  deriveRowClassName(row) {
+    return cx(
+      'Row',
+      row.value == null ? 'summary' : 'value',
+      row.isSelected && 'selected',
+      (row.value == null
+        ? row.summary.internalsFilteredCount
+        : get(row.summary.valueCounts.find(count => count.value === row.value), 'filteredCount', 0)
+      ) > 0 ? 'enabled' : 'disabled'
+    );
+  }
+
+  renderDisplayHeadingName() {
+    return this.props.activeField.display;
+  }
+
+  renderDisplayHeadingSearch() {
+    return (
+      <div
+        style={{
+          width: '15em',
+          fontSize: '.8em',
+          fontWeight: 'normal',
+        }}
+        onMouseUp={event => {
+          event.stopPropagation();
+        }}
+      >
+        <RealTimeSearchBox
+          searchTerm={this.props.activeFieldState.searchTerm}
+          placeholderText="Find items"
+          onSearchTermChange={searchTerm => this.props.onMemberSearch(this.props.activeField, searchTerm)}
+        />
+      </div>
+    )
+  }
+
+  renderDisplayCell({ row }) {
+    return (
+      <div className={cx('ValueContainer')}>
+        <div>
+          {row.value == null && this.props.fields.get(row.summary.term).display}
+        </div>
+        <div>
+          {this.renderRowValue(row)}
+        </div>
+      </div>
+    )
+  }
+
+  renderCountCell({ key, row }) {
+    const count = row.value == null
+      ? ( key === 'count' ? row.summary.internalsCount : row.summary.internalsFilteredCount )
+      : ( key === 'count' ? getCount(row.summary, row.value) : getFilteredCount(row.summary, row.value) );
+    return (
+      <React.Fragment>
+        <div>
+          {count.toLocaleString()}
+        </div>
+        <div>
+          <small>({toPercentage(count, row.summary.internalsCount || this.props.dataCount)}%)</small>
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  renderDistributionCell({ row }) {
+    return row.value != null && (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <StackedBar
+          count={getCount(row.summary, row.value)}
+          filteredCount={getFilteredCount(row.summary, row.value)}
+          populationSize={row.summary.internalsCount || this.props.dataCount}
+        />
+      </div>
+    )
+  }
+
+  renderPercentCell({ row }) {
+    return row.value != null && (
+      <small>
+        ({toPercentage(getFilteredCount(row.summary, row.value), getCount(row.summary, row.value))}%)
+      </small>
+    )
   }
 
   renderRowValue(row) {
@@ -96,22 +202,13 @@ export default class MultiFieldFilter extends React.Component {
         options={{
           useStickyHeader: true,
           tableBodyMaxHeight: '80vh',
-          deriveRowClassName: row => cx(
-            'Row',
-            row.value == null ? 'summary' : 'value',
-            row.isSelected && 'selected',
-            (row.value == null
-              ? row.summary.internalsFilteredCount
-              : get(row.summary.valueCounts.find(count => count.value === row.value), 'filteredCount', 0)
-            ) > 0 ? 'enabled' : 'disabled'
-          )
+          deriveRowClassName: this.deriveRowClassName
         }}
         uiState={{
           sort: this.props.activeFieldState.sort
         }}
         eventHandlers={{
-          onSort: (column, direction) =>
-            this.props.onMemberSort(this.props.activeField, { columnKey: column.key, direction })
+          onSort: this.handleTableSort
         }}
         rows={rows.toArray()}
         filteredRows={filteredRows.toArray()}
@@ -121,102 +218,35 @@ export default class MultiFieldFilter extends React.Component {
             sortable: true,
             width: '22em',
             wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: [
-              () => this.props.activeField.display,
-              () =>
-                <div
-                  style={{
-                    width: '15em',
-                    fontSize: '.8em',
-                    fontWeight: 'normal',
-                  }}
-                  onMouseUp={event => {
-                    event.stopPropagation();
-                  }}
-                >
-                  <RealTimeSearchBox
-                    searchTerm={this.props.activeFieldState.searchTerm}
-                    placeholderText="Find items"
-                    onSearchTermChange={searchTerm => this.props.onMemberSearch(this.props.activeField, searchTerm)}
-                  />
-                </div>
-            ],
-            renderCell: ({ row }) =>
-              <div className={cx('ValueContainer')}>
-                <div>
-                  {row.value == null && this.props.fields.get(row.summary.term).display}
-                </div>
-                <div>
-                  {this.renderRowValue(row)}
-                </div>
-              </div>
+            renderHeading: [ this.renderDisplayHeadingName, this.renderDisplayHeadingSearch ],
+            renderCell: this.renderDisplayCell
           },
           {
-            key: 'internalsFilteredCount',
+            key: 'filteredCount',
             className: cx('CountCell'),
             sortable: true,
             width: '11em',
             name: <div>Remaining {this.props.displayName}</div>,
-            renderCell: ({ row }) => {
-              const filteredCount = row.value == null
-                ? row.summary.internalsFilteredCount
-                : getFilteredCount(row.summary, row.value);
-              return (
-                <React.Fragment>
-                  <div>
-                    {filteredCount.toLocaleString()}
-                  </div>
-                  <div>
-                    <small>({Math.round(filteredCount/(row.summary.internalsCount || this.props.dataCount) * 100)}%)</small>
-                  </div>
-                </React.Fragment>
-              );
-            }
+            renderCell: this.renderCountCell
           },
           {
-            key: 'internalsCount',
+            key: 'count',
             className: cx('CountCell'),
             sortable: true,
             width: '11em',
             name: <div>All {this.props.displayName}</div>,
-            renderCell: ({ row }) => {
-              const count = row.value == null
-                ? row.summary.internalsCount
-                : getCount(row.summary, row.value);
-              return (
-                <React.Fragment>
-                  <div>
-                    {count.toLocaleString()}
-                  </div>
-                  <div>
-                    <small>({toPercentage(count, row.summary.internalsCount || this.props.dataCount)}%)</small>
-                  </div>
-                </React.Fragment>
-              )
-            }
+            renderCell: this.renderCountCell
           },
           {
             key: 'distribution',
             name: 'Distribution',
-            renderCell: ({ row }) => row.value != null && (
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <StackedBar
-                  count={getCount(row.summary, row.value)}
-                  filteredCount={getFilteredCount(row.summary, row.value)}
-                  populationSize={row.summary.internalsCount || this.props.dataCount}
-                />
-              </div>
-            )
+            renderCell: this.renderDistributionCell
           },
           {
             key: '%',
             width: '4em',
             name: '%',
-            renderCell: ({ row }) => row.value != null && (
-              <small>
-                ({toPercentage(getFilteredCount(row.summary, row.value), getCount(row.summary, row.value))}%)
-              </small>
-            )
+            renderCell: this.renderPercentCell
           }
         ]}
       />

@@ -17,7 +17,14 @@ export default function ServerSideAttributeFilter (props) {
 
       {/* Main selection UI */}
       <div className="filters ui-helper-clearfix">
-        {hideFieldPanel || <FieldList {...props} /> }
+        { hideFieldPanel || (
+          <FieldList
+            autoFocus={props.autoFocus}
+            fields={props.fields}
+            onActiveFieldChange={props.onActiveFieldChange}
+            activeField={props.activeField}
+          />
+        )}
         <FieldFilter {...props } />
       </div>
     </div>
