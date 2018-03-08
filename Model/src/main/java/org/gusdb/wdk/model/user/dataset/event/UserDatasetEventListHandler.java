@@ -47,8 +47,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
     try (FileInputStream fileInputStream = new FileInputStream(eventFile)) {
       eventJsonArray = new JSONArray(fileInputStream.toString());
     }
-    handler.handleEventList(UserDatasetEventArrayHandler.parseEventsArray(eventJsonArray),
-    handler.getModelConfig().getUserDatasetStoreConfig().getTypeHandlers());
+    handler.handleEventList(UserDatasetEventArrayHandler.parseEventsArray(eventJsonArray));
   }
 
   @Override

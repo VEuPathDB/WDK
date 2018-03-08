@@ -64,14 +64,11 @@ public class UserDatasetEventArrayHandler {
    * to date are processed.  The nature of the processing is defined by the user dataset
    * event object (install, uninstall, share).
    * @param eventList - list of user dataset event to be processed.
-   * @param typeHandlers - handlers to define how the event is to be translated into
    * database records in tables.
    * @param tmpDir
    * @throws WdkModelException
    */
-  public void handleEventList(List<UserDatasetEvent> eventList,
-      Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers)
-          throws WdkModelException {
+  public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
 
 	Path tmpDir = Paths.get(getWdkTempDirName());
     try (DatabaseInstance appDb = new DatabaseInstance(getModelConfig().getAppDB(), WdkModel.DB_INSTANCE_APP, true)) {
@@ -90,25 +87,25 @@ public class UserDatasetEventArrayHandler {
         		|| !event.getProjectsFilter().contains(getProjectId())) continue;
         
         if (event instanceof UserDatasetInstallEvent) {
-          UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-          if (typeHandler == null) {
-            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-            	  "Skipping the install.");
-            continue;
-          }    
+          UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
+//          if (typeHandler == null) {
+//            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
+//              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+//            	  "Skipping the install.");
+//            continue;
+//          }    
           UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }
 
         else if (event instanceof UserDatasetUninstallEvent) {
-          UserDatasetTypeHandler typeHandler = typeHandlers.get(event.getUserDatasetType());
-          if (typeHandler == null) {
-            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-              "Skipping the install.");
-            continue;
-          }  
+          UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
+//          if (typeHandler == null) {
+//            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
+//              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+//              "Skipping the install.");
+//            continue;
+//          }  
           UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }
