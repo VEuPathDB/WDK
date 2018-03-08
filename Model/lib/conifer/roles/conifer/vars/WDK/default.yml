@@ -6,7 +6,6 @@ _topleveldomain: =c= e.g. org or com or net ...
 modelconfig_modelName: =c= e.g. TemplateDB
 
 modelconfig_webServiceUrl: local
-modelconfig_webAppUrl: =c= e.g. {% raw %}'https://{{ hostname }}/{{ webapp_ctx }}'{% endraw %} (no trailing slash)
 modelconfig_smtpServer: 127.0.0.1
 modelconfig_supportEmail: =c= e.g. {% raw %}'help@{{ project|lower }}.{{ _topleveldomain }}'{% endraw %}
 modelconfig_wdkTempDir: /var/tmp/wdk

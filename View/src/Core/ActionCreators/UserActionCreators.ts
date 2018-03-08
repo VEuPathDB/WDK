@@ -345,29 +345,15 @@ export function showLoginWarning(attemptedAction: string, destination?: string):
  */
 export function showLoginForm(destination = window.location.href): ActionThunk<never> {
   return function(dispatch, {wdkService}) {
-    wdkService.getConfig().then(config => {
-      AuthUtil.login(trimConfig(config), destination);
-    });
+    AuthUtil.login(wdkService, destination);
   };
 };
 
 function logout(): ActionThunk<never> {
   return function run(dispatch, { wdkService }) {
-    wdkService.getConfig().then(config => {
-      AuthUtil.logout(trimConfig(config));
-    });
+    AuthUtil.logout(wdkService);
   };
 };
-
-function trimConfig(config: ServiceConfig): AuthUtil.Config {
-  return {
-    webappUrl: config.webAppUrl,
-    serviceUrl: config.wdkServiceUrl,
-    method: config.authentication.method,
-    oauthUrl: config.authentication.oauthUrl,
-    oauthClientId: config.authentication.oauthClientId
-  };
-}
 
 export function showLogoutWarning(): ActionThunk<never> {
   return function(dispatch) {

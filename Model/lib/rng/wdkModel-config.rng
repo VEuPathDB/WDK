@@ -7,7 +7,9 @@
             <attribute name="webServiceUrl" />
             <attribute name="smtpServer" />
             <attribute name="supportEmail" />
-            <attribute name="webAppUrl" />
+            <optional>
+              <attribute name="webAppUrl" />
+            </optional>
             <optional>
                 <attribute name="assetsUrl" />
             </optional>

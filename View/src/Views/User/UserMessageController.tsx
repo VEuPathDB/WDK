@@ -14,6 +14,10 @@ const ActionCreators = { conditionallyTransition };
 
 class UserMessageController extends WdkPageController<typeof ActionCreators> {
 
+  getContactUrl() {
+    return 'mailto:help@eupathdb.org';
+  }
+
   getMessagePageContent() : PageContent {
     switch (this.props.match.params.messageKey) {
       case 'password-reset-successful':
@@ -25,7 +29,6 @@ class UserMessageController extends WdkPageController<typeof ActionCreators> {
           )
         };
       case 'login-error':
-        let contactUrl = this.state.globalData.config!.webAppUrl + "/contact.do";
         let prevPageUrl = this.getQueryParams().requestUrl;
         return {
           tabTitle: "Login Problem",
@@ -34,7 +37,7 @@ class UserMessageController extends WdkPageController<typeof ActionCreators> {
             <div>
               <p>
                 An error has occurred and you could not be logged into this site.
-                If this problem persists, please <a href={contactUrl}>contact us</a>.
+                If this problem persists, please <a href={this.getContactUrl()}>contact us</a>.
               </p>
               {prevPageUrl == null ? '' :
                 <p>To return to your previous page, <a href={prevPageUrl}>click here</a>.</p> }

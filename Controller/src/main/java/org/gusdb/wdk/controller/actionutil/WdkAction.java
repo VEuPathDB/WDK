@@ -314,8 +314,8 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   protected String getWebAppRoot() {
     int port = _request.getServerPort();
-    return "http://" + _request.getServerName() +
-        (port == 80 ? "" : ":" + port) + _request.getContextPath();
+    return _request.getScheme() + "://" + _request.getServerName() +
+        (port == 80 || port == 443 ? "" : ":" + port) + _request.getContextPath();
   }
   
   /**

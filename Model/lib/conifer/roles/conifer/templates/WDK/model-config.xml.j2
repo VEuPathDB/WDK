@@ -12,7 +12,6 @@ site_vars file: {{ site_vars }}
 
 <modelConfig modelName="{{ modelconfig_modelName }}"
              webServiceUrl="{{ modelconfig_webServiceUrl }}"
-             webAppUrl="{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}"
              smtpServer="{{ modelconfig_smtpServer }}"
              supportEmail="{{ modelconfig_supportEmail }}"
              {% if modelconfig_adminEmail is defined -%}

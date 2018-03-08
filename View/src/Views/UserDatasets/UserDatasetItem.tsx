@@ -14,7 +14,7 @@ type Props = {
   isOwner: boolean;
   updateUserDatasetItem: (userDataset: UserDataset, details: UserDatasetMeta) => void;
   questionMap: { [key: string]: Question };
-  webAppUrl: string;
+  getQuestionUrl: (question: Question) => string;
   userDatasetUpdating: boolean;
   updateError?: Error;
 };
@@ -85,7 +85,7 @@ class UserDatasetItem extends Component<Props, State> {
   }
 
   render() {
-    let { userDataset, isOwner, questionMap, webAppUrl, userDatasetUpdating, updateError } = this.props;
+    let { userDataset, isOwner, questionMap, getQuestionUrl , userDatasetUpdating, updateError } = this.props;
     let { edit } = this.state;
 
     let releventQuestions = userDataset.questions
@@ -229,8 +229,7 @@ class UserDatasetItem extends Component<Props, State> {
             <ul>
               {releventQuestions.map(question =>
                 <li key={question.name}>
-                  {/* FIXME Replace webAppUel with something route link */}
-                  <a href={url.resolve(normalizeBaseUrl(webAppUrl), `showQuestion.do?questionFullName=${question.name}`)}>
+                  <a href={getQuestionUrl(question)}>
                     {question.displayName}
                   </a>
                 </li>

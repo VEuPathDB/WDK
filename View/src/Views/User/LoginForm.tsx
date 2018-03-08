@@ -1,5 +1,6 @@
 import React, { Component, FormEvent } from 'react';
 import { wrappable, getChangeHandler } from 'Utils/ComponentUtils';
+import Link from 'Components/Link/Link';
 import Dialog from 'Components/Overlays/Dialog';
 import TextBox from 'Components/InputControls/TextBox';
 
@@ -8,8 +9,8 @@ type Props = {
   onSubmit: (email: string, password: string) => void;
   open: boolean;
   message?: string;
-  passwordResetUrl: string;
-  registerUrl: string;
+  passwordResetPath: string;
+  registerPath: string;
 };
 
 type State = {
@@ -40,7 +41,7 @@ class LoginForm extends Component<Props,State> {
   }
 
   render() {
-    let { open, message, onCancel, passwordResetUrl, registerUrl } = this.props;
+    let { open, message, onCancel, passwordResetPath, registerPath } = this.props;
     let onChange = (name: string) => getChangeHandler(name, this.updateState, this.state);
     return open === false ? <noscript/> : (
       <Dialog title="Login" open={true} modal={true} onClose={onCancel}>
@@ -83,8 +84,8 @@ class LoginForm extends Component<Props,State> {
               <tr>
                 <td style={{ textAlign: 'center', verticalAlign: 'top' }} colSpan={2}>
                   <span className="small">
-                    <a href={passwordResetUrl} style={{paddingRight:15 }}>Forgot Password?</a>
-                    <a href={registerUrl}>Register/Subscribe</a>
+                    <Link to={passwordResetPath} style={{paddingRight:15 }}>Forgot Password?</Link>
+                    <Link to={registerPath}>Register/Subscribe</Link>
                   </span>
                 </td>
               </tr>

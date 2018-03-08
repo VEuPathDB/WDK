@@ -41,7 +41,6 @@ public class OAuthClient {
   private final boolean _googleSpecific;
   private final String _clientId;
   private final String _clientSecret;
-  private final String _redirectUri;
   private final UserFactory _userFactory;
   private final TrustManager _trustManager;
 
@@ -50,7 +49,6 @@ public class OAuthClient {
     _googleSpecific = _oauthServerBase.contains("google");
     _clientId = config.getOauthClientId();
     _clientSecret = config.getOauthClientSecret();
-    _redirectUri = config.getWebAppUrl();
     _userFactory = userFactory;
     _trustManager = getTrustManager(config);
   }
@@ -61,7 +59,7 @@ public class OAuthClient {
       new WdkTrustManager(Paths.get(keyStoreFile), config.getKeyStorePassPhrase()));
   }
 
-  public long getUserIdFromAuthCode(String authCode) throws WdkModelException {
+  public long getUserIdFromAuthCode(String authCode, String redirectUri) throws WdkModelException {
 
     try {
       String oauthUrl = _oauthServerBase + "/token";
@@ -70,7 +68,7 @@ public class OAuthClient {
       MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
       formData.add("grant_type", "authorization_code");
       formData.add("code", authCode);
-      formData.add("redirect_uri", _redirectUri);
+      formData.add("redirect_uri", redirectUri);
       formData.add("client_id", _clientId);
       formData.add("client_secret", _clientSecret);
 

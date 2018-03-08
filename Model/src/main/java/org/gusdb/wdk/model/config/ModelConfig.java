@@ -49,11 +49,6 @@ public class ModelConfig implements OAuthConfig {
   private String _assetsUrl;
 
   /**
-   * the absolute url to this site's webapp
-   */
-  private String _webAppUrl;
-
-  /**
    * the recipient of the super slow query log.
    */
   private List<String> _adminEmails = Collections.EMPTY_LIST;
@@ -271,40 +266,17 @@ public class ModelConfig implements OAuthConfig {
   }
 
   public String getAssetsUrl() {
-    return (_assetsUrl != null ? _assetsUrl : _webAppUrl);
+    return _assetsUrl;
   }
 
   public void setAssetsUrl(String assetsUrl) {
     _assetsUrl = assetsUrl;
   }
 
-  @Override
-  public String getWebAppUrl() {
-    return _webAppUrl;
-  }
-
-  public String getApplicationBaseUrl() {
-    return getWebAppUrlParts().getFirst();
-  }
-
-  public String getWebAppName() {
-    return getWebAppUrlParts().getSecond();
-  }
-
-  private TwoTuple<String,String> getWebAppUrlParts() {
-    // trim trailing slash
-    String trimmedUrl = _webAppUrl;
-    if (trimmedUrl.endsWith("/")) {
-      trimmedUrl = trimmedUrl.substring(0, trimmedUrl.length() - 1);
-    }
-    int splitIndex = trimmedUrl.lastIndexOf("/");
-    return new TwoTuple<>(trimmedUrl.substring(0, splitIndex), trimmedUrl.substring(splitIndex + 1));
-  }
-
   public void setWebAppUrl(String webAppUrl) {
-    _webAppUrl = webAppUrl;
+    LOG.warn("WDK Model Config item `webAppUrl` is no longer used." +
+        " If you rely on it in your custom code, consider using a WDK Model Property instead.");
   }
-
   /**
    * @return the userDB
    */

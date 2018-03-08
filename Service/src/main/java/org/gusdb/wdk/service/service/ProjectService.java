@@ -16,7 +16,8 @@ public class ProjectService extends WdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getServiceApi() {
-    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel(), getServiceEndpoint()).toString()).build();
+    String serviceEndpoint = getUriInfo().getBaseUri().toString().replaceAll("\\/$", "");
+    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint).toString()).build();
   }
 
   @GET
