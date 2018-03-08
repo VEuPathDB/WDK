@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
   public final static String NAME = "unsupported";
   public final static String VERSION = "1.0";
+  public final static String DISPLAY = "Unsupported User Dataset Type";
 
   @Override
   public UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource)
@@ -22,6 +23,11 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
   @Override
   public UserDatasetType getUserDatasetType() {
     return UserDatasetTypeFactory.getUserDatasetType(NAME, VERSION);
+  }
+  
+  @Override
+  public String getDisplay() {
+	return DISPLAY;
   }
 
   @Override

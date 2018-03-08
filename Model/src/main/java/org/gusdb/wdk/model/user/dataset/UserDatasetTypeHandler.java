@@ -53,6 +53,8 @@ public abstract class UserDatasetTypeHandler {
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
   public abstract String[] getRelevantQuestionNames();
+  
+  public abstract String getDisplay();
 
   /**
    * Returns detailed type-specific data for a single user dataset for use in a detailed display page
