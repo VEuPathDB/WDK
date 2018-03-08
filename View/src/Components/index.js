@@ -37,6 +37,8 @@ import IndeterminateCheckbox from 'Components/InputControls/IndeterminateCheckbo
 import CategoriesCheckboxTree from 'Components/CheckboxTree/CategoriesCheckboxTree';
 import ServerSideAttributeFilter from 'Components/AttributeFilter/ServerSideAttributeFilter';
 
+import FilterParamNew from 'Params/FilterParamNew/FilterParamNew';
+
 import RecordUI from 'Views/Records/RecordUI';
 import RecordLink from 'Views/Records/RecordLink';
 import RecordHeading from 'Views/Records/RecordHeading';
@@ -88,6 +90,7 @@ export {
   IndeterminateCheckbox,
   CategoriesCheckboxTree,
   ServerSideAttributeFilter,
+  FilterParamNew,
   RecordUI,
   RecordLink,
   RecordTable,
