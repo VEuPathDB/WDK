@@ -92,6 +92,10 @@ public class UserDatasetInfo {
   public int getOwnerQuota() {
     return _ownerQuota;
   }
+  
+  public String getTypeDisplay() {
+	return _handler.getDisplay();
+  }
 
   public List<String> getRelevantQuestionNames() {
     return _relevantQuestionNames;
