@@ -38,7 +38,11 @@ public class UserDatasetFormatter {
    * Return a JSONObject describing this dataset.  Should not include the contents of data file
    * 
    * { id: 12345
-   *   type: {name: "RNA Seq", version: "1.0"},   # our API version
+   *   type:
+   *    {name: "RNA Seq",
+   *     version: "1.0",    # our API version
+   *     data: [ type specific data ]
+   *   },   
    *   dependencies: 
    *      [{resourceIdentifier: "pf3d7_genome_rsrc", 
    *        resourceVersion: "12/2/2015",
@@ -70,6 +74,7 @@ public class UserDatasetFormatter {
     UserDatasetType type = dataset.getType();
     typeJson.put("name", type.getName());
     typeJson.put("version", type.getVersion());
+    typeJson.put("display", datasetInfo.getTypeDisplay());
     JsonType trackSpecificData = detailedData ?
             datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
     typeJson.put("data", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
