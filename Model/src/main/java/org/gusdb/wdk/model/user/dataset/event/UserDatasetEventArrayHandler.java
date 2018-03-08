@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UnsupportedTypeHandler;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
@@ -88,24 +89,24 @@ public class UserDatasetEventArrayHandler {
         
         if (event instanceof UserDatasetInstallEvent) {
           UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
-//          if (typeHandler == null) {
-//            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
-//              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-//            	  "Skipping the install.");
-//            continue;
-//          }    
+          if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
+            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+            	  "Skipping the install.");
+            continue;
+          }    
           UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }
 
         else if (event instanceof UserDatasetUninstallEvent) {
           UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
-//          if (typeHandler == null) {
-//            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
-//              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-//              "Skipping the install.");
-//            continue;
-//          }  
+          if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
+            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
+              event.getUserDatasetType() + " which is not present in the wdk configuration." +
+              "Skipping the uninstall.");
+            continue;
+          }  
           UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
         }

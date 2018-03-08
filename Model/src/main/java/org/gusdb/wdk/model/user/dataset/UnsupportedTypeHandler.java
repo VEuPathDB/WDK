@@ -10,6 +10,8 @@ import javax.sql.DataSource;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
+  public final static String NAME = "unsupported";
+  public final static String VERSION = "1.0";
 
   @Override
   public UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource)
@@ -19,7 +21,7 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
 
   @Override
   public UserDatasetType getUserDatasetType() {
-    return UserDatasetTypeFactory.getUserDatasetType("unsupported", "1.0");
+    return UserDatasetTypeFactory.getUserDatasetType(NAME, VERSION);
   }
 
   @Override
