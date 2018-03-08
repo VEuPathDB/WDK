@@ -73,10 +73,10 @@ export interface ClientError {
 }
 
 export interface ServiceConfig {
-  assetsUrl: string;
   authentication: {
-    oauthUrl: string;
     method: 'OAUTH2' | 'USERDB';
+    oauthUrl: string;
+    oauthClientUrl: string;
     oauthClientId: string;
   };
   buildNumber: string;
@@ -86,9 +86,6 @@ export interface ServiceConfig {
   projectId: string;
   releaseDate: string;
   startupTime: number;
-  webAppUrl: string;
-  wdkServiceUrl: string;
-  //webServiceUrl: string; // no longer sent from server; represents WSF service
 }
 
 export type TryLoginResponse = {
@@ -191,14 +188,6 @@ export default class WdkService {
    */
   getConfig() {
     return this._getFromCache('config', () => this._fetchJson<ServiceConfig>('get', '/'))
-  }
-
-  getLoginServiceEndpoint() {
-    return this.serviceUrl + '/login';
-  }
-
-  getLogoutServiceEndpoint() {
-    return this.serviceUrl + '/logout';
   }
 
   getAnswerServiceEndpoint() {

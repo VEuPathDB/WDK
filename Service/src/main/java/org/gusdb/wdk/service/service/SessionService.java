@@ -83,7 +83,7 @@ public class SessionService extends WdkService {
       return Response.status(new MethodNotAllowedStatusType()).build();
     }
 
-    String appUrl = modelConfig.getWebAppUrl();
+    String appUrl = getContextUri();
     String redirectUrl = isEmpty(originalUrl) ? appUrl : originalUrl;
 
     // Is the user already logged in?
@@ -113,7 +113,7 @@ public class SessionService extends WdkService {
       OAuthClient client = new OAuthClient(modelConfig, userFactory);
 
       // Is there a matching user id for the auth code provided?
-      long userId = client.getUserIdFromAuthCode(authCode);
+      long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
       user = userFactory.login(user, userId);
       if (user == null) {
         throw new WdkModelException("Unable to find user with ID " + userId +
@@ -146,7 +146,7 @@ public class SessionService extends WdkService {
       //}
 
       LoginRequest request = LoginRequest.createFromJson(new JSONObject(body));
-      String appUrl = modelConfig.getWebAppUrl();
+      String appUrl = getContextUri();
       String originalUrl = request.getRedirectUrl();
       String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl;
 
@@ -224,7 +224,7 @@ public class SessionService extends WdkService {
       extraCookie.setMaxAge(-1);
       logoutCookies.add(extraCookie);
     }
-    ResponseBuilder builder = createRedirectResponse(getWdkModel().getModelConfig().getWebAppUrl());
+    ResponseBuilder builder = createRedirectResponse(getContextUri());
     for (Cookie logoutCookie : logoutCookies) {
       builder.cookie(CookieConverter.toJaxRsCookie(logoutCookie));
     }

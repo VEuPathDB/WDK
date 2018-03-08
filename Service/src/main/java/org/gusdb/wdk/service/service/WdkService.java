@@ -81,6 +81,16 @@ public abstract class WdkService {
     return _uriInfo;
   }
 
+  protected String getContextUri() {
+    int port = _request.getServerPort();
+    String portPart = port == 80 || port == 443 ? "" : ":" + port;
+    return (
+      _request.getScheme() + "://" +
+      _request.getServerName() + portPart +
+      _request.getContextPath()
+    );
+  }
+
   protected String getServiceEndpoint() {
     return _serviceEndpoint;
   }
@@ -139,7 +149,7 @@ public abstract class WdkService {
   protected void setServletContext(ServletContext context) {
     _servletContext = context;
     _wdkModelBean = (WdkModelBean)context.getAttribute(Utilities.WDK_MODEL_KEY);
-    _serviceEndpoint = context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
+    _serviceEndpoint = context.getContextPath() + context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
   /**

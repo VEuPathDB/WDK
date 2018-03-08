@@ -160,11 +160,12 @@ public class ProcessLoginAction extends WdkAction {
     // params used to fetch token and validate user
     String authCode = params.getValue("code");
     String redirectUrl = params.getValueOrDefault("redirectUrl",
-        modelConfig.getWebAppUrl() + "/home.do");
+        getWebAppRoot() + "/home.do");
 
     try {
+      // FIXME Pass full URI, including scheme
       OAuthClient client = new OAuthClient(modelConfig, factory.getUserFactory());
-      long userId = client.getUserIdFromAuthCode(authCode);
+      long userId = client.getUserIdFromAuthCode(authCode, getRequestData().getServerName());
 
       UserBean user = factory.login(guest, userId);
       if (user == null) throw new WdkModelException("Unable to find user with ID " +

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { keyBy, pick } from 'lodash';
 import { ViewControllerProps } from 'Core/CommonTypes';
 import { wrappable } from 'Utils/ComponentUtils';
+import { Question } from 'Utils/WdkModel';
 import AbstractPageController, { PageControllerProps } from 'Core/Controllers/AbstractPageController';
 import { loadUserDatasetItem, updateUserDatasetItem } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import UserDatasetItem from 'Views/UserDatasets/UserDatasetItem';
@@ -22,6 +23,10 @@ type EventHandlers = typeof ActionCreators;
  * complete in a different order than they were invoked.
  */
 class UserDatasetItemController extends AbstractPageController<State, UserDatasetItemStore, EventHandlers> {
+
+  getQuestionUrl = (question: Question): string => {
+    return `#${question.name}`;
+  }
 
   getStoreClass(): typeof UserDatasetItemStore {
     return UserDatasetItemStore;
@@ -93,13 +98,13 @@ class UserDatasetItemController extends AbstractPageController<State, UserDatase
     )
     return (
       <UserDatasetItem
+        getQuestionUrl={this.getQuestionUrl}
         userDataset={entry.resource!}
         updateUserDatasetItem={this.eventHandlers.updateUserDatasetItem}
         userDatasetUpdating={this.state.userDatasetUpdating}
         updateError={this.state.updateError}
         isOwner={isOwner}
         questionMap={keyBy(this.state.questions, 'name')}
-        webAppUrl={this.state.config!.webAppUrl}
       />
     );
   }

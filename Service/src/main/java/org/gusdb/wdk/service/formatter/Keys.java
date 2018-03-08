@@ -154,6 +154,7 @@ public class Keys {
   public static final String AUTHENTICATION = "authentication";
   public static final String AUTHENTICATION_METHOD = "method";
   public static final String OAUTH_URL = "oauthUrl";
+  public static final String OAUTH_CLIENT_URL = "oauthClientUrl";
   public static final String OAUTH_CLIENT_ID = "oauthClientId";
   public static final String OAUTH_STATE_TOKEN = "oauthStateToken";
   public static final String REDIRECT_URL = "redirectUrl";
