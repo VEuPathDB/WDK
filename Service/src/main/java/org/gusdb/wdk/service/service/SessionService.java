@@ -137,7 +137,6 @@ public class SessionService extends WdkService {
       throws RequestMisformatException {
     try {
       WdkModel wdkModel = getWdkModel();
-      ModelConfig modelConfig = wdkModel.getModelConfig();
 
       // RRD 11/17: Allow sites configured to use OAuth (e.g. live sites) to log in users with this endpoint;
       //     Reason: logging in this way will be easier for programmatic service access that requires login
