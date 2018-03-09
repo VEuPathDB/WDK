@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Tuples.TwoTuple;
 
 /**
  * An object representation of the {@code model-config.xml} file. It holds all the configuration information
@@ -273,10 +272,14 @@ public class ModelConfig implements OAuthConfig {
     _assetsUrl = assetsUrl;
   }
 
+  /**
+   * @param webAppUrl web app URL (no longer supported) 
+   */
   public void setWebAppUrl(String webAppUrl) {
     LOG.warn("WDK Model Config item `webAppUrl` is no longer used." +
         " If you rely on it in your custom code, consider using a WDK Model Property instead.");
   }
+
   /**
    * @return the userDB
    */
