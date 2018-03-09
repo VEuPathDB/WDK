@@ -132,8 +132,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
-      WdkUserException {
+      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException {
     Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted, validate,
         assignedWeight);
     return new StepBean(this, step);

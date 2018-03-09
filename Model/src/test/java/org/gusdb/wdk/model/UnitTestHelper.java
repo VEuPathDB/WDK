@@ -107,7 +107,7 @@ public class UnitTestHelper {
         return datasetQuestions.get(random.nextInt(datasetQuestions.size()));
     }
 
-    public static Step createNormalStep(User user) throws WdkModelException, WdkUserException {
+    public static Step createNormalStep(User user) throws WdkModelException {
         Question question = getNormalQuestion();
         List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));

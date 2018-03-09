@@ -1048,20 +1048,13 @@ public class Step {
     // create new steps
     Question question = getQuestion();
     Map<String, String> params = getParamValues();
-    try {
-      int startIndex = getAnswerValue().getStartIndex();
-      int endIndex = getAnswerValue().getEndIndex();
-      Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, startIndex, endIndex, _isDeleted, false,
-          assignedWeight, getFilterOptions());
-      step._collapsedName = _collapsedName;
-      step._customName = _customName;
-      step._collapsible = _collapsible;
-      step.update(false);
-      return step;
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
+    Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, _isDeleted, false,
+        assignedWeight, getFilterOptions());
+    step._collapsedName = _collapsedName;
+    step._customName = _customName;
+    step._collapsible = _collapsible;
+    step.update(false);
+    return step;
   }
 
   /**
@@ -1073,36 +1066,30 @@ public class Step {
    */
   public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
     Step step;
-    try {
-      if (!isCombined()) {
-        AnswerValue answerValue = _answerValueCache.getAnswerValue(false);
-        step = StepUtilities.createStep(getUser(), strategyId, answerValue, _isDeleted, _assignedWeight);
-      }
-      else {
-        Question question = getQuestion();
-        Map<String, String> paramValues = new LinkedHashMap<String, String>();
-        Map<String, Param> params = question.getParamMap();
-        for (String paramName : _paramValues.keySet()) {
-          Param param = params.get(paramName);
-          String paramValue = _paramValues.get(paramName);
-          if (param instanceof AnswerParam) {
-            Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
-            child = child.deepClone(strategyId, stepIdMap);
-            paramValue = Long.toString(child.getStepId());
-          }
-          paramValues.put(paramName, paramValue);
-        }
-        AnswerFilterInstance filter = getFilter();
-        step = StepUtilities.createStep(getUser(), strategyId, question, paramValues, filter, _isDeleted, false,
-            _assignedWeight, getFilterOptions());
-      }
+    if (!isCombined()) {
+      step = StepUtilities.createStep(_user, strategyId, getQuestion(), _paramValues,
+          getFilter(), _isDeleted, false, _assignedWeight, _filterOptions);
     }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
+    else {
+      Question question = getQuestion();
+      Map<String, String> paramValues = new LinkedHashMap<String, String>();
+      Map<String, Param> params = question.getParamMap();
+      for (String paramName : _paramValues.keySet()) {
+        Param param = params.get(paramName);
+        String paramValue = _paramValues.get(paramName);
+        if (param instanceof AnswerParam) {
+          Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
+          child = child.deepClone(strategyId, stepIdMap);
+          paramValue = Long.toString(child.getStepId());
+        }
+        paramValues.put(paramName, paramValue);
+      }
+      step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
+          getFilter(), _isDeleted, false, _assignedWeight, getFilterOptions());
     }
 
     stepIdMap.put(getStepId(), step.getStepId());
-    
+
     step._collapsedName = _collapsedName;
     step._customName = _customName;
     step._collapsible = _collapsible;
