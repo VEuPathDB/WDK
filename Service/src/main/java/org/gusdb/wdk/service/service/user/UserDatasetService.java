@@ -127,7 +127,7 @@ public class UserDatasetService extends UserService {
   }
   
   /**
-   * 
+   * Service to stream out a binary datafile from IRODS 
    * @param datasetIdStr
    * @param datafileName
    * @return
@@ -138,7 +138,7 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
-	long userId = getUser(Access.PUBLIC).getUserId();
+	long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     java.nio.file.Path temporaryDirPath = null;
