@@ -7,7 +7,6 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -77,7 +76,7 @@ public class Bug4446Test {
         BooleanOperator.UNION, null);
   }
 
-  private Step createTransformStep(Step inputStep) throws WdkModelException, WdkUserException {
+  private Step createTransformStep(Step inputStep) throws WdkModelException {
     // look for a transform question
     RecordClass recordClass = inputStep.getQuestion().getRecordClass();
     Question[] questions = recordClass.getTransformQuestions(true);

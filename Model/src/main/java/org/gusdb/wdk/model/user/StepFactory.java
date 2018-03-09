@@ -382,24 +382,14 @@ public class StepFactory {
 
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   public Step createStep(User user, Long strategyId, Question question, Map<String, String> dependentValues,
-      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
+      AnswerFilterInstance filter, boolean deleted, boolean validate,
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException {
     LOG.debug("Creating step!");
 
     // get summary list and sorting list
     String questionName = question.getFullName();
     Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
         questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-
-    // create answer
-    AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
-        sortingAttributes, filter, validate, assignedWeight);
-    answerValue.setFilterOptions(filterOptions);
-
-    QueryInstance<?> queryInstance = answerValue.getIdsQueryInstance();
-    LOG.debug("id query name  :" + (queryInstance == null ? "<no_query_specified>" : queryInstance.getQuery().getFullName()));
-    LOG.debug("answer checksum:" + answerValue.getChecksum());
-    LOG.debug("question name:  " + question.getFullName());
 
     // prepare the values to be inserted.
     long userId = user.getUserId();
@@ -408,7 +398,16 @@ public class StepFactory {
     int estimateSize;
     Exception exception = null;
     try {
-        estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
+      // create answer
+      AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, 0, -1,
+          sortingAttributes, filter, validate, assignedWeight);
+      answerValue.setFilterOptions(filterOptions);
+
+      QueryInstance<?> queryInstance = answerValue.getIdsQueryInstance();
+      LOG.debug("id query name  :" + (queryInstance == null ? "<no_query_specified>" : queryInstance.getQuery().getFullName()));
+      LOG.debug("answer checksum:" + answerValue.getChecksum());
+      LOG.debug("question name:  " + question.getFullName());
+      estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
     }
     catch (Exception ex) {
       estimateSize = 0;
@@ -1281,18 +1280,10 @@ public class StepFactory {
       paramValues.put(paramName, paramValue);
     }
 
-    int startIndex = 1;
-    int endIndex = oldStep.getUser().getPreferences().getItemsPerPage();
     boolean deleted = oldStep.isDeleted();
     int assignedWeight = oldStep.getAssignedWeight();
-    Step newStep;
-    try {
-      newStep = StepUtilities.createStep(newUser, newStrategyId, question, paramValues, filter,
-          startIndex, endIndex, deleted, false, assignedWeight, oldStep.getFilterOptions());
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
+    Step newStep = StepUtilities.createStep(newUser, newStrategyId, question, paramValues, filter,
+          deleted, false, assignedWeight, oldStep.getFilterOptions());
 
     Events.triggerAndWait(new StepImportedEvent(oldStep, newStep), new WdkModelException(
         "Unable to execute all operations subsequent to step copy."));

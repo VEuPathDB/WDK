@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -24,33 +23,8 @@ public class StepUtilities {
 
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
-  /**
-   * Create a step from the existing answerValue
-   * 
-   * @param answerValue
-   * @return
-   * @throws WdkModelException
-   */
-  public static Step createStep(User user, Long strategyId, AnswerValue answerValue, boolean deleted, int assignedWeight)
-      throws WdkModelException {
-    Question question = answerValue.getQuestion();
-    Map<String, String> paramValues = answerValue.getIdsQueryInstance().getParamStableValues();
-    AnswerFilterInstance filter = answerValue.getFilter();
-    int startIndex = answerValue.getStartIndex();
-    int endIndex = answerValue.getEndIndex();
-
-    try {
-      return createStep(user, strategyId, question, paramValues, filter, startIndex, endIndex, deleted, false,
-          assignedWeight, answerValue.getFilterOptions());
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
-  }
-
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
-      WdkUserException {
+      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException {
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
@@ -63,25 +37,16 @@ public class StepUtilities {
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return createStep(user, strategyId, question, paramValues, filter, deleted, validate,
         assignedWeight, null);
   }
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight,
-      FilterOptionList filterOptions)
-      throws WdkModelException, WdkUserException {
-    int endIndex = user.getPreferences().getItemsPerPage();
-    return createStep(user, strategyId, question, paramValues, filter, 1, endIndex, deleted, validate,
-        assignedWeight, filterOptions);
-  }
-
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
+      AnswerFilterInstance filter, boolean deleted, boolean validate,
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException {
     Step step = user.getWdkModel().getStepFactory().createStep(user, strategyId, question, paramValues,
-        filter, pageStart, pageEnd, deleted, validate, assignedWeight, filterOptions);
+        filter, deleted, validate, assignedWeight, filterOptions);
     return step;
   }
 
@@ -426,13 +391,7 @@ public class StepUtilities {
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
     //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
-    Step booleanStep;
-    try {
-      booleanStep = createStep(user, strategyId, question, params, filter, false, false, 0);
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
+    Step booleanStep = createStep(user, strategyId, question, params, filter, false, false, 0);
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
