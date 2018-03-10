@@ -7,7 +7,10 @@
 <c:set var="serverName" value="${pageContext.request.serverName}" />
 <c:set var="serverPort" value="${pageContext.request.serverPort}" />
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
-<c:set var="exportBaseUrl" value = "${scheme}://${serverName}${serverPort ne '80' and serverPort ne '443' ? ':' + serverPort : ''}${contextPath}/im.do?s=" />
+<c:set var="useServerPort" value="${serverPort ne 80 and serverPort ne 443}"/>
+<c:set var="serverPortStr" value=":${serverPort}"/>
+<c:set var="serverPortToAdd" value="${useServerPort ? serverPortStr : ''}"/>
+<c:set var="exportBaseUrl" value="${scheme}://${serverName}${serverPortToAdd}${contextPath}/im.do?s=" />
 
 <c:set var="wdkServiceUrl" value="${contextPath}${initParam.wdkServiceEndpoint}"/>
 
