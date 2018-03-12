@@ -1,6 +1,6 @@
 import React, { Component, FormEvent } from 'react';
 import { wrappable, getChangeHandler } from 'Utils/ComponentUtils';
-import Link from 'Components/Link/Link';
+// import Link from 'Components/Link/Link';
 import Dialog from 'Components/Overlays/Dialog';
 import TextBox from 'Components/InputControls/TextBox';
 
@@ -84,8 +84,8 @@ class LoginForm extends Component<Props,State> {
               <tr>
                 <td style={{ textAlign: 'center', verticalAlign: 'top' }} colSpan={2}>
                   <span className="small">
-                    <Link to={passwordResetPath} style={{paddingRight:15 }}>Forgot Password?</Link>
-                    <Link to={registerPath}>Register/Subscribe</Link>
+                    <a href={'/a/app' + passwordResetPath} style={{paddingRight:15 }}>Forgot Password?</a>
+                    <a href={'/a/app' + registerPath}>Register/Subscribe</a>
                   </span>
                 </td>
               </tr>
