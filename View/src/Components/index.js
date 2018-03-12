@@ -45,6 +45,7 @@ import RecordHeading from 'Views/Records/RecordHeading';
 import DownloadForm from 'Views/ReporterForm/DownloadForm';
 import RecordTable from 'Views/Records/RecordTable/RecordTable';
 import PrimaryKeySpan from 'Views/ReporterForm/PrimaryKeySpan';
+import ReporterSortMessage from 'Views/ReporterForm/ReporterSortMessage';
 import RecordMainSection from 'Views/Records/RecordMain/RecordMainSection';
 import RecordAttribute from 'Views/Records/RecordAttributes/RecordAttribute';
 import RecordTableSection from 'Views/Records/RecordTable/RecordTableSection';
@@ -97,6 +98,7 @@ export {
   DownloadForm,
   RecordHeading,
   PrimaryKeySpan,
+  ReporterSortMessage,
   RecordAttribute,
   RecordMainSection,
   RecordTableSection,
