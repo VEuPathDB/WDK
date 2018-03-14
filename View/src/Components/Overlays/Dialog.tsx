@@ -1,4 +1,4 @@
-import React, {Component, Children, ReactChild, ReactNode} from 'react';
+import React, { Component, Children, ReactChild, ReactNode } from 'react';
 import Popup from 'Components/Overlays/Popup';
 import Icon from 'Components/Icon/Icon';
 import Resizable from 'Components/Display/Resizable';

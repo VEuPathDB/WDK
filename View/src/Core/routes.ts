@@ -11,8 +11,8 @@ import UserPasswordChangeController from 'Views/User/Password/UserPasswordChange
 import UserPasswordResetController from 'Views/User/Password/UserPasswordResetController';
 import UserMessageController from 'Views/User/UserMessageController';
 import SiteMapController from 'Views/SiteMap/SiteMapController';
-import UserDatasetListController from 'Views/UserDatasets/UserDatasetListController';
-import UserDatasetItemController from 'Views/UserDatasets/UserDatasetItemController';
+import UserDatasetListController from 'Views/UserDatasets/List/UserDatasetListController';
+import UserDatasetDetailController from 'Views/UserDatasets/Detail/UserDatasetDetailController';
 import FavoritesController from 'Views/Favorites/FavoritesController';
 import QuestionController from 'Views/Question/QuestionController';
 
@@ -29,7 +29,7 @@ export default <RouteSpec[]> [
   { path: '/user/forgot-password', component: UserPasswordResetController },
   { path: '/user/message/:messageKey', component: UserMessageController },
   { path: '/workspace/datasets', component: UserDatasetListController },
-  { path: '/workspace/datasets/:id', component: UserDatasetItemController },
+  { path: '/workspace/datasets/:id', component: UserDatasetDetailController },
   { path: '/favorites', component: FavoritesController },
   { path: '/data-finder', component: SiteMapController },
   { path: '/question-list', component: QuestionListController },

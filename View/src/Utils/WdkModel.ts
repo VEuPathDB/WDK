@@ -100,6 +100,28 @@ export interface NumberParam extends ParameterBase {
   step: number;
 }
 
+export interface MesaColumn {
+  key: string;
+  name?: string;
+  type?: string;
+  sortable?: boolean;
+  filterable?: boolean;
+  helpText?: string;
+  style?: any;
+  width?: any;
+  renderCell?: any;
+  renderHeading?: any;
+  wrapCustomHeadings?: any;
+}
+
+export interface MesaDataCellProps {
+  row: UserDataset;
+  column: MesaColumn;
+  rowIndex: number;
+  columnIndex: number;
+  inline?: boolean;
+}
+
 export interface NumberRangeParam extends ParameterBase {
   type: 'NumberRangeParam';
   min: number;
@@ -294,6 +316,7 @@ export type UserDataset = {
   size: number;
   type: {
     name: string;
+    display: string;
     version: string;
   };
   updloaded: number;
