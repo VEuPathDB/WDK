@@ -17,44 +17,44 @@ export type ListErrorReceivedAction = {
     error: ServiceError
   }
 }
-export type ItemLoading = {
-  type: 'user-datasets/item-loading',
+export type DetailLoading = {
+  type: 'user-datasets/detail-loading',
   payload: {
     id: number
   }
 }
-export type ItemReceivedAction = {
-  type: 'user-datasets/item-received',
+export type DetailReceivedAction = {
+  type: 'user-datasets/detail-received',
   payload: {
     id: number,
     userDataset?: UserDataset
   }
 }
-export type ItemErrorAction = {
-  type: 'user-datasets/item-error',
+export type DetailErrorAction = {
+  type: 'user-datasets/detail-error',
   payload: {
     error: ServiceError
   }
 }
-export type ItemUpdatingAction = {
-  type: 'user-datasets/item-updating'
+export type DetailUpdatingAction = {
+  type: 'user-datasets/detail-updating'
 }
-export type ItemUpdateSuccessAction = {
-  type: 'user-datasets/item-update-success',
+export type DetailUpdateSuccessAction = {
+  type: 'user-datasets/detail-update-success',
   payload: {
     userDataset: UserDataset
   }
 }
-export type ItemUpdateErrorAction = {
-  type: 'user-datasets/item-update-error',
+export type DetailUpdateErrorAction = {
+  type: 'user-datasets/detail-update-error',
   payload: {
     error: ServiceError
   }
 }
 
 type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
-type ItemAction = ItemLoading|ItemReceivedAction|ItemErrorAction;
-type UpdateAction = ItemUpdatingAction|ItemUpdateSuccessAction|ItemUpdateErrorAction;
+type DetailAction = DetailLoading|DetailReceivedAction|DetailErrorAction;
+type UpdateAction = DetailUpdatingAction|DetailUpdateSuccessAction|DetailUpdateErrorAction;
 
 
 export function loadUserDatasetList(): ActionThunk<ListAction> {
@@ -71,30 +71,30 @@ export function loadUserDatasetList(): ActionThunk<ListAction> {
   }
 }
 
-export function loadUserDatasetItem(id: number): ActionThunk<ItemAction> {
+export function loadUserDatasetDetail(id: number): ActionThunk<DetailAction> {
   return (dispatch, { wdkService }) => {
-    dispatch({ type: 'user-datasets/item-loading', payload: { id } });
+    dispatch({ type: 'user-datasets/detail-loading', payload: { id } });
     wdkService.getUserDataset(id).then(
       userDataset => {
-        dispatch({ type: 'user-datasets/item-received', payload: { id, userDataset } })
+        dispatch({ type: 'user-datasets/detail-received', payload: { id, userDataset } })
       },
       (error: ServiceError) => {
-        dispatch(error.status === 404 ? { type: 'user-datasets/item-received', payload: { id, userDataset: undefined } }
-          : { type: 'user-datasets/item-error', payload: { error } })
+        dispatch(error.status === 404 ? { type: 'user-datasets/detail-received', payload: { id, userDataset: undefined } }
+          : { type: 'user-datasets/detail-error', payload: { error } })
       }
     )
   }
 }
 
-export function updateUserDatasetItem(userDataset: UserDataset, meta: UserDatasetMeta): ActionThunk<UpdateAction> {
+export function updateUserDatasetDetail(userDataset: UserDataset, meta: UserDatasetMeta): ActionThunk<UpdateAction> {
   return (dispatch, { wdkService }) => {
-    dispatch({ type: 'user-datasets/item-updating' });
+    dispatch({ type: 'user-datasets/detail-updating' });
     wdkService.updateUserDataset(userDataset.id, meta).then(
       () => {
-        dispatch({ type: 'user-datasets/item-update-success', payload: { userDataset: { ...userDataset, meta } } } as UpdateAction)
+        dispatch({ type: 'user-datasets/detail-update-success', payload: { userDataset: { ...userDataset, meta } } } as UpdateAction)
       },
       (error: ServiceError) => {
-        dispatch({ type: 'user-datasets/item-update-error', payload: { error } })
+        dispatch({ type: 'user-datasets/detail-update-error', payload: { error } })
       }
     )
   }

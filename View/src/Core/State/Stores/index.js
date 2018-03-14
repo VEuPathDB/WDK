@@ -11,8 +11,8 @@ import DownloadFormStore from 'Views/ReporterForm/DownloadFormStore';
 import UserRegistrationStore from 'Views/User/Profile/UserRegistrationStore';
 import UserPasswordChangeStore from 'Views/User/Password/UserPasswordChangeStore';
 import UserPasswordResetStore from 'Views/User/Password/UserPasswordResetStore';
-import UserDatasetItemStore from 'Views/UserDatasets/UserDatasetItemStore';
-import UserDatasetListStore from 'Views/UserDatasets/UserDatasetListStore';
+import UserDatasetDetailStore from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
+import UserDatasetListStore from 'Views/UserDatasets/List/UserDatasetListStore';
 
 export {
   WdkStore,
@@ -27,6 +27,6 @@ export {
   UserRegistrationStore,
   UserPasswordChangeStore,
   UserPasswordResetStore,
-  UserDatasetItemStore,
+  UserDatasetDetailStore,
   UserDatasetListStore
 };

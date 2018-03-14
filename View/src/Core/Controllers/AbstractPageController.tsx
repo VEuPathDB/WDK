@@ -14,7 +14,7 @@ export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteCompo
 /**
  * A ViewController that is intended to render a UI on an entire screen.
  */
-export default abstract class AbstractPageController<
+export default abstract class AbstractPageController <
   State extends {} = BaseState,
   Store extends WdkStore = WdkStore,
   ActionCreators extends ActionCreatorRecord<Action> = {}
