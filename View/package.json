@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "test": "jest",
-    "build": "webpack",
+    "build": "webpack --hide-modules",
     "check-ts": "tsc --version && tsc --noEmit --pretty",
     "examples": "cd client-examples && webpack-dev-server --content-base public/"
   },
