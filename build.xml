@@ -233,6 +233,7 @@
           failonerror="true"
           failifexecutionfails="true">
           <arg line="${webpack.env}"/>
+          <arg line="--hide-modules"/>
     </exec>
 
     <copy todir="${webappTargetDir}">
