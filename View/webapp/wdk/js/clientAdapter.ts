@@ -2,11 +2,13 @@ import $ from 'jquery';
 import React from 'react';
 import { get } from 'lodash';
 import ReactDOM from 'react-dom';
+import { Router } from 'react-router';
 
 import * as Wdk from 'Core/main';
 import { Seq } from 'Utils/IterableUtils';
 import { createDeferred } from 'Utils/PromiseUtils';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
+import * as WdkControllers from 'Core/Controllers';
 
 export * from 'Core/index';
 
@@ -25,6 +27,11 @@ export function initialize(config: any) {
     _deferredContext.resolve(_context);
   }
   return _context;
+}
+
+// FIXME Don't use `any`
+export function getContext(): Promise<any> {
+  return _deferredContext.asPromise();
 }
 
 wdk.namespace('wdk', ns => {
@@ -63,11 +70,16 @@ wdk.namespace('wdk', ns => {
       let resolver: ViewControllerResolver =
         resolverName == null ? defaultResolver : get(window, resolverName);
       let [ ViewController, context ] =
-        await Promise.all([ resolver(name), _deferredContext ]);
+        await Promise.all([ resolver(name), getContext() ]);
 
       observeMutations(el, {
         onPropsChanged(props: any) {
-          ReactDOM.render(React.createElement(ViewController as any, { ...props, ...context }), el)
+          ReactDOM.render(
+            React.createElement(
+              Router,
+              { history: context.history },
+              React.createElement(ViewController as any, { ...props, ...context })
+            ), el)
         },
         onRemoved() {
           ReactDOM.unmountComponentAtNode(el)
@@ -82,8 +94,10 @@ wdk.namespace('wdk', ns => {
 
   /** Default `ViewControllerResolver`.  */
   async function defaultResolver (id: string) {
-    let module = await import(`Core/Controllers/${id}`);
-    return module.default;
+    if (!(id in WdkControllers)) {
+      throw new Error(`Cannot find export '${id}' from module 'Core/Controllers'`);
+    }
+    return (<any>WdkControllers)[id] as any;
   }
 
   Object.assign(ns, { clientAdapter });

@@ -1,6 +1,6 @@
 /* global wdk, wdkConfig */
-import { confirm } from 'Utils/Platform';
-import * as AuthUtil from 'Views/User/AuthUtil';
+import * as UserActionCreators from 'Core/ActionCreators/UserActionCreators';
+import { getContext } from './clientAdapter';
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.
@@ -8,15 +8,7 @@ import * as AuthUtil from 'Views/User/AuthUtil';
 wdk.namespace("window.wdk.user", function(ns, $) {
   "use strict";
 
-  let { auth, guestUser, webappUrl, wdkServiceUrl, wdkUser } = wdkConfig;
-
-  let authUtilConfig = {
-    webappUrl,
-    serviceUrl: wdkServiceUrl,
-    method: auth.method,
-    oauthUrl: auth.oauthUrl,
-    oauthClientId: auth.oauthClientId
-  };
+  let { guestUser, wdkUser } = wdkConfig;
 
   ns.id = function() { return wdkUser.id; };
   ns.name = function() { return wdkUser.name; };
@@ -26,27 +18,16 @@ wdk.namespace("window.wdk.user", function(ns, $) {
   ns.isUserLoggedIn = function() { return !ns.isGuest(); };
 
   ns.login = function(action, destination = window.location.href) {
-    if (action) {
-      let message = `To ${action}, you must be logged in. Would you like to login now?`;
-      confirm('Login required', message).then(confirmed => {
-        if (confirmed) {
-          AuthUtil.login(authUtilConfig, destination);
-        }
-      });
-    }
-    else {
-      AuthUtil.login(authUtilConfig, destination);
-    }
+    getContext().then(context => {
+      context.dispatchAction(action
+        ? UserActionCreators.showLoginWarning(action, destination)
+        : UserActionCreators.showLoginForm(destination));
+    });
   };
 
   ns.logout = function() {
-    return confirm(
-      'Are you sure you want to logout?',
-      'Note: You must log out of other EuPathDB sites separately'
-    ).then(confirmed => {
-      if (confirmed) {
-        AuthUtil.logout(authUtilConfig);
-      }
+    getContext().then(context => {
+      context.dispatchAction(UserActionCreators.showLogoutWarning());
     });
   };
 

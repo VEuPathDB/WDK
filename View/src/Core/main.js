@@ -1,5 +1,5 @@
 /* global __DEV__ */
-import {identity, mapValues, values} from 'lodash';
+import {identity, isString, mapValues, values} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 import {createBrowserHistory} from 'history';
@@ -8,6 +8,7 @@ import Dispatcher from 'Core/State/Dispatcher';
 import WdkService from 'Utils/WdkService';
 import { isPromise } from 'Utils/PromiseUtils';
 import { getTransitioner } from 'Utils/PageTransitioner';
+import { createMockHistory } from 'Utils/MockHistory';
 import Root from 'Core/Root';
 import { loadAllStaticData } from 'Core/ActionCreators/StaticDataActionCreators';
 import { updateLocation } from 'Core/ActionCreators/RouterActionCreators';
@@ -40,10 +41,16 @@ import wdkRoutes from 'Core/routes';
  */
 export function initialize(options) {
   let { rootUrl, rootElement, endpoint, wrapRoutes = identity, storeWrappers, onLocationChange } = options;
+
+  if (!isString(rootUrl)) throw new Error(`Expected rootUrl to be a string, but got ${typeof rootUrl}.`);
+  if (!isString(endpoint)) throw new Error(`Expected endpoint to be a string, but got ${typeof endpoint}.`);
+
   let canUseRouter = location.pathname.startsWith(rootUrl);
   // define the elements of the Flux architecture
 
-  let history = canUseRouter && createBrowserHistory({ basename: rootUrl });
+  let history = canUseRouter
+    ? createBrowserHistory({ basename: rootUrl })
+    : createMockHistory({ basename: rootUrl });
   let wdkService = WdkService.getInstance(endpoint);
   let transitioner = getTransitioner(history);
   let services = { wdkService, transitioner };
@@ -90,7 +97,7 @@ export function initialize(options) {
   }
 
   // return WDK application components
-  return { wdkService, dispatchAction, stores, makeDispatchAction };
+  return { wdkService, dispatchAction, stores, makeDispatchAction, history };
 }
 
 /**

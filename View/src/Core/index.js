@@ -4,7 +4,6 @@ import 'Core/vendor';
 import * as Components from 'Components';
 import * as FilterServiceUtils from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 
-import * as AuthUtil from 'Views/User/AuthUtil';
 import * as ReporterUtils from 'Views/ReporterForm/reporterUtils';
 
 import WdkService from 'Utils/WdkService';
@@ -28,7 +27,6 @@ __webpack_public_path__ = window.__asset_path_remove_me_please__; // eslint-disa
 
 export {
   Stores,
-  AuthUtil,
   WdkModel,
   Platform,
   TreeUtils,

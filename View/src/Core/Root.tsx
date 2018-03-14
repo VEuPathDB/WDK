@@ -5,6 +5,7 @@ import { Router, Switch, Route, RouteComponentProps } from 'react-router';
 import { History, Location } from 'history';
 import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "Core/CommonTypes";
 import WdkStore from "Core/State/Stores/WdkStore";
+import LoginFormController from 'Views/User/LoginForm/LoginFormController';
 
 type Props = {
   rootUrl: string,
@@ -81,11 +82,14 @@ export default class Root extends React.Component<Props> {
   render() {
     return (
       <Router history={this.props.history}>
-        <Switch>
-          {this.props.routes.map(route => (
-            <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
-          ))}
-        </Switch>
+        <React.Fragment>
+          <Switch>
+            {this.props.routes.map(route => (
+              <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
+            ))}
+          </Switch>
+          <LoginFormController makeDispatchAction={this.props.makeDispatchAction} stores={this.props.stores}/>
+        </React.Fragment>
       </Router>
     );
   }
