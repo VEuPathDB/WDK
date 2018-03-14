@@ -18,8 +18,8 @@ import UserPasswordResetController from 'Views/User/Password/UserPasswordResetCo
 import UserProfileController from 'Views/User/Profile/UserProfileController';
 import UserRegistrationController from 'Views/User/Profile/UserRegistrationController';
 import UserMessageController from 'Views/User/UserMessageController';
-import UserDatasetItemController from 'Views/UserDatasets/UserDatasetItemController';
-import UserDatasetListController from 'Views/UserDatasets/UserDatasetListController';
+import UserDatasetDetailController from 'Views/UserDatasets/Detail/UserDatasetDetailController';
+import UserDatasetListController from 'Views/UserDatasets/List/UserDatasetListController';
 
 export {
   AbstractPageController,
@@ -35,7 +35,7 @@ export {
   QuestionListController,
   RecordController,
   SiteMapController,
-  UserDatasetItemController,
+  UserDatasetDetailController,
   UserDatasetListController,
   UserMessageController,
   UserPasswordChangeController,
