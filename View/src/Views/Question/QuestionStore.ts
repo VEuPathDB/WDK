@@ -1,6 +1,6 @@
 import { keyBy, mapValues } from 'lodash';
 
-import { Epic } from 'Utils/ActionCreatorUtils';
+import { Epic, isOneOf } from 'Utils/ActionCreatorUtils';
 import {
   ActiveQuestionUpdatedAction,
   UnloadQuestionAction,
@@ -32,6 +32,26 @@ interface GroupState {
   isVisible: boolean;
 }
 
+const isQuestionType = isOneOf(
+  ActiveQuestionUpdatedAction,
+  UnloadQuestionAction,
+  ParamErrorAction,
+  ParamInitAction,
+  ParamStateUpdatedAction,
+  ParamsUpdatedAction,
+  ParamValueUpdatedAction,
+  QuestionErrorAction,
+  QuestionLoadedAction,
+  QuestionNotFoundAction,
+  GroupStateUpdatedAction,
+  GroupVisibilityChangedAction,
+  ActiveFieldSetAction,
+  SummaryCountsLoadedAction,
+  FieldStateUpdatedAction,
+  FiltersUpdatedAction,
+  OntologyTermsInvalidated
+);
+
 export type QuestionState = {
   questionStatus: 'loading' | 'error' | 'not-found' | 'complete';
   question: Question & {
@@ -60,25 +80,7 @@ export default class QuestionStore extends WdkStore<State> {
   }
 
   handleAction(state: State, action: Action): State {
-    if (
-      ActiveQuestionUpdatedAction.isType(action) ||
-      UnloadQuestionAction.isType(action) ||
-      ParamErrorAction.isType(action) ||
-      ParamInitAction.isType(action) ||
-      ParamStateUpdatedAction.isType(action) ||
-      ParamsUpdatedAction.isType(action) ||
-      ParamValueUpdatedAction.isType(action) ||
-      QuestionErrorAction.isType(action) ||
-      QuestionLoadedAction.isType(action) ||
-      QuestionNotFoundAction.isType(action) ||
-      GroupStateUpdatedAction.isType(action) ||
-      GroupVisibilityChangedAction.isType(action) ||
-      ActiveFieldSetAction.isType(action) ||
-      SummaryCountsLoadedAction.isType(action) ||
-      FieldStateUpdatedAction.isType(action) ||
-      FiltersUpdatedAction.isType(action) ||
-      OntologyTermsInvalidated.isType(action)
-    ) {
+    if (isQuestionType(action)) {
       const { questionName } = action.payload;
       return {
         ...state,

@@ -120,6 +120,12 @@ export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): Ty
     }
 }
 
+export function isOneOf<T extends string, S>(...actionCreators: TypedActionCreator<T, S>[]) {
+  return function isType(action: Action): action is TypedAction<T, S> {
+    return actionCreators.some(ac => ac.isType(action));
+  }
+}
+
 export interface EpicServices<T extends WdkStore = WdkStore> extends ActionCreatorServices {
   store: T;
 }
