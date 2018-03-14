@@ -82,7 +82,7 @@ const empty = Object.create(null);
  *
  * @example
  * ```
- * // Note that we have to call `payload` (see the parentheses).
+ * // Note that we have to call `payload` (see the parentheses ----------------vv)
  * const ActionCreator = makeActionCreator('my-type', payload<{ name: string }>());
  * ```
  */
@@ -119,7 +119,6 @@ export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): Ty
       }
     }
 }
-
 
 export interface EpicServices<T extends WdkStore = WdkStore> extends ActionCreatorServices {
   store: T;

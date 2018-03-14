@@ -9,13 +9,11 @@ import {
   ParamValueUpdatedAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
 import DefaultQuestionForm from 'Views/Question/DefaultQuestionForm';
-import QuestionStore, { State } from 'Views/Question/QuestionStore';
+import QuestionStore, { State, QuestionState } from 'Views/Question/QuestionStore';
 import { wrappable } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
 import { Parameter, ParameterGroup } from 'Utils/WdkModel';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
-
-type QuestionState = State['questions'][string];
 
 const ActionCreators = {
   updateParamValue: ParamValueUpdatedAction.create,

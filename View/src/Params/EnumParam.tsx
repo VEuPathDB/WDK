@@ -5,10 +5,12 @@ import { EnumParam, Parameter } from 'Utils/WdkModel';
 import * as List from 'Params/EnumParam/ListEnumParam';
 import * as TreeBox from 'Params/EnumParam/TreeBoxEnumParam';
 import { isPropsType, Props } from 'Params/Utils';
+import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
 
 type State = TreeBox.State;
 
 export function reduce(state: State, action: Action): State {
+  if (!ParamInitAction.isType(action)) return state;
   const { parameter } = action.payload;
   if (parameter == null || !isType(parameter)) return state;
   if (TreeBox.isType(parameter)) {

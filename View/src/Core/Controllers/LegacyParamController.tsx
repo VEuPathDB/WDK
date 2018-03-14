@@ -9,7 +9,7 @@ import {
   QuestionErrorAction
 } from 'Core/ActionCreators/QuestionActionCreators';
 import * as ParamModules from 'Params';
-import QuestionStore, { State } from 'Views/Question/QuestionStore';
+import QuestionStore, { State, QuestionState } from 'Views/Question/QuestionStore';
 import { Seq } from 'Utils/IterableUtils';
 import { Parameter } from 'Utils/WdkModel';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
@@ -28,8 +28,6 @@ type Props = {
   paramValues: Record<string, string>;
   stepId: number | undefined;
 }
-
-type QuestionState = State['questions'][string];
 
 export default class LegacyParamController extends AbstractViewController<
   QuestionState,

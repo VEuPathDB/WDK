@@ -9,13 +9,20 @@ import {
   ParamStateUpdatedAction,
   ParamsUpdatedAction,
   ParamValueUpdatedAction,
-  questionEpic,
   QuestionErrorAction,
   QuestionLoadedAction,
   QuestionNotFoundAction,
   GroupStateUpdatedAction,
-  GroupVisibilityChangedAction
+  GroupVisibilityChangedAction,
+  questionEpic
 } from 'Core/ActionCreators/QuestionActionCreators';
+import {
+  ActiveFieldSetAction,
+  SummaryCountsLoadedAction,
+  FieldStateUpdatedAction,
+  FiltersUpdatedAction,
+  OntologyTermsInvalidated
+} from 'Params/FilterParamNew/ActionCreators';
 import { Action } from 'Core/State/Dispatcher';
 import { paramEpic, reduce as paramReducer } from 'Params';
 import { Parameter, ParameterGroup, Question, RecordClass } from 'Utils/WdkModel';
@@ -40,7 +47,7 @@ export type QuestionState = {
 }
 
 export type State = BaseState & {
-  questions: Record<string, QuestionState>;
+  questions: Record<string, QuestionState | undefined>;
 }
 
 export default class QuestionStore extends WdkStore<State> {
@@ -53,16 +60,35 @@ export default class QuestionStore extends WdkStore<State> {
   }
 
   handleAction(state: State, action: Action): State {
-    if (action.payload == null) return state;
-
-    const { questionName } = action.payload;
-    return questionName == null ? state : {
-      ...state,
-      questions: {
-        ...state.questions,
-        [questionName]: reduceQuestionState(state.questions[questionName], action)
-      }
-    };
+    if (
+      ActiveQuestionUpdatedAction.isType(action) ||
+      UnloadQuestionAction.isType(action) ||
+      ParamErrorAction.isType(action) ||
+      ParamInitAction.isType(action) ||
+      ParamStateUpdatedAction.isType(action) ||
+      ParamsUpdatedAction.isType(action) ||
+      ParamValueUpdatedAction.isType(action) ||
+      QuestionErrorAction.isType(action) ||
+      QuestionLoadedAction.isType(action) ||
+      QuestionNotFoundAction.isType(action) ||
+      GroupStateUpdatedAction.isType(action) ||
+      GroupVisibilityChangedAction.isType(action) ||
+      ActiveFieldSetAction.isType(action) ||
+      SummaryCountsLoadedAction.isType(action) ||
+      FieldStateUpdatedAction.isType(action) ||
+      FiltersUpdatedAction.isType(action) ||
+      OntologyTermsInvalidated.isType(action)
+    ) {
+      const { questionName } = action.payload;
+      return {
+        ...state,
+        questions: {
+          ...state.questions,
+          [questionName]: reduceQuestionState(state.questions[questionName], action)
+        }
+      };
+    }
+    return state;
   }
 
   getEpics(): Epic[] {
@@ -71,7 +97,7 @@ export default class QuestionStore extends WdkStore<State> {
 
 }
 
-function reduceQuestionState(state: QuestionState, action: Action): QuestionState | undefined {
+function reduceQuestionState(state = {} as QuestionState, action: Action): QuestionState | undefined {
 
   if (UnloadQuestionAction.isType(action)) return undefined;
 
