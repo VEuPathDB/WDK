@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject';
 
 export interface Action {
   type: string;
-  payload?: any;
+  payload?: string | number | object;
   channel?: string;
   isBroadcast?: boolean;
 };
