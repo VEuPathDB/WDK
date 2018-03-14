@@ -71,8 +71,6 @@
   </div>
 
 
-  <div style="display:none" id="wdk-dialog-login-form" title="Account login">
-    <imp:loginForm showCancel="true"/>
-  </div>
+  <div data-controller="wdk.clientAdapter" data-name="LoginFormController"><jsp:text/></div>
 
 </jsp:root>

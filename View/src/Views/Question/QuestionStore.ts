@@ -53,6 +53,8 @@ export default class QuestionStore extends WdkStore<State> {
   }
 
   handleAction(state: State, action: Action): State {
+    if (action.payload == null) return state;
+
     const { questionName } = action.payload;
     return questionName == null ? state : {
       ...state,
