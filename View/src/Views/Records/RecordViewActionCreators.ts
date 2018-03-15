@@ -108,11 +108,12 @@ type UserAction = BasketAction | FavoriteAction
 
 /** Fetch page data from services */
 export function loadRecordData(recordClass: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction | UserAction> {
-  return function run(dispatch) {
-    const activeRecordAction$ = dispatch(setActiveRecord(recordClass, primaryKeyValues)) as Promise<Action>;
-    activeRecordAction$.then((action: RecordReceivedAction) => {
+  return function run(dispatch, { wdkService }) {
+    const activeRecordAction$ = dispatch(setActiveRecord(recordClass, primaryKeyValues)) as Promise<RecordReceivedAction>;
+    const user$ = wdkService.getCurrentUser();
+    Promise.all([ activeRecordAction$, user$ ]).then(([ action, user ]) => {
       let { record, recordClass } = action.payload;
-      if (recordClass.useBasket) {
+      if (!user.isGuest && recordClass.useBasket) {
         dispatch(loadBasketStatus(record));
         dispatch(loadFavoritesStatus(record));
       }

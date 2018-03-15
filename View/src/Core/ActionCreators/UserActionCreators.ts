@@ -1,3 +1,4 @@
+import { Action } from 'Core/State/Dispatcher';
 import {filterOutProps} from 'Utils/ComponentUtils';
 import { alert, confirm } from 'Utils/Platform';
 import { broadcast } from 'Utils/StaticDataUtils';
@@ -8,6 +9,7 @@ import { State as PasswordStoreState } from 'Views/User/Password/UserPasswordCha
 import { State as ProfileStoreState, UserProfileFormData } from 'Views/User/Profile/UserProfileStore';
 import { transitionToInternalPage, transitionToExternalPage } from 'Core/ActionCreators/RouterActionCreators';
 import { default as WdkService, ServiceConfig } from 'Utils/WdkService';
+import { noop } from 'lodash';
 
 // actions to update true user and preferences
 export type UserUpdateAction = {
@@ -450,6 +452,25 @@ export function showLogoutWarning(): ActionThunk<never> {
   }
 };
 
+const emptyThunk: ActionThunk<never> = noop;
+
+/**
+ * ActionThunk decorator that will branch based on if a user is logged in.
+ * If the user is logged in, the first thunk is dispatched, otherwise the
+ * second thunk is dispatched (if present).
+ */
+function maybeLoggedIn<T extends Action>(loggedInThunk: ActionThunk<T>): ActionThunk<T>;
+function maybeLoggedIn<T extends Action, S extends Action>(loggedInThunk: ActionThunk<T>, guestThunk: ActionThunk<S>): ActionThunk<T|S>;
+function maybeLoggedIn<T extends Action, S extends Action>(
+  loggedInThunk: ActionThunk<T>,
+  guestThunk: ActionThunk<S> = emptyThunk
+): ActionThunk<T|S> {
+  return (dispatch, { wdkService }) =>
+    wdkService.getCurrentUser().then(user => {
+      dispatch(user.isGuest ? guestThunk : loggedInThunk)
+    })
+}
+
 //----------------------------------
 // Basket action creators and helpers
 // ----------------------------------
@@ -460,13 +481,11 @@ type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | Basket
  * @param {Record} record
  */
 export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketAction> {
-  //if (user.isGuest) return basketAction(record, false);
-  return function run(dispatch, { wdkService }) {
-    return dispatch(setBasketStatus(
-      record,
-      wdkService.getBasketStatus(record.recordClassName, [record]).then(response => response[0])
-    ));
-  };
+  return maybeLoggedIn<BasketAction>((dispatch, { wdkService }) =>
+    dispatch(setBasketStatus(record,
+      wdkService.getBasketStatus(record.recordClassName, [record]).then(response => response[0]))
+    )
+  );
 };
 
 /**
@@ -474,14 +493,13 @@ export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketActi
  * @param {Record} record
  * @param {Boolean} status
  */
-export function updateBasketStatus(user: User, record: RecordInstance, status: boolean): ActionThunk<BasketAction|ShowLoginModalAction|never> {
-  if (user.isGuest) return showLoginWarning('use baskets');
-  return function run(dispatch, { wdkService }) {
-    return dispatch(setBasketStatus(
-      record,
-      wdkService.updateBasketStatus(status, record.recordClassName, [record]).then(response => status)
-    ));
-  };
+export function updateBasketStatus(record: RecordInstance, status: boolean): ActionThunk<BasketAction|ShowLoginModalAction|never> {
+  return maybeLoggedIn<BasketAction, ShowLoginModalAction|never>(
+    (dispatch, { wdkService }) =>
+      dispatch(setBasketStatus(record,
+        wdkService.updateBasketStatus(status, record.recordClassName, [record]).then(response => status))),
+    showLoginWarning('use baskets')
+  );
 };
 
 /**
@@ -522,34 +540,23 @@ type FavoriteAction = FavoritesStatusErrorAction | FavoritesStatusLoadingAction 
  * @param {Record} record
  */
 export function loadFavoritesStatus(record: RecordInstance): ActionThunk<FavoriteAction> {
-  //if (user.isGuest) return favoritesAction(record, false);
-  return function run(dispatch, { wdkService }) {
-    return dispatch(setFavoritesStatus(
-      record,
-      wdkService.getFavoriteId(record)
-    ));
-  };
+  return maybeLoggedIn<FavoriteAction>(
+    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.getFavoriteId(record)))
+  );
 };
 
-export function removeFavorite(record: RecordInstance, favoriteId: number): ActionThunk<FavoriteAction> {
-  return function run(dispatch, { wdkService }) {
-    return dispatch(setFavoritesStatus(
-      record,
-      wdkService.deleteFavorite(favoriteId)
-    ));
-  };
+export function removeFavorite(record: RecordInstance, favoriteId: number): ActionThunk<FavoriteAction|ShowLoginModalAction|never> {
+  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|never>(
+    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.deleteFavorite(favoriteId))),
+    showLoginWarning('use favorites')
+  );
 };
 
-export function addFavorite(user: User, record: RecordInstance): ActionThunk<FavoriteAction|ShowLoginModalAction|never> {
-  if (user.isGuest) {
-    return showLoginWarning('use favorites');
-  }
-  return function run(dispatch, { wdkService }) {
-    return dispatch(setFavoritesStatus(
-      record,
-      wdkService.addFavorite(record)
-    ));
-  };
+export function addFavorite(record: RecordInstance): ActionThunk<FavoriteAction|ShowLoginModalAction|never> {
+  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|never>(
+    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.addFavorite(record))),
+    showLoginWarning('use favorites')
+  );
 };
 
 /**

@@ -100,7 +100,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
   renderRecord() {
     if (this.state.record == null) return null;
 
-    let { globalData: {user}, record, recordClass, inBasket, favoriteId,
+    let { record, recordClass, inBasket, favoriteId,
       loadingBasketStatus, loadingFavoritesStatus } = this.state;
     let loadingClassName = 'fa fa-circle-o-notch fa-spin';
     let headerActions = [];
@@ -110,7 +110,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
         iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
         onClick: (event: Event) => {
           event.preventDefault();
-          this.eventHandlers.updateBasketStatus(user!, record, !inBasket);
+          this.eventHandlers.updateBasketStatus(record, !inBasket);
         }
       });
     }
@@ -123,7 +123,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
           this.eventHandlers.removeFavorite(record, favoriteId);
         }
         else {
-          this.eventHandlers.addFavorite(user!, record);
+          this.eventHandlers.addFavorite(record);
         }
       }
     });
