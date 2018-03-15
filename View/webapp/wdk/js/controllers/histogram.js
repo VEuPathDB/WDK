@@ -54,12 +54,14 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     // XXX What's going on here? Maybe Ryan knows?
     var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
     var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
+    var sliderStep = (sliderMax - sliderMin)/1000;
     var binControl = histogram.find("#graph .bin-control");
     var binSizeInput = binControl.find(".bin-size");
     var binSlider = binControl.find(".bin-slider").slider({
       value: binSizeInput.val(),
       min: sliderMin,
       max: sliderMax,
+      step: sliderStep,
       change: function( event, ui ) {
         binSizeInput.val(ui.value);
         // refresh display after value is changed
@@ -73,6 +75,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     binSizeInput
       .attr('min', sliderMin)
       .attr('max', sliderMax)
+      .attr('step', sliderStep)
       .on('change', function(event) {
         binSlider.slider('value', event.target.value);
         drawPlot(histogram);
