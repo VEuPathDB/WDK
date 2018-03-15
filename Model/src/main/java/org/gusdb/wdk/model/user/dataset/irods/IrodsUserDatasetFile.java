@@ -10,10 +10,12 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.packinstr.TransferOptions;
 import org.irods.jargon.core.pub.io.FileIOOperations.SeekWhenceType;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSRandomAccessFile;
+import org.irods.jargon.core.transfer.TransferControlBlock;
 
 /**
  * @author steve
@@ -94,11 +96,13 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
   protected void createLocalCopy(UserDatasetSession dsSession, Path tmpFile) throws WdkModelException {
     long start = System.currentTimeMillis();
     IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
+    TransferControlBlock tcb = adaptor.getTranferControlBlock();
     IRODSFile irodsFile = null;
     try {
       IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
       irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
-      adaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, null);
+      tcb.getTransferOptions().setMaxThreads(1);
+      adaptor.getDataTransferOperations().getOperation(irodsFile, tmpFile.toFile(), null, tcb);
     }
     catch(JargonException je) {
       throw new WdkModelException("Unable to copy " + getFilePath().toString() + " to " + tmpFile.toString() + ". - ", je);

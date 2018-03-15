@@ -612,4 +612,13 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     return _wdkTempDirName;
   }
   
+  public TransferControlBlock getTranferControlBlock() throws WdkModelException {
+    try {  
+      return accessObjectFactory.buildDefaultTransferControlBlockBasedOnJargonProperties();
+    }
+    catch(JargonException je) {
+    	  throw new WdkModelException(je);
+    }
+  }
+  
 }
