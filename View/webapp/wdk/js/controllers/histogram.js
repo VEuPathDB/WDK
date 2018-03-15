@@ -54,7 +54,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     // XXX What's going on here? Maybe Ryan knows?
     var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
     var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
-    var sliderStep = (sliderMax - sliderMin)/1000;
+    var sliderStep = (type == "float" && min != max) ? (sliderMax - sliderMin)/1000 : 1;
     var binControl = histogram.find("#graph .bin-control");
     var binSizeInput = binControl.find(".bin-size");
     var binSlider = binControl.find(".bin-slider").slider({
