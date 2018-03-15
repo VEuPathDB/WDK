@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 @Priority(40)
 public class ClientCacheExpirationFilter implements ContainerRequestFilter {
 
-  private static final String CLIENT_WDK_TIMESTAMP_HEADER = "X-CLIENT-WDK-TIMESTAMP";
+  private static final String CLIENT_WDK_TIMESTAMP_HEADER = "x-client-wdk-timestamp";
   private static final String TIMESTAMP_CONFLICT_MESSAGE_ENTITY = "WDK-TIMESTAMP-MISMATCH";
   
   private WdkModelBean _wdkModelBean;
