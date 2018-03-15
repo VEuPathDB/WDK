@@ -4,7 +4,8 @@
   "scripts": {
     "test": "jest",
     "build": "webpack --hide-modules",
-    "check-ts": "tsc --version && tsc --noEmit --pretty",
+    "check-ts": "tsc --version && tsc --noEmit",
+    "watch-ts": "tsc --noEmit --watch",
     "examples": "cd client-examples && webpack-dev-server --content-base public/"
   },
   "private": true,
