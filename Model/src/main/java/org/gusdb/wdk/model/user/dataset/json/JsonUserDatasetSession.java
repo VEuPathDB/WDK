@@ -585,7 +585,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   }
 
   @Override
-  public Integer getQuota(Long userId) throws WdkModelException {
+  public Long getQuota(Long userId) throws WdkModelException {
     Path quotaFile;
 
     Path defaultQuotaFile = usersRootDir.resolve("default_quota");
@@ -594,11 +594,11 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     return getQuota(quotaFile);
   }
 
-  protected Integer getQuota(Path quotaFile) throws WdkModelException {
+  protected Long getQuota(Path quotaFile) throws WdkModelException {
     String line = adaptor.readSingleLineFile(quotaFile);
     if (line == null)
       throw new WdkModelException("Empty quota file " + quotaFile);
-    return new Integer(line.trim());
+    return new Long(line.trim());
   }
 
   /**

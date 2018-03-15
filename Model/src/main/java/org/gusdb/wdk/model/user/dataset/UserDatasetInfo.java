@@ -26,7 +26,7 @@ public class UserDatasetInfo {
   private final UserDataset _userDataset;
   private final boolean _isInstalled;
   private final User _owner;
-  private final int _ownerQuota;
+  private final long _ownerQuota;
   private final List<String> _relevantQuestionNames;
   private final List<UserDatasetShareUser> _shares;
   private final UserDatasetTypeHandler _handler;
@@ -89,7 +89,7 @@ public class UserDatasetInfo {
     return _owner;
   }
 
-  public int getOwnerQuota() {
+  public long getOwnerQuota() {
     return _ownerQuota;
   }
   
