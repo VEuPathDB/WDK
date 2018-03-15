@@ -124,7 +124,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @param userId
    * @return
    */
-  Integer getQuota(Long userId) throws WdkModelException;
+  Long getQuota(Long userId) throws WdkModelException;
 
   /**
    * Check if a user has a userId directory in the store. 
