@@ -34,7 +34,7 @@ import { submitAsForm } from 'Utils/FormSubmitter';
  * Header added to service requests to indicate the version of the model
  * current stored in cache.
  */
-const CLIENT_WDK_VERSION_HEADER = 'X-CLIENT-WDK-TIMESTAMP';
+const CLIENT_WDK_VERSION_HEADER = 'x-client-wdk-timestamp';
 
 /**
  * Response text returned by service that indicates the version of the cached
