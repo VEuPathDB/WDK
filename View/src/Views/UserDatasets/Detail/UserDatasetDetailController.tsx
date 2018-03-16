@@ -71,44 +71,43 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
   }
 
   loadData (prevProps?: PageControllerProps<UserDatasetDetailStore>) {
-    const idChanged = prevProps && prevProps.match.params.id !== this.props.match.params.id;
-    if (idChanged || !this.state.userDatasetsById[this.props.match.params.id]) {
-      this.eventHandlers.loadUserDatasetDetail(Number(this.props.match.params.id));
+    const { match } = this.props;
+    const { userDatasetsById } = this.state;
+    const idChanged = prevProps && prevProps.match.params.id !== match.params.id;
+    if (idChanged || !userDatasetsById[match.params.id]) {
+      this.eventHandlers.loadUserDatasetDetail(Number(match.params.id));
     }
   }
 
   isRenderDataLoadError () {
-    return !this.props.user.isGuest && this.state.loadError != null;
+    const { loadError, user } = this.state;
+    return (!user || user.isGuest) && loadError != null;
   }
 
-  isRenderDataLoaded() {
-    const entry = this.state.userDatasetsById[this.props.match.params.id];
-    return (
-      entry != null &&
-      !entry.isLoading &&
-      this.state.user != null &&
-      this.state.questions != null &&
-      this.state.config != null
-    );
+  isRenderDataLoaded () {
+    const { match } = this.props;
+    const { userDatasetsById, user, questions, config } = this.state;
+    const entry = userDatasetsById[match.params.id];
+    return (entry && !entry.isLoading && user && questions && config)
+      ? true
+      : false;
   }
 
   renderView () {
-    const entry = this.state.userDatasetsById[this.props.match.params.id];
-    const isOwner = (
-      entry.resource != null &&
-      this.state.user != null &&
-      entry.resource.ownerUserId === this.state.user.id
-    )
-    return this.props.user && this.props.user.isGuest
+    const { match } = this.props;
+    const { userDatasetsById, user } = this.state;
+    const entry = userDatasetsById[match.params.id];
+    const isOwner = (user && entry.resource && entry.resource.ownerUserId === user.id);
+    return user && user.isGuest
       ? <NotLoggedIn/>
       : <UserDatasetDetail
-          getQuestionUrl={this.getQuestionUrl}
+          isOwner={isOwner ? true : false}
           userDataset={entry.resource!}
-          updateUserDatasetDetail={this.eventHandlers.updateUserDatasetDetail}
-          userDatasetUpdating={this.state.userDatasetUpdating}
+          getQuestionUrl={this.getQuestionUrl}
           updateError={this.state.updateError}
-          isOwner={isOwner}
           questionMap={keyBy(this.state.questions, 'name')}
+          userDatasetUpdating={this.state.userDatasetUpdating}
+          updateUserDatasetDetail={this.eventHandlers.updateUserDatasetDetail}
         />
   }
 }

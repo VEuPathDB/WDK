@@ -1,9 +1,18 @@
+@import '~Core/Style/palette';
+
 .UserDatasetList-Controller {
   .UserDatasetList-Title {
     font-weight: 200;
   }
   .UserDatasetList-Content {
-
+    .StatusColumn {
+      .wdk-Icon {
+        font-size: 20px;
+        &.fa-check-circle { color: $green; }
+        &.fa-times-circle { color: $red; }
+        &.fa-exclamation-circle { color: $gold; }
+      }
+    }
   }
 
   .UserDatasetList-NotLoggedIn {

@@ -12,7 +12,7 @@ export interface State extends BaseState {
 
 export default class UserDatasetListStore extends WdkStore<State> {
 
-  getInitialState() {
+  getInitialState () {
     return Object.assign({
       userDatasetsLoading: false,
       userDatasets: [],
@@ -20,7 +20,7 @@ export default class UserDatasetListStore extends WdkStore<State> {
     }, super.getInitialState());
   }
 
-  handleAction(state: State, action: Action): State {
+  handleAction (state: State, action: Action): State {
     switch (action.type) {
       case 'user-datasets/list-loading': return {
         ...state,
