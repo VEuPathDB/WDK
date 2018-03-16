@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { wrappable } from 'Utils/ComponentUtils';
 import CollapsibleSection from 'Components/Display/CollapsibleSection';
 import RecordAttribute from 'Views/Records/RecordAttributes/RecordAttribute';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 
 /** Record attribute section container for record page */
 function RecordAttributeSection(props) {
@@ -36,11 +37,13 @@ function InlineRecordAttributeSection(props) {
         {attribute.displayName}
       </div>
       <div className="wdk-RecordAttributeValue">
-        <RecordAttribute
-          attribute={attribute}
-          record={record}
-          recordClass={recordClass}
-        />
+        <ErrorBoundary>
+          <RecordAttribute
+            attribute={attribute}
+            record={record}
+            recordClass={recordClass}
+          />
+        </ErrorBoundary>
       </div>
     </div>
   );
@@ -58,11 +61,13 @@ function BlockRecordAttributeSection(props) {
       isCollapsed={isCollapsed}
       onCollapsedChange={onCollapsedChange}
     >
-      <RecordAttribute
-        attribute={attribute}
-        record={record}
-        recordClass={recordClass}
-      />
+      <ErrorBoundary>
+        <RecordAttribute
+          attribute={attribute}
+          record={record}
+          recordClass={recordClass}
+        />
+      </ErrorBoundary>
     </CollapsibleSection>
   )
 }

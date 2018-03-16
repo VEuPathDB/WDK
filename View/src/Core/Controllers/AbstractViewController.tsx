@@ -10,6 +10,8 @@ import NotFound from 'Views/NotFound/NotFound';
 import Loading from 'Components/Loading/Loading';
 import LoadError from 'Components/PageStatus/LoadError';
 import PermissionDenied from 'Components/PageStatus/PermissionDenied';
+import ErrorBoundary from './ErrorBoundary';
+import Error from 'Components/PageStatus/Error';
 
 /**
  * Abstract base class for all ViewContoller classes in WDK. This base class is
@@ -109,6 +111,10 @@ export default abstract class AbstractViewController<
    */
   renderDataLoading() {
     return ( <Loading/> );
+  }
+
+  renderError() {
+    return ( <Error/> );
   }
 
 
@@ -247,7 +253,11 @@ export default abstract class AbstractViewController<
       return this.renderDataLoading();
     }
     else {
-      return this.renderView();
+      return (
+        <ErrorBoundary>
+          {this.renderView()}
+        </ErrorBoundary>
+      );
     }
   }
 }

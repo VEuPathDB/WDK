@@ -3,6 +3,7 @@ import { includes } from 'lodash';
 import { safeHtml, wrappable } from 'Utils/ComponentUtils';
 import RecordTable from 'Views/Records/RecordTable/RecordTable';
 import CollapsibleSection from 'Components/Display/CollapsibleSection';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 
 /** Record table section on record page */
 function RecordTableSection(props) {
@@ -21,10 +22,12 @@ function RecordTableSection(props) {
       isCollapsed={isCollapsed}
       onCollapsedChange={onCollapsedChange}
     >
-      {description && <p>{safeHtml(description)}</p>}
-      { isError ? <p style={{ color: 'darkred', fontStyle: 'italic' }}>Unable to load data due to a server error.</p>
-      : isLoading ? <p>Loading...</p>
-      : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/> }
+      <ErrorBoundary>
+        {description && <p>{safeHtml(description)}</p>}
+        { isError ? <p style={{ color: 'darkred', fontStyle: 'italic' }}>Unable to load data due to a server error.</p>
+        : isLoading ? <p>Loading...</p>
+        : <RecordTable className={className} value={value} table={table} record={record} recordClass={recordClass}/> }
+      </ErrorBoundary>
     </CollapsibleSection>
   );
 }
