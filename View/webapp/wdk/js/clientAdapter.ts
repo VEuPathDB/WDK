@@ -66,7 +66,6 @@ wdk.namespace('wdk', ns => {
       if (name == null) {
         throw new Error("The attribute `data-name` must be specified.");
       }
-      console.info('Looking for resolver ' + resolverName);
       let resolver: ViewControllerResolver =
         resolverName == null ? defaultResolver : get(window, resolverName);
       let [ ViewController, context ] =
