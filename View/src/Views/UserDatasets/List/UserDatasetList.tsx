@@ -68,8 +68,9 @@ class UserDatasetList extends React.Component <Props, State> {
     return (
       <div>
         <Link to={`/workspace/datasets/${id}`}>
-          {name}  <span className="faded">({id})</span>
+          {name} <span className="faded">({id})</span>
         </Link>
+        
       </div>
     );
   }
