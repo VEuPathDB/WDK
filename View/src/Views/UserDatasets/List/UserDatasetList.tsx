@@ -64,13 +64,13 @@ class UserDatasetList extends React.Component <Props, State> {
     const row: UserDataset = cellProps.row;
     const id: number = row.id;
     const name: string = row.meta.name;
-    const editing: boolean = this.state.
+    
     return (
       <div>
         <Link to={`/workspace/datasets/${id}`}>
           {name}  <span className="faded">({id})</span>
         </Link>
-        
+        <Icon fa='pencil'/>
       </div>
     );
   }
