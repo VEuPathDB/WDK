@@ -13,6 +13,7 @@ import QuestionController from 'Views/Question/QuestionController';
 import UserMessageController from 'Views/User/UserMessageController';
 import FavoritesController from 'Views/Favorites/FavoritesController';
 import QuestionListController from 'Views/Question/QuestionListController';
+import LoginFormController from 'Views/User/LoginForm/LoginFormController';
 import UserProfileController from 'Views/User/Profile/UserProfileController';
 import DownloadFormController from 'Views/ReporterForm/DownloadFormController';
 import UserRegistrationController from 'Views/User/Profile/UserRegistrationController';
@@ -35,6 +36,7 @@ export {
   NotFoundController,
   QuestionController,
   FavoritesController,
+  LoginFormController,
   QuestionListController,
   UserMessageController,
   UserProfileController,
