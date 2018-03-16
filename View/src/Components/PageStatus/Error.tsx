@@ -9,7 +9,11 @@ function Error(props: Props) {
   return (
     <div className="wdk-Error">
       <h1>Oops...</h1>
-      {props.children || <p>Something went wrong.</p>}
+      {props.children || (
+        <p>
+          Something went wrong. Please try again later.
+        </p>
+      )}
     </div>
   )
 }

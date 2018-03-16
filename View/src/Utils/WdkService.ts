@@ -67,9 +67,10 @@ export class ServiceError extends Error {
 }
 
 export interface ClientError {
+  name: string;
   message: string;
-  // stack trace?
-  // context info?
+  stack?: string;
+  componentStack?: string;
 }
 
 export interface ServiceConfig {

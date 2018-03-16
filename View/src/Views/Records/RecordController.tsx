@@ -87,7 +87,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
     }
   }
 
-  renderError() {
+  renderStateError() {
     if (this.state.error == null) return ;
 
     return (
@@ -149,7 +149,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
   renderView() {
     return (
       <div>
-        {this.renderError()}
+        {this.renderStateError()}
         {this.renderRecord()}
       </div>
     );
