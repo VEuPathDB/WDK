@@ -201,7 +201,8 @@ export default class WdkService {
   }
 
   submitError(error: ClientError) {
-    return this._fetchJson<never>('post', '/client-errors', JSON.stringify(error));
+    return this._checkStoreVersion().then(() =>
+      this._fetchJson<void>('post', '/client-errors', JSON.stringify(error)));
   }
 
   /**

@@ -5,6 +5,7 @@ import React from 'react';
 import {wrappable} from 'Utils/ComponentUtils';
 import Header from 'Components/Layout/Header';
 import Footer from 'Components/Layout/Footer';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 
 type Props = {
   children: React.ReactChild | null;
@@ -13,9 +14,9 @@ type Props = {
 function Page(props: Props) {
   return (
     <div className="wdk-RootContainer">
-      <Header/>
+      <ErrorBoundary><Header/></ErrorBoundary>
       <div className="wdk-PageContent">{props.children}</div>
-      <Footer/>
+      <ErrorBoundary><Footer/></ErrorBoundary>
     </div>
   );
 }
