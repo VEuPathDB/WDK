@@ -1,20 +1,23 @@
 import React from 'react';
 import { escape } from 'lodash';
 import { History } from 'history';
-import { wrappable } from 'Utils/ComponentUtils';
-import { UserDataset, UserDatasetMeta, MesaColumn, MesaDataCellProps } from 'Utils/WdkModel';
-import { bytesToHuman } from 'Utils/Converters';
-import DataTable from 'Components/DataTable/DataTable';
-import Loading from 'Components/Loading/Loading';
-import { User } from 'Utils/WdkUser';
 import { Mesa, MesaState } from 'mesa';
 
-import Icon from 'Components/Icon/IconAlt';
+import { User } from 'Utils/WdkUser';
+import { wrappable } from 'Utils/ComponentUtils';
+import { bytesToHuman } from 'Utils/Converters';
+import { UserDataset, UserDatasetMeta } from 'Utils/WdkModel';
+
 import Link from 'Components/Link';
+import Icon from 'Components/Icon/IconAlt';
+import Loading from 'Components/Loading/Loading';
+import TextBox from 'Components/InputControls/TextBox';
+import DataTable from 'Components/DataTable/DataTable';
+import { MesaColumn, MesaDataCellProps } from 'Core/CommonTypes';
 
 interface Props {
   user: User;
-  userDatasets: UserDataset[];
+  userDatasets: UserDataset[];p
   history: History;
 };
 
@@ -25,7 +28,8 @@ interface State {
       columnKey?: string;
       direction?: string;
     }
-  }
+  };
+  editingCache: any;
 }
 
 class UserDatasetList extends React.Component <Props, State> {
@@ -36,7 +40,8 @@ class UserDatasetList extends React.Component <Props, State> {
     super(props);
     this.state = {
       selectedRows: [],
-      uiState: { sort: {} }
+      uiState: { sort: {} },
+      editingCache: {}
     };
 
     this.onSort = this.onSort.bind(this);
@@ -55,6 +60,21 @@ class UserDatasetList extends React.Component <Props, State> {
     return selectedRows.includes(id);
   }
 
+  renderEditableNameField (cellProps: MesaDataCellProps) {
+    const row: UserDataset = cellProps.row;
+    const id: number = row.id;
+    const name: string = row.meta.name;
+    const editing: boolean = this.state.
+    return (
+      <div>
+        <Link to={`/workspace/datasets/${id}`}>
+          {name}  <span className="faded">({id})</span>
+        </Link>
+        
+      </div>
+    );
+  }
+
   getColumns (): MesaColumn[] {
     const { userDatasets, user } = this.props;
     return [
@@ -62,16 +82,7 @@ class UserDatasetList extends React.Component <Props, State> {
         key: 'id',
         sortable: true,
         name: 'Name / ID',
-        renderCell: (cellProps: MesaDataCellProps) => {
-          const row: UserDataset = cellProps.row;
-          const id: number = row.id;
-          const name: string = row.meta.name;
-          return (
-            <Link to={`/workspace/datasets/${id}`}>
-              {name}  <span className="faded">({id})</span>
-            </Link>
-          );
-        }
+        renderCell: this.renderEditableNameField
       },
       {
         key: 'summary',
@@ -85,6 +96,7 @@ class UserDatasetList extends React.Component <Props, State> {
       },
       {
         key: 'status',
+        className: 'StatusColumn',
         name: 'Status',
         style: {
           textAlign: 'center'
@@ -102,7 +114,6 @@ class UserDatasetList extends React.Component <Props, State> {
         name: 'Type',
         renderCell: (cellProps: MesaDataCellProps) => {
           const row: UserDataset = cellProps.row;
-
           const { display, version } = row.type;
           return <span>{display} <span className="faded">({version})</span></span>
         }
@@ -219,11 +230,12 @@ class UserDatasetList extends React.Component <Props, State> {
 
     const tableState = {
       uiState,
-      options: {},
       selectedRows,
+      eventHandlers,
+
+      options: {},
       rows: userDatasets,
       columns: this.getColumns(),
-      eventHandlers
     };
 
     console.info('UDs', userDatasets);
