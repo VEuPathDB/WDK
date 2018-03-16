@@ -6,6 +6,7 @@ import { RouteComponentProps } from "react-router";
 import { History } from 'history';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import { ComponentType } from "react";
+import { UserDataset } from 'Utils/WdkModel';
 
 
 export interface StoreConstructor<T extends WdkStore> {
@@ -38,4 +39,27 @@ export type AbstractViewControllerClass = typeof AbstractViewController;
 export interface RouteSpec {
   path: string;
   component: ComponentType<ViewControllerProps<WdkStore>>
+}
+
+export interface MesaColumn {
+  key: string;
+  name?: string;
+  type?: string;
+  sortable?: boolean;
+  filterable?: boolean;
+  helpText?: string;
+  style?: any;
+  className?: string;
+  width?: any;
+  renderCell?: any;
+  renderHeading?: any;
+  wrapCustomHeadings?: any;
+}
+
+export interface MesaDataCellProps {
+  row: UserDataset;
+  column: MesaColumn;
+  rowIndex: number;
+  columnIndex: number;
+  inline?: boolean;
 }
