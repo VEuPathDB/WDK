@@ -209,6 +209,9 @@ public abstract class WdkService {
       catch (IOException e) {
         throw new WebApplicationException(e);
       }
+      finally {
+        content.close();
+      }
     };
   }
 
