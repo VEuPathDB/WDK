@@ -375,13 +375,14 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       stmt.setLong(1, analysisId);
       rs = stmt.executeQuery();
       if (rs.next()) {
-        return new DatabaseResultStream(rs, "PROPERTIES");
+        // successfully retrieved properties; underlying connection will be closed by caller
+        return new DatabaseResultStream(conn, stmt, rs, "PROPERTIES");
       }
       // could not find row for this analysis ID; close resources and return null
       SqlUtils.closeQuietly(rs, stmt, conn);
       return null;
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       // close only in failure case (not finally); if success, caller must close
       SqlUtils.closeQuietly(rs, stmt, conn);
       throw new WdkModelException(e);

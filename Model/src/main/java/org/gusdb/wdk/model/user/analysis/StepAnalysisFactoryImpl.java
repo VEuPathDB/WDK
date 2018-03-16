@@ -17,6 +17,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
@@ -234,9 +235,18 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       toContext = writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId() + ".  Copying properties...");
-      // copy properties of old context to new
-      setProperties(toContext.getAnalysisId(), getProperties(fromContext.getAnalysisId()));
-      LOG.info("Properties copied.");
+      // copy properties of old context to new and make sure to close- not closing is a connection leak!
+      InputStream propertyStream = null;
+      try {
+        propertyStream = getProperties(fromContext.getAnalysisId());
+        if (propertyStream != null) {
+          setProperties(toContext.getAnalysisId(), propertyStream);
+          LOG.info("Properties copied.");
+        }
+      }
+      finally {
+        IoUtil.closeQuietly(propertyStream);
+      }
     }
     LOG.info("Completed copy.");
   }
