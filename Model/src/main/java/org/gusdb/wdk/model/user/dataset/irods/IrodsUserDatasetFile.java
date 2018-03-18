@@ -10,7 +10,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.packinstr.TransferOptions;
 import org.irods.jargon.core.pub.io.FileIOOperations.SeekWhenceType;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
@@ -61,7 +60,7 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
+  protected Long readFileSize(UserDatasetSession dsSession) throws WdkModelException {
     long start = System.currentTimeMillis();
     IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
     IRODSFile irodsFile = null;
@@ -73,22 +72,6 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
     finally {
       adaptor.closeFile(irodsFile);
       QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileSize-irods: " + getFilePath().toString(),start);
-    }
-  }
-
-  @Override
-  public String getFileName(UserDatasetSession dsSession) throws WdkModelException {
-    long start = System.currentTimeMillis();
-    IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
-    IRODSFile irodsFile = null;
-    try {
-      IRODSFileFactory fileFactory = adaptor.getIrodsFileFactory();
-      irodsFile = adaptor.getIrodsFile(fileFactory,getFilePath().toString());
-      return irodsFile.getName();
-    }
-    finally {
-      adaptor.closeFile(irodsFile);
-      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","getFileName-irods: " + getFilePath().toString(),start);
     }
   }
 

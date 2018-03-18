@@ -30,6 +30,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   protected static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
   protected static final String SHARED_WITH_DIR = "sharedWith";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
+  protected static final String DATAFILES_DIR = "datafiles";
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
 
   private static final String NL = System.lineSeparator();
@@ -56,11 +57,13 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   @Override
   public Map<Long, UserDataset> getUserDatasets(Long userId) throws WdkModelException {
 
-    Path userDatasetsDir = getUserDatasetsDir(userId);
-
-    // iterate through datasets, creating a UD from each
     Map<Long, UserDataset> datasetsMap = new HashMap<>();
-    fillDatasetsMap(userDatasetsDir, datasetsMap);
+
+    Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
+    
+    // iterate through datasets, creating a UD from each   
+    if (userDatasetsDir != null) fillDatasetsMap(userDatasetsDir, datasetsMap);
+    
     return Collections.unmodifiableMap(datasetsMap);
   }
 
@@ -281,18 +284,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json"));
     JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
 
-    Path datafilesDir = datasetDir.resolve("datafiles");
-    if (!directoryExists(datafilesDir))
-      throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
-
-    Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
-
-    for (Path dataFilePath : adaptor.getPathsInDir(datafilesDir)) {
-      UserDatasetFile udf = getUserDatasetFile(dataFilePath, datasetId);
-      dataFiles.put(udf.getFileName(this), udf);
-    }
-
-    return new JsonUserDataset(datasetId, datasetJson, metaJson, dataFiles);
+    return new JsonUserDataset(datasetId, datasetJson, metaJson, datasetDir.resolve(DATAFILES_DIR), this);
   }
 
   /**
@@ -599,6 +591,20 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     if (line == null)
       throw new WdkModelException("Empty quota file " + quotaFile);
     return new Long(line.trim());
+  }
+
+  /**
+   * Given a user ID, return a Path to that user's datasets dir.  If dir doesn't exist, return NULL.
+   * @param userId
+   * @return
+   * @throws WdkModelException
+   */
+  private Path getUserDatasetsDirIfExists(Long userId) throws WdkModelException {
+    Path userDatasetsDir = getUserDir(userId).resolve("datasets");
+
+    if (!directoryExists(userDatasetsDir)) return null;
+
+    return userDatasetsDir;
   }
 
   /**
