@@ -8,6 +8,7 @@ import { ViewControllerProps } from "Core/CommonTypes";
 import { ActionCreatorRecord } from "Utils/ActionCreatorUtils";
 import WdkStore, { BaseState } from "Core/State/Stores/WdkStore";
 import AbstractViewController from "Core/Controllers/AbstractViewController";
+import { mapValues } from 'lodash';
 
 export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
 
@@ -32,7 +33,7 @@ export default abstract class AbstractPageController <
   }
 
   getQueryParams() {
-    return parse(this.props.location.search.slice(1));
+    return mapValues(parse(this.props.location.search.slice(1)), String);
   }
 
   setDocumentTitle(): void {

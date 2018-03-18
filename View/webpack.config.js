@@ -20,7 +20,6 @@ var scripts = [
   { alias: 'lib/jquery-flot-time',                      path : __dirname + '/webapp/wdk/lib/flot/jquery.flot.time.min.js' },
   { alias: 'lib/jquery-datatables',                     path : __dirname + '/webapp/wdk/lib/datatables.min.js' },
   { alias: 'lib/jquery-datatables-natural-type-plugin', path : __dirname + '/webapp/wdk/lib/datatables-natural-type-plugin.js' },
-  { alias: 'fixed-data-table',                          path : __dirname + '/node_modules/fixed-data-table/main.js' },
   { alias: 'zynga-scroller',                            path : __dirname + '/lib/zynga-scroller/src' }
 ];
 
