@@ -32,14 +32,12 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
-    "backbone": "^1.2.1",
     "classnames": "^2.2.0",
     "css-loader": "^0.28.9",
     "exports-loader": "^0.7.0",
     "expose-loader": "^0.7.4",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.7",
-    "fixed-data-table": "^0.6.5",
     "flux": "^3.1.3",
     "history": "^4.7.2",
     "json-stable-stringify": "^1.0.0",
@@ -74,7 +72,6 @@
     "eslint": "^4.10.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-react": "^7.4.0",
-    "react-addons-perf": "^15.4.2",
     "ts-node": "^3.2.0"
   },
   "jest": {
