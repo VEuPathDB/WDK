@@ -20,9 +20,7 @@ public abstract class UserDatasetFile {
     this.userDatasetId = userDatasetId;
   }
   
-  public UserDatasetFile(Path filePath, Long userDatasetId, Long fileSize) {
-    this.filePath = filePath;
-    this.userDatasetId = userDatasetId;
+  public void setSize(Long fileSize) {
     this.fileSize = fileSize;
   }
   
