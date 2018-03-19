@@ -113,11 +113,7 @@ export function getDispatchActionMaker(dispatcher: Dispatcher, services: ActionC
 
   function logError(error: Error) {
     console.error(error);
-    services.wdkService.submitError({
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    }).catch(err => {
+    services.wdkService.submitError(error).catch(err => {
       console.error('Could not submit error to log.', err);
     })
   }

@@ -33,12 +33,7 @@ export default class ErrorBoundary extends React.Component {
     }
     else {
       dispatch(({ wdkService }) => {
-        return wdkService.submitError({
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-          componentStack: info.componentStack
-        }).then(() => emptyAction)
+        return wdkService.submitError(error, info).then(() => emptyAction)
       });
     }
   }

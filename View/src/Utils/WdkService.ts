@@ -200,9 +200,10 @@ export default class WdkService {
       JSON.stringify({ email, password, redirectUrl }));
   }
 
-  submitError(error: ClientError) {
+  submitError(error: Error, extra?: any) {
+    const { name, message, stack } = error;
     return this._checkStoreVersion().then(() =>
-      this._fetchJson<void>('post', '/client-errors', JSON.stringify(error)));
+      this._fetchJson<void>('post', '/client-errors', JSON.stringify({ name, message, stack, extra })));
   }
 
   /**
