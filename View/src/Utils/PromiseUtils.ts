@@ -12,7 +12,7 @@ export const pendingPromise = { then() { } };
  * @param {any} maybePromise
  * @returns {boolean}
  */
-export function isPromise(maybePromise: any) {
+export function isPromise<T>(maybePromise: any): maybePromise is Promise<T> {
   return maybePromise != null && typeof maybePromise.then === 'function';
 }
 

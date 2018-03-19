@@ -125,20 +125,22 @@ type DeleteAction = DeleteFavoritesAction|DeleteErrorReceivedAction|TableStateUp
 type AddAction = AddErrorAction|UndeleteFavoritesAction|TableStateUpdatedAction;
 
 export function loadFavoritesList (): ActionThunk<ListAction>{
-  return function run (dispatch, { wdkService }) {
-    dispatch({ type: 'favorites/list-loading' });
-    wdkService.getCurrentFavorites()
-      .then(rows => {
-          const newTableState = MesaState.create({ rows });
-          dispatch({
-            type: 'favorites/list-received',
-            payload: { tableState: newTableState }
-          });
-        },
-        (error: ServiceError) => {
-          dispatch({type: 'favorites/list-error', payload: {error}})
-        }
-      );
+  return function run ({ wdkService }) {
+    return [
+      { type: 'favorites/list-loading' },
+      wdkService.getCurrentFavorites()
+        .then(rows => {
+            const newTableState = MesaState.create({ rows });
+            return {
+              type: 'favorites/list-received',
+              payload: { tableState: newTableState }
+            } as ListAction;
+          },
+          (error: ServiceError) => {
+            return {type: 'favorites/list-error', payload: {error}} as ListAction;
+          }
+        )
+      ];
   }
 }
 
@@ -195,37 +197,35 @@ export function cancelCellEdit (): CancelCellEditAction {
 }
 
 export function saveCellData (tableState: {}, updatedFavorite: Favorite): ActionThunk<SaveAction> {
-  return (dispatch, { wdkService }) => {
-    dispatch({ type: 'favorites/save-cell-data' });
-
+  return ({ wdkService }) => {
     const rows = MesaState.getRows(tableState);
     const updatedRows = rows.map((fav: Favorite) => fav.id === updatedFavorite.id ? updatedFavorite : fav);
     const updatedTableState = MesaState.setRows(tableState, updatedRows);
 
-    wdkService.saveFavorite(updatedFavorite)
-      .then(() => {
-        dispatch({ type: 'favorites/save-received', payload: { tableState: updatedTableState } });
-      }, (error: ServiceError) => {
-        dispatch({ type: 'favorites/save-error', payload: { error } })
-      });
+    return [
+      { type: 'favorites/save-cell-data' },
+      wdkService.saveFavorite(updatedFavorite).then(
+        () => ({ type: 'favorites/save-received', payload: { tableState: updatedTableState } } as SaveAction),
+        (error: ServiceError) => ({ type: 'favorites/save-error', payload: { error } } as SaveAction)
+      )
+    ];
   };
 }
 
 export function deleteFavorites (tableState: {}, deletedFavorites: Favorite[]): ActionThunk <DeleteAction> {
-  return (dispatch, { wdkService }) => {
-    dispatch({ type: 'favorites/delete-favorites' });
-
+  return ({ wdkService }) => {
     const deletedIds = deletedFavorites.map((fav: Favorite) => fav.id);
     const rows = MesaState.getRows(tableState);
     const updatedRows = rows.filter((fav: Favorite) => !deletedIds.includes(fav.id));
     const updatedTableState = MesaState.setRows(tableState, updatedRows);
 
-    wdkService.deleteFavorites(deletedIds)
-      .then(() => {
-          dispatch({ type: 'favorites/table-state-updated', payload: { tableState: updatedTableState }});
-        }, (error: ServiceError) => {
-          dispatch({ type: 'favorites/delete-error', payload: { error }})
-        });
+    return [
+      { type: 'favorites/delete-favorites' },
+      wdkService.deleteFavorites(deletedIds).then(
+        () => ({ type: 'favorites/table-state-updated', payload: { tableState: updatedTableState } } as DeleteAction),
+        (error: ServiceError) => ({ type: 'favorites/delete-error', payload: { error } } as DeleteAction)
+      )
+    ]
   }
 }
 
@@ -253,18 +253,17 @@ export function filterByType(recordType: string): FilterByTypeAction {
 }
 
 export function undeleteFavorites (tableState: {}, undeletedFavorites: Favorite[]): ActionThunk<AddAction> {
-  return (dispatch, { wdkService }) => {
-    dispatch({ type: 'favorites/undelete-favorites' });
-
+  return ({ wdkService }) => {
     const ids = undeletedFavorites.map((favorite) => favorite.id);
     const rows = MesaState.getRows(tableState);
     const updatedTableState = MesaState.setRows(tableState, [...rows, ...undeletedFavorites]);
 
-    wdkService.undeleteFavorites(ids)
-      .then(() => {
-        dispatch({ type: 'favorites/table-state-updated', payload: { tableState: updatedTableState } })
-      }, (error: ServiceError) => {
-        dispatch({ type: 'favorites/add-error', payload: { error } });
-      });
+    return [
+      { type: 'favorites/undelete-favorites' },
+      wdkService.undeleteFavorites(ids).then(
+        () => ({ type: 'favorites/table-state-updated', payload: { tableState: updatedTableState } } as AddAction),
+        (error: ServiceError) => ({ type: 'favorites/add-error', payload: { error } } as AddAction)
+      )
+    ];
   };
 }

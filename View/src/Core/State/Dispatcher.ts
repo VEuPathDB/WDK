@@ -2,7 +2,7 @@ import { Dispatcher } from 'flux';
 import { Subject } from 'rxjs/Subject';
 
 export interface Action {
-  type: string;
+  type: string | symbol;
   payload?: string | number | object;
   channel?: string;
   isBroadcast?: boolean;

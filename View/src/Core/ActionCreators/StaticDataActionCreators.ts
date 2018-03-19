@@ -115,41 +115,42 @@ function handleLoadError(error: Error): LoadErrorAction {
 
 function getPromise(
   dataItemName: StaticDataKey,
-  dispatch: DispatchAction<StaticDataAction>,
   wdkService: WdkService
-) {
+): Promise<StaticDataAction> {
   let { elementName, serviceCall, actionType } = staticDataConfigMap[dataItemName];
   return (wdkService as any)[serviceCall]().then((element: StaticData[typeof elementName]) => {
     console.log("WDK " + elementName + " loaded");
-    dispatch(broadcast({
+    return broadcast({
       type: actionType,
       payload: { [elementName]: element }
-    }) as StaticDataAction);
-    return element;
+    }) as StaticDataAction;
   });
 }
 
-function getLoader(dataItemName: StaticDataKey): ActionThunk<StaticDataAction> {
-  return function run(dispatch, { wdkService }) {
-    return getPromise(dataItemName, dispatch, wdkService)
+function getLoader(dataItemName: StaticDataKey): ActionThunk<StaticDataAction|LoadErrorAction> {
+  return function run({ wdkService }) {
+    return getPromise(dataItemName, wdkService)
       .catch((error: Error) => handleLoadError(error));
   };
 };
 
-export function loadAllStaticData(): ActionThunk<AllDataAction> {
-  let dataItemKeys = Object.keys(staticDataConfigMap);
-  return function run(dispatch, { wdkService }) {
-    let promiseArray = dataItemKeys.map(key => getPromise(key as StaticDataKey, dispatch as any, wdkService));
-    return Promise.all(promiseArray).then(resultArray => {
-      let payload: {[key: string]: any} = {};
-      for (let i = 0; i < dataItemKeys.length; i++) {
-        payload[dataItemKeys[i]] = resultArray[i];
-      }
-      console.log("WDK static data loaded");
-      dispatch(broadcast({
-        type: 'static/all-data-loaded',
-        payload: payload
-      }) as AllDataAction);
-    }).catch((error: Error) => handleLoadError(error));
+export function loadAllStaticData(): ActionThunk<AllDataAction|StaticDataAction|LoadErrorAction> {
+  let dataItemKeys = Object.keys(staticDataConfigMap) as StaticDataKey[];
+  return function run({ wdkService }) {
+    let promiseArray = dataItemKeys.map(key => getPromise(key as StaticDataKey, wdkService));
+    return [
+      promiseArray,
+      Promise.all(promiseArray).then(resultArray => {
+        let allDataAction = resultArray.reduce((action, result) => ({
+          ...action,
+          payload: {
+            ...action.payload,
+            ...result.payload
+          }
+        }), { type: 'static/all-data-loaded', payload: {} } as AllDataAction)
+        console.log("WDK static data loaded");
+        return broadcast(allDataAction);
+      }).catch((error: Error) => handleLoadError(error))
+    ];
   };
 };

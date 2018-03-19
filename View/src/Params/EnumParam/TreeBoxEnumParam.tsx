@@ -34,12 +34,12 @@ export type State = {
 // ActionCreators
 // --------------
 
-const ExpandedListSet = makeActionCreator('enum-param-treebox/expanded-list-set',
+export const ExpandedListSet = makeActionCreator('enum-param-treebox/expanded-list-set',
   payload<Ctx & {
     expandedList: string[]
   }>());
 
-const SearchTermSet = makeActionCreator('enum-param-treebox/search-term-set',
+export const SearchTermSet = makeActionCreator('enum-param-treebox/search-term-set',
   payload<Ctx & {
     searchTerm: string
   }>());
