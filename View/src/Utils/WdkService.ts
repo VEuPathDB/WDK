@@ -66,13 +66,6 @@ export class ServiceError extends Error {
   }
 }
 
-export interface ClientError {
-  name: string;
-  message: string;
-  stack?: string;
-  componentStack?: string;
-}
-
 export interface ServiceConfig {
   authentication: {
     method: 'OAUTH2' | 'USERDB';
