@@ -13,7 +13,7 @@ import {
   FavoritesStatusLoadingAction
 } from 'Core/ActionCreators/UserActionCreators';
 import { PrimaryKey, RecordInstance, RecordClass } from 'Utils/WdkModel';
-import { ActionThunk, DispatchAction } from 'Utils/ActionCreatorUtils';
+import { ActionThunk, DispatchAction, emptyAction, EmptyAction } from 'Utils/ActionCreatorUtils';
 import { Action } from 'Core/State/Dispatcher';
 import WdkService from 'Utils/WdkService';
 import { CategoryTreeNode } from "Utils/CategoryUtils";
@@ -107,25 +107,16 @@ type LoadRecordAction = RecordLoadingAction
 type UserAction = BasketAction | FavoriteAction
 
 /** Fetch page data from services */
-export function loadRecordData(recordClass: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction | UserAction> {
-  return function run(dispatch, { wdkService }) {
-    const activeRecordAction$ = dispatch(setActiveRecord(recordClass, primaryKeyValues)) as Promise<RecordReceivedAction>;
-    const user$ = wdkService.getCurrentUser();
-    Promise.all([ activeRecordAction$, user$ ]).then(([ action, user ]) => {
-      let { record, recordClass } = action.payload;
-      if (!user.isGuest && recordClass.useBasket) {
-        dispatch(loadBasketStatus(record));
-        dispatch(loadFavoritesStatus(record));
-      }
-    });
+export function loadRecordData(recordClass: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction | UserAction | EmptyAction> {
+  return function run({ wdkService }) {
+    return setActiveRecord(recordClass, primaryKeyValues);
   };
 }
 
-const dispatchWithId = <T extends Action & { id: string }>(
-  dispatch: DispatchAction<T>,
+const makeWithId = <T extends Action & { id: string }>(
   id = uniqueId('groupid')
 ) => (action: Action) => {
-  return dispatch(Object.assign(action, { id }) as T);
+  return Object.assign(action, { id }) as T;
 }
 
 /**
@@ -135,55 +126,42 @@ const dispatchWithId = <T extends Action & { id: string }>(
  * @param {string} recordClassName
  * @param {Array<string>} primaryKeyValues
  */
-function setActiveRecord(recordClassName: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction> {
-  return (realDispatch, { wdkService }) => {
-    const dispatch = dispatchWithId(realDispatch);
-    dispatch({
-      type: 'record-view/active-record-loading',
-      payload: { recordClassName, primaryKeyValues }
+function setActiveRecord(recordClassName: string, primaryKeyValues: string[]): ActionThunk<LoadRecordAction|UserAction|EmptyAction> {
+  return ({ wdkService }) => {
+    const withId = makeWithId<LoadRecordAction>();
+    // Helper to handle errors
+    const makeErrorAction = (error: Error) => withId({
+      type: 'record-view/error-received',
+      payload: { error }
     });
-    // Fetch the record base and tables in parallel.
-    return Promise.all([
-      wdkService.findRecordClass(r => r.urlSegment === recordClassName),
-      getPrimaryKey(wdkService, recordClassName, primaryKeyValues),
-      getCategoryTree(wdkService, recordClassName)
-    ]).then(
-      ([recordClass, primaryKey, fullCategoryTree]) => {
-        if (recordClass == null)
-          throw new Error("Could not find record class identified by `" + recordClassName + "`.");
 
-        // Set up promises for actions
-        let baseAction$: Promise<LoadRecordAction> = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
-        // load all subsequent tables in a single request. we were doing it in batches of 4, but that hurts rendering!
-        let tableActions: Promise<LoadRecordAction>[] = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 0);
-        // Helper to handle errors
-        let dispatchError = (error: Error) => dispatch({
-          type: 'record-view/error-received',
-          payload: { error }
-        });
+    return [
+      withId({
+        type: 'record-view/active-record-loading',
+        payload: { recordClassName, primaryKeyValues }
+      }),
+      // Fetch the record base and tables in parallel.
+      Promise.all([
+        wdkService.findRecordClass(r => r.urlSegment === recordClassName),
+        getPrimaryKey(wdkService, recordClassName, primaryKeyValues),
+        getCategoryTree(wdkService, recordClassName)
+      ]).then(
+        ([recordClass, primaryKey, fullCategoryTree]) => {
+          // Set up promises for actions
+          let baseAction$ = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
+          // load all subsequent tables in a single request. we were doing it in batches of 4, but that hurts rendering!
+          let tableActions = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 0);
 
-        baseAction$
-          .then((action: LoadRecordAction) => { dispatch(action) }, (error: Error) => { dispatchError(error) })
-          .then(() => {
-            // Calls dispatch on the array of promises in the provided order
-            // even if they resolve out of order.
-            seq(tableActions, dispatch, dispatchError)
-              .catch(error => {
-                console.error(error);
-                if (process.env.NODE_ENV === 'development')
-                  alert('Render error. See browser console for details.')
-              });
-          });
-
-        return baseAction$;
-      },
-      (error: Error) => {
-        dispatch({
-          type: 'record-view/error-received',
-          payload: { error }
-        })
-      }
-      );
+          return [
+            baseAction$.then(withId, makeErrorAction),
+            tableActions.map(action$ => action$.then(withId, makeErrorAction)),
+            recordClass.useBasket ? baseAction$.then(r => loadBasketStatus(r.payload.record)) : emptyAction,
+            baseAction$.then(r => loadFavoritesStatus(r.payload.record))
+          ];
+        },
+        makeErrorAction
+      )
+    ];
   }
 }
 

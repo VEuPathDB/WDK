@@ -17,6 +17,10 @@ import {
   questionEpic
 } from 'Core/ActionCreators/QuestionActionCreators';
 import {
+  ExpandedListSet,
+  SearchTermSet
+} from 'Params/EnumParam/TreeBoxEnumParam';
+import {
   ActiveFieldSetAction,
   SummaryCountsLoadedAction,
   FieldStateUpdatedAction,
@@ -49,7 +53,9 @@ const isQuestionType = isOneOf(
   SummaryCountsLoadedAction,
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
-  OntologyTermsInvalidated
+  OntologyTermsInvalidated,
+  ExpandedListSet,
+  SearchTermSet
 );
 
 export type QuestionState = {
