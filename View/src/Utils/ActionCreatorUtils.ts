@@ -54,20 +54,25 @@ export type DispatchAction<T extends Action> = (action: ActionCreatorResult<T>) 
 /**
  * Create a function that takes a channel and creates a dispatch function
  * `dispatchAction` that forwards calls to `dispatcher.dispatch` using the
- * channel as a scope for the audience of the action.  In dispatchAction:
+ * channel as a scope for the audience of the action.
  *
- * If `action` is a function, it will be called with `dispatchAction` and
- * `services`. Calling it with `dispatchAction` allows for composability since
- * an action function can in turn call another action function. This is useful
- * for creating higher-order dispatch helpers, such as latest, once, etc.
+ * In `dispatchAction`:
  *
- * If `action` is an object, `dispatcher.dispatch` will be called with it.
+ * If `action` is a function (i.e., a thunk), it will be called with `services`.
+ * The return type of the function is the recursive type
+ * `ActionCreatorResult<T>`, where `T` is the type of Action the function may
+ * produce. `dispatchAction` will recursively unwrap the various types until an
+ * action object is encountered, which will then be dispatched to the
+ * `dispatcher`. If no action should be dispatched, use the special
+ * `emptyAction` value.
  *
- * An `action` function should ultimately return an object to invoke a dispatch.
+ * This design enforces that a value is always returned which makes error
+ * handling more reliable.
  *
- * @param {String} rootUrl
- * @param {Dispatcher} dispatcher
- * @param {Object?} serviceSubset
+ * Note: In a previous design, the thunk was also passed the main dispatch
+ * action and was expected to return void. This design encouraged promise
+ * rejections to go unhandled, which made comprehensive error handling more
+ * difficult.
  */
 export function getDispatchActionMaker(dispatcher: Dispatcher, services: ActionCreatorServices) {
   return function makeDispatchAction(channel: string) {
@@ -78,11 +83,6 @@ export function getDispatchActionMaker(dispatcher: Dispatcher, services: ActionC
     const dispatchAction = tryCatch(
       function dispatch(action: ActionCreatorResult<Action>) {
         if (typeof action === 'function') {
-          // Call the function with dispatchAction and services
-          // TODO Change this to `dispatchAction(action(services))`. Doing this alone will make it impossible
-          // for an ActionCreator to dispatch multiple actions. We can either handle an array as a case below,
-          // and call dispatchAction on each item of the array, or more generally we can support iterables.
-          // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
           return dispatchAction(action(services));
         }
         else if (isPromise(action)) {
