@@ -1,9 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 
-import { Action } from 'Core/State/Dispatcher';
+import Dispatcher, { Action } from 'Core/State/Dispatcher';
 import { PageTransitioner } from 'Utils/PageTransitioner';
 import WdkService from 'Utils/WdkService';
 import WdkStore from 'Core/State/Stores/WdkStore';
+import { isPromise } from 'Utils/PromiseUtils';
+
 
 export interface ActionCreatorServices {
   wdkService: WdkService;
@@ -11,12 +13,26 @@ export interface ActionCreatorServices {
 }
 
 export type ActionCreatorResult<T extends Action> = T
-                                           | Promise<T>
-                                           | Promise<ActionThunk<T>>
-                                           | ActionThunk<T>;
+                                           | ActionThunk<T>
+                                           | ActionCreatorResultArray<T>
+                                           | ActionCreatorResultPromise<T>;
+
+interface ActionCreatorResultArray<T extends Action> extends Array<ActionCreatorResult<T>> {}
+
+interface ActionCreatorResultPromise<T extends Action> extends Promise<ActionCreatorResult<T>> {}
 
 export interface ActionThunk<T extends Action> {
-  (dispatch: DispatchAction<T>, services: ActionCreatorServices): void;
+  (services: ActionCreatorServices): ActionCreatorResult<T>;
+}
+
+export const emptyType = Symbol('empty');
+
+export type EmptyAction = {
+  type: typeof emptyType
+}
+
+export const emptyAction: EmptyAction = {
+  type: emptyType
 }
 
 /**
@@ -35,7 +51,85 @@ export type ActionCreatorRecord<T extends Action> = Record<string, ActionCreator
  */
 export type DispatchAction<T extends Action> = (action: ActionCreatorResult<T>) => ActionCreatorResult<T>;
 
+/**
+ * Create a function that takes a channel and creates a dispatch function
+ * `dispatchAction` that forwards calls to `dispatcher.dispatch` using the
+ * channel as a scope for the audience of the action.
+ *
+ * In `dispatchAction`:
+ *
+ * If `action` is a function (i.e., a thunk), it will be called with `services`.
+ * The return type of the function is the recursive type
+ * `ActionCreatorResult<T>`, where `T` is the type of Action the function may
+ * produce. `dispatchAction` will recursively unwrap the various types until an
+ * action object is encountered, which will then be dispatched to the
+ * `dispatcher`. If no action should be dispatched, use the special
+ * `emptyAction` value.
+ *
+ * This design enforces that a value is always returned which makes error
+ * handling more reliable.
+ *
+ * Note: In a previous design, the thunk was also passed the main dispatch
+ * action and was expected to return void. This design encouraged promise
+ * rejections to go unhandled, which made comprehensive error handling more
+ * difficult.
+ */
+export function getDispatchActionMaker(dispatcher: Dispatcher, services: ActionCreatorServices) {
+  return function makeDispatchAction(channel: string) {
+    if (channel === undefined) {
+      console.warn("Call to makeDispatchAction() with no channel defined.");
+    }
 
+    const dispatchAction = tryCatch(
+      function dispatch(action: ActionCreatorResult<Action>) {
+        if (typeof action === 'function') {
+          return dispatchAction(action(services));
+        }
+        else if (isPromise(action)) {
+          return action.then(result => dispatchAction(result)).then(undefined, logError);
+        }
+        else if (Array.isArray(action)) {
+          return action.map(dispatchAction);
+        }
+        else if (action == null) {
+          throw new Error("Action received is undefined or is null");
+        }
+        else if (action.type == null) {
+          throw new Error("Action received does not have a `type` property.");
+        }
+        if (action.type === emptyType) {
+          // nothing to dispatch, so bail
+          return;
+        }
+        // assign channel if requested
+        action.channel = (action.isBroadcast ? undefined : channel);
+        return dispatcher.dispatch(action);
+      },
+      logError
+    );
+
+    return dispatchAction as DispatchAction<Action>;
+  };
+
+  function logError(error: Error) {
+    console.error(error);
+    services.wdkService.submitError(error).catch(err => {
+      console.error('Could not submit error to log.', err);
+    })
+  }
+}
+
+
+function tryCatch<T extends Function>(fn: T, handleError: (error: Error) => any) {
+  return (function tryCatchWrapper(...args: any[]) {
+    try {
+      return fn(...args)
+    }
+    catch(error) {
+      return handleError(error);
+    }
+  });
+}
 
 /**
  * An Action that carries the type of its `type` and `payload` properties

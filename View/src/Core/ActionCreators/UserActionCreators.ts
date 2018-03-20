@@ -2,7 +2,7 @@ import { Action } from 'Core/State/Dispatcher';
 import {filterOutProps} from 'Utils/ComponentUtils';
 import { alert, confirm } from 'Utils/Platform';
 import { broadcast } from 'Utils/StaticDataUtils';
-import {ActionThunk} from "Utils/ActionCreatorUtils";
+import {ActionThunk, EmptyAction, emptyAction} from "Utils/ActionCreatorUtils";
 import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "Utils/WdkUser";
 import {RecordInstance} from "Utils/WdkModel";
 import { State as PasswordStoreState } from 'Views/User/Password/UserPasswordChangeStore';
@@ -138,14 +138,15 @@ export type FavoritesStatusErrorAction = {
  * the passed path.  Optional external param lets caller specify if path is
  * internal or external, defaulting to false (internal).
  */
-export function conditionallyTransition(test: UserPredicate, path: string, external: boolean = false): ActionThunk<never> {
-  return function run(dispatch, { wdkService }) {
-    wdkService.getCurrentUser().then(user => {
+export function conditionallyTransition(test: UserPredicate, path: string, external: boolean = false): ActionThunk<EmptyAction> {
+  return function run({ wdkService }) {
+    return wdkService.getCurrentUser().then(user => {
       if (test(user)) {
-        dispatch(external ?
+        return external ?
           transitionToExternalPage(path) :
-          transitionToInternalPage(path));
+          transitionToInternalPage(path);
       }
+      return emptyAction;
     });
   };
 }
@@ -155,18 +156,18 @@ export function conditionallyTransition(test: UserPredicate, path: string, exter
  * on the server.
  */
 export function updateUserPreference(scope: PreferenceScope, key: string, value: string): ActionThunk<PreferenceUpdateAction> {
-  return function run(dispatch, { wdkService }) {
+  return function run({ wdkService }) {
     let updatePromise = wdkService.updateCurrentUserPreference(scope, key, value);
-    return dispatch(sendPrefUpdateOnCompletion(updatePromise,
-        'user/preference-update', { [scope]: { [key]: value } } as UserPreferences) as Promise<PreferenceUpdateAction>);
+    return sendPrefUpdateOnCompletion(updatePromise,
+        'user/preference-update', { [scope]: { [key]: value } } as UserPreferences) as Promise<PreferenceUpdateAction>;
   };
 };
 
 export function updateUserPreferences(newPreferences: UserPreferences): ActionThunk<PreferencesUpdateAction> {
-  return function run(dispatch, { wdkService }) {
+  return function run({ wdkService }) {
     let updatePromise = wdkService.updateCurrentUserPreferences(newPreferences);
-    return dispatch(sendPrefUpdateOnCompletion(updatePromise,
-        'user/preferences-update', newPreferences) as Promise<PreferencesUpdateAction>);
+    return sendPrefUpdateOnCompletion(updatePromise,
+        'user/preferences-update', newPreferences) as Promise<PreferencesUpdateAction>;
   };
 };
 
@@ -214,54 +215,56 @@ function createFormStatusAction(actionType: string, status: string, errorMessage
 /** Save user profile to DB */
 type SubmitProfileFormType = ActionThunk<UserUpdateAction|PreferencesUpdateAction|ProfileFormSubmissionStatusAction>;
 export function submitProfileForm(user: UserProfileFormData): SubmitProfileFormType {
-  return function run(dispatch, { wdkService }) {
-    dispatch(createProfileFormStatusAction('pending'));
+  return function run({ wdkService }) {
     let trimmedUser = <UserProfileFormData>filterOutProps(user, ["isGuest", "id", "confirmEmail", "preferences"]);
     let userPromise = wdkService.updateCurrentUser(trimmedUser);
     let prefPromise = wdkService.updateCurrentUserPreferences(user.preferences as UserPreferences); // should never be null by this point
-    return dispatch(Promise.all([userPromise, prefPromise])
-      .then(() => {
+    return [
+      createProfileFormStatusAction('pending'),
+      Promise.all([userPromise, prefPromise]).then(() => [
         // success; update user first, then prefs, then status in ProfileViewStore
-        dispatch(broadcast({
+        broadcast({
           type: 'user/user-update',
           // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
           // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail' and 'preferences'
           payload: { user: filterOutProps(user, ["confirmEmail", "preferences"]) as User }
-        }) as UserUpdateAction);
-        dispatch(broadcast({
+        }) as UserUpdateAction,
+        broadcast({
           type: 'user/preferences-update',
           payload: user.preferences as UserPreferences
-        }) as PreferencesUpdateAction);
-        return createProfileFormStatusAction('success');
-      })
+        }) as PreferencesUpdateAction,
+        createProfileFormStatusAction('success')
+      ])
       .catch((error) => {
         console.error(error.response);
         return createProfileFormStatusAction('error', error.response);
-      }));
+      })
+    ];
   };
 };
 
 /** Register user */
 type SubmitRegistrationFormType = ActionThunk<ProfileFormSubmissionStatusAction|ClearRegistrationFormAction>;
 export function submitRegistrationForm (formData: UserProfileFormData): SubmitRegistrationFormType {
-  return function run(dispatch, { wdkService }) {
-    dispatch(createProfileFormStatusAction('pending'));
+  return function run({ wdkService }) {
     let trimmedUser = <User>filterOutProps(formData, ["isGuest", "id", "preferences", "confirmEmail"]);
     let registrationData: UserWithPrefs = {
       user: trimmedUser,
       preferences: formData.preferences as UserPreferences
     }
-    wdkService.createNewUser(registrationData)
-      .then(responseData => {
+    return [
+      createProfileFormStatusAction('pending'),
+      wdkService.createNewUser(registrationData).then(responseData => [
         // success; clear the form in case user wants to register another user
-        dispatch(broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction);
+        broadcast({ type: 'user/clear-registration-form' }) as ClearRegistrationFormAction,
         // add success message to top of page
-        dispatch(createProfileFormStatusAction('success'));
-      })
+        createProfileFormStatusAction('success')
+      ])
       .catch((error) => {
         console.error(error.response);
-        dispatch(createProfileFormStatusAction('error', error.response));
-      });
+        return createProfileFormStatusAction('error', error.response);
+      })
+    ];
   };
 };
 
@@ -275,16 +278,16 @@ export function updateProfileForm(user: User): ProfileFormUpdateAction {
 
 /** Save new password to DB */
 export function savePassword(oldPassword: string, newPassword: string): ActionThunk<PasswordFormSubmissionStatusAction> {
-  return function run(dispatch, { wdkService }) {
-    dispatch(createPasswordFormStatusAction('pending'));
-    wdkService.updateCurrentUserPassword(oldPassword, newPassword)
-      .then(() => {
-        dispatch(createPasswordFormStatusAction('success'));
-      })
-      .catch((error) => {
-        console.error(error.response);
-        dispatch(createPasswordFormStatusAction('error', error.response));
-      });
+  return function run({ wdkService }) {
+    return [
+      createPasswordFormStatusAction('pending'),
+      wdkService.updateCurrentUserPassword(oldPassword, newPassword)
+        .then(() => createPasswordFormStatusAction('success'))
+        .catch((error) => {
+          console.error(error.response);
+          return createPasswordFormStatusAction('error', error.response);
+        })
+      ];
   };
 };
 
@@ -314,19 +317,21 @@ function createResetPasswordStatusAction(message?: string): ResetPasswordSubmiss
 };
 
 export function submitPasswordReset(email: string): ActionThunk<ResetPasswordSubmissionStatusAction> {
-  return function run(dispatch, { wdkService, transitioner }) {
-    dispatch(createResetPasswordStatusAction("Submitting..."));
-    wdkService.resetUserPassword(email).then(
-        () => {
-          // clear form for next visitor to this page
-          dispatch(createResetPasswordStatusAction(undefined));
-          // transition to user message page
-          transitioner.transitionToInternalPage('/user/message/password-reset-successful');
-        },
-        error => {
-          dispatch(createResetPasswordStatusAction(error.response || error.message));
-        }
-    );
+  return function run({ wdkService, transitioner }) {
+    return [
+      createResetPasswordStatusAction("Submitting..."),
+      wdkService.resetUserPassword(email).then(
+          () => {
+            // transition to user message page
+            transitioner.transitionToInternalPage('/user/message/password-reset-successful');
+            // clear form for next visitor to this page
+            return createResetPasswordStatusAction(undefined);
+          },
+          error => {
+            return createResetPasswordStatusAction(error.response || error.message);
+          }
+      )
+    ];
   };
 };
 
@@ -336,33 +341,32 @@ export function submitPasswordReset(email: string): ActionThunk<ResetPasswordSub
 /**
  * Show a warning that user must be logged in for feature
  */
-export function showLoginWarning(attemptedAction: string, destination?: string): ActionThunk<never|ShowLoginModalAction> {
-  return function(dispatch) {
-    confirm(
+export function showLoginWarning(attemptedAction: string, destination?: string): ActionThunk<EmptyAction|ShowLoginModalAction> {
+  return function() {
+    return confirm(
       'Login Required',
       'To ' + attemptedAction + ', you must be logged in. Would you like to login now?'
-    ).then(confirmed => {
-      if (confirmed) dispatch(showLoginForm(destination));
-    });
+    ).then(confirmed => confirmed ? showLoginForm(destination) : emptyAction);
   }
 };
 
 /**
  * Show the login form based on config
  */
-export function showLoginForm(destination = window.location.href): ActionThunk<never|ShowLoginModalAction> {
-  return function(dispatch, {wdkService}) {
-    wdkService.getConfig().then(config => {
+export function showLoginForm(destination = window.location.href): ActionThunk<EmptyAction|ShowLoginModalAction> {
+  return function({wdkService}) {
+    return wdkService.getConfig().then(config => {
       config.authentication.method
       let { oauthClientId, oauthClientUrl, oauthUrl, method } = config.authentication;
       if (method === 'OAUTH2') {
         performOAuthLogin(destination, wdkService, oauthClientId, oauthClientUrl, oauthUrl);
+        return emptyAction;
       }
       else { // USER_DB
-        dispatch({
+        return {
           type: 'user/show-login-modal',
           payload: { destination }
-        });
+        } as ShowLoginModalAction;
       }
     });
   };
@@ -374,19 +378,20 @@ export function hideLoginForm(): LoginDismissedAction {
   }
 }
 
-export function submitLoginForm(email: string, password: string, destination: string): ActionThunk<never|LoginErrorAction> {
-  return (dispatch, { wdkService }) => {
-    wdkService.tryLogin(email, password, destination)
+export function submitLoginForm(email: string, password: string, destination: string): ActionThunk<EmptyAction|LoginErrorAction> {
+  return ({ wdkService }) => {
+    return wdkService.tryLogin(email, password, destination)
       .then(response => {
         if (response.success) {
           window.location.assign(response.redirectUrl);
+          return emptyAction;
         }
         else {
-          dispatch(loginErrorReceived(response.message));
+          return loginErrorReceived(response.message);
         }
       })
       .catch(error => {
-        dispatch(loginErrorReceived("There was an error submitting your credentials.  Please try again later."));
+        return loginErrorReceived("There was an error submitting your credentials.  Please try again later.");
       });
   };
 }
@@ -422,9 +427,9 @@ function performOAuthLogin(destination: string, wdkService: WdkService,
     });
 }
 
-function logout(): ActionThunk<never> {
-  return function run(dispatch, { wdkService }) {
-    wdkService.getConfig().then(config => {
+function logout(): ActionThunk<EmptyAction> {
+  return function run({ wdkService }) {
+    return wdkService.getConfig().then(config => {
       let { oauthClientId, oauthClientUrl, oauthUrl, method } = config.authentication;
       let logoutUrl = oauthClientUrl + '/logout';
       if (method === 'OAUTH2') {
@@ -437,38 +442,37 @@ function logout(): ActionThunk<never> {
       else {
         window.location.assign(logoutUrl);
       }
+      return emptyAction;
     });
   };
 };
 
-export function showLogoutWarning(): ActionThunk<never> {
-  return function(dispatch) {
-    confirm(
+export function showLogoutWarning(): ActionThunk<EmptyAction> {
+  return function() {
+    return confirm(
       'Are you sure you want to logout?',
       'Note: You must log out of other EuPathDB sites separately'
-    ).then(confirmed => {
-      if (confirmed) dispatch(logout());
-    });
+    ).then(confirmed => confirmed ? logout() : emptyAction);
   }
 };
 
-const emptyThunk: ActionThunk<never> = noop;
+const emptyThunk: ActionThunk<EmptyAction> = () => emptyAction;
 
 /**
  * ActionThunk decorator that will branch based on if a user is logged in.
  * If the user is logged in, the first thunk is dispatched, otherwise the
  * second thunk is dispatched (if present).
  */
-function maybeLoggedIn<T extends Action>(loggedInThunk: ActionThunk<T>): ActionThunk<T>;
+function maybeLoggedIn<T extends Action>(loggedInThunk: ActionThunk<T>): ActionThunk<T|EmptyAction>;
 function maybeLoggedIn<T extends Action, S extends Action>(loggedInThunk: ActionThunk<T>, guestThunk: ActionThunk<S>): ActionThunk<T|S>;
 function maybeLoggedIn<T extends Action, S extends Action>(
   loggedInThunk: ActionThunk<T>,
-  guestThunk: ActionThunk<S> = emptyThunk
+  guestThunk: ActionThunk<S> = emptyThunk as ActionThunk<S>
 ): ActionThunk<T|S> {
-  return (dispatch, { wdkService }) =>
-    wdkService.getCurrentUser().then(user => {
-      dispatch(user.isGuest ? guestThunk : loggedInThunk)
-    })
+  return ({ wdkService }) =>
+    wdkService.getCurrentUser().then(user =>
+      user.isGuest ? guestThunk : loggedInThunk
+    )
 }
 
 //----------------------------------
@@ -480,11 +484,10 @@ type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | Basket
 /**
  * @param {Record} record
  */
-export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketAction> {
-  return maybeLoggedIn<BasketAction>((dispatch, { wdkService }) =>
-    dispatch(setBasketStatus(record,
+export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketAction|EmptyAction> {
+  return maybeLoggedIn<BasketAction>(({ wdkService }) =>
+    setBasketStatus(record,
       wdkService.getBasketStatus(record.recordClassName, [record]).then(response => response[0]))
-    )
   );
 };
 
@@ -493,11 +496,11 @@ export function loadBasketStatus(record: RecordInstance): ActionThunk<BasketActi
  * @param {Record} record
  * @param {Boolean} status
  */
-export function updateBasketStatus(record: RecordInstance, status: boolean): ActionThunk<BasketAction|ShowLoginModalAction|never> {
-  return maybeLoggedIn<BasketAction, ShowLoginModalAction|never>(
-    (dispatch, { wdkService }) =>
-      dispatch(setBasketStatus(record,
-        wdkService.updateBasketStatus(status, record.recordClassName, [record]).then(response => status))),
+export function updateBasketStatus(record: RecordInstance, status: boolean): ActionThunk<BasketAction|ShowLoginModalAction|EmptyAction> {
+  return maybeLoggedIn<BasketAction, ShowLoginModalAction|EmptyAction>(
+    ({ wdkService }) =>
+      setBasketStatus(record,
+        wdkService.updateBasketStatus(status, record.recordClassName, [record]).then(response => status)),
     showLoginWarning('use baskets')
   );
 };
@@ -507,25 +510,23 @@ export function updateBasketStatus(record: RecordInstance, status: boolean): Act
  * @param {Promise<boolean>} basketStatusPromise
  */
 let setBasketStatus = (record: RecordInstance, basketStatusPromise: Promise<boolean>): ActionThunk<BasketAction> => {
-  return function run(dispatch) {
-    dispatch({
-      type: 'user/basket-status-loading',
-      payload: { record }
-    });
-    return basketStatusPromise.then(
-      status => {
-        dispatch({
+  return function run() {
+    return [
+      {
+        type: 'user/basket-status-loading',
+        payload: { record }
+      } as BasketAction,
+      basketStatusPromise.then(
+        status => ({
           type: 'user/basket-status-received',
-          payload: {record, status}
-        })
-      },
-      error => {
-        dispatch({
+          payload: { record, status }
+        } as BasketAction),
+        error => ({
           type: 'user/basket-status-error',
           payload: { record, error }
-        })
-      }
-    );
+        } as BasketAction)
+      )
+    ];
   };
 };
 
@@ -539,22 +540,22 @@ type FavoriteAction = FavoritesStatusErrorAction | FavoritesStatusLoadingAction 
 /**
  * @param {Record} record
  */
-export function loadFavoritesStatus(record: RecordInstance): ActionThunk<FavoriteAction> {
+export function loadFavoritesStatus(record: RecordInstance): ActionThunk<FavoriteAction|EmptyAction> {
   return maybeLoggedIn<FavoriteAction>(
-    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.getFavoriteId(record)))
+    ({ wdkService }) => setFavoritesStatus(record, wdkService.getFavoriteId(record))
   );
 };
 
-export function removeFavorite(record: RecordInstance, favoriteId: number): ActionThunk<FavoriteAction|ShowLoginModalAction|never> {
-  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|never>(
-    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.deleteFavorite(favoriteId))),
+export function removeFavorite(record: RecordInstance, favoriteId: number): ActionThunk<FavoriteAction|ShowLoginModalAction|EmptyAction> {
+  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|EmptyAction>(
+    ({ wdkService }) => setFavoritesStatus(record, wdkService.deleteFavorite(favoriteId)),
     showLoginWarning('use favorites')
   );
 };
 
-export function addFavorite(record: RecordInstance): ActionThunk<FavoriteAction|ShowLoginModalAction|never> {
-  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|never>(
-    (dispatch, { wdkService }) => dispatch(setFavoritesStatus(record, wdkService.addFavorite(record))),
+export function addFavorite(record: RecordInstance): ActionThunk<FavoriteAction|ShowLoginModalAction|EmptyAction> {
+  return maybeLoggedIn<FavoriteAction, ShowLoginModalAction|EmptyAction>(
+    ({ wdkService }) => setFavoritesStatus(record, wdkService.addFavorite(record)),
     showLoginWarning('use favorites')
   );
 };
@@ -564,24 +565,22 @@ export function addFavorite(record: RecordInstance): ActionThunk<FavoriteAction|
  * @param {Promise<Boolean>} statusPromise
  */
 function setFavoritesStatus(record: RecordInstance, statusPromise: Promise<number|undefined>): ActionThunk<FavoriteAction> {
-  return function run(dispatch) {
-    dispatch({
-      type: 'user/favorites-status-loading',
-      payload: { record }
-    });
-    return statusPromise.then(
-      id => {
-        dispatch({
+  return function run() {
+    return [
+      {
+        type: 'user/favorites-status-loading',
+        payload: { record }
+      } as FavoriteAction,
+      statusPromise.then(
+        id => ({
           type: 'user/favorites-status-received',
-          payload: {record, id}
-        })
-      },
-      error => {
-        dispatch({
+          payload: { record, id }
+        } as FavoriteAction),
+        error => ({
           type: 'user/favorites-status-error',
           payload: { record, error }
-        })
-      }
-    );
+        } as FavoriteAction)
+      )
+    ];
   };
 };

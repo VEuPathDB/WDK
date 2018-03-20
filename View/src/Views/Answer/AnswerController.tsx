@@ -2,7 +2,6 @@ import * as React from 'react';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import { wrappable } from 'Utils/ComponentUtils';
 import {isEqual} from 'lodash';
-import { parse } from 'querystring';
 import {
   loadAnswer,
   updateFilter,
@@ -44,7 +43,7 @@ class AnswerController extends AbstractPageController<State, AnswerViewStore, ty
     // incoming values from the router
     let { question, recordClass: recordClassName } = this.props.match.params;
     let [ , questionName, customName ] = question.match(/([^:]+):?(.*)/);
-    let parameters = parse(this.props.location.search.slice(1));
+    let parameters = this.getQueryParams();
 
     // decide whether new answer needs to be loaded (may not need to be loaded
     //   if user goes someplace else and hits 'back' to here- store already correct)

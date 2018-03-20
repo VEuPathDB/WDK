@@ -121,7 +121,7 @@ export function loadAnswer(
   recordClassUrlSegment: string,
   opts: AnswerOptions
 ): ActionThunk<LoadingAction | ErrorAction | AddedAction> {
-  return function run(dispatch, { wdkService }) {
+  return function run({ wdkService }) {
     let { parameters = {} as Parameters, filters = [], displayInfo } = opts;
 
     // FIXME Set attributes to whatever we're sorting on. This is required by
@@ -129,8 +129,6 @@ export function loadAnswer(
     // should be passing the attribute in based on info from the RecordClass.
     displayInfo.attributes = "__ALL_ATTRIBUTES__"; // special string for default attributes
     displayInfo.tables = [];
-
-    dispatch({ type: 'answer/loading' });
 
     let questionPromise = wdkService.findQuestion(hasUrlSegment(questionUrlSegment));
     let recordClassPromise = wdkService.findRecordClass(hasUrlSegment(recordClassUrlSegment));
@@ -152,10 +150,11 @@ export function loadAnswer(
       return wdkService.getAnswer(answerSpec, formatting);
     });
 
-    return Promise.all([ answerPromise, questionPromise, recordClassPromise ])
-    .then(
-      ([ answer, question, recordClass]) => {
-        dispatch({
+    return [
+      { type: 'answer/loading' },
+      Promise.all([answerPromise, questionPromise, recordClassPromise])
+      .then(
+        ([answer, question, recordClass]) => ({
           type: 'answer/added',
           payload: {
             answer,
@@ -164,14 +163,13 @@ export function loadAnswer(
             displayInfo,
             parameters
           }
-        });
-      },
-      error => {
-        dispatch({
+        } as AddedAction),
+        error => ({
           type: 'answer/error',
           payload: { error }
-        });
-      });
+        } as ErrorAction)
+      )
+    ];
   }
 }
 

@@ -2,6 +2,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { DispatchAction } from 'Core/CommonTypes';
 import Error from 'Components/PageStatus/Error';
+import { emptyAction } from 'Utils/ActionCreatorUtils';
 
 export default class ErrorBoundary extends React.Component {
 
@@ -31,13 +32,8 @@ export default class ErrorBoundary extends React.Component {
       console.warn('`dispatchAction` function not found. Unable to log render error to server.');
     }
     else {
-      dispatch((dispatch, { wdkService }) => {
-        wdkService.submitError({
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-          componentStack: info.componentStack
-        })
+      dispatch(({ wdkService }) => {
+        return wdkService.submitError(error, info).then(() => emptyAction)
       });
     }
   }

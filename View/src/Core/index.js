@@ -7,6 +7,7 @@ import * as FilterServiceUtils from 'Components/AttributeFilter/Utils/FilterServ
 import * as ReporterUtils from 'Views/ReporterForm/reporterUtils';
 
 import WdkService from 'Utils/WdkService';
+import * as ActionCreatorUtils from 'Utils/ActionCreatorUtils';
 import * as WdkModel from 'Utils/WdkModel';
 import * as Platform from 'Utils/Platform';
 import * as TreeUtils from 'Utils/TreeUtils';
@@ -26,6 +27,7 @@ import { initialize, wrapComponents } from 'Core/main';
 __webpack_public_path__ = window.__asset_path_remove_me_please__; // eslint-disable-line
 
 export {
+  ActionCreatorUtils,
   Stores,
   WdkModel,
   Platform,
