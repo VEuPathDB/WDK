@@ -115,7 +115,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * For a particular user, the last modification time of any of their datasets.
    * Useful for quick cache checks.  We use Date as a platform neutral representation.
    * @param userId
-   * @return
+   * @return null if no user datasets
    */
   Long getModificationTime(Long userId) throws WdkModelException;
 

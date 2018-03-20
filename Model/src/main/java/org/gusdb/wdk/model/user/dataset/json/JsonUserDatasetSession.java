@@ -21,6 +21,13 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * A session for talking to a user dataset store.  Lifespan is expected to be per-request.
+ * Provides access to state in the store.  In many cases, caches that state in instance
+ * variables to avoid unneeded calls to the store.
+ * @author Steve
+ *
+ */
 public class JsonUserDatasetSession implements UserDatasetSession {
 
   private static final Logger LOG = Logger.getLogger(JsonUserDatasetSession.class);
@@ -31,15 +38,15 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   protected static final String SHARED_WITH_DIR = "sharedWith";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
   protected static final String DATAFILES_DIR = "datafiles";
-  protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
 
   private static final String NL = System.lineSeparator();
  
-  private Map<Long, UserDatasetUser>usersMap = new HashMap<Long, UserDatasetUser>();
+  protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
+  private Map<Long, UserDatasetUser> usersMap = new HashMap<Long, UserDatasetUser>();
   private Long defaultQuota;
-
   protected Path usersRootDir;
   protected UserDatasetStoreAdaptor adaptor;
+  private Map<Long, Path> userDirsMap = new HashMap<Long, Path>();
 
   public JsonUserDatasetSession(UserDatasetStoreAdaptor adaptor, Path usersRootDir) {
     this.adaptor = adaptor;
@@ -59,7 +66,8 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   @Override
   public Long getModificationTime(Long userId) throws WdkModelException {
-    return adaptor.getModificationTime(getUserDatasetsDir(userId));
+    Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
+    return userDatasetsDir == null? null : adaptor.getModificationTime(userDatasetsDir);
   }
 
   @Override
@@ -81,10 +89,10 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   
   private List<Path> getDatasetDirs(Long userId, Path userDatasetsDir) throws WdkModelException {
     UserDatasetUser user = getUserDatasetUser(userId);
-    if (user.datasetDirs == null) {
-      user.datasetDirs = adaptor.getPathsInDir(userDatasetsDir);
+    if (user.datasetDirsList == null) {
+      user.datasetDirsList = adaptor.getPathsInDir(userDatasetsDir);
     }
-    return user.datasetDirs;
+    return user.datasetDirsList;
   }
 
   @Override
@@ -258,8 +266,8 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   public boolean getUserDatasetExists(Long userId, Long datasetId) throws WdkModelException {
     UserDatasetUser user = usersMap.get(userId);
     if (!user.userDatasetExistsMap.containsKey(datasetId)) {
-      Path userDatasetsDir = getUserDatasetsDir(userId);
-      if (!directoryExists(userDatasetsDir)) return false;
+      Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
+      if (userDatasetsDir == null) return false;
       Path datasetDir = userDatasetsDir.resolve(datasetId.toString());
       user.userDatasetExistsMap.put(datasetId, directoryExists(datasetDir));
     }
@@ -320,11 +328,6 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
     Path metaJsonFile = getUserDatasetsDir(userId).resolve(datasetId.toString()).resolve(META_JSON_FILE);
     writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
-  }
-
-  protected void writeJsonUserDataset(JsonUserDataset dataset) throws WdkModelException {
-    Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId()).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
-    writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
 
   @Override
@@ -502,17 +505,24 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   @Override
   public void deleteUserDataset(Long userId, Long datasetId) throws WdkModelException {
-    Path datasetDir = getUserDatasetsDir(userId).resolve(datasetId.toString());
-
+    boolean isOwner;
+    Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
+    if (userDatasetsDir == null) {
+      isOwner = false;
+    } else {     
+      Path datasetDir = userDatasetsDir.resolve(datasetId.toString());
+      isOwner = directoryExists(datasetDir);
+    }
+    
     // User is owner
-    if(directoryExists(datasetDir)) {
+    if (isOwner) {
 
       // First remove any shares on this dataset.  This will fire as many IRODS events as
       // there are outstanding shares for this dataset.
       unshareWithAll(userId, datasetId);
 
       // Then remove the dataset itself.
-      adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
+      adaptor.deleteFileOrDirectory(userDatasetsDir.resolve(datasetId.toString()));
     }
     // User is not the owner - check to see if the user has a share to the dataset
     else {	
@@ -572,11 +582,14 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   }
 
   private Path getUserDir(Long userId) throws WdkModelException {
-    Path userDir = usersRootDir.resolve(userId.toString());
-    if (!directoryExists(userDir)) {
-      adaptor.createDirectory(userDir);
+    if (!userDirsMap.containsKey(userId)) {
+      Path userDir = usersRootDir.resolve(userId.toString());
+      if (!directoryExists(userDir)) {
+        adaptor.createDirectory(userDir);
+      }
+      userDirsMap.put(userId, userDir);
     }
-    return userDir;
+    return userDirsMap.get(userId);
   }
 
   @Override
@@ -626,22 +639,22 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   }
 
   /**
-   * Given a user ID, return a Path to that user's datasets dir.  Create the dir if doesn't exist.
+   * Given a user ID, return a Path to that user's datasets dir.  
    * @param userId
    * @return
    * @throws WdkModelException
    */
   private Path getUserDatasetsDir(Long userId) throws WdkModelException {
-    Path userDatasetsDir = getUserDir(userId).resolve("datasets");
+    Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
 
-    if (!directoryExists(userDatasetsDir)) adaptor.createDirectory(userDatasetsDir);
+    if (userDatasetsDir == null) throw new WdkModelException("User datasets dir does not exist: " + userDatasetsDir);
 
     return userDatasetsDir;
   }
 
   @Override
   public boolean checkUserDatasetsDirExists(Long userId)  throws WdkModelException {
-    return directoryExists(usersRootDir.resolve(userId.toString()).resolve("datasets"));
+    return getUserDatasetsDirIfExists(userId) != null;
   }
 
   @Override
@@ -748,7 +761,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     Path sharedWithDir;
     Map<Long, UserDataset> externalDatasetsMap;
     Map<Long, Boolean> userDatasetExistsMap  = new HashMap<Long, Boolean>();
-    List<Path> datasetDirs;
+    List<Path> datasetDirsList;
     Long quota;
   }
 }

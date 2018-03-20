@@ -31,7 +31,7 @@ public class UserDatasetEventHandler {
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
     
     
-    try(UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {	
+    try(UserDatasetSession dsSession = dsStore.getSession()) {	
     
       // there is a theoretical race condition here, because this check is not in the same
       // transaction as the rest of this method.   but that risk is very small.

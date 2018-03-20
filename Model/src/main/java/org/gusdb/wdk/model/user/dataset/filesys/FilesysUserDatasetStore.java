@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.dataset.filesys;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
@@ -26,7 +25,7 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   @Override
   public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException {
     super.initialize(configuration, typeHandlers, wdkTempDirName);
-    try (FilesysUserDatasetSession session = getSession(_usersRootDir)) {
+    try (FilesysUserDatasetSession session = getSession()) {
       session.checkRootDirExists();
       _id = session.initializeUserDatasetStoreId();
     }
@@ -43,8 +42,8 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   }
 
   @Override
-  public FilesysUserDatasetSession getSession(Path usersRootDir) {
-    return new FilesysUserDatasetSession(usersRootDir);
+  public FilesysUserDatasetSession getSession() {
+    return new FilesysUserDatasetSession(_usersRootDir);
   }
 
 }
