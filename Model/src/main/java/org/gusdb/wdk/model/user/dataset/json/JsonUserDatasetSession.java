@@ -264,7 +264,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   @Override
   public boolean getUserDatasetExists(Long userId, Long datasetId) throws WdkModelException {
-    UserDatasetUser user = usersMap.get(userId);
+    UserDatasetUser user = getUserDatasetUser(userId);
     if (!user.userDatasetExistsMap.containsKey(datasetId)) {
       Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
       if (userDatasetsDir == null) return false;
@@ -599,7 +599,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   @Override
   public Long getQuota(Long userId) throws WdkModelException {
-    UserDatasetUser user = usersMap.get(userId);
+    UserDatasetUser user = getUserDatasetUser(userId);
     if (user.quota == null) {  
       Path userQuotaFile = getUserDir(userId).resolve("quota");
       if (adaptor.fileExists(userQuotaFile)) {
@@ -756,7 +756,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    *
    */
   private class UserDatasetUser {   
-    Map<Long, UserDataset> datasetsMap;
+    Map<Long, UserDataset> datasetsMap = new HashMap<Long, UserDataset>();
     Set<UserDatasetShare> sharedWithUsers;
     Path sharedWithDir;
     Map<Long, UserDataset> externalDatasetsMap;
