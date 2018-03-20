@@ -10,7 +10,11 @@ import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
 type State = TreeBox.State;
 
 export function reduce(state: State, action: Action): State {
-  if (!ParamInitAction.isType(action)) return state;
+  if (!(
+    ParamInitAction.isType(action) ||
+    TreeBox.ExpandedListSet.isType(action) ||
+    TreeBox.SearchTermSet.isType(action)
+  )) return state;
   const { parameter } = action.payload;
   if (parameter == null || !isType(parameter)) return state;
   if (TreeBox.isType(parameter)) {

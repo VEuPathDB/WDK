@@ -6,9 +6,9 @@ import {createBrowserHistory} from 'history';
 
 import Dispatcher from 'Core/State/Dispatcher';
 import WdkService from 'Utils/WdkService';
-import { isPromise } from 'Utils/PromiseUtils';
 import { getTransitioner } from 'Utils/PageTransitioner';
 import { createMockHistory } from 'Utils/MockHistory';
+import { getDispatchActionMaker } from 'Utils/ActionCreatorUtils';
 import Root from 'Core/Root';
 import { loadAllStaticData } from 'Core/ActionCreators/StaticDataActionCreators';
 import { updateLocation } from 'Core/ActionCreators/RouterActionCreators';
@@ -159,71 +159,6 @@ function wrapStores(storeWrappers) {
 }
 
 /**
- * Create a function that takes a channel and creates a dispatch function
- * `dispatchAction` that forwards calls to `dispatcher.dispatch` using the
- * channel as a scope for the audience of the action.  In dispatchAction:
- *
- * If `action` is a function, it will be called with `dispatchAction` and
- * `services`. Calling it with `dispatchAction` allows for composability since
- * an action function can in turn call another action function. This is useful
- * for creating higher-order dispatch helpers, such as latest, once, etc.
- *
- * If `action` is an object, `dispatcher.dispatch` will be called with it.
- *
- * An `action` function should ultimately return an object to invoke a dispatch.
- *
- * @param {String} rootUrl
- * @param {Dispatcher} dispatcher
- * @param {Object?} serviceSubset
- */
-export function getDispatchActionMaker(dispatcher, services) {
-  return function makeDispatchAction(channel) {
-    if (channel === undefined) {
-      console.warn("Call to makeDispatchAction() with no channel defined.");
-    }
-
-    const dispatchAction = tryCatch(
-      function dispatch(action) {
-        if (typeof action === 'function') {
-          // Call the function with dispatchAction and services
-          // TODO Change this to `dispatchAction(action(services))`. Doing this alone will make it impossible
-          // for an ActionCreator to dispatch multiple actions. We can either handle an array as a case below,
-          // and call dispatchAction on each item of the array, or more generally we can support iterables.
-          // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
-          return action(dispatchAction, services);
-        }
-        else if (isPromise(action)) {
-          return action.then(result => dispatchAction(result)).then(undefined, logError);
-        }
-        else if (action == null) {
-          throw new Error("Action received is undefined or is null");
-        }
-        else if (action.type == null) {
-          throw new Error("Action received does not have a `type` property", action);
-        }
-        // assign channel if requested
-        action.channel = (action.isBroadcast ? undefined : channel);
-        return dispatcher.dispatch(action);
-      },
-      logError
-    );
-
-    return dispatchAction;
-  };
-
-  function logError(error) {
-    console.error(error);
-    services.wdkService.submitError({
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    }).catch(err => {
-      console.error('Could not submit error to log.', err);
-    })
-  }
-}
-
-/**
  * Apply Component wrappers to WDK components and controllers. Keys of
  * 'componentWrappers' should correspond to Component or Controller names in
  * WDK. Values of `componentWrappers` are factories that return a new component.
@@ -272,20 +207,9 @@ function logActions(dispatcher, storeMap) {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
     const state = mapValues(stores, store => store.getState());
     console.debug(
-      '%c' + action.type,
+      '%c' + action.type.toString(),
       'font-weight: bold;',
       { action, state }
     );
   });
-}
-
-function tryCatch(fn, handleError) {
-  return function tryCatchWrapper(...args) {
-    try {
-      return fn(...args)
-    }
-    catch(error) {
-      return handleError(error);
-    }
-  }
 }

@@ -5,7 +5,3 @@ import 'lib/jquery-ui';
 import 'lib/jquery-qtip';
 import 'mesa/dist/css/mesa.css';
 import 'mansion-ui/dist/mansion.css';
-
-if (process.env.NODE_ENV !== 'production') {
-  // require('react-addons-perf');
-}

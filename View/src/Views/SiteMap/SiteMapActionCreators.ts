@@ -35,9 +35,7 @@ export type ErrorAction = {
 }
 
 export function loadCurrentSiteMap(): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
-  return function run(dispatch, { wdkService }) {
-    dispatch({ type: 'sitemap/loading' });
-
+  return function run({ wdkService }) {
     let ontologyPromise = wdkService.getOntology('SiteMap');
 
     let isQualifying = (node: OntologyNode) => {
@@ -50,18 +48,19 @@ export function loadCurrentSiteMap(): ActionThunk<LoadingAction | ErrorAction | 
       );
     }
 
-    return ontologyPromise.then((ontology) => {
-      dispatch({
-        type: 'sitemap/initialize',
-        payload: { tree: getTree(ontology, isQualifying) }
-      });
-    }).catch(error => {
-      console.error(error);
-      dispatch({
-        type: 'sitemap/error',
-        payload: { error }
-      });
-    });
+    return [
+      <LoadingAction>{ type: 'sitemap/loading' },
+      ontologyPromise.then(
+        (ontology) => (<InitializeAction>{
+          type: 'sitemap/initialize',
+          payload: { tree: getTree(ontology, isQualifying) }
+        }),
+        error => (<ErrorAction>{
+          type: 'sitemap/error',
+          payload: { error }
+        })
+      )
+    ];
   }
 }
 

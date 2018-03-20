@@ -100,12 +100,16 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     const action$ = dispatcher.asObservable().filter(action =>
       this.storeShouldReceiveAction(action.channel));
 
+    const logError = (error: Error) =>
+      services.wdkService.submitError(error);
+
     const startEpic = (): Observable<Action> =>
       this.rootEpic(action$, services)
         // Assign channel unless action isBroadcast
         .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
         .catch((error: Error, caught) => {
           console.error(error);
+          logError(error);
           // restart epic
           return startEpic();
         })
@@ -115,9 +119,13 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
         dispatcher.dispatch(action)
       },
       error => {
-        // TODO What to do with error?
         console.error(error);
-      });
+        logError(error);
+      },
+      () => {
+        console.debug('epic has completed in store "%s"', this.channel);
+      }
+    );
   }
 
 }

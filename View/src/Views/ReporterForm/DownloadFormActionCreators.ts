@@ -1,5 +1,5 @@
 import { getStepBundlePromise, getSingleRecordStepBundlePromise } from 'Utils/stepUtils';
-import { ActionThunk } from 'Utils/ActionCreatorUtils';
+import { ActionThunk, EmptyAction, emptyAction } from 'Utils/ActionCreatorUtils';
 import { Step } from 'Utils/WdkUser';
 import { Question, RecordClass } from 'Utils/WdkModel';
 import { AnswerRequest } from 'Utils/WdkService';
@@ -69,22 +69,20 @@ export function updateFormUiState(newUiState: any): UiUpdateAction {
 }
 
 export function loadPageDataFromStepId(stepId: number): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
-  return function run(dispatch, { wdkService }) {
-    dispatch({ type: 'downloadForm/loading' });
-    return getStepBundlePromise(stepId, wdkService).then(
-      stepBundle => {
-        dispatch({
+  return function run({ wdkService }) {
+    return [
+      <LoadingAction>{ type: 'downloadForm/loading' },
+      getStepBundlePromise(stepId, wdkService).then(
+        stepBundle => (<InitializeAction>{
           type: 'downloadForm/initialize',
-          payload: Object.assign(stepBundle, {scope: 'results'})
-        })
-      },
-      (error: Error) => {
-        dispatch({
+          payload: Object.assign(stepBundle, { scope: 'results' })
+        }),
+        (error: Error) => (<ErrorAction>{
           type: 'downloadForm/error',
-          payload: {error}
+          payload: { error }
         })
-      }
-    );
+      )
+    ];
   }
 }
 
@@ -92,16 +90,14 @@ export function loadPageDataFromRecord(
   recordClassUrlSegment: string,
   primaryKeyString: string
 ): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
-  return function run(dispatch, { wdkService }) {
-    dispatch({ type: 'downloadForm/loading' });
-
+  return function run({ wdkService }) {
     // create promise for recordClass
     let recordClassPromise = wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
 
     // create promise for record, dependent on result of recordClass promise
     let recordPromise = recordClassPromise.then(recordClass => {
       if (recordClass == null)
-        throw new Error("Could not find record class identified by `" + recordClassUrlSegment + "`.");
+      throw new Error("Could not find record class identified by `" + recordClassUrlSegment + "`.");
 
       let pkValues = primaryKeyString.split(',');
       let pkArray = recordClass.primaryKeyColumnRefs.map((ref, index) => ({ name: ref, value: pkValues[index] }));
@@ -110,24 +106,23 @@ export function loadPageDataFromRecord(
 
     // create promise for bundle, dependent on previous two promises and primaryKeyString
     let bundlePromise = Promise
-      .all([ recordClassPromise, recordPromise, primaryKeyString ])
-      .then(getSingleRecordStepBundlePromise);
+    .all([ recordClassPromise, recordPromise, primaryKeyString ])
+    .then(getSingleRecordStepBundlePromise);
 
-    // dispatch appropriate actions
-    return bundlePromise.then(
-      stepBundle => {
-        dispatch({
+    return [
+      <LoadingAction>{ type: 'downloadForm/loading' },
+      // dispatch appropriate actions
+      bundlePromise.then(
+        stepBundle => (<InitializeAction>{
           type: 'downloadForm/initialize',
-          payload: Object.assign(stepBundle, {scope: 'record'})
-        })
-      },
-      error => {
-        dispatch({
+          payload: Object.assign(stepBundle, { scope: 'record' })
+        }),
+        error => (<ErrorAction>{
           type: 'downloadForm/error',
           payload: { error }
         })
-      }
-    );
+      )
+    ];
   }
 }
 
@@ -138,8 +133,8 @@ export function submitForm(
   selectedReporter: string,
   formState: any,
   target = '_blank'
-): ActionThunk<never> {
-  return (dispatch, { wdkService }) => {
+): ActionThunk<EmptyAction> {
+  return ({ wdkService }) => {
     let answerRequest: AnswerRequest = {
       answerSpec: step.answerSpec,
       formatting: {
@@ -149,5 +144,6 @@ export function submitForm(
       }
     };
     wdkService.downloadAnswer(answerRequest, target);
+    return emptyAction;
   };
 }
