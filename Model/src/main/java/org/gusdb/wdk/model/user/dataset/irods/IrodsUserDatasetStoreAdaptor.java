@@ -14,6 +14,8 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
+import org.irods.jargon.core.connection.ClientServerNegotiationPolicy;
+import org.irods.jargon.core.connection.ClientServerNegotiationPolicy.SslNegotiationPolicy;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.TransferOptions.ForceOption;
@@ -75,14 +77,22 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @param resource
    * @return
    */
-  private static IRODSAccount initializeAccount(String host, int port, String user, String password, String zone, String resource) {
+  private static IRODSAccount initializeAccount(String host,
+		  int port, String user, String password, String zone, String resource) throws WdkModelException {
     if(account == null) {
-      _homeDir = "/" + zone + "/home/" + user;
-      account = new IRODSAccount(host,port,user,password,_homeDir,zone,resource);
+    	  try {
+        ClientServerNegotiationPolicy csnp = new ClientServerNegotiationPolicy();
+        csnp.setSslNegotiationPolicy(SslNegotiationPolicy.CS_NEG_REQUIRE);
+        _homeDir = "/" + zone + "/home/" + user;
+        account = IRODSAccount.instance(host,port,user,password,_homeDir,zone,resource,csnp);
+    	  }
+    	  catch(JargonException je) {
+    	    throw new WdkModelException(je);
+    	  }
     }
     return account;
   }
-  
+
   /**
    * Convenience method to create system and account instance variables for IRODS if either is not
    * already created.
@@ -99,6 +109,14 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       setSystem();
       initializeAccount(host, port, user, pwd, zone, resource);
       accessObjectFactory = system.getIRODSAccessObjectFactory();
+//      IRODSSession irodsSession = accessObjectFactory.getIrodsSession();
+//      SettableJargonProperties jargonProperties = new SettableJargonProperties();
+//      jargonProperties.setEncryptionAlgorithmEnum(EncryptionAlgorithmEnum.AES_256_CBC);
+//      jargonProperties.setEncryptionKeySize(32);
+//      jargonProperties.setEncryptionNumberHashRounds(16);
+//      jargonProperties.setEncryptionSaltSize(8);
+//      jargonProperties.setNegotiationPolicy(SslNegotiationPolicy.CS_NEG_REQUIRE);
+//      irodsSession.setJargonProperties(jargonProperties);
 	}
 	catch(JargonException je) {
 	  throw new WdkModelException(je);
