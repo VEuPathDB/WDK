@@ -2,6 +2,7 @@ import Link from 'Components/Link/Link';
 import Icon from 'Components/Icon/Icon';
 import Main from 'Components/Layout/Main';
 import Page from 'Components/Layout/Page';
+import Modal from 'Components/Overlays/Modal';
 import Popup from 'Components/Overlays/Popup';
 import Footer from 'Components/Layout/Footer';
 import Header from 'Components/Layout/Header';

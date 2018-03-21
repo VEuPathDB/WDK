@@ -553,6 +553,10 @@ export default class WdkService {
     return this._fetchJson<void>('put', `/users/current/user-datasets/${id}/meta`, JSON.stringify(meta));
   }
 
+  removeUserDataset(id: number) {
+    return this._fetchJson<void>('delete', `/users/current/user-datasets/${id}`);
+  }
+
   getOauthStateToken() {
     return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/state-token');
   }

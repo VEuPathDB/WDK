@@ -5,7 +5,10 @@ import {
   DetailErrorAction,
   DetailReceivedAction,
   DetailUpdateErrorAction,
-  DetailUpdateSuccessAction
+  DetailUpdateSuccessAction,
+  DetailRemovingAction,
+  DetailRemoveSuccessAction,
+  DetailRemoveErrorAction
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import { UserDataset } from 'Utils/WdkModel';
 
@@ -15,6 +18,9 @@ type Action = DetailLoading
             | DetailReceivedAction
             | DetailUpdateErrorAction
             | DetailUpdateSuccessAction
+            | DetailRemovingAction
+            | DetailRemoveSuccessAction
+            | DetailRemoveErrorAction
 
 /**
  * If isLoading is false, and resource is undefined,
@@ -28,10 +34,11 @@ type UserDatasetEntry = {
 export interface State extends BaseState {
   userDatasetsById: { [key: number]: UserDatasetEntry };
   userDatasetUpdating: boolean;
-  userDatasetUpdateError?: Error;
+  userDatasetLoading: boolean;
+  userDatasetRemoving: boolean;
   loadError?: Error;
   updateError?: Error;
-  userDatasetLoading: boolean;
+  removalError? : Error;
 }
 
 /**
@@ -42,14 +49,15 @@ export interface State extends BaseState {
  */
 export default class UserDatasetDetailStore extends WdkStore<State> {
 
-  getInitialState(): State {
+  getInitialState (): State {
     return Object.assign({
       userDatasetsById: {},
-      userDatasetUpdating: false
+      userDatasetUpdating: false,
+      userDatasetRemoving: false
     }, super.getInitialState());
   }
 
-  handleAction(state: State, action: Action): State {
+  handleAction (state: State, action: Action): State {
     switch (action.type) {
       case 'user-datasets/detail-loading': return {
         ...state,
@@ -101,6 +109,23 @@ export default class UserDatasetDetailStore extends WdkStore<State> {
         ...state,
         userDatasetUpdating: false,
         updateError: action.payload.error
+      };
+
+      case 'user-datasets/detail-removing': return {
+        ...state,
+        userDatasetRemoving: true
+      };
+
+      case 'user-datasets/detail-remove-success': return {
+        ...state,
+        userDatasetRemoving: false,
+        removalError: undefined
+      };
+
+      case 'user-datasets/detail-remove-error': return {
+        ...state,
+        userDatasetRemoving: false,
+        removalError: action.payload.error
       };
 
       default:

@@ -2,14 +2,15 @@ import * as React from 'react';
 import { wrappable } from 'Utils/ComponentUtils';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
+import { User } from 'Utils/WdkUser';
 import 'Views/UserDatasets/UserDatasets.scss';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
-import { loadUserDatasetList } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { loadUserDatasetList, updateUserDatasetDetail } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/List/UserDatasetListStore";
 
 import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
 
-const ActionCreators = { loadUserDatasetList };
+const ActionCreators = { loadUserDatasetList, updateUserDatasetDetail };
 
 type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
            & Pick<StoreState["globalData"], 'user'>;
@@ -58,16 +59,27 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
 
   renderView () {
-    const { user, userDatasets, loadError } = this.state;
+    const { userDatasets, loadError } = this.state;
+    const user: any = this.state.user;
+    const { updateUserDatasetDetail } = this.eventHandlers;
     const { history } = this.props;
     const title = this.getTitle();
-    const content =  !user || (user && user.isGuest)
+    const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
+    const content = !loggedIn
       ? <NotLoggedIn />
-      : <UserDatasetList userDatasets={userDatasets} user={user} history={history} />;
+      : <UserDatasetList
+          user={user}
+          history={history}
+          userDatasets={userDatasets}
+          updateUserDatasetDetail={updateUserDatasetDetail}
+        />;
 
     return (
       <div className="UserDatasetList-Controller">
-        <h1 className="UserDatasetList-Title">{title}</h1>
+        {!loggedIn
+          ? <h1 className="UserDatasetList-Title">{title}</h1>
+          : null
+        }
         <div className="UserDatasetList-Content">{content}</div>
       </div>
     )
