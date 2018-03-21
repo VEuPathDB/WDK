@@ -79,7 +79,7 @@ sub getAppDbDbiDsn {
         : $self->{dbiDsn}
 }
 
-# return to appDb value, for backward compatibility
+# return to userDbLink value, for backward compatibility
 sub getDblApicomm {
     my ($self) = @_;
     ($self->{appDb})
@@ -100,7 +100,7 @@ sub getUserDbPassword {
 }
 
 # return to appDb value, for backward compatibility
-sub getUserDbiDsn {
+sub getUserDbDbiDsn {
     my ($self) = @_;
     return $self->{userDb}->{dbiDsn};
 }
@@ -125,6 +125,7 @@ WDK::Model::ModelConfig - access to WDK model-config.xml properties
     
     my $username = $cfg->getAppDb->getLogin;
     my $password = $cfg->getAppDb->getPassword;
+    my $accountDb_DBI = $cfg->getAccountDb->getDbiDsn;
     my $emailSubject = $cfg->getEmailSubject;
     
     Retrieve the JDBC connectionUrl converted to Perl DBI syntax:
