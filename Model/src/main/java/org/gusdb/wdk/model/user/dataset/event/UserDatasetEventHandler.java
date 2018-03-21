@@ -202,5 +202,18 @@ public class UserDatasetEventHandler {
     sqlRunner.executeUpdate(args);
     logger.info("Done handling event: " + eventId);
   }
+  
+  /**
+   * Method to handle an event that is either not relevant to this wdk project or is related to an
+   * unsupported type.  The event is not installed but it is noted in the dataset as
+   * handled so that the event is not repeatedly and unnecessarily processed.
+   * @param eventId
+   * @param appDbDataSource
+   * @param userDatasetSchemaName
+   */
+  public static void completeEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
+    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+  }
 
 }
