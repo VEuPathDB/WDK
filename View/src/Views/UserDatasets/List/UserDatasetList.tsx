@@ -521,9 +521,6 @@ class UserDatasetList extends React.Component <Props, State> {
     return (
       <Mesa state={MesaState.create(tableState)}>
         <h1 className="UserDatasetList-Title">My Datasets</h1>
-        <Modal>
-          LOL OK
-        </Modal>
         <SearchBox
           placeholderText="Search Datasets"
           searchTerm={searchTerm}
