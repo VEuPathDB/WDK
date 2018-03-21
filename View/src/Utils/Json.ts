@@ -52,19 +52,19 @@ function err(value: any, expected: string, context?: string): Err {
 export function string(t: any): Result<string> {
   return isString(t)
     ? ok(t)
-    : err(t, 'a string');
+    : err(t, 'string');
 }
 
 export function number(t: any): Result<number> {
   return isNumber(t)
     ? ok(t)
-    : err(t, 'a number');
+    : err(t, 'number');
 }
 
 export function boolean(t: any): Result<boolean> {
   return isBoolean(t)
     ? ok(t)
-    : err(t, 'a boolean');
+    : err(t, 'boolean');
 }
 
 export function nullValue(t: any): Result<null> {
@@ -73,11 +73,20 @@ export function nullValue(t: any): Result<null> {
     : err(t, 'null');
 }
 
+export function none(t: any): Result<void> {
+  return t === undefined
+    ? ok(t)
+    : err(t, 'undefined');
+}
+
 
 // higher order decoders
 // ---------------------
 
 // Expect a specific value
+export function constant<T extends string>(value: T): Decoder<T>;
+export function constant<T extends number>(value: T): Decoder<T>;
+// export function constant<T>(value:T): Decoder<T>;
 export function constant<T>(value: T) {
   return function constantGuard(t: any): Result<T> {
     return t === value
@@ -89,22 +98,22 @@ export function constant<T>(value: T) {
 // Expect an object with string keys and values of a specific type
 export function objectOf<T>(decoder: Decoder<T>) {
   return function objectOfDecoder(t: any): Result<Record<string, T>> {
-    if (!isPlainObject(t)) return err(t, 'an object');
+    if (!isPlainObject(t)) return err(t, 'object');
     const e = values(t).map(decoder).find(r => r.status === 'err') as Err;
     return e == null
       ? ok(t)
-      : err(e.value, `an object where every field is ${e.expected}`);
+      : err(e.value, `{ [string]: ${e.expected} }`, e.context);
   }
 }
 
 // Expect an array with elements of a specific type
 export function arrayOf<T>(decoder: Decoder<T>) {
   return function arrayOfDecoder(t: any): Result<Array<T>> {
-    if (!isArray(t)) return err(t, 'an array');
+    if (!isArray(t)) return err(t, `Array<${decoder.name}>`);
     const e = t.map(decoder).find(r => r.status === 'err') as Err;
     return e == null
       ? ok(t)
-      : err(e.value, `an array where every element is ${e.expected}`);
+      : err(e.value, `${e.expected}[]`, e.context);
   }
 }
 
@@ -114,11 +123,11 @@ export function arrayOf<T>(decoder: Decoder<T>) {
 // of an object.
 export function field<T, S extends string>(fieldName: S, decoder: Decoder<T>) {
   return function fieldDecoder(t: any): Result<{ [K in S]: T }> {
-    if (!(isPlainObject(t))) return err(t, `an object`);
+    if (!(isPlainObject(t))) return err(t, `object`);
     const r = decoder(t[fieldName]);
     return r.status === 'ok'
       ? ok(t)
-      : err(r.value, r.expected, `.${fieldName}${r.context || ''}`);
+      : err(r.value, `{ ${fieldName}: ${r.expected} }`, `.${fieldName}${r.context || ''}`);
   }
 }
 
@@ -158,13 +167,34 @@ export function oneOf<T, S, R, Q, P, O, N, M>(decoder1: Decoder<T>, decoder2: De
 export function oneOf<T, S, R, Q, P, O, N, M, L>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>, decoder8: Decoder<M>, decoder9: Decoder<L>): Decoder<T | S | R | Q | P | O | N | M | L>;
 export function oneOf<T, S, R, Q, P, O, N, M, L, K>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>, decoder8: Decoder<M>, decoder9: Decoder<L>, decoder10: Decoder<K>): Decoder<T | S | R | Q | P | O | N | M | L | K>;
 export function oneOf(...decoders: any[]) {
-  return function oneOfGuard(t: any) {
+  return function oneOfDecoder(t: any) {
     const results = Seq.from(decoders).map(d => d(t));
     return results.find(r => r.status === 'ok')
       ? ok(t)
-      : err(t, `one of [ ${results.map(e => e.expected).join(', ')} ]`)
+      : err(t, `(${results.map(e => e.expected).join('|')})`)
   }
 }
+
+// Combine multiple decoders such that at least one must return Ok
+export function tuple<T, S>(decoder1: Decoder<T>, decoder2: Decoder<S>): Decoder<[T,  S]>;
+export function tuple<T, S, R>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>): Decoder<[T,  S,  R]>;
+export function tuple<T, S, R, Q>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>): Decoder<[T,  S,  R,  Q]>;
+export function tuple<T, S, R, Q, P>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>): Decoder<[T,  S,  R,  Q,  P]>;
+export function tuple<T, S, R, Q, P, O>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>): Decoder<[T,  S,  R,  Q,  P,  O]>;
+export function tuple<T, S, R, Q, P, O, N>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>): Decoder<[T,  S,  R,  Q,  P,  O,  N]>;
+export function tuple<T, S, R, Q, P, O, N, M>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>, decoder8: Decoder<M>): Decoder<[T,  S,  R,  Q,  P,  O,  N,  M]>;
+export function tuple<T, S, R, Q, P, O, N, M, L>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>, decoder8: Decoder<M>, decoder9: Decoder<L>): Decoder<[T,  S,  R,  Q,  P,  O,  N,  M,  L]>;
+export function tuple<T, S, R, Q, P, O, N, M, L, K>(decoder1: Decoder<T>, decoder2: Decoder<S>, decoder3: Decoder<R>, decoder4: Decoder<Q>, decoder5: Decoder<P>, decoder6: Decoder<O>, decoder7: Decoder<N>, decoder8: Decoder<M>, decoder9: Decoder<L>, decoder10: Decoder<K>): Decoder<[T,  S,  R,  Q,  P,  O,  N,  M,  L,  K]>;
+export function tuple(...decoders: Decoder<any>[]) {
+  return function tupleDecoder(t: any) {
+    if (!isArray(t)) return err(t, 'an array');
+    const results = decoders.map((d, i) => d(t[i]));
+    return results.find(r => r.status === 'ok')
+      ? ok(t)
+      : err(t, `[ ${decoders.map(d => d.name).join(', ')} ]`)
+  }
+}
+
 
 // Ensure that a decoder is not evaluated until it is needed. This is useful for
 // recursive types (like trees).
