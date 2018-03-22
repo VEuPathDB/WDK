@@ -1,34 +1,36 @@
 import stringify from 'json-stable-stringify';
-import { difference, keyBy, memoize } from 'lodash';
 import localforage from 'localforage';
+import { difference, keyBy, memoize } from 'lodash';
+
+import { submitAsForm } from 'Utils/FormSubmitter';
+import * as Decode from 'Utils/Json';
 import { Ontology } from 'Utils/OntologyUtils';
-import {
-  CategoryTreeNode,
-  pruneUnknownPaths,
-  sortOntology,
-  resolveWdkReferences
-} from './CategoryUtils';
 import { alert } from 'Utils/Platform';
+import { pendingPromise, synchronized } from 'Utils/PromiseUtils';
+import { PreferenceScope, Step, User, UserPreferences, UserWithPrefs } from 'Utils/WdkUser';
+
+import { CategoryTreeNode, pruneUnknownPaths, resolveWdkReferences, sortOntology } from './CategoryUtils';
 import {
   Answer,
-  AnswerSpec,
   AnswerFormatting,
+  AnswerSpec,
+  AttributeField,
+  Favorite,
   NewStepSpec,
-  PrimaryKey,
-  Question,
+  OntologyTermSummary,
   Parameter,
+  ParameterGroup,
   ParameterValue,
   ParameterValues,
+  PrimaryKey,
+  Question,
+  QuestionWithParameters,
   RecordClass,
   RecordInstance,
+  TreeBoxVocabNode,
   UserDataset,
   UserDatasetMeta,
-  OntologyTermSummary,
-  Favorite
 } from './WdkModel';
-import { User, PreferenceScope, UserPreferences, Step, UserWithPrefs } from 'Utils/WdkUser';
-import { pendingPromise, synchronized } from 'Utils/PromiseUtils';
-import { submitAsForm } from 'Utils/FormSubmitter';
 
 /**
  * Header added to service requests to indicate the version of the model
@@ -110,6 +112,207 @@ type RequestOptions = {
   cacheId?: string;
 }
 
+// JSON Decoders
+// -------------
+
+/*
+  authentication: {
+    method: 'OAUTH2' | 'USERDB';
+    oauthUrl: string;
+    oauthClientUrl: string;
+    oauthClientId: string;
+  };
+*/
+const configDecoder: Decode.Decoder<ServiceConfig> =
+  Decode.combine(
+   Decode.field("authentication", Decode.combine(
+     Decode.field('method', Decode.oneOf(Decode.constant('OAUTH2'), Decode.constant('USERDB'))),
+     Decode.field('oauthUrl', Decode.string),
+     Decode.field('oauthClientUrl', Decode.string),
+     Decode.field('oauthClientId', Decode.string)
+   )),
+   Decode.field('buildNumber', Decode.string),
+   Decode.field('categoriesOntologyName', Decode.string),
+   Decode.field('description', Decode.string),
+   Decode.field('displayName', Decode.string),
+   Decode.field('projectId', Decode.string),
+   Decode.field('releaseDate', Decode.string),
+   Decode.field('startupTime', Decode.number)
+  );
+
+const tryLoginDecoder: Decode.Decoder<TryLoginResponse> =
+  Decode.combine(
+    Decode.field('success', Decode.boolean),
+    Decode.field('message', Decode.string),
+    Decode.field('redirectUrl', Decode.string)
+  )
+
+const treeBoxVocabDecoder: Decode.Decoder<TreeBoxVocabNode> =
+  Decode.combine(
+    Decode.field('data', Decode.combine(
+      Decode.field('term', Decode.string),
+      Decode.field('display', Decode.string)
+    )),
+    Decode.field('children', Decode.lazy(() => Decode.arrayOf(treeBoxVocabDecoder)))
+  )
+
+const parameterDecoder: Decode.Decoder<Parameter> =
+  Decode.combine(
+    Decode.field('name', Decode.string),
+    Decode.field('displayName', Decode.string),
+    Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
+    Decode.field('help', Decode.string),
+    Decode.field('isVisible', Decode.boolean),
+    Decode.field('group', Decode.string),
+    Decode.field('isReadOnly', Decode.boolean),
+    Decode.field('defaultValue', Decode.optional(Decode.string)),
+    Decode.field('dependentParams', Decode.arrayOf(Decode.string)),
+    Decode.oneOf(
+      /* TimestampParam */
+      Decode.field('type', Decode.constant('TimestampParam')),
+      /* StringParam  */
+      Decode.field('type', Decode.constant('StringParam')),
+      /* FilterParamNew */
+      Decode.combine(
+        Decode.field('type', Decode.constant('FilterParamNew')),
+        Decode.field('filterDataTypeDisplayName', Decode.optional(Decode.string)),
+        Decode.field('values', Decode.objectOf(Decode.arrayOf(Decode.string))),
+        Decode.field('ontology', Decode.arrayOf(
+          Decode.combine(
+            Decode.field('term', Decode.string),
+            Decode.field('parent', Decode.optional(Decode.string)),
+            Decode.field('display', Decode.string),
+            Decode.field('description', Decode.optional(Decode.string)),
+            Decode.field('type', Decode.optional(Decode.oneOf(
+              Decode.constant('date'), Decode.constant('string'), Decode.constant('number')
+            ))),
+            // Decode.field('units', Decode.string),
+            Decode.field('precision', Decode.number),
+            Decode.field('isRange', Decode.boolean),
+          )
+        ))
+      ),
+      /* EnumParam */
+      Decode.combine(
+        Decode.field('type', Decode.oneOf(Decode.constant('EnumParam'), Decode.constant('FlatVocabParam'))),
+        // Decode.field('displayType', Decode.string),
+        Decode.field('countOnlyLeaves', Decode.boolean),
+        Decode.field('maxSelectedCount', Decode.number),
+        Decode.field('minSelectedCount', Decode.number),
+        Decode.field('multiPick', Decode.boolean),
+        Decode.field('depthExpanded', Decode.number),
+        Decode.oneOf(
+          /* ListEnumParam */
+          Decode.combine(
+            Decode.field('displayType', Decode.oneOf(
+              Decode.constant('select'), Decode.constant('checkBox'), Decode.constant('typeAhead')
+            )),
+            Decode.field('vocabulary', Decode.arrayOf(
+              Decode.tuple(Decode.string, Decode.string, Decode.oneOf(Decode.string, Decode.nullValue))
+            ))
+          ),
+          /* Treebox */
+          Decode.combine(
+            Decode.field('displayType', Decode.constant('treeBox')),
+            Decode.field('vocabulary', treeBoxVocabDecoder)
+          ),
+        )
+      ),
+      /* NumberParam */
+      Decode.combine(
+        Decode.field('type', Decode.constant('NumberParam')),
+        Decode.field('min', Decode.number),
+        Decode.field('max', Decode.number),
+        Decode.field('step', Decode.number),
+      ),
+      /* NumberRangeParam */
+      Decode.combine(
+        Decode.field('type', Decode.constant('NumberRangeParam')),
+        Decode.field('min', Decode.number),
+        Decode.field('max', Decode.number),
+        Decode.field('step', Decode.number),
+      ),
+      /* DateParam */
+      Decode.combine(
+        Decode.field('type', Decode.constant('DateParam')),
+        Decode.field('minDate', Decode.string),
+        Decode.field('maxDate', Decode.string),
+      ),
+
+      /* DateRangeParam */
+      Decode.combine(
+        Decode.field('type', Decode.constant('DateRangeParam')),
+        Decode.field('minDate', Decode.string),
+        Decode.field('maxDate', Decode.string),
+      ),
+    )
+  )
+
+const parametersDecoder: Decode.Decoder<Parameter[]> =
+  Decode.arrayOf(parameterDecoder)
+
+const paramGroupDecoder: Decode.Decoder<ParameterGroup> =
+  Decode.combine(
+    Decode.field('description', Decode.string),
+    Decode.field('displayName', Decode.string),
+    Decode.field('displayType', Decode.string),
+    Decode.field('isVisible', Decode.boolean),
+    Decode.field('name', Decode.string),
+    Decode.field('parameters', Decode.arrayOf(Decode.string))
+  )
+
+const attributeFieldDecoder: Decode.Decoder<AttributeField> =
+  Decode.combine(
+    Decode.field('name', Decode.string),
+    Decode.field('displayName', Decode.string),
+    Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
+    Decode.field('help', Decode.optional(Decode.string)),
+    Decode.field('align', Decode.optional(Decode.string)),
+    Decode.field('isSortable', Decode.boolean),
+    Decode.field('isRemovable', Decode.boolean),
+    Decode.field('type', Decode.optional(Decode.string)),
+    Decode.field('truncateTo', Decode.number)
+  )
+
+const questionSharedDecoder =
+  Decode.combine(
+    Decode.combine(
+      Decode.field('name', Decode.string),
+      Decode.field('displayName', Decode.string),
+      Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
+      Decode.field('summary', Decode.optional(Decode.string)),
+      Decode.field('description', Decode.optional(Decode.string)),
+      Decode.field('shortDisplayName', Decode.string),
+      Decode.field('recordClassName', Decode.string),
+      Decode.field('help', Decode.optional(Decode.string)),
+      Decode.field('newBuild', Decode.optional(Decode.string)),
+      Decode.field('reviseBuild', Decode.optional(Decode.string)),
+    ),
+    Decode.field('urlSegment', Decode.string),
+    Decode.field('groups', Decode.arrayOf(paramGroupDecoder)),
+    Decode.field('defaultAttributes', Decode.arrayOf(Decode.string)),
+    Decode.field('dynamicAttributes', Decode.arrayOf(attributeFieldDecoder)),
+    Decode.field('defaultSummaryView', Decode.string),
+    Decode.field('summaryViewPlugins', Decode.arrayOf(Decode.string)),
+    Decode.field('stepAnalysisPlugins', Decode.arrayOf(Decode.string)),
+  )
+
+const questionDecoder: Decode.Decoder<Question> =
+  Decode.combine(
+    questionSharedDecoder,
+    Decode.field('parameters', Decode.arrayOf(Decode.string))
+  )
+
+const questionsDecoder: Decode.Decoder<Question[]> =
+  Decode.arrayOf(questionDecoder)
+
+const questionWithParametersDecoder: Decode.Decoder<QuestionWithParameters> =
+  Decode.combine(
+    questionSharedDecoder,
+    Decode.field('parameters', parametersDecoder)
+  )
+
+
 /**
  * A helper to request resources from a Wdk REST Service.
  *
@@ -161,7 +364,7 @@ export default class WdkService {
    *    for POST requests that are semantically treated as GET requests.
    * @return {Promise<Resource>}
    */
-  private sendRequest<Resource>(options: RequestOptions) {
+  private sendRequest<Resource>(decoder: Decode.Decoder<Resource>, options: RequestOptions): Promise<Resource> {
     let { method, path, params, body, useCache, cacheId } = options;
     method = method.toUpperCase();
     let url = path + (params == null ? '' : '?' + queryParams(params));
@@ -170,10 +373,13 @@ export default class WdkService {
     if (useCache && (method === 'GET' || method === 'POST')) {
       let cacheKey = url + (cacheId == null ? '' : '__' + cacheId);
       return this._getFromCache(cacheKey,
-        () => this._fetchJson<Resource>(method, url, body));
-        // () => this.sendRequest(Object.assign({}, options, { useCache: false }));
+        () => this.sendRequest(decoder, { ...options, useCache: false }));
     }
-    return this._fetchJson<Resource>(method, url, body);
+    return this._fetchJson(method, url, body).then(resp => {
+      const result = decoder(resp);
+      if (result.status === 'ok') return result.value;
+      throw new Error(`Could not decode resource at ${options.path}: Expected ${result.expected}${result.context? (' at _' + result.context) : ''}, but got ${result.value}`);
+    })
   }
 
   /**
@@ -181,7 +387,12 @@ export default class WdkService {
    * @return {Promise<ServiceConfig>}
    */
   getConfig() {
-    return this._getFromCache('config', () => this._fetchJson<ServiceConfig>('get', '/'))
+    return this.sendRequest(configDecoder, {
+      method: 'get',
+      path: '/',
+      useCache: true,
+      cacheId: 'config'
+    });
   }
 
   getAnswerServiceEndpoint() {
@@ -189,14 +400,20 @@ export default class WdkService {
   }
 
   tryLogin(email: string, password: string, redirectUrl: string) {
-    return this._fetchJson<TryLoginResponse>('post', '/login',
-      JSON.stringify({ email, password, redirectUrl }));
+    return this.sendRequest(tryLoginDecoder, {
+      method: 'post',
+      path: '/login'
+    });
   }
 
   submitError(error: Error, extra?: any) {
     const { name, message, stack } = error;
     return this._checkStoreVersion().then(() =>
-      this._fetchJson<void>('post', '/client-errors', JSON.stringify({ name, message, stack, extra })));
+    this.sendRequest(Decode.none, {
+      method: 'post',
+      path: '/client-errors',
+      body: JSON.stringify({ name, message, stack, extra })
+    }));
   }
 
   /**
@@ -205,7 +422,14 @@ export default class WdkService {
    * @return {Promise<Array<Object>>}
    */
   getQuestions() {
-    return this._getFromCache('questions', () => this._fetchJson<Question[]>('get', '/questions?expandQuestions=true'));
+    return this.sendRequest(questionsDecoder, {
+      method: 'get',
+      path: '/questions',
+      params: {
+        expandQuestions: 'true'
+      },
+      useCache: true
+    })
   }
 
   /**
@@ -228,27 +452,36 @@ export default class WdkService {
    * Fetch question with default param values/vocabularies (may get from cache if already present)
    */
   getQuestionAndParameters(identifier: string) {
-    let url = `/questions/${identifier}?expandParams=true`;
-    return this._getFromCache(url, () => this._fetchJson<Question>('get', url));
+    return this.sendRequest(questionWithParametersDecoder, {
+      method: 'get',
+      path: `/questions/${identifier}`,
+      params: {
+        expandParams: 'true',
+      },
+      useCache: true
+    });
   }
 
   /**
    * Fetch question information (e.g. vocabularies) given the passed param values; never cached
    */
   getQuestionGivenParameters(identifier: string, paramValues: ParameterValues) {
-    return this._fetchJson<Question>('post',`/questions/${identifier}`,
-      JSON.stringify({ contextParamValues: paramValues }));
+    return this.sendRequest(questionWithParametersDecoder, {
+      method: 'post',
+      path: `/questions/${identifier}`,
+      body: JSON.stringify({ contextParamValues: paramValues })
+    });
   }
 
   getQuestionParamValues(identifier: string, paramName: string, paramValue: ParameterValue, paramValues: ParameterValues) {
-    return this._fetchJson<Parameter[]>(
-      'post',
-      `/questions/${identifier}/refreshed-dependent-params`,
-      JSON.stringify({
+    return this.sendRequest(parametersDecoder, {
+      method: 'post',
+      path: `/questions/${identifier}/refreshed-dependent-params`,
+      body: JSON.stringify({
         changedParam: { name: paramName, value: paramValue },
         contextParamValues: paramValues
       })
-    );
+    })
   }
 
   getOntologyTermSummary(identifier: string, paramName: string, filters: any, ontologyId: string, paramValues: ParameterValues) {
@@ -551,6 +784,10 @@ export default class WdkService {
 
   updateUserDataset(id: number, meta: UserDatasetMeta) {
     return this._fetchJson<void>('put', `/users/current/user-datasets/${id}/meta`, JSON.stringify(meta));
+  }
+
+  removeUserDataset(id: number) {
+    return this._fetchJson<void>('delete', `/users/current/user-datasets/${id}`);
   }
 
   getOauthStateToken() {

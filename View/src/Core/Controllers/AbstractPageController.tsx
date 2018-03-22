@@ -1,14 +1,13 @@
-import React from 'react';
+import { mapValues } from 'lodash';
 import { parse } from 'querystring';
-import { RouteComponentProps } from "react-router";
+import React from 'react';
+import { RouteComponentProps } from 'react-router';
 
 import Page from 'Components/Layout/Page';
-import { Action } from "Core/State/Dispatcher";
-import { ViewControllerProps } from "Core/CommonTypes";
-import { ActionCreatorRecord } from "Utils/ActionCreatorUtils";
-import WdkStore, { BaseState } from "Core/State/Stores/WdkStore";
-import AbstractViewController from "Core/Controllers/AbstractViewController";
-import { mapValues } from 'lodash';
+import { ViewControllerProps } from 'Core/CommonTypes';
+import AbstractViewController from 'Core/Controllers/AbstractViewController';
+import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
+import { Action, ActionCreatorRecord } from 'Utils/ActionCreatorUtils';
 
 export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
 
