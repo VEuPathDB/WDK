@@ -73,12 +73,6 @@ class MembershipField extends React.PureComponent {
   render() {
     if (this.state.hasError) return <div>Something when wrong (check the console)</div>
 
-    const unknownCount = this.props.dataCount - this.props.fieldSummary.internalsCount;
-    const unknownMessage = unknownCount > 0 &&
-      <div className="membership-action membership-action__unknown-count">
-        <strong>{unknownCount} {this.props.displayName} have no data for this quality</strong>
-      </div>;
-
     return (
       <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
         {this.props.filter == null ? (
@@ -86,7 +80,6 @@ class MembershipField extends React.PureComponent {
             <div className="membership-action__no-filters">
               <em>Check items below to apply this filter</em>
             </div>
-            {unknownMessage}
           </div>
         )
           : this.isSortEnabled() ? (
@@ -106,7 +99,6 @@ class MembershipField extends React.PureComponent {
                   /> Keep checked values at top
                 </button>
               </div>
-              {unknownMessage}
             </div>
           ) : null}
 
