@@ -1,21 +1,17 @@
-import { escapeRegExp, intersection, memoize, range } from 'lodash';
+import { escapeRegExp, intersection } from 'lodash';
 import React, { ValidationMap } from 'react';
 
-import Icon from 'Components/Icon/IconAlt';
 import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
-
-import { Action } from 'Core/State/Dispatcher';
+import Icon from 'Components/Icon/IconAlt';
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
-
-import { Seq } from 'Utils/IterableUtils';
-import { safeHtml } from 'Utils/ComponentUtils';
-import { filterNodes, getLeaves, isBranch } from 'Utils/TreeUtils';
-import { makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
-import { ListEnumParam, TreeBoxVocabNode, TreeBoxEnumParam, Parameter } from 'Utils/WdkModel';
-
-import { Context, Props } from 'Params/Utils';
 import { isType as isEnumParam } from 'Params/EnumParam';
 import SelectionInfo from 'Params/EnumParam/SelectionInfo';
+import { Context, Props } from 'Params/Utils';
+import { Action, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
+import { safeHtml } from 'Utils/ComponentUtils';
+import { Seq } from 'Utils/IterableUtils';
+import { filterNodes, getLeaves, isBranch } from 'Utils/TreeUtils';
+import { Parameter, TreeBoxVocabNode, TreeBoxEnumParam } from 'Utils/WdkModel';
 
 
 // Types

@@ -1,15 +1,13 @@
-import { Action } from 'Core/State/Dispatcher';
-import {filterOutProps} from 'Utils/ComponentUtils';
+import { transitionToExternalPage, transitionToInternalPage } from 'Core/ActionCreators/RouterActionCreators';
+import { Action, ActionThunk, EmptyAction, emptyAction } from 'Utils/ActionCreatorUtils';
+import { filterOutProps } from 'Utils/ComponentUtils';
 import { alert, confirm } from 'Utils/Platform';
 import { broadcast } from 'Utils/StaticDataUtils';
-import {ActionThunk, EmptyAction, emptyAction} from "Utils/ActionCreatorUtils";
-import {User, UserPreferences, PreferenceScope, UserWithPrefs, UserPredicate} from "Utils/WdkUser";
-import {RecordInstance} from "Utils/WdkModel";
+import { RecordInstance } from 'Utils/WdkModel';
+import WdkService from 'Utils/WdkService';
+import { PreferenceScope, User, UserPredicate, UserPreferences, UserWithPrefs } from 'Utils/WdkUser';
 import { State as PasswordStoreState } from 'Views/User/Password/UserPasswordChangeStore';
 import { State as ProfileStoreState, UserProfileFormData } from 'Views/User/Profile/UserProfileStore';
-import { transitionToInternalPage, transitionToExternalPage } from 'Core/ActionCreators/RouterActionCreators';
-import { default as WdkService, ServiceConfig } from 'Utils/WdkService';
-import { noop } from 'lodash';
 
 // actions to update true user and preferences
 export type UserUpdateAction = {

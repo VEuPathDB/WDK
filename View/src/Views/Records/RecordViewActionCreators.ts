@@ -1,23 +1,21 @@
 import { chunk, partial, uniqueId } from 'lodash';
-import { getTree, nodeHasProperty, getPropertyValue } from 'Utils/OntologyUtils';
-import { filterNodes } from 'Utils/TreeUtils';
-import { seq } from 'Utils/PromiseUtils';
+
 import {
-  loadBasketStatus,
-  loadFavoritesStatus,
-  BasketStatusLoadingAction,
   BasketStatusErrorAction,
+  BasketStatusLoadingAction,
   BasketStatusReceivedAction,
   FavoritesStatusErrorAction,
+  FavoritesStatusLoadingAction,
   FavoritesStatusReceivedAction,
-  FavoritesStatusLoadingAction
+  loadBasketStatus,
+  loadFavoritesStatus,
 } from 'Core/ActionCreators/UserActionCreators';
-import { PrimaryKey, RecordInstance, RecordClass } from 'Utils/WdkModel';
-import { ActionThunk, DispatchAction, emptyAction, EmptyAction } from 'Utils/ActionCreatorUtils';
-import { Action } from 'Core/State/Dispatcher';
-import WdkService from 'Utils/WdkService';
-import { CategoryTreeNode } from "Utils/CategoryUtils";
-import { ServiceError } from "Utils/WdkService";
+import { Action, ActionThunk, EmptyAction, emptyAction } from 'Utils/ActionCreatorUtils';
+import { CategoryTreeNode } from 'Utils/CategoryUtils';
+import { getPropertyValue, getTree, nodeHasProperty } from 'Utils/OntologyUtils';
+import { filterNodes } from 'Utils/TreeUtils';
+import { PrimaryKey, RecordClass, RecordInstance } from 'Utils/WdkModel';
+import WdkService, { ServiceError } from 'Utils/WdkService';
 
 type BasketAction = BasketStatusLoadingAction | BasketStatusErrorAction | BasketStatusReceivedAction;
 type FavoriteAction = FavoritesStatusLoadingAction | FavoritesStatusReceivedAction | FavoritesStatusErrorAction;

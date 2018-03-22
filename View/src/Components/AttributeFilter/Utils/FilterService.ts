@@ -34,7 +34,7 @@ export interface DateField extends BaseField {
   type: 'date';
 }
 
-export type Field = StringField | NumberField | DateField;
+export type Field = StringField | NumberField | DateField | BaseField;
 
 export type FieldTreeNode = {
   field: Field;

@@ -1,10 +1,9 @@
+import { ActionThunk } from 'Utils/ActionCreatorUtils';
+import { CategoryOntology } from 'Utils/CategoryUtils';
 import { broadcast } from 'Utils/StaticDataUtils';
-import WdkService from "Utils/WdkService";
-import {ActionThunk, DispatchAction} from "Utils/ActionCreatorUtils";
-import {ServiceConfig} from "Utils/WdkService";
-import {CategoryOntology} from "Utils/CategoryUtils";
-import {Question, RecordClass} from "Utils/WdkModel";
-import {User, UserPreferences} from "Utils/WdkUser";
+import { Question, RecordClass } from 'Utils/WdkModel';
+import WdkService, { ServiceConfig } from 'Utils/WdkService';
+import { User, UserPreferences } from 'Utils/WdkUser';
 
 const CONFIG = "config";
 const ONTOLOGY = "ontology";

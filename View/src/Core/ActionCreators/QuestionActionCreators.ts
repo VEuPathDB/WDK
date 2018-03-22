@@ -1,12 +1,8 @@
 import { Observable } from 'rxjs/Rx';
 
-import { combineEpics, EpicServices } from 'Utils/ActionCreatorUtils';
-import { Context } from 'Params/Utils';
-import { makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
-import { Parameter, ParameterValue, ParameterValues, Question, RecordClass } from 'Utils/WdkModel';
-import WdkService from 'Utils/WdkService';
-import { Action } from 'Core/State/Dispatcher';
-import RecordViewStore from 'Views/Records/RecordViewStore';
+import { Action, combineEpics, EpicServices, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
+import { Parameter, ParameterValue, ParameterValues, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
+import WdkService, { ServiceError } from 'Utils/WdkService';
 import QuestionStore from 'Views/Question/QuestionStore';
 
 type BasePayload = {
@@ -24,7 +20,7 @@ export const ActiveQuestionUpdatedAction = makeActionCreator(
 export const QuestionLoadedAction = makeActionCreator(
   'question/question-loaded',
   payload<BasePayload & {
-    question: Question;
+    question: QuestionWithParameters;
     recordClass: RecordClass;
     paramValues: ParameterValues;
   }>()
@@ -154,8 +150,14 @@ function loadQuestion(wdkService: WdkService, questionName: string, paramValues?
       }
       return QuestionLoadedAction.create({ questionName, question, recordClass, paramValues })
     },
-    error => error.status === 404 ? QuestionNotFoundAction.create({ questionName }) : QuestionErrorAction.create({ questionName })
-  )
+    error =>
+      (error instanceof ServiceError
+        ? Promise.resolve()
+        : wdkService.submitError(error)).then(() =>
+          error.status === 404
+            ? QuestionNotFoundAction.create({ questionName })
+            : QuestionErrorAction.create({ questionName }))
+  );
 }
 
 function makeDefaultParamValues(parameters: Parameter[]) {

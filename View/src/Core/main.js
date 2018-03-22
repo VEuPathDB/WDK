@@ -8,7 +8,7 @@ import Dispatcher from 'Core/State/Dispatcher';
 import WdkService from 'Utils/WdkService';
 import { getTransitioner } from 'Utils/PageTransitioner';
 import { createMockHistory } from 'Utils/MockHistory';
-import { getDispatchActionMaker } from 'Utils/ActionCreatorUtils';
+import { getDispatchActionMaker } from 'Utils/DispatchAction';
 import Root from 'Core/Root';
 import { loadAllStaticData } from 'Core/ActionCreators/StaticDataActionCreators';
 import { updateLocation } from 'Core/ActionCreators/RouterActionCreators';

@@ -109,11 +109,11 @@ export function getChildren(node: CategoryTreeNode) {
  * @param description - tooltip
  * @returns {{properties: {targetType: string[], name: *[]}, wdkReference: {displayName: *, help: *}, children: Array}}
  */
-export function createNode(id: string, displayName: string, description: string, children: CategoryTreeNode[] = []): CategoryTreeNode {
+export function createNode(id: string, displayName: string, description?: string, children: CategoryTreeNode[] = []): CategoryTreeNode {
   return children.length > 0 ? {
     properties: {
       label: [id],
-      hasDefinition: [description],
+      hasDefinition: description ? [description]: [],
       'EuPathDB alternative term': [displayName]
     },
     children

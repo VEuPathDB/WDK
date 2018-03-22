@@ -1,7 +1,8 @@
-import * as React from 'react';
 import PropTypes from 'prop-types';
-import { DispatchAction } from 'Core/CommonTypes';
+import * as React from 'react';
+
 import Error from 'Components/PageStatus/Error';
+import { DispatchAction } from 'Core/CommonTypes';
 import { emptyAction } from 'Utils/ActionCreatorUtils';
 
 export default class ErrorBoundary extends React.Component {
