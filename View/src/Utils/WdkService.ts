@@ -378,7 +378,18 @@ export default class WdkService {
     return this._fetchJson(method, url, body).then(resp => {
       const result = decoder(resp);
       if (result.status === 'ok') return result.value;
-      throw new Error(`Could not decode resource at ${options.path}: Expected ${result.expected}${result.context? (' at _' + result.context) : ''}, but got ${result.value}`);
+
+      // This is an error we always want to submit to service. Typically,
+      // WdkService consumers will catch errors and show a message to users
+      // that something went wrong. We want to make sure that this error also
+      // makes it to the client error log on the server.
+      const err = Error(`
+        Could not decode resource at ${options.path}:
+
+        Expected ${result.expected}${result.context? (' at _' + result.context) : ''}, but got ${result.value}
+      `.trim());
+      this.submitError(err);
+      throw err;
     })
   }
 
