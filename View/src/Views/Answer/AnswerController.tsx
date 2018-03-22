@@ -13,6 +13,7 @@ import {
 import Answer from 'Views/Answer/Answer';
 import Loading from 'Components/Loading/Loading';
 import { State, default as AnswerViewStore } from "Views/Answer/AnswerViewStore";
+import NotFound from '../NotFound/NotFound';
 
 const ActionCreators = {
   loadAnswer,
@@ -67,7 +68,20 @@ class AnswerController extends AbstractPageController<State, AnswerViewStore, ty
   }
 
   isRenderDataLoadError() {
-    return this.state.error != null;
+    return (
+      this.state.error != null &&
+      ( 'status' in this.state.error
+        ? this.state.error.status !== 404
+        : true )
+    )
+  }
+
+  isRenderDataNotFound() {
+    return (
+      this.state.error != null &&
+      'status' in this.state.error &&
+      this.state.error.status === 404
+    )
   }
 
   getTitle() {
@@ -78,6 +92,14 @@ class AnswerController extends AbstractPageController<State, AnswerViewStore, ty
 
   renderLoading() {
     return this.state.isLoading && <Loading/>;
+  }
+
+  renderDataNotFound() {
+    return (
+      <NotFound>
+        <p>The search you requested does not exist.</p>
+      </NotFound>
+    )
   }
 
   renderAnswer() {
