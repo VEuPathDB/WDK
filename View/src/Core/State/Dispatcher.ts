@@ -1,14 +1,7 @@
 import { Dispatcher } from 'flux';
 import { Subject } from 'rxjs/Subject';
 
-export interface Action {
-  type: string | symbol;
-  payload?: string | number | object;
-  channel?: string;
-  isBroadcast?: boolean;
-};
-
-export default class WdkDispatcher extends Dispatcher<Action> {
+export default class WdkDispatcher<T> extends Dispatcher<T> {
 
   /**
    * Actions will be pushed here after they have been handled by registered
@@ -16,14 +9,14 @@ export default class WdkDispatcher extends Dispatcher<Action> {
    * for more details on what a Subject is, and how they can be treated as
    * Observables.
    */
-  private action$: Subject<Action> = new Subject();
+  private action$: Subject<T> = new Subject();
 
   /**
    * Call super's dispatch method, then push values into action$ Subject.
    * Doing this here makes it possible for consumers of action$ emit futher
    * actions.
    */
-  dispatch(action: Action) {
+  dispatch(action: T) {
     super.dispatch(action);
     this.action$.next(action);
     return action;

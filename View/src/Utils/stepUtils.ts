@@ -1,6 +1,6 @@
+import { getSingleRecordQuestionName, Question, RecordClass, RecordInstance } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
-import { Question, RecordClass, RecordInstance, getSingleRecordQuestionName } from 'Utils/WdkModel';
-import {Step} from "Utils/WdkUser";
+import { Step } from 'Utils/WdkUser';
 
 /**
  * Fetches the step for the given ID and also finds the question and recordClass
@@ -69,18 +69,7 @@ export function getSingleRecordStepBundlePromise([ recordClass, recordInstance, 
     newBuild: '0',
     reviseBuild: '0',
     urlSegment: 'singleRecord',
-    class: recordClass.name,
-    parameters: [{
-      name: 'primaryKeys',
-      help: '',
-      isVisible: false,
-      group: '',
-      isReadOnly: true,
-      defaultValue: '',
-      type: 'StringParam',
-      displayName: '',
-      dependentParams: []
-    }],
+    parameters: ['primaryKeys'],
     groups: [],
     defaultAttributes: [ ],
     dynamicAttributes: [ ],

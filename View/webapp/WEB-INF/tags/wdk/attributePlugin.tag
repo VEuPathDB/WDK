@@ -11,6 +11,7 @@
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="plugins" value="${attribute.attributePlugins}" />
 <c:set var="divId" value="${attribute.name}_${step.stepId}_div"/>
+<c:set var="assetsUrl" value="${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}"/>
 
 <%-- If only one plugin, then give simple tooltip and have button click launch plugin --%>
 <c:if test="${fn:length(plugins) eq 1}">
@@ -26,7 +27,7 @@
   <c:forEach items="${plugins}" var="item">
     <c:set var="plugin" value="${item.value}" />
     <div>
-      <input type="image" id="${divId}" class="jqbutton" data-assets-src="wdk/images/plugin.png"
+      <input type="image" id="${divId}" class="jqbutton" src="${assetsUrl}/wdk/images/plugin.png"
              plugin="${plugin.name}" plugintitle="${plugin.display} for ${attribute.displayName}"
              title="Analyze/Graph the contents of this column by ${fn:toLowerCase(plugin.display)}"
              onclick="wdk.resultsPage.invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')" />
@@ -63,7 +64,7 @@
 		  </div>    
     </c:set>
     <input type="image" id="${divId}" class="jqbutton" title="${fn:escapeXml(tipContents)}"
-           data-assets-src="wdk/images/plugin.png" x-title="Analyze/graph the contents of this column"/>
+      src="${assetsUrl}/wdk/images/plugin.png" x-title="Analyze/graph the contents of this column"/>
   </div>
 </c:if>
 

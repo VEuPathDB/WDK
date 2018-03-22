@@ -12,11 +12,12 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   onChange: (value: string) => void;
 }
 
-let TextBox = function(props: Props) {
-  let onChange = function(event: React.ChangeEvent<HTMLInputElement>) {
-    props.onChange(event.target.value);
+let TextBox = function(originalProps: Props) {
+  const { onChange, ...props } = originalProps;
+  let changeHandler = function(event: React.ChangeEvent<HTMLInputElement>): void {
+    onChange(event.target.value);
   };
-  return ( <input type="text" {...props} onChange={onChange}/> );
+  return ( <input type="text" {...props} onChange={changeHandler}/> );
 }
 
 export default wrappable(TextBox);

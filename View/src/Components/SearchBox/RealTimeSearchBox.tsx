@@ -147,9 +147,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
             <i className={"fa fa-close " + cancelIconClassName}/>
           </button>
         </label>
-        {helpText &&
-          <HelpIcon>{helpText}</HelpIcon>
-        }
+        {!helpText ? null : <HelpIcon>{helpText}</HelpIcon>}
       </div>
     );
   }

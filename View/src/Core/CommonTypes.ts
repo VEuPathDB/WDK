@@ -1,16 +1,15 @@
-import WdkStore from "Core/State/Stores/WdkStore";
-import WdkDispatcher, { Action } from "Core/State/Dispatcher";
-import GlobalDataStore from "Core/State/Stores/GlobalDataStore";
-import { ActionCreator, ActionCreatorResult, ActionCreatorServices } from 'Utils/ActionCreatorUtils';
-import { RouteComponentProps } from "react-router";
-import { History } from 'history';
+import { ComponentType } from 'react';
+
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
-import { ComponentType } from "react";
+import WdkDispatcher from 'Core/State/Dispatcher';
+import GlobalDataStore from 'Core/State/Stores/GlobalDataStore';
+import WdkStore from 'Core/State/Stores/WdkStore';
+import { Action, ActionCreatorResult, ActionCreatorServices } from 'Utils/ActionCreatorUtils';
 import { UserDataset } from 'Utils/WdkModel';
 
 
 export interface StoreConstructor<T extends WdkStore> {
-  new(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices): T;
+  new(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices): T;
 }
 
 export interface DispatchAction {

@@ -1,6 +1,6 @@
-import {ActionThunk} from "Utils/ActionCreatorUtils";
-import {UserDatasetMeta, UserDataset} from "Utils/WdkModel";
-import {ServiceError} from "Utils/WdkService";
+import { ActionThunk } from "Utils/ActionCreatorUtils";
+import { UserDatasetMeta, UserDataset } from "Utils/WdkModel";
+import { ServiceError } from "Utils/WdkService";
 
 export type ListLoadingAction = {
   type: 'user-datasets/list-loading'
@@ -51,11 +51,27 @@ export type DetailUpdateErrorAction = {
     error: ServiceError
   }
 }
+export type DetailRemovingAction = {
+  type: 'user-datasets/detail-removing'
+}
+
+export type DetailRemoveSuccessAction = {
+  type: 'user-datasets/detail-remove-success',
+  payload: {
+    userDataset: UserDataset
+  }
+}
+export type DetailRemoveErrorAction = {
+  type: 'user-datasets/detail-remove-error',
+  payload: {
+    error: Error
+  }
+}
 
 type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
 type DetailAction = DetailLoading|DetailReceivedAction|DetailErrorAction;
 type UpdateAction = DetailUpdatingAction|DetailUpdateSuccessAction|DetailUpdateErrorAction;
-
+type RemovalAction = DetailRemovingAction|DetailRemoveSuccessAction|DetailRemoveErrorAction;
 
 export function loadUserDatasetList(): ActionThunk<ListAction> {
   return ({ wdkService }) => [
@@ -85,6 +101,16 @@ export function updateUserDatasetDetail(userDataset: UserDataset, meta: UserData
     wdkService.updateUserDataset(userDataset.id, meta).then(
       () => (<DetailUpdateSuccessAction>{ type: 'user-datasets/detail-update-success', payload: { userDataset: { ...userDataset, meta } } } as UpdateAction),
       (error: ServiceError) => (<DetailUpdateErrorAction>{ type: 'user-datasets/detail-update-error', payload: { error } })
+    )
+  ]
+}
+
+export function removeUserDataset (userDataset: UserDataset): ActionThunk<RemovalAction> {
+  return ({ wdkService }) => [
+    <DetailRemovingAction>{ type: 'user-datasets/detail-removing' },
+    wdkService.removeUserDataset(userDataset.id).then(
+      () => (<DetailRemoveSuccessAction>{ type: 'user-datasets/detail-remove-success', payload: { userDataset } } as RemovalAction),
+      (error: ServiceError) => (<DetailRemoveErrorAction>{ type: 'user-datasets/detail-remove-error', payload: { error } })
     )
   ]
 }

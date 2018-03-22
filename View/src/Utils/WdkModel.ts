@@ -7,7 +7,7 @@ import { Field } from "Components/AttributeFilter/Utils/FilterService";
 interface ModelEntity {
   name: string;
   displayName: string;
-  properties?: Record<string, string>;
+  properties?: Record<string, string[]>;
 }
 
 export interface RecordClass extends ModelEntity {
@@ -37,7 +37,7 @@ export interface ParameterBase extends ModelEntity {
   isVisible: boolean;
   group: string;
   isReadOnly: boolean;
-  defaultValue: ParameterValue;
+  defaultValue?: ParameterValue;
   dependentParams: string[];
 }
 
@@ -45,17 +45,21 @@ export interface StringParam extends ParameterBase {
   type: 'StringParam';
 }
 
+export interface TimestampParam extends ParameterBase {
+  type: 'TimestampParam';
+}
+
 export interface FilterParamNew extends ParameterBase {
   type: 'FilterParamNew';
   filterDataTypeDisplayName?: string;
   ontology: Array<{
     term: string;
-    parent: string;
+    parent?: string;
     display: string;
-    description: string;
-    type: any;
-    units: string;
-    precision: string;
+    description?: string;
+    type?: 'date' | 'string' | 'number';
+    // units: string;
+    precision: number;
     isRange: boolean;
   }>;
   values: Record<string, string[]>;
@@ -119,7 +123,7 @@ export interface DateRangeParam extends ParameterBase {
   maxDate: string;
 }
 
-export type Parameter = StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
+export type Parameter = TimestampParam | StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
 
 export interface ParameterGroup {
   description: string;
@@ -130,23 +134,29 @@ export interface ParameterGroup {
   parameters: string[];
 }
 
-export interface Question extends ModelEntity {
-  summary: string;
-  description: string;
+interface QuestionShared extends ModelEntity {
+  summary?: string;
+  description?: string;
   shortDisplayName: string;
   recordClassName: string;
-  help: string;
-  newBuild: string;
-  reviseBuild: string;
+  help?: string;
+  newBuild?: string;
+  reviseBuild?: string;
   urlSegment: string;
-  class: string;
-  parameters: Parameter[];
   groups: ParameterGroup[];
   defaultAttributes: string[];
   dynamicAttributes: AttributeField[];
   defaultSummaryView: string;
   summaryViewPlugins: string[];
   stepAnalysisPlugins: string[];
+}
+
+export interface Question extends QuestionShared {
+  parameters: string[];
+}
+
+export interface QuestionWithParameters extends QuestionShared {
+  parameters: Parameter[];
 }
 
 export type ParameterValue = string;
@@ -188,11 +198,11 @@ export type ParamUIState = { } | {
 }
 
 export interface AttributeField extends ModelEntity {
-  help: string;
-  align: string;
+  help?: string;
+  align?: string;
   isSortable: boolean;
   isRemovable: boolean;
-  type: string;
+  type?: string;
   truncateTo: number;
 }
 

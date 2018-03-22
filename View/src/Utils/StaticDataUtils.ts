@@ -1,5 +1,6 @@
 import { isPlainObject } from 'lodash';
-import {Action} from "Core/State/Dispatcher";
+
+import { Action } from 'Utils/ActionCreatorUtils';
 
 /**
  * Adds an isBroadcast property to the passed action with value true.  Only

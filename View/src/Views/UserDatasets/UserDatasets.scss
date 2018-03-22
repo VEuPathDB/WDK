@@ -3,13 +3,59 @@
 .UserDatasetList-Controller {
   .UserDatasetList-Title {
     font-weight: 200;
+    flex: 0 0 auto;
+    line-height: 1em;
+    margin-right: 20px;
   }
   .UserDatasetList-Content {
+    .ActionToolbar-Children {
+      display: flex;
+      flex: 1 0 auto;
+      align-items: center;
+    }
+    .CellEditor {
+      .CellEditor-Summary {
+        .CellEdit-Row {
+          flex-direction: column;
+        }
+      }
+      .CellEdit-Actions {
+        display: flex;
+        flex: 1;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .CellEdit-Row {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+      }
+      .CellEdit-Input {
+        flex: 0 0 auto;
+        margin-right: 10px;
+        min-width: 200px;
+      }
+      .CellEdit-Icon {
+        flex: 0 0 auto;
+        margin: 10px 5px;
+        transition: all 0.3s;
+        cursor: pointer;
+        color: rgb(162, 162, 162);
+        &:hover {
+          transform: scale(1.1);
+        }
+        &.fa-pencil:hover { color: $blue; }
+        &.fa-check-circle:hover { color: $green; }
+        &.fa-times:hover { color: $red; }
+      }
+    }
     .StatusColumn {
       .wdk-Icon {
         font-size: 20px;
         &.fa-check-circle { color: $green; }
         &.fa-times-circle { color: $red; }
+        &.fa-minus-circle { color: #bbb; }
         &.fa-exclamation-circle { color: $gold; }
       }
     }

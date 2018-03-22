@@ -1,36 +1,32 @@
 import { keyBy, mapValues } from 'lodash';
 
-import { Epic, isOneOf } from 'Utils/ActionCreatorUtils';
 import {
   ActiveQuestionUpdatedAction,
-  UnloadQuestionAction,
+  GroupStateUpdatedAction,
+  GroupVisibilityChangedAction,
   ParamErrorAction,
   ParamInitAction,
   ParamStateUpdatedAction,
   ParamsUpdatedAction,
   ParamValueUpdatedAction,
+  questionEpic,
   QuestionErrorAction,
   QuestionLoadedAction,
   QuestionNotFoundAction,
-  GroupStateUpdatedAction,
-  GroupVisibilityChangedAction,
-  questionEpic
+  UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
-import {
-  ExpandedListSet,
-  SearchTermSet
-} from 'Params/EnumParam/TreeBoxEnumParam';
+import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
+import { paramEpic, reduce as paramReducer } from 'Params';
+import { ExpandedListSet, SearchTermSet } from 'Params/EnumParam/TreeBoxEnumParam';
 import {
   ActiveFieldSetAction,
-  SummaryCountsLoadedAction,
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
-  OntologyTermsInvalidated
+  OntologyTermsInvalidated,
+  SummaryCountsLoadedAction,
 } from 'Params/FilterParamNew/ActionCreators';
-import { Action } from 'Core/State/Dispatcher';
-import { paramEpic, reduce as paramReducer } from 'Params';
-import { Parameter, ParameterGroup, Question, RecordClass } from 'Utils/WdkModel';
-import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
+import { Action, Epic, isOneOf } from 'Utils/ActionCreatorUtils';
+import { Parameter, ParameterGroup, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
 
 interface GroupState {
   isVisible: boolean;
@@ -60,7 +56,7 @@ const isQuestionType = isOneOf(
 
 export type QuestionState = {
   questionStatus: 'loading' | 'error' | 'not-found' | 'complete';
-  question: Question & {
+  question: QuestionWithParameters & {
     parametersByName: Record<string, Parameter>;
     groupsByName: Record<string, ParameterGroup>
   };
@@ -172,7 +168,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
 
   if (ParamsUpdatedAction.isType(action)) {
     const newParamsByName = keyBy(action.payload.parameters, 'name');
-    const newParamValuesByName = mapValues(newParamsByName, param => param.defaultValue);
+    const newParamValuesByName = mapValues(newParamsByName, param => param.defaultValue || '');
     const newParamErrors = mapValues(newParamsByName, () => undefined);
     // merge updated parameters into quesiton and reset their values
     return {
@@ -229,7 +225,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
  * Add parametersByName and groupsByName objects
  * @param question
  */
-function normalizeQuestion(question: Question) {
+function normalizeQuestion(question: QuestionWithParameters) {
   return {
     ...question,
     parametersByName: keyBy(question.parameters, 'name'),

@@ -530,10 +530,12 @@ public class FilterParamNew extends AbstractDependentParam {
     /////////////////////////////////////
     /* GET DISTINCT FILTER ITEM COUNTS */
     /////////////////////////////////////
-    
-    String unfilteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
-        " = ?";
-    String filteredDistinctFilterItemsSql = unfilteredDistinctFilterItemsSql + andClause;
+    String oneColumnBgdSql = "select " + _filterItemIdColumn + " from (" + bgdSql + ") bq WHERE bq." + COLUMN_ONTOLOGY_ID +  " = ?";
+    String unfilteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + oneColumnBgdSql + ")";
+
+    String filteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + oneColumnBgdSql +
+        " INTERSECT select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
+
     getCountsOfDistinctFilterItems(summary, unfilteredDistinctFilterItemsSql, filteredDistinctFilterItemsSql, ontologyItem.getOntologyId());
 
     // return the whole bundle
