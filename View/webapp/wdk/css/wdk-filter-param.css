@@ -279,13 +279,17 @@
 .filter-param .membership-actions {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   padding: 1em 0;
 }
-.filter-param .membership-action {
-  display: flex;
-  align-items: center;
+.filter-param .membership-action__no-filters,
+.filter-param .membership-action__group-selected {
   font-weight: 300;
   font-size: 1.1em;
+}
+.filter-param .membership-action__group-selected {
+  display: flex;
+  align-items: center;
 }
 .filter-param .membership-group-selected-button {
   border-radius: 4px;
