@@ -227,11 +227,11 @@ export interface PrimaryKey extends Array<{
   value: string;
 }> {}
 
-export type AttributeValue = string | LinkAttributeValue;
+export type AttributeValue = string | LinkAttributeValue | null;
 
 export interface LinkAttributeValue {
   url: string;
-  displayText: string;
+  displayText?: string;
 }
 
 export interface TableValue extends Array<Record<string, AttributeValue>> { }
