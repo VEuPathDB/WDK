@@ -389,6 +389,7 @@ export default class WdkService {
         Expected ${result.expected}${result.context? (' at _' + result.context) : ''}, but got ${result.value}
       `.trim());
       this.submitError(err);
+      console.error(err);
       throw err;
     })
   }
