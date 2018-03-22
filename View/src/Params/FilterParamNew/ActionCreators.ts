@@ -1,23 +1,21 @@
+import { get, isEqual } from 'lodash';
 import { Observable } from 'rxjs';
 
+import { Filter } from 'Components/AttributeFilter/Utils/FilterService';
 import {
   GroupVisibilityChangedAction,
-  UnloadQuestionAction,
+  ParamErrorAction,
   ParamValueUpdatedAction,
   QuestionLoadedAction,
-  ParamErrorAction
+  UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
-import { Action } from 'Core/State/Dispatcher';
-import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
-import { makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
-import { combineEpics, EpicServices } from 'Utils/ActionCreatorUtils';
-import { Filter } from 'Components/AttributeFilter/Utils/FilterService';
+import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
+import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from 'Params/FilterParamNew/Utils';
+import { Context } from 'Params/Utils';
+import { Action, combineEpics, EpicServices, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
 import { FilterParamNew } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
-import { Context } from 'Params/Utils';
-import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
-import { isType, findFirstLeaf, getFilters, isMemberField, sortDistribution } from 'Params/FilterParamNew/Utils';
-import { get, groupBy, isEqual } from 'lodash';
+import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
 
 
 type Ctx = Context<FilterParamNew>

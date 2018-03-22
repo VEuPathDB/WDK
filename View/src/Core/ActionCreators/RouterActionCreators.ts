@@ -4,9 +4,10 @@
  * Note: These actions do not currently alter the URL. They mainly
  * propagate router state to stores.
  */
-
 import { Location } from 'history';
+
 import { ActionThunk, EmptyAction, emptyAction } from 'Utils/ActionCreatorUtils';
+
 
 export type LocationAction = {
   type: 'router/location-updated',

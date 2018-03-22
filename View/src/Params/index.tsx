@@ -1,15 +1,13 @@
 import * as React from 'react';
 
-import { DispatchAction, ActionThunk, ActionCreatorRecord, combineEpics, Epic } from 'Utils/ActionCreatorUtils';
-import { Action } from 'Core/State/Dispatcher';
-import { Parameter, ParameterValues } from 'Utils/WdkModel';
-import { Seq } from 'Utils/IterableUtils';
-import { Context, isContextType, isPropsType, ParamModule, Props } from './Utils';
-
-import * as FilterParamNew from 'Params/FilterParamNew';
 import * as EnumParam from 'Params/EnumParam';
+import * as FilterParamNew from 'Params/FilterParamNew';
 import * as NumberParam from 'Params/NumberParam';
 import * as NumberRangeParam from 'Params/NumberRangeParam';
+import { combineEpics, Epic } from 'Utils/ActionCreatorUtils';
+import { Parameter } from 'Utils/WdkModel';
+
+import { isPropsType, ParamModule, Props } from './Utils';
 
 
 // Param modules

@@ -1,4 +1,5 @@
-import { isPlainObject, values, isNumber, isBoolean, isArray, isString } from 'lodash';
+import { isArray, isBoolean, isNumber, isPlainObject, isString, values } from 'lodash';
+
 import { Seq } from 'Utils/IterableUtils';
 
 /**

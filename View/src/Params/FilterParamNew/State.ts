@@ -1,16 +1,16 @@
-import { keyBy, mapValues, groupBy, isEqual } from 'lodash';
+import { groupBy, isEqual, mapValues } from 'lodash';
 
-import { Action } from 'Core/State/Dispatcher';
 import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
-import { OntologyTermSummary } from 'Utils/WdkModel';
 import {
   ActiveFieldSetAction,
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
+  OntologyTermsInvalidated,
   SummaryCountsLoadedAction,
-  OntologyTermsInvalidated
 } from 'Params/FilterParamNew/ActionCreators';
 import { sortDistribution } from 'Params/FilterParamNew/Utils';
+import { Action } from 'Utils/ActionCreatorUtils';
+import { OntologyTermSummary } from 'Utils/WdkModel';
 
 
 export type SortSpec = {

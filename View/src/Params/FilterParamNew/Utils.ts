@@ -5,7 +5,8 @@ import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterSer
 import { getTree } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 import { filter, Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
-import { FilterParamNew, Parameter, OntologyTermSummary } from 'Utils/WdkModel';
+import { FilterParamNew, OntologyTermSummary, Parameter } from 'Utils/WdkModel';
+
 import { SortSpec } from './State';
 
 const natSortComparator = (natsort as any)();
@@ -82,5 +83,5 @@ export function isMemberField(parameter: FilterParamNew, fieldName: string) {
   if (field == null) {
     throw new Error("Could not find a field with the term `" + fieldName + "`.");
   }
-  return field.type === 'membership' || field.isRange === false;
+  return field.isRange === false;
 }

@@ -1,11 +1,9 @@
 import { ReduceStore } from 'flux/utils';
+import { Observable } from 'rxjs/Rx';
 
-import WdkDispatcher, { Action } from 'Core/State/Dispatcher';
-import GlobalDataStore from 'Core/State/Stores/GlobalDataStore';
-import { GlobalData } from 'Core/State/Stores/GlobalDataStore';
-import { ActionCreatorServices, Epic, EpicServices } from 'Utils/ActionCreatorUtils';
-import { Observable, Subject } from 'rxjs/Rx';
-import { setTimeout } from 'timers';
+import WdkDispatcher from 'Core/State/Dispatcher';
+import GlobalDataStore, { GlobalData } from 'Core/State/Stores/GlobalDataStore';
+import { Action, ActionCreatorServices, Epic } from 'Utils/ActionCreatorUtils';
 
 export interface BaseState {
   globalData: Partial<GlobalData>;
@@ -74,7 +72,7 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
 
   /*------------- Methods that should probably not be overridden -------------*/
 
-  constructor(dispatcher: WdkDispatcher, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices) {
+  constructor(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices) {
     super(dispatcher);
     this.channel = channel;
     this.globalDataStore = globalDataStore;
@@ -95,20 +93,21 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     return state;
   }
 
-  configureEpic(dispatcher: WdkDispatcher, services: ActionCreatorServices) {
+  configureEpic(dispatcher: WdkDispatcher<Action>, services: ActionCreatorServices) {
     // Wire up epics.
     const action$ = dispatcher.asObservable().filter(action =>
       this.storeShouldReceiveAction(action.channel));
 
-    const logError = (error: Error) =>
+    const logError = (error: Error) => {
+      console.error(error);
       services.wdkService.submitError(error);
+    };
 
     const startEpic = (): Observable<Action> =>
       this.rootEpic(action$, services)
         // Assign channel unless action isBroadcast
         .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
         .catch((error: Error, caught) => {
-          console.error(error);
           logError(error);
           // restart epic
           return startEpic();
@@ -119,7 +118,6 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
         dispatcher.dispatch(action)
       },
       error => {
-        console.error(error);
         logError(error);
       },
       () => {
