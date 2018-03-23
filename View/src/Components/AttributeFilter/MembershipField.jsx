@@ -6,6 +6,7 @@ import { safeHtml } from 'Utils/ComponentUtils';
 import { findAncestorNode } from 'Utils/DomUtils';
 import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
 import Toggle from 'Components/Icon/Toggle';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 import StackedBar from './StackedBar';
 import FilterLegend from './FilterLegend';
 
@@ -21,11 +22,6 @@ class MembershipField extends React.PureComponent {
     this.handleGroupBySelected = this.handleGroupBySelected.bind(this);
     this.mapMouseTargetToTooltipState = debounce(this.mapMouseTargetToTooltipState, 250);
     this.state = { showDisabledTooltip: false };
-  }
-
-  componentDidCatch(error, info) {
-    this.setState({ hasError: true });
-    console.error({ error, info });
   }
 
   handleMouseOver(event) {
@@ -71,51 +67,51 @@ class MembershipField extends React.PureComponent {
   }
 
   render() {
-    if (this.state.hasError) return <div>Something when wrong (check the console)</div>
-
     return (
-      <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
-        {this.props.filter == null ? (
-          <div className="membership-actions">
-            <div className="membership-action__no-filters">
-              <em>Check items below to apply this filter</em>
-            </div>
-          </div>
-        )
-          : this.isSortEnabled() ? (
+      <ErrorBoundary>
+        <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
+          {this.props.filter == null ? (
             <div className="membership-actions">
-              <div className="membership-action membership-action__group-selected">
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0
-                  }}
-                  type="button"
-                  onClick={this.handleGroupBySelected}
-                >
-                  <Toggle
-                    on={this.props.fieldState.sort.groupBySelected}
-                  /> Keep checked values at top
-                </button>
+              <div className="membership-action__no-filters">
+                <em>Check items below to apply this filter</em>
               </div>
             </div>
-          ) : null}
+          )
+            : this.isSortEnabled() ? (
+              <div className="membership-actions">
+                <div className="membership-action membership-action__group-selected">
+                  <button
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0
+                    }}
+                    type="button"
+                    onClick={this.handleGroupBySelected}
+                  >
+                    <Toggle
+                      on={this.props.fieldState.sort.groupBySelected}
+                    /> Keep checked values at top
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
-        {this.state.showDisabledTooltip &&
-          <div
-            className="disabled-tooltip"
-            style={{
-              left: this.state.tooltipLeft,
-              top: this.state.tooltipTop
-            }}
-          >
-            This item is unavailable because your previous filters have removed these {this.props.displayName}.
-          </div>
-        }
+          {this.state.showDisabledTooltip &&
+            <div
+              className="disabled-tooltip"
+              style={{
+                left: this.state.tooltipLeft,
+                top: this.state.tooltipTop
+              }}
+            >
+              This item is unavailable because your previous filters have removed these {this.props.displayName}.
+            </div>
+          }
 
-        <MembershipTable {...this.props} />
-      </div>
+          <MembershipTable {...this.props} />
+        </div>
+      </ErrorBoundary>
     )
   }
 
