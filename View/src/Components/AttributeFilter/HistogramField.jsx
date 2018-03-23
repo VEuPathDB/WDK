@@ -4,6 +4,7 @@ import { clamp, debounce, get } from 'lodash';
 
 import Histogram from './Histogram';
 import FilterLegend from './FilterLegend';
+import UnknownCount from './UnknownCount';
 
 /**
  * Generic Histogram field component
@@ -17,16 +18,16 @@ export default class HistogramField extends React.Component {
   static getHelpContent(props) {
     return (
       <div>
-        Select a range of {props.field.display} values with the graph below.
+        Select a range of {props.activeField.display} values with the graph below.
       </div>
     );
    /*
    return (
       <div>
         <div>
-          The graph below shows the distribution of {props.field.display} values.
+          The graph below shows the distribution of {props.activeField.display} values.
           The red bar indicates the number of {props.displayName} that have the
-          {props.field.display} value and your other selection criteria.
+          {props.activeField.display} value and your other selection criteria.
         </div>
         <div>
           The slider to the left of the graph can be used to scale the Y-axis.
@@ -112,7 +113,7 @@ export default class HistogramField extends React.Component {
 
   handleRangeScaleChange(range) {
     if (this.props.onRangeScaleChange != null) {
-      this.props.onRangeScaleChange(this.props.field, range);
+      this.props.onRangeScaleChange(this.props.activeField, range);
     }
   }
 
@@ -157,8 +158,8 @@ export default class HistogramField extends React.Component {
       range.max >= this.distributionRange.max
     ) ? undefined : range;
 
-    this.props.onChange(this.props.field, filterValue, includeUnknown,
-      this.props.fieldSummary.valueCounts);
+    this.props.onChange(this.props.activeField, filterValue, includeUnknown,
+      this.props.activeFieldSummary.valueCounts);
 
     this.setState({
       minInputValue: get(filterValue, 'min', this.distributionRange.min),
@@ -168,11 +169,11 @@ export default class HistogramField extends React.Component {
 
   render() {
     var {
-      field,
+      activeField,
       filter,
       displayName,
       unknownCount,
-      fieldState,
+      activeFieldState,
       selectByDefault
     } = this.props;
 
@@ -203,42 +204,49 @@ export default class HistogramField extends React.Component {
     return (
       <div className="range-filter">
 
-        <div className="overview">
-          {this.props.overview}
-        </div>
+        <div className="head">
+          <div>
+            <div className="overview">
+              {this.props.overview}
+            </div>
 
-        <div>
-          {'Select ' + field.display + ' from '}
-          <input
-            type="text"
-            size="6"
-            placeholder={distMin}
-            value={this.state.minInputValue || ''}
-            onChange={this.handleMinInputChange}
-            onKeyPress={this.handleMinInputKeyPress}
-            onBlur={this.handleMinInputBlur}
-          />
-          {' to '}
-          <input
-            type="text"
-            size="6"
-            placeholder={distMax}
-            value={this.state.maxInputValue || ''}
-            onChange={this.handleMaxInputChange}
-            onKeyPress={this.handleMaxInputKeyPress}
-            onBlur={this.handleMaxInputBlur}
-          />
-          {unknownCount > 0 && (
-            <label className="include-unknown">
-              {' '}
+            <div>
+              {'Select ' + activeField.display + ' from '}
               <input
-                type="checkbox"
-                checked={includeUnknown}
-                onChange={this.handleUnknownCheckboxChange}
-              /> Include {unknownCount} Unknown
-            </label>
-          )}
-          <span className="selection-total">{selection}</span>
+                type="text"
+                size="6"
+                placeholder={distMin}
+                value={this.state.minInputValue || ''}
+                onChange={this.handleMinInputChange}
+                onKeyPress={this.handleMinInputKeyPress}
+                onBlur={this.handleMinInputBlur}
+              />
+              {' to '}
+              <input
+                type="text"
+                size="6"
+                placeholder={distMax}
+                value={this.state.maxInputValue || ''}
+                onChange={this.handleMaxInputChange}
+                onKeyPress={this.handleMaxInputKeyPress}
+                onBlur={this.handleMaxInputBlur}
+              />
+              {unknownCount > 0 && (
+                <label className="include-unknown">
+                  {' '}
+                  <input
+                    type="checkbox"
+                    checked={includeUnknown}
+                    onChange={this.handleUnknownCheckboxChange}
+                  /> Include {unknownCount} Unknown
+                </label>
+              )}
+              <span className="selection-total">{selection}</span>
+            </div>
+          </div>
+          <div>
+            <UnknownCount {...this.props} />
+          </div>
         </div>
 
         <Histogram
@@ -246,11 +254,11 @@ export default class HistogramField extends React.Component {
           onSelected={this.updateFilterValueFromSelection}
           selectedMin={selectedMin}
           selectedMax={selectedMax}
-          chartType={field.type}
+          chartType={activeField.type}
           timeformat={this.props.timeformat}
-          xaxisLabel={field.display}
+          xaxisLabel={activeField.display}
           yaxisLabel={displayName}
-          uiState={fieldState}
+          uiState={activeFieldState}
           onUiStateChange={this.handleRangeScaleChange}
         />
 
@@ -268,13 +276,13 @@ HistogramField.propTypes = {
   toHistogramValue: PropTypes.func.isRequired,
   selectByDefault: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
-  field: PropTypes.object.isRequired,
-  fieldSummary: PropTypes.object.isRequired,
+  activeField: PropTypes.object.isRequired,
+  activeFieldSummary: PropTypes.object.isRequired,
   filter: PropTypes.object,
   overview: PropTypes.node.isRequired,
   displayName: PropTypes.string.isRequired,
   unknownCount: PropTypes.number.isRequired,
   timeformat: PropTypes.string,
-  fieldState: PropTypes.object,
+  activeFieldState: PropTypes.object,
   onRangeScaleChange: PropTypes.func
 };

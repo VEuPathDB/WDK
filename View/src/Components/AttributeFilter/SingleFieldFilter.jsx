@@ -1,4 +1,5 @@
 import React from 'react';
+import { omit } from 'lodash';
 import { isRange } from './Utils/FilterServiceUtils';
 import DateField from './DateField';
 import NumberField from './NumberField';
@@ -26,11 +27,7 @@ export default class SingleFieldFilter extends React.Component {
   }
 
   render() {
-    const { activeField, activeFieldSummary, dataCount, displayName, filters } = this.props;
-    const unknownCount = dataCount - activeFieldSummary.internalsCount;
-    const unknownMessage = unknownCount > 0 &&
-      <div className="unknown-count"><b>{unknownCount}</b> {displayName} have no data for this filter</div>;
-
+    const { activeField, filters } = this.props;
 
     const FieldDetail = activeField == null ? null
       : isRange(activeField) == false ? MembershipField
@@ -45,25 +42,15 @@ export default class SingleFieldFilter extends React.Component {
       filters.find(filter => filter.field === activeField.term)
     );
 
-  let fieldDetailProps = {
-    filter,
-    dataCount: this.props.dataCount,
-    filteredDataCount: this.props.filteredDataCount,
-    fieldSummary: this.props.activeFieldSummary,
-    displayName: this.props.displayName,
-    field: this.props.activeField,
-    fieldState: this.props.activeFieldState,
-    onChange: this.handleFieldFilterChange,
-    onSort: this.props.onMemberSort,
-    onSearch: this.props.onMemberSearch,
-    onRangeScaleChange: this.props.onRangeScaleChange,
-    selectByDefault: this.props.selectByDefault
-  };
+    const restProps = omit(this.props, ['filter']);
 
     return (
       <React.Fragment>
-        {unknownMessage}
-        <FieldDetail {...fieldDetailProps} />
+        <FieldDetail
+          filter={filter}
+          onChange={this.handleFieldFilterChange}
+          {...restProps}
+         />
       </React.Fragment>
     );
 

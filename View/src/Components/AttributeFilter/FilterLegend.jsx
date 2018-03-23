@@ -8,7 +8,7 @@ export default function FilterLegend(props) {
     <div className="filter-param-legend">
       <div>
         <div className="bar"><div className="fill"></div></div>
-        <div className="label">All {props.displayName} having "{props.field.display}"</div>
+        <div className="label">All {props.displayName} having "{props.activeField.display}"</div>
       </div>
       <div>
         <div className="bar"><div className="fill filtered"></div></div>
@@ -20,14 +20,14 @@ export default function FilterLegend(props) {
   // TODO Either remove the commented code below, or replace using provided total counts
   // const totalCounts = Seq.from(props.distribution)
   //   // FIXME Always filter nulls when they are moved to different section for non-range fields
-  //   .filter(entry => !props.field.isRange || entry.value != null)
+  //   .filter(entry => !props.activeField.isRange || entry.value != null)
   //   .reduce(concatCounts, { count: 0, filteredCount: 0 });
 
   // return (
   //   <div className="filter-param-legend">
   //     <div>
   //       <div className="bar"><div className="fill"></div></div>
-  //       <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.field.display}"</div>
+  //       <div className="label"><strong>{totalCounts.count} {props.displayName}</strong> &ndash; All {props.displayName} having "{props.activeField.display}"</div>
   //     </div>
   //     <div>
   //       <div className="bar"><div className="fill filtered"></div></div>
