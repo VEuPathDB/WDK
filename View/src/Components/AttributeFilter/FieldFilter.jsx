@@ -11,7 +11,7 @@ const cx = makeClassNameHelper('field-detail');
  * Main interactive filtering interface for a particular field.
  */
 function FieldFilter(props) {
-  let className = cx('', props.hideFieldPanel && 'fullWidth', props.activeField.isRange ? 'range' : 'member');
+  let className = cx('', props.hideFieldPanel && 'fullWidth');
 
   return (
     <div className={className}>
