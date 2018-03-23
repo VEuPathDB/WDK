@@ -85,9 +85,7 @@ export function none(t: any): Result<void> {
 // ---------------------
 
 // Expect a specific value
-export function constant<T extends string>(value: T): Decoder<T>;
-export function constant<T extends number>(value: T): Decoder<T>;
-// export function constant<T>(value:T): Decoder<T>;
+export function constant<T extends string | number | boolean | null>(value: T): Decoder<T>;
 export function constant<T>(value: T) {
   return function constantGuard(t: any): Result<T> {
     return t === value
