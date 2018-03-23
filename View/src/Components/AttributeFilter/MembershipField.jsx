@@ -9,6 +9,7 @@ import Toggle from 'Components/Icon/Toggle';
 import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 import StackedBar from './StackedBar';
 import FilterLegend from './FilterLegend';
+import UnknownCount from './UnknownCount';
 
 const UNKNOWN_ELEMENT = <em>Not specified</em>;
 
@@ -35,18 +36,18 @@ class MembershipField extends React.PureComponent {
   }
 
   handleGroupBySelected() {
-    this.props.onSort(
-      this.props.field,
-      Object.assign({}, this.props.fieldState.sort, {
-        groupBySelected: !this.props.fieldState.sort.groupBySelected
+    this.props.onMemberSort(
+      this.props.activeField,
+      Object.assign({}, this.props.activeFieldState.sort, {
+        groupBySelected: !this.props.activeFieldState.sort.groupBySelected
       })
     );
   }
 
   isSortEnabled() {
     return (
-      has(this.props, 'fieldState.sort') &&
-      isFunction(this.props.onSort)
+      has(this.props, 'activeFieldState.sort') &&
+      isFunction(this.props.onMemberSort)
     );
   }
 
@@ -75,6 +76,9 @@ class MembershipField extends React.PureComponent {
               <div className="membership-action__no-filters">
                 <em>Check items below to apply this filter</em>
               </div>
+              <div className="membership-action">
+                <UnknownCount {...this.props} />
+              </div>
             </div>
           )
             : this.isSortEnabled() ? (
@@ -90,7 +94,7 @@ class MembershipField extends React.PureComponent {
                     onClick={this.handleGroupBySelected}
                   >
                     <Toggle
-                      on={this.props.fieldState.sort.groupBySelected}
+                      on={this.props.activeFieldState.sort.groupBySelected}
                     /> Keep checked values at top
                   </button>
                 </div>
@@ -118,12 +122,12 @@ class MembershipField extends React.PureComponent {
 }
 
 /**
- * Membership field component
+ * Membership activeField component
  */
 class MembershipTable extends React.PureComponent {
   static getHelpContent(props) {
     var displayName = props.displayName;
-    var fieldDisplay = props.field.display;
+    var fieldDisplay = props.activeField.display;
     return (
       <div>
         You may add or remove {displayName} with specific {fieldDisplay} values
@@ -165,7 +169,7 @@ class MembershipTable extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.fieldSummary !== nextProps.fieldSummary) {
+    if (this.props.activeFieldSummary !== nextProps.activeFieldSummary) {
       this.getKnownValues.cache.clear();
     }
     if (this.props.filter !== nextProps.filter) {
@@ -174,14 +178,14 @@ class MembershipTable extends React.PureComponent {
   }
 
   toFilterValue(value) {
-    return this.props.field.type === 'string' ? String(value)
-      : this.props.field.type === 'number' ? Number(value)
-      : this.props.field.type === 'date' ? Date(value)
+    return this.props.activeField.type === 'string' ? String(value)
+      : this.props.activeField.type === 'number' ? Number(value)
+      : this.props.activeField.type === 'date' ? Date(value)
       : value;
   }
 
   getKnownValues() {
-    return this.props.fieldSummary.valueCounts
+    return this.props.activeFieldSummary.valueCounts
       .filter(({ value }) => value != null)
       .map(({ value }) => value);
   }
@@ -193,8 +197,8 @@ class MembershipTable extends React.PureComponent {
   getFilteredRows(searchTerm) {
     let re = new RegExp(escapeRegExp(searchTerm), 'i');
     return searchTerm !== ''
-      ? this.props.fieldSummary.valueCounts.filter(entry => re.test(entry.value))
-      : this.props.fieldSummary.valueCounts;
+      ? this.props.activeFieldSummary.valueCounts.filter(entry => re.test(entry.value))
+      : this.props.activeFieldSummary.valueCounts;
   }
 
   deriveRowClassName(item) {
@@ -221,16 +225,16 @@ class MembershipTable extends React.PureComponent {
 
   isSortEnabled() {
     return (
-      has(this.props, 'fieldState.sort') &&
-      isFunction(this.props.onSort)
+      has(this.props, 'activeFieldState.sort') &&
+      isFunction(this.props.onMemberSort)
     );
   }
 
   isSearchEnabled() {
     return (
-      this.props.fieldSummary.valueCounts.length > 10 &&
-      has(this.props, 'fieldState.searchTerm') &&
-      isFunction(this.props.onSearch)
+      this.props.activeFieldSummary.valueCounts.length > 10 &&
+      has(this.props, 'activeFieldState.searchTerm') &&
+      isFunction(this.props.onMemberSearch)
     );
   }
 
@@ -279,7 +283,7 @@ class MembershipTable extends React.PureComponent {
   handleSelectAll() {
     const allValues = this.getKnownValues();
 
-    const disabledValues = this.props.fieldSummary.valueCounts
+    const disabledValues = this.props.activeFieldSummary.valueCounts
       .filter(entry => entry.filteredCount === 0)
       .map(entry => entry.value);
 
@@ -287,7 +291,7 @@ class MembershipTable extends React.PureComponent {
 
     const value = this.isSearchEnabled()
       ? difference(
-        this.getFilteredRows(this.props.fieldState.searchTerm)
+        this.getFilteredRows(this.props.activeFieldState.searchTerm)
           .map(entry => entry.value),
         disabledValues
       ).concat(filterValues || [])
@@ -304,21 +308,21 @@ class MembershipTable extends React.PureComponent {
 
   handleSort({ key: columnKey }, direction) {
     let nextSort = { columnKey, direction };
-    let sort = Object.assign({}, this.props.fieldState.sort, nextSort);
-    this.props.onSort(this.props.field, sort);
+    let sort = Object.assign({}, this.props.activeFieldState.sort, nextSort);
+    this.props.onMemberSort(this.props.activeField, sort);
   }
 
   handleSearchTermChange(searchTerm) {
-    this.props.onSearch(this.props.field, searchTerm);
+    this.props.onMemberSearch(this.props.activeField, searchTerm);
   }
 
   emitChange(value, includeUnknown = get(this.props, 'filter.includeUnknown', false)) {
-    this.props.onChange(this.props.field, value, includeUnknown,
-      this.props.fieldSummary.valueCounts);
+    this.props.onChange(this.props.activeField, value, includeUnknown,
+      this.props.activeFieldSummary.valueCounts);
   }
 
   renderCheckboxHeading() {
-    const availableItems = this.props.fieldSummary.valueCounts
+    const availableItems = this.props.activeFieldSummary.valueCounts
       .filter(member => member.filteredCount > 0);
     const allAvailableChecked = availableItems
       .every(member => this.isItemSelected(member));
@@ -344,7 +348,7 @@ class MembershipTable extends React.PureComponent {
   }
 
   renderValueHeading() {
-    return this.props.field.display;
+    return this.props.activeField.display;
   }
 
   renderValueHeadingSearch() {
@@ -360,7 +364,7 @@ class MembershipTable extends React.PureComponent {
         }}
       >
         <RealTimeSearchBox
-          searchTerm={this.props.fieldState.searchTerm}
+          searchTerm={this.props.activeFieldState.searchTerm}
           placeholderText="Find items"
           onSearchTermChange={this.handleSearchTermChange}
         />
@@ -411,11 +415,11 @@ class MembershipTable extends React.PureComponent {
   }
 
   renderFilteredCountHeading2() {
-    return this.renderCountHeading2(this.props.fieldSummary.internalsFilteredCount);
+    return this.renderCountHeading2(this.props.activeFieldSummary.internalsFilteredCount);
   }
 
   renderFilteredCountCell({ value }) {
-    return this.renderCountCell(value, this.props.fieldSummary.internalsFilteredCount);
+    return this.renderCountCell(value, this.props.activeFieldSummary.internalsFilteredCount);
   }
 
   renderUnfilteredCountHeading1() {
@@ -423,11 +427,11 @@ class MembershipTable extends React.PureComponent {
   }
 
   renderUnfilteredCountHeading2() {
-    return this.renderCountHeading2(this.props.fieldSummary.internalsCount);
+    return this.renderCountHeading2(this.props.activeFieldSummary.internalsCount);
   }
 
   renderUnfilteredCountCell({ value }) {
-    return this.renderCountCell(value, this.props.fieldSummary.internalsCount);
+    return this.renderCountCell(value, this.props.activeFieldSummary.internalsCount);
   }
 
   renderDistributionCell({ row }) {
@@ -435,7 +439,7 @@ class MembershipTable extends React.PureComponent {
       <StackedBar
         count={row.count}
         filteredCount={row.filteredCount}
-        populationSize={this.props.fieldSummary.internalsCount || this.props.dataCount}
+        populationSize={this.props.activeFieldSummary.internalsCount || this.props.dataCount}
       />
     );
   }
@@ -453,8 +457,8 @@ class MembershipTable extends React.PureComponent {
     var useSearch = this.isSearchEnabled();
 
     var rows = useSearch
-      ? this.getFilteredRows(this.props.fieldState.searchTerm)
-      : this.props.fieldSummary.valueCounts;
+      ? this.getFilteredRows(this.props.activeFieldState.searchTerm)
+      : this.props.activeFieldSummary.valueCounts;
 
     return (
       <Mesa
@@ -465,7 +469,7 @@ class MembershipTable extends React.PureComponent {
           useStickyHeader: true,
           tableBodyMaxHeight: '80vh'
         }}
-        uiState={this.props.fieldState}
+        uiState={this.props.activeFieldState}
         actions={[]}
         eventHandlers={{
           // onRowSelect: this.handleRowSelect,
@@ -474,7 +478,7 @@ class MembershipTable extends React.PureComponent {
           // onMultipleRowDeselect: this.handleRemoveAll,
           onSort: this.handleSort
         }}
-        rows={this.props.fieldSummary.valueCounts}
+        rows={this.props.activeFieldSummary.valueCounts}
         filteredRows={rows}
         columns={[
           {
@@ -501,11 +505,11 @@ class MembershipTable extends React.PureComponent {
             helpText: (
               <div>
                 The number of <em>{this.props.displayName}</em> that match the criteria chosen for other qualities, <br />
-                and that have the given <em>{this.props.field.display}</em> value.
+                and that have the given <em>{this.props.activeField.display}</em> value.
                 </div>
             ),
             wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: this.props.fieldSummary.internalsFilteredCount != null
+            renderHeading: this.props.activeFieldSummary.internalsFilteredCount != null
               ? [this.renderFilteredCountHeading1, this.renderFilteredCountHeading2]
               : this.renderFilteredCountHeading1,
             renderCell: this.renderFilteredCountCell
@@ -517,11 +521,11 @@ class MembershipTable extends React.PureComponent {
             helpText: (
               <div>
                 The number of <em>{this.props.displayName}</em> with the
-                  given <em>{this.props.field.display}</em> value.
+                  given <em>{this.props.activeField.display}</em> value.
                 </div>
             ),
             wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: this.props.fieldSummary.internalsCount != null
+            renderHeading: this.props.activeFieldSummary.internalsCount != null
               ? [this.renderUnfilteredCountHeading1, this.renderUnfilteredCountHeading2]
               : this.renderUnfilteredCountHeading1,
             renderCell: this.renderUnfilteredCountCell
@@ -540,7 +544,7 @@ class MembershipTable extends React.PureComponent {
             helpText: (
               <div>
                 <em>Remaining {this.props.displayName}</em> out of <em>Total {this.props.displayName}</em><br />
-                with the given <em>{this.props.field.display}</em> value.
+                with the given <em>{this.props.activeField.display}</em> value.
                 </div>
             ),
             renderCell: this.renderPrecentageCell

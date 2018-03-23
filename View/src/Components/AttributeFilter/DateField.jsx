@@ -20,11 +20,11 @@ export default class DateField extends React.Component {
   }
 
   componentWillMount() {
-    this.setDateFormat(this.props.fieldSummary.valueCounts);
+    this.setDateFormat(this.props.activeFieldSummary.valueCounts);
   }
 
   componentWillUpdate(nextProps) {
-    this.setDateFormat(nextProps.fieldSummary.valueCounts);
+    this.setDateFormat(nextProps.activeFieldSummary.valueCounts);
   }
 
   setDateFormat(distribution) {
@@ -49,7 +49,7 @@ export default class DateField extends React.Component {
   }
 
   render() {
-    var [ knownDist, unknownDist ] = partition(this.props.fieldSummary.valueCounts, function(entry) {
+    var [ knownDist, unknownDist ] = partition(this.props.activeFieldSummary.valueCounts, function(entry) {
       return entry.value !== null;
     });
 

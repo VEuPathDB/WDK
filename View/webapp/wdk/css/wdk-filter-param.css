@@ -63,6 +63,11 @@
 .filter-param .filter-view {
   position: relative;
 }
+.filter-param .range-filter .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
 .filter-param .range-filter .table tr {
   display: inline-block;
 }
@@ -163,13 +168,6 @@
 .filter-param .unknown-count {
   font-size: 1.1em;
   font-weight: 300;
-  position: absolute;
-  right: 1rem;
-  top: 4rem;
-}
-.filter-param .field-detail__range .unknown-count {
-  top: 6rem;
-  right: 3rem;
 }
 .filter-param .field-detail__topPadding {
   padding-top: 2.5em;
