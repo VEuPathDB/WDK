@@ -51,7 +51,10 @@ function getSearchableString(filterAttributes: string[], filterTables: string[],
     .flatMap(rows => rows)
     .flatMap(row => Object.values(row))
     .concat(values(attributes))
-    .map(value => typeof value === 'object' ? (value.displayText || value.url) : value)
+    .flatMap(value =>
+      value == null ? []
+      : typeof value === 'object' ? [value.displayText || value.url]
+      : [value] )
     .map(stripHTML)
     .reduce((compositeStr, nextStr) => `${compositeStr}\0${nextStr}`);
 }

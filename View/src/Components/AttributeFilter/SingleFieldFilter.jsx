@@ -26,7 +26,11 @@ export default class SingleFieldFilter extends React.Component {
   }
 
   render() {
-    const { activeField, filters } = this.props;
+    const { activeField, activeFieldSummary, dataCount, displayName, filters } = this.props;
+    const unknownCount = dataCount - activeFieldSummary.internalsCount;
+    const unknownMessage = unknownCount > 0 &&
+      <div>{unknownCount} {displayName} have no data for this quality</div>;
+
 
     const FieldDetail = activeField == null ? null
       : isRange(activeField) == false ? MembershipField
@@ -57,7 +61,10 @@ export default class SingleFieldFilter extends React.Component {
   };
 
     return (
-      <FieldDetail {...fieldDetailProps} />
+      <React.Fragment>
+        {unknownMessage}
+        <FieldDetail {...fieldDetailProps} />
+      </React.Fragment>
     );
 
   }

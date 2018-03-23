@@ -77,7 +77,7 @@ class MembershipField extends React.PureComponent {
       <div className="membership-filter" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
         {this.props.filter == null ? (
           <div className="membership-actions">
-            <div className="membership-action">
+            <div className="membership-action__no-filters">
               <em>Check items below to apply this filter</em>
             </div>
           </div>

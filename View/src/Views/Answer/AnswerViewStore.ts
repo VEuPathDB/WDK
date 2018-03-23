@@ -1,16 +1,17 @@
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
-import { filterRecords } from 'Views/Records/RecordUtils';
-import {Answer, Question, RecordInstance, RecordClass, AttributeField} from 'Utils/WdkModel';
+import { Answer, AttributeField, Question, RecordClass, RecordInstance } from 'Utils/WdkModel';
+import { ServiceError } from 'Utils/WdkService';
 import {
-  AnswerOptions,
-  LoadingAction,
   AddedAction,
-  ErrorAction,
-  TableSortedAction,
+  AnswerOptions,
   AttributesChangedAction,
   ColumnMovedAction,
-  TableFilteredAction
+  ErrorAction,
+  LoadingAction,
+  TableFilteredAction,
+  TableSortedAction,
 } from 'Views/Answer/AnswerViewActionCreators';
+import { filterRecords } from 'Views/Records/RecordUtils';
 
 type Action = LoadingAction
             | AddedAction
@@ -33,7 +34,7 @@ export type State = BaseState & Answer & AnswerOptions & FilterState & {
   visibleAttributes: AttributeField[];
   unfilteredRecords: RecordInstance[];
   isLoading: boolean;
-  error?: Error;
+  error?: Error | ServiceError;
 }
 
 export default class AnswerViewStore extends WdkStore<State> {
