@@ -160,6 +160,17 @@
   padding: 0 1rem;
   position: relative;
 }
+.filter-param .unknown-count {
+  font-size: 1.1em;
+  font-weight: 300;
+  position: absolute;
+  right: 1rem;
+  top: 4rem;
+}
+.filter-param .field-detail__range .unknown-count {
+  top: 6rem;
+  right: 3rem;
+}
 .filter-param .field-detail__topPadding {
   padding-top: 2.5em;
 }

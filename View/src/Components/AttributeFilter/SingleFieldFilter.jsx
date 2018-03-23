@@ -29,7 +29,7 @@ export default class SingleFieldFilter extends React.Component {
     const { activeField, activeFieldSummary, dataCount, displayName, filters } = this.props;
     const unknownCount = dataCount - activeFieldSummary.internalsCount;
     const unknownMessage = unknownCount > 0 &&
-      <div>{unknownCount} {displayName} have no data for this quality</div>;
+      <div className="unknown-count"><b>{unknownCount}</b> {displayName} have no data for this filter</div>;
 
 
     const FieldDetail = activeField == null ? null
