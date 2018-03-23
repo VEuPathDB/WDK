@@ -78,7 +78,7 @@ public class UserDatasetService extends UserService {
     UserFactory userFactory = getWdkModel().getUserFactory();
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
       List<UserDatasetInfo> userDatasets = getDatasetInfo(dsSession.getUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel(), user);
@@ -108,7 +108,7 @@ public class UserDatasetService extends UserService {
 	long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       UserDataset userDataset =
           dsSession.getUserDatasetExists(userId, datasetId) ?
           dsSession.getUserDataset(userId, datasetId) :
@@ -142,7 +142,7 @@ public class UserDatasetService extends UserService {
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     java.nio.file.Path temporaryDirPath = null;
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
     	  temporaryDirPath = IoUtil.createOpenPermsTempDir(Paths.get(getWdkModel().getModelConfig().getWdkTempDir()), "irods_");
       UserDataset userDataset =
               dsSession.getUserDatasetExists(userId, datasetId) ?
@@ -193,7 +193,7 @@ public class UserDatasetService extends UserService {
 	long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       if (!dsSession.getUserDatasetExists(userId, datasetId)) throw new NotFoundException("user-dataset/" + datasetIdStr);
       JSONObject metaJson = new JSONObject(body);
       dsSession.updateMetaFromJson(userId, datasetId, metaJson);
@@ -224,7 +224,7 @@ public class UserDatasetService extends UserService {
 	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
     UserDatasetStore dsStore = getUserDatasetStore();
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
     	  Set<Long> ownedDatasetIds = dsSession.getUserDatasets(userId).keySet();
       UserDatasetShareRequest request = UserDatasetShareRequest.createFromJson(jsonObj, getWdkModel(), ownedDatasetIds);
       Map<String, Map<Long, Set<Long>>> userDatasetShareMap = request.getUserDatasetShareMap();
@@ -277,7 +277,7 @@ public class UserDatasetService extends UserService {
 	long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
-    try (UserDatasetSession dsSession = dsStore.getSession(dsStore.getUsersRootDir())) {
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       dsSession.deleteUserDataset(userId, datasetId);
     }  
     return Response.noContent().build();

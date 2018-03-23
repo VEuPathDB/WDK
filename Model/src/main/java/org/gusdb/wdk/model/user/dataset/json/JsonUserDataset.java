@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +33,9 @@ public class JsonUserDataset implements UserDataset {
   private static final String DEPENDENCIES  = "dependencies";
   private static final String SIZE  = "size";
   private static final String PROJECTS  = "projects";
-   
+  private static final String NAME  = "name";
+  private static final String DATA_FILES  = "dataFiles";
+  
   private Long userDatasetId;
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
@@ -51,15 +54,14 @@ public class JsonUserDataset implements UserDataset {
    * @param datasetJsonObject
    * @throws WdkModelException
    */
-  public JsonUserDataset(Long userDatasetId, JSONObject datasetJsonObject, JSONObject metaJsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
+  public JsonUserDataset(Long userDatasetId, JSONObject datasetJsonObject, JSONObject metaJsonObject, Path dataFilesDir, JsonUserDatasetSession session) throws WdkModelException {
     this.userDatasetId = userDatasetId;
     this.datasetJsonObject = datasetJsonObject;
-    unpackJson(datasetJsonObject, metaJsonObject);
-    this.dataFiles = dataFiles;
+    unpackJson(datasetJsonObject, metaJsonObject, dataFilesDir, session);
   }
   
   // TODO: consider active validation of the JSONObject
-  private void unpackJson(JSONObject datasetJsonObj, JSONObject metaJsonObj) throws WdkModelException {
+  private void unpackJson(JSONObject datasetJsonObj, JSONObject metaJsonObj, Path dataFilesDir, JsonUserDatasetSession session) throws WdkModelException {
     try {
       this.meta = new JsonUserDatasetMeta(metaJsonObj);
       this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
@@ -74,7 +76,17 @@ public class JsonUserDataset implements UserDataset {
       JSONArray projectsJson = datasetJsonObj.getJSONArray(PROJECTS);
       for (int i=0; i<projectsJson.length(); i++) 
         projects.add(projectsJson.getString(i));
-          
+      
+      JSONArray dataFilesJson = datasetJsonObj.getJSONArray(DATA_FILES);
+      for (int i=0; i<dataFilesJson.length(); i++) {
+        JSONObject dataFileJson = dataFilesJson.getJSONObject(i);
+        String name = dataFileJson.getString(NAME);
+        Long size = dataFileJson.getLong(SIZE);
+        UserDatasetFile udf = session.getUserDatasetFile(dataFilesDir.resolve(name), userDatasetId);
+        udf.setSize(size);
+        dataFiles.put(name, udf);
+      }
+
     } catch (JSONException e) {
       throw new WdkModelException(e);
     }

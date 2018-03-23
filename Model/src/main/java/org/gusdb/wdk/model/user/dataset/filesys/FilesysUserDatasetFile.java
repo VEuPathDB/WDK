@@ -26,17 +26,12 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
+  protected Long readFileSize(UserDatasetSession dsSession) throws WdkModelException {
     try {
       return Files.size(getFilePath());
     } catch (IOException e) {
       throw new WdkModelException(e);
     }
-  }
-
-  @Override
-  public String getFileName(UserDatasetSession dsSession) {
-    return getFilePath().getFileName().toString();
   }
 
   @Override

@@ -13,14 +13,23 @@ import org.gusdb.wdk.model.WdkModelException;
 public abstract class UserDatasetFile {
   private Path filePath;
   private Long userDatasetId;
+  private Long fileSize;
   
   public UserDatasetFile(Path filePath, Long userDatasetId) {
     this.filePath = filePath;
     this.userDatasetId = userDatasetId;
   }
   
+  public void setSize(Long fileSize) {
+    this.fileSize = fileSize;
+  }
+  
   public Path getFilePath() {
     return filePath;
+  }
+  
+  public String getFileName(UserDatasetSession dsSession) {
+    return getFilePath().getFileName().toString();
   }
 
   /**
@@ -29,19 +38,17 @@ public abstract class UserDatasetFile {
    */
   public abstract InputStream getFileContents(UserDatasetSession dsSession, Path path) throws WdkModelException;
   
-  /**
-   * Get the size of the file
-   * @return
-   */
-  public abstract Long getFileSize(UserDatasetSession dsSession) throws WdkModelException;
+  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
+    if (fileSize == null ) fileSize = readFileSize(dsSession);
+    return fileSize;
+  }
   
   /**
-   * Get the file's name.  There is no path, just a base name, because within
-   * a dataset the files are flat
+   * Get the size of the file by asking the store
    * @return
    */
-  public abstract String getFileName(UserDatasetSession dsSession) throws WdkModelException;
-  
+  protected abstract Long readFileSize(UserDatasetSession dsSession) throws WdkModelException;
+    
   /**
    * Make a local copy of this user dataset file.  tmpWorkingDir is a temp dir that is dedicated
    * to the job that needs this local copy.
