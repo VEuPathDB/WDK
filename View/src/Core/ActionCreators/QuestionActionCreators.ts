@@ -150,13 +150,9 @@ function loadQuestion(wdkService: WdkService, questionName: string, paramValues?
       }
       return QuestionLoadedAction.create({ questionName, question, recordClass, paramValues })
     },
-    error =>
-      ('status' in error
-        ? Promise.resolve()
-        : wdkService.submitError(error)).then(() =>
-          error.status === 404
-            ? QuestionNotFoundAction.create({ questionName })
-            : QuestionErrorAction.create({ questionName }))
+    error => error.status === 404
+      ? QuestionNotFoundAction.create({ questionName })
+      : QuestionErrorAction.create({ questionName })
   );
 }
 
