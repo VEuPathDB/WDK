@@ -62,6 +62,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
     EnumParamTermNode[] rootNodes = vocabInstance.getVocabTreeRoots();
     if (rootNodes.length == 1) return nodeToJson(rootNodes[0]);
     EnumParamTermNode root = new EnumParamTermNode("@@fake@@");
+    root.setDisplay("@@fake@@");
     for (EnumParamTermNode child: rootNodes) {
       root.addChild(child);
     }
