@@ -88,12 +88,12 @@ export function initialize(options) {
         ReactDOM.render(applicationElement, container);
       }
       else if (__DEV__) {
-        console.log('Could not resolve rootElement %o. Application will not render automatically.', rootElement);
+        console.debug('Could not resolve rootElement %o. Application will not render automatically.', rootElement);
       }
     });
   }
   else if (__DEV__) {
-    console.log('The current page url does not start with the rootUrl %o. Application router will not be rendered.', rootUrl);
+    console.debug('The current page url does not start with the rootUrl %o. Application router will not be rendered.', rootUrl);
   }
 
   // return WDK application components
@@ -141,7 +141,7 @@ function wrapStores(storeWrappers) {
     Object.entries(storeWrappers).forEach(function([key, storeWrapper]) {
       const Store = Stores[key];
       if (Store == null) {
-        console.log("Creating new application store: `%s`.", key);
+        console.debug("Creating new application store: `%s`.", key);
       }
       const storeWrapperType = typeof storeWrapper;
       if (storeWrapperType !== 'function') {

@@ -118,7 +118,7 @@ function getPromise(
 ): Promise<StaticDataAction> {
   let { elementName, serviceCall, actionType } = staticDataConfigMap[dataItemName];
   return (wdkService as any)[serviceCall]().then((element: StaticData[typeof elementName]) => {
-    console.log("WDK " + elementName + " loaded");
+    console.debug("WDK " + elementName + " loaded");
     return broadcast({
       type: actionType,
       payload: { [elementName]: element }
@@ -147,7 +147,7 @@ export function loadAllStaticData(): ActionThunk<AllDataAction|StaticDataAction|
             ...result.payload
           }
         }), { type: 'static/all-data-loaded', payload: {} } as AllDataAction)
-        console.log("WDK static data loaded");
+        console.debug("WDK static data loaded");
         return broadcast(allDataAction);
       }).catch((error: Error) => handleLoadError(error))
     ];
