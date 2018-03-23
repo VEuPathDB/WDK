@@ -60,6 +60,7 @@ export default class MultiFieldFilter extends React.Component {
       'Row',
       row.value == null ? 'summary' : 'value',
       row.isSelected && 'selected',
+      row.isLast && 'last-value',
       (row.value == null
         ? row.summary.internalsFilteredCount
         : get(row.summary.valueCounts.find(count => count.value === row.value), 'filteredCount', 0)
@@ -122,15 +123,22 @@ export default class MultiFieldFilter extends React.Component {
   }
 
   renderDistributionCell({ row }) {
-    return row.value != null && (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <StackedBar
-          count={getCount(row.summary, row.value)}
-          filteredCount={getFilteredCount(row.summary, row.value)}
-          populationSize={row.summary.internalsCount || this.props.dataCount}
-        />
-      </div>
-    )
+    const unknownCount = this.props.dataCount - row.summary.internalsCount;
+    return row.value != null
+      ? (
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <StackedBar
+            count={getCount(row.summary, row.value)}
+            filteredCount={getFilteredCount(row.summary, row.value)}
+            populationSize={row.summary.internalsCount || this.props.dataCount}
+          />
+        </div>
+      )
+      : unknownCount > 0 && (
+        <div style={{ fontWeight: 300 }}>
+          <b>{unknownCount}</b> {this.props.displayName} have no data
+        </div>
+      )
   }
 
   renderPercentCell({ row }) {
@@ -175,6 +183,7 @@ export default class MultiFieldFilter extends React.Component {
         .flatMap(summary => summary.valueCounts)
         .map(count => count.value)
         .uniq()
+        .toArray()
     } = this.props.activeField;
     const { searchTerm = '' } = this.props.activeFieldState;
     const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
@@ -186,11 +195,12 @@ export default class MultiFieldFilter extends React.Component {
           summary,
           filter: filtersByField[summary.term]
         },
-        ...values.map(value => ({
+        ...values.map((value, index) => ({
           summary,
           value,
           filter: filtersByField[summary.term],
-          isSelected: get(filtersByField, [ summary.term, 'value' ], []).includes(value)
+          isSelected: get(filtersByField, [ summary.term, 'value' ], []).includes(value),
+          isLast: index === values.length - 1
         }))
       ])
 

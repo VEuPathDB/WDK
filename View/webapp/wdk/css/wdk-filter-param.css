@@ -599,6 +599,10 @@
   padding: 4px;
 }
 
+.filter-param .wdk-MultiFieldFilterRow__last-value > td {
+  padding-bottom: calc(1.5em);
+}
+
 .filter-param .wdk-MultiFieldFilterRow__disabled > td {
   opacity: .4;
 }
