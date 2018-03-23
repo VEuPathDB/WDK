@@ -439,14 +439,14 @@ public class FilterParamNew extends AbstractDependentParam {
     // get filtered   filter_item_ids  count
     String filteredItemIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _filterItemIdColumn);
     sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ")";
-    fpsc.filteredRecordCount = runCountSql(sql, "filterItemIds-filtered");
+    fpsc.filteredFilterItemCount = runCountSql(sql, "filterItemIds-filtered");
 
     if (_filterItemIdColumn.equals(_recordIdColumn)) {
-      fpsc.filteredFilterItemCount = fpsc.filteredRecordCount;
+      fpsc.filteredRecordCount = fpsc.filteredFilterItemCount;
     } else {
       String filteredRecordIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _recordIdColumn);
       sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredRecordIdsSql + ")";
-      fpsc.filteredFilterItemCount = runCountSql(sql, "recordIds-filtered");
+      fpsc.filteredRecordCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;
   }
