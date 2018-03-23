@@ -1,23 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Loading from 'Components/Loading/Loading';
+import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import EmptyField from './EmptyField';
 import MultiFieldFilter from './MultiFieldFilter';
 import SingleFieldFilter from './SingleFieldFilter';
 
+const cx = makeClassNameHelper('field-detail');
 /**
  * Main interactive filtering interface for a particular field.
  */
 function FieldFilter(props) {
-  let className = 'field-detail';
-  if (props.hideFieldPanel) className += ' ' + className + '__fullWidth';
+  let className = cx('', props.hideFieldPanel && 'fullWidth', props.activeField.isRange ? 'range' : 'member');
 
   return (
     <div className={className}>
       {!props.activeField ? (
         <EmptyField displayName={props.displayName}/>
       ) : (
-        <div>
+        <React.Fragment>
           <h3>
             {props.activeField.display + ' '}
           </h3>
@@ -32,7 +33,7 @@ function FieldFilter(props) {
             ? <MultiFieldFilter {...props} />
             : <SingleFieldFilter {...props} />
           )}
-        </div>
+        </React.Fragment>
       )}
     </div>
   );
