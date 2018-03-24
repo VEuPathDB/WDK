@@ -43,7 +43,7 @@ import org.json.JSONObject;
  *   summaryViewPlugins: [ String ],
  *   stepAnalysisPlugins: [ String ]
  * }
- * 
+ *
  * @author rdoherty
  */
 public class QuestionFormatter {
@@ -59,13 +59,13 @@ public class QuestionFormatter {
     return json;
   }
 
-  public static JSONObject getQuestionJson(Question q, boolean expandParams, 
+  public static JSONObject getQuestionJson(Question q, boolean expandParams,
       User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     return getQuestionJson(q, expandParams, user, dependedParamValues, q.getParamMap().values());
   }
 
-  public static JSONObject getQuestionJson(Question q, boolean expandParams, 
+  public static JSONObject getQuestionJson(Question q, boolean expandParams,
       User user, Map<String, String> dependedParamValues, Collection<Param> params)
       throws JSONException, WdkModelException, WdkUserException {
     return new JSONObject()
@@ -106,7 +106,7 @@ public class QuestionFormatter {
     }
     return paramsJson;
   }
-  
+
   private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup) {
     JSONArray groups = new JSONArray();
     for (Group group: paramsByGroup.keySet()) {
@@ -115,7 +115,7 @@ public class QuestionFormatter {
     }
     return groups;
   }
-  
+
   private static JSONObject getGroupJson(Group group, Set<String> params) {
     JSONObject groupJson = new JSONObject();
     groupJson.put(Keys.NAME, group.getName());
@@ -136,9 +136,9 @@ public class QuestionFormatter {
    */
   public static <T> JSONObject getOntologyTermSummaryJson(FilterParamNew.OntologyTermSummary<T> summary) {
     Map<T,FilterParamSummaryCounts> counts = summary.getSummaryCounts();
-    
+
     JSONObject json = new JSONObject();
-    
+
     JSONArray jsonarray = new JSONArray();
     for (Entry<T,FilterParamSummaryCounts> entry : counts.entrySet()) {
       T termValue = entry.getKey();
@@ -149,23 +149,23 @@ public class QuestionFormatter {
       c.put("filteredCount", fpsc.filteredFilterItemCount);
       jsonarray.put(c);
     }
-    
+
     json.put("valueCounts", jsonarray);
     json.put("internalsCount", summary.getDistinctInternal());
     json.put("internalsFilteredCount", summary.getDistinctMatchingInternal());
     return json;
-  
+
   }
-  
+
   /*
    * { "filtered" : 123, "unfiltered" : 234}
    */
   public static JSONObject getFilterParamSummaryJson(FilterParamSummaryCounts counts) {
     JSONObject json = new JSONObject();
-    json.put("filtered", counts.filteredFilterItemCount);
-    json.put("nativeFiltered", counts.filteredRecordCount);
-    json.put("unfiltered", counts.unfilteredFilterItemCount);
-    json.put("nativeUnfiltered", counts.unfilteredRecordCount); 
+    json.put("nativeFiltered", counts.filteredFilterItemCount);
+    json.put("filtered", counts.filteredRecordCount);
+    json.put("nativeUnfiltered", counts.unfilteredFilterItemCount);
+    json.put("unfiltered", counts.unfilteredRecordCount);
     return json;
   }
 
