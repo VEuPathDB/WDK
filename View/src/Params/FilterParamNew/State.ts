@@ -73,8 +73,8 @@ export function reduce(state: State = initialState, action: Action): State {
   if (SummaryCountsLoadedAction.isType(action)) return {
     ...state,
     loadingFilteredCount: false,
-    filteredCount: action.payload.filtered,
-    unfilteredCount: action.payload.unfiltered
+    filteredCount: action.payload.nativeFiltered,
+    unfilteredCount: action.payload.nativeUnfiltered
   }
 
   if (FieldStateUpdatedAction.isType(action)) return {
