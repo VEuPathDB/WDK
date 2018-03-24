@@ -41,6 +41,8 @@ export const SummaryCountsLoadedAction = makeActionCreator(
   payload<Context<FilterParamNew> & {
     filtered: number;
     unfiltered: number;
+    nativeFiltered: number;
+    nativeUnfiltered: number;
   }>()
 )
 

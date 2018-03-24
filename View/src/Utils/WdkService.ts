@@ -509,7 +509,7 @@ export default class WdkService {
   }
 
   getFilterParamSummaryCounts(identifier: string, paramName: string, filters: any, paramValues: ParameterValues) {
-    return this._fetchJson<{filtered: number, unfiltered: number}>(
+    return this._fetchJson<{filtered: number, unfiltered: number, nativeFiltered: number, nativeUnfiltered: number}>(
       'post',
       `/questions/${identifier}/${paramName}/summary-counts`,
       JSON.stringify({
