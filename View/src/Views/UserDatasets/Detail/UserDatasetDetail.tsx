@@ -96,7 +96,10 @@ class UserDatasetDetail extends Component<Props, State> {
     if (userDataset == null) {
       return (
         <NotFound>
-          <p>The User Data Set you requested does not exist, or has been deleted. You might be interested in the <Link to="/workspace/datasets">list of User Data Sets</Link> available to you.</p>
+          <p>
+            The User Data Set you requested does not exist, or has been deleted.
+            You might be interested in the <Link to="/workspace/datasets">list of User Data Sets</Link> available to you.
+          </p>
         </NotFound>
       );
     }

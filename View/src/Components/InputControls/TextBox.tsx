@@ -12,7 +12,7 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   onChange: (value: string) => void;
 }
 
-let TextBox = function(originalProps: Props) {
+let TextBox = function (originalProps: Props) {
   const { onChange, ...props } = originalProps;
   let changeHandler = function(event: React.ChangeEvent<HTMLInputElement>): void {
     onChange(event.target.value);

@@ -6,7 +6,7 @@ import { Question } from 'Utils/WdkModel';
 import AbstractPageController, { PageControllerProps } from 'Core/Controllers/AbstractPageController';
 
 import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
-import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
+import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetailNew';
 import UserDatasetDetailStore, { State as StoreState } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
 import { loadUserDatasetDetail, updateUserDatasetDetail } from 'Views/UserDatasets/UserDatasetsActionCreators';
 
@@ -101,7 +101,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
     return user && user.isGuest
       ? <NotLoggedIn/>
       : <UserDatasetDetail
-          isOwner={isOwner ? true : false}
+          isOwner={!!isOwner}
           userDataset={entry.resource!}
           getQuestionUrl={this.getQuestionUrl}
           updateError={this.state.updateError}
