@@ -414,7 +414,8 @@ export default class WdkService {
   tryLogin(email: string, password: string, redirectUrl: string) {
     return this.sendRequest(tryLoginDecoder, {
       method: 'post',
-      path: '/login'
+      path: '/login',
+      body: JSON.stringify({ email, password, redirectUrl })
     });
   }
 
