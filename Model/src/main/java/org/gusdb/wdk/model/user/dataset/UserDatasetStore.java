@@ -23,6 +23,7 @@ public interface UserDatasetStore {
   void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException;
   
   UserDatasetSession getSession() throws WdkModelException;
+  UserDatasetSession getSession(Path usersRootDir) throws WdkModelException;
   
   Path getUsersRootDir();
   
