@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.irods;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -28,6 +29,10 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
   @Override
   public IrodsUserDatasetSession getSession() throws WdkModelException {
     return new IrodsUserDatasetSession(_usersRootDir, getWdkTempDirName());
+  }
+  
+  public IrodsUserDatasetSession getSession(Path usersRootDir) throws WdkModelException {
+    return new IrodsUserDatasetSession(usersRootDir, getWdkTempDirName());
   }
 
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.dataset.filesys;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
@@ -44,6 +45,11 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   @Override
   public FilesysUserDatasetSession getSession() {
     return new FilesysUserDatasetSession(_usersRootDir);
+  }
+  
+  @Override
+  public FilesysUserDatasetSession getSession(Path usersRootDir) {
+    return new FilesysUserDatasetSession(usersRootDir);
   }
 
 }
