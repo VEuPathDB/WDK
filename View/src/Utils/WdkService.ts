@@ -70,7 +70,7 @@ export class ServiceError extends Error {
 
 export interface ServiceConfig {
   authentication: {
-    method: 'OAUTH2' | 'USERDB';
+    method: 'OAUTH2' | 'USER_DB';
     oauthUrl: string;
     oauthClientUrl: string;
     oauthClientId: string;
@@ -117,7 +117,7 @@ type RequestOptions = {
 
 /*
   authentication: {
-    method: 'OAUTH2' | 'USERDB';
+    method: 'OAUTH2' | 'USER_DB';
     oauthUrl: string;
     oauthClientUrl: string;
     oauthClientId: string;
@@ -126,7 +126,7 @@ type RequestOptions = {
 const configDecoder: Decode.Decoder<ServiceConfig> =
   Decode.combine(
    Decode.field("authentication", Decode.combine(
-     Decode.field('method', Decode.oneOf(Decode.constant('OAUTH2'), Decode.constant('USERDB'))),
+     Decode.field('method', Decode.oneOf(Decode.constant('OAUTH2'), Decode.constant('USER_DB'))),
      Decode.field('oauthUrl', Decode.string),
      Decode.field('oauthClientUrl', Decode.string),
      Decode.field('oauthClientId', Decode.string)
