@@ -42,7 +42,7 @@ function ok<T>(value: T): Ok<T> {
   return { status: 'ok', value };
 }
 
-function err(value: any, expected: string, context?: string): Err {
+function err(value: any, expected: string, context: string = ''): Err {
   return { status: 'err', value, expected, context};
 }
 
@@ -101,7 +101,7 @@ export function objectOf<T>(decoder: Decoder<T>) {
     const e = values(t).map(decoder).find(r => r.status === 'err') as Err;
     return e == null
       ? ok(t)
-      : err(e.value, `{ [string]: ${e.expected} }`, e.context);
+      : err(e.value, e.expected, `[string]${e.context}`);
   }
 }
 
@@ -112,7 +112,7 @@ export function arrayOf<T>(decoder: Decoder<T>) {
     const e = t.map(decoder).find(r => r.status === 'err') as Err;
     return e == null
       ? ok(t)
-      : err(e.value, `${e.expected}[]`, e.context);
+      : err(e.value, e.expected, `[number]${e.context}`);
   }
 }
 
@@ -126,7 +126,7 @@ export function field<T, S extends string>(fieldName: S, decoder: Decoder<T>) {
     const r = decoder(t[fieldName]);
     return r.status === 'ok'
       ? ok(t)
-      : err(r.value, `{ ${fieldName}: ${r.expected} }`, `.${fieldName}${r.context || ''}`);
+      : err(r.value, r.expected, `.${fieldName}${r.context}`);
   }
 }
 
@@ -170,7 +170,7 @@ export function oneOf(...decoders: any[]) {
     const results = Seq.from(decoders).map(d => d(t));
     return results.find(r => r.status === 'ok')
       ? ok(t)
-      : err(t, `(${results.map(e => e.expected).join('|')})`)
+      : err(t, `${results.map(e => e.expected).join(' | ')}`)
   }
 }
 
