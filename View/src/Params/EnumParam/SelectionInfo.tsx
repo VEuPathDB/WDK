@@ -4,6 +4,7 @@ import { EnumParam } from 'Utils/WdkModel';
 type Props = {
   parameter: EnumParam;
   selectedCount: number;
+  allCount: number;
   alwaysShowCount?: boolean;
 };
 
@@ -17,13 +18,16 @@ export default function SelectionInfo(props: Props) {
     : hasMin ? `You must select at least ${minSelectedCount} values for this parameter.`
     : hasMax ? `You may select up to ${maxSelectedCount} values for this parameter.`
     : null;
+  const countColor = props.selectedCount
+    ? 'black'
+    : 'red';
 
   if (message == null && alwaysShowCount == false) return null;
 
   return (
-    <div style={{ fontStyle: 'italic', fontSize: '.95em' }}>
+    <div className="treeCount">
       {message && <div>Note: {message}</div>}
-      <div>{props.selectedCount} selected</div>
+      <div><span className={countColor}>{props.selectedCount} selected</span>, of {props.allCount}</div>
     </div>
   );
 }

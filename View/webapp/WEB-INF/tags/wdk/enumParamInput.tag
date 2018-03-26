@@ -194,7 +194,7 @@ Otherwise a standard select menu is used.
 <c:set var="invalidKey" value="${qP.name}_invalid" />
 <c:set var="invalidTerms" value="${requestScope[invalidKey]}" />
 
-<c:if test="${fn:length(invalidTerms) gt 0}">
+<c:if test="${fn:length(invalidTerms) gt 1}">
   <div class="invalid-values">
     <p>Some of the option(s) you previously selected are no longer available.</p>
     <p>Here is a list of the values you selected (unavailable options are marked in red):</p>
