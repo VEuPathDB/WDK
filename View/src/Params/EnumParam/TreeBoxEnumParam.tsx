@@ -134,13 +134,14 @@ export function TreeBoxEnumParam(props: TreeBoxProps) {
   const tree = props.parameter.vocabulary;
   const selectedNodes = props.value.split(/\s*,\s*/);
   const selectedLeaves = removeBranches(tree, selectedNodes);
+  const allCount = getLeaves(tree, getNodeChildren).length;
   const selectedCount = props.parameter.countOnlyLeaves
     ? selectedLeaves.length
     : selectedNodes.length;
 
   return (
     <div className="wdk-TreeBoxParam">
-      <SelectionInfo parameter={props.parameter} selectedCount={selectedCount} alwaysShowCount />
+      <SelectionInfo parameter={props.parameter} selectedCount={selectedCount} allCount={allCount} alwaysShowCount />
       <CheckboxTree
         isSelectable={true}
         isMultiPick={props.parameter.multiPick}
