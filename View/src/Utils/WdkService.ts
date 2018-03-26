@@ -383,11 +383,14 @@ export default class WdkService {
       // WdkService consumers will catch errors and show a message to users
       // that something went wrong. We want to make sure that this error also
       // makes it to the client error log on the server.
-      const err = Error(`
-        Could not decode resource at ${options.path}:
+      let errorMessage = `Could not decode resource from ${options.path}:`;
+      if (result.context) {
+        errorMessage += '\n\n' + `  Problem at _${result.context}:`;
+      }
 
-        Expected ${result.expected}${result.context? (' at _' + result.context) : ''}, but got ${result.value}
-      `.trim());
+      errorMessage += '\n\n' + `    Expected ${result.expected}, but got ${JSON.stringify(result.value)}.`;
+
+      const err = Error(errorMessage);
       this.submitError(err);
       console.error(err);
       throw err;
