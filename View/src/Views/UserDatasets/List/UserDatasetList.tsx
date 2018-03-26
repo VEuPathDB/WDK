@@ -9,6 +9,7 @@ import {
 } from 'mesa';
 
 import { User } from 'Utils/WdkUser';
+import moment from 'Utils/MomentUtils';
 import { wrappable } from 'Utils/ComponentUtils';
 import { bytesToHuman } from 'Utils/Converters';
 import { UserDataset, UserDatasetMeta } from 'Utils/WdkModel';
@@ -20,6 +21,7 @@ import Loading from 'Components/Loading/Loading';
 import TextBox from 'Components/InputControls/TextBox';
 import DataTable from 'Components/DataTable/DataTable';
 import SearchBox from 'Components/SearchBox/RealTimeSearchBox';
+import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 import { MesaColumn, MesaDataCellProps } from 'Core/CommonTypes';
 
 interface Props {
@@ -40,6 +42,7 @@ interface State {
     sort: MesaSortObject;
   };
   searchTerm: string;
+  sharingModalOpen: boolean;
   editingCache: any;
 }
 
@@ -58,6 +61,7 @@ class UserDatasetList extends React.Component <Props, State> {
         }
       },
       editingCache: {},
+      sharingModalOpen: false,
       searchTerm: ''
     };
 
@@ -85,6 +89,8 @@ class UserDatasetList extends React.Component <Props, State> {
     this.renderOwnerCell = this.renderOwnerCell.bind(this);
     this.filterAndSortRows = this.filterAndSortRows.bind(this);
     this.onSearchTermChange = this.onSearchTermChange.bind(this);
+    this.openSharingModal = this.openSharingModal.bind(this);
+    this.closeSharingModal = this.closeSharingModal.bind(this);
   }
 
   isRowSelected (row: UserDataset): boolean {
@@ -291,8 +297,7 @@ class UserDatasetList extends React.Component <Props, State> {
   renderCreatedCell (cellProps: MesaDataCellProps) {
     const row: UserDataset = cellProps.row;
     const { created } = row;
-    const formattedDate = (new Date(created)).toLocaleDateString();
-    return <span>{formattedDate}</span>
+    return <span>{moment(created).fromNow()}</span>
   }
 
   renderSizeCell (cellProps: MesaDataCellProps) {
@@ -418,7 +423,7 @@ class UserDatasetList extends React.Component <Props, State> {
     return [
       {
         callback: (rows: UserDataset[]) => {
-          alert('affecting ' + rows.map(({ id }) => id).join(', '));
+          this.openSharingModal();
         },
         element: (
           <button className="btn btn-info">
@@ -490,26 +495,38 @@ class UserDatasetList extends React.Component <Props, State> {
       : sorted.reverse();
   }
 
+  closeSharingModal () {
+    const sharingModalOpen = false;
+    this.setState({ sharingModalOpen });
+  }
+
+  openSharingModal () {
+    const sharingModalOpen = true;
+    this.setState({ sharingModalOpen });
+  }
+
   render () {
+    const { isRowSelected } = this;
     const { userDatasets, history, user } = this.props;
-    const { uiState, selectedRows, searchTerm } = this.state;
+    const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
 
     console.info('Datasets:', userDatasets);
 
     const rows = userDatasets;
     const actions = this.getTableActions();
     const options = this.getTableOptions();
+    const columns = this.getColumns();
     const eventHandlers = this.getEventHandlers();
     const filteredRows = this.filterAndSortRows(userDatasets);
 
     const tableState = {
       rows,
-      filteredRows,
+      columns,
       options,
       actions,
+      filteredRows,
       selectedRows,
       eventHandlers,
-      columns: this.getColumns(),
       uiState: {
         ...uiState,
         emptinessCulprit: userDatasets.length
@@ -521,6 +538,13 @@ class UserDatasetList extends React.Component <Props, State> {
     return (
       <Mesa state={MesaState.create(tableState)}>
         <h1 className="UserDatasetList-Title">My Datasets</h1>
+        {sharingModalOpen
+          ? <SharingModal
+              datasets={rows.filter(isRowSelected)}
+              onClose={this.closeSharingModal}
+            />
+          : null
+        }
         <SearchBox
           placeholderText="Search Datasets"
           searchTerm={searchTerm}
