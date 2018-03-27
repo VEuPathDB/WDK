@@ -13,6 +13,7 @@ import { Seq } from 'Utils/IterableUtils';
 import { filterNodes, getLeaves, isBranch } from 'Utils/TreeUtils';
 import { Parameter, TreeBoxVocabNode, TreeBoxEnumParam } from 'Utils/WdkModel';
 
+import 'Params/EnumParam/TreeBoxParam.scss';
 
 // Types
 // -----
