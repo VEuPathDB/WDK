@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { get, isEqual, omit, pick } from 'lodash';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
-import { ViewControllerProps } from 'Core/CommonTypes';
+import { PageControllerProps } from 'Core/CommonTypes';
 import {wrappable} from 'Utils/ComponentUtils';
 import {
   loadRecordData,
@@ -78,9 +78,12 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
       'does not exist.' : 'could not be loaded.');
   }
 
-  loadData(previousProps?: ViewControllerProps<RecordViewStore>) {
+  loadData(previousProps?: PageControllerProps<RecordViewStore>) {
     // load data if params have changed
-    if (!isEqual(get(this.props, 'match.params'), get(previousProps, 'match.params'))) {
+    if (
+      previousProps == null ||
+      this.props.location.pathname !== previousProps.location.pathname
+    ) {
       let { recordClass, primaryKey } = this.props.match.params;
       let pkValues = primaryKey.split('/');
       this.eventHandlers.loadRecordData(recordClass, pkValues);

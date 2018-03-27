@@ -1,4 +1,5 @@
 import { ComponentType } from 'react';
+import { RouteComponentProps } from 'react-router';
 
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import WdkDispatcher from 'Core/State/Dispatcher';
@@ -32,6 +33,8 @@ export interface ViewControllerProps<Store> {
   stores: Container<Store>;
   makeDispatchAction: MakeDispatchAction;
 }
+
+export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
 
 export type AbstractViewControllerClass = typeof AbstractViewController;
 
