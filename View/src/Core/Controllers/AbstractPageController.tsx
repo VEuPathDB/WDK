@@ -58,7 +58,8 @@ export default abstract class AbstractPageController <
     this.setDocumentTitle();
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: PageControllerProps<Store>, state: State): void {
+    super.componentDidUpdate(prevProps, state);
     this.setDocumentTitle();
   }
 

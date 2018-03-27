@@ -64,7 +64,7 @@ export default class Root extends React.Component<Props> {
     const target = event.currentTarget;
     if (!target.href) return;
 
-    let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 1;
+    let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 0;
     let href = (target.getAttribute('href') || '').replace(RELATIVE_LINK_REGEXP, '');
     if (!hasModifiers && href.startsWith(this.props.rootUrl)) {
       this.props.history.push(href.slice(this.props.rootUrl.length));
