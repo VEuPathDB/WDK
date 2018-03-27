@@ -110,7 +110,11 @@ export default abstract class AbstractViewController<
    * Renders data loading message
    */
   renderDataLoading() {
-    return ( <Loading/> );
+    return (
+      <Loading>
+        <div className="wdk-LoadingData">Loading data...</div>
+      </Loading>
+    );
   }
 
   renderError() {

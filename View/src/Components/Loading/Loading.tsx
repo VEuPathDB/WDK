@@ -9,6 +9,8 @@ type Props = {
 
   /** Radius in pixels of the inner circle */
   radius?: number;
+
+  children?: React.ReactNode;
 }
 
 
@@ -52,7 +54,9 @@ class Loading extends React.Component<Props> {
   render() {
     const { className = '' } = this.props;
     return (
-      <div className={`wdk-Loading ${className}`}/>
+      <div className={`wdk-Loading ${className}`}>
+        {this.props.children}
+      </div>
     );
   }
 
