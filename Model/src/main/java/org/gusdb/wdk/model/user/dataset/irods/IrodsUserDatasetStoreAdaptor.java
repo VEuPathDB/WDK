@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.dataset.irods;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -544,6 +545,10 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   }
   
   /**
+   * Note that this method makes no use of IRODS POSIX FS mimics as it appears that creating the
+   * empty file directly in IRODS (e.g., via irodsFile.createNewFile()) does not initiate a replication.
+   * Only an iput (the putOperation here) will do that, it appears.  That requires us to use temporary POSIX
+   * stores.
    * @see
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#writeEmptyFile(Path)
    */
@@ -552,20 +557,38 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	long start = System.currentTimeMillis();
     String pathName = file.toString();
     IRODSFile irodsFile = null;
+    Path temporaryDirPath = null;
+    Path localPath = null;
+    File localFile = null;
     try {
       IRODSFileFactory fileFactory = getIrodsFileFactory();
       irodsFile = getIrodsFile(fileFactory, pathName);
       if(!irodsFile.exists()) {
-        irodsFile.createNewFile();
+    	    temporaryDirPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
+    	    localPath = Paths.get(temporaryDirPath.toString(), file.getFileName().toString());
+    	    localFile = new File(localPath.toString());
+    	    localFile.createNewFile();
+    	    getDataTransferOperations().putOperation(localFile, irodsFile, null, null);
       }  
     }
-    catch(IOException ioe) {
-      throw new WdkModelException(ioe);
+    catch(IOException | JargonException e) {
+      throw new WdkModelException(e);
     }
     finally {
       closeFile(irodsFile);
-      QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","writeEmptyFile-irods: " + pathName,start);
-    }  
+      try {
+        if(temporaryDirPath != null) {
+    	      if(localFile != null) {
+  	    	    Files.delete(localPath);
+    	      }
+  		  Files.delete(temporaryDirPath);
+  	    }
+      }
+  	  catch(IOException ioe) {
+  	    	throw new WdkModelException(ioe);
+  	  }
+  	}
+    QueryLogger.logEndStatementExecution("SUMMARY OF IRODS CALL","writeEmptyFile-irods: " + pathName,start);  
   }
 
   /**
