@@ -119,6 +119,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
     }
     headerActions.push({
       label: favoriteId ? 'Remove from favorites' : 'Add to favorites',
+      classname: ' favorites ',
       iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
       onClick: (event: Event) => {
         event.preventDefault();
