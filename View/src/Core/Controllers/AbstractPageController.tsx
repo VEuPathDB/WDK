@@ -1,15 +1,12 @@
-import { mapValues } from 'lodash';
+import { mapValues, isEqual } from 'lodash';
 import { parse } from 'querystring';
 import React from 'react';
-import { RouteComponentProps } from 'react-router';
 
 import Page from 'Components/Layout/Page';
-import { ViewControllerProps } from 'Core/CommonTypes';
+import { PageControllerProps } from 'Core/CommonTypes';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
 import { Action, ActionCreatorRecord } from 'Utils/ActionCreatorUtils';
-
-export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
 
 /**
  * A ViewController that is intended to render a UI on an entire screen.
@@ -59,7 +56,8 @@ export default abstract class AbstractPageController <
   }
 
   componentDidUpdate(prevProps: PageControllerProps<Store>, state: State): void {
-    super.componentDidUpdate(prevProps, state);
+    // only call loadData of router props have changed
+    if (!isEqual(prevProps.location, this.props.location)) this.loadData(prevProps);
     this.setDocumentTitle();
   }
 

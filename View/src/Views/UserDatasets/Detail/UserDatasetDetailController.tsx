@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { keyBy, pick } from 'lodash';
-import { ViewControllerProps } from 'Core/CommonTypes';
+import { PageControllerProps } from 'Core/CommonTypes';
 import { wrappable } from 'Utils/ComponentUtils';
 import { Question } from 'Utils/WdkModel';
-import AbstractPageController, { PageControllerProps } from 'Core/Controllers/AbstractPageController';
+import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
 import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
 import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetailNew';
