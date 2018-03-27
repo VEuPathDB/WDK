@@ -161,9 +161,9 @@ class FavoritesList extends Component {
   //  RENDERERS ===============================================================
 
   renderIdCell ({ key, value, row, column }) {
-    let { recordClassName, primaryKey, displayName } = row;
-    let recordClass = this.getRecordClassByName(recordClassName);
-    let style = { whiteSpace: 'normal' };
+    const { recordClassName, primaryKey, displayName } = row;
+    const recordClass = this.getRecordClassByName(recordClassName);
+    const style = { whiteSpace: 'normal', wordWrap: 'break-word' };
     return (
       <div style={style}>
         <RecordLink recordClass={recordClass} recordId={primaryKey}>
