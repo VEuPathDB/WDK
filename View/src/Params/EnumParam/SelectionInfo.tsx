@@ -27,7 +27,7 @@ export default function SelectionInfo(props: Props) {
   return (
     <div className="treeCount">
       {message && <div>Note: {message}</div>}
-      <div><span className={countColor}>{props.selectedCount} selected</span>, of {props.allCount}</div>
+      <div><span className={countColor}>{props.selectedCount} selected</span>, out of {props.allCount}</div>
     </div>
   );
 }
