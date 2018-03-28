@@ -77,7 +77,7 @@ public class UserDatasetFormatter {
     typeJson.put("display", datasetInfo.getTypeDisplay());
     JsonType trackSpecificData = detailedData ?
             datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-    typeJson.put("data", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
+    typeJson.put("data", trackSpecificData == null ? JSONObject.NULL : trackSpecificData.get());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     json.put("isInstalled", datasetInfo.isInstalled());
