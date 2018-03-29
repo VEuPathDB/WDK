@@ -1223,12 +1223,20 @@ tr.headerRow th {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 }
 
-.histogram #graph .plot { width:700px; height:400px; margin:0px auto 40px auto; }
+.histogram .plot { width:700px; height:400px; margin:0px auto 70px auto; }
+.histogram .plot-container { position: relative; }
+.histogram .y-axis-label { font-weight: bold; position: absolute; transform-origin: bottom left; transform: rotate(270deg); bottom: 20px; left: 20px; }
+.histogram .x-axis-label { font-weight: bold; position: absolute; bottom: -60px; left: 60px; }
+.histogram .distribution { position: absolute; right: 60px; bottom: -60px; margin: 0; }
+.histogram .distribution dt, .histogram .distribution dd { display: inline-block; margin: 0; }
+.histogram .distribution dt { font-weight: bold; margin-left: 1em; }
 .histogram .plot .flot-x-axis .flot-tick-label { margin:5px 0px 0px 0px; white-space: nowrap; background: white; font-size: 1.1em; padding: 0 1px; }
 .histogram #data .data { display:none; }
 .histogram .control-panel { margin: 5px; padding:7px 5px 5px 7px; background:#EEE; }
-.histogram .bin-slider { display:inline-block; width:500px; }
-.histogram .bin-size { width:40px; text-align:right; }
+.histogram .control-panel-section { display: flex; justify-content: space-between; margin: 1em 0; }
+.histogram .bin-count, .histogram .bin-size { width: 8em; }
+.histogram .bin-size-slider, .histogram .bin-count-slider { width: 40em; margin: auto; }
+.histogram .input-label { display: inline-block; width: 8em; text-align: right; }
 .histogram .update { text-align:center; }
 
 #flot-tooltip { position:absolute; display:block; border:1px solid #fdd; padding:3px; border-radius:3px; background-color:#ffe; z-index:100000000000; }

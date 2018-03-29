@@ -1,12 +1,11 @@
+/* global wdk */
+
+import { debounce } from 'lodash';
+
 wdk.namespace("wdk.result.histogram", function(ns, $) {
   "use strict";
 
-  var type;
-  var min;
-  var max;
-  var previousPoint = null;
-
-  var init = function(histogram, attrs) {
+  function init($el, attrs) {
     require([
       'lib/jquery-flot',
       'lib/jquery-flot-categories',
@@ -14,7 +13,8 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
       'lib/jquery-flot-time'
     ], function() {
       // initialize the properties
-      type = attrs.type;
+      const type = attrs.type;
+      let min, max;
       if (type == "int") {
         min = parseInt(attrs.min);
         max = parseInt(attrs.max);
@@ -23,20 +23,24 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
         max = parseFloat(attrs.max);
       }
 
+      const view = { $el, type, min, max }
+
       // initialize UI controls
-      initializeControls(histogram);
+      initializeControls(view);
 
       // draw the graph
-      drawPlot(histogram);
+      drawPlot(view);
     });
-  };
+  }
 
 
-  function initializeControls(histogram) {
-    var dataTable;
+  function initializeControls(view) {
+    let dataTable;
+    const { $el, min, max, type } = view;
+    const drawPlot_ = debounce(drawPlot, 300);
 
     // register tabs
-    histogram.tabs({
+    $el.tabs({
       activate: function(event, ui) {
         if (ui.newPanel.attr('id') === 'data') {
           dataTable.draw();
@@ -45,57 +49,87 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     });
 
     // register data table
-    dataTable = histogram.find("#data .datatable").wdkDataTable( {
+    dataTable = $el.find("#data .datatable").wdkDataTable( {
       "bDestroy": true,
       "aaSorting": [[ 0, "asc" ]],
     }).DataTable();
 
     // register bin size control
-    // XXX What's going on here? Maybe Ryan knows?
-    var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
-    var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
-    var sliderStep = (type == "float" && min != max) ? (sliderMax - sliderMin)/100 : 1;
-    var binControl = histogram.find("#graph .bin-control");
-    var binSizeInput = binControl.find(".bin-size");
-    var binSlider = binControl.find(".bin-slider").slider({
-      value: binSizeInput.val(),
-      min: sliderMin,
-      max: sliderMax,
-      step: sliderStep,
-      change: function( event, ui ) {
-        binSizeInput.val(ui.value);
-        // refresh display after value is changed
-        drawPlot(histogram);
-      },
-      slide: function( event, ui ) {
-        binSizeInput.val(ui.value);
-      }
-    });
+    const binControl = $el.find("#graph .bin-control");
 
-    binSizeInput
-      .attr('min', sliderMin)
-      .attr('max', sliderMax)
-      .attr('step', sliderStep)
-      .on('change', function(event) {
-        binSlider.slider('value', event.target.value);
-        drawPlot(histogram);
-      })
-      .on('keydown', function(event) {
-        if (event.which === 13) {
-          $(event.target).change();
-          event.stopPropagation();
-        }
-      });
+    // input for selecting/displaying the size of the bins
+    const binSizeInput = binControl.find(".bin-size");
+    const binSizeSlider = binControl.find(".bin-size-slider");
+
+    // input and slider for selecting/displaying the number of bins (1-100)
+    const binCountInput = binControl.find('.bin-count');
+    const binCountSlider = binControl.find(".bin-count-slider");
+
+    // the min allowed bin size should create no more than the max allowed number of bins
+    const minAllowedSize = Math.max(min.toFixed(2), (max / binCountInput.attr('max')).toFixed(2));
+    binSizeInput.attr('min', minAllowedSize);
+    binSizeSlider.attr('min', minAllowedSize);
+
+    const handleSizeEvent = handleEvent(sizeToData);
+    const handleCountEvent = handleEvent(countToData);
+
+    binSizeInput.on('change input keydown', handleSizeEvent);
+    binSizeSlider.on('change input keydown', handleSizeEvent);
+    binCountInput.on('change input keydown', handleCountEvent);
+    binCountSlider.on('change input keydown', handleCountEvent);
 
     // refresh display when value radio changed
-    histogram.find("#graph .value-control input").click(function() {
-      drawPlot(histogram);
+    $el.find("#graph .value-control input").click(function() {
+      drawPlot_(view);
     });
+
+    function sizeToData(rawSize) {
+      return {
+        size: Number(rawSize).toFixed(2),
+        count: Math.ceil(max / rawSize)
+      };
+    }
+
+    function countToData(rawCount) {
+      // if type is int, make sure size is a whole number
+      if (type === 'int') {
+        const size = Math.round(max / rawCount);
+        const count = Math.ceil(max / size)
+        return { size, count };
+      }
+
+      return {
+        size: (max / rawCount).toFixed(2),
+        count: rawCount
+      };
+    }
+
+    function handleEvent(valueToData) {
+      return function update(event) {
+        // capture ENTER for inputs
+        if (event.which === 13) {
+          event.stopPropagation();
+          event.preventDefault();
+        }
+
+        // Ignore invalid input
+        if (!event.target.validity.valid) return;
+
+        const { count, size } = valueToData(event.target.value);
+        binSizeInput.val(size);
+        binSizeSlider.val(size);
+        binCountInput.val(count);
+        binCountSlider.val(count);
+
+        if (event.type === 'change') drawPlot_(view);
+      }
+    }
   }
 
   
-  function drawPlot(histogram) {
-    var graph = histogram.find("#graph");
+  function drawPlot(view) {
+    const { $el, type } = view;
+    var graph = $el.find("#graph");
     // get user inputs
     var binSize = graph.find(".bin-control .bin-size").val();
     binSize = (type == "float") ? parseFloat(binSize) : parseInt(binSize);
@@ -103,45 +137,49 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     var logarithm = (logOption.attr("checked") == "checked");
 
     // get data and labels
-    var plotDetails = loadData(histogram, binSize, logarithm);
+    var plotDetails = loadData(view, binSize, logarithm);
     var data = plotDetails[0];
     var labels = plotDetails[1];
     
     // get plot options
     // use .first() because dataTable plugin creates two tables for the
     // scrollable body
-    var header = histogram.find("#data thead tr").first();
-    var binLabel = header.children(".bin").text();
+    var header = $el.find("#data thead tr").first();
+    var binLabel = header.children(".label").text();
     var sizeLabel = header.children(".count").text();
-    var options = getOptions(histogram, binSize, binLabel, sizeLabel, labels);
+    var options = getOptions(view, binSize, binLabel, sizeLabel, labels);
 
     // draw plot
     var plotCanvas = graph.find(".plot");
+    var previousPoint = null;
     $.plot(plotCanvas, [ data ], options);
-    plotCanvas.bind("plothover", function (event, pos, item) {
-      if (item) {
-        if (previousPoint != item.dataIndex) {
-          previousPoint = item.dataIndex;
+    plotCanvas
+      .off("plothover")
+      .on("plothover", function (event, pos, item) {
+        if (item) {
+          if (previousPoint != item.dataIndex) {
+            previousPoint = item.dataIndex;
+            $("#flot-tooltip").remove();
+            var data = item.series.data[item.dataIndex];
+            var typeValue = (logOption.attr("checked") == "checked" ? 'log('+data[1]+')' : data[1]);
+            var content = sizeLabel + " = " + typeValue + ", in " + binLabel + " = " + labels[item.dataIndex][1];
+            showTooltip(item.pageX, item.pageY, content);
+          }
+        } else {
           $("#flot-tooltip").remove();
-          var data = item.series.data[item.dataIndex];
-          var typeValue = (logOption.attr("checked") == "checked" ? 'log('+data[1]+')' : data[1]);
-          var content = sizeLabel + " = " + typeValue + ", in " + binLabel + " = " + data[0];
-          showTooltip(item.pageX, item.pageY, content);
+          previousPoint = null;
         }
-      } else {
-        $("#flot-tooltip").remove();
-        previousPoint = null;
-      }
-    });
+      });
     // rotate label so it can be displayed without overlap.
     plotCanvas.find(".flot-x-axis .flot-tick-label").addClass("rotate45");
   }
 
 
-  function loadData(histogram, binSize, logarithm) {
+  function loadData(view, binSize, logarithm) {
+    const { $el, type } = view;
     // load original data.
     var data = [];
-    histogram.find("#data .data span").each(function() {
+    $el.find("#data .data span").each(function() {
       var bin = $(this).text();
       if (type == "int") bin = parseInt(bin);
       else if (type == "float") bin = parseFloat(bin);
@@ -151,7 +189,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
 
     // convert data into bins and/or logarithm display
     if (type == "category") data = convertCategoryData(data, binSize, logarithm);
-    else data = convertNumericData(data, binSize, logarithm);
+    else data = convertNumericData(data, view, binSize, logarithm);
 
     return data;
   }
@@ -175,10 +213,10 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
       // now compute new label;
       var label = "";
       if (bin.length === 1) {
-    	    label = bin[0];
-    	    if(label.length > 20) {
-    	    	  label = label.substring(0,20) + "...";
-    	    }
+        label = bin[0];
+        if(label.length > 20) {
+          label = label.substring(0,20) + "...";
+        }
       }
       else {
         for (var k = 0; k < bin.length; k++) {
@@ -197,7 +235,8 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
   }
 
 
-  function convertNumericData(data, binSize, logarithm) {
+  function convertNumericData(data, view, binSize, logarithm) {
+    const { type, min, max } = view;
     var tempBins = [];
     var bin;
     var label;
@@ -244,8 +283,9 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
   }
 
 
-  function getOptions(histogram, binSize, binLabel, sizeLabel, labels) {
+  function getOptions(view, binSize, binLabel, sizeLabel, labels) {
     // determine the mode
+    // const { type } = view;
     //var mode = (type == "float" || binSize != 1) ? "categories" : null;
 
     var options = {

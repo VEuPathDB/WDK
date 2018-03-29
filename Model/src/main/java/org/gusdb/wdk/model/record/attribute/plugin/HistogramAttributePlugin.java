@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.record.attribute.plugin;
 import java.sql.ResultSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -32,7 +33,13 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
   private static final String ATTR_TYPE = "histogramType";
   private static final String ATTR_MIN = "histogramMin";
   private static final String ATTR_MAX = "histogramMax";
+  private static final String ATTR_AVG = "histogramAvg";
   private static final String ATTR_BIN_SIZE = "histogramBinSize";
+  private static final String ATTR_BIN_COUNT = "histogramBinCount";
+  private static final String ATTR_MAX_BIN_COUNT = "histogramMaxBinCount";
+
+  private static final Integer DEFAULT_BIN_COUNT = 10;
+  private static final Integer MAX_BIN_COUNT = 100;
 
   private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
@@ -58,9 +65,14 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
     Number[] range = getRange(data, type);
     result.put(ATTR_MIN, range[0]);
     result.put(ATTR_MAX, range[1]);
+    result.put(ATTR_AVG, getAverage(data));
 
-    // get bin size
-    result.put(ATTR_BIN_SIZE, getBinSize(type, range));
+    // get bin size and count
+    Integer count = getBinCount(type, range);
+    result.put(ATTR_BIN_COUNT, count);
+    result.put(ATTR_BIN_SIZE, getBinSize(type, range, count));
+
+    result.put(ATTR_MAX_BIN_COUNT, getMaxBinCount(type, range));
 
     return result;
   }
@@ -89,16 +101,45 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
     }
   }
 
-  private Number getBinSize(String type, Number[] range) {
+  private Integer getBinCount(String type, Number[] range) {
+    // if min & max is the same, return binSize as 1.
+    float min = Float.valueOf(range[0].toString());
+    float max = Float.valueOf(range[1].toString());
+    if (min == max) return 1;
+
+    return type.equals(TYPE_FLOAT) ? DEFAULT_BIN_COUNT
+        : Math.min(DEFAULT_BIN_COUNT, range[1].intValue());
+  }
+
+  private Integer getMaxBinCount(String type, Number[] range) {
+    if (type.equals(TYPE_CATEGORY)) {
+      return (int)range[1];
+    }
+    if (type.equals(TYPE_INT)) {
+      return Math.min(MAX_BIN_COUNT, (int)range[1]);
+    }
+    return MAX_BIN_COUNT;
+  }
+
+  private Double getAverage(Map<String, Integer> data) {
+    return Double.parseDouble(
+        String.format( "%1.2f", data.values()
+            .stream()
+            .collect(Collectors.averagingDouble(Integer::doubleValue))));
+  }
+
+  private Number getBinSize(String type, Number[] range, Integer numBins) {
+    if (type.equals(TYPE_CATEGORY)) return 1;
+
     // if min & max is the same, return binSize as 1.
     float min = Float.valueOf(range[0].toString());
     float max = Float.valueOf(range[1].toString()); 
     if (min == max) return 1;
 
     if (type.equals(TYPE_FLOAT)) { // float type, continuous range
-      return (max - min) / 10D;
+      return Math.round(max / numBins * 100) / (float)100;
     } else { // int or category, distinct range
-      return Math.max(1, (int)(Math.ceil((max - min + 1) / 10D)));
+      return Math.max(1, (int)(Math.ceil((max - min + 1) / numBins)));
     }
   }
 
