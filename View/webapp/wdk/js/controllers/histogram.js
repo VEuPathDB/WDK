@@ -36,7 +36,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
 
   function initializeControls(view) {
     let dataTable;
-    const { $el, min, max, type } = view;
+    const { $el, min = 1, max = 1, type } = view;
     const drawPlot_ = debounce(drawPlot, 300);
 
     // register tabs
