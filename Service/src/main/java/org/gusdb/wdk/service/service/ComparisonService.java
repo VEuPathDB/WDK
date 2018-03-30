@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,12 +29,12 @@ public class ComparisonService extends WdkService {
   
   protected String getQaBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://qa." + project + ".org/" + getContextPath().split(".")[0];
+    return "http://qa." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
   }
   
   protected String getProdBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://www." + project + ".org/" + getContextPath().split(".")[0];
+    return "http://www." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
   }
 
   /**
