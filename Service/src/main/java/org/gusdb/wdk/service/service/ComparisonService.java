@@ -28,12 +28,12 @@ public class ComparisonService extends WdkService {
   
   protected String getQaBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://qa." + project + ".org/" + getContextPath();
+    return "http://qa." + project + ".org/" + getContextPath().split(".")[0];
   }
   
   protected String getProdBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://www." + project + ".org/" + getContextPath();
+    return "http://www." + project + ".org/" + getContextPath().split(".")[0];
   }
 
   /**
