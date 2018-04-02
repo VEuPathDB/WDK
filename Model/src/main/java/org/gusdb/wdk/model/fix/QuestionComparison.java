@@ -33,8 +33,9 @@ public class QuestionComparison {
     for(String url : urls) {
       comparisons.add(callComparisonService(url + "/service/comparison/questionName"));
     }
-    System.out.println("Results");
-    System.out.println(comparisons.toString());
+    System.out.println("Result of Question Comparison:");
+    //System.out.println(comparisons.toString());
+    comparisons.stream().forEach(comparison -> comparison.display());
   }
 
   protected ComparisonBean callComparisonService(String serviceUrl) throws WdkModelException {
