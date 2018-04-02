@@ -17,8 +17,8 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.fix.ComparisonBean;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,12 +29,12 @@ public class ComparisonService extends WdkService {
   
   protected String getQaBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://qa." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
+    return getScheme() + "://qa." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
   }
   
   protected String getProdBaseUri() {
     String project = getWdkModel().getProjectId().toLowerCase();
-    return "http://www." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
+    return getScheme() + "://www." + project + ".org" + getContextPath().split(Pattern.quote("."))[0];
   }
 
   /**
@@ -46,7 +46,7 @@ public class ComparisonService extends WdkService {
   @GET
   @Path("comparison/questionName")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response compareQuestionNames() throws WdkModelException {
+  public ComparisonBean compareQuestionNames() throws WdkModelException {
 	List<String> qaList = getResults(getQaBaseUri());
 	List<String> prodList = getResults(getProdBaseUri());
 	
@@ -59,12 +59,14 @@ public class ComparisonService extends WdkService {
     invalidQuestionList.removeAll(prodList);
     JSONArray invalidQuestionJson = new JSONArray();
     invalidQuestionList.stream().forEach(entry -> {invalidQuestionJson.put(entry);});
-    
-	JSONObject jsonObject = new JSONObject()
-			.put(getWdkModel().getProjectId(), new JSONObject()
-			.put("New questions", newQuestionJson)
-			.put("Invalid questions", invalidQuestionJson));
-	return Response.ok(jsonObject.toString()).build();
+    ComparisonBean comparison = new ComparisonBean();
+    comparison.setContext("");
+    comparison.setProject(getWdkModel().getProjectId());
+    comparison.setMissingFromProdName("New Questions");
+    comparison.setMissingFromQaName("Invalid Questions");
+    comparison.setMissingFromProd(newQuestionList);
+    comparison.setMissingFromQa(invalidQuestionList);
+    return comparison;
   }
   
   /**
