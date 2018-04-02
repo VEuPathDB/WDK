@@ -80,7 +80,7 @@ public class ComparisonBean {
 	int missingFromProdLength = missingFromProdLongestString.isPresent() ? missingFromProdLongestString.get().length() : getMissingFromProdName().length();
 	String line = new String(new char[23 + missingFromQaLength + missingFromProdLength]).replace('\0', '-');
 	System.out.println(line);
-    System.out.printf("%s|%s|%s|%n",
+    System.out.printf("%n%s|%s|%s|%n",
 	            StringUtils.center("Project", 17),
 	            StringUtils.center(getMissingFromQaName(), missingFromQaLength + 2),
 	            StringUtils.center(getMissingFromProdName(), missingFromProdLength + 2));
@@ -89,12 +89,19 @@ public class ComparisonBean {
     String missingFromQaFormat = " %2$" + missingFromQaLength + "s |";
     String missingFromProdFormat = " %3$" + missingFromProdLength + "s |%n";
     String format = projectFormat.concat(missingFromQaFormat).concat(missingFromProdFormat);
-    for(int i = 0; i < Math.max(getMissingFromQa().size(),getMissingFromProd().size()); i++) {
-    	  String project = i == 0 ? getProject() : "";
-    	  String missingFromQaItem = getMissingFromQa().size() < i + 1 ? "" : getMissingFromQa().get(i);
-    	  String missingFromProdItem = getMissingFromProd().size() < i + 1 ? "" : getMissingFromProd().get(i);
-    	  System.out.printf(format, project, missingFromQaItem, missingFromProdItem);
-    	  System.out.println(line);
+    int maxRows = Math.max(getMissingFromQa().size(),getMissingFromProd().size());
+    if(maxRows == 0) {
+    	  System.out.printf(format, project, "", "");
+  	  System.out.println(line);
+    }
+    else {
+      for(int i = 0; i < maxRows; i++) {
+    	    String project = i == 0 ? getProject() : "";
+    	    String missingFromQaItem = getMissingFromQa().size() < i + 1 ? "" : getMissingFromQa().get(i);
+    	    String missingFromProdItem = getMissingFromProd().size() < i + 1 ? "" : getMissingFromProd().get(i);
+    	    System.out.printf(format, project, missingFromQaItem, missingFromProdItem);
+    	    System.out.println(line);
+      }  
     }
   }  
 }
