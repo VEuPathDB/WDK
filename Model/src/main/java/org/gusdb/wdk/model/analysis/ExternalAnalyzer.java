@@ -129,9 +129,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
-      WdkModel wdkModel = getWdkModel();
-      dumpModelProps(wdkModel, storageDir);
-      dumpModelXmlProps(wdkModel, storageDir);
+      dumpModelProps(getWdkModel(), storageDir);
     }
 
     // decide if header should be added to table and attribute tab files
@@ -217,19 +215,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   private static void dumpModelProps(WdkModel wdkModel, String storageDir) throws WdkModelException {
     File propsOutFile = Paths.get(storageDir, MODEL_PROPS_FILE_NAME).toFile();
     try (BufferedWriter out = new BufferedWriter(new FileWriter(propsOutFile))) {
-      for (Entry<String,String> prop : wdkModel.getProperties().entrySet()) {
-        out.write(prop.getKey() + "=" + prop.getValue());
-        out.newLine();
-      }
-    }
-    catch (IOException e) {
-      throw new WdkModelException("Unable to dump WDK Model properties to file.", e);
-    }
-  }
-
-  private void dumpModelXmlProps(WdkModel wdkModel, String storageDir) throws WdkModelException {
-    File propsOutFile = Paths.get(storageDir, MODEL_PROPS_FILE_NAME).toFile();
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(propsOutFile))) {
       out.write("gusHome=" + wdkModel.getGusHome() + NL);
       out.write("project=" + wdkModel.getProjectId() + NL);
       out.write("version=" + wdkModel.getVersion() + NL);
@@ -238,9 +223,12 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       out.write("startupTime=" + wdkModel.getStartupTime() + NL);
       out.write("displayName=" + wdkModel.getDisplayName() + NL);
       out.write("introduction=" + wdkModel.getIntroduction() + NL);
+      for (Entry<String,String> prop : wdkModel.getProperties().entrySet()) {
+        out.write(prop.getKey() + "=" + prop.getValue() + NL);
+      }
     }
     catch (IOException e) {
-      throw new WdkModelException("Unable to dump WDK Model XML properties to file.", e);
+      throw new WdkModelException("Unable to dump WDK Model properties to file.", e);
     }
   }
 
