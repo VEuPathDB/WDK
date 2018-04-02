@@ -426,7 +426,7 @@ class MembershipTable extends React.PureComponent {
   }
 
   renderUnfilteredCountHeading1() {
-    return this.renderCountHeading1('All');
+    return this.renderCountHeading1('');
   }
 
   renderUnfilteredCountHeading2() {
