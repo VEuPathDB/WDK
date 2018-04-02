@@ -50,7 +50,7 @@ export default class FilterList extends React.Component {
       : filteredDataCount && filteredDataCount.toLocaleString();
 
     const total = hideGlobalCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
-    const filtered = hideGlobalCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} {displayName} selected</span>;
+    const filtered = hideGlobalCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} of {dataCount && dataCount.toLocaleString()} {displayName} selected</span>;
 
 
     return (
