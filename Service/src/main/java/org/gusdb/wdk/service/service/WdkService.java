@@ -95,6 +95,10 @@ public abstract class WdkService {
 	return _request.getContextPath();
   }
 
+  protected String getScheme() {
+    return _request.getScheme();
+  }
+
   protected String getServiceEndpoint() {
     return _serviceEndpoint;
   }
