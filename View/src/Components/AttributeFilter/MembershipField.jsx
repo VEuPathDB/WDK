@@ -98,6 +98,9 @@ class MembershipField extends React.PureComponent {
                     /> Keep checked values at top
                   </button>
                 </div>
+                <div className="membership-action">
+                  <UnknownCount {...this.props} />
+                </div>
               </div>
             ) : null}
 
