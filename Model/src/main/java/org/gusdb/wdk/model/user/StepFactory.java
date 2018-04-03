@@ -184,11 +184,12 @@ public class StepFactory {
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
 
     // estimate validity of strategies by executing subquery against steps in the strategy
-    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(nvl(" + COLUMN_IS_VALID +
-        ", 1)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
+    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" + 
+    	_userDb.getPlatform().getNvlFunctionName() + "(" + COLUMN_IS_VALID +
+        ", " + _userDb.getPlatform().convertBoolean(true) + ") AS INTEGER)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
         TABLE_STEP + " sp WHERE sp." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID + " GROUP BY sr." +
         COLUMN_STRATEGY_ID + " )";
-
+    
     // basic select with required joins
     basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
         COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " + 
