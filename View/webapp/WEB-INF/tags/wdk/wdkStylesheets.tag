@@ -10,5 +10,6 @@
   <jsp:directive.attribute name="debug" required="false" description="Use unminified files"/>
 
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="vendor.bundle.css"/>
   <imp:stylesheet rel="stylesheet" type="text/css" href="wdk-client.bundle.css"/>
 </jsp:root>
