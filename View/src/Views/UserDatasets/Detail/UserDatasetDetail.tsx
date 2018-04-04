@@ -1,3 +1,4 @@
+/*
 import React, { Component, MouseEvent,  StatelessComponent } from 'react';
 import Link from 'Components/Link/Link';
 import url from 'url';
@@ -256,3 +257,4 @@ class UserDatasetDetail extends Component<Props, State> {
 }
 
 export default wrappable(UserDatasetDetail);
+*/

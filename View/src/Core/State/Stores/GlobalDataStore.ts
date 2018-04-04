@@ -15,6 +15,7 @@ type RouterAction = LocationAction;
 type Action = AllDataAction | StaticDataAction | UserAction | RouterAction | LoginAction;
 
 export type GlobalData = StaticData & {
+  siteConfig?: any;
   location: Location;
   loginForm: {
     isOpen: boolean;

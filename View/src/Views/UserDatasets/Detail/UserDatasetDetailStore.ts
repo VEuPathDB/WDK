@@ -26,7 +26,7 @@ type Action = DetailLoading
  * If isLoading is false, and resource is undefined,
  * then assume the user dataset does not exist
  */
-type UserDatasetEntry = {
+export type UserDatasetEntry = {
   isLoading: boolean;
   resource?: UserDataset | void;
 };

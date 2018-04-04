@@ -1,191 +1,26 @@
 @import '~Core/Style/palette';
 
 .UserDatasetList, .UserDatasetDetail {
-  input,textarea {
-    border-radius: 3px;
-  }
-  .save { color: $green; }
-  .cancel { color: $red; }
-}
-
-.UserDatasetList-Title {
-  flex: 0 0 auto;
-  font-weight: 200;
-  line-height: 1em;
-  margin-right: 20px;
-  margin-bottom: 10px;
-}
-
-.UserDatasetDetail-Header {
-  display: flex;
-  padding-top: 30px;
-  flex-flow: column nowrap;
-}
-.UserDatasetDetail-Pretext {
-  padding: 0;
-  font-size: 18px;
-  font-weight: 300;
-  margin: 15px 0 20px;
-}
-.UserDatasetDetail-Title {
-  padding: 0;
-  display: flex;
-  line-height: 1em;
-  font-weight: 200;
-  margin: 0 0 20px;
-  align-items: center;
-  flex-flow: row nowrap;
-  letter-spacing: -0.5px;
-
-  .wdk-Icon {
-    flex: 0 0 auto;
-    font-size: 0.7em;
-    margin-right: 10px;
-  }
-  span, input {
-    letter-spacing: -0.5px;
-  }
-  span {
-    flex: 1;
-    margin-left: 5px;
-  }
-  input {
-    flex: 1;
+  section {
     width: 100%;
-    margin: -10px 10px -10px 0;
+    margin-bottom: 30px;
   }
-}
-.UserDatasetDetail-Label {
-  display: flex;
-  font-size: 0.9em;
-  margin-bottom: 5px;
-  flex-flow: row nowrap;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.75);
-  a {
-    margin: 0 0 0 10px;
-  }
-  .spacer {
-    flex: 1;
-  }
-  &:hover {
-    color: rgba(0, 0, 0, 0.9);
-  }
-}
-.UserDatasetDetail-Summary, .UserDatasetDetail-Description {
-  margin: 0;
-}
-.UserDatasetDetail-SectionTitle {
-  margin-bottom: 10px;
-  .wdk-Icon {
-    margin-right: 10px;
-  }
-}
-.UserDatasetDetail-InfoRow {
-  align-items: flex-start;
-  p {
-    flex: 1;
-    border: none;
-    padding: 5px 0;
-    margin-top: 0;
-    min-height: 80px;
-  }
-  textarea {
-    min-height: 60px;
-  }
-  .box {
-    flex: 1;
-    padding: 0 5px;
-  }
-  input, textarea {
-    flex: 1;
-    width: 97%;
-    display: block;
-  }
-}
-.UserDatasetDetail-Actions {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-end;
-}
-details {
-  margin: 30px 0;
-}
-hr {
-  height: 0;
-  width: 100%;
-  border: none;
-  margin: 20px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-}
-.UserDatasetDetail-Header {
-  a {
-    color: $blue;
-    opacity: 0.5;
-    cursor: pointer;
-    transition: all 0.3s;
-    &:hover {
-      opacity: 1;
-    }
-  }
-}
-.MesaComponent {
-  table {
-    .DataRowList {
-      td.DataCell {
-        vertical-align: middle;
-      }
-    }
-    button {
-      .wdk-Icon {
-        font-size: 1em;
-      }
-    }
-  }
-}
 
-.UserDatasetList-Content, .UserDatasetDetail-Content {
+  .MesaComponent {
+    .DataTable {
+      button {
+        .wdk-Icon {
+          font-size: 1em;
+        }
+      }
+    }
+    td, th { vertical-align: middle; }
+  }
+
   .ActionToolbar-Children {
     display: flex;
     flex: 1 0 auto;
     align-items: center;
-  }
-  .CellEditor {
-    .CellEditor-Summary {
-      .CellEdit-Row {
-        flex-direction: column;
-      }
-    }
-    .CellEdit-Actions {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      flex-flow: row nowrap;
-      justify-content: flex-end;
-    }
-    .CellEdit-Row {
-      display: flex;
-      flex-flow: row wrap;
-      align-items: center;
-    }
-    .CellEdit-Input {
-      flex: 0 0 auto;
-      min-width: 200px;
-      margin-right: 10px;
-    }
-    .CellEdit-Icon {
-      flex: 0 0 auto;
-      cursor: pointer;
-      margin: 10px 5px;
-      transition: all 0.3s;
-      color: rgb(162, 162, 162);
-      &:hover {
-        transform: scale(1.1);
-      }
-      &.fa-times:hover { color: $red; }
-      &.fa-pencil:hover { color: $blue; }
-      &.fa-check-circle:hover { color: $green; }
-    }
   }
   .StatusColumn {
     .wdk-Icon {
@@ -198,19 +33,26 @@ hr {
   }
 }
 
-.UserDatasetList-NotLoggedIn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  p {
-    font-size: 1.3em;
-    font-weight: 300;
+.UserDataset-Tutorial {
+  margin-top: 150px;
+  text-align: center;
+
+  ul {
+    display: block;
+    margin: 0 auto;
+    max-width: 80%;
+    text-align: left;
+    li {
+      margin-bottom: 10px;
+    }
   }
-  .wdk-Icon {
-    opacity: 0.3;
-    font-size: 60px;
-    margin: 5px auto;
+  .box {
+    padding: 10px;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
   }
 }

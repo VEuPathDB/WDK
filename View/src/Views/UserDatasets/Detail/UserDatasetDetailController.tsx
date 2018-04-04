@@ -2,18 +2,23 @@ import * as React from 'react';
 import { keyBy, pick } from 'lodash';
 import { PageControllerProps } from 'Core/CommonTypes';
 import { wrappable } from 'Utils/ComponentUtils';
-import { Question } from 'Utils/WdkModel';
+import { Question, UserDataset } from 'Utils/WdkModel';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
 import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
-import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetailNew';
 import UserDatasetDetailStore, { State as StoreState } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
-import { loadUserDatasetDetail, updateUserDatasetDetail } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { loadUserDatasetDetail, updateUserDatasetDetail, removeUserDataset } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { UserDatasetEntry } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
+
+import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
+import BigwigDatasetDetail from 'Views/UserDatasets/Detail/BigwigDatasetDetail';
+// import { removeUserDataset } from 'Views/UserDatasets/UserDatasetsActionCreators';
 
 type State = Pick<StoreState, 'userDatasetsById' | 'loadError' | 'userDatasetUpdating' | 'updateError'>
            & Pick<StoreState["globalData"], 'user' | 'questions' | 'config'>;
 
-const ActionCreators = { loadUserDatasetDetail, updateUserDatasetDetail };
+const ActionCreators = { loadUserDatasetDetail, updateUserDatasetDetail, removeUserDataset };
+
 
 type EventHandlers = typeof ActionCreators;
 
@@ -93,22 +98,39 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       : false;
   }
 
+  getDetailView (type: any) {
+    const name: string = typeof type === 'object' ? type.name : null;
+    switch (name) {
+      case 'BigwigFiles':
+        return BigwigDatasetDetail;
+      default:
+        return UserDatasetDetail;
+    }
+  }
+
   renderView () {
-    const { match } = this.props;
-    const { userDatasetsById, user } = this.state;
+    const { match, location } = this.props;
+    const { updateUserDatasetDetail } = this.eventHandlers;
+    const { userDatasetsById, user, updateError, questions, config, userDatasetUpdating } = this.state;
     const entry = userDatasetsById[match.params.id];
-    const isOwner = (user && entry.resource && entry.resource.ownerUserId === user.id);
+    const isOwner = !!(user && entry.resource && entry.resource.ownerUserId === user.id);
+    const props = {
+      user,
+      config,
+      isOwner,
+      location,
+      updateError,
+      removeUserDataset,
+      userDatasetUpdating,
+      updateUserDatasetDetail,
+      userDataset: entry.resource,
+      getQuestionUrl: this.getQuestionUrl,
+      questionMap: keyBy(questions, 'name')
+    };
+    const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
       ? <NotLoggedIn/>
-      : <UserDatasetDetail
-          isOwner={!!isOwner}
-          userDataset={entry.resource!}
-          getQuestionUrl={this.getQuestionUrl}
-          updateError={this.state.updateError}
-          questionMap={keyBy(this.state.questions, 'name')}
-          userDatasetUpdating={this.state.userDatasetUpdating}
-          updateUserDatasetDetail={this.eventHandlers.updateUserDatasetDetail}
-        />
+      : <DetailView {...props}/>
   }
 }
 

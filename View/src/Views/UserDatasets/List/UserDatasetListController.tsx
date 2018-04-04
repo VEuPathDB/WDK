@@ -8,12 +8,12 @@ import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
 import { loadUserDatasetList, updateUserDatasetDetail } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/List/UserDatasetListStore";
 
-import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
+import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 
 const ActionCreators = { loadUserDatasetList, updateUserDatasetDetail };
 
 type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
-           & Pick<StoreState["globalData"], 'user'>;
+           & Pick<StoreState["globalData"], 'user' | 'config'>;
 
 class UserDatasetListController extends AbstractPageController <State, UserDatasetListStore, typeof ActionCreators> {
   getStoreClass () {
@@ -22,7 +22,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
   getStateFromStore () {
     const {
-      globalData: { user },
+      globalData: { user, config },
       userDatasetsLoading,
       userDatasets,
       loadError
@@ -30,6 +30,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
     return {
       user,
+      config,
       userDatasetsLoading,
       userDatasets,
       loadError
@@ -53,26 +54,32 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   isRenderDataLoadError () {
-    return false;
-    // return this.state.loadError != null;
+    // return false;
+    return this.state.loadError != null;
   }
 
-
   renderView () {
-    const { userDatasets, loadError } = this.state;
-    const user: any = this.state.user;
+    const { userDatasets, loadError, config } = this.state;
+    const { projectId, displayName } = config;
+    const user: User = this.state.user;
     const { updateUserDatasetDetail } = this.eventHandlers;
     const { history } = this.props;
+
     const title = this.getTitle();
     const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
     const content = !loggedIn
-      ? <NotLoggedIn />
-      : <UserDatasetList
+      ? (
+        <UserDatasetEmptyState message="Please log in to upload and view your user datasets."/>
+      ) : (
+        <UserDatasetList
           user={user}
           history={history}
+          projectId={projectId}
+          projectName={displayName}
           userDatasets={userDatasets}
           updateUserDatasetDetail={updateUserDatasetDetail}
-        />;
+        />
+      );
 
     return (
       <div className="UserDatasetList-Controller">
