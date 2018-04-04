@@ -82,7 +82,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
     // load data if params have changed
     if (
       previousProps == null ||
-      this.props.location.pathname !== previousProps.location.pathname
+      !isEqual(previousProps.match.params, this.props.match.params)
     ) {
       let { recordClass, primaryKey } = this.props.match.params;
       let pkValues = primaryKey.split('/');
