@@ -5,7 +5,7 @@ import { wrappable } from 'Utils/ComponentUtils';
 import { Question, UserDataset } from 'Utils/WdkModel';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
-import NotLoggedIn from 'Views/UserDatasets/NotLoggedIn';
+import EmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetDetailStore, { State as StoreState } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
 import { loadUserDatasetDetail, updateUserDatasetDetail, removeUserDataset } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import { UserDatasetEntry } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
@@ -129,7 +129,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
     };
     const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
-      ? <NotLoggedIn/>
+      ? <EmptyState message="Please log in to view and edit your user datasets."/>
       : <DetailView {...props}/>
   }
 }

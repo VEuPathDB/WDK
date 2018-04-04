@@ -27,7 +27,6 @@ class BigwigGBrowseUploader extends React.Component {
     const uploadUrl = getBigwigUploadUrl(datasetId, filename);
     fetch(uploadUrl, { credentials: 'include' })
       .then(res => {
-        console.info('Initial response...', res);
         this.setState({ inProgress: true }, this.startListeningForStatusChange);
       }).catch(err => {
         console.error(err);
@@ -40,7 +39,10 @@ class BigwigGBrowseUploader extends React.Component {
     const statusUrl = getBigwigStatusUrl(datasetId);
     fetch(statusUrl, { credentials: 'include' })
       .then(res => res.json())
-      .then(res => console.info('got response!', res))
+      .then(({ results }) => {
+
+        console.info('getting Results!', results);
+      })
       .catch(err => {
         console.error(err);
         if (err.message) this.setState({ errorMessage });
