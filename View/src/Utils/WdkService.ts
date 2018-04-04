@@ -84,10 +84,13 @@ export interface ServiceConfig {
   startupTime: number;
 }
 
+/** This is for POST requests */
 export type TryLoginResponse = {
-  success: boolean;
-  message: string;
+  success: true;
   redirectUrl: string;
+} | {
+  success: false;
+  message: string;
 }
 
 type BasketStatusResponse = Array<boolean>;
@@ -115,14 +118,6 @@ type RequestOptions = {
 // JSON Decoders
 // -------------
 
-/*
-  authentication: {
-    method: 'OAUTH2' | 'USER_DB';
-    oauthUrl: string;
-    oauthClientUrl: string;
-    oauthClientId: string;
-  };
-*/
 const configDecoder: Decode.Decoder<ServiceConfig> =
   Decode.combine(
    Decode.field("authentication", Decode.combine(
@@ -140,11 +135,17 @@ const configDecoder: Decode.Decoder<ServiceConfig> =
    Decode.field('startupTime', Decode.number)
   );
 
+/** This is for POST requests */
 const tryLoginDecoder: Decode.Decoder<TryLoginResponse> =
-  Decode.combine(
-    Decode.field('success', Decode.boolean),
-    Decode.field('message', Decode.string),
-    Decode.field('redirectUrl', Decode.string)
+  Decode.oneOf(
+    Decode.combine(
+      Decode.field('success', Decode.constant(true)),
+      Decode.field('redirectUrl', Decode.string)
+    ),
+    Decode.combine(
+      Decode.field('success', Decode.constant(false)),
+      Decode.field('message', Decode.string)
+    )
   )
 
 const treeBoxVocabDecoder: Decode.Decoder<TreeBoxVocabNode> =
