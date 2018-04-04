@@ -11,7 +11,7 @@ type Props = {
   };
 }
 
-export default function HelpIcon(props: Props) {
+export default function HelpIcon (props: Props) {
   return (
     <Tooltip content={props.children} position={props.tooltipPosition}>
       <div className="HelpTrigger">
@@ -19,4 +19,4 @@ export default function HelpIcon(props: Props) {
       </div>
     </Tooltip>
   )
-}
+};

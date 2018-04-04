@@ -53,7 +53,7 @@ export default class UserDatasetListStore extends WdkStore<State> {
             : userDataset
         })
       };
-      
+
       case 'user-datasets/detail-update-success': return {
         ...state,
         userDatasets: [...state.userDatasets].map((userDataset: UserDataset): UserDataset => {

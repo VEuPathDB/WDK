@@ -6,7 +6,7 @@ import GlobalDataStore, { GlobalData } from 'Core/State/Stores/GlobalDataStore';
 import { Action, ActionCreatorServices, Epic } from 'Utils/ActionCreatorUtils';
 
 export interface BaseState {
-  globalData: Partial<GlobalData>;
+  globalData: GlobalData;
 }
 
 export default class WdkStore<State extends BaseState = BaseState> extends ReduceStore<State, Action> {

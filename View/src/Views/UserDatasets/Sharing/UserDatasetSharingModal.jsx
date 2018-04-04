@@ -19,6 +19,8 @@ class UserDatasetSharingModal extends React.Component {
     this.renderShareList = this.renderShareList.bind(this);
     this.renderDatasetList = this.renderDatasetList.bind(this);
     this.renderDatasetItem = this.renderDatasetItem.bind(this);
+    this.renderRecipientItem = this.renderRecipientItem.bind(this);
+    this.renderRecipientList = this.renderRecipientList.bind(this);
 
     this.handleTextChange = this.handleTextChange.bind(this);
     this.handleRecipientAdd = this.handleRecipientAdd.bind(this);
@@ -105,18 +107,20 @@ class UserDatasetSharingModal extends React.Component {
     return (
       <Modal className="UserDataset-SharingModal">
         <Icon
-          fa="times"
+          fa="window-close"
           className="SharingModal-Close"
           onClick={() => typeof onClose === 'function' ? onClose() : null}
         />
-        Share with:
-        <TextBox
-          onChange={this.handleTextChange}
-          value={recipientInput ? recipientInput : ''}
-        />
-        <button onClick={this.handleRecipientAdd}>
-          Add
-        </button>
+        <h3>Share with:</h3>
+        <fieldset>
+          <TextBox
+            onChange={this.handleTextChange}
+            value={recipientInput ? recipientInput : ''}
+          />
+          <button className="btn slim btn-slim" onClick={this.handleRecipientAdd}>
+            Add <Icon fa="share-alt right-side"/>
+          </button>
+        </fieldset>
         <RecipientList recipients={recipients}/>
         <hr />
         <DatasetList datasets={datasets}/>

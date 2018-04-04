@@ -8,6 +8,8 @@ import {
   AnchoredTooltip as Tooltip
 } from 'mesa';
 
+
+import './UserDatasetList.scss';
 import { User } from 'Utils/WdkUser';
 import moment from 'Utils/MomentUtils';
 import { wrappable } from 'Utils/ComponentUtils';
@@ -17,30 +19,28 @@ import { UserDataset, UserDatasetMeta } from 'Utils/WdkModel';
 import Link from 'Components/Link';
 import Icon from 'Components/Icon/IconAlt';
 import Modal from 'Components/Overlays/Modal';
+import HelpIcon from 'Components/Icon/HelpIcon';
 import Loading from 'Components/Loading/Loading';
-import TextBox from 'Components/InputControls/TextBox';
-import DataTable from 'Components/DataTable/DataTable';
 import SearchBox from 'Components/SearchBox/RealTimeSearchBox';
+import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
+import { textCell } from 'Views/UserDatasets/UserDatasetUtils';
+import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
+import UserDatasetTutorial from 'Views/UserDatasets/UserDatasetTutorial';
+import { MesaColumn, MesaDataCellProps, MesaSortObject } from 'Core/CommonTypes';
 import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
-import { MesaColumn, MesaDataCellProps } from 'Core/CommonTypes';
 
 interface Props {
   user: User;
   history: History;
+  projectId: string;
+  projectName: string;
   userDatasets: UserDataset[];
   updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any
 };
 
-interface MesaSortObject {
-  columnKey: string;
-  direction: string;
-};
-
 interface State {
   selectedRows: number[];
-  uiState: {
-    sort: MesaSortObject;
-  };
+  uiState: { sort: MesaSortObject; };
   searchTerm: string;
   sharingModalOpen: boolean;
   editingCache: any;
@@ -65,30 +65,23 @@ class UserDatasetList extends React.Component <Props, State> {
       searchTerm: ''
     };
 
-    this.onSort = this.onSort.bind(this);
-    this.getColumns = this.getColumns.bind(this);
     this.onRowSelect = this.onRowSelect.bind(this);
     this.onRowDeselect = this.onRowDeselect.bind(this);
     this.isRowSelected = this.isRowSelected.bind(this);
-    this.getEventHandlers = this.getEventHandlers.bind(this);
     this.onMultipleRowSelect = this.onMultipleRowSelect.bind(this);
     this.onMultipleRowDeselect = this.onMultipleRowDeselect.bind(this);
 
-    this.editNameField = this.editNameField.bind(this);
-    this.onNameFieldChange = this.onNameFieldChange.bind(this);
-    this.saveEditNameField = this.saveEditNameField.bind(this);
-    this.cancelEditNameField = this.cancelEditNameField.bind(this);
-    this.renderEditableNameField = this.renderEditableNameField.bind(this);
-    this.editSummaryField = this.editSummaryField.bind(this);
-    this.onSummaryFieldChange = this.onSummaryFieldChange.bind(this);
-    this.saveEditSummaryField = this.saveEditSummaryField.bind(this);
-    this.cancelEditSummaryField = this.cancelEditSummaryField.bind(this);
-    this.renderEditableSummaryField = this.renderEditableSummaryField.bind(this);
-
+    this.onSort = this.onSort.bind(this);
+    this.getColumns = this.getColumns.bind(this);
     this.isMyDataset = this.isMyDataset.bind(this);
-    this.renderOwnerCell = this.renderOwnerCell.bind(this);
+    this.getEventHandlers = this.getEventHandlers.bind(this);
     this.filterAndSortRows = this.filterAndSortRows.bind(this);
     this.onSearchTermChange = this.onSearchTermChange.bind(this);
+    this.onMetaAttributeSaveFactory = this.onMetaAttributeSaveFactory.bind(this);
+
+    this.renderOwnerCell = this.renderOwnerCell.bind(this);
+    this.renderStatusCell = this.renderStatusCell.bind(this);
+
     this.openSharingModal = this.openSharingModal.bind(this);
     this.closeSharingModal = this.closeSharingModal.bind(this);
   }
@@ -108,175 +101,36 @@ class UserDatasetList extends React.Component <Props, State> {
     this.setState({ searchTerm });
   }
 
-  editNameField (row: UserDataset): void {
-    const { editingCache } = this.state;
-    const editingKey = `name:${row.id}`;
-    if (editingKey in editingCache) return;
-    this.setState({ editingCache: { ...editingCache, [editingKey]: row.meta.name }});
-  }
-
-  cancelEditNameField (row: UserDataset): void {
-    const editingCache = { ...this.state.editingCache };
-    delete editingCache[`name:${row.id}`];
-    this.setState({ editingCache });
-  }
-
-  saveEditNameField (row: UserDataset): void {
-    const { editingCache } = this.state;
+  onMetaAttributeSaveFactory (dataset: UserDataset, attrKey: string) {
+    const { meta } = dataset;
     const { updateUserDatasetDetail } = this.props;
-    const name = editingCache[`name:${row.id}`];
-    const meta: UserDatasetMeta = { ...row.meta, name };
-    updateUserDatasetDetail(row, meta);
-    this.cancelEditNameField(row);
-  }
-
-  onNameFieldChange (row: UserDataset, name: string): void {
-    const { editingCache } = this.state;
-    this.setState({
-      editingCache: {
-        ...editingCache,
-        [`name:${row.id}`]: name
-      }
-    });
-  }
-
-  renderEditableNameField (cellProps: MesaDataCellProps) {
-    const { user } = this.props;
-    const { editingCache } = this.state;
-    const row: UserDataset = cellProps.row;
-    const id: number = row.id;
-
-    const editingKey = `name:${id}`;
-    const editingName: any = editingKey in editingCache
-      ? editingCache[editingKey]
-      : null;
-
-    const name: string = row.meta.name;
-    const edit = () => this.editNameField(row);
-    const save = () => this.saveEditNameField(row);
-    const cancel = () => this.cancelEditNameField(row);
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => { this.onNameFieldChange(row, event.target.value); };
-    return (
-      <div className="CellEditor CellEditor-Name">
-        {editingName
-          ? (
-            <div className="CellEdit-Row">
-              <input type="text" value={editingName} className="CellEdit-Input" onChange={onChange} />
-              <div className="CellEdit-Actions">
-                <Icon fa="check-circle CellEdit-Icon" title="Save Name Changes" onClick={save} />
-                <Icon fa="times CellEdit-Icon" title="Cancel Name Changes" onClick={cancel} />
-              </div>
-            </div>
-          ) : (
-            <span>
-              <Link to={`/workspace/datasets/${id}`}>
-                {name} <span className="faded">({id})</span>
-              </Link>
-              {!this.isMyDataset(row) ? null : (
-                <Icon fa="pencil CellEdit-Icon" title="Edit Dataset Name" onClick={edit} />
-              )}
-            </span>
-          )
-        }
-      </div>
-    );
-  }
-
-  editSummaryField (row: UserDataset): void {
-    const { editingCache } = this.state;
-    const editingKey = `summary:${row.id}`;
-    if (editingKey in editingCache) return;
-    this.setState({ editingCache: { ...editingCache, [editingKey]: row.meta.summary }});
-  }
-
-  cancelEditSummaryField (row: UserDataset): void {
-    const editingCache = { ...this.state.editingCache };
-    const editingKey = `summary:${row.id}`;
-    delete editingCache[editingKey];
-    this.setState({ editingCache });
-  }
-
-  saveEditSummaryField (row: UserDataset): void {
-    const { editingCache } = this.state;
-    const { updateUserDatasetDetail } = this.props;
-    const editingKey = `summary:${row.id}`;
-    const summary = editingCache[editingKey];
-    const meta: UserDatasetMeta = { ...row.meta, summary };
-    updateUserDatasetDetail(row, meta);
-    this.cancelEditSummaryField(row);
-  }
-
-  onSummaryFieldChange (row: UserDataset, summary: string): void {
-    const { editingCache } = this.state;
-    const editingKey = `summary:${row.id}`;
-    this.setState({ editingCache: { ...editingCache, [editingKey]: summary }});
-  }
-
-  renderEditableSummaryField (cellProps: MesaDataCellProps) {
-    const { user } = this.props;
-    const { editingCache } = this.state;
-    const row: UserDataset = cellProps.row;
-    const editingKey = `summary:${row.id}`;
-    const id: number = row.id;
-    const editingSummary: any = editingKey in editingCache
-      ? editingCache[editingKey]
-      : null;
-    const summary: string = row.meta.summary;
-    const edit = () => this.editSummaryField(row);
-    const save = () => this.saveEditSummaryField(row);
-    const cancel = () => this.cancelEditSummaryField(row);
-    const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => { this.onSummaryFieldChange(row, event.target.value); }
-    return (
-      <div className="CellEditor CellEditor-Summary">
-        {typeof editingSummary === 'string'
-          ? (
-            <div className="CellEdit-Row">
-              <textarea
-                rows={3}
-                onChange={onChange}
-                value={editingSummary}
-                style={{ width: '100%' }}
-                className="CellEdit-Input"
-              />
-              <div className="CellEdit-Actions">
-                <Icon fa="check-circle CellEdit-Icon" title="Save Summary Changes" onClick={save} />
-                <Icon fa="times CellEdit-Icon" title="Cancel Summary Changes" onClick={cancel} />
-              </div>
-            </div>
-          ) : (
-            <span>
-              {escape(summary)}
-              {!this.isMyDataset(row) ? null : (
-                <Icon fa="pencil CellEdit-Icon" title="Edit Dataset Summary" onClick={edit} />
-              )}
-            </span>
-          )
-        }
-
-      </div>
-    );
+    return (value: string) => updateUserDatasetDetail(dataset, { ...meta, [attrKey]: value });
   }
 
   renderStatusCell (cellProps: MesaDataCellProps) {
-    const row: UserDataset = cellProps.row;
-    const { isInstalled } = row;
-    const appNames = row.projects.join(', ');
-    const content = isInstalled
-      ? `Files in this dataset have been installed to ${appNames}.`
-      : `The files in this dataset have not been installed to ${appNames}.`;
-    const children = <Icon fa={isInstalled ? 'check-circle' : 'minus-circle'}/>;
+    const dataset: UserDataset = cellProps.row;
+    const { projectId, projectName } = this.props;
+    const { isInstalled, projects } = dataset;
+    const isInstallable = projects.includes(projectId);
+    const appNames = projects.join(', ');
+    const content = !isInstallable
+      ? <span>This dataset is not compatible with {projectName}.</span>
+      : isInstalled
+        ? `The files in this dataset have been installed to ${projectName}.`
+        : (
+          <span>
+            This dataset could not be installed to  {projectName} due to a server error.
+            <br />
+            Please remove this dataset and try again.
+          </span>
+        )
+    const children = <Icon fa={!isInstallable ? 'minus-circle' : isInstalled ? 'check-circle' : 'times-circle'}/>;
     const tooltipProps = { content, children };
     return (
-      <Link to={`/workspace/datasets/${row.id}`}>
+      <Link to={`/workspace/datasets/${dataset.id}`}>
         <Tooltip {...tooltipProps}/>
       </Link>
     );
-  }
-
-  renderTypeCell (cellProps: MesaDataCellProps) {
-    const row: UserDataset = cellProps.row;
-    const { display, version } = row.type;
-    return <span>{display} <span className="faded">({version})</span></span>
   }
 
   renderOwnerCell (cellProps: MesaDataCellProps) {
@@ -284,53 +138,91 @@ class UserDatasetList extends React.Component <Props, State> {
     const { user } = this.props;
     const { owner } = row;
     return this.isMyDataset(row)
-      ? <span className="faded">You</span>
+      ? <span className="faded">Me</span>
       : <span>{owner}</span>
-  }
-
-  renderFileCountCell (cellProps: MesaDataCellProps) {
-    const row: UserDataset = cellProps.row;
-    const fileCount = row.datafiles.length;
-    return fileCount;
-  }
-
-  renderCreatedCell (cellProps: MesaDataCellProps) {
-    const row: UserDataset = cellProps.row;
-    const { created } = row;
-    return <span>{moment(created).fromNow()}</span>
-  }
-
-  renderSizeCell (cellProps: MesaDataCellProps) {
-    const row: UserDataset = cellProps.row;
-    const size: number = row.size;
-    const percent: number = row.percentQuotaUsed;
-    return (
-      <span>
-        {bytesToHuman(size)}
-        {percent !== null ? <span style={{ opacity: 0.5 }}> ({percent}%)</span> : ''}
-      </span>
-    );
   }
 
   getColumns (): MesaColumn[] {
     const { userDatasets, user } = this.props;
+    function isOwner (ownerId: number): boolean {
+      return user.id === ownerId;
+    };
     return [
       {
         key: 'id',
         sortable: true,
         name: 'Name / ID',
-        renderCell: this.renderEditableNameField
+        renderCell: (cellProps: MesaDataCellProps) => {
+          const dataset: UserDataset = cellProps.row;
+          const saveName = this.onMetaAttributeSaveFactory(dataset, 'name');
+          return (
+            <SaveableTextEditor
+              value={dataset.meta.name}
+              multiLine={true}
+              rows={2}
+              onSave={saveName}
+              readOnly={!isOwner(dataset.ownerUserId)}
+              displayValue={(value: string) => (
+                <React.Fragment>
+                  <Link to={`/workspace/datasets/${dataset.id}`}>
+                    {value}
+                  </Link>
+                  <br/>
+                  <span className="faded">
+                    ({dataset.id})
+                  </span>
+                </React.Fragment>
+              )}
+            />
+          );
+        }
       },
       {
         key: 'summary',
         name: 'Summary',
-        renderCell: this.renderEditableSummaryField
+        style: { maxWidth: '300px' },
+        renderCell: (cellProps: MesaDataCellProps) => {
+          const dataset: UserDataset = cellProps.row;
+          const saveSummary = this.onMetaAttributeSaveFactory(dataset, 'summary');
+          return (
+            <div style={{ display: 'block', maxWidth: '100%' }}>
+              <SaveableTextEditor
+                rows={Math.max(2, Math.floor(dataset.meta.summary.length / 22))}
+                multiLine={true}
+                onSave={saveSummary}
+                value={dataset.meta.summary}
+                readOnly={!isOwner(dataset.ownerUserId)}
+              />
+            </div>
+          );
+        }
       },
       {
         key: 'type',
         name: 'Type',
         sortable: true,
-        renderCell: this.renderTypeCell
+        renderCell: textCell('type', (datasetType: any) => {
+          const display: string = datasetType.display;
+          const version: string = datasetType.version;
+          return (
+            <span>{display} <span className="faded">({version})</span></span>
+          );
+        })
+      },
+      {
+        key: 'projects',
+        name: 'Projects',
+        renderCell (cellProps: MesaDataCellProps) {
+          const userDataset: UserDataset = cellProps.row;
+          const { projects } = userDataset;
+          return (
+            <ul>
+              {projects.map((projectName: string, index: number) => (
+                <li key={index}>{projectName}</li>
+              ))}
+            </ul>
+          )
+        }
       },
       {
         key: 'status',
@@ -349,19 +241,25 @@ class UserDatasetList extends React.Component <Props, State> {
         key: 'created',
         name: 'Created',
         sortable: true,
-        renderCell: this.renderCreatedCell
+        renderCell: textCell('created', (created: number) => moment(created).fromNow())
       },
       {
         key: 'datafiles',
         name: 'File Count',
-        renderCell: this.renderFileCountCell
+        renderCell: textCell('datafiles', (files: any[]) => files.length)
       },
       {
         key: 'size',
-        name: 'Size / Quota Usage',
+        name: 'Size',
+        sortable: true,
+        renderCell: textCell('size', (size: number) => bytesToHuman(size))
+      },
+      {
+        key: 'percentQuotaUsed',
+        name: 'Quota Usage',
         sortable: true,
         style: { textAlign: 'right' },
-        renderCell: this.renderSizeCell
+        renderCell: textCell('percentQuotaUsed', (percent: number) => percent ? `${percent}%` : null)
       }
     ]
   }
@@ -448,10 +346,40 @@ class UserDatasetList extends React.Component <Props, State> {
 
   getTableOptions () {
     const { isRowSelected } = this;
+    const { userDatasets, projectName } = this.props;
+    const emptyMessage = !userDatasets.length
+      ? (
+        <React.Fragment>
+          <p>You don't have any user datasets.</p>
+          <br/>
+          <small>
+            <Link to="/search/dataset/AllDatasets/result">
+              See <b>{projectName}</b>'s Public Datasets.
+            </Link>
+          </small>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <p>Your search returned no results.</p>
+          <br/>
+          <small>
+            <a onClick={() => this.setState({ searchTerm: '' })} href="#">
+              Clear Search Query <Icon fa="chevron-right"/>
+            </a>
+          </small>
+        </React.Fragment>
+      );
     return {
-      title: 'My Datasets',
+      isRowSelected,
       showToolbar: true,
-      isRowSelected
+      renderEmptyState () {
+        return (
+          <React.Fragment>
+            <UserDatasetEmptyState message={emptyMessage}/>
+            <UserDatasetTutorial projectName={projectName}/>
+          </React.Fragment>
+        )
+      }
     };
   }
 
@@ -488,8 +416,8 @@ class UserDatasetList extends React.Component <Props, State> {
   sortRowsByColumnKey (rows: UserDataset[], sort: MesaSortObject): UserDataset[] {
     const direction: string = sort.direction;
     const columnKey: string = sort.columnKey;
-    const mapValue = this.getColumnSortValueMapper(columnKey);
-    const sorted = [ ...rows ].sort(MesaUtils.sortFactory(mapValue));
+    const mappedValue = this.getColumnSortValueMapper(columnKey);
+    const sorted = [ ...rows ].sort(MesaUtils.sortFactory(mappedValue));
     return direction === 'asc'
       ? sorted
       : sorted.reverse();
@@ -507,7 +435,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
   render () {
     const { isRowSelected } = this;
-    const { userDatasets, history, user } = this.props;
+    const { userDatasets, history, user, projectName } = this.props;
     const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
 
     console.info('Datasets:', userDatasets);
@@ -536,21 +464,35 @@ class UserDatasetList extends React.Component <Props, State> {
     };
 
     return (
-      <Mesa state={MesaState.create(tableState)}>
-        <h1 className="UserDatasetList-Title">My Datasets</h1>
-        {sharingModalOpen
-          ? <SharingModal
-              datasets={rows.filter(isRowSelected)}
-              onClose={this.closeSharingModal}
-            />
-          : null
-        }
-        <SearchBox
-          placeholderText="Search Datasets"
-          searchTerm={searchTerm}
-          onSearchTermChange={this.onSearchTermChange}
-        />
-      </Mesa>
+      <div className="UserDatasetList">
+        <Mesa state={MesaState.create(tableState)}>
+          <h1 className="UserDatasetList-Title">
+            My Datasets
+            <HelpIcon>
+              <div>
+                As a part of your new user Workspace, you can now upload your own datasets to use in <b>{projectName}</b>.
+                <ul style={{ marginTop: '10px' }}>
+                  <li>This data can be used in all the same ways as our public datasets.</li>
+                  <li>Easily manage how you leverage your data: push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
+                  <li>Share your dataset with others and receive shared data from your own colleagues.</li>
+                </ul>
+              </div>
+            </HelpIcon>
+          </h1>
+          {sharingModalOpen
+            ? <SharingModal
+                datasets={rows.filter(isRowSelected)}
+                onClose={this.closeSharingModal}
+              />
+            : null
+          }
+          <SearchBox
+            placeholderText="Search Datasets"
+            searchTerm={searchTerm}
+            onSearchTermChange={this.onSearchTermChange}
+          />
+        </Mesa>
+      </div>
     )
   }
 };

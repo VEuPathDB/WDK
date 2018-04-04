@@ -65,3 +65,9 @@ export interface MesaDataCellProps {
   columnIndex: number;
   inline?: boolean;
 }
+
+
+export interface MesaSortObject {
+  columnKey: string;
+  direction: string;
+};
