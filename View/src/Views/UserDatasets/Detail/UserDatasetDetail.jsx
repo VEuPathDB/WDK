@@ -98,6 +98,7 @@ class UserDatasetDetail extends React.Component {
         value: (
           <SaveableTextEditor
             value={meta.name}
+            readOnly={!isOwner}
             onSave={this.onMetaSave('name')}
           />
         )
@@ -108,7 +109,9 @@ class UserDatasetDetail extends React.Component {
           <SaveableTextEditor
             value={meta.description}
             multiLine={true}
+            readOnly={!isOwner}
             onSave={this.onMetaSave('description')}
+            emptyText="No Description"
           />
         )
       },
@@ -123,8 +126,9 @@ class UserDatasetDetail extends React.Component {
           <SaveableTextEditor
             multiLine={true}
             value={meta.summary}
+            readOnly={!isOwner}
             onSave={onMetaSave('summary')}
-            emptyText="No Summary."
+            emptyText="No Summary"
           />
         )
       },
