@@ -56,7 +56,7 @@ export default abstract class AbstractPageController <
   }
 
   componentDidUpdate(prevProps: PageControllerProps<Store>, state: State): void {
-    // only call loadData of router props have changed
+    // only call loadData if router props have changed
     if (!isEqual(prevProps.location, this.props.location)) this.loadData(prevProps);
     this.setDocumentTitle();
   }
