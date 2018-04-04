@@ -1,9 +1,10 @@
 /**
- * 
+ *
  */
 package org.gusdb.wdk.model.record.attribute.plugin;
 
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ import org.gusdb.wdk.model.user.Step;
 
 /**
  * @author jerric
- * 
+ *
  */
 public class HistogramAttributePlugin extends AbstractAttributePlugin {
 
@@ -45,7 +46,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.AttributePlugin#process()
    */
   @Override
@@ -65,7 +66,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
     Number[] range = getRange(data, type);
     result.put(ATTR_MIN, range[0]);
     result.put(ATTR_MAX, range[1]);
-    result.put(ATTR_AVG, getAverage(data));
+    result.put(ATTR_AVG, getAverage(data, type));
 
     // get bin size and count
     Integer count = getBinCount(type, range);
@@ -80,7 +81,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
   private String getType(Map<String, Integer> data) {
     String type = properties.get(PROP_TYPE);
     if (type != null) { // return specified type
-      if (type.equals(TYPE_CATEGORY) || type.equals(TYPE_INT) 
+      if (type.equals(TYPE_CATEGORY) || type.equals(TYPE_INT)
           || type.equals(TYPE_FLOAT))
         return type;
     }
@@ -121,11 +122,19 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
     return MAX_BIN_COUNT;
   }
 
-  private Double getAverage(Map<String, Integer> data) {
-    return Double.parseDouble(
-        String.format( "%1.2f", data.values()
-            .stream()
-            .collect(Collectors.averagingDouble(Integer::doubleValue))));
+  private Double getAverage(Map<String, Integer> data, String type) {
+    if (type.equals(TYPE_CATEGORY)) return null;
+
+    Double average = data.entrySet()
+      .stream()
+      .flatMap(entry -> {
+        Double[] uniqData = new Double[entry.getValue()];
+        Arrays.fill(uniqData, Double.valueOf(entry.getKey()));
+        return Arrays.stream(uniqData);
+      })
+      .collect(Collectors.averagingDouble(d -> d));
+
+    return Double.parseDouble(String.format("%1.2f", average));
   }
 
   private Number getBinSize(String type, Number[] range, Integer numBins) {
@@ -133,7 +142,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
 
     // if min & max is the same, return binSize as 1.
     float min = Float.valueOf(range[0].toString());
-    float max = Float.valueOf(range[1].toString()); 
+    float max = Float.valueOf(range[1].toString());
     if (min == max) return 1;
 
     if (type.equals(TYPE_FLOAT)) { // float type, continuous range
