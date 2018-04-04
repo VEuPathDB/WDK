@@ -93,7 +93,13 @@ var primaryConfig = {
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({
       name: 'wdk-client'
-    })
+    }),
+    new baseConfig.webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: function(module){
+        return module.context && module.context.includes("node_modules");
+      }
+    }),
   ]
 };
 
@@ -119,7 +125,7 @@ var mesaConfig = {
         ]
       }
     ]
-  },
+  }
 };
 
 module.exports = baseConfig.merge([ primaryConfig, mesaConfig ]);
