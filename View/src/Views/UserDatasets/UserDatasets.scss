@@ -1,6 +1,9 @@
 @import '~Core/Style/palette';
 
 .UserDatasetList, .UserDatasetDetail {
+  .success { color: $green; }
+  .danger { color: $red; }
+  
   section {
     width: 100%;
     margin-bottom: 30px;

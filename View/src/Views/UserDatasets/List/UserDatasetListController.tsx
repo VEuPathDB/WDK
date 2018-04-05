@@ -64,7 +64,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
     const user: User = this.state.user;
     const { updateUserDatasetDetail } = this.eventHandlers;
     const { history } = this.props;
-
+    console.info('UDList controller props...', this.props);
     const title = this.getTitle();
     const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
     const content = !loggedIn

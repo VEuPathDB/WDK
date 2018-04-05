@@ -807,6 +807,15 @@ export default class WdkService {
     return this._fetchJson<void>('delete', `/users/current/user-datasets/${id}`);
   }
 
+  checkIfUserEmailExists (emailAddress: string) {
+    return this._fetchJson<void>('post', '/user-id-query', JSON.stringify({ emails: [ emailAddress ]}));
+  }
+
+  shareUserDatasetWithRecipients (id: number, recipientUserIds: string[]) {
+    const delta = { add: { [`${id}`]: [ ...recipientUserIds.map(uid => uid.toString()) ] } };
+    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', JSON.stringify(delta));
+  }
+
   getOauthStateToken() {
     return this._fetchJson<{oauthStateToken: string}>('get', '/oauth/state-token');
   }

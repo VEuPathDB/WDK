@@ -116,8 +116,12 @@ class UserDatasetList extends React.Component <Props, State> {
     const content = !isInstallable
       ? <span>This dataset is not compatible with {projectName}.</span>
       : isInstalled
-        ? `The files in this dataset have been installed to ${projectName}.`
-        : (
+        ? (
+          <span>
+            The files in this dataset have been installed to <b>{projectName}</b>.<br />
+            Visit this dataset's page to see how to use it in <b>{projectName}</b>.
+          </span>
+        ) : (
           <span>
             This dataset could not be installed to  {projectName} due to a server error.
             <br />
@@ -152,6 +156,7 @@ class UserDatasetList extends React.Component <Props, State> {
         key: 'id',
         sortable: true,
         name: 'Name / ID',
+        helpText: '',
         renderCell: (cellProps: MesaDataCellProps) => {
           const dataset: UserDataset = cellProps.row;
           const saveName = this.onMetaAttributeSaveFactory(dataset, 'name');
@@ -258,7 +263,6 @@ class UserDatasetList extends React.Component <Props, State> {
         key: 'percentQuotaUsed',
         name: 'Quota Usage',
         sortable: true,
-        style: { textAlign: 'right' },
         renderCell: textCell('percentQuotaUsed', (percent: number) => percent ? `${percent}%` : null)
       }
     ]
@@ -481,6 +485,7 @@ class UserDatasetList extends React.Component <Props, State> {
           </h1>
           {sharingModalOpen
             ? <SharingModal
+                user={user}
                 datasets={rows.filter(isRowSelected)}
                 onClose={this.closeSharingModal}
               />
