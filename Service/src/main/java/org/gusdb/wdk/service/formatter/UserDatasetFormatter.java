@@ -90,12 +90,12 @@ public class UserDatasetFormatter {
       dependencyJson.put("resourceIdentifier", dependency.getResourceIdentifier());
       dependencyJson.put("resourceVersion", dependency.getResourceVersion());
       dependencyJson.put("resourceDisplayName", dependency.getResourceDisplayName());
-      dependencyJson.put("compatibilityInfo",compatibility.getCompatibilityInfoJson());
+      dependencyJson.put("compatibilityInfo",compatibility != null ?
+        		compatibility.getCompatibilityInfoJson(): JSONObject.NULL);
       dependenciesJson.put(dependencyJson);
     }
     json.put("dependencies", dependenciesJson);
-    json.put("isCompatible", compatibility.isCompatible());
-   
+    json.put("isCompatible", compatibility != null ? compatibility.isCompatible() : JSONObject.NULL);
 
     JSONArray projectsJson = new JSONArray(); 
     for (String project : dataset.getProjects()) projectsJson.put(project);
