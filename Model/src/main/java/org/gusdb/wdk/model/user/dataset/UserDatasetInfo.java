@@ -112,6 +112,10 @@ public class UserDatasetInfo {
   public List<UserDatasetShareUser> getShares() {
     return _shares;
   }
+  
+  public UserDatasetCompatibility getUserDatasetCompatibility() throws WdkModelException {
+    return _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource());
+  }
 
   public class UserDatasetShareUser extends TwoTuple<User,Long> implements UserDatasetShare {
 
@@ -132,5 +136,6 @@ public class UserDatasetInfo {
     public Long getTimeShared() {
       return getSecond();
     }
+    
   }
 }
