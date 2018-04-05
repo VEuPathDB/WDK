@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FlatVocabularyFetcher extends NoUpdateItemFetcher<String, EnumParamVocabInstance> {
+public class FlatVocabularyFetcher implements NoUpdateItemFetcher<String, EnumParamVocabInstance> {
 
   private static final Logger logger = Logger.getLogger(FlatVocabularyFetcher.class);
 

@@ -23,7 +23,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class OntologyItemNewFetcher extends NoUpdateItemFetcher<String, Map<String, OntologyItem>> {
+public class OntologyItemNewFetcher implements NoUpdateItemFetcher<String, Map<String, OntologyItem>> {
 
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
