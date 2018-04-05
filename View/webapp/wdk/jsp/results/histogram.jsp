@@ -23,6 +23,7 @@
      data-min="${min}"
      data-max="${max}"
      data-count="${binCount}"
+     data-max-bin-count="${maxBinCount}"
      >
      <!-- <h2 align="center">${plugin.display}</h2> -->
 
@@ -30,7 +31,7 @@
     <li><a href="#graph">Graph</a></li>
     <li><a href="#data">Data</a></li>
   </ul>
-  
+
   <div id="graph">
     <div class="plot-container">
       <div class="plot"> </div>
@@ -51,6 +52,7 @@
     <c:choose>
       <c:when test="${type != 'category'}">
         <div class="bin-control control-panel">
+          <%--
           <div class="control-panel-section">
             <label>
               <span class="input-label">Number of bins: </span>
@@ -58,6 +60,7 @@
             </label>
             <input class="bin-count-slider" type="range" min="1" max="${maxBinCount}" step="1" value="${binCount}" />
           </div>
+          --%>
           <div class="control-panel-section">
             <label>
               <span class="input-label">Size of bins: </span>
@@ -72,8 +75,8 @@
           <input class="bin-size" type="hidden" value="${binSize}" />
         </div>
       </c:otherwise>
-    </c:choose>  
-    
+    </c:choose>
+
 
     <div class="value-control control-panel">
       Choose column display:
@@ -85,7 +88,7 @@
       </label>
     </div>
   </div>
-  
+
   <div id="data">
     <div class="data">
       <c:forEach items="${data}" var="item">
@@ -128,5 +131,5 @@
       </c:forEach>
     </div>
   </div>
-  
+
 </div>
