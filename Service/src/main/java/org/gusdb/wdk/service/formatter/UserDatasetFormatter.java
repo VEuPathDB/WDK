@@ -6,6 +6,7 @@ import java.util.List;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
@@ -69,6 +70,7 @@ public class UserDatasetFormatter {
    */
   public static JSONObject getUserDatasetJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData, boolean detailedData) throws WdkModelException {
     UserDataset dataset = datasetInfo.getDataset();
+    UserDatasetCompatibility compatibility = datasetInfo.getUserDatasetCompatibility();
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
@@ -88,9 +90,12 @@ public class UserDatasetFormatter {
       dependencyJson.put("resourceIdentifier", dependency.getResourceIdentifier());
       dependencyJson.put("resourceVersion", dependency.getResourceVersion());
       dependencyJson.put("resourceDisplayName", dependency.getResourceDisplayName());
+      dependencyJson.put("compatibilityInfo",compatibility.getCompatibilityInfoJson());
       dependenciesJson.put(dependencyJson);
     }
     json.put("dependencies", dependenciesJson);
+    json.put("isCompatible", compatibility.isCompatible());
+   
 
     JSONArray projectsJson = new JSONArray(); 
     for (String project : dataset.getProjects()) projectsJson.put(project);
