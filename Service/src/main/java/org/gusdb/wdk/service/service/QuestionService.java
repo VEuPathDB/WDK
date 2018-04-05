@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.functional.Functions.filter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -211,13 +213,17 @@ public class QuestionService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionChange(@PathParam("questionName") String questionName, String body)
           throws WdkUserException, WdkModelException {
+
+    // get requested question and throw not found if invalid
     Question question = getQuestionFromSegment(questionName);
-    if (question == null)
+    if (question == null) {
       throw new NotFoundException(WdkService.NOT_FOUND + questionName);
+    }
+
+    // parse incoming JSON into existing and changed values
     Map<String, String> contextParamValues = new HashMap<String, String>();
     String changedParamName = null;
     String changedParamValue = null;
-    
     try {
       JSONObject jsonBody = new JSONObject(body);
       JSONObject changedParam = jsonBody.getJSONObject("changedParam");
@@ -229,15 +235,21 @@ public class QuestionService extends WdkService {
       throw new BadRequestException(e);
     }
 
-    // find the param object for the changed param, and validate it. (this will also validate the paramValuesContext it needs, if dependent)
-    Param changedParam = null;
-    for (Param param : question.getParams()) if (param.getName().equals(changedParamName)) changedParam = param;
-    if (changedParam == null) throw new WdkUserException("Param with name '" + changedParamName + "' is no longer valid for question '" + question.getName() + "'");
-    changedParam.validate(getSessionUser(), changedParamValue, contextParamValues);
-    
-    // find all dependencies of the changed param, and remove them from the context
-    for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
+    // find the param object for the changed param
+    Param changedParam = findParam(question, changedParamName);
 
+    // validate the changed param value (will also validate the paramValuesContext it needs, if dependent)
+    changedParam.validate(getSessionUser(), changedParamValue, contextParamValues);
+
+    // find all dependencies of the changed param, and remove them from the context
+    for (Param dependentParam : changedParam.getAllDependentParams()) {
+      contextParamValues.remove(dependentParam.getName());
+    }
+
+    // set the new value on the contextValues map so new dependent values can be generated
+    contextParamValues.put(changedParamName, changedParamValue);
+
+    // format JSON response (will fill missing values with defaults based on context)
     return Response.ok(QuestionFormatter.getParamsJson(
         changedParam.getStaleDependentParams(),
         true,
@@ -245,7 +257,18 @@ public class QuestionService extends WdkService {
         contextParamValues).toString()).build();
   }
 
-  private Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question) throws JSONException, WdkUserException {
+  private static Param findParam(Question question, String changedParamName) throws WdkUserException {
+    List<Param> changedParamList = filter(question.getParamMap().values(),
+        param -> param.getName().equals(changedParamName));
+    if (changedParamList.isEmpty()) {
+      throw new WdkUserException("Param with name '" + changedParamName +
+          "' is no longer valid for question '" + question.getName() + "'");
+    }
+    return changedParamList.get(0);
+  }
+
+  private static Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question)
+      throws JSONException, WdkUserException {
 
     Map<String, String> contextParamValues = new HashMap<String, String>();
     JSONObject contextJson = bodyJson.getJSONObject("contextParamValues");
