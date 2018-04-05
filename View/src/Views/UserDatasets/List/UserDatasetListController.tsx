@@ -54,8 +54,8 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   isRenderDataLoadError () {
-    // return false;
-    return this.state.loadError != null;
+    return false;
+    // return this.state.loadError != null;
   }
 
   renderView () {

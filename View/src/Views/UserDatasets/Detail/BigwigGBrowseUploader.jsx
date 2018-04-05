@@ -11,7 +11,7 @@ class BigwigGBrowseUploader extends React.Component {
     this.state = {
       inProgress: props.status === 'IN_PROGRESS',
       isInstalled: props.status === 'COMPLETED',
-      lastUploaded: props.uploadedAt,
+      uploadedAt: props.uploadedAt,
       errorMessage: props.errorMessage
     };
     this.getStatusIcon = this.getStatusIcon.bind(this);
@@ -40,8 +40,13 @@ class BigwigGBrowseUploader extends React.Component {
     fetch(statusUrl, { credentials: 'include' })
       .then(res => res.json())
       .then(({ results }) => {
-
-        console.info('getting Results!', results);
+        const track = results.find(({ dataFileName }) => filename === dataFileName);
+        if (!track) return;
+        if (track.status === 'COMPLETED') {
+          this.setState({ isInstalled: true, lastUploaded: `${Date.now()}` }, this.stopListeningForStatusChange);
+        } else {
+          console.info('Polling track status...', track);
+        }
       })
       .catch(err => {
         console.error(err);
@@ -60,6 +65,7 @@ class BigwigGBrowseUploader extends React.Component {
     if (!this.statusListener) return;
     clearInterval(this.statusListener);
     this.statusListener = null;
+    this.setState({ inProgress: false });
   }
 
   getStatusIcon () {
@@ -81,12 +87,13 @@ class BigwigGBrowseUploader extends React.Component {
   getStatusMessage () {
     const { inProgress, isInstalled, errorMessage, uploadedAt } = this.state;
     const { status } = this.props;
+    const GBrowseUrl = this.getGBrowseUrl();
     if (inProgress) return <b>Sending to GBrowse...</b>;
     if (isInstalled) return (
       <span>
-        <a href="#">Available now in GBrowse.</a>
+        <a href={GBrowseUrl}>Available now in GBrowse.</a>
         <br/>
-        Last sent {moment(uploadedAt).fromNow()}.
+        Sent to GBrowse {moment(uploadedAt).fromNow()}.
       </span>
     );
     switch (status) {
@@ -94,16 +101,16 @@ class BigwigGBrowseUploader extends React.Component {
         return <span>This file has not been added to <b>GBrowse</b>.</span>;
       default:
         return errorMessage && errorMessage.length
-          ? `Error Uploading: ${errorMessage}`
+          ? `Error sending to GBrowse: ${errorMessage}`
           : 'IDK bro';
     }
   }
 
   getButtons () {
-    const { inProgress } = this.state;
+    const { inProgress, isInstalled } = this.state;
     return (
       <React.Fragment>
-        <button onClick={this.startUpload} className="btn btn-slim" disabled={inProgress}>
+        <button onClick={this.startUpload} className="btn btn-slim" disabled={inProgress || isInstalled}>
           Send To GBrowse <Icon fa="upload right-side"/>
         </button>
       </React.Fragment>
@@ -112,7 +119,7 @@ class BigwigGBrowseUploader extends React.Component {
 
   getGBrowseUrl () {
     const { appUrl, projectId } = this.props;
-    return `${appUrl}/cgi-bin/gbrowse/${projectId}`
+    return `/cgi-bin/gbrowse/${projectId}`
   }
 
   render () {
