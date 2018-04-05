@@ -68,10 +68,33 @@ export type DetailRemoveErrorAction = {
   }
 }
 
+export type SharingDatasetAction = {
+  type: 'user-datasets/sharing-dataset',
+  payload: {
+    userDataset: UserDataset,
+    recipients: string[]
+  }
+}
+
+export type SharingSuccessAction = {
+  type: 'user-datasets/sharing-success',
+  payload: {
+    userDataset: UserDataset
+  }
+}
+
+export type SharingErrorAction = {
+  type: 'user-datasets/sharing-error',
+  payload: {
+    error: Error
+  }
+}
+
 type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
 type DetailAction = DetailLoading|DetailReceivedAction|DetailErrorAction;
 type UpdateAction = DetailUpdatingAction|DetailUpdateSuccessAction|DetailUpdateErrorAction;
 type RemovalAction = DetailRemovingAction|DetailRemoveSuccessAction|DetailRemoveErrorAction;
+type SharingAction = SharingDatasetAction|SharingSuccessAction|SharingErrorAction;
 
 export function loadUserDatasetList(): ActionThunk<ListAction> {
   return ({ wdkService }) => [
@@ -92,6 +115,21 @@ export function loadUserDatasetDetail(id: number): ActionThunk<DetailAction> {
         ? <DetailReceivedAction>{ type: 'user-datasets/detail-received', payload: { id, userDataset: undefined } }
         : <DetailErrorAction>{ type: 'user-datasets/detail-error', payload: { error } }
     )
+  ];
+}
+
+export function shareUserDataset (userDataset: UserDataset, recipientUserIds: string[]): ActionThunk<SharingAction> {
+  return ({ wdkService }) => [
+    wdkService.shareUserDatasetWithRecipients(userDataset.id, recipientUserIds)
+      .then(
+        (newSharees) => (<SharingSuccessAction>{
+          type: 'user-datasets/sharing-success',
+          payload: { userDataset }
+        })
+      )
+      .catch(
+        (error: ServiceError) => (<SharingErrorAction>{ type: 'user-datasets/sharing-error', payload: { error } })
+      )
   ];
 }
 

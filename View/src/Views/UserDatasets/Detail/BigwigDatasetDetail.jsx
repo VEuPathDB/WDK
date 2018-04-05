@@ -16,8 +16,9 @@ class BigwigDatasetDetail extends UserDatasetDetail {
   }
 
   getTracksTableColumns () {
-    const { userDataset, appUrl } = this.props;
+    const { userDataset, appUrl, rootUrl, config } = this.props;
     const { id, ownerUserId } = userDataset;
+    const { projectId } = config;
     return [
       {
         key: 'datafileName',
@@ -27,7 +28,7 @@ class BigwigDatasetDetail extends UserDatasetDetail {
       {
         key: 'main',
         name: 'GBrowse Status',
-        renderCell: ({ row }) => <BigwigGBrowseUploader {...row} datasetId={id} appUrl={appUrl} />
+        renderCell: ({ row }) => <BigwigGBrowseUploader {...row} datasetId={id} rootUrl={rootUrl} appUrl={appUrl} projectId={projectId} />
       }
     ];
   }
@@ -44,7 +45,6 @@ class BigwigDatasetDetail extends UserDatasetDetail {
     return !rows.length ? null : userDataset.isInstalled
       ? (
       <section>
-        <h1>Use This Dataset in {userDataset.projects.join(', ')}</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="bar-chart"/>
           GBrowse Tracks
@@ -61,7 +61,9 @@ class BigwigDatasetDetail extends UserDatasetDetail {
   }
 
   getPageSections () {
-    return [ ...super.getPageSections(), this.renderTracksSection ];
+    const [ headerSection, compatSection, fileSection ] = super.getPageSections();
+    return [ headerSection, compatSection, this.renderTracksSection, fileSection ];
+    // return [ ...super.getPageSections(), this.renderTracksSection ];
   }
 };
 

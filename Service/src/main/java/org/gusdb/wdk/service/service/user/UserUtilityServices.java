@@ -87,13 +87,13 @@ public class UserUtilityServices extends WdkService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @POST
   @Path("user-id-query")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response lookupUserId(String body) throws RequestMisformatException {
-	Set<String> userEmails = new HashSet<>();  
+  	Set<String> userEmails = new HashSet<>();
     JSONArray userEmailsJsonArray = new JSONObject(body).getJSONArray("emails");
     ObjectMapper mapper = new ObjectMapper();
     String userEmailsJson = userEmailsJsonArray.toString();

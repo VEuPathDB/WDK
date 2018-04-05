@@ -114,10 +114,13 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
     const { userDatasetsById, user, updateError, questions, config, userDatasetUpdating } = this.state;
     const entry = userDatasetsById[match.params.id];
     const isOwner = !!(user && entry.resource && entry.resource.ownerUserId === user.id);
+    const rootUrl = window.location.href.substring(0, window.location.href.indexOf(`/app${location.pathname}`));
+
     const props = {
       user,
       config,
       isOwner,
+      rootUrl,
       location,
       updateError,
       removeUserDataset,
@@ -127,6 +130,8 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       getQuestionUrl: this.getQuestionUrl,
       questionMap: keyBy(questions, 'name')
     };
+    console.info('UDDetailControl gettin props:', this.props);
+    console.info('UDDetailControl passin props:', props);
     const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
       ? <EmptyState message="Please log in to view and edit your user datasets."/>

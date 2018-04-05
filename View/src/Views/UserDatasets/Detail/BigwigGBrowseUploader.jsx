@@ -23,8 +23,8 @@ class BigwigGBrowseUploader extends React.Component {
   }
 
   startUpload () {
-    const { appUrl, datasetId, datafileName: filename } = this.props;
-    const uploadUrl = getBigwigUploadUrl(datasetId, filename);
+    const { appUrl, rootUrl, datasetId, datafileName: filename } = this.props;
+    const uploadUrl = rootUrl + getBigwigUploadUrl(datasetId, filename);
     fetch(uploadUrl, { credentials: 'include' })
       .then(res => {
         this.setState({ inProgress: true }, this.startListeningForStatusChange);
@@ -35,15 +35,15 @@ class BigwigGBrowseUploader extends React.Component {
   }
 
   pollForTrackStatus () {
-    const { datasetId, datafileName: filename } = this.props;
-    const statusUrl = getBigwigStatusUrl(datasetId);
+    const { datasetId, rootUrl, datafileName: filename } = this.props;
+    const statusUrl = rootUrl + getBigwigStatusUrl(datasetId);
     fetch(statusUrl, { credentials: 'include' })
       .then(res => res.json())
       .then(({ results }) => {
         const track = results.find(({ dataFileName }) => filename === dataFileName);
         if (!track) return;
         if (track.status === 'COMPLETED') {
-          this.setState({ isInstalled: true, lastUploaded: `${Date.now()}` }, this.stopListeningForStatusChange);
+          this.setState({ isInstalled: true, lastUploaded: null }, this.stopListeningForStatusChange);
         } else {
           console.info('Polling track status...', track);
         }
@@ -91,9 +91,9 @@ class BigwigGBrowseUploader extends React.Component {
     if (inProgress) return <b>Sending to GBrowse...</b>;
     if (isInstalled) return (
       <span>
-        <a href={GBrowseUrl}>Available now in GBrowse.</a>
-        <br/>
-        Sent to GBrowse {moment(uploadedAt).fromNow()}.
+        {/* Available now in GBrowse.
+        <br/> */}
+        Sent to GBrowse{uploadedAt ? ` ${moment(uploadedAt).fromNow()}.` : '.'}
       </span>
     );
     switch (status) {
@@ -102,23 +102,34 @@ class BigwigGBrowseUploader extends React.Component {
       default:
         return errorMessage && errorMessage.length
           ? `Error sending to GBrowse: ${errorMessage}`
-          : 'IDK bro';
+          : '...';
     }
   }
 
   getButtons () {
     const { inProgress, isInstalled } = this.state;
+    const GBrowseUrl = this.getGBrowseUrl();
     return (
       <React.Fragment>
-        <button onClick={this.startUpload} className="btn btn-slim" disabled={inProgress || isInstalled}>
-          Send To GBrowse <Icon fa="upload right-side"/>
-        </button>
+        {isInstalled
+          ? (
+            <a href={GBrowseUrl} target="_blank">
+              <button className="btn btn-slim">
+                View In GBrowse <Icon fa="chevron-circle-right right-side" />
+              </button>
+            </a>
+          ) : (
+            <button onClick={this.startUpload} className="btn btn-slim" disabled={inProgress || isInstalled}>
+              Send To GBrowse <Icon fa="upload right-side"/>
+            </button>
+          )
+        }
       </React.Fragment>
     )
   }
 
   getGBrowseUrl () {
-    const { appUrl, projectId } = this.props;
+    const { rootUrl, projectId } = this.props;
     return `/cgi-bin/gbrowse/${projectId}`
   }
 

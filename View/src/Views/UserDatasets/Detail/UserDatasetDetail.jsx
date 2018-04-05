@@ -26,8 +26,8 @@ class UserDatasetDetail extends React.Component {
     this.renderHeaderSection = this.renderHeaderSection.bind(this);
     this.renderDatasetActions = this.renderDatasetActions.bind(this);
 
-    this.renderDependencySection = this.renderDependencySection.bind(this);
-    this.getDependencyTableColumns = this.getDependencyTableColumns.bind(this);
+    this.renderCompatibilitySection = this.renderCompatibilitySection.bind(this);
+    this.getCompatibilityTableColumns = this.getCompatibilityTableColumns.bind(this);
 
     this.renderFileSection = this.renderFileSection.bind(this);
     this.getFileTableColumns = this.getFileTableColumns.bind(this);
@@ -82,7 +82,7 @@ class UserDatasetDetail extends React.Component {
   getAttributes () {
     const { userDataset } = this.props;
     const { onMetaSave } = this;
-    const { id, type, meta, projects, size, percentQuotaUsed, created } = userDataset;
+    const { id, type, meta, projects, size, percentQuotaUsed, owner, created } = userDataset;
     const { display, name, version } = type;
     const isOwner = this.isMyDataset();
 
@@ -103,6 +103,7 @@ class UserDatasetDetail extends React.Component {
           />
         )
       },
+      { attribute: 'Owner', value: isOwner ? <span className="faded">Me</span> : owner },
       {
         attribute: 'Description',
         value: (
@@ -132,7 +133,7 @@ class UserDatasetDetail extends React.Component {
           />
         )
       },
-      { attribute: 'Compatible Projects', value: projects.join(', ') },
+      // { attribute: 'Compatible Projects', value: projects.join(', ') },
       {
         attribute: 'Created',
         value: (
@@ -233,16 +234,18 @@ class UserDatasetDetail extends React.Component {
 
     return (
       <section>
+        <h1>Data Files</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="files-o"/>
-          Data Files
+          Files in Dataset
         </h3>
         <Mesa state={fileTableState}/>
       </section>
     );
   }
 
-  getFileTableColumns ({ userDataset, appUrl }) {
+  getFileTableColumns () {
+    const { userDataset, rootUrl } = this.props;
     const { datafiles, type, ownerUserId, id } = userDataset;
     const trackData = type.data;
     const shouldShowGBrowseTrackUpload = Array.isArray(datafiles)
@@ -275,9 +278,9 @@ class UserDatasetDetail extends React.Component {
         headingStyle: { textAlign: 'center' },
         renderCell ({ row }) {
           const { name } = row;
-          const downloadUrl = appUrl + getDownloadUrl(id, name);
+          const downloadUrl = rootUrl + getDownloadUrl(id, name);
           return (
-            <a href={downloadUrl} title="Download this file">
+            <a href={downloadUrl} target="_blank" title="Download this file">
               <button className="btn btn-info">
                 <Icon fa="save" className="left-side" /> Download
               </button>
@@ -291,23 +294,26 @@ class UserDatasetDetail extends React.Component {
 
   /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-                                Dependency Table
+                                Compatible Table
 
    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-  renderDependencySection () {
-    const { userDataset } = this.props;
+  renderCompatibilitySection () {
+    const { userDataset, config } = this.props;
+    const { projectId } = config;
 
-    const depedencyTableState = MesaState.create({
-      columns: this.getDependencyTableColumns(userDataset),
+    const compatibilityTableState = MesaState.create({
+      columns: this.getCompatibilityTableColumns(userDataset),
       rows: userDataset.dependencies
     });
+    const isCompatible = userDataset.projects.includes(projectId);
 
     return (
       <section>
+        <h1>Use This Dataset in {userDataset.projects.join(', ')}</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="puzzle-piece"/>
-          Dataset Dependencies &nbsp;
+          Compatible With &nbsp;
           <AnchoredTooltip content="The data and genomes listed here are requisite for using the data in this user dataset.">
             <div className="HelpTrigger">
               <Icon fa="question-circle"/>
@@ -315,14 +321,34 @@ class UserDatasetDetail extends React.Component {
           </AnchoredTooltip>
         </h3>
         <div style={{ maxWidth: '600px' }}>
-          <Mesa state={depedencyTableState}/>
+          <Mesa state={compatibilityTableState}/>
         </div>
+        {isCompatible
+          ? (
+            <p className="success">
+              This dataset is compatible with <b>{projectId}</b>.  It is installed for use.
+            </p>
+          ) : (
+            <p className="danger">
+              This dataset is not compatible with <b>{projectId}</b>.
+            </p>
+          )
+        }
       </section>
     );
   }
 
-  getDependencyTableColumns () {
+  getCompatibilityTableColumns () {
+    const { userDataset } = this.props;
+    const { projects } = userDataset;
     return [
+      {
+        key: 'project',
+        name: 'Project',
+        renderCell () {
+          return projects.join(', ');
+        }
+      },
       {
         key: 'resourceDisplayName',
         name: 'Resource',
@@ -347,9 +373,9 @@ class UserDatasetDetail extends React.Component {
   getPageSections () {
     return [
       this.renderHeaderSection,
-      this.renderDependencySection,
+      this.renderCompatibilitySection,
       this.renderFileSection,
-      this.renderDetailsSection
+      // this.renderDetailsSection
     ];
   }
 

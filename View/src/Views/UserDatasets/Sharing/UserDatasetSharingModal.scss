@@ -1,12 +1,21 @@
+@import '~Core/Style/palette';
+
 .UserDataset-SharingModal {
   background-color: white;
   color: black;
-  padding: 20px;
+  padding: 30px 20px;
   display: flex;
   flex-flow: column nowrap;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   min-width: 500px;
-  
+  .fa, button .fa {
+    margin-right: 0;
+  }
+
+  .UserDatasetSharing-SectionName {
+    margin: 10px 0 0;
+  }
+
   fieldset {
     margin: 0;
     padding: 0;
@@ -26,6 +35,45 @@
     margin: 20px 0 0;
     border: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  }
+
+  .UserDatasetSharing-Dataset, .UserDatasetSharing-Recipient {
+    border: 1px solid rgba(0, 0, 0,0.1);
+    border-radius: 5px;
+    display: flex;
+    margin-top: 5px;
+    align-items: center;
+    flex-flow: row nowrap;
+    .wdk-Icon {
+      font-size: 1.5em;
+      margin-left: 10px;
+      &.times-circle {
+        color: $red;
+      }
+    }
+    .UserDatasetSharing-Dataset-Details, .UserDatasetSharing-Recipient-Details {
+      flex: 1 1 auto;
+    }
+    .UserDatasetSharing-Dataset-Icon, .UserDatasetSharing-Recipient-Icon {
+      flex: 0 0 auto;
+    }
+    .UserDatasetSharing-Dataset-Details, .UserDatasetSharing-Dataset-Icon,
+    .UserDatasetSharing-Recipient-Details, .UserDatasetSharing-Recipient-Icon {
+      padding: 10px;
+    }
+  }
+
+  h3 {
+    padding: 5px 0;
+  }
+
+  .UserDatasetSharing-Buttons {
+    display: flex;
+    margin: 20px 0 0;
+    flex-direction: row-reverse;
+    button {
+      flex: 0 0 auto;
+    }
   }
 }
 
