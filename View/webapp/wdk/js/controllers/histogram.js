@@ -1,6 +1,8 @@
 /* global wdk */
 
-import { debounce } from 'lodash';
+import { clamp, debounce } from 'lodash';
+
+const numberFormat = new Intl.NumberFormat('en-us');
 
 wdk.namespace("wdk.result.histogram", function(ns, $) {
   "use strict";
@@ -14,6 +16,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     ], function() {
       // initialize the properties
       const type = attrs.type;
+      const maxBinCount = attrs.maxBinCount;
       let min, max;
       if (type == "int") {
         min = parseInt(attrs.min);
@@ -23,7 +26,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
         max = parseFloat(attrs.max);
       }
 
-      const view = { $el, type, min, max }
+      const view = { $el, type, min, max, maxBinCount };
 
       // initialize UI controls
       initializeControls(view);
@@ -36,8 +39,8 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
 
   function initializeControls(view) {
     let dataTable;
-    const { $el, min = 1, max = 1, type } = view;
-    const drawPlot_ = debounce(drawPlot, 300);
+    const { $el, min = 1, max = 1, type, maxBinCount } = view;
+    const drawPlot_ = debounce(drawPlot, 1000);
 
     // register tabs
     $el.tabs({
@@ -66,7 +69,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     const binCountSlider = binControl.find(".bin-count-slider");
 
     // the min allowed bin size should create no more than the max allowed number of bins
-    const minAllowedSize = Math.max(min.toFixed(2), (max / binCountInput.attr('max')).toFixed(2));
+    const minAllowedSize = numberFormat.format(Math.max(min, (max / maxBinCount)));
     binSizeInput.attr('min', minAllowedSize);
     binSizeSlider.attr('min', minAllowedSize);
 
@@ -84,22 +87,23 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     });
 
     function sizeToData(rawSize) {
+      const size = clamp(Number(rawSize), min, max);
       return {
-        size: Number(rawSize).toFixed(2),
-        count: Math.ceil(max / rawSize)
+        size: size,
+        count: Math.ceil(max / size)
       };
     }
 
     function countToData(rawCount) {
       // if type is int, make sure size is a whole number
       if (type === 'int') {
-        const size = Math.round(max / rawCount);
+        const size = clamp(Math.round(max / rawCount), min, max);
         const count = Math.ceil(max / size)
         return { size, count };
       }
 
       return {
-        size: (max / rawCount).toFixed(2),
+        size: clamp(max / rawCount, min, max),
         count: rawCount
       };
     }
@@ -110,6 +114,8 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
         if (event.which === 13) {
           event.stopPropagation();
           event.preventDefault();
+          drawPlot_.cancel();
+          drawPlot(view);
         }
 
         // Ignore invalid input
@@ -121,12 +127,18 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
         binCountInput.val(count);
         binCountSlider.val(count);
 
-        if (event.type === 'change') drawPlot_(view);
+        if (event.type === 'change') {
+          drawPlot_.cancel();
+          drawPlot(view);
+        }
+        else {
+          drawPlot_(view);
+        }
       }
     }
   }
 
-  
+
   function drawPlot(view) {
     const { $el, type } = view;
     var graph = $el.find("#graph");
@@ -140,7 +152,7 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
     var plotDetails = loadData(view, binSize, logarithm);
     var data = plotDetails[0];
     var labels = plotDetails[1];
-    
+
     // get plot options
     // use .first() because dataTable plugin creates two tables for the
     // scrollable body
@@ -268,8 +280,8 @@ wdk.namespace("wdk.result.histogram", function(ns, $) {
       if (binSize == 1 && type == "int") label = bin[0];
       else {
         if (type == "float") {
-          bin[0] = bin[0].toFixed(2);
-          bin[1] = bin[1].toFixed(2);
+          bin[0] = numberFormat.format(bin[0]);
+          bin[1] = numberFormat.format(bin[1]);
         }
         var upper = (type == "int") ? (bin[1] - 1) + "]" : bin[1] + ")";
         label = "[" + bin[0] + ", " + upper;
