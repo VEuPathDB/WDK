@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FilterParamNewFetcher extends NoUpdateItemFetcher<String, FilterParamNewInstance> {
+public class FilterParamNewFetcher implements NoUpdateItemFetcher<String, FilterParamNewInstance> {
 
   private static final Logger LOG = Logger.getLogger(FlatVocabularyFetcher.class);
 
