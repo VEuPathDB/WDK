@@ -41,8 +41,6 @@ class BigwigDatasetDetail extends UserDatasetDetail {
     const columns = this.getTracksTableColumns({ userDataset, appUrl });
     const tracksTableState = MesaState.create({ rows, columns });
 
-    console.info('tracks', rows);
-
     return !rows.length ? null : userDataset.isInstalled
       ? (
       <section>
