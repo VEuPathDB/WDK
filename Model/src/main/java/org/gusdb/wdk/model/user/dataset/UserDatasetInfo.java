@@ -114,7 +114,8 @@ public class UserDatasetInfo {
   }
   
   public UserDatasetCompatibility getUserDatasetCompatibility() throws WdkModelException {
-    return _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource());
+	return _userDataset.getProjects().contains(_wdkModel.getProjectId()) ?
+     _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource()) : null;
   }
 
   public class UserDatasetShareUser extends TwoTuple<User,Long> implements UserDatasetShare {
