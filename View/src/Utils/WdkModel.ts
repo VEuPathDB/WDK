@@ -127,7 +127,20 @@ export interface DateRangeParam extends ParameterBase {
   maxDate: string;
 }
 
-export type Parameter = AnswerParam | TimestampParam | StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
+export interface DatasetParam extends ParameterBase {
+  type: 'DatasetParam';
+}
+
+export type Parameter = AnswerParam
+                      | DatasetParam
+                      | DateParam
+                      | DateRangeParam
+                      | EnumParam
+                      | FilterParamNew
+                      | NumberParam
+                      | NumberRangeParam
+                      | StringParam
+                      | TimestampParam;
 
 export interface ParameterGroup {
   description: string;
