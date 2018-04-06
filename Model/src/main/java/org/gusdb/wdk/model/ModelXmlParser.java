@@ -1098,10 +1098,9 @@ public class ModelXmlParser extends XmlParser {
     Options options = new Options();
 
     // config file
-    addOption(options, "model", "the name of the model.  This is used to "
-        + "find the Model XML file ($GUS_HOME/lib/wdk/model_name.xml) "
-        + "the Model property file ($GUS_HOME/config/model_name.prop) " + "and the Model config file "
-        + "($GUS_HOME/config/model_name-config.xml)");
+    addOption(options, "model", "The ProjectId, which"
+          + " should match the directory name under $GUS_HOME where "
+          + "model-config.xml is stored.");
 
     Option optDependency = new Option(ARG_DEPENDENCY, false, "Print out the dependency tree of the model");
     optDependency.setRequired(false);
