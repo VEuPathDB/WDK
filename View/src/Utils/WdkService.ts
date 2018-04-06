@@ -169,6 +169,8 @@ const parameterDecoder: Decode.Decoder<Parameter> =
     Decode.field('defaultValue', Decode.optional(Decode.string)),
     Decode.field('dependentParams', Decode.arrayOf(Decode.string)),
     Decode.oneOf(
+      /* AnswerParam */
+      Decode.field('type', Decode.constant('AnswerParam')),
       /* TimestampParam */
       Decode.field('type', Decode.constant('TimestampParam')),
       /* StringParam  */
