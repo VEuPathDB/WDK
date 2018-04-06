@@ -45,6 +45,10 @@ export interface StringParam extends ParameterBase {
   type: 'StringParam';
 }
 
+export interface AnswerParam extends ParameterBase {
+  type: 'AnswerParam';
+}
+
 export interface TimestampParam extends ParameterBase {
   type: 'TimestampParam';
 }
@@ -123,7 +127,7 @@ export interface DateRangeParam extends ParameterBase {
   maxDate: string;
 }
 
-export type Parameter = TimestampParam | StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
+export type Parameter = AnswerParam | TimestampParam | StringParam | EnumParam | FilterParamNew | NumberParam | NumberRangeParam | DateParam | DateRangeParam;
 
 export interface ParameterGroup {
   description: string;
