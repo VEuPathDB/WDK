@@ -57,13 +57,17 @@ public class CacheMgr {
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
-  public SqlCountCache getSqlCountCache(DatabaseInstance db) {
+
+  // special getter lazily populates the repo with db-specific count caches
+  public synchronized SqlCountCache getSqlCountCache(DatabaseInstance db) {
     String key = "Sql Count Cache - " + db.getIdentifier();
-    if (!_cacheRepo.containsKey(key)) _cacheRepo.put(key, new SqlCountCache(db.getDataSource()));
+    if (!_cacheRepo.containsKey(key)) {
+      _cacheRepo.put(key, new SqlCountCache(db.getDataSource()));
+    }
     return (SqlCountCache)_cacheRepo.get(key);
   }
 
-  public Map<String,ItemCache<?,?>> getAllCaches() {
-    return _cacheRepo;
+  public synchronized Map<String,ItemCache<?,?>> getAllCaches() {
+    return new LinkedHashMap<>(_cacheRepo);
   }
 }
