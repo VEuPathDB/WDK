@@ -7,7 +7,7 @@ import Icon from 'Components/Icon/IconAlt';
 import { bytesToHuman } from 'Utils/Converters';
 import { Mesa, MesaState, AnchoredTooltip } from 'mesa';
 import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
-import { textCell, getDownloadUrl, makeClassifier } from 'Views/UserDatasets/UserDatasetUtils';
+import { textCell, getDownloadUrl, makeClassifier, normalizePercentage } from 'Views/UserDatasets/UserDatasetUtils';
 
 const classify = makeClassifier('UserDatasetDetail');
 
@@ -85,11 +85,6 @@ class UserDatasetDetail extends React.Component {
     const { id, type, meta, projects, size, percentQuotaUsed, owner, created } = userDataset;
     const { display, name, version } = type;
     const isOwner = this.isMyDataset();
-
-    function normalizePercentage (value) {
-      const parsed = parseFloat(value);
-      return (Math.floor(value * 100)) / 100
-    };
 
     return [
       {

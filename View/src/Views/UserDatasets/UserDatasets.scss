@@ -1,9 +1,14 @@
 @import '~Core/Style/palette';
 
-.UserDatasetList, .UserDatasetDetail {
+.UserDatasetList, .UserDatasetDetail, .UserDataset-SharingModal {
   .success { color: $green; }
   .danger { color: $red; }
-  
+  .faded { opacity: 0.5 }
+
+  input, input[type="text"], textarea {
+    background-color: none;
+  }
+
   section {
     width: 100%;
     margin-bottom: 30px;
