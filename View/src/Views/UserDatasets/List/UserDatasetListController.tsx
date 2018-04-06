@@ -50,18 +50,14 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   isRenderDataLoaded () {
-    return this.state.user != null && this.state.userDatasetsLoading === false;
-  }
-
-  isRenderDataLoadError () {
-    return false;
-    // return this.state.loadError != null;
+    return this.state.user != null
+      && this.state.config != null
+      && this.state.userDatasetsLoading === false;
   }
 
   renderView () {
-    if (!this.isRenderDataLoaded) return null;
     const { userDatasets, loadError, config } = this.state;
-    const { projectId, displayName } = config ? config : {};
+    const { projectId, displayName } = config;
     const user: User = this.state.user;
     const { updateUserDatasetDetail } = this.eventHandlers;
     const { history, location } = this.props;
