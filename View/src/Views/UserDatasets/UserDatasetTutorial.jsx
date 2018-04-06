@@ -8,7 +8,7 @@ function UserDatasetTutorial ({ projectName, rootUrl }) {
       <div className="box xs-12 md-4">
         <img src={rootUrl + '/wdk/images/userDatasetHelp/tut-step-1.jpg'} />
         <p>
-          Using <b><a href={galaxyurl} target="_blank">EuPathDB Galaxy</a></b>, upload your data files and select the relevant genome (and genome project) for each.
+          Using <b><a href={galaxyUrl} target="_blank">EuPathDB Galaxy</a></b>, upload your data files and select the relevant genome (and genome project) for each.
         </p>
         <p>
           To learn more about <b>EuPathDB Galaxy</b>, including how to get started, see our <a href={orientationUrl} target="_blank">orientation tutorial</a>.
