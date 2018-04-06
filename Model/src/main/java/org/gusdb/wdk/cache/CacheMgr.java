@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.db.cache.SqlCountCache;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;
@@ -55,6 +57,11 @@ public class CacheMgr {
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
+  public SqlCountCache getSqlCountCache(DatabaseInstance db) {
+    String key = "Sql Count Cache - " + db.getIdentifier();
+    if (!_cacheRepo.containsKey(key)) _cacheRepo.put(key, new SqlCountCache(db.getDataSource()));
+    return (SqlCountCache)_cacheRepo.get(key);
+  }
 
   public Map<String,ItemCache<?,?>> getAllCaches() {
     return _cacheRepo;

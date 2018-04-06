@@ -20,9 +20,9 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
@@ -451,9 +451,11 @@ public class FilterParamNew extends AbstractDependentParam {
     return fpsc;
   }
 
-  private long runCountSql(String sql, String qName) {
-    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "filter-param-counts-" + qName).executeQuery(
-        new SingleLongResultSetHandler()).getRetrievedValue();
+  private long runCountSql(String sql, String qName) throws WdkModelException {
+    SqlCountCache cache = CacheMgr.get().getSqlCountCache(_wdkModel.getAppDb());
+    try {
+      return cache.getItem(sql, "filter-param-counts-" + qName);
+    } catch (UnfetchableItemException e) { throw new WdkModelException(e); }
   }
 
   /**
