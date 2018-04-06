@@ -115,12 +115,12 @@ class BigwigGBrowseUploader extends React.Component {
           ? (
             <a href={GBrowseUrl} target="_blank">
               <button className="btn btn-slim">
-                View In GBrowse <Icon fa="chevron-circle-right right-side" />
+                View In <b>GBrowse</b> <Icon fa="chevron-circle-right right-side" />
               </button>
             </a>
           ) : (
             <button onClick={this.startUpload} className="btn btn-slim" disabled={inProgress || isInstalled}>
-              Send To GBrowse <Icon fa="upload right-side"/>
+              Send To <b>GBrowse</b> <Icon fa="upload right-side"/>
             </button>
           )
         }

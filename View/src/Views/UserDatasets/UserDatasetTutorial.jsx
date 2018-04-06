@@ -1,20 +1,21 @@
 import React from 'react';
 
-function UserDatasetTutorial ({ projectName }) {
-  const orientationUrl = '/';
+function UserDatasetTutorial ({ projectName, rootUrl }) {
+  const orientationUrl = '';
+  const galaxyUrl = 'https://eupathdb.globusgenomics.org/';
   return (
     <div className="row UserDataset-Tutorial">
       <div className="box xs-12 md-4">
-        <img src="/fungidb.austinjb/wdk/images/userDatasetHelp/tut-step-1.jpg"/>
+        <img src={rootUrl + '/wdk/images/userDatasetHelp/tut-step-1.jpg'} />
         <p>
-          Using <b>EuPathDB Galaxy</b>, upload your data files and select the relevant genome (and genome project) for each.
+          Using <b><a href={galaxyurl} target="_blank">EuPathDB Galaxy</a></b>, upload your data files and select the relevant genome (and genome project) for each.
         </p>
         <p>
           To learn more about <b>EuPathDB Galaxy</b>, including how to get started, see our <a href={orientationUrl} target="_blank">orientation tutorial</a>.
         </p>
       </div>
       <div className="box xs-12 md-4">
-        <img src="/fungidb.austinjb/wdk/images/userDatasetHelp/tut-step-2.jpg"/>
+        <img src={rootUrl + '/wdk/images/userDatasetHelp/tut-step-2.jpg'} />
         <p>
           Using the <b>EuPathDB Export Tools</b> on the left-side navigation, prepare your dataset by selecting the files you’d like to use, and provide some general information about the dataset. This data can be edited later, from the <i>My Datasets</i> page.
         </p>
@@ -23,7 +24,7 @@ function UserDatasetTutorial ({ projectName }) {
         </p>
       </div>
       <div className="box xs-12 md-4">
-        <img src="/fungidb.austinjb/wdk/images/userDatasetHelp/tut-step-3.jpg"/>
+        <img src={rootUrl + '/wdk/images/userDatasetHelp/tut-step-3.jpg'} />
         <ul>
           <li>You can now view, manage, share, and utilize your dataset in <b>{projectName}</b>.</li>
           <li>Datasets you’ve created contribute to a per-user upload limit/quota of <b>1 GB</b>.</li>

@@ -60,11 +60,11 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
   renderView () {
     const { userDatasets, loadError, config } = this.state;
-    const { projectId, displayName } = config;
+    const { projectId, displayName } = config ? config : {};
     const user: User = this.state.user;
     const { updateUserDatasetDetail } = this.eventHandlers;
-    const { history } = this.props;
-    console.info('UDList controller props...', this.props);
+    const { history, location } = this.props;
+    
     const title = this.getTitle();
     const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
     const content = !loggedIn
@@ -74,6 +74,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
         <UserDatasetList
           user={user}
           history={history}
+          location={location}
           projectId={projectId}
           projectName={displayName}
           userDatasets={userDatasets}

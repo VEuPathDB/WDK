@@ -6,6 +6,12 @@ export function makeClassifier (...classNames) {
     .join(' ');
 }
 
+
+export function normalizePercentage (value) {
+  const parsed = parseFloat(value);
+  return (Math.floor(value * 100)) / 100
+};
+
 export function textCell (prop, transform) {
   const getValue = typeof transform === 'function'
     ? transform

@@ -23,7 +23,7 @@ import HelpIcon from 'Components/Icon/HelpIcon';
 import Loading from 'Components/Loading/Loading';
 import SearchBox from 'Components/SearchBox/RealTimeSearchBox';
 import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
-import { textCell } from 'Views/UserDatasets/UserDatasetUtils';
+import { textCell, normalizePercentage } from 'Views/UserDatasets/UserDatasetUtils';
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetTutorial from 'Views/UserDatasets/UserDatasetTutorial';
 import { MesaColumn, MesaDataCellProps, MesaSortObject } from 'Core/CommonTypes';
@@ -32,6 +32,7 @@ import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 interface Props {
   user: User;
   history: History;
+  location: any;
   projectId: string;
   projectName: string;
   userDatasets: UserDataset[];
@@ -263,7 +264,10 @@ class UserDatasetList extends React.Component <Props, State> {
         key: 'percentQuotaUsed',
         name: 'Quota Usage',
         sortable: true,
-        renderCell: textCell('percentQuotaUsed', (percent: number) => percent ? `${percent}%` : null)
+        renderCell: textCell('percentQuotaUsed', (percent: number) => percent
+          ? `${normalizePercentage(percent)}%`
+          : null
+        )
       }
     ]
   }
@@ -350,7 +354,8 @@ class UserDatasetList extends React.Component <Props, State> {
 
   getTableOptions () {
     const { isRowSelected } = this;
-    const { userDatasets, projectName } = this.props;
+    const { userDatasets, projectName, location } = this.props;
+    const rootUrl: string = window.location.href.substring(0, window.location.href.indexOf('/app/'));
     const emptyMessage = !userDatasets.length
       ? (
         <React.Fragment>
@@ -380,7 +385,7 @@ class UserDatasetList extends React.Component <Props, State> {
         return (
           <React.Fragment>
             <UserDatasetEmptyState message={emptyMessage}/>
-            <UserDatasetTutorial projectName={projectName}/>
+            <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>
           </React.Fragment>
         )
       }
@@ -487,6 +492,7 @@ class UserDatasetList extends React.Component <Props, State> {
             ? <SharingModal
                 user={user}
                 datasets={rows.filter(isRowSelected)}
+                deselectDataset={this.onRowDeselect}
                 onClose={this.closeSharingModal}
               />
             : null
