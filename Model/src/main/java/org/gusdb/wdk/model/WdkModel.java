@@ -98,6 +98,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
   public static final String DB_INSTANCE_ACCOUNT = "ACCT";
+  
+  public static final String UD_ENABLED = "UD_ENABLED";
+  public static final String UD_DISABLED = "UD_DISABLED";
+  public static final String UD_BROKEN = "UD_BROKEN";
 
   public static final String INDENT = "  ";
 
@@ -115,6 +119,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ModelConfig _modelConfig;
   private String _projectId;
   private long _startupTime;
+  private String _userDatasetStoreStatus;
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
@@ -637,7 +642,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
     if (udsConfig != null) {
-      userDatasetStore = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
+      try {	
+        userDatasetStore = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
+        _userDatasetStoreStatus = UD_ENABLED;
+      }
+      catch(WdkModelException wme) {
+        _userDatasetStoreStatus = UD_BROKEN;
+      }
+    }
+    else {
+      _userDatasetStoreStatus = UD_DISABLED;
     }
 
     resultFactory = new ResultFactory(this);
@@ -1633,5 +1647,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     XmlQuestion xmlQuestion = xmlQuestionSet.getQuestion(reference.getElementName());
     if(xmlQuestion == null) throw new WdkModelException("Cannot find xml question with the name " + xmlQuestionFullName);
     return xmlQuestion;
+  }
+  
+  public String getUserDatasetStoreStatus() {
+    return _userDatasetStoreStatus;
   }
 }
