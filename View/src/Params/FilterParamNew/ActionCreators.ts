@@ -239,7 +239,13 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
           const questionState = getQuestionState(store, questionName);
           if (questionState == null) return Observable.empty() as Observable<Action>;
           const { paramValues, paramUIState } = questionState;
-          const { activeOntologyTerm } = paramUIState[parameter.name];
+          const { activeOntologyTerm } = paramUIState[parameter.name] as State;
+          const { ontology } = parameter;
+          const filters = getFilters(paramValues[parameter.name]);
+
+          const activeField = ontology.findIndex(item => item.term === activeOntologyTerm) > -1
+            ? activeOntologyTerm
+            : filters.length === 0 ? findFirstLeaf(ontology) : filters[0].field;
 
           return Observable.of(OntologyTermsInvalidated.create({
             questionName,
@@ -247,7 +253,7 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
             paramValues,
             retainedFields: [/* activeOntologyTerm */]
           })).merge(
-            getOntologyTermSummary(wdkService, parameter, questionState, activeOntologyTerm),
+            activeField ? getOntologyTermSummary(wdkService, parameter, questionState, activeField) : Observable.empty() as Observable<Action>,
             getSummaryCounts(wdkService, parameter, questionState)
           );
         })
@@ -332,12 +338,12 @@ function getSummaryCounts(
   wdkService: WdkService,
   parameter: FilterParamNew,
   state: QuestionState
-) {
+): Observable<Action> {
   const { question, paramValues } = state;
   const questionName = question.urlSegment;
   const paramName = parameter.name;
   const filters = JSON.parse(paramValues[parameter.name]).filters;
-  return wdkService.getFilterParamSummaryCounts(questionName, paramName, filters, paramValues).then(
+  return Observable.from(wdkService.getFilterParamSummaryCounts(questionName, paramName, filters, paramValues).then(
     counts => SummaryCountsLoadedAction.create({
       questionName,
       parameter,
@@ -349,7 +355,7 @@ function getSummaryCounts(
       error,
       paramName
     })
-  )
+  ));
 }
 
 function getFiltersFromContext(ctx: Ctx) {
