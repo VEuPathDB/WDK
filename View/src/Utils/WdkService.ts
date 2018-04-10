@@ -815,9 +815,19 @@ export default class WdkService {
     return this._fetchJson<void>('post', '/user-id-query', JSON.stringify({ emails: [ emailAddress ]}));
   }
 
-  shareUserDatasetWithRecipients (id: number, recipientUserIds: string[]) {
-    const delta = { add: { [`${id}`]: [ ...recipientUserIds.map(uid => uid.toString()) ] } };
-    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', JSON.stringify(delta));
+  shareUserDatasetWithRecipients (userDatasetIds: number[], recipientUserIds: number[]) {
+    const initialObject: object = {};
+    const stringUserIds: string[] = recipientUserIds.map(id => `${id}`);
+    const stringDatasetIds: string[] = userDatasetIds.map(id => `${id}`);
+
+    const add = stringDatasetIds.reduce((output: object, datasetId: string) => {
+      Object.defineProperty(output, datasetId, {
+        value: [...stringUserIds]
+      });
+      return output;
+    }, initialObject);
+    console.info('executing share with, using delta', { add });
+    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', JSON.stringify({ add }));
   }
 
   getOauthStateToken() {
