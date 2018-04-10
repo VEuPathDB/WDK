@@ -38,7 +38,7 @@ export default class NumberField extends React.Component {
   }
 
   render() {
-    var [ knownDist, unknownDist ] = partition(this.props.activeFieldSummary.valueCounts, function(entry) {
+    var [ knownDist, unknownDist ] = partition(this.props.activeFieldState.summary.valueCounts, function(entry) {
       return entry.value !== null;
     });
 

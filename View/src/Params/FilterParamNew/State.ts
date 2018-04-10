@@ -20,8 +20,9 @@ export type SortSpec = {
 };
 
 type BaseFieldState = {
-  ontologyTermSummary?: OntologyTermSummary;
+  summary?: OntologyTermSummary;
   loading?: boolean;
+  invalid?: boolean;
   errorMessage?: string;
 }
 
@@ -96,16 +97,13 @@ export function reduce(state: State = initialState, action: Action): State {
 
   if (OntologyTermsInvalidated.isType(action)) return {
     ...state,
-    fieldStates: Object.entries(state.fieldStates).reduce((newFieldStates, [ key, fieldState ]) => {
-      return Object.assign(newFieldStates, {
-        [key]: action.payload.retainedFields.includes(key)
-          ? state.fieldStates[key]
-          : {
-            ...state.fieldStates[key],
-            ontologyTermSummary: undefined
-          }
-      })
-    }, {} as Record<string, FieldState>)
+    fieldStates: mapValues(state.fieldStates, (fieldState, key) =>
+      action.payload.retainedFields.includes(key)
+        ? fieldState
+        : {
+          ...fieldState,
+          invalid: true
+        })
   }
 
   return state;
@@ -123,16 +121,16 @@ function handleFilterChange(state: State, prevFilters: Filter[], filters: Filter
     if (modifiedFields.size > 2 || fieldTerm !== state.activeOntologyTerm) {
       fieldState = {
         ...fieldState,
-        ontologyTermSummary: undefined
+        summary: undefined
       }
     }
-    if (isMemberFieldState(fieldState) && fieldState.ontologyTermSummary && fieldState.sort.groupBySelected) {
+    if (isMemberFieldState(fieldState) && fieldState.summary && fieldState.sort.groupBySelected) {
       fieldState = {
         ...fieldState,
-        ontologyTermSummary: {
-          ...fieldState.ontologyTermSummary,
+        summary: {
+          ...fieldState.summary,
           valueCounts: sortDistribution(
-            fieldState.ontologyTermSummary.valueCounts,
+            fieldState.summary.valueCounts,
             fieldState.sort,
             filters.find(filter => filter.field === fieldTerm) as MemberFilter
           )

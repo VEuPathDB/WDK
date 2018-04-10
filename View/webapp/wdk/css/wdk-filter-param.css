@@ -216,6 +216,11 @@
   max-width: 100%;
   font-size: 1em;
 }
+.filter-param .wdk-MultiFieldFilterUpdateCountsButton {
+  position: absolute;
+  top: 0;
+  right: 1em;
+}
 .filter-param .membership-filter .HeadingRow:first-child {
   border-top: 1px solid #ccc;
 }

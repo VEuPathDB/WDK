@@ -1,8 +1,8 @@
 import React from 'react';
 
 export default function UnknownCount(props) {
-  const { activeFieldSummary, dataCount, displayName } = props;
-  const unknownCount = dataCount - activeFieldSummary.internalsCount;
+  const { activeFieldState, dataCount, displayName } = props;
+  const unknownCount = dataCount - activeFieldState.summary.internalsCount;
   return unknownCount > 0
     ? (
       <div className="unknown-count">

@@ -1,15 +1,15 @@
 import { bindAll, curry, escapeRegExp, get, keyBy } from 'lodash';
-import React from 'react';
 import { MesaController as Mesa } from 'mesa';
+import React from 'react';
 
-import { isRange } from './Utils/FilterServiceUtils';
-import { Seq } from 'Utils/IterableUtils';
-import { makeClassNameHelper } from 'Utils/ComponentUtils';
-
+import Icon from 'Components/Icon/IconAlt';
 import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
+import { makeClassNameHelper } from 'Utils/ComponentUtils';
+import { Seq } from 'Utils/IterableUtils';
 
 import StackedBar from './StackedBar';
 import { shouldAddFilter } from './Utils';
+import { isRange } from './Utils/FilterServiceUtils';
 
 const cx = makeClassNameHelper('wdk-MultiFieldFilter');
 
@@ -179,7 +179,7 @@ export default class MultiFieldFilter extends React.Component {
 
   render() {
     const {
-      values = Seq.from(this.props.activeFieldSummary)
+      values = Seq.from(this.props.activeFieldState.summary)
         .flatMap(summary => summary.valueCounts)
         .map(count => count.value)
         .uniq()
@@ -189,7 +189,7 @@ export default class MultiFieldFilter extends React.Component {
     const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
     const filtersByField = keyBy(this.props.filters, 'field');
 
-    const rows = Seq.from(this.props.activeFieldSummary)
+    const rows = Seq.from(this.props.activeFieldState.summary)
       .flatMap(summary => [
         {
           summary,
@@ -208,6 +208,16 @@ export default class MultiFieldFilter extends React.Component {
       searchRe.test(this.props.fields.get(summary.term).display))
 
     return <div className={cx()}>
+      <button
+        type="button"
+        className={cx('UpdateCountsButton') + " btn"}
+        disabled={!this.props.activeFieldState.invalid || this.props.activeFieldState.loading}
+        onClick={() => this.props.onFieldCountUpdateRequest(this.props.activeField.term)}
+      >
+        {this.props.activeFieldState.loading
+          ? <div><Icon fa="circle-o-notch" className="fa-spin"/> Loading...</div>
+          : 'Update counts'}
+      </button>
       <Mesa
         options={{
           useStickyHeader: true,

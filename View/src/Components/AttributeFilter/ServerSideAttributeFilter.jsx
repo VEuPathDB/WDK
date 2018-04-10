@@ -50,13 +50,13 @@ ServerSideAttributeFilter.propTypes = {
 
   activeField: FieldFilter.propTypes.activeField,
   activeFieldState: FieldFilter.propTypes.activeFieldState,
-  activeFieldSummary: FieldFilter.propTypes.activeFieldSummary,
 
   // not sure if these belong here
   isLoading: PropTypes.bool,
 
   // event handlers
   onActiveFieldChange: PropTypes.func.isRequired,
+  onFieldCountUpdateRequest: PropTypes.func.isRequired,
   onFiltersChange: PropTypes.func.isRequired,
   onMemberSort: PropTypes.func.isRequired,
   onMemberSearch: PropTypes.func.isRequired,
