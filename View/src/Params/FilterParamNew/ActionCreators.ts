@@ -8,6 +8,7 @@ import {
   ParamValueUpdatedAction,
   QuestionLoadedAction,
   UnloadQuestionAction,
+  ParamsUpdatedAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
 import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
 import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from 'Params/FilterParamNew/Utils';
@@ -36,6 +37,13 @@ export const ActiveFieldSetAction = makeActionCreator(
   }>()
 )
 
+export const FieldCountUpdateRequestAction = makeActionCreator(
+  'filter-param-new/field-count-update-request',
+  payload<Context<FilterParamNew> & {
+    field: string;
+  }>()
+)
+
 export const SummaryCountsLoadedAction = makeActionCreator(
   'filter-param-new/summary-counts-loaded',
   payload<Context<FilterParamNew> & {
@@ -50,7 +58,7 @@ export const FieldStateUpdatedAction = makeActionCreator(
   'filter-param-new/field-state-updated',
   payload<Context<FilterParamNew> & {
     field: string;
-    fieldState: Record<string, any>;
+    fieldState: FieldState;
   }>()
 )
 
@@ -77,7 +85,7 @@ export default combineEpics(initEpic, updateDependentParamsActiveFieldEpic);
 type LoadDeps = {
   parameter: FilterParamNew,
   loadCounts: boolean,
-  loadSummary: boolean,
+  loadSummaryFor: string | null,
   questionState: QuestionState
 };
 
@@ -116,7 +124,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               const { activeOntologyTerm, fieldStates } =
                 questionState.paramUIState[parameter.name];
               const loadSummary = activeOntologyTerm != null && (
-                fieldStates[activeOntologyTerm].ontologyTermSummary == null ||
+                fieldStates[activeOntologyTerm].summary == null ||
                 !isEqual( prevFilters.filter(f => f.field != activeOntologyTerm)
                         , filters.filter(f => f.field !== activeOntologyTerm) )
               );
@@ -125,7 +133,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
                 questionState,
                 parameter,
                 loadCounts: true,
-                loadSummary
+                loadSummaryFor: loadSummary ? activeOntologyTerm : null
               });
             })
             .debounceTime(1000)
@@ -137,17 +145,31 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
               const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[parameter.name];
-              if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].ontologyTermSummary == null) {
+              if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].summary == null) {
                 return Observable.of({
                   parameter,
                   loadCounts: true,
-                  loadSummary: true,
+                  loadSummaryFor: questionState.paramUIState[parameter.name].activeOntologyTerm,
                   questionState
                 })
               }
               return Observable.empty() as Observable<LoadDeps>;
             })
             .debounceTime(1000)
+
+          const forceSummaryUpdateParameter$ = action$.filter(FieldCountUpdateRequestAction.isType)
+            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
+            .mergeMap(action => {
+              const questionState = getQuestionState(services.store, questionName);
+              if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
+
+              return Observable.of({
+                parameter,
+                loadCounts: false,
+                loadSummaryFor: action.payload.field,
+                questionState
+            })
+            })
 
           const groupVisibilityChangeParameter$ = action$.filter(GroupVisibilityChangedAction.isType)
             .filter(action => action.payload.questionName === questionName && action.payload.groupName === parameter.group)
@@ -156,8 +178,13 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
               const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[parameter.name];
-              if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].ontologyTermSummary == null) {
-                return Observable.of({ parameter, loadCounts: true, loadSummary: true, questionState })
+              if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].summary == null) {
+                return Observable.of({
+                  parameter,
+                  loadCounts: true,
+                  loadSummaryFor: activeOntologyTerm,
+                  questionState
+                })
               }
               return Observable.empty() as Observable<LoadDeps>;
             });
@@ -168,13 +195,13 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
             groupVisibilityChangeParameter$
           )
           .filter(({ parameter }) => isVisible(parameter))
-          .switchMap(({parameter, loadCounts, loadSummary, questionState}) => {
+          .switchMap(({parameter, loadCounts, loadSummaryFor, questionState}) => {
             return Observable.merge(
               loadCounts
                 ? getSummaryCounts(services.wdkService, parameter, questionState)
                 : Observable.empty(),
-              loadSummary
-                ? getOntologyTermSummary(services.wdkService, parameter, questionState)
+              loadSummaryFor
+                ? getOntologyTermSummary(services.wdkService, parameter, questionState, loadSummaryFor)
                 : Observable.empty()
             ) as Observable<Action>;
           });
@@ -202,28 +229,25 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
 }
 
 function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
-  return action$.filter(ParamValueUpdatedAction.isType)
+  return action$.filter(ParamsUpdatedAction.isType)
     .debounceTime(1000)
     .switchMap(action => {
-      const { questionName, dependentParameters } = action.payload;
-      const questionState = getQuestionState(store, questionName);
-      if (questionState == null) return Observable.empty() as Observable<Action>;
-
-      const { paramValues, paramUIState } = questionState;
-
-      return Observable.from(dependentParameters)
+      const { questionName, parameters } = action.payload;
+      return Observable.from(parameters)
         .filter(isType)
         .mergeMap(parameter => {
           const questionState = getQuestionState(store, questionName);
           if (questionState == null) return Observable.empty() as Observable<Action>;
+          const { paramValues, paramUIState } = questionState;
+          const { activeOntologyTerm } = paramUIState[parameter.name];
 
           return Observable.of(OntologyTermsInvalidated.create({
             questionName,
             parameter,
             paramValues,
-            retainedFields: [paramUIState[parameter.name].activeOntologyTerm]
+            retainedFields: [/* activeOntologyTerm */]
           })).merge(
-            getOntologyTermSummary(wdkService, parameter, questionState),
+            getOntologyTermSummary(wdkService, parameter, questionState, activeOntologyTerm),
             getSummaryCounts(wdkService, parameter, questionState)
           );
         })
@@ -241,37 +265,49 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
 function getOntologyTermSummary(
   wdkService: WdkService,
   parameter: FilterParamNew,
-  state: QuestionState
+  state: QuestionState,
+  ontologyTerm: string
 ): Observable<Action> {
   const { question, paramValues, paramUIState } = state;
   const questionName = question.urlSegment;
-  const { activeOntologyTerm } = paramUIState[parameter.name] as State;
-  if (activeOntologyTerm == null) return Observable.empty();
+  if (ontologyTerm == null) return Observable.empty();
 
+  // FIXME Add loading and invalid for fieldState
   const filters = (JSON.parse(paramValues[parameter.name]).filters as Filter[])
-    .filter(filter => filter.field !== activeOntologyTerm);
-  return Observable.from(wdkService.getOntologyTermSummary(questionName, parameter.name, filters, activeOntologyTerm, paramValues).then(
+    .filter(filter => filter.field !== ontologyTerm);
+  return Observable.of(FieldStateUpdatedAction.create({
+    questionName,
+    parameter,
+    paramValues,
+    field: ontologyTerm,
+    fieldState: {
+      loading: true
+    }
+  }))
+  .concat(wdkService.getOntologyTermSummary(questionName, parameter.name, filters, ontologyTerm, paramValues).then(
     summary => {
-      const fieldState: FieldState = isMemberField(parameter, activeOntologyTerm)
+      const fieldState: FieldState = isMemberField(parameter, ontologyTerm)
         ? {
+          invalid: false,
           loading: false,
           sort: defaultMemberFieldSort,
           searchTerm: '',
-          ontologyTermSummary: {
+          summary: {
             ...summary,
             valueCounts: sortDistribution(summary.valueCounts, defaultMemberFieldSort)
           }
         }
         : {
+          invalid: false,
           loading: false,
-          ontologyTermSummary: summary
+          summary: summary
         };
 
       return FieldStateUpdatedAction.create({
         questionName,
         parameter,
         paramValues,
-        field: activeOntologyTerm,
+        field: ontologyTerm,
         fieldState
       })
     },
@@ -281,10 +317,11 @@ function getOntologyTermSummary(
         questionName,
         parameter,
         paramValues,
-        field: activeOntologyTerm,
+        field: ontologyTerm,
         fieldState: {
+          invalid: false,
           loading: false,
-          errorMessage: 'Unable to load ontologyTermSummary for "' + activeOntologyTerm + '".'
+          errorMessage: 'Unable to load summary for "' + ontologyTerm + '".'
         }
       });
     }

@@ -1,6 +1,7 @@
-import { ActionThunk } from "Utils/ActionCreatorUtils";
+import { ActionThunk, EmptyAction, emptyAction } from "Utils/ActionCreatorUtils";
 import { UserDatasetMeta, UserDataset } from "Utils/WdkModel";
 import { ServiceError } from "Utils/WdkService";
+import { transitionToInternalPage } from "Core/ActionCreators/RouterActionCreators";
 
 export type ListLoadingAction = {
   type: 'user-datasets/list-loading'
@@ -144,11 +145,14 @@ export function updateUserDatasetDetail(userDataset: UserDataset, meta: UserData
   ]
 }
 
-export function removeUserDataset (userDataset: UserDataset): ActionThunk<RemovalAction> {
+export function removeUserDataset (userDataset: UserDataset, redirectRoute?: string): ActionThunk<RemovalAction|EmptyAction> {
   return ({ wdkService }) => [
     <DetailRemovingAction>{ type: 'user-datasets/detail-removing' },
     wdkService.removeUserDataset(userDataset.id).then(
-      () => (<DetailRemoveSuccessAction>{ type: 'user-datasets/detail-remove-success', payload: { userDataset } } as RemovalAction),
+      () => [
+        (<DetailRemoveSuccessAction>{ type: 'user-datasets/detail-remove-success', payload: { userDataset } } as RemovalAction),
+        redirectRoute ? transitionToInternalPage(redirectRoute) : emptyAction
+      ],
       (error: ServiceError) => (<DetailRemoveErrorAction>{ type: 'user-datasets/detail-remove-error', payload: { error } })
     )
   ]

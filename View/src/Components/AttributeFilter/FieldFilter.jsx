@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Loading from 'Components/Loading/Loading';
+import Icon from 'Components/Icon/IconAlt';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import EmptyField from './EmptyField';
 import MultiFieldFilter from './MultiFieldFilter';
@@ -21,14 +21,20 @@ function FieldFilter(props) {
         <React.Fragment>
           <h3>
             {props.activeField.display + ' '}
+            {!props.activeFieldState || props.activeFieldState.loading && (
+              <React.Fragment>
+                <Icon fa="circle-o-notch" className="fa-spin"/>
+                <span className="sr-only">Loading...</span>
+              </React.Fragment>
+            )}
           </h3>
           {props.activeField.description && (
             <div className="field-description">{props.activeField.description}</div>
           )}
           {props.activeFieldState && props.activeFieldState.errorMessage ? (
             <div style={{ color: 'darkred' }}>{props.activeFieldState.errorMessage}</div>
-          ) : (props.activeFieldSummary == null || props.dataCount == null) ? (
-            <Loading />
+          ) : (props.activeFieldState && props.activeFieldState.summary == null || props.dataCount == null) ? (
+            null
           ) : ( props.activeField.isMulti
             ? <MultiFieldFilter {...props} />
             : <SingleFieldFilter {...props} />
@@ -58,8 +64,11 @@ FieldFilter.propTypes = {
   filteredDataCount: PropTypes.number,
   filters: PropTypes.array,
   activeField: PropTypes.object,
-  activeFieldState: PropTypes.object,
-  activeFieldSummary: PropTypes.oneOfType([FieldSummary, MultiFieldSummary]),
+  activeFieldState: PropTypes.shape({
+    loading: PropTypes.boolean,
+    summary: PropTypes.oneOfType([ FieldSummary, MultiFieldSummary ]),
+    /* member, range, multi specific settings */
+  }),
 
   onFiltersChange: PropTypes.func,
   onMemberSort: PropTypes.func,
