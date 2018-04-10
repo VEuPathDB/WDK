@@ -31,8 +31,10 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
   private static final String ATTR_TAGS = "tags";
 
   private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
-  private static final String[] COMMON_WORDS = { "and", "off", "are", "was",
-      "were", "the", "that" };
+  private static final String[] COMMON_WORDS = {
+      "and", "off", "are", "was", "were", "the", "that",
+      "cgi", "bin", "groupac", "href", "http", "org", "tmp",
+      "Chro", "sequenceList", "orthomcl", "OrthoMclWeb" };
 
   private static final Logger logger = Logger.getLogger(WordCloudAttributePlugin.class);
 
