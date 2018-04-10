@@ -79,7 +79,8 @@ export type SharingDatasetAction = {
 export type SharingSuccessAction = {
   type: 'user-datasets/sharing-success',
   payload: {
-    userDataset: UserDataset
+    userDatasetIds: number[],
+    recipientUserIds: number[]
   }
 }
 
@@ -118,19 +119,19 @@ export function loadUserDatasetDetail(id: number): ActionThunk<DetailAction> {
   ];
 }
 
-export function shareUserDataset (userDataset: UserDataset, recipientUserIds: string[]): ActionThunk<SharingAction> {
-  return ({ wdkService }) => [
-    wdkService.shareUserDatasetWithRecipients(userDataset.id, recipientUserIds)
+export function shareUserDatasets (userDatasetIds: number[], recipientUserIds: number[]): ActionThunk<SharingAction> {
+  return ({ wdkService }) => {
+    return wdkService.shareUserDatasetWithRecipients(userDatasetIds, recipientUserIds)
       .then(
-        (newSharees) => (<SharingSuccessAction>{
+        (value: void) => (<SharingSuccessAction>{
           type: 'user-datasets/sharing-success',
-          payload: { userDataset }
+          payload: { userDatasetIds, recipientUserIds }
         })
       )
       .catch(
         (error: ServiceError) => (<SharingErrorAction>{ type: 'user-datasets/sharing-error', payload: { error } })
       )
-  ];
+  };
 }
 
 export function updateUserDatasetDetail(userDataset: UserDataset, meta: UserDatasetMeta): ActionThunk<UpdateAction> {

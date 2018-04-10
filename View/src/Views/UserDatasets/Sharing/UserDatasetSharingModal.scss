@@ -8,13 +8,30 @@
   flex-flow: column nowrap;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  max-height: 95vh;
+  overflow-y: auto;
   min-width: 500px;
+  max-width: 100%;
+
+  .UserDataset-SharingModal-CloseBar {
+    text-align: right;
+  }
+  .UserDataset-SharingModal-FormView {
+    margin-top: -50px;
+  }
+
+  .NoRecipients {
+    font-size: 1.1em;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.5;
+  }
   .fa, button .fa {
     margin-right: 0;
   }
 
   .UserDatasetSharing-SectionName {
-    margin: 10px 0 0;
+    margin: 10px 0 -5px;
   }
 
   fieldset {
@@ -40,18 +57,22 @@
 
   .UserDatasetSharing-RecipientForm {
     display: flex;
-    margin: 10px 0 20px;
+    margin: 0;
+    align-items: center;
     input {
       flex: 1;
-      border-color: rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      height: 35px;
+      border-color: rgba(0, 0, 0, 0.3) !important;
       border-radius: 5px;
       background: none;
-      padding: 10px;
+      padding: 10px !important;
       background: none;
     }
   }
 
-  .UserDatasetSharing-Dataset, .UserDatasetSharing-Recipient {
+  .UserDatasetSharing-Dataset,
+  .UserDatasetSharing-Recipient {
     border: 1px solid rgba(0, 0, 0,0.1);
     border-radius: 5px;
     display: flex;
@@ -59,8 +80,20 @@
     align-items: center;
     flex-flow: row nowrap;
 
+    .removalLink {
+      cursor: pointer;
+      position: relative;
+      &:hover {
+        color: $red;
+      }
+      z-index: 20;
+      .wdk-Icon {
+        padding-right:5px;
+      }
+    }
+
     &.invalid {
-      opacity: 0.8;
+      opacity: 0.4;
       transition: opacity 0.3s;
       &:hover {
         opacity: 1;
@@ -74,18 +107,26 @@
         color: $red;
       }
     }
-    .UserDatasetSharing-Dataset-Details, .UserDatasetSharing-Recipient-Details {
+    .UserDatasetSharing-Dataset-Details,
+    .UserDatasetSharing-Recipient-Details {
       flex: 1 1 auto;
       h3 {
         line-height: 1em;
         margin-top: -5px;
       }
     }
-    .UserDatasetSharing-Dataset-Icon, .UserDatasetSharing-Recipient-Icon {
+    .UserDatasetSharing-Dataset-Actions,
+    .UserDatasetSharing-Recipient-Actions {
+      margin-right: 10px;
+    }
+    .UserDatasetSharing-Dataset-Icon,
+    .UserDatasetSharing-Recipient-Icon {
       flex: 0 0 auto;
     }
-    .UserDatasetSharing-Dataset-Details, .UserDatasetSharing-Dataset-Icon,
-    .UserDatasetSharing-Recipient-Details, .UserDatasetSharing-Recipient-Icon {
+    .UserDatasetSharing-Dataset-Details,
+    .UserDatasetSharing-Dataset-Icon,
+    .UserDatasetSharing-Recipient-Details,
+    .UserDatasetSharing-Recipient-Icon {
       padding: 10px;
     }
   }
@@ -96,7 +137,7 @@
 
   .UserDatasetSharing-Buttons {
     display: flex;
-    margin: 20px 0 0;
+    margin: 30px 0 0;
     flex-direction: row-reverse;
     button {
       flex: 0 0 auto;
@@ -104,14 +145,31 @@
   }
 }
 
+.UserDataset-SharingModal-StatusView {
+  width: 100%;
+  text-align: center;
+  padding: 20px 5px;
+  h2 {
+    font-weight: 200;
+    text-align: center;
+  }
+  button {
+    margin-top: 15px;
+  }
+  .wdk-Icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+}
+
 .SharingModal-Close {
-  align-self: flex-end;
-  margin-bottom: -30px;
   font-size: 1.2em;
   position: relative;
+  top: -10px;
   z-index: 100;
+  margin-bottom: -50px;
   cursor: pointer;
   &:hover {
-    color: firebrick;
+    color: $red;
   }
 }

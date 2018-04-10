@@ -130,8 +130,10 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       getQuestionUrl: this.getQuestionUrl,
       questionMap: keyBy(questions, 'name')
     };
+
     console.info('UDDetailControl gettin props:', this.props);
     console.info('UDDetailControl passin props:', props);
+
     const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
       ? <EmptyState message="Please log in to view and edit your user datasets."/>

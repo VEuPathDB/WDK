@@ -4,11 +4,17 @@ import {
   ListReceivedAction,
   ListErrorReceivedAction,
   DetailUpdateErrorAction,
-  DetailUpdateSuccessAction
+  DetailUpdateSuccessAction,
+  DetailRemoveSuccessAction
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import { UserDataset } from 'Utils/WdkModel';
 
-type Action = ListLoadingAction | ListReceivedAction | ListErrorReceivedAction | DetailUpdateErrorAction | DetailUpdateSuccessAction;
+type Action = ListLoadingAction
+  | ListReceivedAction
+  | ListErrorReceivedAction
+  | DetailUpdateErrorAction
+  | DetailUpdateSuccessAction
+  | DetailRemoveSuccessAction;
 
 export interface State extends BaseState {
   userDatasetsLoading: boolean;
@@ -51,6 +57,13 @@ export default class UserDatasetListStore extends WdkStore<State> {
           return userDataset.id === action.payload.userDataset.id
             ? action.payload.userDataset
             : userDataset
+        })
+      };
+
+      case 'user-datasets/detail-remove-success': return {
+        ...state,
+        userDatasets: [...state.userDatasets].filter((userDataset: UserDataset): boolean => {
+          return userDataset.id !== action.payload.userDataset.id;
         })
       };
 
