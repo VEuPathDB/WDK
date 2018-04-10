@@ -65,6 +65,7 @@ public class ProjectFormatter {
       .put(Keys.STARTUP_TIME, wdkModel.getStartupTime())
       .put(Keys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
       .put(Keys.USER_DATASETS_ENABLED, config.getUserDatasetStoreConfig() != null)
+      .put(Keys.USER_DATASET_STORE_STATUS, wdkModel.getUserDatasetStoreStatus())
       .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
       .put(Keys.AUTHENTICATION, authConfig)
       .put(Keys.USER_PROFILE_PROPERTIES, userProfileProps);

@@ -149,6 +149,7 @@ public class Keys {
   public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
   public static final String USER_PROFILE_PROPERTIES = "userProfileProperties";
   public static final String USER_DATASETS_ENABLED = "userDatasetsEnabled";
+  public static final String USER_DATASET_STORE_STATUS = "userDatasetStoreStatus";
 
   // authentication keys
   public static final String AUTHENTICATION = "authentication";
