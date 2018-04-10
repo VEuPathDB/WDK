@@ -63,7 +63,9 @@ class UserDatasetSharingModal extends React.Component {
     if (typeof recipientEmail !== 'string' || !recipientEmail.length)
       throw new TypeError(`verifyRecipient: bad email received (${recipientEmail})`);
 
-    return fetch('/fungidb.austinjb/service/user-id-query', {
+    const { rootUrl } = this.props;
+
+    return fetch(`${rootUrl}/service/user-id-query`, {
       method: 'POST',
       body: JSON.stringify({ emails: [ recipientEmail ]}),
       headers: new Headers({ 'Content-Type': 'application/json' }),

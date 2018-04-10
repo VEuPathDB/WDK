@@ -517,6 +517,7 @@ class UserDatasetList extends React.Component <Props, State> {
           {sharingModalOpen && selectedDatasets.length
             ? <SharingModal
                 user={user}
+                rootUrl={rootUrl}
                 datasets={selectedDatasets}
                 deselectDataset={this.onRowDeselect}
                 shareUserDatasets={shareUserDatasets}
