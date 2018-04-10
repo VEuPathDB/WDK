@@ -5,12 +5,12 @@ import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import { User } from 'Utils/WdkUser';
 import 'Views/UserDatasets/UserDatasets.scss';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
-import { loadUserDatasetList, updateUserDatasetDetail } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { loadUserDatasetList, updateUserDatasetDetail, removeUserDataset, shareUserDatasets } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/List/UserDatasetListStore";
 
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 
-const ActionCreators = { loadUserDatasetList, updateUserDatasetDetail };
+const ActionCreators = { loadUserDatasetList, updateUserDatasetDetail, removeUserDataset, shareUserDatasets };
 
 type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
            & Pick<StoreState["globalData"], 'user' | 'config'>;
@@ -57,35 +57,36 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
   renderView () {
     const { userDatasets, loadError, config } = this.state;
-    const { projectId, displayName } = config;
+    const { projectId, displayName: projectName } = config;
     const user: User = this.state.user;
-    const { updateUserDatasetDetail } = this.eventHandlers;
+    const { updateUserDatasetDetail, shareUserDatasets, removeUserDataset } = this.eventHandlers;
     const { history, location } = this.props;
 
     const title = this.getTitle();
     const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
-    const content = !loggedIn
-      ? (
-        <UserDatasetEmptyState message="Please log in to upload and view your user datasets."/>
-      ) : (
-        <UserDatasetList
-          user={user}
-          history={history}
-          location={location}
-          projectId={projectId}
-          projectName={displayName}
-          userDatasets={userDatasets}
-          updateUserDatasetDetail={updateUserDatasetDetail}
-        />
-      );
-
+    const listProps = {
+      user,
+      history,
+      location,
+      projectId,
+      projectName,
+      userDatasets,
+      removeUserDataset,
+      shareUserDatasets,
+      updateUserDatasetDetail
+    };
     return (
       <div className="UserDatasetList-Controller">
         {!loggedIn
           ? <h1 className="UserDatasetList-Title">{title}</h1>
           : null
         }
-        <div className="UserDatasetList-Content">{content}</div>
+        <div className="UserDatasetList-Content">
+          {!loggedIn
+            ? <UserDatasetEmptyState message="Please log in to upload and view your user datasets."/>
+            : <UserDatasetList {...listProps} />
+          }
+        </div>
       </div>
     )
   }

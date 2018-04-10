@@ -14,7 +14,7 @@ import { User } from 'Utils/WdkUser';
 import moment from 'Utils/MomentUtils';
 import { wrappable } from 'Utils/ComponentUtils';
 import { bytesToHuman } from 'Utils/Converters';
-import { UserDataset, UserDatasetMeta } from 'Utils/WdkModel';
+import { UserDataset, UserDatasetShare, UserDatasetMeta } from 'Utils/WdkModel';
 
 import Link from 'Components/Link';
 import Icon from 'Components/Icon/IconAlt';
@@ -36,7 +36,9 @@ interface Props {
   projectId: string;
   projectName: string;
   userDatasets: UserDataset[];
-  updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any
+  shareUserDatasets: (userDatasetIds: number[], recipientUserIds: number[]) => any;
+  removeUserDataset: (dataset: UserDataset) => any;
+  updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any;
 };
 
 interface State {
@@ -111,7 +113,7 @@ class UserDatasetList extends React.Component <Props, State> {
   renderStatusCell (cellProps: MesaDataCellProps) {
     const dataset: UserDataset = cellProps.row;
     const { projectId, projectName } = this.props;
-    const { isInstalled, projects } = dataset;
+    const { isInstalled, isCompatible, projects } = dataset;
     const isInstallable = projects.includes(projectId);
     const appNames = projects.join(', ');
     const content = !isInstallable
@@ -123,13 +125,22 @@ class UserDatasetList extends React.Component <Props, State> {
             Visit this dataset's page to see how to use it in <b>{projectName}</b>.
           </span>
         ) : (
-          <span>
-            This dataset could not be installed to  {projectName} due to a server error.
-            <br />
-            Please remove this dataset and try again.
-          </span>
-        )
-    const children = <Icon fa={!isInstallable ? 'minus-circle' : isInstalled ? 'check-circle' : 'times-circle'}/>;
+          isCompatible
+            ? (
+              <span>
+                This dataset could not be installed to {projectName} due to a server error.
+                <br />
+                Please remove this dataset and try again.
+              </span>
+            ) : (
+              <span>
+                This dataset is not compatible with resources in this release of {projectName}.
+                <br />
+                Click this icon for more compatibility information.
+              </span>
+            )
+          );
+    const children = <Icon fa={!isInstallable ? 'minus-circle' : isInstalled ? 'check-circle' : isCompatible ? 'times-circle' : 'exclamation-circle'}/>;
     const tooltipProps = { content, children };
     return (
       <Link to={`/workspace/datasets/${dataset.id}`}>
@@ -217,17 +228,12 @@ class UserDatasetList extends React.Component <Props, State> {
       },
       {
         key: 'projects',
-        name: 'Projects',
+        sortable: true,
+        name: 'EuPathDB Websites',
         renderCell (cellProps: MesaDataCellProps) {
           const userDataset: UserDataset = cellProps.row;
           const { projects } = userDataset;
-          return (
-            <ul>
-              {projects.map((projectName: string, index: number) => (
-                <li key={index}>{projectName}</li>
-              ))}
-            </ul>
-          )
+          return projects.join(', ');
         }
       },
       {
@@ -326,6 +332,8 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   getTableActions () {
+    const { openSharingModal, isMyDataset } = this;
+    const { removeUserDataset } = this.props;
     return [
       {
         callback: (rows: UserDataset[]) => {
@@ -339,8 +347,22 @@ class UserDatasetList extends React.Component <Props, State> {
         selectionRequired: true
       },
       {
-        callback: (rows: UserDataset[]) => {
-          alert('affecting ' + rows.map(({ id }) => id).join(', '));
+        callback: (userDatasets: UserDataset[]) => {
+          const [ noun, pronoun ] = userDatasets.length === 1
+            ? [ 'this dataset', 'it' ]
+            : [ 'these datasets', 'them' ];
+
+          const affectedUsers: UserDatasetShare[] = userDatasets.reduce((affectedUserList: UserDatasetShare[], userDataset: UserDataset) => {
+            if (!isMyDataset(userDataset)) return affectedUserList;
+            if (!userDataset.sharedWith || userDataset.sharedWith.length) return affectedUserList;
+            const newlyAffectedUsers = userDataset.sharedWith.filter((sharedWithUser: UserDatasetShare) => {
+              return affectedUserList.find(affectedUser => affectedUser.user === sharedWithUser.user) != null;
+            });
+            return [ ...affectedUserList, ...newlyAffectedUsers ];
+          }, []);
+
+          if (!confirm(`Are you sure you want to delete ${noun}? ` + (affectedUsers.length ? `You have shared ${pronoun} with ${affectedUsers} users.` : ''))) return;
+          userDatasets.forEach(userDataset => removeUserDataset(userDataset));
         },
         element: (
           <button className="btn btn-error">
@@ -355,7 +377,6 @@ class UserDatasetList extends React.Component <Props, State> {
   getTableOptions () {
     const { isRowSelected } = this;
     const { userDatasets, projectName, location } = this.props;
-    const rootUrl: string = window.location.href.substring(0, window.location.href.indexOf('/app/'));
     const emptyMessage = !userDatasets.length
       ? (
         <React.Fragment>
@@ -385,7 +406,6 @@ class UserDatasetList extends React.Component <Props, State> {
         return (
           <React.Fragment>
             <UserDatasetEmptyState message={emptyMessage}/>
-            <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>
           </React.Fragment>
         )
       }
@@ -442,14 +462,20 @@ class UserDatasetList extends React.Component <Props, State> {
     this.setState({ sharingModalOpen });
   }
 
+  getRootUrl () {
+    const { href } = window.location;
+    return href.substring(0, href.indexOf('/app/'));
+  }
+
   render () {
     const { isRowSelected } = this;
-    const { userDatasets, history, user, projectName } = this.props;
+    const { userDatasets, history, user, projectName, shareUserDatasets } = this.props;
     const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
 
-    console.info('Datasets:', userDatasets);
-
     const rows = userDatasets;
+    const selectedDatasets = rows.filter(isRowSelected);
+
+    const rootUrl = this.getRootUrl();
     const actions = this.getTableActions();
     const options = this.getTableOptions();
     const columns = this.getColumns();
@@ -488,11 +514,12 @@ class UserDatasetList extends React.Component <Props, State> {
               </div>
             </HelpIcon>
           </h1>
-          {sharingModalOpen
+          {sharingModalOpen && selectedDatasets.length
             ? <SharingModal
                 user={user}
-                datasets={rows.filter(isRowSelected)}
+                datasets={selectedDatasets}
                 deselectDataset={this.onRowDeselect}
+                shareUserDatasets={shareUserDatasets}
                 onClose={this.closeSharingModal}
               />
             : null
@@ -503,6 +530,7 @@ class UserDatasetList extends React.Component <Props, State> {
             onSearchTermChange={this.onSearchTermChange}
           />
         </Mesa>
+        {rows.length ? null : <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>}
       </div>
     )
   }

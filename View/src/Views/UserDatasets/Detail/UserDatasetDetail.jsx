@@ -295,20 +295,23 @@ class UserDatasetDetail extends React.Component {
 
   renderCompatibilitySection () {
     const { userDataset, config } = this.props;
-    const { projectId } = config;
+    const { projectId, displayName } = config;
 
     const compatibilityTableState = MesaState.create({
       columns: this.getCompatibilityTableColumns(userDataset),
       rows: userDataset.dependencies
     });
-    const isCompatible = userDataset.projects.includes(projectId);
+
+    const { buildNumber } = config;
+    const { isCompatible } = userDataset;
+    const isCompatibleProject = userDataset.projects.includes(projectId);
 
     return (
       <section>
-        <h1>Use This Dataset in {userDataset.projects.join(', ')}</h1>
+        <h1>Use This Dataset in {displayName}</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="puzzle-piece"/>
-          Compatible With &nbsp;
+          Compatibility Information &nbsp;
           <AnchoredTooltip content="The data and genomes listed here are requisite for using the data in this user dataset.">
             <div className="HelpTrigger">
               <Icon fa="question-circle"/>
@@ -318,17 +321,21 @@ class UserDatasetDetail extends React.Component {
         <div style={{ maxWidth: '600px' }}>
           <Mesa state={compatibilityTableState}/>
         </div>
-        {isCompatible
+        {isCompatibleProject && isCompatible
           ? (
             <p className="success">
-              This dataset is compatible with <b>{projectId}</b>.  It is installed for use.
+              This dataset is compatible with the current release, build {buildNumber}, of <b>{projectId}</b>.  It is installed for use.
             </p>
           ) : (
             <p className="danger">
-              This dataset is not compatible with <b>{projectId}</b>.
+              This dataset is not compatible with the current release, build {buildNumber}, of <b>{projectId}</b>. It is not installed for use.
             </p>
           )
         }
+        <details style={{ display: 'none' }}>
+          <pre><code>{JSON.stringify(this.props.userDataset, null, '  ')}</code></pre>
+          <pre><code>{JSON.stringify(this.props.config, null, '  ')}</code></pre>
+        </details>
       </section>
     );
   }
@@ -339,14 +346,14 @@ class UserDatasetDetail extends React.Component {
     return [
       {
         key: 'project',
-        name: 'Project',
+        name: 'EuPathDB Website',
         renderCell () {
           return projects.join(', ');
         }
       },
       {
         key: 'resourceDisplayName',
-        name: 'Resource',
+        name: 'Required Resource',
         renderCell ({ row }) {
           const { resourceDisplayName } = row;
           return resourceDisplayName;
@@ -354,7 +361,18 @@ class UserDatasetDetail extends React.Component {
       },
       {
         key: 'resourceVersion',
-        name: 'Minimum Version'
+        name: 'Required Resource Release'
+      },
+      {
+        key: 'installedVersion',
+        name: 'Installed Resource Release',
+        renderCell ({ row }) {
+          const { compatibilityInfo } = row;
+          const { currentBuild } = compatibilityInfo ? compatibilityInfo : {};
+          return compatibilityInfo === null || currentBuild === null
+            ? 'N/A'
+            : currentBuild;
+        }
       }
     ]
   }
