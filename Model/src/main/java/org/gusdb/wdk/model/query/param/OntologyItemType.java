@@ -69,6 +69,7 @@ public enum OntologyItemType {
 
   public static List<String> getTypedValueColumnNames() {
     List<OntologyItemType> values = normalValues();
+    values.remove(MULTIFILTER); // has no associated column
     return mapToList(values, type -> type._metadataQueryColumn);
   }
 
