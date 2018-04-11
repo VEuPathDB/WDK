@@ -624,6 +624,18 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     return defaultQuota;
   }
   
+  @Override
+  public Long getDefaultQuota(boolean getFromStore) throws WdkModelException {
+    if (getFromStore || defaultQuota == null) {
+        Path quotaFile = usersRootDir.resolve("default_quota");
+        String line = adaptor.readSingleLineFile(quotaFile);
+        if (line == null)
+          throw new WdkModelException("Empty quota file " + quotaFile);
+        defaultQuota = new Long(line.trim());
+      }
+      return defaultQuota;
+  }
+  
   /**
    * Given a user ID, return a Path to that user's datasets dir.  If dir doesn't exist, return NULL.
    * @param userId
