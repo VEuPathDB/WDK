@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -8,7 +9,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Timer;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
+import org.json.JSONObject;
 
 @Path("/")
 public class ProjectService extends WdkService {
@@ -52,5 +57,24 @@ public class ProjectService extends WdkService {
     output.append("Total time: ").append(Timer.getDurationString(totalTime))
           .append(" (").append(Timer.getDurationString(totalTime / numTrials)).append(" avg)\n");
     return Response.ok(output.toString()).build();
+  }
+  
+  /**
+   * A public access service that reports the default quota in MB and can double as a health check of
+   * the user dataset store.
+   * @return
+   * @throws WdkModelException
+   */
+  @GET
+  @Path("user-datasets/config")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getDefaultQuota() throws WdkModelException {
+	UserDatasetStore dsStore = getWdkModel().getUserDatasetStore();
+    if(dsStore == null) throw new NotFoundException("The user dataset store is not enabled.");
+    JSONObject json = new JSONObject();
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
+      json.put("default_quota", dsSession.getDefaultQuota(true));
+    }
+    return Response.ok(json.toString()).build();
   }
 }
