@@ -123,6 +123,7 @@ public class UserDatasetFormatter {
       for (UserDatasetShareUser share : datasetInfo.getShares()) {
         JSONObject shareJson = new JSONObject();
         shareJson.put("email", share.getUser().getEmail());
+        shareJson.put("user", share.getUser().getUserId());
         shareJson.put("time", share.getTimeShared());
         shareJson.put("userDisplayName", share.getUser().getDisplayName());
         sharesJson.put(shareJson);
