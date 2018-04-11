@@ -244,7 +244,7 @@ export function isRange(field: Field) {
 }
 
 export function isMulti(field: Field) {
-  return field.isMulti;
+  return field.type === 'multiFilter';
 }
 
 export function isFilterField(field: Field) {

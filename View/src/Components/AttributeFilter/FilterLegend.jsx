@@ -20,7 +20,7 @@ export default function FilterLegend(props) {
   // TODO Either remove the commented code below, or replace using provided total counts
   // const totalCounts = Seq.from(props.distribution)
   //   // FIXME Always filter nulls when they are moved to different section for non-range fields
-  //   .filter(entry => !props.activeField.isRange || entry.value != null)
+  //   .filter(entry => !isRange(props.activeField) || entry.value != null)
   //   .reduce(concatCounts, { count: 0, filteredCount: 0 });
 
   // return (

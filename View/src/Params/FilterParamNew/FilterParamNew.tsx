@@ -13,6 +13,7 @@ import { FilterParamNew as TFilterParamNew } from 'Utils/WdkModel';
 import { getLeaves, sortDistribution } from 'Params/FilterParamNew/Utils';
 import { MemberFieldState, RangeFieldState, State } from 'Params/FilterParamNew/State';
 import { Field, Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
+import { isRange } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 import _ServerSideAttributeFilter from 'Components/AttributeFilter/ServerSideAttributeFilter';
 
 const ServerSideAttributeFilter: any = _ServerSideAttributeFilter;
@@ -81,9 +82,8 @@ export default class FilterParamNew extends React.PureComponent<Props> {
   }
 
   _handleMemberSort(field: Field, sort: MemberFieldState['sort']) {
-    if (field.isRange || field.isMulti) {
-      const type = field.isRange ? 'range' : 'multi';
-      throw new Error(`Cannot sort ${type} field.`);
+    if (isRange(field)) {
+      throw new Error(`Cannot sort a range field.`);
     }
 
     const filters = this._getFiltersFromValue(this.props.value);

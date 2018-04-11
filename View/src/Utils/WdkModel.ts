@@ -61,7 +61,7 @@ export interface FilterParamNew extends ParameterBase {
     parent?: string;
     display: string;
     description?: string;
-    type?: 'date' | 'string' | 'number';
+    type?: 'date' | 'string' | 'number' | 'multiFilter';
     // units: string;
     precision: number;
     isRange: boolean;

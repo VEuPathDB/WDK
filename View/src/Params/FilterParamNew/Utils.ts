@@ -2,7 +2,7 @@ import { memoize, sortBy, stubTrue as T } from 'lodash';
 import natsort from 'natural-sort';
 
 import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
-import { getTree } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
+import { isRange, getTree } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
 import { filter, Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
 import { FilterParamNew, OntologyTermSummary, Parameter } from 'Utils/WdkModel';
@@ -83,5 +83,5 @@ export function isMemberField(parameter: FilterParamNew, fieldName: string) {
   if (field == null) {
     throw new Error("Could not find a field with the term `" + fieldName + "`.");
   }
-  return field.isRange === false;
+  return isRange(field) === false;
 }
