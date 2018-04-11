@@ -6,24 +6,28 @@ import { transitionToInternalPage } from "Core/ActionCreators/RouterActionCreato
 export type ListLoadingAction = {
   type: 'user-datasets/list-loading'
 }
+
 export type ListReceivedAction = {
   type: 'user-datasets/list-received',
   payload: {
     userDatasets: UserDataset[]
   }
 }
+
 export type ListErrorReceivedAction = {
   type: 'user-datasets/list-error',
   payload: {
     error: ServiceError
   }
 }
+
 export type DetailLoading = {
   type: 'user-datasets/detail-loading',
   payload: {
     id: number
   }
 }
+
 export type DetailReceivedAction = {
   type: 'user-datasets/detail-received',
   payload: {
@@ -31,27 +35,32 @@ export type DetailReceivedAction = {
     userDataset?: UserDataset
   }
 }
+
 export type DetailErrorAction = {
   type: 'user-datasets/detail-error',
   payload: {
     error: ServiceError
   }
 }
+
 export type DetailUpdatingAction = {
   type: 'user-datasets/detail-updating'
 }
+
 export type DetailUpdateSuccessAction = {
   type: 'user-datasets/detail-update-success',
   payload: {
     userDataset: UserDataset
   }
 }
+
 export type DetailUpdateErrorAction = {
   type: 'user-datasets/detail-update-error',
   payload: {
     error: ServiceError
   }
 }
+
 export type DetailRemovingAction = {
   type: 'user-datasets/detail-removing'
 }
@@ -62,6 +71,7 @@ export type DetailRemoveSuccessAction = {
     userDataset: UserDataset
   }
 }
+
 export type DetailRemoveErrorAction = {
   type: 'user-datasets/detail-remove-error',
   payload: {
@@ -145,15 +155,16 @@ export function updateUserDatasetDetail(userDataset: UserDataset, meta: UserData
   ]
 }
 
-export function removeUserDataset (userDataset: UserDataset, redirectRoute?: string): ActionThunk<RemovalAction|EmptyAction> {
+export function removeUserDataset (userDataset: UserDataset, redirectTo?: string): ActionThunk<RemovalAction|EmptyAction> {
   return ({ wdkService }) => [
     <DetailRemovingAction>{ type: 'user-datasets/detail-removing' },
-    wdkService.removeUserDataset(userDataset.id).then(
-      () => [
-        (<DetailRemoveSuccessAction>{ type: 'user-datasets/detail-remove-success', payload: { userDataset } } as RemovalAction),
-        redirectRoute ? transitionToInternalPage(redirectRoute) : emptyAction
-      ],
-      (error: ServiceError) => (<DetailRemoveErrorAction>{ type: 'user-datasets/detail-remove-error', payload: { error } })
-    )
-  ]
+    wdkService.removeUserDataset(userDataset.id)
+      .then(
+        () => [
+          <DetailRemoveSuccessAction>{ type: 'user-datasets/detail-remove-success', payload: { userDataset } } as RemovalAction,
+          (typeof redirectTo === 'string' ? transitionToInternalPage(redirectTo) : emptyAction)
+        ],
+        (error: ServiceError) => (<DetailRemoveErrorAction>{ type: 'user-datasets/detail-remove-error', payload: { error } })
+      )
+  ];
 }

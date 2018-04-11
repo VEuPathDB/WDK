@@ -189,6 +189,7 @@ class UserDatasetSharingModal extends React.Component {
     const { sharedWith, id, meta } = dataset;
     const { name, summary } = meta;
     const isOwner = this.isMyDataset(dataset);
+    const { deselectDataset } = this.props;
 
     const EmptyState = this.renderEmptyState;
     const ShareList = this.renderShareList;
@@ -211,9 +212,17 @@ class UserDatasetSharingModal extends React.Component {
         </div>
 
         <div className="UserDatasetSharing-Dataset-Actions">
-          <a title="Unselect this dataset for sharing" onClick={() => this.unselectDataset(dataset)} className="removalLink">
-            <Icon fa="close"/>
-          </a>
+          {typeof deselectDataset !== 'function'
+            ? null
+            : (
+              <a
+                title="Unselect this dataset for sharing"
+                onClick={() => this.unselectDataset(dataset)}
+                className="removalLink">
+                <Icon fa="close"/>
+              </a>
+            )
+          }
         </div>
 
       </div>

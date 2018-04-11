@@ -4,9 +4,11 @@ import './UserDatasetDetail.scss';
 import Link from 'Components/Link';
 import moment from 'Utils/MomentUtils';
 import Icon from 'Components/Icon/IconAlt';
+import NotFound from 'Views/NotFound/NotFound';
 import { bytesToHuman } from 'Utils/Converters';
 import { Mesa, MesaState, AnchoredTooltip } from 'mesa';
 import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
+import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 import { textCell, getDownloadUrl, makeClassifier, normalizePercentage } from 'Views/UserDatasets/UserDatasetUtils';
 
 const classify = makeClassifier('UserDatasetDetail');
@@ -29,15 +31,24 @@ class UserDatasetDetail extends React.Component {
     this.renderCompatibilitySection = this.renderCompatibilitySection.bind(this);
     this.getCompatibilityTableColumns = this.getCompatibilityTableColumns.bind(this);
 
+    this.openSharingModal = this.openSharingModal.bind(this);
     this.renderFileSection = this.renderFileSection.bind(this);
+    this.closeSharingModal = this.closeSharingModal.bind(this);
     this.getFileTableColumns = this.getFileTableColumns.bind(this);
-
     this.renderDetailsSection = this.renderDetailsSection.bind(this);
   }
 
   isMyDataset () {
     const { user, userDataset } = this.props;
-    return user && user.id && user.id === userDataset.ownerUserId;
+    return user && userDataset && user.id && user.id === userDataset.ownerUserId;
+  }
+
+  openSharingModal () {
+    this.setState({ sharingModalOpen: true });
+  }
+
+  closeSharingModal () {
+    this.setState({ sharingModalOpen: false });
   }
 
   validateKey (key) {
@@ -58,7 +69,7 @@ class UserDatasetDetail extends React.Component {
   }
 
   handleDelete () {
-    const { isOwner, userDataset, removeUserDataset } = this.props;
+    const { isOwner, userDataset, removeUserDataset, history } = this.props;
     const { sharedWith } = userDataset;
     const shares = !Array.isArray(sharedWith) ? 0 : sharedWith.length;
     const message = `Are you sure you want to ${isOwner ? 'delete' : 'remove'} this dataset?` + (
@@ -66,7 +77,7 @@ class UserDatasetDetail extends React.Component {
     );
 
     if (confirm(message)) {
-      removeUserDataset(userDataset);
+      removeUserDataset(userDataset, '/workspace/datasets');
     }
   }
 
@@ -190,13 +201,13 @@ class UserDatasetDetail extends React.Component {
     return (
       <div className={classify('Actions')}>
         <button className="btn btn-error" onClick={this.handleDelete}>
-          <Icon fa="trash" className="left-side" />
           {isOwner ? 'Delete' : 'Remove'}
+          <Icon fa="trash" className="right-side" />
         </button>
         {!isOwner ? null : (
-          <button className="btn btn-success">
-            <Icon fa="share-alt" className="left-side" />
+          <button className="btn btn-success" onClick={this.openSharingModal}>
             Share
+            <Icon fa="share-alt" className="right-side" />
           </button>
         )}
       </div>
@@ -393,9 +404,29 @@ class UserDatasetDetail extends React.Component {
   }
 
   render () {
+    const { user, rootUrl, userDataset, shareUserDatasets } = this.props;
+    const AllDatasetsLink = this.renderAllDatasetsLink;
+    if (!userDataset) return (
+      <NotFound>
+        <AllDatasetsLink/>
+      </NotFound>
+    );
+    const isOwner = this.isMyDataset();
+    const { sharingModalOpen } = this.state;
+    console.info('UDDC gettin props', this.props);
     return (
       <div className={classify()}>
         {this.getPageSections().map((Section, key) => <Section key={key}/>)}
+        {!isOwner || !sharingModalOpen
+          ? null
+          : <SharingModal
+              user={user}
+              rootUrl={rootUrl}
+              datasets={[ userDataset ]}
+              onClose={this.closeSharingModal}
+              shareUserDatasets={shareUserDatasets}
+            />
+        }
       </div>
     )
   }
