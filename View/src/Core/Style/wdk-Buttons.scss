@@ -44,7 +44,7 @@ button.btn {
     }
   }
   &.btn-success {
-    &wd:hover {
+    &:hover {
       background: $green;
       color: $white;
     }
