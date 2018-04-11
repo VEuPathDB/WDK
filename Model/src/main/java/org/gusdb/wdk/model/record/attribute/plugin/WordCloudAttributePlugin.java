@@ -34,7 +34,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
   private static final String[] COMMON_WORDS = {
       "and", "off", "are", "was", "were", "the", "that",
       "cgi", "bin", "groupac", "href", "http", "org", "tmp",
-      "Chro", "sequenceList", "orthomcl", "OrthoMclWeb" };
+      "chro", "sequencelist", "orthomcl", "orthomclweb" };
 
   private static final Logger logger = Logger.getLogger(WordCloudAttributePlugin.class);
 
