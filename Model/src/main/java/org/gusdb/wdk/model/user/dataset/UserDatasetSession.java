@@ -125,6 +125,15 @@ public interface UserDatasetSession extends AutoCloseable {
    * @return
    */
   Long getQuota(Long userId) throws WdkModelException;
+  
+  /**
+   * Gets the size of the default quota.  Option to always grab from the store so that
+   * this could be used in a service to check health of store.
+   * @param getFromStore
+   * @return
+   * @throws WdkModelException
+   */
+  Long getDefaultQuota(boolean getFromStore) throws WdkModelException;
 
   /**
    * Check if a user has a userId directory in the store. 
