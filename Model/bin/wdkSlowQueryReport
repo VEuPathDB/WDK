@@ -103,7 +103,7 @@ where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
   -g:  genepage only flag. only include queries logged with \"GENEPAGE\"
   -n:  not-genepage flag. complementary to -g flag (only non-genepage queries)
-  -t:  time filter.  Use the time format as found in the WDK slow query log, eg, 02/Jun/2013:23:41:28, or seconds since epoch.
+  -t:  time filter.  Use the time format as found in the WDK slow query log (e.g. '10/Apr/2018|21:48:31') or seconds since epoch.
   -c:  column to sort on (default is 2, the total time)
   -p:  optional output file: a tab delimited file to pass as input
         to wdkSlowQueryPlot.  Used to visualize the query durations over time.
