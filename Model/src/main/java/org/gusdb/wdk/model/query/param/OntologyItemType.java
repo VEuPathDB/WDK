@@ -21,7 +21,9 @@ public enum OntologyItemType {
   // data types of ontology leaf nodes
   STRING ("string", "string_value", String.class),
   NUMBER ("number", "number_value", Double.class),
-  DATE   ("date",   "date_value",   String.class);
+  DATE   ("date",   "date_value",   String.class),
+  MULTIFILTER   ("multiFilter",   "",   String.class);
+
 
   private static class BranchNode{}
 
@@ -90,6 +92,10 @@ public enum OntologyItemType {
       case DATE:
         Date dateValue = resultSet.getDate(OntologyItemType.DATE.getMetadataQueryColumn());
         value = resultSet.wasNull() ? null : dateFormatter.format(dateValue);
+        break;
+      case MULTIFILTER:
+        break;
+      default:
         break;
     }
     if (resultSet.wasNull()) {
