@@ -189,7 +189,7 @@ const parameterDecoder: Decode.Decoder<Parameter> =
             Decode.field('display', Decode.string),
             Decode.field('description', Decode.optional(Decode.string)),
             Decode.field('type', Decode.optional(Decode.oneOf(
-              Decode.constant('date'), Decode.constant('string'), Decode.constant('number')
+              Decode.constant('date'), Decode.constant('string'), Decode.constant('number'), Decode.constant('multiFilter')
             ))),
             // Decode.field('units', Decode.string),
             Decode.field('precision', Decode.number),

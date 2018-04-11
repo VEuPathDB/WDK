@@ -17,7 +17,6 @@ interface BaseField {
   parent?: string;
   leaf?: 'true';
   isRange?: boolean;
-  isMulti?: boolean;
   filter?: 'range'|'membership';
   values?: string;
 }
@@ -34,7 +33,11 @@ export interface DateField extends BaseField {
   type: 'date';
 }
 
-export type Field = StringField | NumberField | DateField | BaseField;
+export interface MultiField extends BaseField {
+  type: 'multiFilter';
+}
+
+export type Field = StringField | NumberField | DateField | BaseField | MultiField;
 
 export type FieldTreeNode = {
   field: Field;

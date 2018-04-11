@@ -5,6 +5,7 @@ import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import EmptyField from './EmptyField';
 import MultiFieldFilter from './MultiFieldFilter';
 import SingleFieldFilter from './SingleFieldFilter';
+import { isMulti } from './Utils/FilterServiceUtils';
 
 const cx = makeClassNameHelper('field-detail');
 /**
@@ -35,7 +36,7 @@ function FieldFilter(props) {
             <div style={{ color: 'darkred' }}>{props.activeFieldState.errorMessage}</div>
           ) : (props.activeFieldState && props.activeFieldState.summary == null || props.dataCount == null) ? (
             null
-          ) : ( props.activeField.isMulti
+          ) : ( isMulti(props.activeField)
             ? <MultiFieldFilter {...props} />
             : <SingleFieldFilter {...props} />
           )}
