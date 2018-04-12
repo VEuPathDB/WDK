@@ -4,7 +4,7 @@ import { UserDatasetShare } from "Utils/WdkModel";
 
 type Props = {
   shares: UserDatasetShare[];
-}
+};
 
 const todo = () => alert('TODO')
 

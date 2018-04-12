@@ -815,19 +815,25 @@ export default class WdkService {
     return this._fetchJson<void>('post', '/user-id-query', JSON.stringify({ emails: [ emailAddress ]}));
   }
 
-  shareUserDatasetWithRecipients (userDatasetIds: number[], recipientUserIds: number[]) {
-    const initialObject: object = {};
-    const stringUserIds: string[] = recipientUserIds.map(id => `${id}`);
-    const stringDatasetIds: string[] = userDatasetIds.map(id => `${id}`);
+  editUserDatasetSharing (actionName: string, userDatasetIds: number[], recipientUserIds: number[]) {
+    const acceptableActions = [ 'add', 'delete' ];
+    if (!actionName || !acceptableActions.includes(actionName))
+      throw new TypeError(`editUserDatasetSharing: invalid action name given: "${actionName}"`);
 
-    const add = stringDatasetIds.reduce((output: object, datasetId: string) => {
-      Object.defineProperty(output, datasetId, {
-        value: [...stringUserIds]
-      });
-      return output;
-    }, initialObject);
-    console.info('executing share with, using delta', { add });
-    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', JSON.stringify({ add }));
+    const stringUserIds: string[] = recipientUserIds.map(id => `${id}`);
+    const delta = JSON.stringify({
+      [actionName]: userDatasetIds
+        .map(id => `${id}`)
+        .reduce((output: object, datasetId: string) => {
+          Object.defineProperty(output, datasetId, {
+            value: [...stringUserIds],
+            enumerable: true
+          });
+          return output;
+        }, {})
+    });
+    console.info('using delta', delta);
+    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', delta);
   }
 
   getOauthStateToken() {

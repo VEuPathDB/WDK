@@ -71,10 +71,13 @@ class UserDatasetDetail extends React.Component {
   handleDelete () {
     const { isOwner, userDataset, removeUserDataset, history } = this.props;
     const { sharedWith } = userDataset;
-    const shares = !Array.isArray(sharedWith) ? 0 : sharedWith.length;
-    const message = `Are you sure you want to ${isOwner ? 'delete' : 'remove'} this dataset?` + (
-      !isOwner || !shares ? '' : `The ${shares} other${shares === 1 ? '' : 's'} you've shared with will lose access.`
-    );
+    const shareCount = !Array.isArray(sharedWith) ? null : sharedWith.length;
+    const message = `Are you sure you want to ${isOwner ? 'delete' : 'remove'} this dataset? `
+      + (
+        !isOwner || !shareCount
+          ? ''
+          : `${shareCount} collaborator${shareCount === 1 ? '' : 's'} you've shared with will lose access.`
+      );
 
     if (confirm(message)) {
       removeUserDataset(userDataset, '/workspace/datasets');
@@ -93,7 +96,7 @@ class UserDatasetDetail extends React.Component {
   getAttributes () {
     const { userDataset } = this.props;
     const { onMetaSave } = this;
-    const { id, type, meta, projects, size, percentQuotaUsed, owner, created } = userDataset;
+    const { id, type, meta, projects, size, percentQuotaUsed, owner, created, sharedWith } = userDataset;
     const { display, name, version } = type;
     const isOwner = this.isMyDataset();
 
@@ -149,7 +152,21 @@ class UserDatasetDetail extends React.Component {
         )
       },
       { attribute: 'Dataset Size', value: bytesToHuman(size) },
-      (!isOwner ? null : { attribute: 'Quota Usage', value: `${normalizePercentage(percentQuotaUsed)}%` })
+      (!isOwner ? null : { attribute: 'Quota Usage', value: `${normalizePercentage(percentQuotaUsed)}%` }),
+      (
+        !isOwner || !sharedWith || !sharedWith.length
+          ? null
+          : {
+            attribute: 'Shared With',
+            value: (
+              <ul>
+                {sharedWith.map(share => (
+                  <li key={share.email}>{share.userDisplayName} <span className="faded">&lt;{share.email}&gt;</span> {moment(share.time).fromNow()}</li>
+                ))}
+              </ul>
+            )
+          }
+      )
     ].filter(attr => attr);
   }
 
@@ -343,10 +360,6 @@ class UserDatasetDetail extends React.Component {
             </p>
           )
         }
-        <details style={{ display: 'none' }}>
-          <pre><code>{JSON.stringify(this.props.userDataset, null, '  ')}</code></pre>
-          <pre><code>{JSON.stringify(this.props.config, null, '  ')}</code></pre>
-        </details>
       </section>
     );
   }
@@ -398,13 +411,12 @@ class UserDatasetDetail extends React.Component {
     return [
       this.renderHeaderSection,
       this.renderCompatibilitySection,
-      this.renderFileSection,
-      // this.renderDetailsSection
+      this.renderFileSection
     ];
   }
 
   render () {
-    const { user, rootUrl, userDataset, shareUserDatasets } = this.props;
+    const { user, rootUrl, userDataset, shareUserDatasets, unshareUserDatasets } = this.props;
     const AllDatasetsLink = this.renderAllDatasetsLink;
     if (!userDataset) return (
       <NotFound>
@@ -425,6 +437,7 @@ class UserDatasetDetail extends React.Component {
               datasets={[ userDataset ]}
               onClose={this.closeSharingModal}
               shareUserDatasets={shareUserDatasets}
+              unshareUserDatasets={unshareUserDatasets}
             />
         }
       </div>

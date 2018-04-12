@@ -7,7 +7,13 @@ import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
 import EmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetDetailStore, { State as StoreState } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
-import { loadUserDatasetDetail, updateUserDatasetDetail, removeUserDataset, shareUserDatasets } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import {
+  loadUserDatasetDetail,
+  updateUserDatasetDetail,
+  removeUserDataset,
+  shareUserDatasets,
+  unshareUserDatasets
+} from 'Views/UserDatasets/UserDatasetsActionCreators';
 import { UserDatasetEntry } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
 
 import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
@@ -17,7 +23,13 @@ import BigwigDatasetDetail from 'Views/UserDatasets/Detail/BigwigDatasetDetail';
 type State = Pick<StoreState, 'userDatasetsById' | 'loadError' | 'userDatasetUpdating' | 'updateError'>
            & Pick<StoreState["globalData"], 'user' | 'questions' | 'config'>;
 
-const ActionCreators = { loadUserDatasetDetail, updateUserDatasetDetail, removeUserDataset, shareUserDatasets };
+const ActionCreators = {
+  loadUserDatasetDetail,
+  updateUserDatasetDetail,
+  removeUserDataset,
+  shareUserDatasets,
+  unshareUserDatasets
+};
 
 
 type EventHandlers = typeof ActionCreators;
@@ -110,7 +122,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
 
   renderView () {
     const { match, location, history } = this.props;
-    const { updateUserDatasetDetail, shareUserDatasets, removeUserDataset } = this.eventHandlers;
+    const { updateUserDatasetDetail, shareUserDatasets, removeUserDataset, unshareUserDatasets } = this.eventHandlers;
     const { userDatasetsById, user, updateError, questions, config, userDatasetUpdating } = this.state;
     const entry = userDatasetsById[match.params.id];
     const isOwner = !!(user && entry.resource && entry.resource.ownerUserId === user.id);
@@ -127,6 +139,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       removeUserDataset,
       userDatasetUpdating,
       shareUserDatasets,
+      unshareUserDatasets,
       updateUserDatasetDetail,
       userDataset: entry.resource,
       getQuestionUrl: this.getQuestionUrl,

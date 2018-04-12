@@ -8,7 +8,8 @@ import {
   DetailUpdateSuccessAction,
   DetailRemovingAction,
   DetailRemoveSuccessAction,
-  DetailRemoveErrorAction
+  DetailRemoveErrorAction,
+  SharingSuccessAction
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import { UserDataset } from 'Utils/WdkModel';
 
@@ -21,6 +22,7 @@ type Action = DetailLoading
             | DetailRemovingAction
             | DetailRemoveSuccessAction
             | DetailRemoveErrorAction
+            | SharingSuccessAction;
 
 /**
  * If isLoading is false, and resource is undefined,
@@ -28,11 +30,11 @@ type Action = DetailLoading
  */
 export type UserDatasetEntry = {
   isLoading: boolean;
-  resource?: UserDataset | void;
+  resource?: UserDataset;
 };
 
 export interface State extends BaseState {
-  userDatasetsById: { [key: number]: UserDatasetEntry };
+  userDatasetsById: { [key: string]: UserDatasetEntry };
   userDatasetUpdating: boolean;
   userDatasetLoading: boolean;
   userDatasetRemoving: boolean;
@@ -126,6 +128,44 @@ export default class UserDatasetDetailStore extends WdkStore<State> {
         ...state,
         userDatasetRemoving: false,
         removalError: action.payload.error
+      };
+
+      case 'user-datasets/sharing-success': {
+        const { method, userDatasetIds, recipientUserIds } = action.payload;
+        if (
+          !Array.isArray(userDatasetIds)
+          || !userDatasetIds.length
+          || !Array.isArray(recipientUserIds)
+          || !recipientUserIds.length
+        ) return state;
+
+        switch (method) {
+          case 'add': {
+
+            return state;
+          }
+          case 'delete': {
+            const userDatasetsById = Object.entries(state.userDatasetsById).reduce((outputObject, [ id, entry ]) => {
+              if (entry == null || entry.resource == null || entry.resource.sharedWith == null || !entry.resource.sharedWith.length)
+                return Object.assign(outputObject, { [id]: entry });
+
+              const updatedEntry = {
+                ...entry,
+                resource: {
+                  ...entry.resource,
+                  sharedWith: entry.resource.sharedWith.filter((userDatasetShare) => {
+                    return !recipientUserIds.includes(userDatasetShare.user);
+                  })
+                }
+              };
+
+              return Object.assign(outputObject, { [id]: updatedEntry });
+            }, {});
+
+            return { ...state, userDatasetsById };
+          }
+          default: return state;
+        }
       };
 
       default:
