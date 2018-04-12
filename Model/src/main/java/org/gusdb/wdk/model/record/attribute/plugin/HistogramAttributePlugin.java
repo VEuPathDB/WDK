@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.gusdb.wdk.model.record.attribute.plugin;
 
 import java.sql.ResultSet;
