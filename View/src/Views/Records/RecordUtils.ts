@@ -1,7 +1,11 @@
-import { Seq } from "Utils/IterableUtils";
-import {flattenDeep, partial, pick, values} from 'lodash';
+import { partial, pick, values } from 'lodash';
+
+import { CategoryTreeNode } from 'Utils/CategoryUtils';
+import { Seq } from 'Utils/IterableUtils';
+import { getPropertyValue, nodeHasProperty } from 'Utils/OntologyUtils';
 import { filterItems } from 'Utils/SearchUtils';
-import { RecordInstance, AttributeValue, TableValue } from 'Utils/WdkModel';
+import { filterNodes } from 'Utils/TreeUtils';
+import { AttributeValue, RecordInstance, TableValue } from 'Utils/WdkModel';
 
 type AttributeValueDict = Record<string, AttributeValue>;
 type TableValueDict = Record<string, TableValue>;
@@ -57,4 +61,35 @@ function getSearchableString(filterAttributes: string[], filterTables: string[],
       : [value] )
     .map(stripHTML)
     .reduce((compositeStr, nextStr) => `${compositeStr}\0${nextStr}`);
+}
+
+
+// Category tree interactions
+// --------------------------
+
+const isInternalNode = partial(nodeHasProperty, 'scope', 'record-internal');
+export const isNotInternalNode = partial(nodeHasProperty, 'scope', 'record');
+const isAttributeNode = partial(nodeHasProperty, 'targetType', 'attribute');
+const isTableNode = partial(nodeHasProperty, 'targetType', 'table');
+const getAttributes = partial(filterNodes, isAttributeNode);
+const getTables = partial(filterNodes, isTableNode);
+const getNodeName = partial(getPropertyValue, 'name');
+
+export function getAttributeNames(categoryTree: CategoryTreeNode): string[] {
+  return getAttributes(categoryTree).map(getNodeName);
+}
+
+export function getTableNames(categoryTree: CategoryTreeNode): string[] {
+  return getTables(categoryTree).map(getNodeName);
+}
+
+/** Creates a leaf predicate for the given recordClass */
+export function isLeafFor(recordClassName: string) {
+  return function isLeaf(node: CategoryTreeNode) {
+    return (
+      (isAttributeNode(node) || isTableNode(node))
+      && nodeHasProperty('recordClassName', recordClassName, node)
+      && (isInternalNode(node) || isNotInternalNode(node))
+    );
+  }
 }
