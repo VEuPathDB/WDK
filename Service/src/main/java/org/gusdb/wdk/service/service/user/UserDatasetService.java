@@ -220,6 +220,7 @@ public class UserDatasetService extends UserService {
   @PATCH
   @Path("user-datasets/sharing")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException, DataValidationException {
 	long userId = getUser(Access.PRIVATE).getUserId();
     JSONObject jsonObj = new JSONObject(body);
@@ -233,7 +234,8 @@ public class UserDatasetService extends UserService {
         if ("add".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
           for (Long targetDatasetId : targetDatasetIds) {
-            Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+            Set<Long> targetUserIds = userDatasetShareMap.get(key).get(targetDatasetId);  
+            validateTargetUserIds(targetUserIds);
             // Since each dataset may be shared with different users, we share datasets one by one
             dsSession.shareUserDataset(userId, targetDatasetId, targetUserIds);
           }
@@ -242,33 +244,19 @@ public class UserDatasetService extends UserService {
         if ("delete".equals(key)) {
           Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
           for (Long targetDatasetId : targetDatasetIds) {
-            Set<Long> targetUserIds = identifyTargetUsers(userDatasetShareMap.get(key).get(targetDatasetId));  
+            Set<Long> targetUserIds = userDatasetShareMap.get(key).get(targetDatasetId);
+            validateTargetUserIds(targetUserIds);
             // Since each dataset may unshared with different users, we unshare datasets one by one.
             dsSession.unshareUserDataset(userId, targetDatasetId, targetUserIds);
           }
         }
-      } 
-      return Response.noContent().build();
+      }
+      //return Response.noContent().build();
+      return Response.ok(UserDatasetFormatter.getUserDatasetSharesJson(getWdkModel().getUserFactory(), userDatasetShareMap).toString()).build();
     }
     catch(JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
     }
-  }
-
-  /**
-   * Convenience method to whittle out any non-valid target users
-   * @param providedUserIds - set of user ids provided to the service
-   * @return - subset of those provided user ids that belong to valid users.
-   * @throws WdkModelException
-   */
-  protected Set<Long> identifyTargetUsers(Set<Long> providedUserIds) throws WdkModelException {
-    Set<Long> targetUserIds = new HashSet<>();
-    for (Long providedUserId : providedUserIds) {
-      if (validateTargetUserId(providedUserId)) {
-        targetUserIds.add(providedUserId);
-      }
-    }
-    return targetUserIds;
   }
 
   @DELETE
@@ -324,19 +312,17 @@ public class UserDatasetService extends UserService {
   }
 
   /**
-   * Determines whether the target user is valid.  Any invalid user is noted in the logs.  Seems extreme to trash the whole operation
-   * over one wayward user id.
-   * @param targetUserId - id of target user to check for validity
-   * @return - true is target user is valid and false otherwise.
+   * Determines whether set of target users is valid.  Any invalid user id throws a Not Found exception.
+   * @param targetUserIds - set of target user ids to check for validity
    * @throws WdkModelException
    */
-  private boolean validateTargetUserId(Long targetUserId) throws WdkModelException {
-    UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
-    if (!targetUserBundle.isValidUserId()) {
-      //throw new NotFoundException(WdkService.formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
-      LOG.warn("This user dataset share service request contains the following invalid user: " + targetUserId);
-      return false;	
-    }
-    return true;
+  private void validateTargetUserIds(Set<Long> targetUserIds) throws WdkModelException {
+	for(Long targetUserId : targetUserIds) {  
+      UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+      if (!targetUserBundle.isValidUserId()) {
+        LOG.error("This user dataset share service request contains the following invalid user: " + targetUserId);
+        throw new NotFoundException(formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
+      }
+	}  
   }
 }

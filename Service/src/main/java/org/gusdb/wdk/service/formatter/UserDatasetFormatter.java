@@ -2,9 +2,14 @@ package org.gusdb.wdk.service.formatter;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
@@ -160,4 +165,29 @@ public class UserDatasetFormatter {
     */
     return json;
   }
+  
+  public static JSONObject getUserDatasetSharesJson(UserFactory userFactory, Map<String, Map<Long, Set<Long>>> userDatasetShareMap) throws WdkModelException {
+    JSONObject json = new JSONObject();
+    for (String key : userDatasetShareMap.keySet()) {
+      if ("add".equals(key) || "delete".equals(key)) {
+    	JSONObject jsonOperation = new JSONObject();
+        Set<Long> targetDatasetIds = userDatasetShareMap.get(key).keySet();
+        for (Long targetDatasetId : targetDatasetIds) {
+          JSONArray sharesJson = new JSONArray();
+          for (long targetUserId : userDatasetShareMap.get(key).get(targetDatasetId)) {
+            JSONObject shareJson = new JSONObject();
+            User user = userFactory.getUserById(targetUserId);
+            shareJson.put("email", user.getEmail());
+            shareJson.put("user", user.getUserId());
+            shareJson.put("userDisplayName", user.getDisplayName());
+            sharesJson.put(shareJson);
+          }
+          jsonOperation.put(Long.toString(targetDatasetId), sharesJson);
+        }
+        json.put(key, jsonOperation);
+      }  
+    }
+    return json;
+  }
+    
 }
