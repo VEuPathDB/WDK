@@ -1,19 +1,25 @@
+import { isEqual, omit } from 'lodash';
 import * as React from 'react';
-import { get, isEqual, omit, pick } from 'lodash';
-import AbstractPageController from 'Core/Controllers/AbstractPageController';
+
+import * as UserActionCreators from 'Core/ActionCreators/UserActionCreators';
 import { PageControllerProps } from 'Core/CommonTypes';
-import {wrappable} from 'Utils/ComponentUtils';
+import AbstractPageController from 'Core/Controllers/AbstractPageController';
+import { wrappable } from 'Utils/ComponentUtils';
+import RecordUI from 'Views/Records/RecordUI';
 import {
   loadRecordData,
-  updateSectionVisibility,
-  updateNavigationQuery,
+  RecordRequestOptions,
   updateAllFieldVisibility,
   updateNavigationCategoryExpansion,
-  updateNavigationVisibility
+  updateNavigationQuery,
+  updateNavigationVisibility,
+  updateSectionVisibility,
 } from 'Views/Records/RecordViewActionCreators';
-import * as UserActionCreators from 'Core/ActionCreators/UserActionCreators';
-import RecordUI from 'Views/Records/RecordUI';
-import RecordViewStore, { State } from "Views/Records/RecordViewStore";
+import RecordViewStore, { State } from 'Views/Records/RecordViewStore';
+
+import { CategoryTreeNode } from '../../Utils/CategoryUtils';
+import { RecordClass } from '../../Utils/WdkModel';
+import { getAttributeNames, getTableNames } from './RecordUtils';
 
 const ActionCreators = {
   ...UserActionCreators,
@@ -43,6 +49,29 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
   // components have access to them?
   getActionCreators() {
     return ActionCreators;
+  }
+
+  /**
+   * Declare what fields of the record are needed. All requests are made in
+   * parallel, but the first requests is required to render the page.
+   *
+   * By default, two elements are returned. The first includes all atrributes,
+   * and the second includes all tables. In some cases, more granular control
+   * might be required, which this function hook provides.
+   */
+  getRecordRequestOptions(recordClass: RecordClass, categoryTree: CategoryTreeNode): RecordRequestOptions[] {
+    return [
+      // all attributes
+      {
+        attributes: getAttributeNames(categoryTree),
+        tables: []
+      },
+      // all tables
+      {
+        attributes: [],
+        tables: getTableNames(categoryTree)
+      }
+    ]
   }
 
   isRenderDataLoaded() {
@@ -86,7 +115,7 @@ class RecordController extends AbstractPageController<State, RecordViewStore, ty
     ) {
       let { recordClass, primaryKey } = this.props.match.params;
       let pkValues = primaryKey.split('/');
-      this.eventHandlers.loadRecordData(recordClass, pkValues);
+      this.eventHandlers.loadRecordData(recordClass, pkValues, this.getRecordRequestOptions);
     }
   }
 
