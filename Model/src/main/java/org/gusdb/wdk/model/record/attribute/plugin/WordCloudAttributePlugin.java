@@ -31,10 +31,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
   private static final String ATTR_TAGS = "tags";
 
   private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
-  private static final String[] COMMON_WORDS = {
-      "and", "off", "are", "was", "were", "the", "that",
-      "cgi", "bin", "groupac", "href", "http", "org", "tmp",
-      "chro", "sequencelist", "orthomcl", "orthomclweb" };
+  protected static final String[] COMMON_WORDS = { "and", "are", "was", "were", "the", "that" };
 
   private static final Logger logger = Logger.getLogger(WordCloudAttributePlugin.class);
 
@@ -90,10 +87,12 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
       return;
 
     // get common words
-    String[] words = COMMON_WORDS;
-    if (properties.containsKey(PROP_COMMON_WORDS))
+    String[] words = getCommonWords();
+    if (properties.containsKey(PROP_COMMON_WORDS)) {
+      // override common words with property if provided
       words = properties.get(PROP_COMMON_WORDS).split(",");
-    commonWords = new HashSet<String>();
+    }
+    commonWords = new HashSet<>();
     for (String word : words) {
       commonWords.add(word);
     }
@@ -115,6 +114,10 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
       splitPattern = properties.get(PROP_SPLIT_PATTERN);
 
     propertiesResolved = true;
+  }
+
+  protected String[] getCommonWords() {
+    return COMMON_WORDS;
   }
 
   private void splitWords(String content, Map<String, WordTag> tags) {
