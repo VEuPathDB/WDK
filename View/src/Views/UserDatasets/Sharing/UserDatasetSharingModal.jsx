@@ -393,7 +393,6 @@ class UserDatasetSharingModal extends React.Component {
           <div className="UserDataset-SharingModal-FormView">
             <h2 className="UserDatasetSharing-SectionName">Share {datasetNoun}:</h2>
             <DatasetList datasets={datasets}/>
-            <hr />
             <h2 className="UserDatasetSharing-SectionName">With The Following Collaborators:</h2>
             <RecipientForm/>
             <RecipientList recipients={recipients}/>
