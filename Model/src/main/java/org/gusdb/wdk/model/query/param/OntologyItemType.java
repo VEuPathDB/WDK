@@ -18,14 +18,17 @@ public enum OntologyItemType {
   // special type to indicate an ontology branch node; no data is present in branch nodes
   BRANCH (null, null, BranchNode.class),
 
+  // special type to indicated this node should be a multiFilter
+  MULTIFILTER   ("multiFilter",   null,   MultiFilter.class),
+
   // data types of ontology leaf nodes
   STRING ("string", "string_value", String.class),
   NUMBER ("number", "number_value", Double.class),
-  DATE   ("date",   "date_value",   String.class),
-  MULTIFILTER   ("multiFilter",   "",   String.class);
-
+  DATE   ("date",   "date_value",   String.class);
+ 
 
   private static class BranchNode{}
+  private static class MultiFilter{}
 
   private static final SimpleDateFormat dateFormatter = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_DASH);
 
