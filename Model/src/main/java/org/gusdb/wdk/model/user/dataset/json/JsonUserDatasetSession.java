@@ -126,13 +126,14 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
     Path userDatasetDir = getUserDatasetDir(userId, datasetId);
     
-    if (user.sharedWithDir == null) {
+    // if stmt breaks un/sharing of multiple UDs
+    //if (user.sharedWithDir == null) {
       user.sharedWithDir = userDatasetDir.resolve(SHARED_WITH_DIR);
       //TODO should we handle this upon setting up the dataset rather than on the fly?
       if (!adaptor.fileExists(user.sharedWithDir)) {
         adaptor.createDirectory(user.sharedWithDir);
       }
-    }
+    //}
     return user.sharedWithDir;
   }
 
