@@ -90,6 +90,7 @@ export type SharingDatasetAction = {
 export type SharingSuccessAction = {
   type: 'user-datasets/sharing-success',
   payload: {
+    method: string,
     userDatasetIds: number[],
     recipientUserIds: number[]
   }
@@ -132,11 +133,26 @@ export function loadUserDatasetDetail(id: number): ActionThunk<DetailAction> {
 
 export function shareUserDatasets (userDatasetIds: number[], recipientUserIds: number[]): ActionThunk<SharingAction> {
   return ({ wdkService }) => {
-    return wdkService.shareUserDatasetWithRecipients(userDatasetIds, recipientUserIds)
+    return wdkService.editUserDatasetSharing('add', userDatasetIds, recipientUserIds)
       .then(
         (value: void) => (<SharingSuccessAction>{
           type: 'user-datasets/sharing-success',
-          payload: { userDatasetIds, recipientUserIds }
+          payload: { method: 'add', userDatasetIds, recipientUserIds }
+        })
+      )
+      .catch(
+        (error: ServiceError) => (<SharingErrorAction>{ type: 'user-datasets/sharing-error', payload: { error } })
+      )
+  };
+}
+
+export function unshareUserDatasets (userDatasetIds: number[], recipientUserIds: number[]): ActionThunk<SharingAction> {
+  return ({ wdkService }) => {
+    return wdkService.editUserDatasetSharing('delete', userDatasetIds, recipientUserIds)
+      .then(
+        (value: void) => (<SharingSuccessAction>{
+          type: 'user-datasets/sharing-success',
+          payload: { method: 'delete', userDatasetIds, recipientUserIds }
         })
       )
       .catch(

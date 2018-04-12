@@ -294,6 +294,7 @@ export type UserDatasetMeta = {
 export type UserDatasetShare = {
   time: number;
   user: number;
+  email: string;
   userDisplayName: string;
 };
 

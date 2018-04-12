@@ -110,6 +110,15 @@ class UserDatasetList extends React.Component <Props, State> {
     return (value: string) => updateUserDatasetDetail(dataset, { ...meta, [attrKey]: value });
   }
 
+  renderSharedWithCell (cellProps: MesaDataCellProps) {
+    const dataset: UserDataset = cellProps.row;
+    return (!dataset.sharedWith || !dataset.sharedWith.length)
+      ? null
+      : (
+        <ul>{dataset.sharedWith.map(share => share.userDisplayName).join(', ')}</ul>
+      )
+  }
+
   renderStatusCell (cellProps: MesaDataCellProps) {
     const dataset: UserDataset = cellProps.row;
     const { projectId, projectName } = this.props;
@@ -158,7 +167,7 @@ class UserDatasetList extends React.Component <Props, State> {
       : <span>{owner}</span>
   }
 
-  getColumns (): MesaColumn[] {
+  getColumns (): any[] {
     const { userDatasets, user } = this.props;
     function isOwner (ownerId: number): boolean {
       return user.id === ownerId;
@@ -249,6 +258,15 @@ class UserDatasetList extends React.Component <Props, State> {
         sortable: true,
         renderCell: this.renderOwnerCell
       },
+      (!userDatasets.some((userDataset) => !!(userDataset.sharedWith && userDataset.sharedWith.length))
+        ? null
+        : {
+          key: 'sharedWith',
+          name: 'Shared With',
+          sortable: true,
+          renderCell: this.renderSharedWithCell
+        }
+      ),
       {
         key: 'created',
         name: 'Created',
@@ -275,7 +293,7 @@ class UserDatasetList extends React.Component <Props, State> {
           : null
         )
       }
-    ]
+    ].filter(column => column);
   }
 
   onRowSelect (row: UserDataset): void {

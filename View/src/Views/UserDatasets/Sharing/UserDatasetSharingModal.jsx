@@ -36,6 +36,7 @@ class UserDatasetSharingModal extends React.Component {
     this.disqualifyRecipient = this.disqualifyRecipient.bind(this);
 
     this.submitShare = this.submitShare.bind(this);
+    this.unshareWithUser = this.unshareWithUser.bind(this);
     this.isRecipientValid = this.isRecipientValid.bind(this);
     this.renderViewContent = this.renderViewContent.bind(this);
     this.isDatasetShareable = this.isDatasetShareable.bind(this);
@@ -170,11 +171,18 @@ class UserDatasetSharingModal extends React.Component {
     );
   }
 
-  renderShareItem (share, index) {
+  unshareWithUser (datasetId, userId) {
+    if (!confirm('Are you sure you want to stop sharing this dataset with this user?')) return;
+    const { unshareUserDatasets } = this.props;
+    unshareUserDatasets([ datasetId ], [ userId ]);
+  }
+
+  renderShareItem (share, index, userDataset) {
     const { user, time, userDisplayName } = share;
     return (
       <div key={index}>
-        Shared with <b>{userDisplayName}</b> {moment(time).fromNow()}
+        <span className="faded">Shared with</span> <b>{userDisplayName}</b> {moment(time).fromNow()}
+        <a onClick={() => this.unshareWithUser(userDataset.id, user)}><Icon fa="times-circle right-side"/></a>
       </div>
     );
   }
@@ -185,10 +193,10 @@ class UserDatasetSharingModal extends React.Component {
     deselectDataset(dataset);
   }
 
-  renderDatasetItem (dataset) {
-    const { sharedWith, id, meta } = dataset;
+  renderDatasetItem (userDataset) {
+    const { sharedWith, id, meta } = userDataset;
     const { name, summary } = meta;
-    const isOwner = this.isMyDataset(dataset);
+    const isOwner = this.isMyDataset(userDataset);
     const { deselectDataset } = this.props;
 
     const EmptyState = this.renderEmptyState;
@@ -206,7 +214,7 @@ class UserDatasetSharingModal extends React.Component {
           {!isOwner
             ? <i className="faded danger">This dataset has been shared with you. Only the owner can share it.</i>
             : Array.isArray(sharedWith) && sharedWith.length
-              ? <ShareList shares={sharedWith}/>
+              ? <ShareList userDataset={userDataset} />
               : <EmptyState/>
           }
         </div>
@@ -265,10 +273,11 @@ class UserDatasetSharingModal extends React.Component {
       : recipients.map(this.renderRecipientItem);
   }
 
-  renderShareList ({ shares }) {
-    return !Array.isArray(shares) || !shares.length
+  renderShareList ({ userDataset }) {
+    const { sharedWith } = userDataset;
+    return !Array.isArray(sharedWith) || !sharedWith.length
       ? null
-      : shares.map(this.renderShareItem);
+      : sharedWith.map((share, index) => this.renderShareItem(share, index, userDataset));
   }
 
   renderDatasetList ({ datasets }) {
@@ -295,12 +304,12 @@ class UserDatasetSharingModal extends React.Component {
     this.setState({ processing: true }, () => {
       shareUserDatasets(datasets.map(({ id }) => id), recipients.map(({ id }) => id))
         .then(response => {
-          console.info('submitShare: Received response: ', response);
-          const { type } = response;
-          if (type !== 'user-datasets/sharing-success')
-            throw response;
+          if (response.type !== 'user-datasets/sharing-success') throw response;
           this.setState({ processing: false, succeeded: true });
-        }).catch(err => console.error('sumitShare: rejected', err) || this.setState({ processing: false, succeeded: false }));
+        }).catch(err => {
+          console.error('submitShare: rejected', err)
+          this.setState({ processing: false, succeeded: false });
+        });
     });
   }
 
@@ -384,6 +393,7 @@ class UserDatasetSharingModal extends React.Component {
           <div className="UserDataset-SharingModal-FormView">
             <h2 className="UserDatasetSharing-SectionName">Share {datasetNoun}:</h2>
             <DatasetList datasets={datasets}/>
+            <hr />
             <h2 className="UserDatasetSharing-SectionName">With The Following Collaborators:</h2>
             <RecipientForm/>
             <RecipientList recipients={recipients}/>
@@ -400,7 +410,7 @@ class UserDatasetSharingModal extends React.Component {
 
     return (
       <Modal className="UserDataset-SharingModal">
-        <div className="UserDataset-SharingModal-CloseBar">
+        <div className="UserDataset-SharingModal-CloseBar" title="CLose this window">
           <Icon
             fa="window-close"
             className="SharingModal-Close"

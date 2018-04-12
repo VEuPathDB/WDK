@@ -5,12 +5,24 @@ import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import { User } from 'Utils/WdkUser';
 import 'Views/UserDatasets/UserDatasets.scss';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
-import { loadUserDatasetList, updateUserDatasetDetail, removeUserDataset, shareUserDatasets } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import {
+  loadUserDatasetList,
+  updateUserDatasetDetail,
+  removeUserDataset,
+  shareUserDatasets,
+  unshareUserDatasets
+} from 'Views/UserDatasets/UserDatasetsActionCreators';
 import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/List/UserDatasetListStore";
 
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 
-const ActionCreators = { loadUserDatasetList, updateUserDatasetDetail, removeUserDataset, shareUserDatasets };
+const ActionCreators = {
+  loadUserDatasetList,
+  updateUserDatasetDetail,
+  removeUserDataset,
+  shareUserDatasets,
+  unshareUserDatasets
+};
 
 type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
            & Pick<StoreState["globalData"], 'user' | 'config'>;
@@ -73,6 +85,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       userDatasets,
       removeUserDataset,
       shareUserDatasets,
+      unshareUserDatasets,
       updateUserDatasetDetail
     };
     return (
