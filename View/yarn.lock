@@ -4086,7 +4086,7 @@ merge@^1.1.3:
 
 "mesa@https://github.com/austinbillings/mesa.git":
   version "1.1.0"
-  resolved "https://github.com/austinbillings/mesa.git#9908f69371948faf106d1882c31c7160fd274741"
+  resolved "https://github.com/austinbillings/mesa.git#fb57d5956515dd53f98fc9593925f0d541daef50"
   dependencies:
     prop-types ">=15.6.0"
     react "^16.2.0"
