@@ -38,6 +38,7 @@ interface Props {
   projectName: string;
   userDatasets: UserDataset[];
   shareUserDatasets: (userDatasetIds: number[], recipientUserIds: number[]) => any;
+  unshareUserDatasets: (userDatasetIds: number[], recipientUserIds: number[]) => any;
   removeUserDataset: (dataset: UserDataset) => any;
   updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any;
 };
@@ -503,7 +504,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
   render () {
     const { isRowSelected, toggleProjectScope } = this;
-    const { userDatasets, history, user, projectName, shareUserDatasets } = this.props;
+    const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets } = this.props;
     const { uiState, selectedRows, searchTerm, sharingModalOpen, showOnlyCurrentProject } = this.state;
 
     const rows = showOnlyCurrentProject
@@ -537,40 +538,45 @@ class UserDatasetList extends React.Component <Props, State> {
     return (
       <div className="UserDatasetList">
         <Mesa state={MesaState.create(tableState)}>
-          <h1 className="UserDatasetList-Title">
-            My Datasets
-            <HelpIcon>
-              <div>
-                As a part of your new user Workspace, you can now upload your own datasets to use in <b>{projectName}</b>.
-                <ul style={{ marginTop: '10px' }}>
-                  <li>This data can be used in all the same ways as our public datasets.</li>
-                  <li>Easily manage how you leverage your data: push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
-                  <li>Share your dataset with others and receive shared data from your own colleagues.</li>
-                </ul>
-              </div>
-            </HelpIcon>
-          </h1>
-          {sharingModalOpen && selectedDatasets.length
-            ? <SharingModal
-                user={user}
-                rootUrl={rootUrl}
-                datasets={selectedDatasets}
-                deselectDataset={this.onRowDeselect}
-                shareUserDatasets={shareUserDatasets}
-                onClose={this.closeSharingModal}
+          <div className="stack">
+            <h1 className="UserDatasetList-Title">
+              My Datasets
+              <HelpIcon>
+                <div>
+                  As a part of your new user Workspace, you can now upload your own datasets to use in <b>{projectName}</b>.
+                  <ul style={{ marginTop: '10px' }}>
+                    <li>This data can be used in all the same ways as our public datasets.</li>
+                    <li>Easily manage how you leverage your data: push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
+                    <li>Share your dataset with others and receive shared data from your own colleagues.</li>
+                  </ul>
+                </div>
+              </HelpIcon>
+            </h1>
+            <div style={{ display: 'flex' }}>
+              {sharingModalOpen && selectedDatasets.length
+                ? <SharingModal
+                    user={user}
+                    rootUrl={rootUrl}
+                    datasets={selectedDatasets}
+                    deselectDataset={this.onRowDeselect}
+                    shareUserDatasets={shareUserDatasets}
+                    unshareUserDatasets={unshareUserDatasets}
+                    onClose={this.closeSharingModal}
+                  />
+                : null
+              }
+              <SearchBox
+                placeholderText="Search Datasets"
+                searchTerm={searchTerm}
+                onSearchTermChange={this.onSearchTermChange}
               />
-            : null
-          }
-          <SearchBox
-            placeholderText="Search Datasets"
-            searchTerm={searchTerm}
-            onSearchTermChange={this.onSearchTermChange}
-          />
-          <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
-            <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
-            {' '}
-            <div onClick={() => toggleProjectScope(!showOnlyCurrentProject)}>
-              Only show datasets related to <b>{projectName}</b>
+              <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
+                <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
+                {' '}
+                <div onClick={() => toggleProjectScope(!showOnlyCurrentProject)} style={{ display: 'inline-block' }}>
+                  Only show datasets related to <b>{projectName}</b>
+                </div>
+              </div>
             </div>
           </div>
         </Mesa>

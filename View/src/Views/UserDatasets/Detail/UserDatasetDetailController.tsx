@@ -113,6 +113,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
   getDetailView (type: any) {
     const name: string = type && typeof type === 'object' ? type.name : null;
     switch (name) {
+      case 'Bigwigs':
       case 'BigwigFiles':
         return BigwigDatasetDetail;
       default:
