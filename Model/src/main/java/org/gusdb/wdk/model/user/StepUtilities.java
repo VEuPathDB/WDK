@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -395,5 +396,20 @@ public class StepUtilities {
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
+  }
+
+  public static TwoTuple<List<Strategy>, List<String>> getOpenableStrategies(WdkModel wdkModel, List<String> stratKeys) {
+    List<Strategy> successfulStrats = new ArrayList<>();
+    List<String> failedStratKeys = new ArrayList<>();
+    for (String stratKey : stratKeys) {
+      try {
+        Strategy strat = getStrategyByStrategyKey(wdkModel, stratKey);
+        successfulStrats.add(strat);
+      }
+      catch (Exception e) {
+        failedStratKeys.add(stratKey);
+      }
+    }
+    return new TwoTuple<>(successfulStrats, failedStratKeys);
   }
 }
