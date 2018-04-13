@@ -198,6 +198,7 @@ public class ProcessStepAction extends Action {
     // Update customName
     step.setCustomName(customName);
     step.saveParamFilters();
+    step.setValid(true);
     step.update(false);
   }
 
