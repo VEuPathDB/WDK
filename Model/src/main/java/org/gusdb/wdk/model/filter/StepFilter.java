@@ -9,18 +9,15 @@ import org.gusdb.wdk.model.query.Query;
  *
  */
 public abstract class StepFilter extends AbstractFilter {
+
   private Query _summaryQuery = null;
 
   public Query getSummaryQuery() {
-	return _summaryQuery;
+    return _summaryQuery;
   }
 
   public void setSummaryQuery(Query summaryQuery) {
-	this._summaryQuery = summaryQuery;
-  }
-
-  public StepFilter(String name) {
-    super(name);
+    _summaryQuery = summaryQuery;
   }
 
 }

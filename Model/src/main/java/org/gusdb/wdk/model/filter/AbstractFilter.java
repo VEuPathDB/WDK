@@ -8,23 +8,13 @@ import org.json.JSONObject;
 
 public abstract class AbstractFilter implements Filter {
 
-  private final String _key;
   private String _display;
   private String _description;
   private String _view;
   protected JSONObject _defaultValue;
   private boolean _isViewOnly = false;
   private boolean _isAlwaysApplied = false;
-  
-  public AbstractFilter(String key) {
-    _key = key;
-  }
 
-  @Override
-  public String getKey() {
-    return _key;
-  }
-  
   @Override
   public String getDisplay() {
     return _display;

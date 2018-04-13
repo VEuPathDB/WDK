@@ -13,23 +13,26 @@ import org.gusdb.wdk.model.query.Query;
 
 public class StepFilterDefinition extends FilterDefinition {
 
-  private List<WdkModelText> propertyList = new ArrayList<>();
-  private Map<String, String> properties = new LinkedHashMap<>();
-  private Query summaryQuery = null;
   private static final Logger LOG = Logger.getLogger(StepFilterDefinition.class);
 
+  private List<WdkModelText> _propertyList = new ArrayList<>();
+  private Map<String, String> _properties = new LinkedHashMap<>();
+
   private Class<? extends StepFilter> _class;
+  private Query _summaryQuery = null;
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
     try {
       String className = getImplementation();
-      if (className == null) throw new WdkModelException("null implementation for StepFilter '" + getName() + "'");
+      if (className == null) {
+        throw new WdkModelException("null implementation for StepFilter '" + getName() + "'");
+      }
       LOG.debug("Checking filter '" + getName() + "' implementation class: " + className);
       _class = Class.forName(className).asSubclass(StepFilter.class);
-      String summaryQueryRef = properties.get("summaryQueryRef");
-      summaryQuery = summaryQueryRef != null ? (Query) wdkModel.resolveReference(summaryQueryRef) : null;
+      String summaryQueryRef = _properties.get("summaryQueryRef");
+      _summaryQuery = summaryQueryRef != null ? (Query) wdkModel.resolveReference(summaryQueryRef) : null;
     }
     catch (ClassNotFoundException | ClassCastException ex) {
       throw new WdkModelException(ex);
@@ -40,37 +43,37 @@ public class StepFilterDefinition extends FilterDefinition {
     try {
       StepFilter filter = _class.newInstance();
       initializeFilter(filter);
-      filter.setSummaryQuery(summaryQuery);
+      filter.setSummaryQuery(_summaryQuery);
       return filter;
     }
     catch (InstantiationException | IllegalAccessException ex) {
       throw new WdkModelException(ex);
     }
   }
-  
+
   public void addProperty(WdkModelText property) {
-    this.propertyList.add(property);
+    _propertyList.add(property);
   }
 
   public Map<String, String> getProperties() {
-    return new LinkedHashMap<String, String>(this.properties);
+    return new LinkedHashMap<String, String>(_properties);
   }
-  
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
     // exclude properties
-    for (WdkModelText property : propertyList) {
+    for (WdkModelText property : _propertyList) {
       if (property.include(projectId)) {
         property.excludeResources(projectId);
         String propName = property.getName();
         String propValue = property.getText();
-        if (properties.containsKey(propName))
+        if (_properties.containsKey(propName))
           throw new WdkModelException("The property " + propName
               + " is duplicated in step filter " + getStepFilter().getKey());
-        properties.put(propName, propValue);
+        _properties.put(propName, propValue);
       }
     }
-    propertyList = null;
-  }  
+    _propertyList = null;
+  }
 }
