@@ -11,6 +11,7 @@ import {
 
 import './UserDatasetList.scss';
 import { User } from 'Utils/WdkUser';
+import Checkbox from 'Components/InputControls/Checkbox';
 import moment from 'Utils/MomentUtils';
 import { wrappable } from 'Utils/ComponentUtils';
 import { bytesToHuman } from 'Utils/Converters';
@@ -47,6 +48,7 @@ interface State {
   searchTerm: string;
   sharingModalOpen: boolean;
   editingCache: any;
+  showOnlyCurrentProject: boolean;
 }
 
 class UserDatasetList extends React.Component <Props, State> {
@@ -65,7 +67,8 @@ class UserDatasetList extends React.Component <Props, State> {
       },
       editingCache: {},
       sharingModalOpen: false,
-      searchTerm: ''
+      searchTerm: '',
+      showOnlyCurrentProject: true
     };
 
     this.onRowSelect = this.onRowSelect.bind(this);
@@ -87,6 +90,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
     this.openSharingModal = this.openSharingModal.bind(this);
     this.closeSharingModal = this.closeSharingModal.bind(this);
+    this.toggleProjectScope = this.toggleProjectScope.bind(this);
   }
 
   isRowSelected (row: UserDataset): boolean {
@@ -114,9 +118,7 @@ class UserDatasetList extends React.Component <Props, State> {
     const dataset: UserDataset = cellProps.row;
     return (!dataset.sharedWith || !dataset.sharedWith.length)
       ? null
-      : (
-        <ul>{dataset.sharedWith.map(share => share.userDisplayName).join(', ')}</ul>
-      )
+      : dataset.sharedWith.map(share => share.userDisplayName).join(', ')
   }
 
   renderStatusCell (cellProps: MesaDataCellProps) {
@@ -393,8 +395,9 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   getTableOptions () {
-    const { isRowSelected } = this;
+    const { isRowSelected, toggleProjectScope } = this;
     const { userDatasets, projectName, location } = this.props;
+    const { showOnlyCurrentProject } = this.state;
     const emptyMessage = !userDatasets.length
       ? (
         <React.Fragment>
@@ -406,17 +409,26 @@ class UserDatasetList extends React.Component <Props, State> {
             </Link>
           </small>
         </React.Fragment>
-      ) : (
-        <React.Fragment>
-          <p>Your search returned no results.</p>
-          <br/>
-          <small>
-            <a onClick={() => this.setState({ searchTerm: '' })} href="#">
-              Clear Search Query <Icon fa="chevron-right"/>
-            </a>
-          </small>
-        </React.Fragment>
-      );
+      ) : showOnlyCurrentProject
+        ? (
+          <React.Fragment>
+            <p>You have no <b>{projectName}</b> datasets.</p>
+            <br/>
+            <button className="btn btn-info" onClick={() => toggleProjectScope(false)}>
+              Show All User Datasets
+            </button>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <p>Your search returned no results.</p>
+            <br/>
+            <small>
+              <a onClick={() => this.setState({ searchTerm: '' })} href="#">
+                Clear Search Query <Icon fa="chevron-right"/>
+              </a>
+            </small>
+          </React.Fragment>
+        );
     return {
       isRowSelected,
       showToolbar: true,
@@ -485,20 +497,26 @@ class UserDatasetList extends React.Component <Props, State> {
     return href.substring(0, href.indexOf('/app/'));
   }
 
-  render () {
-    const { isRowSelected } = this;
-    const { userDatasets, history, user, projectName, shareUserDatasets } = this.props;
-    const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
+  toggleProjectScope (newValue: boolean) {
+    this.setState({ showOnlyCurrentProject: newValue });
+  }
 
-    const rows = userDatasets;
+  render () {
+    const { isRowSelected, toggleProjectScope } = this;
+    const { userDatasets, history, user, projectName, shareUserDatasets } = this.props;
+    const { uiState, selectedRows, searchTerm, sharingModalOpen, showOnlyCurrentProject } = this.state;
+
+    const rows = showOnlyCurrentProject
+      ? userDatasets.filter(dataset => dataset.projects.includes(projectName))
+      : userDatasets;
     const selectedDatasets = rows.filter(isRowSelected);
 
     const rootUrl = this.getRootUrl();
+    const columns = this.getColumns();
     const actions = this.getTableActions();
     const options = this.getTableOptions();
-    const columns = this.getColumns();
     const eventHandlers = this.getEventHandlers();
-    const filteredRows = this.filterAndSortRows(userDatasets);
+    const filteredRows = this.filterAndSortRows(rows);
 
     const tableState = {
       rows,
@@ -548,8 +566,15 @@ class UserDatasetList extends React.Component <Props, State> {
             searchTerm={searchTerm}
             onSearchTermChange={this.onSearchTermChange}
           />
+          <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
+            <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
+            {' '}
+            <div onClick={() => toggleProjectScope(!showOnlyCurrentProject)}>
+              Only show datasets related to <b>{projectName}</b>
+            </div>
+          </div>
         </Mesa>
-        {rows.length ? null : <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>}
+        {userDatasets.length ? null : <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>}
       </div>
     )
   }

@@ -103,7 +103,7 @@
     .wdk-Icon {
       font-size: 1.5em;
       margin-left: 10px;
-      &.times-circle {
+      &.fa-times-circle:hover {
         color: $red;
       }
     }
@@ -113,6 +113,9 @@
       h3 {
         line-height: 1em;
         margin-top: -5px;
+      }
+      .fa-times {
+        font-size: 0.8em;
       }
     }
     .UserDatasetSharing-Dataset-Actions,
