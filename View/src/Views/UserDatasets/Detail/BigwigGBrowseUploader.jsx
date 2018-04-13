@@ -91,8 +91,6 @@ class BigwigGBrowseUploader extends React.Component {
     if (inProgress) return <b>Sending to GBrowse...</b>;
     if (isInstalled) return (
       <span>
-        {/* Available now in GBrowse.
-        <br/> */}
         Sent to GBrowse{uploadedAt ? ` ${moment(uploadedAt).fromNow()}.` : '.'}
       </span>
     );
@@ -130,7 +128,10 @@ class BigwigGBrowseUploader extends React.Component {
 
   getGBrowseUrl () {
     const { rootUrl, projectId } = this.props;
-    return `/cgi-bin/gbrowse/${projectId}`
+    const sequenceId = '';
+    const trackId = '';
+    console.info('bigwig uploader gettin props', this.props);
+    return `/cgi-bin/gbrowse/${projectId}/?ref=`
   }
 
   render () {

@@ -820,13 +820,12 @@ export default class WdkService {
     if (!actionName || !acceptableActions.includes(actionName))
       throw new TypeError(`editUserDatasetSharing: invalid action name given: "${actionName}"`);
 
-    const stringUserIds: string[] = recipientUserIds.map(id => `${id}`);
     const delta = JSON.stringify({
       [actionName]: userDatasetIds
         .map(id => `${id}`)
         .reduce((output: object, datasetId: string) => {
           Object.defineProperty(output, datasetId, {
-            value: [...stringUserIds],
+            value: recipientUserIds.map(id => `${id}`),
             enumerable: true
           });
           return output;
