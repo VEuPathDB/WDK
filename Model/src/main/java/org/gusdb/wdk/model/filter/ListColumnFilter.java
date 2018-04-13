@@ -36,7 +36,7 @@ public class ListColumnFilter extends SqlColumnFilter {
   @Override
   public String getSummarySql(String inputSql) throws WdkModelException,
       WdkUserException {
-    String columnName = attribute.getName();
+    String columnName = _attribute.getName();
 
     // group by the query and get a count
     String sql = "SELECT " + columnName + " as " + COLUMN_PROPERTY + ", count(*) AS " + COLUMN_COUNT + " FROM (" + inputSql +
@@ -48,7 +48,7 @@ public class ListColumnFilter extends SqlColumnFilter {
   @Override
   public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException,
       WdkUserException {
-    String columnName = attribute.getName();
+    String columnName = _attribute.getName();
 
     StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + " in (");
 

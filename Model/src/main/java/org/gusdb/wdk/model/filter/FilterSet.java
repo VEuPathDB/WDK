@@ -74,8 +74,8 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterDefinitio
 
         // check if the reference of the same project already exists
         if (_filterDefinitionMap.containsKey(definition.getName()))
-          throw new WdkModelException("Filter reference " + definition.getName() +
-              " is duplicated for project " + projectId);
+          throw new WdkModelException("More than one filter has name '" +
+              definition.getName() + "' for project: " + projectId);
 
         _filterDefinitionMap.put(definition.getName(), definition);
       }

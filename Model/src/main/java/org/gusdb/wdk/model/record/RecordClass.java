@@ -989,9 +989,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve step filter references
     for (FilterReference reference : _filterReferences) {
       StepFilter filter = resolveStepFilterReferenceByName(reference.getName(), _wdkModel, "recordClass " + getFullName());
-      if (_stepFilters.containsKey(filter.getKey()))
-        throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
-            " of recordClass " + getFullName() + " twice.");
+      if (_stepFilters.containsKey(filter.getKey())) {
+        throw new WdkModelException("Non-unique step filter key '" + filter.getKey() + "detected in record class " + getFullName());
+      }
       _stepFilters.put(filter.getKey(), filter);
     }
     _filterReferences.clear();

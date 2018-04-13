@@ -80,13 +80,14 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
 
     // resolve the column filters
     for (FilterReference reference : _filterReferences) {
+      reference.resolveReferences(wdkModel);
       String name = reference.getName();
       FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
       if (definition instanceof ColumnFilterDefinition) {
         ColumnFilter filter = ((ColumnFilterDefinition) definition).getColumnFilter(this);
         if (_columnFilters.containsKey(filter.getKey()))
-          throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
-              " of " + _containerName + " twice.");
+          throw new WdkModelException("Non-unique column filter key '" + filter.getKey() +
+              "' in attribute " + getName() + " of " + _containerName);
         _columnFilters.put(filter.getKey(), filter);
       }
       else {

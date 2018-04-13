@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 public class ColumnFilterDefinition extends FilterDefinition {
 
@@ -23,10 +23,10 @@ public class ColumnFilterDefinition extends FilterDefinition {
     }
   }
 
-  public ColumnFilter getColumnFilter(ColumnAttributeField columnAttribute) throws WdkModelException {
+  public ColumnFilter getColumnFilter(QueryColumnAttributeField columnAttribute) throws WdkModelException {
     try {
-      Constructor<? extends ColumnFilter> constructor = _class.getConstructor(ColumnAttributeField.class);
-      ColumnFilter columnFilter = constructor.newInstance(columnAttribute);
+      Constructor<? extends ColumnFilter> constructor = _class.getConstructor(String.class, QueryColumnAttributeField.class);
+      ColumnFilter columnFilter = constructor.newInstance(getName(), columnAttribute);
       initializeFilter(columnFilter);
       return columnFilter;
     }

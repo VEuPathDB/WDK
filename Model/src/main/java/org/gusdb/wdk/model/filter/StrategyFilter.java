@@ -28,9 +28,10 @@ public class StrategyFilter extends StepFilter {
    
     return definition;
   }
-  
-  public StrategyFilter() {
-    super(FILTER_NAME);
+
+  @Override
+  public String getKey() {
+    return FILTER_NAME;
   }
 
   @Override

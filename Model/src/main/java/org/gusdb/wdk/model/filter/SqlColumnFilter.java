@@ -88,7 +88,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 			throws WdkModelException, WdkUserException {
 		
 		String attributeSql = getAttributeSql(answer, idSql);
-		String columnName = attribute.getName();
+		String columnName = _attribute.getName();
 
 
 		StringBuilder sql = new StringBuilder("SELECT idq.*, aq. " + columnName);

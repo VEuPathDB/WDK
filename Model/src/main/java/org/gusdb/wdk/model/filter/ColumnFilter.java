@@ -11,25 +11,30 @@ import org.json.JSONObject;
 
 public abstract class ColumnFilter extends AbstractFilter {
 
-  protected final QueryColumnAttributeField attribute;
+  private final String _key;
+  protected final QueryColumnAttributeField _attribute;
 
   public ColumnFilter(String name, QueryColumnAttributeField attribute) {
-    super(name + "-" + attribute.getName());
-    this.attribute = attribute;
+    _key = name + "-" + attribute.getName();
+    _attribute = attribute;
+  }
+
+  @Override
+  public String getKey() {
+    return _key;
   }
 
   @Override
   public String getDisplay() {
     String display = super.getDisplay();
     if (display == null || display.length() == 0)
-      display = attribute.getDisplayName();
+      display = _attribute.getDisplayName();
     return display;
   }
 
-  protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException,
-      WdkUserException {
-    String queryName = attribute.getColumn().getQuery().getFullName();
-    WdkModel wdkModel = attribute.getWdkModel();
+  protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException {
+    String queryName = _attribute.getColumn().getQuery().getFullName();
+    WdkModel wdkModel = _attribute.getWdkModel();
     Query query = (Query) wdkModel.resolveReference(queryName);
     String attributeSql = answer.getAttributeSql(query);
     String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
@@ -41,16 +46,16 @@ public abstract class ColumnFilter extends AbstractFilter {
     }
     return sql.toString();
   }
-  
+
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
-	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+    throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
-  
-  @Override
+
   /**
    * Not fully implemented yet.
    */
+  @Override
   public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
     return false;
   }
