@@ -4,11 +4,9 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,10 +21,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -154,19 +150,7 @@ public class UserDatasetService extends UserService {
       UserDatasetFile userDatasetFile = userDataset.getFile(dsSession, datafileName);
       if(userDatasetFile == null) throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
       InputStream inputStream = userDatasetFile.getFileContents(dsSession, temporaryDirPath);
-    	  StreamingOutput output = new StreamingOutput() {
-        @Override
-        public void write(OutputStream out) throws IOException, WebApplicationException {  
-          int length;
-          byte[] buffer = new byte[1024];
-          while((length = inputStream.read(buffer)) != -1) {
-            out.write(buffer, 0, length);
-          }
-          out.flush();  
-          inputStream.close();
-        }
-     };
-     return Response.ok(output).build();
+      return Response.ok(getStreamingOutput(inputStream)).build();
     }
     catch(IOException ioe) {
     	  throw new WdkModelException(ioe);
