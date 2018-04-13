@@ -10,7 +10,7 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   max-height: 95vh;
   overflow-y: auto;
-  min-width: 500px;
+  min-width: 650px;
   max-width: 100%;
 
   .UserDataset-SharingModal-CloseBar {
@@ -18,6 +18,14 @@
   }
   .UserDataset-SharingModal-FormView {
     margin-top: -50px;
+    display: flex;
+    flex-direction: column;
+    min-height: 250px;
+  }
+
+  .UserDataset-SharingModal-RecipientSection,
+  .UserDataset-SharingModal-DatasetSection {
+    flex: 1;
   }
 
   .NoRecipients {
@@ -32,6 +40,7 @@
 
   .UserDatasetSharing-SectionName {
     margin: 10px 0 -5px;
+    font-weight: 200;
   }
 
   fieldset {
@@ -105,6 +114,10 @@
       margin-left: 10px;
       &.fa-times-circle:hover {
         color: $red;
+      }
+      &.unshareRecipient {
+        font-size: 15px;
+        margin-left: 5px;
       }
     }
     .UserDatasetSharing-Dataset-Details,

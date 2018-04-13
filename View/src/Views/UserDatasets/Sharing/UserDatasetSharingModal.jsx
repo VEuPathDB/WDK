@@ -174,6 +174,8 @@ class UserDatasetSharingModal extends React.Component {
   unshareWithUser (datasetId, userId) {
     if (!confirm('Are you sure you want to stop sharing this dataset with this user?')) return;
     const { unshareUserDatasets } = this.props;
+    if (typeof unshareUserDatasets !== 'function')
+      throw new TypeError('UserDatasetSharingModal:unshareWithUser: expected unshareUserDatasets to be function. Got: ' + typeof unshareUserDatasets);
     unshareUserDatasets([ datasetId ], [ userId ]);
   }
 
@@ -182,7 +184,7 @@ class UserDatasetSharingModal extends React.Component {
     return (
       <div key={index}>
         <span className="faded">Shared with</span> <b>{userDisplayName}</b> {moment(time).fromNow()}
-        <a onClick={() => this.unshareWithUser(userDataset.id, user)}><Icon fa="times-circle right-side"/></a>
+        <a onClick={() => this.unshareWithUser(userDataset.id, user)}><Icon fa="times-circle unshareRecipient"/></a>
       </div>
     );
   }
@@ -391,12 +393,16 @@ class UserDatasetSharingModal extends React.Component {
       default:
         return (
           <div className="UserDataset-SharingModal-FormView">
-            <h2 className="UserDatasetSharing-SectionName">Share {datasetNoun}:</h2>
-            <DatasetList datasets={datasets}/>
-            <h2 className="UserDatasetSharing-SectionName">With The Following Collaborators:</h2>
-            <RecipientForm/>
-            <RecipientList recipients={recipients}/>
-            <SharingButtons/>
+            <div className="UserDataset-SharingModal-DatasetSection">
+              <h2 className="UserDatasetSharing-SectionName">Share {datasetNoun}:</h2>
+              <DatasetList datasets={datasets}/>
+            </div>
+            <div className="UserDataset-SharingModal-RecipientSection">
+              <h2 className="UserDatasetSharing-SectionName">With The Following Collaborators:</h2>
+              <RecipientForm/>
+              <RecipientList recipients={recipients}/>
+              <SharingButtons/>
+            </div>
           </div>
         );
     }

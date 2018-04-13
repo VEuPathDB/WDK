@@ -819,7 +819,6 @@ export default class WdkService {
     const acceptableActions = [ 'add', 'delete' ];
     if (!actionName || !acceptableActions.includes(actionName))
       throw new TypeError(`editUserDatasetSharing: invalid action name given: "${actionName}"`);
-
     const delta = JSON.stringify({
       [actionName]: userDatasetIds
         .map(id => `${id}`)
@@ -831,7 +830,6 @@ export default class WdkService {
           return output;
         }, {})
     });
-    console.info('using delta', delta);
     return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', delta);
   }
 

@@ -17,8 +17,9 @@ class BigwigDatasetDetail extends UserDatasetDetail {
 
   getTracksTableColumns () {
     const { userDataset, appUrl, rootUrl, config } = this.props;
-    const { id, ownerUserId } = userDataset;
+    const { id, ownerUserId, type } = userDataset;
     const { projectId } = config;
+    const { seqId } = type ? type.data : { seqId: null };
     return [
       {
         key: 'datafileName',
@@ -28,7 +29,7 @@ class BigwigDatasetDetail extends UserDatasetDetail {
       {
         key: 'main',
         name: 'GBrowse Status',
-        renderCell: ({ row }) => <BigwigGBrowseUploader {...row} datasetId={id} rootUrl={rootUrl} appUrl={appUrl} projectId={projectId} />
+        renderCell: ({ row }) => <BigwigGBrowseUploader sequenceId={seqId} {...row} datasetId={id} rootUrl={rootUrl} appUrl={appUrl} projectId={projectId} />
       }
     ];
   }
@@ -37,8 +38,9 @@ class BigwigDatasetDetail extends UserDatasetDetail {
     const { userDataset, appUrl, projectName } = this.props;
 
     const { type } = userDataset;
+    const { data } = type;
 
-    const rows = Array.isArray(type.data) ? type.data : [];
+    const rows = data && Array.isArray(data.tracks) ? data.tracks : [];
     const columns = this.getTracksTableColumns({ userDataset, appUrl });
     const tracksTableState = MesaState.create({ rows, columns });
 
@@ -63,7 +65,6 @@ class BigwigDatasetDetail extends UserDatasetDetail {
   getPageSections () {
     const [ headerSection, compatSection, fileSection ] = super.getPageSections();
     return [ headerSection, compatSection, this.renderTracksSection, fileSection ];
-    // return [ ...super.getPageSections(), this.renderTracksSection ];
   }
 };
 

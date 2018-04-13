@@ -127,11 +127,8 @@ class BigwigGBrowseUploader extends React.Component {
   }
 
   getGBrowseUrl () {
-    const { rootUrl, projectId } = this.props;
-    const sequenceId = '';
-    const trackId = '';
-    console.info('bigwig uploader gettin props', this.props);
-    return `/cgi-bin/gbrowse/${projectId}/?ref=`
+    const { rootUrl, projectId, sequenceId, trackName } = this.props;
+    return `/cgi-bin/gbrowse/${projectId}/?ref=${sequenceId || ''};hmap=gene_model;enable=track_${trackName || ''}_1`
   }
 
   render () {
