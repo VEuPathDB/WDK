@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import static org.gusdb.fgputil.functional.Functions.filter;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -7,7 +9,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
@@ -33,6 +39,7 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.StepUtilities;
+import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,8 +74,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0) ? new String[0]
-                    : strStratKeys.split(",");
+            List<String> stratKeys = (strStratKeys == null || strStratKeys.length() == 0) ?
+                new ArrayList<>() : Arrays.asList(strStratKeys.split(","));
 
             boolean updateResults = Boolean.parseBoolean(
                     request.getParameter(PARAM_UPDATE_RESULTS));
@@ -87,8 +94,15 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 // reload the current strategy to make sure all the data is up to date.
                 displayStrategies.put(currentStrategy.getStrategyId(),
                     new StrategyBean(wdkUser, StepUtilities.getStrategy(wdkUser.getUser(), currentStrategy.getStrategyId())));
-            } else if (open) {
-                logger.info("OPEN all strategies...");
+            }
+            else if (open) {
+                logger.info("OPEN requested strategies...");
+                // first, see which strategies can be opened; do not make strat active if
+                //   exception thrown during opening will prevent panel from even being displayed
+                //TwoTuple<List<Strategy>,List<String>> openableResult = StepUtilities.getOpenableStrategies(wdkModel.getModel(), stratKeys);
+                //stratKeys = filter(stratKeys, key -> !openableResult.getSecond().contains(key));
+
+                // TODO: we already have the openable strategies above- USE THEM rather than load again
                 // open all the requested strategies
                 for (String strategyKey : stratKeys) {
                     wdkUser.addActiveStrategy(strategyKey);
@@ -97,8 +111,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 displayStrategies = getModifiedStrategies(wdkUser, state);
 
                 // set the highlight to the last opened strategy
-                if (stratKeys.length > 0) {
-                    String stratKey = stratKeys[stratKeys.length - 1];
+                if (!stratKeys.isEmpty()) {
+                    String stratKey = stratKeys.get(stratKeys.size() - 1);
                     int pos = stratKey.indexOf('_');
                     if (pos >= 0) stratKey = stratKey.substring(0, pos);
                     long stratId = Long.parseLong(stratKey);
@@ -108,7 +122,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
                         wdkUser.getUser().getSession().setViewResults(stratKey, stepId, 0);
                     }
                 }
-            } else {
+            }
+            else {
                 logger.info("GET all strategies...");
                 // return the details of all the requested strategies; skip the
                 // state validation
