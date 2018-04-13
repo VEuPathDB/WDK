@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import static org.gusdb.fgputil.functional.Functions.filter;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
@@ -39,7 +36,6 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.StepUtilities;
-import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
