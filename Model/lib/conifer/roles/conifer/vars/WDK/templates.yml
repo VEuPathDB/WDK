@@ -8,3 +8,6 @@ model-config.xml:
 model.prop:
   src: 'WDK/model.prop.j2'
   dest: '{{ gus_home }}/config/{{ project }}/model.prop'
+tomcat_context.xml:
+  src: 'WDK/tomcat_context.xml.j2'
+  dest: '{{ gus_home }}/config/{{ webapp_ctx }}.xml'

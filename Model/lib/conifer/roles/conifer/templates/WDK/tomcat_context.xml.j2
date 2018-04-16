@@ -1,0 +1,20 @@
+<!--
+{# $SourceFileURL:$ #}
+Templated by Conifer using
+{{ template_path }}
+with vars from
+Cohort: {{ cohort }}
+Project: {{ project }}
+Environment: {{ env|default() }}
+site_vars file: {{ site_vars }}
+-->
+
+<!-- context file for deploying webapp into Tomcat -->
+<Context path="{{ contextxml_path }}"
+    docBase="{{ contextxml_docBase }}"
+    privileged="{{ contextxml_privileged|default("false") }}"
+    swallowOutput="{{ contextxml_swallowOutput|default("true") }}"
+    allowLinking="{{ contextxml_allowLinking|default("true") }}"
+>
+    <Parameter name="model" value="{{ contextxml_model }}"/>
+</Context>
