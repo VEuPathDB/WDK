@@ -1,6 +1,6 @@
 import { ActionThunk, EmptyAction, emptyAction } from "Utils/ActionCreatorUtils";
 import { UserDatasetMeta, UserDataset } from "Utils/WdkModel";
-import { ServiceError } from "Utils/WdkService";
+import { ServiceError, UserDatasetShareResponse } from "Utils/WdkService";
 import { transitionToInternalPage } from "Core/ActionCreators/RouterActionCreators";
 
 export type ListLoadingAction = {
@@ -90,9 +90,7 @@ export type SharingDatasetAction = {
 export type SharingSuccessAction = {
   type: 'user-datasets/sharing-success',
   payload: {
-    method: string,
-    userDatasetIds: number[],
-    recipientUserIds: number[]
+    response: UserDatasetShareResponse
   }
 }
 
@@ -134,10 +132,10 @@ export function loadUserDatasetDetail(id: number): ActionThunk<DetailAction> {
 export function shareUserDatasets (userDatasetIds: number[], recipientUserIds: number[]): ActionThunk<SharingAction> {
   return ({ wdkService }) => {
     return wdkService.editUserDatasetSharing('add', userDatasetIds, recipientUserIds)
-      .then(
-        (value: void) => (<SharingSuccessAction>{
+      .then(response =>
+        (<SharingSuccessAction>{
           type: 'user-datasets/sharing-success',
-          payload: { method: 'add', userDatasetIds, recipientUserIds }
+          payload: { response }
         })
       )
       .catch(
@@ -150,9 +148,9 @@ export function unshareUserDatasets (userDatasetIds: number[], recipientUserIds:
   return ({ wdkService }) => {
     return wdkService.editUserDatasetSharing('delete', userDatasetIds, recipientUserIds)
       .then(
-        (value: void) => (<SharingSuccessAction>{
+        response => (<SharingSuccessAction>{
           type: 'user-datasets/sharing-success',
-          payload: { method: 'delete', userDatasetIds, recipientUserIds }
+          payload: { response }
         })
       )
       .catch(

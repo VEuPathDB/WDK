@@ -58,6 +58,12 @@ export interface AnswerRequest {
   }
 }
 
+export type UserDatasetShareResponse = {
+  [Key in 'add' | 'delete']: {
+    [Key in string]: UserDataset['sharedWith']
+  }
+}
+
 export class ServiceError extends Error {
   constructor(
     message: string,
@@ -830,7 +836,7 @@ export default class WdkService {
           return output;
         }, {})
     });
-    return this._fetchJson<void>('patch', '/users/current/user-datasets/sharing', delta);
+    return this._fetchJson<UserDatasetShareResponse>('patch', '/users/current/user-datasets/sharing', delta);
   }
 
   getOauthStateToken() {

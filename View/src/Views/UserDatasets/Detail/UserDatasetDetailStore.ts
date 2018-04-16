@@ -11,6 +11,7 @@ import {
   DetailRemoveErrorAction,
   SharingSuccessAction
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import sharingReducer from 'Views/UserDatasets/Sharing/UserDatasetSharingReducer';
 import { UserDataset } from 'Utils/WdkModel';
 
 type Action = DetailLoading
@@ -131,40 +132,9 @@ export default class UserDatasetDetailStore extends WdkStore<State> {
       };
 
       case 'user-datasets/sharing-success': {
-        const { method, userDatasetIds, recipientUserIds } = action.payload;
-        if (
-          !Array.isArray(userDatasetIds)
-          || !userDatasetIds.length
-          || !Array.isArray(recipientUserIds)
-          || !recipientUserIds.length
-        ) return state;
-
-        switch (method) {
-          case 'add': {
-
-            return state;
-          }
-          case 'delete': {
-            const userDatasetsById = Object.entries(state.userDatasetsById).reduce((outputObject, [ id, entry ]) => {
-              if (entry == null || entry.resource == null || entry.resource.sharedWith == null || !entry.resource.sharedWith.length)
-                return Object.assign(outputObject, { [id]: entry });
-
-              const updatedEntry = {
-                ...entry,
-                resource: {
-                  ...entry.resource,
-                  sharedWith: entry.resource.sharedWith.filter((userDatasetShare) => {
-                    return !recipientUserIds.includes(userDatasetShare.user);
-                  })
-                }
-              };
-
-              return Object.assign(outputObject, { [id]: updatedEntry });
-            }, {});
-
-            return { ...state, userDatasetsById };
-          }
-          default: return state;
+        return {
+          ...state,
+          userDatasetsById: sharingReducer(state.userDatasetsById, action)
         }
       };
 
