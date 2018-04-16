@@ -17,7 +17,6 @@ import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/Li
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 
 const ActionCreators = {
-  loadUserDatasetList,
   updateUserDatasetDetail,
   removeUserDataset,
   shareUserDatasets,
@@ -58,7 +57,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   loadData () {
-    this.eventHandlers.loadUserDatasetList();
+    this.dispatchAction(loadUserDatasetList());
   }
 
   isRenderDataLoaded () {
@@ -71,7 +70,6 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
     const { userDatasets, loadError, config } = this.state;
     const { projectId, displayName: projectName } = config;
     const user: User = this.state.user;
-    const { updateUserDatasetDetail, shareUserDatasets, removeUserDataset } = this.eventHandlers;
     const { history, location } = this.props;
 
     const title = this.getTitle();
@@ -83,10 +81,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       projectId,
       projectName,
       userDatasets,
-      removeUserDataset,
-      shareUserDatasets,
-      unshareUserDatasets,
-      updateUserDatasetDetail
+      ...this.eventHandlers
     };
     return (
       <div className="UserDatasetList-Controller">
