@@ -83,7 +83,7 @@ export const OntologyTermsInvalidated = makeActionCreator(
 export default combineEpics(initEpic, updateDependentParamsActiveFieldEpic);
 
 type LoadDeps = {
-  parameter: FilterParamNew,
+  paramName: string,
   loadCounts: boolean,
   loadSummaryFor: string | null,
   questionState: QuestionState
@@ -100,21 +100,26 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
       const questionState = getQuestionState(services.store, questionName);
       if (questionState == null) return Observable.empty();
       const { question, paramValues } = questionState;
-      const isVisible = (parameter: FilterParamNew) => (
-        get(getQuestionState(services.store, questionName), ['groupUIState', parameter.group, 'isVisible'], false)
-      )
+      const isVisible = (paramName: string) => {
+        const state = getQuestionState(services.store, questionName);
+        if (state == null) return false;
+
+        const parameter = getFilterParamNewFromState(state, paramName);
+        return state.groupUIState[parameter.group].isVisible;
+      }
 
       // Create an observable per filter param to load ontology term summaries
       // and counts when an active ontology term is changed, or when a param
       // value changes, but only if its group is visible.
       return Observable.from(question.parameters)
         .filter(isType)
-        .mergeMap(parameter => {
+        .map(parameter => ({ paramName: parameter.name, groupName: parameter.group }))
+        .mergeMap(({paramName, groupName}) => {
           // Create an Observable<FilterParamNew> based on actions
           const valueChangedParameter$ = action$.filter(FiltersUpdatedAction.isType)
             .filter(
               action => action.payload.questionName === questionName &&
-              action.payload.parameter.name === parameter.name
+              action.payload.parameter.name === paramName
             )
             .mergeMap(action => {
               const { prevFilters, filters } = action.payload;
@@ -122,7 +127,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
               const { activeOntologyTerm, fieldStates } =
-                questionState.paramUIState[parameter.name];
+                questionState.paramUIState[paramName];
               const loadSummary = activeOntologyTerm != null && (
                 fieldStates[activeOntologyTerm].summary == null ||
                 !isEqual( prevFilters.filter(f => f.field != activeOntologyTerm)
@@ -131,7 +136,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
 
               return Observable.of({
                 questionState,
-                parameter,
+                paramName,
                 loadCounts: true,
                 loadSummaryFor: loadSummary ? activeOntologyTerm : null
               });
@@ -139,48 +144,47 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
             .debounceTime(1000)
 
           const activeOntologyTermChangedParameter$ = action$.filter(ActiveFieldSetAction.isType)
-            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
+            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === paramName)
             .mergeMap(() => {
               const questionState = getQuestionState(services.store, questionName);
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
-              const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[parameter.name];
+              const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[paramName];
               if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].summary == null) {
                 return Observable.of({
-                  parameter,
+                  paramName,
                   loadCounts: true,
-                  loadSummaryFor: questionState.paramUIState[parameter.name].activeOntologyTerm,
+                  loadSummaryFor: questionState.paramUIState[paramName].activeOntologyTerm,
                   questionState
                 })
               }
               return Observable.empty() as Observable<LoadDeps>;
             })
-            .debounceTime(1000)
 
           const forceSummaryUpdateParameter$ = action$.filter(FieldCountUpdateRequestAction.isType)
-            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === parameter.name)
+            .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === paramName)
             .mergeMap(action => {
               const questionState = getQuestionState(services.store, questionName);
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
               return Observable.of({
-                parameter,
+                paramName,
                 loadCounts: false,
                 loadSummaryFor: action.payload.field,
                 questionState
-            })
+              })
             })
 
           const groupVisibilityChangeParameter$ = action$.filter(GroupVisibilityChangedAction.isType)
-            .filter(action => action.payload.questionName === questionName && action.payload.groupName === parameter.group)
+            .filter(action => action.payload.questionName === questionName && action.payload.groupName === groupName)
             .mergeMap(() => {
               const questionState = getQuestionState(services.store, questionName);
               if (questionState == null) return Observable.empty() as Observable<LoadDeps>;
 
-              const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[parameter.name];
+              const { activeOntologyTerm, fieldStates }: State = questionState.paramUIState[paramName];
               if (activeOntologyTerm != null && fieldStates[activeOntologyTerm].summary == null) {
                 return Observable.of({
-                  parameter,
+                  paramName,
                   loadCounts: true,
                   loadSummaryFor: activeOntologyTerm,
                   questionState
@@ -194,20 +198,22 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
             activeOntologyTermChangedParameter$,
             groupVisibilityChangeParameter$
           )
-          .filter(({ parameter }) => isVisible(parameter))
-          .switchMap(({parameter, loadCounts, loadSummaryFor, questionState}) => {
+          .filter(({ paramName }) => isVisible(paramName))
+          .switchMap(({paramName, loadCounts, loadSummaryFor, questionState}) => {
             return Observable.merge(
               loadCounts
-                ? getSummaryCounts(services.wdkService, parameter.name, questionState)
+                ? getSummaryCounts(services.wdkService, paramName, questionState)
                 : Observable.empty(),
               loadSummaryFor
-                ? getOntologyTermSummary(services.wdkService, parameter.name, questionState, loadSummaryFor)
+                ? getOntologyTermSummary(services.wdkService, paramName, questionState, loadSummaryFor)
                 : Observable.empty()
             ) as Observable<Action>;
           });
 
-          const filters = getFilters(paramValues[parameter.name]);
-          const activeField = filters.length === 0 ? findFirstLeaf(parameter.ontology) : filters[0].field;
+          const filters = getFilters(paramValues[paramName]);
+          const activeField = filters.length === 0
+            ? findFirstLeaf(getFilterParamNewFromState(getQuestionState(services.store, questionName), paramName).ontology)
+            : filters[0].field;
 
           // The order here is important. We want to first merge the child epics
           // (updateActiveFieldEpic and ypdateSummaryCountsEpic), THEN we want to
@@ -216,7 +222,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
           return parameter$
             .merge(Observable.of(ActiveFieldSetAction.create({
               questionName,
-              parameter,
+              parameter: getFilterParamNewFromState(questionState, paramName),
               paramValues,
               activeField
             })))
@@ -230,7 +236,6 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
 
 function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
   return action$.filter(ParamsUpdatedAction.isType)
-    .debounceTime(1000)
     .switchMap(action => {
       const { questionName, parameters } = action.payload;
       return Observable.from(parameters)
@@ -370,7 +375,9 @@ function getOntologyFromContext(ctx: Ctx) {
 }
 
 function getQuestionState(store: QuestionStore, questionName: string) {
-  return store.state.questions[questionName];
+  const state = store.state.questions[questionName];
+  if (state == null) throw new Error(`Question ${questionName} does not exist in store state.`);
+  return state;
 }
 
 function getFilterParamNewFromState(state: QuestionState, paramName: string) {
