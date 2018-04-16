@@ -198,10 +198,10 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
           .switchMap(({parameter, loadCounts, loadSummaryFor, questionState}) => {
             return Observable.merge(
               loadCounts
-                ? getSummaryCounts(services.wdkService, parameter, questionState)
+                ? getSummaryCounts(services.wdkService, parameter.name, questionState)
                 : Observable.empty(),
               loadSummaryFor
-                ? getOntologyTermSummary(services.wdkService, parameter, questionState, loadSummaryFor)
+                ? getOntologyTermSummary(services.wdkService, parameter.name, questionState, loadSummaryFor)
                 : Observable.empty()
             ) as Observable<Action>;
           });
@@ -253,8 +253,8 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
             paramValues,
             retainedFields: [/* activeOntologyTerm */]
           })).merge(
-            activeField ? getOntologyTermSummary(wdkService, parameter, questionState, activeField) : Observable.empty() as Observable<Action>,
-            getSummaryCounts(wdkService, parameter, questionState)
+            activeField ? getOntologyTermSummary(wdkService, parameter.name, questionState, activeField) : Observable.empty() as Observable<Action>,
+            getSummaryCounts(wdkService, parameter.name, questionState)
           );
         })
         .takeUntil(action$.filter(killAction => (
@@ -270,12 +270,14 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
 
 function getOntologyTermSummary(
   wdkService: WdkService,
-  parameter: FilterParamNew,
+  paramName: string,
   state: QuestionState,
   ontologyTerm: string
 ): Observable<Action> {
   const { question, paramValues, paramUIState } = state;
   const questionName = question.urlSegment;
+  const parameter = getFilterParamNewFromState(state, paramName);
+
   if (ontologyTerm == null) return Observable.empty();
 
   // FIXME Add loading and invalid for fieldState
@@ -336,13 +338,14 @@ function getOntologyTermSummary(
 
 function getSummaryCounts(
   wdkService: WdkService,
-  parameter: FilterParamNew,
+  paramName: string,
   state: QuestionState
 ): Observable<Action> {
   const { question, paramValues } = state;
   const questionName = question.urlSegment;
-  const paramName = parameter.name;
-  const filters = JSON.parse(paramValues[parameter.name]).filters;
+  const parameter = getFilterParamNewFromState(state, paramName);
+  const filters = JSON.parse(paramValues[paramName]).filters;
+
   return Observable.from(wdkService.getFilterParamSummaryCounts(questionName, paramName, filters, paramValues).then(
     counts => SummaryCountsLoadedAction.create({
       questionName,
@@ -368,4 +371,12 @@ function getOntologyFromContext(ctx: Ctx) {
 
 function getQuestionState(store: QuestionStore, questionName: string) {
   return store.state.questions[questionName];
+}
+
+function getFilterParamNewFromState(state: QuestionState, paramName: string) {
+  const parameter = state.question.parametersByName[paramName];
+  if (parameter == null || parameter.type !== 'FilterParamNew') {
+    throw new Error(`Parameter ${paramName} in ${state.question.name} is not a FilterParamNew.`);
+  }
+  return parameter;
 }
