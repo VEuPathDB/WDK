@@ -38,11 +38,11 @@ type Err = {
 
 type Result<T> = Ok<T> | Err;
 
-function ok<T>(value: T): Ok<T> {
+export function ok<T>(value: T): Ok<T> {
   return { status: 'ok', value };
 }
 
-function err(value: any, expected: string, context: string = ''): Err {
+export function err(value: any, expected: string, context: string = ''): Err {
   return { status: 'err', value, expected, context};
 }
 

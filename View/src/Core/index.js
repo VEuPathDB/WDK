@@ -8,6 +8,7 @@ import * as ReporterUtils from 'Views/ReporterForm/reporterUtils';
 
 import WdkService from 'Utils/WdkService';
 import * as ActionCreatorUtils from 'Utils/ActionCreatorUtils';
+import * as Json from 'Utils/Json';
 import * as WdkModel from 'Utils/WdkModel';
 import * as Platform from 'Utils/Platform';
 import * as TreeUtils from 'Utils/TreeUtils';
@@ -28,6 +29,7 @@ __webpack_public_path__ = window.__asset_path_remove_me_please__; // eslint-disa
 
 export {
   ActionCreatorUtils,
+  Json,
   Stores,
   WdkModel,
   Platform,
