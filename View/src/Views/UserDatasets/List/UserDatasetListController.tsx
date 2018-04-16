@@ -49,7 +49,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   getTitle () {
-    return 'My Datasets';
+    return 'My Data Sets';
   }
 
   getActionCreators () {
@@ -91,7 +91,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
         }
         <div className="UserDatasetList-Content">
           {!loggedIn
-            ? <UserDatasetEmptyState message="Please log in to upload and view your user datasets."/>
+            ? <UserDatasetEmptyState message="Please log in to upload and view your user data sets."/>
             : <UserDatasetList {...listProps} />
           }
         </div>
