@@ -168,18 +168,21 @@ function setActiveRecord(
           const additionalActions = additionalOptions.map(options =>
             wdkService.getRecord(recordClass.name, primaryKey, options).then(
               record => ({
-                  type: 'record-view/active-record-updated',
-                  payload: { record }
-                } as RecordUpdatedAction)
+                type: 'record-view/active-record-updated',
+                payload: { record }
+              } as RecordUpdatedAction)
             )
           );
 
-          return [
-            initialAction$.then(withId, makeErrorAction),
-            additionalActions.map(action$ => action$.then(withId, makeErrorAction)),
-            recordClass.useBasket ? initialAction$.then(a => loadBasketStatus(a.payload.record)) : emptyAction,
-            initialAction$.then(a => loadFavoritesStatus(a.payload.record))
-          ];
+          return initialAction$.then(
+            action => [
+              withId(action),
+              additionalActions.map(action$ => action$.then(withId, makeErrorAction)),
+              recordClass.useBasket ? loadBasketStatus(action.payload.record) : emptyAction,
+              loadFavoritesStatus(action.payload.record)
+            ],
+            makeErrorAction
+          );
         },
         makeErrorAction
       )
