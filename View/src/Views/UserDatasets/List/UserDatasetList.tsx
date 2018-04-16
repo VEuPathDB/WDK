@@ -402,18 +402,16 @@ class UserDatasetList extends React.Component <Props, State> {
     const emptyMessage = !userDatasets.length
       ? (
         <React.Fragment>
-          <p>You don't have any user datasets.</p>
+          <p  style={{ textAlign: 'center' }}>This page is empty because you do not have any data sets.  <br/> To add a data set, go to EuPathDB Galaxy via 'Analyze My Experiment' and then use the EuPathDB Export Tool as outlined below.</p>
           <br/>
-          <small>
             <Link to="/search/dataset/AllDatasets/result">
-              See <b>{projectName}</b>'s Public Datasets.
+              See <b>{projectName}</b>'s Public Data Sets.
             </Link>
-          </small>
         </React.Fragment>
       ) : showOnlyCurrentProject
         ? (
           <React.Fragment>
-            <p>You have no <b>{projectName}</b> datasets.</p>
+            <p>You have no <b>{projectName}</b> data sets.</p>
             <br/>
             <button className="btn btn-info" onClick={() => toggleProjectScope(false)}>
               Show All User Datasets
@@ -540,14 +538,14 @@ class UserDatasetList extends React.Component <Props, State> {
         <Mesa state={MesaState.create(tableState)}>
           <div className="stack">
             <h1 className="UserDatasetList-Title">
-              My Datasets
+              My Data Sets
               <HelpIcon>
                 <div>
-                  As a part of your new user Workspace, you can now upload your own datasets to use in <b>{projectName}</b>.
+                  As a part of your My Data Sets, you can now upload your own data sets to use in <b>{projectName}</b>.
                   <ul style={{ marginTop: '10px' }}>
-                    <li>This data can be used in all the same ways as our public datasets.</li>
+                    <li>This data can be used in all the same ways as our public data sets.</li>
                     <li>Easily manage how you leverage your data: push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
-                    <li>Share your dataset with others and receive shared data from your own colleagues.</li>
+                    <li>Share your data set with others and receive shared data from your own colleagues.</li>
                   </ul>
                 </div>
               </HelpIcon>
@@ -574,7 +572,7 @@ class UserDatasetList extends React.Component <Props, State> {
                 <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
                 {' '}
                 <div onClick={() => toggleProjectScope(!showOnlyCurrentProject)} style={{ display: 'inline-block' }}>
-                  Only show datasets related to <b>{projectName}</b>
+                  Only show data sets related to <b>{projectName}</b>
                 </div>
               </div>
             </div>
