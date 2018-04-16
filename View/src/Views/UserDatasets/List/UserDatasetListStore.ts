@@ -5,20 +5,25 @@ import {
   ListErrorReceivedAction,
   DetailUpdateErrorAction,
   DetailUpdateSuccessAction,
-  DetailRemoveSuccessAction
+  DetailRemoveSuccessAction,
+  SharingSuccessAction
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import sharingReducer from 'Views/UserDatasets/Sharing/UserDatasetSharingReducer';
 import { UserDataset } from 'Utils/WdkModel';
+import { keyBy } from 'lodash';
 
 type Action = ListLoadingAction
   | ListReceivedAction
   | ListErrorReceivedAction
   | DetailUpdateErrorAction
   | DetailUpdateSuccessAction
-  | DetailRemoveSuccessAction;
+  | DetailRemoveSuccessAction
+  | SharingSuccessAction;
 
 export interface State extends BaseState {
   userDatasetsLoading: boolean;
   userDatasets: UserDataset[];
+  userDatasetsById: Record<string, { isLoading: boolean, resource?: UserDataset }>;
   loadError: Error | null;
 }
 
@@ -28,6 +33,7 @@ export default class UserDatasetListStore extends WdkStore<State> {
     return Object.assign({
       userDatasetsLoading: false,
       userDatasets: [],
+      userDatasetsById: {},
       loadError: null
     }, super.getInitialState());
   }
@@ -42,7 +48,9 @@ export default class UserDatasetListStore extends WdkStore<State> {
       case 'user-datasets/list-received': return {
         ...state,
         userDatasetsLoading: false,
-        userDatasets: action.payload.userDatasets
+        userDatasets: action.payload.userDatasets,
+        userDatasetsById: action.payload.userDatasets.reduce((uds, ud) =>
+          Object.assign(uds, { [ud.id]: { loading: false, resource: ud }}), {} as State['userDatasetsById'])
       };
 
       case 'user-datasets/list-error': return {
@@ -75,6 +83,17 @@ export default class UserDatasetListStore extends WdkStore<State> {
             : userDataset
         })
       };
+
+      case 'user-datasets/sharing-success': {
+        const userDatasetsById = sharingReducer(state.userDatasetsById, action);
+        const userDatasets = state.userDatasets.map(ud =>
+          userDatasetsById[ud.id].resource || ud);
+        return {
+          ...state,
+          userDatasetsById,
+          userDatasets
+        }
+      }
 
       default:
         return state;
