@@ -183,9 +183,12 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
       },
       question: {
         ...state.question,
+        parametersByName: {
+          ...state.question.parametersByName,
+          ...newParamsByName
+        },
         parameters: state.question.parameters
           .map(parameter => newParamsByName[parameter.name] || parameter)
-
       }
     };
   }
