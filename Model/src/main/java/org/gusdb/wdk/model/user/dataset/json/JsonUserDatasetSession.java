@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.jfree.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,9 +79,14 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       
     // iterate through datasets, creating a UD from each   
     if (userDatasetsDir != null) {
-      for (Path datasetDir : getDatasetDirs(userId, userDatasetsDir)) { 
-        UserDataset dataset = getUserDataset(datasetDir);
-        user.datasetsMap.put(dataset.getUserDatasetId(), dataset);
+      for (Path datasetDir : getDatasetDirs(userId, userDatasetsDir)) {
+    	try {  
+          UserDataset dataset = getUserDataset(datasetDir);
+          user.datasetsMap.put(dataset.getUserDatasetId(), dataset);
+    	}
+    	catch(WdkModelException wme) {
+    	  LOG.error("User dataset at " + datasetDir + " not retrievable.  May be corrupted.");
+    	}
       }
     }
     
@@ -98,19 +104,21 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   @Override
   public Set<UserDatasetShare> getSharedWith(Long ownerUserId, Long datasetId) throws WdkModelException {
     UserDatasetUser user = getUserDatasetUser(ownerUserId);
-    if (user.sharedWithUsers == null) {
-      user.sharedWithUsers = new HashSet<UserDatasetShare>();
+    if (user.sharedWithUsers.get(datasetId) == null) {
+      
   
       Path sharedWithDir = getSharedWithDir(ownerUserId, datasetId);
   
       List<Path> sharedWithPaths = adaptor.getPathsInDir(sharedWithDir);
+      Set<UserDatasetShare> sharedWithItems = new HashSet<UserDatasetShare>();
       for (Path sharedWithPath : sharedWithPaths) {
         String userIdString = sharedWithPath.getFileName().toString();
         Long timestamp = adaptor.getModificationTime(sharedWithPath);
-        user.sharedWithUsers.add(new JsonUserDatasetShare(new Long(userIdString), timestamp));
+        sharedWithItems.add(new JsonUserDatasetShare(new Long(userIdString), timestamp));
       }
+      user.sharedWithUsers.put(datasetId, sharedWithItems);
     }
-    return Collections.unmodifiableSet(user.sharedWithUsers);
+    return Collections.unmodifiableSet(user.sharedWithUsers.get(datasetId));
   }
 
   /**
@@ -770,7 +778,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    */
   private class UserDatasetUser {   
     Map<Long, UserDataset> datasetsMap = new HashMap<Long, UserDataset>();
-    Set<UserDatasetShare> sharedWithUsers;
+    Map<Long, Set<UserDatasetShare>> sharedWithUsers = new HashMap<Long, Set<UserDatasetShare>>();
     Path sharedWithDir;
     Map<Long, UserDataset> externalDatasetsMap;
     Map<Long, Boolean> userDatasetExistsMap  = new HashMap<Long, Boolean>();
