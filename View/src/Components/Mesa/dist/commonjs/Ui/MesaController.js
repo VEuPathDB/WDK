@@ -134,13 +134,14 @@ var MesaController = function (_React$Component) {
     value: function renderBody() {
       var _props5 = this.props,
           rows = _props5.rows,
+          filteredRows = _props5.filteredRows,
           options = _props5.options,
           columns = _props5.columns,
           actions = _props5.actions,
           uiState = _props5.uiState,
           eventHandlers = _props5.eventHandlers;
 
-      var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
+      var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
       var Empty = this.renderEmptyState;
 
       return rows.length ? _react2.default.createElement(_DataTable2.default, props) : _react2.default.createElement(Empty, null);

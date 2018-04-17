@@ -12,11 +12,11 @@ class DataRowList extends React.Component {
 
   render () {
     const { props } = this;
-    const { rows } = props;
+    const { rows, filteredRows } = props;
 
     return (
       <tbody className={dataRowListClass()}>
-        {rows.map((row, rowIndex) => (
+        {filteredRows.map((row, rowIndex) => (
           <DataRow
             row={row}
             key={rowIndex}

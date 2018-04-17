@@ -40,6 +40,7 @@ var Mesa = function (_React$Component) {
     value: function render() {
       var state = this.props.state;
       var rows = state.rows,
+          filteredRows = state.filteredRows,
           columns = state.columns,
           options = state.options,
           actions = state.actions,

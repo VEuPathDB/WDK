@@ -68,13 +68,14 @@ var DataTable = function (_React$PureComponent) {
     value: function generateLayout() {
       var _props2 = this.props,
           rows = _props2.rows,
+          filteredRows = _props2.filteredRows,
           options = _props2.options,
           columns = _props2.columns,
           actions = _props2.actions,
           uiState = _props2.uiState,
           eventHandlers = _props2.eventHandlers;
 
-      var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
+      var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
