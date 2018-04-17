@@ -67,12 +67,14 @@ var DataTable = function (_React$Component) {
   }, {
     key: 'handleTableBodyScroll',
     value: function handleTableBodyScroll(e) {
-      console.log('body is at', this.bodyNode.scrollLeft);
+      var offset = this.bodyNode.scrollLeft;
+      this.headerNode.scrollLeft = offset;
     }
   }, {
     key: 'handleTableHeaderScroll',
     value: function handleTableHeaderScroll(e) {
-      console.log('header is at', this.headerNode.scrollLeft);
+      var offset = this.headerNode.scrollLeft;
+      this.bodyNode.scrollLeft = offset;
     }
   }, {
     key: 'render',

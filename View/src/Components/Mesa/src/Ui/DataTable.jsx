@@ -28,11 +28,13 @@ class DataTable extends React.Component {
   }
 
   handleTableBodyScroll (e) {
-    console.log('body is at', this.bodyNode.scrollLeft);
+    const offset = this.bodyNode.scrollLeft;
+    this.headerNode.scrollLeft = offset;
   }
 
   handleTableHeaderScroll (e) {
-    console.log('header is at', this.headerNode.scrollLeft);
+    const offset = this.headerNode.scrollLeft;
+    this.bodyNode.scrollLeft = offset;
   }
 
   render () {
