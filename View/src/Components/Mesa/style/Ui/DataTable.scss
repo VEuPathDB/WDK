@@ -2,6 +2,7 @@
   font-size: $fontSize;
 
   .DataTable-Sticky {
+    display: block;
     overflow: visible;
     border: 1px solid cyan;
 
