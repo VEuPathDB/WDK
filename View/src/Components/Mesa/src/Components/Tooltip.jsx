@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { EventsFactory } from 'Utils/Events';
+import { EventsFactory } from '../Utils/Events';
 
 class Tooltip extends React.Component {
   constructor (props) {
