@@ -62,9 +62,9 @@ class EmptyState extends React.PureComponent {
 
   render () {
     let { state } = this.props;
-    let { columns, ui } = state;
+    let { columns, ui, actions } = state;
     let { emptinessCulprit } = ui;
-    let colspan = columns.filter(column => !column.hidden).length;
+    let colspan = columns.filter(column => !column.hidden).length + (actions.length ? 1 : 0);
     let culprit = this.getCulprit();
 
     return (

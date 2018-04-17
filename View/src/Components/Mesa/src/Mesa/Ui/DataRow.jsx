@@ -1,6 +1,7 @@
 import React from 'react';
 
 import DataCell from 'Mesa/Ui/DataCell';
+import SelectionCell from 'Mesa/Ui/SelectionCell';
 
 class DataRow extends React.PureComponent {
   constructor (props) {
@@ -21,27 +22,26 @@ class DataRow extends React.PureComponent {
 
   expandRow () {
     if (!this.props.state.options.inline) return;
-    const expanded = true;
-    this.setState({ expanded });
+    this.setState({ expanded: true });
   }
 
   collapseRow () {
     if (!this.props.state.options.inline) return;
-    const expanded = false;
-    this.setState({ expanded });
+    this.setState({ expanded: false });
   }
 
   toggleRow () {
     const { row } = this.props;
-    console.log('u clicked' ,row);
     if (!this.props.state.options.inline) return;
+
     const { expanded } = this.state;
     this.setState({ expanded: !expanded });
   }
 
   render () {
-    let { row, state } = this.props;
-    let { columns, options } = state;
+    let { row, state, dispatch } = this.props;
+    let { columns, options, actions } = state;
+
     let { inline } = options;
     let { expanded } = this.state;
     inline = (inline ? !expanded : inline);
@@ -51,6 +51,10 @@ class DataRow extends React.PureComponent {
 
     return (
       <tr className={className} style={rowStyle} onClick={this.toggleRow}>
+        {actions.length
+          ? <SelectionCell row={row} state={state} dispatch={dispatch} />
+          : null
+        }
         {columns.map(column => (
           <DataCell
             column={column}

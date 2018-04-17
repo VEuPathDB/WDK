@@ -71,6 +71,15 @@ const Importer = {
   importOptions (options = {}) {
     let result = Object.assign({}, OptionsDefaults, options);
     return result;
+  },
+
+  importActions (actions) {
+    if (!actions || !Array.isArray(actions) || actions.some(action => typeof action !== 'object')) return [];
+    actions = actions.map(action => {
+      let __id = Utils.uid();
+      return Object.assign({}, action, { __id });
+    });
+    return actions;
   }
 };
 

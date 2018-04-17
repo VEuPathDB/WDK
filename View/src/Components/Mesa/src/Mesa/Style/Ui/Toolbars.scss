@@ -1,0 +1,12 @@
+.Toolbar {
+  button {
+    margin: 10px;
+    padding: 10px;
+    .icon:first-child {
+      margin-right: 10px;
+    }
+    .icon:last-child {
+      margin-left: 10px;
+    }
+  }
+}

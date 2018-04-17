@@ -51,6 +51,7 @@ class TableBody extends React.Component {
             <HeadingRow
               dispatch={dispatch}
               state={state}
+              filteredRows={filteredRows}
             />
           </tbody>
           {content}

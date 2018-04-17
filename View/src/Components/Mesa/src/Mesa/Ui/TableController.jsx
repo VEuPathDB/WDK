@@ -2,8 +2,9 @@ import React from 'react';
 
 import TableBody from 'Mesa/Ui/TableBody';
 import RowUtils from 'Mesa/Utils/RowUtils';
-import PaginationMenu from 'Mesa/Ui/PaginationMenu';
 import TableToolbar from 'Mesa/Ui/TableToolbar';
+import ActionToolbar from 'Mesa/Ui/ActionToolbar';
+import PaginationMenu from 'Mesa/Ui/PaginationMenu';
 import { setEmptinessCulprit } from 'Mesa/State/Actions';
 
 class TableController extends React.Component {
@@ -18,7 +19,7 @@ class TableController extends React.Component {
     let { searchQuery, sort, emptinessCulprit } = ui;
 
     if (!rows.length) {
-      if (emptinessCulprit !== 'nodata') dispatch(setEmptinessCulprit('nodata'));
+      if (emptinessCulprit && emptinessCulprit !== 'nodata') dispatch(setEmptinessCulprit('nodata'));
       return [];
     }
 
@@ -42,12 +43,12 @@ class TableController extends React.Component {
 
   render () {
     let { state, dispatch, children } = this.props;
-    let { ui, options } = state;
+    let { ui, options, actions } = state;
     let { pagination } = ui;
 
     let filteredRows = this.getFilteredRows();
 
-    let pageNav = !options.paginate ? null : (
+    let PageNav = () => !options.paginate ? null : (
       <PaginationMenu
         dispatch={dispatch}
         list={filteredRows}
@@ -67,7 +68,16 @@ class TableController extends React.Component {
             </TableToolbar>
         }
 
-        {pageNav}
+        {!actions.length
+          ? null
+          : <ActionToolbar
+              state={state}
+              dispatch={dispatch}
+              filteredRows={filteredRows}
+            />
+        }
+
+        <PageNav />
 
         <TableBody
           state={state}
@@ -75,7 +85,7 @@ class TableController extends React.Component {
           filteredRows={filteredRows}
         />
 
-        {pageNav}
+        <PageNav />
 
       </div>
     );

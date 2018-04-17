@@ -1,7 +1,10 @@
+import React from 'react';
+
+import Icon from 'Mesa/Components/Icon';
 import Datasets from 'Content/Data/Datasets';
 
 const ExtraData = {
-  label: 'Extra Data + Inline Mode!',
+  label: 'Extra Data / Inline / Actions',
   rows: [
     ...Datasets, ...Datasets,
     ...Datasets, ...Datasets,
@@ -18,7 +21,18 @@ const ExtraData = {
       truncated: false,
       overflowHeight: '2rem'
     }
-  }
+  },
+  actions: [
+    {
+      element: <button>Example Action <Icon fa="magic" /></button>,
+      handler (row) {
+        alert('one row has the category of '+ row.category);
+      },
+      callback (rows) {
+        alert('there are ' + rows.length + 'rows');
+      }
+    }
+  ]
 };
 
 export default ExtraData;

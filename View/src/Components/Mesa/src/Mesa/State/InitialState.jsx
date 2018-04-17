@@ -2,10 +2,12 @@ const InitialState = {
   rows: [],
   columns: [],
   options: {},
+  actions: [],
   ui: {
     columnEditorOpen: false,
     emptinessCulprit: null,
     searchQuery: null,
+    selection: [],
     sort: {
       byColumn: null,
       ascending: true

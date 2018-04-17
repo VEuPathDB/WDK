@@ -4,7 +4,13 @@ import 'Mesa/Style/Mesa';
 import Importer from 'Mesa/Utils/Importer';
 import StoreFactory from 'Mesa/State/StoreFactory';
 import TableController from 'Mesa/Ui/TableController';
-import { updateOptions, updateColumns, updateRows } from 'Mesa/State/Actions';
+import {
+  updateOptions,
+  updateColumns,
+  updateRows,
+  updateActions,
+  resetUiState
+} from 'Mesa/State/Actions';
 
 class Mesa extends React.Component {
   constructor (props) {
@@ -16,13 +22,13 @@ class Mesa extends React.Component {
   }
 
   componentWillMount () {
-    let { options, columns, rows } = this.props;
+    let { options, columns, rows, actions } = this.props;
 
     rows = Importer.importRows(rows);
     options = Importer.importOptions(options);
     columns = Importer.importColumns(columns, rows, options);
-
-    this.store = StoreFactory.create({ options, columns, rows });
+    actions = Importer.importActions(actions);
+    this.store = StoreFactory.create({ options, columns, rows, actions });
     this.setState(this.store.getState());
   }
 
@@ -36,10 +42,15 @@ class Mesa extends React.Component {
     if (newProps.columns !== this.props.columns) {
       let columns = Importer.importColumns(newProps.columns, newProps.rows, newProps.options);
       dispatch(updateColumns([...columns]));
+      dispatch(resetUiState());
     }
     if (newProps.rows !== this.props.rows) {
       let rows = Importer.importRows(newProps.rows)
       dispatch(updateRows([...rows]));
+    }
+    if (newProps.actions !== this.props.actions) {
+      let actions = Importer.importActions(newProps.actions);
+      dispatch(updateActions([...actions]));
     }
   }
 

@@ -138,7 +138,8 @@ class ColumnFilter extends React.PureComponent {
       : (
         <div className="FilterMenu" ref="menu">
           <big>
-            <b>{column.name}</b> filter [{enabled ? 'on' : 'off'}]
+            <b>{column.name}</b> filter
+            <span className="faded"> ({enabled ? 'on' : 'off'})</span>
             <Toggle
               style={{ float: 'right' }}
               onChange={this.toggleFilter}
