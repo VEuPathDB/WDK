@@ -27,7 +27,6 @@ class Tooltip extends React.Component {
   }
 
   showTooltip () {
-    this.engageTooltip();
     if (this.id) return;
     const { addModal } = this.context;
     const textBox = { render: this.renderTooltipBox };
@@ -36,6 +35,7 @@ class Tooltip extends React.Component {
 
   engageTooltip () {
     if (this.timeout) clearTimeout(this.timeout);
+    this.showTooltip();
   }
 
   disengageTooltip () {
@@ -68,7 +68,7 @@ class Tooltip extends React.Component {
       <div
         style={boxStyle}
         className={'Tooltip-Content'}
-        onMouseEnter={this.showTooltip}
+        onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
         {content}
       </div>
@@ -81,7 +81,7 @@ class Tooltip extends React.Component {
     return (
       <div
         className={className}
-        onMouseEnter={this.showTooltip}
+        onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
         {children}
       </div>
