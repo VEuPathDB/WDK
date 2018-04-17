@@ -82,17 +82,18 @@ var DataTable = function (_React$PureComponent) {
 
       var tableBodyStyle = { maxHeight: tableBodyMaxHeight };
       var useStickyLayout = this.shouldUseStickyHeader();
-      var cumulativeWidth = useStickyLayout ? { minWidth: (0, _Utils.combineWidths)(columns.map(function (col) {
-          return col.width;
-        })) } : null;
+      var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
+        return col.width;
+      }));
+      var widthLayer = useStickyLayout ? { minWidth: cumulativeWidth, maxWidth: cumulativeWidth, width: cumulativeWidth } : null;
       console.log('cumulative width...', cumulativeWidth);
 
       return useStickyLayout ? _react2.default.createElement(
         'div',
-        { className: dataTableClass('Sticky'), style: cumulativeWidth },
+        { className: dataTableClass('Sticky'), style: widthLayer },
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Header'), style: cumulativeWidth },
+          { className: dataTableClass('Header'), style: widthLayer },
           '>',
           _react2.default.createElement(
             'table',
@@ -106,7 +107,7 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Body'), style: Object.assign(tableBodyStyle, cumulativeWidth) },
+          { className: dataTableClass('Body'), style: Object.assign(tableBodyStyle, widthLayer) },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
