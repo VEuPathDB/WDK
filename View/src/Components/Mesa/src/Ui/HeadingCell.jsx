@@ -23,6 +23,7 @@ class HeadingCell extends React.PureComponent {
   componentDidMount () {
     this.updateOffset();
     Events.add('scroll', this.updateOffset);
+    Events.add('resize', this.updateOffset);
   }
 
   updateOffset () {
