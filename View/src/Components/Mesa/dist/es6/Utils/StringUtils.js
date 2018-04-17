@@ -11,7 +11,11 @@ exports.isHtml = isHtml;
 exports.htmlStringValue = htmlStringValue;
 exports.sortFactory = sortFactory;
 exports.numberSort = numberSort;
+exports.arraysMatch = arraysMatch;
 exports.textSort = textSort;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function stringValue(value) {
   switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
     case 'string':
@@ -76,12 +80,25 @@ function numberSort(list, key) {
   return ascending ? result.reverse() : result;
 };
 
-function textSort(list, key) {
+function arraysMatch(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return undefined;
+  if (a.length !== b.length) return false;
+  while (a.length) {
+    if (a.shift() !== b.shift()) return false;
+  }
+  return true;
+}
+
+function textSort(_list, key) {
   var ascending = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
+  var list = [].concat(_toConsumableArray(_list));
   var accessor = function accessor(val) {
     return typeof val[key] === 'string' ? val[key].trim() : stringValue(val[key]);
   };
-  var result = list.sort(sortFactory(accessor));
+  var preSort = list.map(accessor);
+  var sorted = list.sort(sortFactory(accessor));
+  var postSort = sorted.map(accessor);
+  var result = arraysMatch(preSort, postSort) ? list : sorted;
   return ascending ? result.reverse() : result;
 };

@@ -81,7 +81,7 @@ class MesaController extends React.Component {
   }
 };
 
-DataTable.propTypes = {
+MesaController.propTypes = {
   rows: PropTypes.array,
   columns: PropTypes.array,
   options: PropTypes.object,
