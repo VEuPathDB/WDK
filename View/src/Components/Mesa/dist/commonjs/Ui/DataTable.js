@@ -74,7 +74,7 @@ var DataTable = function (_React$PureComponent) {
 
       return this.shouldUseStickyHeader() ? _react2.default.createElement(
         'div',
-        null,
+        { className: 'DataTable-Sticky' },
         _react2.default.createElement(
           'div',
           { className: 'DataTable-Header' },
