@@ -30,11 +30,12 @@ class HeadingRow extends React.PureComponent {
               isRowSelected={isRowSelected}
             />
         }
-        {columns.map(column => (
+        {columns.map((column, columnIndex) => (
           <HeadingCell
+            sort={sort}
             key={column.key}
             column={column}
-            sort={sort}
+            columnIndex={columnIndex}
             eventHandlers={eventHandlers}
           />
         ))}

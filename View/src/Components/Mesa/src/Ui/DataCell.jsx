@@ -8,10 +8,10 @@ class DataCell extends React.PureComponent {
   }
 
   renderContent () {
-    const { row, column, rowIndex, inline } = this.props;
+    const { row, column, rowIndex, columnIndex, inline } = this.props;
     const { key } = column;
     const value = row[key];
-    const cellProps = { key, value, row, column, rowIndex };
+    const cellProps = { key, value, row, column, rowIndex, columnIndex };
 
     if ('renderCell' in column) {
       return column.renderCell(cellProps);

@@ -62,7 +62,7 @@ class DataRow extends React.PureComponent {
               isRowSelected={options.isRowSelected}
             />
         }
-        {columns.map(column => <DataCell key={column.key} column={column} {...cellProps} />)}
+        {columns.map((column, columnIndex) => <DataCell key={column.key} column={column} columnIndex={columnIndex} {...cellProps} />)}
       </tr>
     )
   }

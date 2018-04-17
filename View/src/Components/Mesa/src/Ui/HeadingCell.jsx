@@ -13,9 +13,9 @@ class HeadingCell extends React.PureComponent {
   }
 
   renderContent () {
-    const { column } = this.props;
-    if ('renderHeading' in column) return column.renderHeading(column);
-    return Templates.heading(column);
+    const { column, columnIndex } = this.props;
+    if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
+    return Templates.heading(column, columnIndex);
   }
 
   handleSortClick () {
