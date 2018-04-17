@@ -46,6 +46,7 @@ class DataRow extends React.PureComponent {
   render () {
     const { row, rowIndex, columns, options, actions, eventHandlers } = this.props;
     const { expanded } = this.state;
+    const { columnDefaults } = options ? options : {};
     const inline = options.inline ? !expanded : false;
 
     const hasSelectionColumn = typeof options.isRowSelected === 'function'
@@ -61,7 +62,7 @@ class DataRow extends React.PureComponent {
       className += (typeof derivedClassName === 'string') ? ' ' + derivedClassName : '';
     };
 
-    const cellProps = { row, inline, options, rowIndex };
+    const sharedProps = { row, inline, options, rowIndex };
 
     return (
       <tr className={className} style={rowStyle} onClick={this.handleRowClick}>
@@ -73,7 +74,18 @@ class DataRow extends React.PureComponent {
               isRowSelected={options.isRowSelected}
             />
         }
-        {columns.map((column, columnIndex) => <DataCell key={column.key} column={column} columnIndex={columnIndex} {...cellProps} />)}
+        {columns.map((column, columnIndex) => {
+          if (typeof columnDefaults === 'object')
+            column = Object.assign({}, columnDefaults, column);
+          return (
+            <DataCell
+              key={column.key}
+              column={column}
+              columnIndex={columnIndex}
+              {...sharedProps}
+            />
+          );
+        })}
       </tr>
     )
   }

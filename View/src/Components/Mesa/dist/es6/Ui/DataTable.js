@@ -59,7 +59,7 @@ var DataTable = function (_React$Component) {
           options = _props.options;
 
       if (!options || !options.useStickyHeader) return false;
-      if (!options.tableBodyMaxHeight) return console.error('\n      "useStickyHeader" option enabled but no maxHeight for the table is set.\n      Use a css height as the "tableBodyMaxHeight" option to use this setting;\n    ');
+      if (!options.tableBodyMaxHeight) return console.error('\n      "useStickyHeader" option enabled but no maxHeight for the table is set.\n      Use a css height as the "tableBodyMaxHeight" option to use this setting.\n    ');
       if (!columns.every(hasWidthProperty)) return console.error('\n      "useStickyHeader" opeion enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
       return true;
     }
