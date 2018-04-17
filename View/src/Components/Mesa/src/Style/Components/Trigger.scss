@@ -3,9 +3,9 @@
   transition: all 0.4s;
   cursor: pointer;
   display: inline-block;
-
-  &, &.inactive {
-    color: black;
+  color: black;
+  
+  &.inactive {
     opacity: 0.2;
   }
   &.active {
