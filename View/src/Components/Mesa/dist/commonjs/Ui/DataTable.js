@@ -109,7 +109,9 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Body') },
+          {
+            className: dataTableClass('Body'),
+            style: Object.assign(tableBodyStyle, widthLayer) },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
