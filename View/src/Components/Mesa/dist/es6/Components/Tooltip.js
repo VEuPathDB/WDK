@@ -106,6 +106,16 @@ var Tooltip = function (_React$Component) {
       this.id = null;
     }
   }, {
+    key: 'getCornerClass',
+    value: function getCornerClass() {
+      var corner = this.props.corner;
+
+      if (typeof corner !== 'string' || !corner.length) return 'no-corner';
+      return corner.split(' ').filter(function (s) {
+        return s;
+      }).join('-');
+    }
+  }, {
     key: 'renderTooltipBox',
     value: function renderTooltipBox() {
       var _props = this.props,
@@ -119,6 +129,7 @@ var Tooltip = function (_React$Component) {
           left = _ref.left,
           right = _ref.right;
 
+      var cornerClass = this.getCornerClass();
       var boxStyle = Object.assign({}, {
         top: top,
         left: left,
@@ -133,7 +144,7 @@ var Tooltip = function (_React$Component) {
         'div',
         {
           style: boxStyle,
-          className: 'Tooltip-Content',
+          className: 'Tooltip-Content ' + cornerClass,
           onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
         renderHtml ? _react2.default.createElement('div', { dangerouslySetInnerHTML: { __html: content } }) : content

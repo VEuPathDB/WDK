@@ -40,7 +40,11 @@ class HelpTrigger extends React.Component {
     const { children } = this.props;
 
     return (
-      <Tooltip position={position} className="Trigger HelpTrigger" content={children}>
+      <Tooltip
+        corner="top-left"
+        position={position}
+        className="Trigger HelpTrigger"
+        content={children}>
         <div ref={(el) => this.element = el}>
           <Icon fa="question-circle" />
         </div>
