@@ -3,9 +3,18 @@ th {
   transition: background 0.25s;
   position: relative;
   color: #444;
-  cursor: -webkit-grab;
-  cursor: -moz-grab;
   text-align: left;
+
+  [draggable="true"] {
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    &:active {
+      cursor: grabbing;
+      cursor: -moz-grabbing;
+      cursor: -webkit-grabbing;
+    }
+  }
 
   &:active {
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
