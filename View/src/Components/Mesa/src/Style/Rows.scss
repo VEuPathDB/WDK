@@ -1,6 +1,11 @@
+$headingRowBg: rgba(0, 0, 0, 0.05);
+$evenRowBg: rgba(0, 0, 0, 0.02);
+$oddRowBg: transparent;
+
+
 tbody:first-of-type {
   tr:first-of-type {
-    background-color: purple;
+    background-color: $headingRowBg;
     th, td {
       border-top: 1px solid $borderColor;
     }
@@ -19,8 +24,11 @@ tbody:first-of-type {
 
 tbody:last-of-type {
   tr {
+    &:nth-child(odd) {
+      background-color: $oddRowBg;
+    }
     &:nth-child(even) {
-      background-color: red;
+      background-color: $evenRowBg;
     }
     &:last-child {
       th:first-child, td:first-child {
