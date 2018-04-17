@@ -130,12 +130,6 @@ var DataTable = function (_React$Component) {
 
       var higher = Math.max(contentWidth, headingWidth);
       return this.widthCache[key] = higher;
-
-      var lower = Math.min(contentWidth, headingWidth);
-      var split = Math.abs(contentWidth - headingWidth) / 2;
-      var width = Math.ceil(lower + split) - widthOffset + 'px';
-
-      return this.widthCache[key] = width;
     }
   }, {
     key: 'hasSelectionColumn',

@@ -75,13 +75,6 @@ class DataTable extends React.Component {
 
     const higher = Math.max(contentWidth, headingWidth);
     return this.widthCache[key] = higher;
-
-
-    const lower = Math.min(contentWidth, headingWidth);
-    const split = Math.abs(contentWidth - headingWidth) / 2;
-    const width = (Math.ceil(lower + split) - widthOffset) + 'px';
-
-    return this.widthCache[key] = width;
   }
 
   hasSelectionColumn () {
