@@ -37,7 +37,7 @@ const MesaState = {
   },
   selectRowsByIndex (state, indexes) {
     if (!Array.isArray(indexes) || !indexes.every(index => typeof index === 'number')) return state;
-
+    
   },
   setSearchQuery (state, query) {
 

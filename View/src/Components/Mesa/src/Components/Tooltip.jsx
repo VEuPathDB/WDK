@@ -45,18 +45,17 @@ class Tooltip extends React.Component {
     const textStyle = {
       top,
       left,
+      display: 'block',
       position: 'absolute',
       zIndex: 1000000
     };
 
     return !showText ? null : (
-        <div
-          style={textStyle}
-          className="Tooltip-Text"
-          onMouseEnter={this.showTooltip}
-          onMouseLeave={this.hideTooltip}>
-          {text}
-        </div>
+      <div
+        style={textStyle}
+        className="Tooltip-Text"
+        {text}
+      </div>
     );
   }
 
