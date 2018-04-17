@@ -6,6 +6,7 @@ import DataRowList from '../Ui/DataRowList';
 import { makeClassifier, combineWidths } from '../Utils/Utils';
 
 const dataTableClass = makeClassifier('DataTable');
+const hasWidthProperty = ({ width }) => typeof width === 'string';
 
 class DataTable extends React.Component {
   constructor (props) {
@@ -17,13 +18,15 @@ class DataTable extends React.Component {
   shouldUseStickyHeader () {
     const { columns, options } = this.props;
     if (!options || !options.useStickyHeader) return false;
-    const hasWidthProperty = ({ width }) => typeof width === 'string';
-    if (columns.every(hasWidthProperty)) return true;
-    console.error(`
-      "useStickyHeader" enabled but not all columns have explicit widths (required).
+    if (!options.tableBodyMaxHeight) return console.error(`
+      "useStickyHeader" option enabled but no maxHeight for the table is set.
+      Use a css height as the "tableBodyMaxHeight" option to use this setting;
+    `);
+    if (!columns.every(hasWidthProperty)) return console.error(`
+      "useStickyHeader" opeion enabled but not all columns have explicit widths (required).
       Use a CSS width (e.g. "250px" or "30%") as each column's .width property.
     `);
-    return false;
+    return true;
   }
 
   handleTableBodyScroll (e) {

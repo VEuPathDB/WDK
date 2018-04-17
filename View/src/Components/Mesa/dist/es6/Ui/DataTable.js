@@ -33,6 +33,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var dataTableClass = (0, _Utils.makeClassifier)('DataTable');
+var hasWidthProperty = function hasWidthProperty(_ref) {
+  var width = _ref.width;
+  return typeof width === 'string';
+};
 
 var DataTable = function (_React$Component) {
   _inherits(DataTable, _React$Component);
@@ -55,13 +59,9 @@ var DataTable = function (_React$Component) {
           options = _props.options;
 
       if (!options || !options.useStickyHeader) return false;
-      var hasWidthProperty = function hasWidthProperty(_ref) {
-        var width = _ref.width;
-        return typeof width === 'string';
-      };
-      if (columns.every(hasWidthProperty)) return true;
-      console.error('\n      "useStickyHeader" enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
-      return false;
+      if (!options.tableBodyMaxHeight) return console.error('\n      "useStickyHeader" option enabled but no maxHeight for the table is set.\n      Use a css height as the "tableBodyMaxHeight" option to use this setting;\n    ');
+      if (!columns.every(hasWidthProperty)) return console.error('\n      "useStickyHeader" opeion enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
+      return true;
     }
   }, {
     key: 'handleTableBodyScroll',
