@@ -287,7 +287,7 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'onDragLeave',
     value: function onDragLeave(event) {
-      if (this.state.isDragTarget) this.setState({ isDragTarget: false });
+      this.setState({ isDragTarget: false });
       event.preventDefault();
     }
   }, {
