@@ -14,7 +14,7 @@ function getRealOffset (el) {
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
-    this.state = { showText: false, position: { top: 0, left: 0 } }
+    this.state = { showText: false }
     this.showTooltip = this.showTooltip.bind(this);
     this.hideTooltip = this.hideTooltip.bind(this);
     this.renderTextBox = this.renderTextBox.bind(this);
@@ -22,11 +22,11 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount () {
-    const { anchor } = this.refs;
-    if (!anchor) return;
-    const position = getRealOffset(anchor);
-    console.log('got position as', position);
-    this.setState({ position });
+    // const { anchor } = this.refs;
+    // if (!anchor) return;
+    // const position = getRealOffset(anchor);
+    // console.log('got position as', position);
+    // this.setState({ position });
   }
 
   showTooltip () {
@@ -40,15 +40,15 @@ class Tooltip extends React.Component {
   }
 
   renderTextBox () {
-    const { text } = this.props;
-    const { showText, position } = this.state;
+    const { text, position } = this.props;
+    const { showText } = this.state;
 
     const wrapperStyle = {
-      position: 'fixed',
       top: 0,
       left: 0,
       width: '100vw',
-      height: '100%',
+      height: '100vh',
+      position: 'fixed',
       pointerEvents: 'none'
     };
 
@@ -73,7 +73,6 @@ class Tooltip extends React.Component {
     const TextBox = this.renderTextBox;
     return (
       <div
-        ref={'anchor'}
         className={className}
         onMouseEnter={this.showTooltip}
         onMouseLeave={this.hideTooltip}>

@@ -37,7 +37,7 @@ var Tooltip = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Tooltip.__proto__ || Object.getPrototypeOf(Tooltip)).call(this, props));
 
-    _this.state = { showText: false, position: { top: 0, left: 0 } };
+    _this.state = { showText: false };
     _this.showTooltip = _this.showTooltip.bind(_this);
     _this.hideTooltip = _this.hideTooltip.bind(_this);
     _this.renderTextBox = _this.renderTextBox.bind(_this);
@@ -48,12 +48,11 @@ var Tooltip = function (_React$Component) {
   _createClass(Tooltip, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      var anchor = this.refs.anchor;
-
-      if (!anchor) return;
-      var position = getRealOffset(anchor);
-      console.log('got position as', position);
-      this.setState({ position: position });
+      // const { anchor } = this.refs;
+      // if (!anchor) return;
+      // const position = getRealOffset(anchor);
+      // console.log('got position as', position);
+      // this.setState({ position });
     }
   }, {
     key: 'showTooltip',
@@ -70,18 +69,18 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'renderTextBox',
     value: function renderTextBox() {
-      var text = this.props.text;
-      var _state = this.state,
-          showText = _state.showText,
-          position = _state.position;
+      var _props = this.props,
+          text = _props.text,
+          position = _props.position;
+      var showText = this.state.showText;
 
 
       var wrapperStyle = {
-        position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
-        height: '100%',
+        height: '100vh',
+        position: 'fixed',
         pointerEvents: 'none'
       };
 
@@ -111,7 +110,6 @@ var Tooltip = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         {
-          ref: 'anchor',
           className: className,
           onMouseEnter: this.showTooltip,
           onMouseLeave: this.hideTooltip },
