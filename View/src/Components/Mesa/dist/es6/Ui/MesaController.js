@@ -109,7 +109,7 @@ var MesaController = function (_React$Component) {
           children = _props3.children;
 
       var props = { rows: rows, options: options, actions: actions, eventHandlers: eventHandlers };
-      if (!actions.length) return null;
+      if (!actions || !actions.length) return null;
       if (!this.renderToolbar() && children) props = Object.assign({}, props, { children: children });
 
       return _react2.default.createElement(_ActionToolbar2.default, props);
