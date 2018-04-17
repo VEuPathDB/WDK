@@ -74,6 +74,9 @@ var Tooltip = function (_React$Component) {
           top = _ref.top,
           left = _ref.left;
 
+      top = typeof top === 'number' ? top : 0;
+      console.log('top is...', top);
+
       var textStyle = {
         top: top,
         left: left,
