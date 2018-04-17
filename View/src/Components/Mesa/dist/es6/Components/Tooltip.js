@@ -99,6 +99,7 @@ var Tooltip = function (_React$Component) {
         left: left,
         display: 'block',
         position: 'absolute',
+        pointerEvents: 'auto',
         zIndex: 1000000
       };
 

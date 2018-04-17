@@ -58,7 +58,7 @@ var Checkbox = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         { className: className, onClick: disabled ? null : this.handleClick },
-        _react2.default.createElement('input', { type: 'checkbox', defaultChecked: checked })
+        _react2.default.createElement('input', { type: 'checkbox', checked: checked })
       );
     }
   }]);
