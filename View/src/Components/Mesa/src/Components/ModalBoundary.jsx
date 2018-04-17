@@ -70,7 +70,7 @@ class ModalBoundary extends React.Component {
     const zIndex = (z) => ({ position: 'relative', zIndex: z });
 
     return (
-      <div className={modalBoundaryClass()} style={style}>
+      <div className={modalBoundaryClass() + ' MesaComponent'} style={style}>
         <div style={zIndex(1)}>
           {children}
         </div>

@@ -112,7 +112,7 @@ var ModalBoundary = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: modalBoundaryClass(), style: style },
+        { className: modalBoundaryClass() + ' MesaComponent', style: style },
         _react2.default.createElement(
           'div',
           { style: zIndex(1) },
