@@ -13,12 +13,15 @@ class Tooltip extends React.Component {
   static getOffset (node) {
     let top = 0;
     let left = 0;
+    let height = node.offsetHeight;
+    let width = node.offsetWidth;
+
     do {
       top += node.offsetTop || 0;
       left += node.offsetLeft || 0;
       node = node.offsetParent;
     } while (node);
-    return { top, left };
+    return { top, left, height, width };
   }
 
   componentDidMount () {

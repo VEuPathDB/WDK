@@ -9,6 +9,7 @@ import Tooltip from '../Components/Tooltip';
 class HeadingCell extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.state = { offset: null };
     this.renderContent = this.renderContent.bind(this);
     this.handleSortClick = this.handleSortClick.bind(this);
     this.renderSortTrigger = this.renderSortTrigger.bind(this);
@@ -18,10 +19,9 @@ class HeadingCell extends React.PureComponent {
 
   componentDidMount () {
     const { element } = this;
-    console.log('element?', element);
     if (!element) return;
     let offset = Tooltip.getOffset(element);
-    console.log('got offset', offset);
+    this.setState({ offset });
   }
 
   renderContent () {
@@ -68,9 +68,13 @@ class HeadingCell extends React.PureComponent {
 
   renderHelpTrigger () {
     const { column } = this.props;
+    const { offset } = this.state;
+    const { top, left, height } = offset ? offset : {};
+    const position = { top: top + height, left };
+
     if (!column.helpText) return null;
     return (
-      <Tooltip className="Trigger HelpTrigger" text={column.helpText}>
+      <Tooltip position={position} className="Trigger HelpTrigger" text={column.helpText}>
         <Icon fa="question-circle" />
       </Tooltip>
     )

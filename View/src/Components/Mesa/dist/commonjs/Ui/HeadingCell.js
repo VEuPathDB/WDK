@@ -41,6 +41,7 @@ var HeadingCell = function (_React$PureComponent) {
 
     var _this = _possibleConstructorReturn(this, (HeadingCell.__proto__ || Object.getPrototypeOf(HeadingCell)).call(this, props));
 
+    _this.state = { offset: null };
     _this.renderContent = _this.renderContent.bind(_this);
     _this.handleSortClick = _this.handleSortClick.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
@@ -54,10 +55,9 @@ var HeadingCell = function (_React$PureComponent) {
     value: function componentDidMount() {
       var element = this.element;
 
-      console.log('element?', element);
       if (!element) return;
       var offset = _Tooltip2.default.getOffset(element);
-      console.log('got offset', offset);
+      this.setState({ offset: offset });
     }
   }, {
     key: 'renderContent',
@@ -128,11 +128,19 @@ var HeadingCell = function (_React$PureComponent) {
     key: 'renderHelpTrigger',
     value: function renderHelpTrigger() {
       var column = this.props.column;
+      var offset = this.state.offset;
+
+      var _ref5 = offset ? offset : {},
+          top = _ref5.top,
+          left = _ref5.left,
+          height = _ref5.height;
+
+      var position = { top: top + height, left: left };
 
       if (!column.helpText) return null;
       return _react2.default.createElement(
         _Tooltip2.default,
-        { className: 'Trigger HelpTrigger', text: column.helpText },
+        { position: position, className: 'Trigger HelpTrigger', text: column.helpText },
         _react2.default.createElement(_Icon2.default, { fa: 'question-circle' })
       );
     }
