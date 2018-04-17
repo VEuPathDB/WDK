@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
-    this.state = { showText: false }
     this.showTooltip = this.showTooltip.bind(this);
     this.hideTooltip = this.hideTooltip.bind(this);
     this.renderTooltipBox = this.renderTooltipBox.bind(this);
@@ -39,7 +39,6 @@ class Tooltip extends React.Component {
   }
 
   disengageTooltip () {
-    console.log('disengaging', arguments.callee);
     let { hideDelay } = this.props;
     hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
     this.timeout = setTimeout(this.hideTooltip, hideDelay);
