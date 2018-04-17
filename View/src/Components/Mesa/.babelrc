@@ -2,8 +2,7 @@
   "presets": [
     "env",
     "react",
-    [
-      "minify",
+    ["minify",
       {
         "mangle": false
       }

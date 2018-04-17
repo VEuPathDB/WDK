@@ -14,13 +14,15 @@ class DataTable extends React.PureComponent {
     const props = { rows, options, columns, actions, uiState, eventHandlers };
 
     return (
-      <div className="DataTable">
-        <table cellSpacing="0" cellPadding="0">
-          <tbody>
-            <HeadingRow {...props} />
-          </tbody>
-          <DataRowList {...props} />
-        </table>
+      <div className="Mesa">
+        <div className="DataTable">
+          <table cellSpacing="0" cellPadding="0">
+            <tbody>
+              <HeadingRow {...props} />
+            </tbody>
+            <DataRowList {...props} />
+          </table>
+        </div>
       </div>
     );
   }
