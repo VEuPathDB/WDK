@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.intersectSelection = exports.mapListToIds = exports.isRowSelected = exports.removeRowFromSelection = exports.addRowToSelection = exports.selectionFromRows = exports.createSelection = undefined;
+exports.intersectSelection = exports.mapListToIds = exports.isRowSelected = exports.removeIdFromSelection = exports.removeRowFromSelection = exports.addIdToSelection = exports.addRowToSelection = exports.selectionFromRows = exports.createSelection = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -26,16 +26,24 @@ var selectionFromRows = exports.selectionFromRows = function selectionFromRows(r
 
 var addRowToSelection = exports.addRowToSelection = function addRowToSelection(_selection, row, idAccessor) {
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('addRowToSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
-  var selection = new Set(_selection);
   var id = idAccessor(row);
+  return addIdToSelection(_selection, id);
+};
+
+var addIdToSelection = exports.addIdToSelection = function addIdToSelection(_selection, id) {
+  var selection = new Set(_selection);
   selection.add(id);
   return [].concat(_toConsumableArray(selection));
 };
 
 var removeRowFromSelection = exports.removeRowFromSelection = function removeRowFromSelection(_selection, row, idAccessor) {
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
-  var selection = new Set(_selection);
   var id = idAccessor(row);
+  return removeIdFromSelection(_selection, id);
+};
+
+var removeIdFromSelection = exports.removeIdFromSelection = function removeIdFromSelection(_selection, id) {
+  var selection = new Set(_selection);
   selection.delete(id);
   return [].concat(_toConsumableArray(selection));
 };
