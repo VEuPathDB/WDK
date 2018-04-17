@@ -20,7 +20,10 @@ class AnchoredTooltip extends React.Component {
       MesaScroll: Events.add('MesaScroll', this.updateOffset),
       MesaReflow: Events.add('MesaReflow', this.updateOffset)
     };
-    setTimeout(this.updateOffset, 100);
+    setTimeout(() => {
+      this.updateOffset()
+      console.log('Updated offset after delay')
+    }, 100);
   }
 
   componentWillUnmount () {
