@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import SelectionCounter from '../Ui/SelectionCounter';
 
@@ -53,7 +54,7 @@ class ActionToolbar extends React.PureComponent {
 
   render () {
     const { rows, actions, eventHandlers } = this.props;
-    const { onRowSelect, onRowDeselect } = eventHandlers;
+    const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
 
     const ActionList = this.renderActionItemList;
     const selection = this.getSelection();
@@ -72,6 +73,12 @@ class ActionToolbar extends React.PureComponent {
        </div>
     );
   }
+};
+
+ActionToolbar.propTypes = {
+  rows: PropTypes.array,
+  actions: PropTypes.array,
+  eventHandlers: PropTypes.array
 };
 
 export default ActionToolbar;
