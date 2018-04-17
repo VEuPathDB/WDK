@@ -13,16 +13,27 @@ var _KeyCodes2 = _interopRequireDefault(_KeyCodes);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var idPrefix = 'listener_';
 
 var EventsFactory = exports.EventsFactory = function EventsFactory(node) {
   var instance = {
     listenerStore: [],
-    add: function add(event, callback) {
-      var signature = [event, callback];
+    add: function add(eventName, callback) {
+      eventName = eventName.toLowerCase();
+      console.log('adding...', eventName, callback);
+      var signature = [eventName, callback];
       var length = instance.listenerStore.push(signature);
-      node.addEventListener(event, callback);
+      node.addEventListener(eventName, callback);
       return idPrefix + --length;
+    },
+    use: function use() {
+      var map = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      Object.entries(map).forEach(function (entry) {
+        return instance.add.apply(instance, _toConsumableArray(entry));
+      });
     },
     remove: function remove(id) {
       var offset = idPrefix.length;
@@ -34,6 +45,9 @@ var EventsFactory = exports.EventsFactory = function EventsFactory(node) {
 
       node.removeEventListener(event, callback);
       delete instance.listenerStore[index];
+    },
+    clearAll: function clearAll() {
+      instance.listenerStore.forEach(instance.remove);
     },
     onKey: function onKey(key, callback) {
       if (!key in _KeyCodes2.default) return;

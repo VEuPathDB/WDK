@@ -12,6 +12,7 @@ class Tooltip extends React.Component {
     this.engageTooltip = this.engageTooltip.bind(this);
     this.disengageTooltip = this.disengageTooltip.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.state = { isFocus: false, isHovered: false };
   }
 
   static getOffset (node) {
@@ -29,12 +30,21 @@ class Tooltip extends React.Component {
     if (!this.el) {
       console.error(`
         Tooltip Error: Can't setup focusIn/focusOut events.
-        Element ref could not be found.
+        Element ref could not be found; was render interrupted?
       `);
+    } else {
+      this.events = new EventsFactory(this.el);
+      this.events.use({
+        focusIn: () => this.setState({ isFocus: true }),
+        focusOut: () => this.setState({ isFocus: false }),
+        mouseEnter: () => this.setState({ isHovered: true }),
+        mouseLeave: () => this.setState({ isHovered: false })
+      });
     }
-    this.events = EventsFactory(this.el);
-    this.events.add('focusIn', () => this.engageTooltip());
-    this.events.add('focusOut', () => this.disengageTooltip());
+  }
+
+  componentWillUnmount () {
+    if (this.events) this.events.clearAll();
   }
 
   showTooltip () {
@@ -100,17 +110,17 @@ class Tooltip extends React.Component {
   }
 
   render () {
-    const { children } = this.props;
-    const className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
+    const { isFocus, isHovered } = this.state;
+    if (this.el && (isFocus || isHovered)) this.engageTooltip();
+    else this.disengageTooltip();
+
+    const { children, className } = this.props;
+    const fullClassName = 'Tooltip' + (className ? ' ' + className : '');
     return (
       <div
         tabIndex={0}
-        className={className}
-        ref={(el) => this.el = el}
-        onFocus={this.engageTooltip}
-        onBlur={this.disengageTooltip}
-        onMouseEnter={this.engageTooltip}
-        onMouseLeave={this.disengageTooltip}>
+        className={fullClassName}
+        ref={(el) => this.el = el}>
         {children}
       </div>
     )
@@ -122,6 +132,7 @@ Tooltip.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
   content: PropTypes.node,
+  corner: PropTypes.string,
   position: PropTypes.object
 };
 

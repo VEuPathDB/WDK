@@ -52,7 +52,6 @@ var SelectionCell = function (_React$PureComponent) {
         return !isRowSelected(row);
       });
       if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);
-      console.log('Selecting all manually', unselectedRows, onRowSelect);
       return unselectedRows.forEach(onRowSelect);
     }
   }, {
@@ -68,7 +67,6 @@ var SelectionCell = function (_React$PureComponent) {
 
       var selection = rows.filter(isRowSelected);
       if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);
-      console.log('Deselecting all manually', selection, onRowDeselect);
       return selection.forEach(onRowDeselect);
     }
   }, {
