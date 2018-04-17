@@ -12,6 +12,7 @@ import Checkbox from './Components/Checkbox';
 import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
 
+import Events, { EventsFactory } from './Utils/Events';
 import * as Utils from './Utils/Utils';
 import * as MesaState from './Utils/MesaState';
 import * as MesaSelection from './Utils/MesaSelection';
@@ -26,6 +27,8 @@ export {
   PaginationMenu,
   ModalBoundary,
   HelpTrigger,
+  Events,
+  EventsFactory,
   Tooltip,
   Checkbox,
   MesaController,
