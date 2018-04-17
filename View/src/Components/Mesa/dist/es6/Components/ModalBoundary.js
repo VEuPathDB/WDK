@@ -85,8 +85,8 @@ var ModalBoundary = function (_React$Component) {
         left: 0,
         width: '100vw',
         height: '100vh',
-        position: 'fixed',
-        pointerEvents: 'none'
+        position: 'fixed'
+        // pointerEvents: 'none'
       };
       return !modals.length ? null : _react2.default.createElement(
         'div',
