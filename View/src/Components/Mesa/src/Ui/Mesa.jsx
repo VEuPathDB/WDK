@@ -28,10 +28,10 @@ class Mesa extends React.Component {
 
   renderToolbar () {
     const { rows, options, columns, uiState, eventHandlers, children } = this.props;
-    const props = { rows, options, columns, uiState, eventHandlers };
+    const props = { rows, options, columns, uiState, eventHandlers, children };
     if (!options.toolbar) return <div>{children}</div>;
 
-    return <TableToolbar {...props}>{children}</TableToolbar>
+    return <TableToolbar {...props} />
   }
 
   renderActionBar () {
