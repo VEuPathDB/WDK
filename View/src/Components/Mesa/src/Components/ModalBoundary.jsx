@@ -10,7 +10,7 @@ class ModalBoundary extends React.Component {
     super(props);
 
     this.state = {
-      modals: []
+      modals: {}
     };
 
     this.addModal = this.addModal.bind(this);
@@ -21,8 +21,6 @@ class ModalBoundary extends React.Component {
 
   addModal (modal) {
     let { modals } = this.state;
-    if (!'id' in modal) throw new Error('Modals must have an "id" property.');
-    if (modals.indexOf(modal) < 0) modals.push(modal);
     this.setState({ modals });
   }
 
