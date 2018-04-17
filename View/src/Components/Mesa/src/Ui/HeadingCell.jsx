@@ -96,14 +96,14 @@ class HeadingCell extends React.PureComponent {
 
   renderContent () {
     const { column, columnIndex } = this.props;
-    if ('renderHeading' in column && typeof column.renderHeading === 'function')
-      return column.renderHeading(column, columnIndex);
-    if ('renderHeading' in column && column.renderHeading === false)
-      return null;
-
     const SortTrigger = this.renderSortTrigger;
     const HelpTrigger = this.renderHelpTrigger;
     const ClickBoundary = this.renderClickBoundary;
+
+    if ('renderHeading' in column && typeof column.renderHeading === 'function')
+      return column.renderHeading(column, columnIndex, { SortTrigger, HelpTrigger, ClickBoundary });
+    if ('renderHeading' in column && column.renderHeading === false)
+      return null;
 
     return (
       <div className={headingCellClass('Content')}>
@@ -210,8 +210,6 @@ class HeadingCell extends React.PureComponent {
   }
 
   getDomEvents () {
-    const { primary } = this.props;
-    if (!primary) return null;
     const {
       onMouseDown, onMouseUp,
       onDragStart, onDragEnd,
