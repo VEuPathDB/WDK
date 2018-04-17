@@ -79,8 +79,8 @@ export function makeClassifier (namespace, globalNamespace) {
   return (element, modifiers) => {
     if (Array.isArray(element)) element = element.join('-');
     let base = (
-      (globalNamespace ? globalNamespace : '') +
-      (namespace ? '-' + namespace : '') +
+      (globalNamespace ? globalNamespace + '-'  : '') +
+      (namespace ? namespace : '') +
       (element ? '-' + element : '')
     );
     if (!modifiers || !modifiers.length) return base;
