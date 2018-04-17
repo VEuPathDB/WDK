@@ -8,6 +8,7 @@ const dataCellClass = makeClassifier('DataCell');
 class DataCell extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.renderContent = this.renderContent.bind(this);
   }
 
   renderContent () {
