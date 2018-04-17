@@ -69,10 +69,10 @@ class Mesa extends React.Component {
     const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, options, columns, actions, uiState, eventHandlers };
 
-    const PageNav = this.renderPaginationMenu;
+    const Body = this.renderBody;
     const Toolbar = this.renderToolbar;
     const ActionBar = this.renderActionBar;
-    const Body = this.renderBody;
+    const PageNav = this.renderPaginationMenu;
 
     return (
       <div className="Mesa">
