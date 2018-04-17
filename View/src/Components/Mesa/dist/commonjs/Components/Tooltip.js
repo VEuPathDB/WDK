@@ -52,16 +52,18 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
-      var showText = true;
+      var addModal = this.context.addModal;
+
       var textBox = { render: this.renderTextBox };
-      this.context.addModal(textBox);
+      addModal(textBox);
     }
   }, {
     key: 'hideTooltip',
     value: function hideTooltip() {
-      var showText = false;
+      var removeModal = this.context.removeModal;
+
       var textBox = { render: this.renderTextBox };
-      this.context.removeModal(textBox);
+      removeModal(textBox);
     }
   }, {
     key: 'renderTextBox',
@@ -73,9 +75,6 @@ var Tooltip = function (_React$Component) {
       var _ref = position ? position : { top: 0, left: 0 },
           top = _ref.top,
           left = _ref.left;
-
-      top = typeof top === 'number' ? top : 0;
-      console.log('top is...', top);
 
       var textStyle = {
         top: top,

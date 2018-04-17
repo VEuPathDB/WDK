@@ -35,23 +35,20 @@ class Tooltip extends React.Component {
   }
 
   showTooltip () {
-    const showText = true;
+    const { addModal } = this.context;
     const textBox = { render: this.renderTextBox };
-    this.context.addModal(textBox);
+    addModal(textBox);
   }
 
   hideTooltip () {
-    const showText = false;
+    const { removeModal } = this.context;
     const textBox = { render: this.renderTextBox };
-    this.context.removeModal(textBox);
+    removeModal(textBox);
   }
 
   renderTextBox () {
     const { text, position } = this.props;
     let { top, left } = position ? position : { top: 0, left: 0 };
-    top = (typeof top === 'number' ? top : 0);
-    console.log('top is...', top);
-
 
     const textStyle = {
       top,

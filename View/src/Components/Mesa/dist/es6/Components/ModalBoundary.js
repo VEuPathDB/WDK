@@ -35,7 +35,7 @@ var ModalBoundary = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (ModalBoundary.__proto__ || Object.getPrototypeOf(ModalBoundary)).call(this, props));
 
     _this.state = {
-      modals: []
+      modals: {}
     };
 
     _this.addModal = _this.addModal.bind(_this);
@@ -50,8 +50,6 @@ var ModalBoundary = function (_React$Component) {
     value: function addModal(modal) {
       var modals = this.state.modals;
 
-      if (!'id' in modal) throw new Error('Modals must have an "id" property.');
-      if (modals.indexOf(modal) < 0) modals.push(modal);
       this.setState({ modals: modals });
     }
   }, {
