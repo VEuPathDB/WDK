@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import Templates from '../Templates';
 import { makeClassifier } from '../Utils/Utils';
@@ -57,6 +58,12 @@ class DataCell extends React.PureComponent {
       </td>
     );
   }
+};
+
+DataCell.propTypes = {
+  column: PropTypes.object,
+  row: PropTypes.object,
+  inline: PropTypes.boolean
 };
 
 export default DataCell;
