@@ -84,11 +84,11 @@ var Tooltip = function (_React$Component) {
         pointerEvents: 'none'
       };
 
-      var textStyle = {
-        position: 'relative',
-        top: position.top + 'px',
-        left: position.left + 'px'
-      };
+      var _ref = position ? position : { top: 0, left: 0 },
+          top = _ref.top,
+          left = _ref.left;
+
+      var textStyle = { top: top, left: left, position: 'relative' };
 
       return !showText ? null : _react2.default.createElement(
         'div',
