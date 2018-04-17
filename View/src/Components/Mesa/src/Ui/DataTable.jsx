@@ -10,6 +10,7 @@ const dataTableClass = makeClassifier('DataTable');
 class DataTable extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.render = this.render.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
     this.handleTableHeaderScroll = this.handleTableHeaderScroll.bind(this);
@@ -41,7 +42,7 @@ class DataTable extends React.PureComponent {
 
     if (!this.shouldUseStickyHeader()) {
       return (
-        <div className="MesaComponent">
+        <div className="MesaComponent" ref="WTF">
           <div className={dataTableClass()}>
             <table cellSpacing="0" cellPadding="0">
               <thead>
@@ -63,14 +64,14 @@ class DataTable extends React.PureComponent {
       <div className="MesaComponent">
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
-            <div ref="tableHeader" className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
+            <div className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <thead>
                   <HeadingRow {...props} />
                 </thead>
               </table>
             </div>
-            <div ref="tableBody" style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
+            <div style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <DataRowList {...props} />
               </table>
