@@ -80,6 +80,7 @@ var Tooltip = function (_React$Component) {
         left: 0,
         width: '100vw',
         height: '100vh',
+        zIndex: 1000000,
         position: 'fixed',
         pointerEvents: 'none'
       };
