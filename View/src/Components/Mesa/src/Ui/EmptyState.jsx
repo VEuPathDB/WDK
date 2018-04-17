@@ -3,8 +3,6 @@ import React from 'react';
 import Icon from '../Components/Icon';
 import { makeClassifier } from '../Utils/Utils';
 
-const emptyStateClass = makeClassifier('EmptyState');
-
 class EmptyState extends React.PureComponent {
   constructor (props) {
     super(props);
@@ -60,6 +58,7 @@ class EmptyState extends React.PureComponent {
 
   render () {
     const culprit = this.getCulprit();
+    const emptyStateClass = makeClassifier('EmptyState');
 
     return (
       <div className={emptyStateClass()}>
