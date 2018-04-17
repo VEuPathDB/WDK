@@ -67,6 +67,11 @@ class ActionToolbar extends React.PureComponent {
 
     return (
        <div className="Toolbar ActionToolbar">
+         {!children ? null : (
+           <div className="ActionToolbar-Children">
+             {children}
+           </div>
+         )}
          <div className="ActionToolbar-Info">
            <SelectionCounter
              rows={rows}

@@ -30,15 +30,16 @@ class MesaController extends React.Component {
   renderToolbar () {
     const { rows, options, columns, uiState, eventHandlers, children } = this.props;
     const props = { rows, options, columns, uiState, eventHandlers, children };
-    if (!options.toolbar) return <div>{children}</div>;
+    if (!options.toolbar) return null;
 
     return <TableToolbar {...props} />
   }
 
   renderActionBar () {
-    const { rows, options, actions, eventHandlers } = this.props;
+    const { rows, options, actions, eventHandlers, children } = this.props;
     const props = { rows, options, actions, eventHandlers };
     if (!actions.length) return null;
+    if (!this.renderToolbar()) props = { ...props, children };
 
     return <ActionToolbar {...props} />
   }
