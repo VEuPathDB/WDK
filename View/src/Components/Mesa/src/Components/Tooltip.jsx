@@ -10,7 +10,6 @@ class Tooltip extends React.Component {
     this.state = {
       isFocus: false,
       isHovered: false,
-      isDisengaged: false
     };
 
     this.showTooltip = this.showTooltip.bind(this);
@@ -38,11 +37,10 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount () {
-    const { addModal, removeModal, updateModal } = this.context;
+    const { addModal, removeModal } = this.context;
     if (
       typeof addModal !== 'function'
       || typeof removeModal !== 'function'
-      || typeof updateModal !== 'function'
     ) {
       throw new Error(`
         Tooltip Error: No "addModal" or "removeModal" detected in context.
@@ -85,10 +83,12 @@ class Tooltip extends React.Component {
   }
 
   engageTooltip () {
-    const { updateModal } = this.context;
+    const { fadeOut } = this.props;
     const showDelay = this.getShowDelay();
 
-    updateModal(this.id, { render: () => this.renderTooltipBox() });
+    if (this.isDisengaged && fadeOut) {
+      this.isDisengaged = false;
+    }
 
     this.showTimeout = setTimeout(() => {
       this.showTooltip();
@@ -97,7 +97,15 @@ class Tooltip extends React.Component {
   }
 
   disengageTooltip () {
+    const { fadeOut } = this.props;
+    const { triggerModalRefresh } = this.context;
     const hideDelay = this.getHideDelay();
+
+    if (!this.isDisengaged && fadeOut) {
+      this.isDisengaged = true;
+      triggerModalRefresh();
+    }
+
     if (this.showTimeout) clearTimeout(this.showTimeout);
     this.hideTimeout = setTimeout(this.hideTooltip, hideDelay);
   }
@@ -115,24 +123,28 @@ class Tooltip extends React.Component {
     return corner.split(' ').filter(s => s).join('-');
   }
 
-  renderTooltipBox (disengaged = false) {
+  renderTooltipBox () {
+    const { isDisengaged } = this;
     const { content, position, style, renderHtml } = this.props;
     const { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
     const cornerClass = this.getCornerClass();
+    const opacity = isDisengaged ? 0.05 : 1;
     const boxStyle = Object.assign({}, {
       top,
       left,
       right,
+      zIndex: 1000000,
       display: 'block',
       position: 'absolute',
       pointerEvents: 'auto',
-      zIndex: 1000000
+      transition: 'opacity 0.7s',
+      opacity,
     }, style && Object.keys(style).length ? style : {});
 
     return (
       <div
         style={boxStyle}
-        className={'Tooltip-Content ' + cornerClass + (disengaged ? ' Tooltip-Content--Disengaged' : '')}
+        className={'Tooltip-Content ' + cornerClass + (isDisengaged ? ' Tooltip-Content--Disengaged' : '')}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
         {renderHtml ? <div dangerouslySetInnerHTML={{ __html: content }} /> : content}
@@ -166,13 +178,14 @@ Tooltip.propTypes = {
   className: PropTypes.string,
   content: PropTypes.node,
   corner: PropTypes.string,
+  fadeOut: PropTypes.boolean,
   position: PropTypes.object
 };
 
 Tooltip.contextTypes = {
   addModal: PropTypes.func,
-  updateModal: PropTypes.func,
-  removeModal: PropTypes.func
+  removeModal: PropTypes.func,
+  triggerModalRefresh: PropTypes.func
 };
 
 export default Tooltip;

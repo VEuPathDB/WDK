@@ -9,15 +9,14 @@ class ModalBoundary extends React.Component {
   constructor (props) {
     super(props);
 
-    this.state = {
-      modals: []
-    };
+    this.state = { modals: [] };
 
     this.addModal = this.addModal.bind(this);
     this.removeModal = this.removeModal.bind(this);
     this.updateModal = this.updateModal.bind(this);
     this.getChildContext = this.getChildContext.bind(this);
     this.renderModalWrapper = this.renderModalWrapper.bind(this);
+    this.triggerModalRefresh = this.triggerModalRefresh.bind(this);
   }
 
   addModal (modal) {
@@ -28,6 +27,10 @@ class ModalBoundary extends React.Component {
     return modal._id;
   }
 
+  triggerModalRefresh () {
+    this.forceUpdate();
+  }
+
   removeModal (id) {
     let { modals } = this.state;
     let index = modals.findIndex(modal => modal._id === id);
@@ -36,17 +39,9 @@ class ModalBoundary extends React.Component {
     this.setState({ modals });
   }
 
-  updateModal (id, modal = {}) {
-    let { modals } = this.state;
-    let index = modals.findIndex(modal => modal._id === id);
-    if (index < 0) return;
-    modals.splice(index, 1, modal);
-    this.setState({ modals });
-  }
-
   getChildContext () {
-    const { addModal, removeModal, updateModal } = this;
-    return { addModal, removeModal, updateModal };
+    const { addModal, removeModal, triggerModalRefresh } = this;
+    return { addModal, removeModal, triggerModalRefresh };
   }
 
   renderModalWrapper () {
@@ -90,8 +85,8 @@ class ModalBoundary extends React.Component {
 
 ModalBoundary.childContextTypes = {
   addModal: PropTypes.func,
-  updateModal: PropTypes.func,
-  removeModal: PropTypes.func
+  removeModal: PropTypes.func,
+  triggerModalRefresh: PropTypes.func
 };
 
 export default ModalBoundary;
