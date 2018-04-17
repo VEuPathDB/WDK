@@ -14,8 +14,8 @@ class SelectionCounter extends React.Component {
     return (!selectedNoun && !selectedPluralNoun)
       ? 'row' + (size === 1 ? '' : 's')
       : size === 1
-        ? selectedNoun || 'row',
-        : selectedPluralNoun || 'rows';
+        ? (selectedNoun || 'row')
+        : (selectedPluralNoun || 'rows');
   }
 
   selectAllRows () {
