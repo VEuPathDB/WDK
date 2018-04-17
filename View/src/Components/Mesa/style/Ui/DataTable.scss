@@ -3,13 +3,14 @@
 
   .DataTable-Sticky {
     overflow: visible;
+    border: 1px solid cyan;
 
     .DataTable-Header, .DataTable-Body {
-      overflow: auto;
+      overflow: visible;
       table { table-layout: fixed; }
     }
     .DataTable-Body {
-      display: block;
+      overflow-y: auto;
       // overflow-y: auto;
     }
     .DataTable-Header {}
