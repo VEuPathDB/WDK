@@ -1,0 +1,33 @@
+.DataTable {
+  max-width: 100vw;
+  overflow-x: auto;
+  overflow-y: visible;
+  font-size: $fontSize;
+  width: 100%;
+  table {
+    width: 100%;
+  }
+  .DataTable-Sticky {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    max-width: 100%;
+
+    .DataTable-Header, .DataTable-Body {
+      display: block;
+      width: 100%;
+      max-width: none;
+      table {
+        table-layout: fixed;
+        width: auto;
+      }
+    }
+    .DataTable-Body {
+      overflow-x: visible;
+      overflow-y: visible;
+    }
+    .DataTable-Header {
+    }
+  }
+}
