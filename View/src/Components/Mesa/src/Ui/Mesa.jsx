@@ -45,7 +45,7 @@ class Mesa extends React.Component {
 
   renderEmptyState () {
     const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const { emptinessCulprit, sort } = uiState;
+    const { emptinessCulprit, sort } = uiState ? uiState : {};
 
     const hasSelectionColumn = typeof options.isRowSelected === 'function'
       && typeof eventHandlers.onRowSelect === 'function'
