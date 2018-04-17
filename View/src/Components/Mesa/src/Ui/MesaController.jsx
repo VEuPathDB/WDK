@@ -65,8 +65,9 @@ class MesaController extends React.Component {
   }
 
   render () {
-    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, options, columns, actions, uiState, eventHandlers };
+    let { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+    if (!filteredRows) filteredRows = [...rows];
+    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
     const Body = this.renderBody;
     const Toolbar = this.renderToolbar;
@@ -86,8 +87,9 @@ class MesaController extends React.Component {
 };
 
 MesaController.propTypes = {
-  rows: PropTypes.array,
-  columns: PropTypes.array,
+  rows: PropTypes.array.isRequired(),
+  columns: PropTypes.array.isRequired(),
+  filteredRows: PropTypes.array,
   options: PropTypes.object,
   actions: PropTypes.arrayOf(PropTypes.shape({
     element: PropTypes.oneOfType([ PropTypes.func, PropTypes.node, PropTypes.element ]),
