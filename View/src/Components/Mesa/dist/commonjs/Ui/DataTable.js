@@ -77,24 +77,23 @@ var DataTable = function (_React$PureComponent) {
 
       var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
-      console.log('generating dataTable layout...');
-      var cumulativeWidth = columns.reduce(function (initial, col) {
-        return initial + ' ' + col.width;
-      }, '');
-
-      console.log('cumulative width...', cumulativeWidth);
-
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
 
       var tableBodyStyle = { maxHeight: tableBodyMaxHeight };
+      var useStickyLayout = this.shouldUseStickyHeader();
+      var cumulativeWidth = useStickyLayout ? { minWidth: (0, _Utils.combineWidths)(columns.map(function (col) {
+          return col.width;
+        })) } : null;
+      console.log('cumulative width...', cumulativeWidth);
 
-      return this.shouldUseStickyHeader() ? _react2.default.createElement(
+      return useStickyLayout ? _react2.default.createElement(
         'div',
-        { className: dataTableClass('Sticky') },
+        { className: dataTableClass('Sticky'), style: cumulativeWidth },
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Header') },
+          { className: dataTableClass('Header'), style: cumulativeWidth },
+          '>',
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
@@ -107,7 +106,7 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Body'), style: tableBodyStyle },
+          { className: dataTableClass('Body'), style: Object.assign(tableBodyStyle, cumulativeWidth) },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
