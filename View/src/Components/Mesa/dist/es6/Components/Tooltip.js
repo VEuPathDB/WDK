@@ -37,14 +37,25 @@ var Tooltip = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Tooltip.__proto__ || Object.getPrototypeOf(Tooltip)).call(this, props));
 
-    _this.state = { showText: false };
+    _this.state = { showText: false, position: { top: 0, left: 0 } };
     _this.showTooltip = _this.showTooltip.bind(_this);
     _this.hideTooltip = _this.hideTooltip.bind(_this);
     _this.renderTextBox = _this.renderTextBox.bind(_this);
+    _this.componentDidMount = _this.componentDidMount.bind(_this);
     return _this;
   }
 
   _createClass(Tooltip, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var anchor = this.refs.anchor;
+
+      if (!anchor) return;
+      var position = getRealOffset(anchor);
+      console.log('got position as', position);
+      this.setState({ position: position });
+    }
+  }, {
     key: 'showTooltip',
     value: function showTooltip() {
       var showText = true;
@@ -60,10 +71,10 @@ var Tooltip = function (_React$Component) {
     key: 'renderTextBox',
     value: function renderTextBox() {
       var text = this.props.text;
-      var showText = this.state.showText;
+      var _state = this.state,
+          showText = _state.showText,
+          position = _state.position;
 
-
-      var position = this.anchor ? getRealOffset(this.anchor) : { top: 0, left: 0 };
 
       var wrapperStyle = {
         position: 'fixed',
@@ -93,8 +104,6 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _this2 = this;
-
       var children = this.props.children;
 
       var className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
@@ -102,20 +111,13 @@ var Tooltip = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         {
-          ref: function ref(_ref) {
-            return _this2.anchor = _ref;
-          },
+          ref: 'anchor',
           className: className,
           onMouseEnter: this.showTooltip,
           onMouseLeave: this.hideTooltip },
         children,
         _react2.default.createElement(TextBox, null)
       );
-    }
-  }], [{
-    key: 'say',
-    value: function say(whatever) {
-      console.log('::::: ---> ', whatever);
     }
   }]);
 
