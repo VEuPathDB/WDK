@@ -24,7 +24,7 @@ class HeadingRow extends React.PureComponent {
           ? null
           : <SelectionCell
               heading={true}
-              filteredRows={filteredRows}
+              rows={filteredRows}
               options={options}
               eventHandlers={eventHandlers}
               isRowSelected={isRowSelected}

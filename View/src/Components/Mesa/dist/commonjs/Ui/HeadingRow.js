@@ -65,7 +65,7 @@ var HeadingRow = function (_React$PureComponent) {
         { className: 'Row HeadingRow' },
         !hasSelectionColumn ? null : _react2.default.createElement(_SelectionCell2.default, {
           heading: true,
-          filteredRows: filteredRows,
+          rows: filteredRows,
           options: options,
           eventHandlers: eventHandlers,
           isRowSelected: isRowSelected
