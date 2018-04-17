@@ -9,12 +9,11 @@
   }
   .DataTable-Header, .DataTable-Body {
     display: block;
+    overflow-x: visible;
+    overflow-y: auto;
     table {
       table-layout: fixed;
       width: 100%;
     }
-  }
-  .DataTable-Body {
-    overflow-x: auto;
   }
 }
