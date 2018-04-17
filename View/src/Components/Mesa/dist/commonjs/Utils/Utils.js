@@ -14,6 +14,8 @@ exports.numberSort = numberSort;
 exports.arraysMatch = arraysMatch;
 exports.textSort = textSort;
 exports.makeClassifier = makeClassifier;
+exports.randomize = randomize;
+exports.uid = uid;
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -116,3 +118,21 @@ function makeClassifier(namespace, globalNamespace) {
     }, base);
   };
 }
+
+function randomize() {
+  var low = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  var high = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 99;
+
+  return Math.floor(Math.random() * (high - low + 1) + low);
+};
+
+function uid() {
+  var len = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8;
+
+  var output = '';
+  while (output.length < len) {
+    var index = randomize(0, 35);
+    if (index >= 10) output += String.fromCharCode(87 + index);else output += index.toString();
+  };
+  return output;
+};

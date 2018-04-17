@@ -91,3 +91,17 @@ export function makeClassifier (namespace, globalNamespace) {
     }, base);
   };
 }
+
+export function randomize (low = 0, high = 99) {
+  return Math.floor(Math.random() * (high - low + 1) + low);
+};
+
+export function uid (len = 8) {
+  let output = '';
+  while (output.length < len) {
+    let index = randomize(0, 35);
+    if (index >= 10) output += String.fromCharCode(87 + index);
+    else output += index.toString();
+  };
+  return output;
+};
