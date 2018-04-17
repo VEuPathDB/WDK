@@ -48,13 +48,17 @@ var Tooltip = function (_React$Component) {
     key: 'showTooltip',
     value: function showTooltip() {
       var showText = true;
-      this.setState({ showText: showText });
+      var textBox = { render: this.renderTextBox };
+      // this.setState({ showText });
+      this.context.addModal(textBox);
     }
   }, {
     key: 'hideTooltip',
     value: function hideTooltip() {
       var showText = false;
-      this.setState({ showText: showText });
+      var textBox = { render: this.renderTextBox };
+      // this.setState({ showText
+      this.context.removeModal(textBox);
     }
   }, {
     key: 'renderTextBox',

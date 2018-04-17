@@ -13,10 +13,10 @@ class ModalBoundary extends React.Component {
       modals: []
     };
 
-    this.getChildContext = this.getChildContext.bind(this);
     this.addModal = this.addModal.bind(this);
     this.removeModal = this.removeModal.bind(this);
-    this.renderModalList = this.renderModalList.bind(this);
+    this.getChildContext = this.getChildContext.bind(this);
+    this.renderModalWrapper = this.renderModalWrapper.bind(this);
   }
 
   addModal (modal) {
@@ -38,47 +38,37 @@ class ModalBoundary extends React.Component {
     return { addModal, removeModal };
   }
 
-  getBoundaryStyle () {
-    return {
-      width: '100%',
-      height: '100%',
-      display: 'block',
-      position: 'relative',
-      border: '10px solid orange'
-    };
-  }
 
-  renderModalList () {
+  renderModalWrapper () {
     const { modals } = this.state;
-    return (
-      <div>Lol</div>
-    );
-  }
-
-  getWrapperStyle () {
-    return {
-      position: 'fixed',
+    const style = {
       top: 0,
       left: 0,
       width: '100vw',
       height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.4)',
-      border: '2px solid orange'
-    }
+      position: 'fixed',
+      pointerEvents: 'none'
+    };
+
+    return !modals.length ? null : (
+      <div style={style} className={modalBoundaryClass('Wrapper')}>
+        {modals.map((modal, index) => {
+          const Element = modal.render;
+          return <Element key={index} />
+        })}
+      </div>
+    );
   }
 
   render () {
     const { children } = this.props;
-    const ModalList = this.renderModalList;
-    const style = this.getBoundaryStyle();
+    const ModalWrapper = this.renderModalWrapper;
+    const style = { position: 'relative' };
 
     return (
       <div className={modalBoundaryClass()} style={style}>
         {children}
-        <div style={this.getWrapperStyle()}>
-          Modals:
-          <ModalList />
-        </div>
+        <ModalWrapper />
       </div>
     );
   }
