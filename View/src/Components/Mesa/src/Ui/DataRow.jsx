@@ -57,7 +57,7 @@ class DataRow extends React.PureComponent {
       <tr className={className} style={rowStyle} onClick={this.toggleRow}>
         {!hasSelectionColumn
           ? null
-          ? <SelectionCell
+          : <SelectionCell
               row={row}
               eventHandlers={eventHandlers}
               isRowSelected={options.isRowSelected}

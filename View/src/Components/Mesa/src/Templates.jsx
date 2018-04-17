@@ -29,11 +29,11 @@ const Templates = {
     let { href, target, text } = (typeof value === 'object' ? value : defaults);
     href = (href ? href : (typeof value === 'string' ? value : '#'));
     text = (text.length ? text : href);
-    
+
     const props = { href, target, className, name: text };
 
     return <a {...props}>{text}</a>
-  }
+  },
 
   htmlCell ({ key, value, row, rowIndex, column }) {
     const { truncated } = column;
