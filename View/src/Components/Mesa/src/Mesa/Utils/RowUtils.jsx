@@ -1,4 +1,4 @@
-import Utils from 'Mesa/Utils/Utils';
+  import Utils from 'Mesa/Utils/Utils';
 
 const RowUtils = {
   searchRowsForQuery (rows, columns, searchQuery) {
@@ -27,6 +27,19 @@ const RowUtils = {
       }
     }
     return rows;
+  },
+
+  filterRowsByColumns (rows, columns) {
+    let filters = columns
+      .filter(column => column.filterable && column.filterState.enabled)
+      .map(({ key, filterState }) => {
+        const { blacklist } = filterState;
+        return { key, blacklist };
+      });
+    return rows.filter(row => {
+      let result = !filters.some(({ key, blacklist }) => blacklist.includes(row[key]));
+      return result;
+    });
   }
 };
 

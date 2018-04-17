@@ -1,17 +1,17 @@
 export function updateRows (rows) {
-  if (!rows || !Array.isArray(rows)) return {};
+  if (!rows || !Array.isArray(rows)) rows = [];
   return { type: 'UPDATE_ROWS', rows };
-}
+};
 
 export function updateColumns (columns) {
-  if (!columns || !Array.isArray(columns)) return {};
+  if (!columns || !Array.isArray(columns)) columns = [];
   return { type: 'UPDATE_COLUMNS', columns };
-}
+};
 
 export function updateOptions (options) {
-  if (!options || typeof options !== 'object') return {};
+  if (!options || typeof options !== 'object') options = {};
   return { type: 'UPDATE_OPTIONS', options };
-}
+};
 
 export function sortByColumn (column) {
   if (!column) return {};
@@ -21,7 +21,7 @@ export function sortByColumn (column) {
 export function setColumnWidth (column, width) {
   if (!column || typeof width !== 'number') return {};
   return { type: 'SET_COLUMN_WIDTH', column, width };
-}
+};
 
 export function toggleSortOrder () {
   return { type: 'TOGGLE_SORT_ORDER' };
@@ -30,11 +30,30 @@ export function toggleSortOrder () {
 export function toggleColumnFilter (column) {
   if (!column) return {};
   return { type: 'TOGGLE_COLUMN_FILTER', column };
-}
+};
+
+export function toggleColumnFilterVisibility (column) {
+  if (!column) return {};
+  return { type: 'TOGGLE_COLUMN_FILTER_VISIBILITY', column };
+};
 
 export function toggleColumnFilterValue (column, value) {
   if (!column || !value) return {};
   return { type: 'TOGGLE_COLUMN_FILTER_VALUE', column, value };
+};
+
+export function disableAllColumnFilters () {
+  return { type: 'DISABLE_ALL_COLUMN_FILTERS' };
+}
+
+export function setColumnBlackList (column, blacklist) {
+  if (!column || !Array.isArray(blacklist)) return {};
+  return { type: 'SET_COLUMN_BLACKLIST', column, blacklist };
+};
+
+export function setEmptinessCulprit (emptinessCulprit) {
+  if (typeof emptinessCulprit !== 'string' || !emptinessCulprit.length) emptinessCulprit = null;
+  return { type: 'SET_EMPTINESS_CULPRIT', emptinessCulprit };
 }
 
 export function searchByQuery (searchQuery) {

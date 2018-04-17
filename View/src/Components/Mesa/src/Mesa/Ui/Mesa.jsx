@@ -9,28 +9,35 @@ import { updateOptions, updateColumns, updateRows } from 'Mesa/State/Actions';
 class Mesa extends React.Component {
   constructor (props) {
     super(props);
-    let { options, columns, rows } = this.props;
-
-    options = Importer.importOptions(options);
-    columns = Importer.importColumns(columns, rows)
-
-    this.store = StoreFactory.create({ options, columns, rows });
-    this.state = this.store.getState();
+    this.state = {};
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillMount = this.componentWillMount.bind(this);
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
   }
 
+  componentWillMount () {
+    let { options, columns, rows } = this.props;
+
+    options = Importer.importOptions(options);
+    columns = Importer.importColumns(columns, rows, options);
+
+    this.store = StoreFactory.create({ options, columns, rows });
+    this.setState(this.store.getState());
+  }
+
   componentWillReceiveProps (newProps) {
+    const { dispatch } = this.store;
+
     if (newProps.options !== this.props.options) {
       let options = Importer.importOptions(newProps.options);
-      this.store.dispatch(updateOptions(options));
+      dispatch(updateOptions(options));
     }
     if (newProps.columns !== this.props.columns) {
-      let columns = Importer.importColumns(newProps.columns, this.props.rows);
-      this.store.dispatch(updateColumns(columns));
+      let columns = Importer.importColumns(newProps.columns, newProps.rows, newProps.options);
+      dispatch(updateColumns(columns));
     }
     if (newProps.rows !== this.props.rows) {
-      this.store.dispatch(updateRows(newProps.rows));
+      dispatch(updateRows(newProps.rows));
     }
   }
 
@@ -45,15 +52,18 @@ class Mesa extends React.Component {
   }
 
   render () {
-    let { dispatch } = this.store;
-    let state = this.state;
+    const state = this.state;
+    const { children } = this.props;
+    const { dispatch } = this.store;
 
     return (
       <div className="Mesa">
         <TableController
           state={state}
           dispatch={dispatch}
-        />
+        >
+          {children}
+        </TableController>
       </div>
     );
   }

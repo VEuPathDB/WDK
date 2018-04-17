@@ -4,4 +4,7 @@
   overflow-y: visible;
   font-size: $fontSize;
   width: 100%;
+  table {
+    min-width: 100%;
+  }
 }

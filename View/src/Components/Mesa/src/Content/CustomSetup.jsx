@@ -39,9 +39,13 @@ const CustomSetup = {
     width: '150px'
   },
   released: { name: 'Released', width: '10%' },
-  category: 'Category',
+  category: {
+    name: 'Category',
+    filterable: true
+  },
   contact: {
     name: 'Contact',
+    filterable: true,
     style: { fontWeight: 'bold' }
   },
   description: {
@@ -51,20 +55,5 @@ const CustomSetup = {
     maxHeight: ''
   }
 };
-
-/* Functionally the same as
-[
-  {
-    key: 'dataSet',
-    primary: true
-  },
-  {
-    key: 'organism',
-    type: 'html'
-  },
-  {
-    key: 'category'
-  }
-];                       */
 
 export default CustomSetup;

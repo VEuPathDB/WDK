@@ -3,6 +3,7 @@ export const initialState = {
   columns: [],
   options: {},
   ui: {
+    emptinessCulprit: null,
     searchQuery: null,
     sort: {
       byColumn: null,
@@ -16,6 +17,8 @@ export default function ReducerFactory (base = {}) {
 
   return function Reducer (state = startingState, action = {}) {
     switch (action.type) {
+
+      /* Updates -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
       case 'UPDATE_OPTIONS': {
         let { options } = action;
         return Object.assign({}, state, { options });
@@ -31,6 +34,8 @@ export default function ReducerFactory (base = {}) {
         return Object.assign({}, state, { rows });
       }
 
+      /* COL WIDTH -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=- */
+
       case 'SET_COLUMN_WIDTH': {
         let { column, width } = action;
         let { columns } = state;
@@ -40,16 +45,18 @@ export default function ReducerFactory (base = {}) {
         return Object.assign({}, state, { columns });
       }
 
+      /* FILTERS -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
+
       case 'TOGGLE_COLUMN_FILTER': {
         let { column } = action;
         let { columns } = state;
         if (!column.filterable) return state;
 
-        let index = columns.indexOf(column);
+        let index = columns.findIndex(col => col.key === column.key);
         if (index < 0) return state;
-        let { filter } = column;
-        filter.enabled = !filter.enabled;
-        columns[index] = Object.assign({}, columns[index], { filter });
+        let { filterState } = column;
+        filterState.enabled = !filterState.enabled;
+        columns[index] = Object.assign({}, columns[index], { filterState });
         return Object.assign({}, state, { columns });
       }
 
@@ -58,18 +65,64 @@ export default function ReducerFactory (base = {}) {
         let { columns } = state;
         if (!column.filterable) return state;
 
-        let index = columns.indexOf(column);
+        let index = columns.findIndex(col => col.key === column.key);
         if (index < 0) return state;
-        let { filter } = column;
-        if (filter.blacklist.includes(value)) {
-          filter.blacklist.splice(filter.blacklist.indexOf(value), 1);
-        } else {
-          filter.blacklist.push(value);
-        };
-        columns[index] = Object.assign({}, columns[index], { filter });
+        let { filterState } = column;
+        let { blacklist } = filterState;
+        if (blacklist.includes(value)) blacklist = blacklist.filter(item => item !== value)
+        else blacklist = [...blacklist, value];
+        filterState = Object.assign({}, filterState, { blacklist });
+        columns.splice(index, 1, Object.assign({}, column, { filterState }));
         return Object.assign({}, state, { columns });
       }
 
+      case 'TOGGLE_COLUMN_FILTER_VISIBILITY': {
+        let { column } = action;
+        let { columns } = state;
+        if (!column.filterable) return state;
+
+        let index = columns.findIndex(col => col.key === column.key);
+        if (index < 0) return state;
+        let { filterState } = column;
+        filterState.visible = !filterState.visible;
+        columns[index] = Object.assign({}, columns[index], { filterState });
+        return Object.assign({}, state, { columns });
+      }
+
+      case 'SET_COLUMN_BLACKLIST': {
+        let { column, blacklist } = action;
+        let { columns } = state;
+        if (!column.filterable) return state;
+
+        let index = columns.findIndex(col => col.key === column.key);
+        if (index < 0) return state;
+        let { filterState } = column;
+        filterState = Object.assign({}, filterState, { blacklist });
+        columns[index] = Object.assign({}, columns[index], { filterState });
+        return Object.assign({}, state, { columns });
+      }
+
+      case 'DISABLE_ALL_COLUMN_FILTERS': {
+        let { columns } = state;
+        columns = columns.map(column => {
+          let { filterable, filterState } = column;
+          let enabled = false;
+          if (!filterable) return column;
+          filterState = Object.assign({}, filterState, { enabled });
+          column = Object.assign({}, column, { filterState });
+          return column;
+        });
+        return Object.assign({}, state, { columns });
+      }
+
+      case 'SET_EMPTINESS_CULPRIT': {
+        let { emptinessCulprit } = action;
+        let { ui } = state;
+        ui = Object.assign({}, ui, { emptinessCulprit });
+        return Object.assign({}, state, { ui });
+      }
+
+      /* COLUMN SORTING -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~= */
       case 'SORT_BY_COLUMN': {
         let byColumn = action.column;
         let sort = Object.assign({}, state.ui.sort, { byColumn, ascending: true });
@@ -84,6 +137,7 @@ export default function ReducerFactory (base = {}) {
         return Object.assign({}, state, { ui });
       }
 
+      /* SHOW/HIDE COLUMN -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-= */
       case 'HIDE_COLUMN': {
         let { column } = action;
         let { columns } = state;
@@ -106,6 +160,7 @@ export default function ReducerFactory (base = {}) {
         return Object.assign({}, state, { columns });
       }
 
+      /* SEARCH -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~= */
       case 'SEARCH_BY_QUERY': {
         let { searchQuery } = action;
         if (!searchQuery || !searchQuery.length) searchQuery = null;

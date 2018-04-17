@@ -3,7 +3,8 @@
   border: 1px solid $borderColor;
   position: absolute;
   top: 90%;
-  width: 220px;
+  min-width: 220px;
+  width: 250px;
   text-align: left;
   font-weight: 400;
   z-index: 3000;
@@ -12,6 +13,11 @@
   padding: 20px;
   background-color: #f5f5f5;
   border-radius: 5px;
+
+  big {
+    display: block;
+    margin-bottom: 5px;
+  }
 
   &:before {
     content: ' ';
@@ -42,5 +48,9 @@
   }
   .icon {
     margin-right: 5px;
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
   }
 }

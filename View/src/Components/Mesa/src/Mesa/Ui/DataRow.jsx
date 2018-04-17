@@ -9,12 +9,14 @@ class DataRow extends React.PureComponent {
 
   render () {
     const { row, state } = this.props;
-    const { columns } = state;
+    const { columns, options } = state;
+
+    let rowStyle = !options.inline ? {} : { whiteSpace: 'nowrap' };
 
     return (
-      <tr className="DataRow">
+      <tr className="DataRow" style={rowStyle} >
         {columns.map(column => (
-          <DataCell column={column} row={row} key={column.key} />
+          <DataCell column={column} row={row} state={state} key={column.key} />
         ))}
       </tr>
     )

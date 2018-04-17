@@ -7,7 +7,7 @@ export const ColumnDefaults = {
   truncated: true,
 
   filterable: false,
-  filter: {
+  filterState: {
     enabled: false,
     visible: false,
     blacklist: []
@@ -26,6 +26,7 @@ export const OptionsDefaults = {
   toolbar: true,
   search: true,
   className: null,
+  inline: false,
   fixedWidth: false,
   overflowHeight: '16em'
 };

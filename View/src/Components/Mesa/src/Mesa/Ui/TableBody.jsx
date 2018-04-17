@@ -1,7 +1,8 @@
 import React from 'react';
 
-import HeadingRow from 'Mesa/Ui/HeadingRow';
 import DataRow from 'Mesa/Ui/DataRow';
+import HeadingRow from 'Mesa/Ui/HeadingRow';
+import EmptyState from 'Mesa/Ui/EmptyState';
 
 class TableBody extends React.PureComponent {
   constructor (props) {
@@ -9,9 +10,8 @@ class TableBody extends React.PureComponent {
   }
 
   render () {
-    let { dispatch, state } = this.props;
-    let { ui, rows, columns, options } = state;
-    let EmptyState = 'div';
+    let { dispatch, state, filteredRows } = this.props;
+    let rows = filteredRows;
 
     return (
       <div className="TableBody">
@@ -21,19 +21,22 @@ class TableBody extends React.PureComponent {
               dispatch={dispatch}
               state={state}
             />
-            {rows.length && rows.map((row, idx) => (
-              <DataRow
-                key={idx}
-                row={row}
-                dispatch={dispatch}
-                state={state}
-              />
-            ))}
-            {/*
-            <EmptyState
-              state={state}
-              dispatch={dispatch}
-            /> */}
+            {rows.length
+              ? rows.map((row, idx) => (
+                <DataRow
+                  key={idx}
+                  row={row}
+                  dispatch={dispatch}
+                  state={state}
+                />
+              ))
+              : (
+                <EmptyState
+                  state={state}
+                  dispatch={dispatch}
+                />
+              )
+            }
           </tbody>
         </table>
       </div>
