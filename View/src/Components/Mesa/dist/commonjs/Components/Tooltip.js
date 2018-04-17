@@ -105,7 +105,9 @@ var Tooltip = function (_React$Component) {
         'div',
         {
           style: textStyle,
-          className: 'Tooltip-Text' },
+          className: 'Tooltip-Text',
+          onMouseEnter: this.showTooltip,
+          onMouseLeave: this.disengageTooltip },
         text
       );
     }

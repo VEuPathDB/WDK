@@ -66,7 +66,9 @@ class Tooltip extends React.Component {
     return (
       <div
         style={textStyle}
-        className="Tooltip-Text">
+        className="Tooltip-Text"
+        onMouseEnter={this.showTooltip}
+        onMouseLeave={this.disengageTooltip}>
         {text}
       </div>
     );
