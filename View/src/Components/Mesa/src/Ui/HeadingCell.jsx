@@ -101,13 +101,13 @@ class HeadingCell extends React.PureComponent {
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
         <row className="justify-center items-center">
-          <box>
+          <box className="grow-1">
             <SortTrigger />
           </box>
           <box>
             <Content />
           </box>
-          <box>
+          <box className="grow-1">
             <ClickBoundary>
               <HelpTrigger />
             </ClickBoundary>
