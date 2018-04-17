@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { escape, orderBy } from 'lodash';
 import { withRouter } from 'react-router';
 import { wrappable } from 'Utils/ComponentUtils';
-import { Mesa, Utils as MesaUtils, MesaState } from 'mesa';
+import { Mesa, Utils as MesaUtils, MesaState } from 'Components/Mesa';
 
 import 'Views/Favorites/wdk-Favorites.scss';
 import RecordLink from 'Views/Records/RecordLink';

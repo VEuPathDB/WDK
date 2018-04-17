@@ -6,7 +6,7 @@ import moment from 'Utils/MomentUtils';
 import Icon from 'Components/Icon/IconAlt';
 import NotFound from 'Views/NotFound/NotFound';
 import { bytesToHuman } from 'Utils/Converters';
-import { Mesa, MesaState, AnchoredTooltip } from 'mesa';
+import { Mesa, MesaState, AnchoredTooltip } from 'Components/Mesa';
 import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
 import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 import { textCell, getDownloadUrl, makeClassifier, normalizePercentage } from 'Views/UserDatasets/UserDatasetUtils';

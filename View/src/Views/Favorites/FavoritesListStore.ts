@@ -18,7 +18,7 @@ import {
   FilterByTypeAction
 } from 'Views/Favorites/FavoritesActionCreators';
 import { Favorite } from 'Utils/WdkModel';
-import { MesaState } from 'mesa';
+import { MesaState } from 'Components/Mesa';
 
 type Action =
   TableStateUpdatedAction

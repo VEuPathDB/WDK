@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Icon from 'Components/Icon/IconAlt';
-import { Mesa, MesaState } from 'mesa';
+import { Mesa, MesaState } from 'Components/Mesa';
 import { makeClassifier } from 'Views/UserDatasets/UserDatasetUtils';
 import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
 import BigwigGBrowseUploader from 'Views/UserDatasets/Detail/BigwigGBrowseUploader';

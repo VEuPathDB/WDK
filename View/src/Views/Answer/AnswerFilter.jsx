@@ -2,7 +2,7 @@ import {debounce} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AnswerFilterSelector from 'Views/Answer/AnswerFilterSelector';
-import { HelpTrigger } from 'mesa';
+import { HelpTrigger } from 'Components/Mesa';
 import { wrappable } from 'Utils/ComponentUtils';
 import Tooltip from 'Components/Overlays/Tooltip';
 

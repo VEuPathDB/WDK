@@ -6,7 +6,7 @@ import Dialog from 'Components/Overlays/Dialog';
 import AnswerFilter from 'Views/Answer/AnswerFilter';
 import { wrappable } from 'Utils/ComponentUtils';
 import AttributeSelector from 'Views/Answer/AnswerAttributeSelector';
-import { Mesa, MesaState, Utils as MesaUtils } from 'mesa';
+import { Mesa, MesaState, Utils as MesaUtils } from 'Components/Mesa';
 
 import 'Views/Answer/wdk-Answer.scss';
 

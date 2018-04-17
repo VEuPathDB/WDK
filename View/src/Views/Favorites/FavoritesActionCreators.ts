@@ -1,7 +1,7 @@
 import { ActionThunk } from "Utils/ActionCreatorUtils";
 import { Favorite, RecordInstance } from "Utils/WdkModel";
 import { ServiceError } from "Utils/WdkService";
-import { MesaState, MesaSelection } from 'mesa';
+import { MesaState, MesaSelection } from 'Components/Mesa';
 
 
 export type TableStateUpdatedAction = {

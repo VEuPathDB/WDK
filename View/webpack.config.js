@@ -48,7 +48,6 @@ var exposeModules = [
   { module: 'react',              expose : 'React' },
   { module: 'react-dom',          expose : 'ReactDOM' },
   { module: 'react-router/es',    expose : 'ReactRouter' },
-  { module: 'mesa/dist/es6',      expose : 'Mesa' },
   { module: 'rxjs',               expose : 'Rx' }
 ];
 
@@ -103,29 +102,4 @@ var primaryConfig = {
   ]
 };
 
-// The following config enables us to compile mesa code directly, preventing
-// react from being bundled and causing version mismatch failuers.
-// TODO Remove this when mesa is moved into the wdk codebase.
-var mesaConfig = {
-  resolve: {
-    alias: {
-      // aliases to prevent mesa from bundling react
-      'react': path.join(__dirname, 'node_modules/react'),
-      'prop-types': path.join(__dirname, 'node_modules/prop-types'),
-    }
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(css|js)$/,
-        use: ['source-map-loader'],
-        enforce: 'pre',
-        include: [
-          path.resolve(__dirname, 'node_modules/mesa')
-        ]
-      }
-    ]
-  }
-};
-
-module.exports = baseConfig.merge([ primaryConfig, mesaConfig ]);
+module.exports = baseConfig.merge([ primaryConfig ]);

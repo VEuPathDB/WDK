@@ -1,5 +1,5 @@
 import { bindAll, difference, escapeRegExp, get, has, isFunction, memoize, debounce } from 'lodash';
-import { MesaController as Mesa } from 'mesa';
+import { MesaController as Mesa } from 'Components/Mesa';
 import React from 'react';
 
 import { safeHtml } from 'Utils/ComponentUtils';

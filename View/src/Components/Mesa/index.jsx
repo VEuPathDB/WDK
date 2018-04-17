@@ -1,3 +1,5 @@
+import './style/Mesa.scss';
+
 import Mesa from './Ui/Mesa';
 import DataTable from './Ui/DataTable';
 import RowCounter from './Ui/RowCounter';

@@ -44,7 +44,6 @@
     "localforage": "^1.5.0",
     "lodash": "^4.17.5",
     "mansion-ui": "^2.5.2",
-    "mesa": "https://github.com/austinbillings/mesa.git",
     "moment": "^2.21.0",
     "natural-sort": "^1.0.0",
     "node-sass": "^4.7.2",
