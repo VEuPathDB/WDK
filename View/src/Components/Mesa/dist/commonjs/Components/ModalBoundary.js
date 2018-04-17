@@ -35,6 +35,7 @@ var ModalBoundary = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (ModalBoundary.__proto__ || Object.getPrototypeOf(ModalBoundary)).call(this, props));
 
     _this.componentDidMount = _this.componentDidMount.bind(_this);
+    _this.getChildContext = _this.getChildContext.bind(_this);
     return _this;
   }
 

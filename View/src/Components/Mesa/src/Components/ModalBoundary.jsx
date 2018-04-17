@@ -9,6 +9,7 @@ class ModalBoundary extends React.Component {
   constructor (props) {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.getChildContext = this.getChildContext.bind(this);
   }
 
   componentDidMount () {
