@@ -4,11 +4,16 @@ const idPrefix = 'listener_';
 export const EventsFactory = (node) => {
   const instance = {
     listenerStore: [],
-    add: (event, callback) => {
-      let signature = [ event, callback ];
+    add: (eventName, callback) => {
+      eventName = eventName.toLowerCase();
+      console.log('adding...', eventName, callback);
+      let signature = [ eventName, callback ];
       let length = instance.listenerStore.push(signature);
-      node.addEventListener(event, callback);
+      node.addEventListener(eventName, callback);
       return idPrefix + (--length);
+    },
+    use: (map = {}) => {
+      Object.entries(map).forEach(entry => instance.add(...entry));
     },
     remove: (id) => {
       const offset = idPrefix.length;
@@ -16,6 +21,9 @@ export const EventsFactory = (node) => {
       let [ event, callback ] = instance.listenerStore[index];
       node.removeEventListener(event, callback);
       delete instance.listenerStore[index];
+    },
+    clearAll: () => {
+      instance.listenerStore.forEach(instance.remove);
     },
     onKey: (key, callback) => {
       if (!key in KeyCodes) return;

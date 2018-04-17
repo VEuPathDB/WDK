@@ -38,6 +38,7 @@ var Tooltip = function (_React$Component) {
     _this.engageTooltip = _this.engageTooltip.bind(_this);
     _this.disengageTooltip = _this.disengageTooltip.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
+    _this.state = { isFocus: false, isHovered: false };
     return _this;
   }
 
@@ -54,15 +55,29 @@ var Tooltip = function (_React$Component) {
         throw new Error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
       }
       if (!this.el) {
-        console.error('\n        Tooltip Error: Can\'t setup focusIn/focusOut events.\n        Element ref could not be found.\n      ');
+        console.error('\n        Tooltip Error: Can\'t setup focusIn/focusOut events.\n        Element ref could not be found; was render interrupted?\n      ');
+      } else {
+        this.events = new _Events.EventsFactory(this.el);
+        this.events.use({
+          focusIn: function focusIn() {
+            return _this2.setState({ isFocus: true });
+          },
+          focusOut: function focusOut() {
+            return _this2.setState({ isFocus: false });
+          },
+          mouseEnter: function mouseEnter() {
+            return _this2.setState({ isHovered: true });
+          },
+          mouseLeave: function mouseLeave() {
+            return _this2.setState({ isHovered: false });
+          }
+        });
       }
-      this.events = (0, _Events.EventsFactory)(this.el);
-      this.events.add('focusIn', function () {
-        return _this2.engageTooltip();
-      });
-      this.events.add('focusOut', function () {
-        return _this2.disengageTooltip();
-      });
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this.events) this.events.clearAll();
     }
   }, {
     key: 'showTooltip',
@@ -155,21 +170,25 @@ var Tooltip = function (_React$Component) {
     value: function render() {
       var _this4 = this;
 
-      var children = this.props.children;
+      var _state = this.state,
+          isFocus = _state.isFocus,
+          isHovered = _state.isHovered;
 
-      var className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
+      if (this.el && (isFocus || isHovered)) this.engageTooltip();else this.disengageTooltip();
+
+      var _props2 = this.props,
+          children = _props2.children,
+          className = _props2.className;
+
+      var fullClassName = 'Tooltip' + (className ? ' ' + className : '');
       return _react2.default.createElement(
         'div',
         {
           tabIndex: 0,
-          className: className,
+          className: fullClassName,
           ref: function ref(el) {
             return _this4.el = el;
-          },
-          onFocus: this.engageTooltip,
-          onBlur: this.disengageTooltip,
-          onMouseEnter: this.engageTooltip,
-          onMouseLeave: this.disengageTooltip },
+          } },
         children
       );
     }
@@ -190,6 +209,7 @@ Tooltip.propTypes = {
   children: _propTypes2.default.node,
   className: _propTypes2.default.string,
   content: _propTypes2.default.node,
+  corner: _propTypes2.default.string,
   position: _propTypes2.default.object
 };
 
