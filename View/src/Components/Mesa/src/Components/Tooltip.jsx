@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { EventsFactory } from 'Utils/Events';
+
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
@@ -24,6 +26,8 @@ class Tooltip extends React.Component {
         Please use a <ModalBoundary> in your element tree to catch modals.
       `);
     }
+    this.events = EventsFactory(this.el);
+    this.events.add('focusIn', () => console.log('focus in detected brah'));
   }
 
   showTooltip () {
@@ -89,6 +93,7 @@ class Tooltip extends React.Component {
       <div
         tabIndex={0}
         className={className}
+        ref={(el) => this.el = el}
         onFocus={this.engageTooltip}
         onBlur={this.disengageTooltip}
         onMouseEnter={this.engageTooltip}

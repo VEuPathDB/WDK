@@ -14,6 +14,8 @@ var _propTypes = require('prop-types');
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
+var _Events = require('Utils/Events');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -49,6 +51,10 @@ var Tooltip = function (_React$Component) {
       if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
         throw new Error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
       }
+      this.events = (0, _Events.EventsFactory)(this.el);
+      this.events.add('focusIn', function () {
+        return console.log('focus in detected brah');
+      });
     }
   }, {
     key: 'showTooltip',
@@ -128,6 +134,8 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
+      var _this3 = this;
+
       var children = this.props.children;
 
       var className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
@@ -136,6 +144,9 @@ var Tooltip = function (_React$Component) {
         {
           tabIndex: 0,
           className: className,
+          ref: function ref(el) {
+            return _this3.el = el;
+          },
           onFocus: this.engageTooltip,
           onBlur: this.disengageTooltip,
           onMouseEnter: this.engageTooltip,
