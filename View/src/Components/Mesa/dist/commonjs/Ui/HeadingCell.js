@@ -14,6 +14,10 @@ var _Templates = require('../Templates');
 
 var _Templates2 = _interopRequireDefault(_Templates);
 
+var _Icon = require('../Components/Icon');
+
+var _Icon2 = _interopRequireDefault(_Icon);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -102,7 +106,7 @@ var HeadingCell = function (_React$PureComponent) {
 
       var sortIcon = !isActive ? 'sort-amount-asc inactive' : direction === 'asc' ? 'sort-amount-asc active' : 'sort-amount-desc active';
 
-      return _react2.default.createElement(Icon, { fa: sortIcon + ' Trigger SortTrigger' });
+      return _react2.default.createElement(_Icon2.default, { fa: sortIcon + ' Trigger SortTrigger' });
     }
   }, {
     key: 'render',
