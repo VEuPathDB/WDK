@@ -6,7 +6,6 @@ export const EventsFactory = (node) => {
     listenerStore: [],
     add: (eventName, callback) => {
       eventName = eventName.toLowerCase();
-      console.log('adding...', eventName, callback);
       let signature = [ eventName, callback ];
       let length = instance.listenerStore.push(signature);
       node.addEventListener(eventName, callback);
