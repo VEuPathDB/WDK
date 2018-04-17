@@ -4,6 +4,7 @@ import DataTable from '../Ui/DataTable';
 import TableToolbar from '../Ui/TableToolbar';
 import ActionToolbar from '../Ui/ActionToolbar';
 import PaginationMenu from '../Ui/PaginationMenu';
+import EmptyState from '../Ui/EmptyState';
 
 class Mesa extends React.Component {
   constructor (props) {
@@ -11,6 +12,8 @@ class Mesa extends React.Component {
     this.renderToolbar = this.renderToolbar.bind(this);
     this.renderActionBar = this.renderActionBar.bind(this);
     this.renderPaginationMenu = this.renderPaginationMenu.bind(this);
+    this.renderEmptyState = this.renderEmptyState.bind(this);
+    this.renderBody = this.renderBody.bind(this);
   }
 
   renderPaginationMenu () {
@@ -39,6 +42,28 @@ class Mesa extends React.Component {
     return <ActionToolbar {...props} />
   }
 
+  renderEmptyState () {
+    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const { emptinessCulprit, sort } = uiState;
+
+    const hasSelectionColumn = typeof options.isRowSelected === 'function'
+      && typeof eventHandlers.onRowSelect === 'function'
+      && typeof eventHandlers.onRowDeselect === 'function';
+    const colspan = columns.filter(column => !column.hidden).length + (hasSelectionColumn ? 1 : 0);
+
+    return <EmptyState colspan={colspan} culprit={emptinessCulprit} />
+  }
+
+  renderBody () {
+    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, options, columns, actions, uiState, eventHandlers };
+    const Empty = this.renderEmptyState;
+
+    return rows.length
+      ? <DataTable {...props} />
+      : <Empty />
+  }
+
   render () {
     const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, options, columns, actions, uiState, eventHandlers };
@@ -46,13 +71,14 @@ class Mesa extends React.Component {
     const PageNav = this.renderPaginationMenu;
     const Toolbar = this.renderToolbar;
     const ActionBar = this.renderActionBar;
+    const Body = this.renderBody;
 
     return (
       <div className="TableController">
         <Toolbar />
         <ActionBar />
         <PageNav />
-        <DataTable {...props} />
+        <Body />
         <PageNav />
       </div>
     );
