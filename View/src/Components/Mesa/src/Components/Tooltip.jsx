@@ -10,13 +10,18 @@ class Tooltip extends React.Component {
     this.state = {
       isFocus: false,
       isHovered: false,
+      isDisengaged: false
     };
 
     this.showTooltip = this.showTooltip.bind(this);
     this.hideTooltip = this.hideTooltip.bind(this);
+
     this.getHideDelay = this.getHideDelay.bind(this);
+    this.getShowDelay = this.getShowDelay.bind(this);
+
     this.engageTooltip = this.engageTooltip.bind(this);
     this.disengageTooltip = this.disengageTooltip.bind(this);
+
     this.renderTooltipBox = this.renderTooltipBox.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
@@ -25,9 +30,20 @@ class Tooltip extends React.Component {
     return node.getBoundingClientRect();
   }
 
+  getShowDelay () {
+    const { showDelay } = this.props;
+    return typeof showDelay === 'number'
+      ? showDelay
+      : 250;
+  }
+
   componentDidMount () {
-    const { addModal, removeModal } = this.context;
-    if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
+    const { addModal, removeModal, updateModal } = this.context;
+    if (
+      typeof addModal !== 'function'
+      || typeof removeModal !== 'function'
+      || typeof updateModal !== 'function'
+    ) {
       throw new Error(`
         Tooltip Error: No "addModal" or "removeModal" detected in context.
         Please use a <ModalBoundary> in your element tree to catch modals.
@@ -64,14 +80,16 @@ class Tooltip extends React.Component {
   showTooltip () {
     if (this.id) return;
     const { addModal } = this.context;
-    const textBox = { render: this.renderTooltipBox };
-    this.id = addModal(textBox);
+    this.id = addModal({ render: () => this.renderTooltipBox() });
     if (this.hideTimeout) clearTimeout(this.hideTimeout);
   }
 
   engageTooltip () {
-    let { showDelay } = this.props;
-    showDelay = typeof showDelay === 'number' ? showDelay : 250;
+    const { updateModal } = this.context;
+    const showDelay = this.getShowDelay();
+
+    updateModal(this.id, { render: () => this.renderTooltipBox() });
+
     this.showTimeout = setTimeout(() => {
       this.showTooltip();
       if (this.hideTimeout) clearTimeout(this.hideTimeout);
@@ -97,8 +115,7 @@ class Tooltip extends React.Component {
     return corner.split(' ').filter(s => s).join('-');
   }
 
-  renderTooltipBox () {
-    const { isDisengaged } = this.state;
+  renderTooltipBox (disengaged = false) {
     const { content, position, style, renderHtml } = this.props;
     const { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
     const cornerClass = this.getCornerClass();
@@ -115,7 +132,7 @@ class Tooltip extends React.Component {
     return (
       <div
         style={boxStyle}
-        className={'Tooltip-Content ' + cornerClass}
+        className={'Tooltip-Content ' + cornerClass + (disengaged ? ' Tooltip-Content--Disengaged' : '')}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
         {renderHtml ? <div dangerouslySetInnerHTML={{ __html: content }} /> : content}
@@ -154,6 +171,7 @@ Tooltip.propTypes = {
 
 Tooltip.contextTypes = {
   addModal: PropTypes.func,
+  updateModal: PropTypes.func,
   removeModal: PropTypes.func
 };
 

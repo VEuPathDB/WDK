@@ -15,6 +15,7 @@ class ModalBoundary extends React.Component {
 
     this.addModal = this.addModal.bind(this);
     this.removeModal = this.removeModal.bind(this);
+    this.updateModal = this.updateModal.bind(this);
     this.getChildContext = this.getChildContext.bind(this);
     this.renderModalWrapper = this.renderModalWrapper.bind(this);
   }
@@ -35,9 +36,17 @@ class ModalBoundary extends React.Component {
     this.setState({ modals });
   }
 
+  updateModal (id, modal = {}) {
+    let { modals } = this.state;
+    let index = modals.findIndex(modal => modal._id === id);
+    if (index < 0) return;
+    modals.splice(index, 1, modal);
+    this.setState({ modals });
+  }
+
   getChildContext () {
-    const { addModal, removeModal } = this;
-    return { addModal, removeModal };
+    const { addModal, removeModal, updateModal } = this;
+    return { addModal, removeModal, updateModal };
   }
 
   renderModalWrapper () {
@@ -54,7 +63,7 @@ class ModalBoundary extends React.Component {
       <div style={style} className={modalBoundaryClass('Wrapper')}>
         {modals.map((modal, index) => {
           const Element = modal.render;
-          return <Element key={index} />
+          return <Element key={index} {...modal} />
         })}
       </div>
     );
@@ -81,6 +90,7 @@ class ModalBoundary extends React.Component {
 
 ModalBoundary.childContextTypes = {
   addModal: PropTypes.func,
+  updateModal: PropTypes.func,
   removeModal: PropTypes.func
 };
 

@@ -3,8 +3,6 @@ import React from 'react';
 import DataRow from '../Ui/DataRow';
 import { makeClassifier } from '../Utils/Utils';
 
-const dataRowListClass = makeClassifier('DataRowList');
-
 class DataRowList extends React.Component {
   constructor (props) {
     super(props);
@@ -15,7 +13,7 @@ class DataRowList extends React.Component {
     const { rows, filteredRows } = props;
 
     return (
-      <tbody className={dataRowListClass()}>
+      <tbody className="DataRowList">
         {filteredRows.map((row, rowIndex) => (
           <DataRow
             row={row}
