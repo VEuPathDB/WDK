@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Templates from '../Templates';
+import Icon from '../Components/Icon';
 // import ColumnSorter from '../Ui/ColumnSorter';
 // import ColumnFilter from '../Ui/ColumnFilter';
 
