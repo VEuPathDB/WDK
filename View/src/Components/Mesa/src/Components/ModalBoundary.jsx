@@ -49,7 +49,7 @@ class ModalBoundary extends React.Component {
       width: '100vw',
       height: '100vh',
       position: 'fixed',
-      pointerEvents: 'none'
+      // pointerEvents: 'none'
     };
     return !modals.length ? null : (
       <div style={style} className={modalBoundaryClass('Wrapper')}>
