@@ -185,13 +185,13 @@ var create = exports.create = function create(_ref) {
       uiState = _ref.uiState;
   var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-  if (rows) state = setRows(state, rows);
-  if (filteredRows) state = setFilteredRows(state, filteredRows);
-  if (columns) state = setColumns(state, columns);
-  if (options) state = setOptions(state, options);
-  if (actions) state = setActions(state, actions);
-  if (eventHandlers) state = setEventHandlers(state, eventHandlers);
-  if (uiState) state = setUiState(state, uiState);
+  state = setRows(state, rows ? rows : []);
+  state = setColumns(state, columns ? columns : []);
+  state = setOptions(state, options ? options : {});
+  state = setActions(state, actions ? actions : []);
+  state = setFilteredRows(state, filteredRows ? filteredRows : rows ? rows : []);
+  state = setEventHandlers(state, eventHandlers ? eventHandlers : []);
+  state = setUiState(state, uiState ? uiState : {});
   return state;
 };
 
