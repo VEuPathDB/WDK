@@ -33,10 +33,12 @@ class DataTable extends React.PureComponent {
     const { tableBodyMaxHeight } = options ? options : {};
     const useStickyLayout = this.shouldUseStickyHeader();
     const cumulativeWidth = combineWidths(columns.map(col => col.width));
+
     const heightLayer = {
       maxHeight: tableBodyMaxHeight,
       overflow: 'auto'
     };
+
     const widthLayer = {
       minWidth: cumulativeWidth,
       maxWidth: cumulativeWidth,
