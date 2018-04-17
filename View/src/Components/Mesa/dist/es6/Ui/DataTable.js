@@ -105,7 +105,9 @@ var DataTable = function (_React$Component) {
       var dynamicWidths = columns.map(function (c, i) {
         return getInnerCellWidth(contentCells[i], headingCells[i], c);
       });
-      this.setState({ dynamicWidths: dynamicWidths });
+      this.setState({ dynamicWidths: dynamicWidths }, function () {
+        window.dispatchEvent(new Event('MesaReflow'));
+      });
     }
   }, {
     key: 'getInnerCellWidth',
@@ -150,6 +152,7 @@ var DataTable = function (_React$Component) {
     value: function handleTableBodyScroll(e) {
       var offset = this.bodyNode.scrollLeft;
       this.headerNode.scrollLeft = offset;
+      window.dispatchEvent(new Event('MesaScroll'));
     }
 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

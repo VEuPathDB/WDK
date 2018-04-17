@@ -56,7 +56,9 @@ class DataTable extends React.Component {
       contentCells.shift();
     }
     const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c));
-    this.setState({ dynamicWidths });
+    this.setState({ dynamicWidths }, () => {
+      window.dispatchEvent(new Event('MesaReflow'));
+    });
   }
 
   getInnerCellWidth (cell, headingCell, { key }) {
@@ -94,6 +96,7 @@ class DataTable extends React.Component {
   handleTableBodyScroll (e) {
     const offset = this.bodyNode.scrollLeft;
     this.headerNode.scrollLeft = offset;
+    window.dispatchEvent(new Event('MesaScroll'));
   }
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
