@@ -190,8 +190,11 @@ export default function ReducerFactory (base = {}) {
       /* SEARCH -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~= */
       case 'SEARCH_BY_QUERY': {
         let { searchQuery } = action;
+        let { ui } = state;
         if (!searchQuery || !searchQuery.length) searchQuery = null;
-        let ui = Object.assign({}, state.ui, { searchQuery });
+        let { pagination } = ui;
+        pagination = Object.assign({}, pagination, { activeItem: 1 });
+        ui = Object.assign({}, ui, { searchQuery }, { pagination });
         return Object.assign({}, state, { ui })
       }
 
