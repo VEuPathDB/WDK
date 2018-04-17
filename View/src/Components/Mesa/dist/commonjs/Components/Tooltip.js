@@ -52,11 +52,24 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
+      this.engageTooltip();
       if (this.id) return;
       var addModal = this.context.addModal;
 
       var textBox = { render: this.renderTextBox };
       this.id = addModal(textBox);
+    }
+  }, {
+    key: 'engageTooltip',
+    value: function engageTooltip() {
+      console.log('calling engagetooltip');
+      if (this.timeout) clearTimeout(this.timeout);
+    }
+  }, {
+    key: 'disengageTooltip',
+    value: function disengageTooltip() {
+      console.log('calling disengagetooltip');
+      this.timeout = setTimeout(this.hideTooltip, 1000);
     }
   }, {
     key: 'hideTooltip',
@@ -105,7 +118,7 @@ var Tooltip = function (_React$Component) {
         {
           className: className,
           onMouseEnter: this.showTooltip,
-          onMouseLeave: this.hideTooltip },
+          onMouseLeave: this.disengageTooltip },
         children
       );
     }
@@ -113,17 +126,6 @@ var Tooltip = function (_React$Component) {
     key: 'getOffset',
     value: function getOffset(node) {
       return node.getBoundingClientRect();
-      // let top = 0;
-      // let left = 0;
-      // let height = node.offsetHeight;
-      // let width = node.offsetWidth;
-      //
-      // do {
-      //   top += node.offsetTop || 0;
-      //   left += node.offsetLeft || 0;
-      //   node = node.offsetParent;
-      // } while (node);
-      // return { top, left, height, width };
     }
   }]);
 

@@ -12,17 +12,6 @@ class Tooltip extends React.Component {
 
   static getOffset (node) {
     return node.getBoundingClientRect();
-    // let top = 0;
-    // let left = 0;
-    // let height = node.offsetHeight;
-    // let width = node.offsetWidth;
-    //
-    // do {
-    //   top += node.offsetTop || 0;
-    //   left += node.offsetLeft || 0;
-    //   node = node.offsetParent;
-    // } while (node);
-    // return { top, left, height, width };
   }
 
   componentDidMount () {
@@ -36,10 +25,21 @@ class Tooltip extends React.Component {
   }
 
   showTooltip () {
+    this.engageTooltip();
     if (this.id) return;
     const { addModal } = this.context;
     const textBox = { render: this.renderTextBox };
     this.id = addModal(textBox);
+  }
+
+  engageTooltip () {
+    console.log('calling engagetooltip');
+    if (this.timeout) clearTimeout(this.timeout);
+  }
+
+  disengageTooltip () {
+    console.log('calling disengagetooltip');
+    this.timeout = setTimeout(this.hideTooltip, 1000);
   }
 
   hideTooltip () {
@@ -77,7 +77,7 @@ class Tooltip extends React.Component {
       <div
         className={className}
         onMouseEnter={this.showTooltip}
-        onMouseLeave={this.hideTooltip}>
+        onMouseLeave={this.disengageTooltip}>
         {children}
       </div>
     )
