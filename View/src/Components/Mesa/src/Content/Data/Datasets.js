@@ -114,25 +114,4 @@ const TableData = [
   }
 ];
 
-
-/* {
-  dataSet: '',
-  organism: '',
-  category: '',
-  description: ``,
-  released: '',
-  summary: '',
-  releasePolicy: null,
-  publications: [
-    { id: '' }
-  ],
-  contact: '',
-  contactInstitution: ''
-}
-
-
-wtf lol
-*/
-
-
 export default TableData;

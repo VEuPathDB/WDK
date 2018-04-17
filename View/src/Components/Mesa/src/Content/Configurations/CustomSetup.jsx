@@ -1,6 +1,9 @@
 import React from 'react';
 
+import Datasets from 'Content/Data/Datasets';
+
 const bgImage = 'https://media.giphy.com/media/VxbvpfaTTo3le/giphy.gif';
+const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color: 'blue' };
 const fancy = {
   color: '#fff',
   fontWeight: 900,
@@ -15,7 +18,7 @@ const fancy = {
   backgroundImage: `url(${bgImage})`
 };
 
-const CustomSetup = {
+const CustomSetupColumns = {
   dataSet: {
     primary: true,
     style: { width: '20%' },
@@ -53,6 +56,15 @@ const CustomSetup = {
     name: 'Description',
     width: '50%',
     maxHeight: ''
+  }
+};
+
+const CustomSetup = {
+  label: 'Custom Setup with Filter',
+  columns: CustomSetupColumns,
+  rows: Datasets,
+  options: {
+    title: <span style={embarrassment}>Cool Internet ! (｡◕‿◕｡)</span>
   }
 };
 
