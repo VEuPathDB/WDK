@@ -18,6 +18,9 @@ class HeadingCell extends React.PureComponent {
   componentDidMount () {
     const { element } = this.refs;
     if (!element) return;
+    console.log('got element', element);
+    let offset = Tooltip.getOffset(element);
+    console.log('got offset', offset);
   }
 
   renderContent () {

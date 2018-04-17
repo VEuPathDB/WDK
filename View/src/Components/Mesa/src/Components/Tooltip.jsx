@@ -1,16 +1,5 @@
 import React from 'react';
 
-function getRealOffset (el) {
-  let top = 0;
-  let left = 0;
-  do {
-    top += el.offsetTop || 0;
-    left += el.offsetLeft || 0;
-    el = el.offsetParent;
-  } while (el);
-  return { top, left };
-};
-
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
@@ -19,6 +8,17 @@ class Tooltip extends React.Component {
     this.hideTooltip = this.hideTooltip.bind(this);
     this.renderTextBox = this.renderTextBox.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  static getOffset (node) {
+    let top = 0;
+    let left = 0;
+    do {
+      top += node.offsetTop || 0;
+      left += node.offsetLeft || 0;
+      node = node.offsetParent;
+    } while (node);
+    return { top, left };
   }
 
   componentDidMount () {

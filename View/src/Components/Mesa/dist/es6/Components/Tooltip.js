@@ -18,17 +18,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function getRealOffset(el) {
-  var top = 0;
-  var left = 0;
-  do {
-    top += el.offsetTop || 0;
-    left += el.offsetLeft || 0;
-    el = el.offsetParent;
-  } while (el);
-  return { top: top, left: left };
-};
-
 var Tooltip = function (_React$Component) {
   _inherits(Tooltip, _React$Component);
 
@@ -117,6 +106,18 @@ var Tooltip = function (_React$Component) {
         children,
         _react2.default.createElement(TextBox, null)
       );
+    }
+  }], [{
+    key: 'getOffset',
+    value: function getOffset(node) {
+      var top = 0;
+      var left = 0;
+      do {
+        top += node.offsetTop || 0;
+        left += node.offsetLeft || 0;
+        node = node.offsetParent;
+      } while (node);
+      return { top: top, left: left };
     }
   }]);
 

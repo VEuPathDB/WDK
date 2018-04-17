@@ -2,12 +2,13 @@
   position: relative;
   max-width: none;
   overflow: visible;
+  
   .Tooltip-Text {
     position:absolute;
     top: 100%;
     left: 100%;
     overflow: visible;
-    display: block;
+    display: inline-block;
     padding: 5px;
     background-color: #FFF;
     font-weight: normal;

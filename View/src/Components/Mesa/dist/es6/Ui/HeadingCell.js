@@ -54,6 +54,9 @@ var HeadingCell = function (_React$PureComponent) {
       var element = this.refs.element;
 
       if (!element) return;
+      console.log('got element', element);
+      var offset = _Tooltip2.default.getOffset(element);
+      console.log('got offset', offset);
     }
   }, {
     key: 'renderContent',
