@@ -41,6 +41,7 @@ var ModalBoundary = function (_React$Component) {
     _this.getChildContext = _this.getChildContext.bind(_this);
     _this.addModal = _this.addModal.bind(_this);
     _this.removeModal = _this.removeModal.bind(_this);
+    _this.renderModalList = _this.renderModalList.bind(_this);
     return _this;
   }
 
