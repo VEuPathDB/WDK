@@ -77,6 +77,13 @@ var DataTable = function (_React$PureComponent) {
 
       var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
+      console.log('generating dataTable layout...');
+      var cumulativeWidth = columns.reduce(function (initial, col) {
+        return initial + ' ' + col.width;
+      }, '');
+
+      console.log('cumulative width...', cumulativeWidth);
+
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
 

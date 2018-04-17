@@ -30,6 +30,14 @@ class DataTable extends React.PureComponent {
     const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
+
+    console.log('generating dataTable layout...');
+    const cumulativeWidth = columns.reduce((initial, col) => {
+      return initial + ' ' + col.width;
+    }, '');
+
+    console.log('cumulative width...', cumulativeWidth);
+
     const { tableBodyMaxHeight } = options ? options : {};
     const tableBodyStyle = { maxHeight: tableBodyMaxHeight };
 
