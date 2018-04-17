@@ -46,8 +46,13 @@ var DataTable = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
+    _this.state = { dynamicWidths: null };
+    _this.renderPlainTable = _this.renderPlainTable.bind(_this);
+    _this.renderStickyTable = _this.renderStickyTable.bind(_this);
+    _this.componentDidMount = _this.componentDidMount.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
+    _this.componentWillReceiveProps = _this.componentWillReceiveProps.bind(_this);
     return _this;
   }
 
@@ -60,8 +65,57 @@ var DataTable = function (_React$Component) {
 
       if (!options || !options.useStickyHeader) return false;
       if (!options.tableBodyMaxHeight) return console.error('\n      "useStickyHeader" option enabled but no maxHeight for the table is set.\n      Use a css height as the "tableBodyMaxHeight" option to use this setting.\n    ');
-      if (!columns.every(hasWidthProperty)) return console.error('\n      "useStickyHeader" opeion enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
       return true;
+    }
+  }, {
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.setDynamicWidths();
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(newProps) {
+      var _this2 = this;
+
+      if (newProps && newProps.columns && newProps.columns !== this.props.columns) this.setState({ dynamicWidths: null }, function () {
+        return _this2.setDynamicWidths();
+      });
+    }
+  }, {
+    key: 'setDynamicWidths',
+    value: function setDynamicWidths() {
+      var headingTable = this.headingTable,
+          contentTable = this.contentTable,
+          getInnerCellWidth = this.getInnerCellWidth;
+
+      if (!headingTable || !contentTable) return;
+      var headingCells = Array.from(headingTable.getElementsByTagName('th'));
+      var contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
+      if (this.hasSelectionColumn()) headingCells.shift() && contentCells.shift();
+      var dynamicWidths = contentCells.map(function (c, i) {
+        return getInnerCellWidth(c, headingCells[i]);
+      });
+      this.setState({ dynamicWidths: dynamicWidths });
+    }
+  }, {
+    key: 'getInnerCellWidth',
+    value: function getInnerCellWidth(cell, headingCell) {
+      var contentWidth = cell.clientWidth;
+      var headingWidth = headingCell.clientWidth;
+      var leftPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-left'));
+      var rightPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-right'));
+      var lower = Math.min(contentWidth, headingWidth);
+      var difference = Math.abs(contentWidth - headingWidth);
+      return Math.ceil(lower + difference / 2) - leftPadding - rightPadding + 'px';
+    }
+  }, {
+    key: 'hasSelectionColumn',
+    value: function hasSelectionColumn() {
+      var _props2 = this.props,
+          options = _props2.options,
+          eventHandlers = _props2.eventHandlers;
+
+      return typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
     }
   }, {
     key: 'handleTableBodyScroll',
@@ -69,51 +123,98 @@ var DataTable = function (_React$Component) {
       var offset = this.bodyNode.scrollLeft;
       this.headerNode.scrollLeft = offset;
     }
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
   }, {
-    key: 'render',
-    value: function render() {
-      var _this2 = this;
+    key: 'renderStickyTable',
+    value: function renderStickyTable() {
+      var _this3 = this;
 
-      var _props2 = this.props,
-          rows = _props2.rows,
-          filteredRows = _props2.filteredRows,
-          options = _props2.options,
-          columns = _props2.columns,
-          actions = _props2.actions,
-          uiState = _props2.uiState,
-          eventHandlers = _props2.eventHandlers;
+      var _props3 = this.props,
+          options = _props3.options,
+          columns = _props3.columns,
+          rows = _props3.rows,
+          filteredRows = _props3.filteredRows,
+          actions = _props3.actions,
+          eventHandlers = _props3.eventHandlers,
+          uiState = _props3.uiState;
+      var dynamicWidths = this.state.dynamicWidths;
 
-      var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
-
-      if (!this.shouldUseStickyHeader()) {
-        return _react2.default.createElement(
+      var newColumns = columns.every(function (_ref2) {
+        var width = _ref2.width;
+        return width;
+      }) || !dynamicWidths || dynamicWidths.length == 0 ? columns : columns.map(function (column, index) {
+        return Object.assign({}, column, { width: dynamicWidths[index] });
+      });
+      var maxHeight = { maxHeight: options ? options.tableBodyMaxHeight : null };
+      var maxWidth = { minWidth: dynamicWidths ? (0, _Utils.combineWidths)(columns.map(function (_ref3) {
+          var width = _ref3.width;
+          return width;
+        })) : null };
+      var tableLayout = { tableLayout: dynamicWidths ? 'fixed' : 'auto' };
+      var tableProps = { options: options, rows: rows, filteredRows: filteredRows, actions: actions, eventHandlers: eventHandlers, uiState: uiState, columns: newColumns };
+      return _react2.default.createElement(
+        'div',
+        { className: 'MesaComponent' },
+        _react2.default.createElement(
           'div',
-          { className: 'MesaComponent' },
+          { className: dataTableClass(), style: maxWidth },
           _react2.default.createElement(
             'div',
-            { className: dataTableClass() },
+            { className: dataTableClass('Sticky'), style: maxWidth },
             _react2.default.createElement(
-              'table',
-              { cellSpacing: '0', cellPadding: '0' },
+              'div',
+              {
+                ref: function ref(node) {
+                  return _this3.headerNode = node;
+                },
+                className: dataTableClass('Header') },
               _react2.default.createElement(
-                'thead',
-                null,
-                _react2.default.createElement(_HeadingRow2.default, props)
-              ),
-              _react2.default.createElement(_DataRowList2.default, props)
+                'table',
+                {
+                  cellSpacing: 0,
+                  cellPadding: 0,
+                  style: tableLayout,
+                  ref: function ref(node) {
+                    return _this3.headingTable = node;
+                  } },
+                _react2.default.createElement(
+                  'thead',
+                  null,
+                  _react2.default.createElement(_HeadingRow2.default, tableProps)
+                )
+              )
+            ),
+            _react2.default.createElement(
+              'div',
+              {
+                style: maxHeight,
+                ref: function ref(node) {
+                  return _this3.bodyNode = node;
+                },
+                className: dataTableClass('Body'),
+                onScroll: this.handleTableBodyScroll },
+              _react2.default.createElement(
+                'table',
+                {
+                  cellSpacing: 0,
+                  cellPadding: 0,
+                  style: tableLayout,
+                  ref: function ref(node) {
+                    return _this3.contentTable = node;
+                  } },
+                _react2.default.createElement(_DataRowList2.default, tableProps)
+              )
             )
           )
-        );
-      };
-
-      var _ref2 = options ? options : {},
-          tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
-
-      var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
-        return col.width;
-      }));
-      var heightLayer = { maxHeight: tableBodyMaxHeight };
-      var widthLayer = { minWidth: cumulativeWidth };
+        )
+      );
+    }
+  }, {
+    key: 'renderPlainTable',
+    value: function renderPlainTable() {
+      var props = this.props;
 
       return _react2.default.createElement(
         'div',
@@ -122,45 +223,26 @@ var DataTable = function (_React$Component) {
           'div',
           { className: dataTableClass() },
           _react2.default.createElement(
-            'div',
-            { className: dataTableClass('Sticky') },
+            'table',
+            { cellSpacing: '0', cellPadding: '0' },
             _react2.default.createElement(
-              'div',
-              {
-                ref: function ref(node) {
-                  return _this2.headerNode = node;
-                },
-                className: dataTableClass('Header')
-              },
-              _react2.default.createElement(
-                'table',
-                { cellSpacing: 0, cellPadding: 0 },
-                _react2.default.createElement(
-                  'thead',
-                  null,
-                  _react2.default.createElement(_HeadingRow2.default, props)
-                )
-              )
+              'thead',
+              null,
+              _react2.default.createElement(_HeadingRow2.default, props)
             ),
-            _react2.default.createElement(
-              'div',
-              {
-                ref: function ref(node) {
-                  return _this2.bodyNode = node;
-                },
-                style: heightLayer,
-                className: dataTableClass('Body'),
-                onScroll: this.handleTableBodyScroll
-              },
-              _react2.default.createElement(
-                'table',
-                { cellSpacing: 0, cellPadding: 0 },
-                _react2.default.createElement(_DataRowList2.default, props)
-              )
-            )
+            _react2.default.createElement(_DataRowList2.default, props)
           )
         )
       );
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var shouldUseStickyHeader = this.shouldUseStickyHeader,
+          renderStickyTable = this.renderStickyTable,
+          renderPlainTable = this.renderPlainTable;
+
+      return shouldUseStickyHeader() ? renderStickyTable() : renderPlainTable();
     }
   }]);
 

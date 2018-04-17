@@ -61,6 +61,18 @@ export function arraysMatch (a, b) {
     if (a.shift() !== b.shift()) return false;
   }
   return true;
+};
+
+export function repositionItemInList (list, fromIndex, toIndex) {
+  if (!list || !list.length) return list;
+  if (fromIndex === toIndex) return list;
+  if (fromIndex < 0 || toIndex < 0) return list;
+  toIndex = (toIndex < fromIndex ? toIndex + 1 : toIndex);
+  const updatedList = [...list];
+  const item = updatedList[fromIndex];
+  updatedList.splice(fromIndex, 1);
+  updatedList.splice(toIndex, 0, item);
+  return [...updatedList];
 }
 
 export function textSort (_list, key, ascending = true) {
