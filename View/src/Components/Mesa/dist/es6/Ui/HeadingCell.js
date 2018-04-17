@@ -24,6 +24,10 @@ var _Tooltip2 = _interopRequireDefault(_Tooltip);
 
 var _Utils = require('../Utils/Utils');
 
+var _Events = require('../Utils/Events');
+
+var _Events2 = _interopRequireDefault(_Events);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43,6 +47,7 @@ var HeadingCell = function (_React$PureComponent) {
     var _this = _possibleConstructorReturn(this, (HeadingCell.__proto__ || Object.getPrototypeOf(HeadingCell)).call(this, props));
 
     _this.state = { offset: null };
+    _this.updateOffset = _this.updateOffset.bind(_this);
     _this.renderContent = _this.renderContent.bind(_this);
     _this.handleSortClick = _this.handleSortClick.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
@@ -54,6 +59,12 @@ var HeadingCell = function (_React$PureComponent) {
   _createClass(HeadingCell, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      this.updateOffset();
+      _Events2.default.add('scroll', this.updateOffset);
+    }
+  }, {
+    key: 'updateOffset',
+    value: function updateOffset() {
       var element = this.element;
 
       if (!element) return;
