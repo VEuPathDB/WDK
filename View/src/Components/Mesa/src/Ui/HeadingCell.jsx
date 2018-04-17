@@ -15,6 +15,11 @@ class HeadingCell extends React.PureComponent {
     this.renderHelpTrigger = this.renderHelpTrigger.bind(this);
   }
 
+  componentDidMount () {
+    const { element } = this.refs;
+    if (!element) return;
+  }
+
   renderContent () {
     const { column, columnIndex } = this.props;
     if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
@@ -63,7 +68,6 @@ class HeadingCell extends React.PureComponent {
     return (
       <Tooltip className="Trigger HelpTrigger" text={column.helpText}>
         <Icon fa="question-circle" />
-        <span ref={ref => this.triggerSpot = ref}>yo</span>
       </Tooltip>
     )
   }
