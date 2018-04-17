@@ -37,9 +37,9 @@ class MesaController extends React.Component {
 
   renderActionBar () {
     const { rows, options, actions, eventHandlers, children } = this.props;
-    const props = { rows, options, actions, eventHandlers };
+    let props = { rows, options, actions, eventHandlers };
     if (!actions.length) return null;
-    if (!this.renderToolbar()) props = { ...props, children };
+    if (!this.renderToolbar() && children) props = Object.assign({}, props, children);
 
     return <ActionToolbar {...props} />
   }
