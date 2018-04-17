@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.StringUtils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Utils = exports.Mesa = undefined;
+exports.StringUtils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
@@ -46,7 +46,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.Mesa = _Mesa2.default;
-exports.Utils = Utils;
 exports.DataTable = _DataTable2.default;
 exports.RowCounter = _RowCounter2.default;
 exports.TableSearch = _TableSearch2.default;

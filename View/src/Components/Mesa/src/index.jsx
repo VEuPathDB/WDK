@@ -10,7 +10,6 @@ import * as StringUtils from './Utils/StringUtils';
 
 export {
   Mesa,
-  Utils,
   DataTable,
   RowCounter,
   TableSearch,
