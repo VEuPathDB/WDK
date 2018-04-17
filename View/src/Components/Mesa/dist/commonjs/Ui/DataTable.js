@@ -36,21 +36,82 @@ var DataTable = function (_React$PureComponent) {
   function DataTable(props) {
     _classCallCheck(this, DataTable);
 
-    return _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
+
+    _this.generateLayout = _this.generateLayout.bind(_this);
+    _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
+    return _this;
   }
 
   _createClass(DataTable, [{
-    key: 'render',
-    value: function render() {
+    key: 'shouldUseStickyHeader',
+    value: function shouldUseStickyHeader() {
       var _props = this.props,
-          rows = _props.rows,
-          options = _props.options,
           columns = _props.columns,
-          actions = _props.actions,
-          uiState = _props.uiState,
-          eventHandlers = _props.eventHandlers;
+          options = _props.options;
+
+      if (!options || !options.useStickyHeader) return false;
+      var hasWidthProperty = function hasWidthProperty(_ref) {
+        var width = _ref.width;
+        return typeof width === 'string';
+      };
+      if (columns.every(hasWidthProperty)) return true;
+      console.error('\n      "useStickyHeader" enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
+      return false;
+    }
+  }, {
+    key: 'generateLayout',
+    value: function generateLayout() {
+      var _props2 = this.props,
+          rows = _props2.rows,
+          options = _props2.options,
+          columns = _props2.columns,
+          actions = _props2.actions,
+          uiState = _props2.uiState,
+          eventHandlers = _props2.eventHandlers;
 
       var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
+
+      return this.shouldUseStickyHeader() ? _react2.default.createElement(
+        'div',
+        null,
+        _react2.default.createElement(
+          'div',
+          { className: 'DataTable-Header' },
+          _react2.default.createElement(
+            'table',
+            { cellSpacing: 0, cellPadding: 0 },
+            _react2.default.createElement(
+              'thead',
+              null,
+              _react2.default.createElement(_HeadingRow2.default, props)
+            )
+          )
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'DataTable-Body' },
+          _react2.default.createElement(
+            'table',
+            { cellSpacing: 0, cellPadding: 0 },
+            _react2.default.createElement(_DataRowList2.default, props)
+          )
+        )
+      ) : _react2.default.createElement(
+        'table',
+        { cellSpacing: '0', cellPadding: '0' },
+        _react2.default.createElement(
+          'thead',
+          null,
+          _react2.default.createElement(_HeadingRow2.default, props)
+        ),
+        _react2.default.createElement(_DataRowList2.default, props)
+      );
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var Layout = this.generateLayout;
 
       return _react2.default.createElement(
         'div',
@@ -58,16 +119,7 @@ var DataTable = function (_React$PureComponent) {
         _react2.default.createElement(
           'div',
           { className: 'DataTable' },
-          _react2.default.createElement(
-            'table',
-            { cellSpacing: '0', cellPadding: '0' },
-            _react2.default.createElement(
-              'thead',
-              null,
-              _react2.default.createElement(_HeadingRow2.default, props)
-            ),
-            _react2.default.createElement(_DataRowList2.default, props)
-          )
+          _react2.default.createElement(Layout, null)
         )
       );
     }
