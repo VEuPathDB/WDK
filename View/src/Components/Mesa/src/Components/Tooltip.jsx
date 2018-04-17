@@ -77,7 +77,7 @@ class Tooltip extends React.Component {
         className={'Tooltip-Content'}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
-        {renderHtml ? <div dangerouslySetInnerHtml={{ __html: content }} /> : content}
+        {renderHtml ? <div dangerouslySetInnerHTML={{ __html: content }} /> : content}
       </div>
     );
   }
