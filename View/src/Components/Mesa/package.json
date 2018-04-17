@@ -19,8 +19,8 @@
   },
   "scripts": {
     "compile:sass": "sass style/Mesa.scss dist/css/mesa.css -t compressed",
-    "compile:cjs": "babel src --out-dir dist/commonjs",
-    "compile:es": "cross-env BABEL_ENV=es babel src --out-dir dist/es6",
+    "compile:cjs": "babel src --out-dir dist/commonjs --source-maps inline",
+    "compile:es": "cross-env BABEL_ENV=es babel src --out-dir dist/es6 --source-maps inline",
     "compile": "npm run compile:es && npm run compile:sass",
     "clean": "rm -rf dist/* && mkdir dist/css dist/es6 dist/commonjs",
     "build": "npm run clean && npm run compile",

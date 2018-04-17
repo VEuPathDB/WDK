@@ -22,7 +22,7 @@ export const EventsFactory = (node) => {
       delete instance.listenerStore[index];
     },
     clearAll: () => {
-      instance.listenerStore.forEach(instance.remove);
+      instance.listenerStore.forEach(id => instance.remove(id));
     },
     onKey: (key, callback) => {
       if (!key in KeyCodes) return;
