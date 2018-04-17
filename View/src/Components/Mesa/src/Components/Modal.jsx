@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import { makeClassifier } from '../Utils/Utils';
 
@@ -21,6 +22,10 @@ class Modal extends React.Component {
       </div>
     );
   }
+};
+
+Modal.contextTypes = {
+  yo: PropTypes.string
 };
 
 export default Modal;
