@@ -85,8 +85,11 @@ var DataTable = function (_React$PureComponent) {
       var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
         return col.width;
       }));
-      var widthLayer = useStickyLayout ? { minWidth: cumulativeWidth, maxWidth: cumulativeWidth, width: cumulativeWidth } : null;
-      console.log('cumulative width...', cumulativeWidth);
+      var widthLayer = !useStickyLayout ? null : {
+        minWidth: cumulativeWidth,
+        maxWidth: cumulativeWidth,
+        width: cumulativeWidth
+      };
 
       return useStickyLayout ? _react2.default.createElement(
         'div',
