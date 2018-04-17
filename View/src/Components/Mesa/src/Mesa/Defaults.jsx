@@ -10,6 +10,7 @@ const Defaults = {
     truncated: true,
     hideable: true,
     disabled: false,
+    resizeable: true,
     type: 'text'
   },
   searchPlaceholder: 'Search This Table',

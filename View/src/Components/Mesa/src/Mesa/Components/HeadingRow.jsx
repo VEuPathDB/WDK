@@ -140,6 +140,8 @@ class HeadingRow extends React.Component {
   }
 
   renderResizeBar (column) {
+    let { resizeable } = column;
+    if (!resizeable) return null;
     return (
       <div
         className="ResizeBar"
