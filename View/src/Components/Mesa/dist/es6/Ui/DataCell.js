@@ -10,6 +10,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 var _Templates = require('../Templates');
 
 var _Templates2 = _interopRequireDefault(_Templates);
@@ -105,5 +109,11 @@ var DataCell = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 ;
+
+DataCell.propTypes = {
+  column: _propTypes2.default.object,
+  row: _propTypes2.default.object,
+  inline: _propTypes2.default.boolean
+};
 
 exports.default = DataCell;
