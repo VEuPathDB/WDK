@@ -442,8 +442,10 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   filterAndSortRows (rows: UserDataset[]): UserDataset[] {
-    const { searchTerm, uiState } = this.state;
+    const { searchTerm, uiState, showOnlyCurrentProject } = this.state;
+    const { projectName } = this.props;
     const sort: MesaSortObject = uiState.sort;
+    if (showOnlyCurrentProject) rows = rows.filter(dataset => dataset.projects.includes(projectName));
     if (searchTerm && searchTerm.length) rows = this.filterRowsBySearchTerm([ ...rows ], searchTerm);
     if (sort.columnKey.length) rows = this.sortRowsByColumnKey([ ...rows ], sort);
     return [...rows];
@@ -505,9 +507,7 @@ class UserDatasetList extends React.Component <Props, State> {
     const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets } = this.props;
     const { uiState, selectedRows, searchTerm, sharingModalOpen, showOnlyCurrentProject } = this.state;
 
-    const rows = showOnlyCurrentProject
-      ? userDatasets.filter(dataset => dataset.projects.includes(projectName))
-      : userDatasets;
+    const rows = userDatasets;
     const selectedDatasets = rows.filter(isRowSelected);
 
     const rootUrl = this.getRootUrl();
@@ -550,7 +550,7 @@ class UserDatasetList extends React.Component <Props, State> {
                 </div>
               </HelpIcon>
             </h1>
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               {sharingModalOpen && selectedDatasets.length
                 ? <SharingModal
                     user={user}
@@ -568,6 +568,9 @@ class UserDatasetList extends React.Component <Props, State> {
                 searchTerm={searchTerm}
                 onSearchTermChange={this.onSearchTermChange}
               />
+              <div style={{ flex: '0 0 auto', padding: '0 10px' }}>
+                Showing {filteredRows.length} of {rows.length} {`data set${rows.length == 1 ? '' : 's'}`}
+              </div>
               <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
                 <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
                 {' '}
