@@ -3,8 +3,15 @@ import React from 'react';
 import Events from 'Mesa/Utils/Events';
 import Store from 'Mesa/State/Store';
 import Icon from 'Mesa/Components/Icon';
+import Utils from 'Mesa/Utils/Utils';
 import Templates from 'Mesa/Templates';
-import { toggleSortOrder, sortByColumn, filterByColumnValues, toggleColumnFilterValue } from 'Mesa/State/Actions';
+import {
+  toggleSortOrder,
+  sortByColumn,
+  setColumnWidth,
+  filterByColumnValues,
+  toggleColumnFilterValue
+} from 'Mesa/State/Actions';
 
 class HeadingRow extends React.Component {
   constructor (props) {
@@ -45,12 +52,7 @@ class HeadingRow extends React.Component {
       : sort.ascending
         ? 'sort-amount-asc'
         : 'sort-amount-desc';
-    let sortTrigger = !column.sortable ? null : (
-      <Icon
-        fa={sortIcon + ' Trigger SortTrigger'}
-        onClick={() => this.handleSortClick({ column })}
-      />
-    );
+    let sortTrigger = !column.sortable ? null : (<Icon fa={sortIcon + ' Trigger SortTrigger'} />)
     return sortTrigger;
   }
 
@@ -61,7 +63,7 @@ class HeadingRow extends React.Component {
   openFilterMenu (column) {
     this.setState({ showColumnFilter: column });
     this.filterCloseListener = Events.add('click', (e) => {
-      let within = e.path.includes(this.refs.active);
+      let within = e.path.includes(this.refs[column.key]);
       if (!within) this.closeFilterMenu();
     });
   }
@@ -123,19 +125,52 @@ class HeadingRow extends React.Component {
     return filterMenu;
   }
 
+  handleResizeStart (e, column) {
+    this.resizeOrigin = Utils.getRealOffset(this.refs[column.key]).left;
+  }
+
+  handleResize (e, column) {
+    let draggedTo = e.pageX;
+    let width = draggedTo - this.resizeOrigin;
+    Store.dispatch(setColumnWidth(column, width))
+  }
+
+  handleResizeEnd (e, column) {
+    this.resizeOrigin = null;
+  }
+
+  renderResizeBar (column) {
+    return (
+      <div
+        className="ResizeBar"
+        draggable={true}
+        onDragStart={(e) => this.handleResizeStart(e, column)}
+        onDrag={(e) => this.handleResize(e, column)}
+        onDragEnd={(e) => this.handleResizeEnd(e, column)}
+      > </div>
+    )
+  }
+
   renderHeadingCell (column) {
     let { showColumnFilter } = this.state;
     let content = this.getRenderer(column);
     let sortTrigger = this.renderSortTrigger(column);
     let filterTrigger = this.renderFilterTrigger(column);
     let filterMenu = this.renderFilterMenu(column);
+    let resizeBar = this.renderResizeBar(column);
+    let isHidden = Store.getState().hiddenColumns.includes(column);
 
-    return column.hidden ? null : (
-      <th key={column.key} ref={showColumnFilter === column ? 'active' : null}>
+    return isHidden ? null : (
+      <th
+        key={column.key}
+        ref={column.key}
+        onClick={() => sortTrigger ? this.handleSortClick({ column }) : null}
+      >
         {sortTrigger}
         {content}
         {filterTrigger}
         {filterMenu}
+        {resizeBar}
       </th>
     );
   }

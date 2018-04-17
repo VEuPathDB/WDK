@@ -98,10 +98,10 @@ const TableData = [
   {
     dataSet: 'Malaria Literature Database',
     organism: [
-      'P. berghei ANKA',
-      'P. chabaudi chabaudi',
-      'P. falciparum 3D7',
-      'P. yoelii yoelii 17XNL'
+      'P. <i>berghei</i> ANKA',
+      'P. <i>chabaudi</i> chabaudi',
+      'P. <i>falciparum</i> 3D7',
+      'P. <i>yoelii</i> yoelii 17XNL'
     ],
     category: 'Link outs',
     description: ``,

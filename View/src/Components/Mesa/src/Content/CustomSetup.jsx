@@ -7,9 +7,9 @@ const fancy = {
   fontStyle: 'italic',
   fontSize: '0.8em',
   display: 'block',
-  margin: '-20px',
+  margin: '-40px -20px',
   padding: '20px',
-  height: 'calc(100% + 40px)',
+  height: 'calc(100% + 50px)',
   width: 'calc(100% + 40px)',
   backgroundPosition: 'center 35%',
   backgroundImage: `url(${bgImage})`

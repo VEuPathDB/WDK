@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Store from 'Mesa/State/Store';
 import Templates from 'Mesa/Templates';
 
 class Row extends React.Component {
@@ -24,10 +25,14 @@ class Row extends React.Component {
   }
 
   makeCell (column, row) {
-    const { style, width } = column;
-    const content = this.getRenderer(column, row);
+    let { style, width } = column;
+    let { columnWidths } = Store.getState();
+    if (column.key in columnWidths) width = columnWidths[column.key] + 'px'
+    let content = this.getRenderer(column, row);
     let _style = Object.assign({}, (style ? style : {}), (width ? { width } : {}));
-    return column.hidden ? null : (
+    let isHidden = Store.getState().hiddenColumns.includes(column);
+
+    return isHidden ? null : (
       <td key={column.key} style={_style}>
         {content}
       </td>

@@ -11,13 +11,32 @@ class ColumnEditor extends React.Component {
   constructor (props) {
     super(props);
 
-    this.state = { editorOpen: false };
+    let { hiddenColumns } = Store.getState();
+    this.state = { editorOpen: false, hiddenColumns };
 
     this.openEditor = this.openEditor.bind(this);
     this.closeEditor = this.closeEditor.bind(this);
     this.toggleEditor = this.toggleEditor.bind(this);
     this.renderTrigger = this.renderTrigger.bind(this);
     this.renderModal = this.renderModal.bind(this);
+    this.showAllColumns = this.showAllColumns.bind(this);
+    this.hideAllColumns = this.hideAllColumns.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+  }
+
+  componentDidMount () {
+    this.subscription = Store.subscribe(() => {
+      let { hiddenColumns } = Store.getState();
+      if (hiddenColumns === this.state.hiddenColumns) return;
+      let { editorOpen } = this.state;
+      console.log('Store updated:', hiddenColumns);
+      let newState = Object.assign({ hiddenColumns, editorOpen });
+    });
+  }
+
+  componentWillUnmount () {
+    this.subscription();
   }
 
   openEditor () {
@@ -25,6 +44,18 @@ class ColumnEditor extends React.Component {
     this.setState({ editorOpen }, () => {
       this.closeListener = Events.onKey('esc', this.closeEditor);
     });
+  }
+
+  showAllColumns () {
+    const { columns } = this.props;
+    return columns.forEach(col => Store.dispatch(showColumn(col)));
+  }
+
+  hideAllColumns () {
+    const { columns } = this.props;
+    const { hiddenColumns } = Store.getState();
+    const hideableColumns = columns.filter(col => hiddenColumns.indexOf(col) < 0 && col.hideable);
+    return hideableColumns.forEach(col => Store.dispatch(hideColumn(col)));
   }
 
   closeEditor () {
@@ -54,15 +85,15 @@ class ColumnEditor extends React.Component {
 
     return (
       <li className="ColumnEditor-List-Item" key={column.key}>
-        <Checkbox checked={isShown} onChange={toggler} />
-        {' ' + column.name || column.key}
+        <Checkbox checked={isShown} disabled={!column.hideable} onChange={toggler} />
+        {' ' + (column.name || column.key)}
       </li>
     );
   }
 
   renderColumnList () {
     const { columns } = this.props;
-    const { hiddenColumns } = Store.getState();
+    const { hiddenColumns } = this.state;
 
     const columnList = columns.map(col => this.renderColumnListItem(col, hiddenColumns));
 
@@ -81,8 +112,15 @@ class ColumnEditor extends React.Component {
     return (
       <Modal open={editorOpen} onClose={this.closeEditor}>
         <h3>Add / Remove Column</h3>
-        <small><a>Select All</a> | <a>Clear All</a></small>
+        <small>
+          <a onClick={this.showAllColumns}>Select All</a>
+          <span> | </span>
+          <a onClick={this.hideAllColumns}>Clear All</a>
+        </small>
         {columnList}
+        <button onClick={this.closeEditor} style={{ margin: '0 auto', display: 'block' }}>
+          Close
+        </button>
       </Modal>
     );
   }

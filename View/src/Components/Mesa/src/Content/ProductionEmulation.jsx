@@ -4,7 +4,10 @@ const ProductionEmulation = {
   dataSet: {
     primary: true,
     name: 'Data Set',
-    width: '25%'
+    width: '25%',
+    renderCell (key, value) {
+      return <a href="#">{value}</a>;
+    }
   },
   organism: {
     type: 'html',
@@ -15,6 +18,7 @@ const ProductionEmulation = {
     sortable: true
   },
   description: {
+    hidden: true,
     type: 'html',
     name: 'Description',
     width: '30%',
@@ -23,9 +27,11 @@ const ProductionEmulation = {
   released: 'Release # / Date',
   summary: 'Summary',
   releasePolicy: {
+    hidden: true,
     name: 'Release Policy'
   },
   publications: {
+    hidden: true,
     name: 'Publications',
     renderCell (key, value = [], row = {}) {
       return (
@@ -38,7 +44,10 @@ const ProductionEmulation = {
       );
     }
   },
-  contact: 'Contact',
+  contact: {
+    name: 'Contact',
+    hidden: true
+  },
   contactInstitution: 'Contact Institution'
 };
 

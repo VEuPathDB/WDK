@@ -1,0 +1,14 @@
+.Trigger {
+  margin: 0 0.5em;
+  transition: all 0.4s;
+  cursor: pointer;
+  display: inline-block;
+  color: $accentColor;
+  &.inactive {
+    color: black;
+    opacity: 0.2;
+  }
+  &:hover {
+    tramsform: scale(1.1);
+  }
+}
