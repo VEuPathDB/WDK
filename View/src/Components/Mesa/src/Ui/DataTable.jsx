@@ -12,13 +12,14 @@ class DataTable extends React.Component {
   constructor (props) {
     super(props);
     this.widthCache = {};
-    this.state = { dynamicWidths: null };
+    this.state = { dynamicWidths: null, hasSelectionColumn: false };
     this.renderPlainTable = this.renderPlainTable.bind(this);
     this.renderStickyTable = this.renderStickyTable.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.getInnerCellWidth = this.getInnerCellWidth.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
+    this.checkForSelectionColumn = this.checkForSelectionColumn.bind(this);
     this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
@@ -34,6 +35,7 @@ class DataTable extends React.Component {
 
   componentDidMount () {
     this.setDynamicWidths();
+    this.checkForSelectionColumn();
   }
 
   componentWillReceiveProps (newProps) {
@@ -43,19 +45,22 @@ class DataTable extends React.Component {
 
   setDynamicWidths () {
     const { columns } = this.props;
+    const { hasSelectionColumn } = this.state;
     const { headingTable, contentTable, getInnerCellWidth } = this;
     if (!headingTable || !contentTable) return;
     const headingCells = Array.from(headingTable.getElementsByTagName('th'));
-    const contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
+    const contentCells = Array.from(contentTable.getElementsByTagName('td'));
 
-    if (this.hasSelectionColumn())
-      headingCells.shift() && contentCells.shift();
-    const dynamicWidths = contentCells.map((c, i) => getInnerCellWidth(c, headingCells[i], columns[i]));
+    if (hasSelectionColumn) {
+      headingCells.shift();
+      contentCells.shift();
+    }
+    const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c));
     this.setState({ dynamicWidths });
   }
 
   getInnerCellWidth (cell, headingCell, { key }) {
-    if (key in this.widthCache) return this.widthCache[key];
+    if (key && key in this.widthCache) return this.widthCache[key];
 
     const contentWidth = cell.clientWidth;
     const headingWidth = headingCell.clientWidth;
@@ -78,11 +83,12 @@ class DataTable extends React.Component {
     return this.widthCache[key] = width;
   }
 
-  hasSelectionColumn () {
+  checkForSelectionColumn () {
     const { options, eventHandlers } = this.props;
-    return typeof options.isRowSelected === 'function'
+    const hasSelectionColumn = typeof options.isRowSelected === 'function'
       && typeof eventHandlers.onRowSelect === 'function'
       && typeof eventHandlers.onRowDeselect === 'function';
+    this.setState({ hasSelectionColumn });
   }
 
   handleTableBodyScroll (e) {

@@ -47,13 +47,14 @@ var DataTable = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
     _this.widthCache = {};
-    _this.state = { dynamicWidths: null };
+    _this.state = { dynamicWidths: null, hasSelectionColumn: false };
     _this.renderPlainTable = _this.renderPlainTable.bind(_this);
     _this.renderStickyTable = _this.renderStickyTable.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
     _this.getInnerCellWidth = _this.getInnerCellWidth.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
+    _this.checkForSelectionColumn = _this.checkForSelectionColumn.bind(_this);
     _this.componentWillReceiveProps = _this.componentWillReceiveProps.bind(_this);
     return _this;
   }
@@ -73,6 +74,7 @@ var DataTable = function (_React$Component) {
     key: 'componentDidMount',
     value: function componentDidMount() {
       this.setDynamicWidths();
+      this.checkForSelectionColumn();
     }
   }, {
     key: 'componentWillReceiveProps',
@@ -87,17 +89,21 @@ var DataTable = function (_React$Component) {
     key: 'setDynamicWidths',
     value: function setDynamicWidths() {
       var columns = this.props.columns;
+      var hasSelectionColumn = this.state.hasSelectionColumn;
       var headingTable = this.headingTable,
           contentTable = this.contentTable,
           getInnerCellWidth = this.getInnerCellWidth;
 
       if (!headingTable || !contentTable) return;
       var headingCells = Array.from(headingTable.getElementsByTagName('th'));
-      var contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
+      var contentCells = Array.from(contentTable.getElementsByTagName('td'));
 
-      if (this.hasSelectionColumn()) headingCells.shift() && contentCells.shift();
-      var dynamicWidths = contentCells.map(function (c, i) {
-        return getInnerCellWidth(c, headingCells[i], columns[i]);
+      if (hasSelectionColumn) {
+        headingCells.shift();
+        contentCells.shift();
+      }
+      var dynamicWidths = columns.map(function (c, i) {
+        return getInnerCellWidth(contentCells[i], headingCells[i], c);
       });
       this.setState({ dynamicWidths: dynamicWidths });
     }
@@ -106,7 +112,7 @@ var DataTable = function (_React$Component) {
     value: function getInnerCellWidth(cell, headingCell, _ref2) {
       var key = _ref2.key;
 
-      if (key in this.widthCache) return this.widthCache[key];
+      if (key && key in this.widthCache) return this.widthCache[key];
 
       var contentWidth = cell.clientWidth;
       var headingWidth = headingCell.clientWidth;
@@ -130,13 +136,14 @@ var DataTable = function (_React$Component) {
       return this.widthCache[key] = width;
     }
   }, {
-    key: 'hasSelectionColumn',
-    value: function hasSelectionColumn() {
+    key: 'checkForSelectionColumn',
+    value: function checkForSelectionColumn() {
       var _props2 = this.props,
           options = _props2.options,
           eventHandlers = _props2.eventHandlers;
 
-      return typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
+      var hasSelectionColumn = typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
+      this.setState({ hasSelectionColumn: hasSelectionColumn });
     }
   }, {
     key: 'handleTableBodyScroll',
