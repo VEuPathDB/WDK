@@ -33,7 +33,7 @@ const ExtraData = {
     },
     {
       element: (selection) => {
-        return <button>Example Action for {selection.length} rows <Icon fa="magic" /></button>
+        return <button><span>Example Action for {selection.length} rows</span> <Icon fa="magic" /></button>
       },
       handler (row) {
         alert('one row has the category of '+ row.category);
@@ -44,7 +44,7 @@ const ExtraData = {
       selectionRequired: true
     },
     {
-      element: <button>This button doesn't really do much <Icon fa="meh-o" /></button>,
+      element: <button><span>This button doesn't really do much</span> <Icon fa="meh-o" /></button>,
       callback () {
         alert('Hi!');
       }

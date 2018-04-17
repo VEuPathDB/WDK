@@ -22,6 +22,7 @@ const fancy = {
 const CustomSetupColumns = {
   dataSet: {
     primary: true,
+    name: 'Data Set',
     style: { width: '20%' },
     renderCell (key, value) {
       let style = { fontWeight: 400, letterSpacing: 0 };
