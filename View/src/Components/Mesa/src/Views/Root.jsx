@@ -50,6 +50,7 @@ class Root extends React.Component {
             rows={config.rows}
             options={config.options}
             columns={config.columns}
+            actions={config.actions}
           />
         </main>
       </row>

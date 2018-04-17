@@ -6,8 +6,8 @@ import NoData from 'Content/Configurations/NoData';
 import NoConfig from 'Content/Configurations/NoConfig';
 
 const ConfigList = [
-  Population,
   ExtraData,
+  Population,
   Custom,
   Production,
   NoData,

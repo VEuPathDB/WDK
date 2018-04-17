@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Datasets from 'Content/Data/Datasets';
+import Icon from 'Mesa/Components/Icon';
 
 const bgImage = 'https://media.giphy.com/media/VxbvpfaTTo3le/giphy.gif';
 const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color: 'blue' };
@@ -65,7 +66,18 @@ const CustomSetup = {
   rows: Datasets,
   options: {
     title: <span style={embarrassment}>Cool Internet ! (｡◕‿◕｡)</span>
-  }
+  },
+  actions: [
+    {
+      element: <button>Example Action <Icon fa="magic" /></button>,
+      handler (row) {
+        alert('one row has the category of '+ row.category);
+      },
+      callback (rows) {
+        alert('there are ' + rows.length + 'rows');
+      }
+    }
+  ]
 };
 
 export default CustomSetup;

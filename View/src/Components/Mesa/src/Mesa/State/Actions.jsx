@@ -3,6 +3,10 @@ export function updateRows (rows) {
   return { type: 'UPDATE_ROWS', rows };
 };
 
+export function resetUiState () {
+  return { type: 'RESET_UI_STATE' };
+}
+
 export function toggleColumnEditor () {
   return { type: 'TOGGLE_COLUMN_EDITOR' };
 }
@@ -13,6 +17,34 @@ export function openColumnEditor () {
 
 export function closeColumnEditor () {
   return { type: 'CLOSE_COLUMN_EDITOR' };
+}
+
+export function selectRowById (id) {
+  return { type: 'SELECT_ROW_BY_ID', id };
+};
+
+export function selectRowsByIds (ids) {
+  return { type: 'SELECT_ROWS_BY_IDS', ids };
+}
+
+export function deselectRowById (id) {
+  return { type: 'DESELCT_ROW_BY_ID', id };
+}
+
+export function deselectRowsByIds (ids) {
+  return { type: 'DESELECT_ROWS_BY_IDS', ids };
+}
+
+export function toggleRowSelectionById (id) {
+  return { type: 'TOGGLE_ROW_SELECTION_BY_ID', id };
+}
+
+export function selectAllRows () {
+  return { type: 'SELECT_ALL_ROWS' };
+}
+
+export function clearRowSelection () {
+  return { type: 'CLEAR_ROW_SELECTION' };
 }
 
 export function setPaginatedActiveItem (activeItem) {
@@ -34,6 +66,11 @@ export function updateOptions (options) {
   if (!options || typeof options !== 'object') options = {};
   return { type: 'UPDATE_OPTIONS', options };
 };
+
+export function updateActions (actions) {
+  if (!actions || !Array.isArray(actions)) actions = [];
+  return { type: 'UPDATE_ACTIONS', actions };
+}
 
 export function sortByColumn (column) {
   if (!column) return {};

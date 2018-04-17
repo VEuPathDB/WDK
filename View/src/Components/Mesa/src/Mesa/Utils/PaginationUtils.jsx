@@ -11,6 +11,21 @@ const PaginationUtils = {
     let pageNumber = PaginationUtils.getCurrentPageNumber({ itemsPerPage, activeItem });
     return pageNumber - 1;
   },
+  getSpread (list, { itemsPerPage, activeItem }, usePagination) {
+    let spread = usePagination
+      ? PaginationUtils.getCurrentPage(list, { itemsPerPage, activeItem })
+      : list;
+    return spread ? spread.map(item => item.__id) : [];
+  },
+  isSpreadSelected (spread, selection) {
+    if (!Array.isArray(spread) || !Array.isArray(selection)) return;
+    return selection.length >= spread.length && spread.every(id => selection.includes(id))
+  },
+  countSelectedInSpread (spread, selection) {
+    if (!Array.isArray(spread) || !Array.isArray(selection)) return;
+    let selected = spread.filter(id => selection.includes(id));
+    return selected.length;
+  },
   splitIntoPages (list, { itemsPerPage }) {
     return PaginationUtils.chunkArray(list, itemsPerPage);
   },

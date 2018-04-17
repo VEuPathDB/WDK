@@ -25,7 +25,7 @@ export default function ReducerFactory (base = {}) {
       }
 
       /* Updates -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
-      
+
       case 'UPDATE_OPTIONS': {
         let { options } = action;
         return Object.assign({}, state, { options });
@@ -39,6 +39,11 @@ export default function ReducerFactory (base = {}) {
       case 'UPDATE_ROWS': {
         let { rows } = action;
         return Object.assign({}, state, { rows });
+      }
+
+      case 'UPDATE_ACTIONS': {
+        let { actions } = action;
+        return Object.assign({}, state, { actions });
       }
 
       /* COL WIDTH -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=- */
@@ -73,13 +78,14 @@ export default function ReducerFactory (base = {}) {
         if (!column.filterable) return state;
 
         let index = columns.findIndex(col => col.key === column.key);
+        console.log('TCFV: using index', index);
         if (index < 0) return state;
-        let { filterState } = column;
-        let { blacklist } = filterState;
+        let filterState = Object.assign({}, column.filterState);
+        let blacklist = [...filterState.blacklist];
         if (blacklist.includes(value)) blacklist = blacklist.filter(item => item !== value)
         else blacklist = [ ...blacklist, value ];
         filterState = Object.assign({}, filterState, { blacklist });
-        columns.splice(index, 1, Object.assign({}, column, { filterState }));
+        columns[index] = Object.assign({}, column, { filterState });
         return Object.assign({}, state, { columns });
       }
 
@@ -89,8 +95,9 @@ export default function ReducerFactory (base = {}) {
         if (!column.filterable) return state;
 
         let index = columns.findIndex(col => col.key === column.key);
+        console.log('TCFVis: using index', index);
         if (index < 0) return state;
-        let { filterState } = column;
+        let filterState = Object.assign({}, column.filterState);
         filterState.visible = !filterState.visible;
         columns[index] = Object.assign({}, columns[index], { filterState });
         return Object.assign({}, state, { columns });
@@ -197,6 +204,77 @@ export default function ReducerFactory (base = {}) {
         pagination = Object.assign({}, pagination, { activeItem: 1 });
         ui = Object.assign({}, ui, { searchQuery }, { pagination });
         return Object.assign({}, state, { ui })
+      }
+
+      case 'SELECT_ROW_BY_ID': {
+        let { id } = action;
+        let { ui } = state;
+        let { selection } = ui;
+        if (selection.includes(id)) return state;
+        selection.push(id);
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'SELECT_ROWS_BY_IDS': {
+        let { ids } = action;
+        let { ui } = state;
+        let { selection } = ui;
+        let selectable = ids.filter(id => !selection.includes(id));
+        selection = [...selection, ...selectable];
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'DESELECT_ROWS_BY_IDS': {
+        let { ids } = action;
+        let { ui } = state;
+        let { selection } = ui;
+        selection = selection.filter(id => !ids.includes(id));
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'DESELECT_ROW_BY_ID': {
+        let { id } = action;
+        let { ui } = state;
+        let { selection } = ui;
+        let index = selection.indexOf(id);
+        if (index < 0) return state;
+        selection.splice(index, 1);
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'TOGGLE_ROW_SELECTION_BY_ID': {
+        let { id } = action;
+        let { ui } = state;
+        let { selection } = ui;
+        let index = selection.indexOf(id);
+        if (index < 0) selection.push(id);
+        else selection.splice(index, 1);
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'SELECT_ALL_ROWS': {
+        let { ui, rows } = state;
+        let { selection } = ui;
+        selection = rows.map(row => row.__id);
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'CLEAR_ROW_SELECTION': {
+        let { ui } = state;
+        let selection = []
+        ui = Object.assign({}, ui, { selection });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'RESET_UI_STATE': {
+        let ui = Object.assign({}, startingState.ui);
+        return Object.assign({}, state, { ui });
       }
 
       default:

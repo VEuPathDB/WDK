@@ -22,7 +22,7 @@ class TableToolbar extends React.PureComponent {
     const [ first, last, total ] = [1,2,3];
 
     return (
-      <div className="TableToolbar">
+      <div className="Toolbar TableToolbar">
         {options.title && (
           <h1 className="TableToolbar-Title">{options.title}</h1>
         )}
@@ -44,7 +44,7 @@ class TableToolbar extends React.PureComponent {
           <ColumnEditor state={state} dispatch={dispatch}>
             <button>
               <Icon fa={'columns'} />
-              Add/Remove Columns
+              <span>Add/Remove Columns</span>
             </button>
           </ColumnEditor>
         )}
