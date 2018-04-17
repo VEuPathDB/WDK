@@ -20,37 +20,52 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var modalClass = (0, _Utils.makeClassifier)('Modal');
+var modalBoundaryClass = (0, _Utils.makeClassifier)('ModalBoundary');
 
-var Modal = function (_React$Component) {
-  _inherits(Modal, _React$Component);
+var ModalBoundary = function (_React$Component) {
+  _inherits(ModalBoundary, _React$Component);
 
-  function Modal(props) {
-    _classCallCheck(this, Modal);
+  function ModalBoundary(props) {
+    _classCallCheck(this, ModalBoundary);
 
-    var _this = _possibleConstructorReturn(this, (Modal.__proto__ || Object.getPrototypeOf(Modal)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (ModalBoundary.__proto__ || Object.getPrototypeOf(ModalBoundary)).call(this, props));
 
     _this.componentDidMount = _this.componentDidMount.bind(_this);
     return _this;
   }
 
-  _createClass(Modal, [{
+  _createClass(ModalBoundary, [{
     key: 'componentDidMount',
     value: function componentDidMount() {}
   }, {
+    key: 'getBoundaryStyle',
+    value: function getBoundaryStyle() {
+      return {
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        position: 'relative',
+        border: '10px solid orange'
+      };
+    }
+  }, {
     key: 'render',
     value: function render() {
+      var children = this.props.children;
+
+      var style = this.getBoundaryStyle();
+
       return _react2.default.createElement(
         'div',
-        { className: modalClass() },
-        'Modal!'
+        { className: modalBoundaryClass(), style: style },
+        children
       );
     }
   }]);
 
-  return Modal;
+  return ModalBoundary;
 }(_react2.default.Component);
 
 ;
 
-exports.default = Modal;
+exports.default = ModalBoundary;

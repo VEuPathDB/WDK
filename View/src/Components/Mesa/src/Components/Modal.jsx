@@ -1,39 +1,23 @@
 import React from 'react';
 
-import Events from '../Utils/Events';
+import { makeClassifier } from '../Utils/Utils';
+
+const modalClass = makeClassifier('Modal');
 
 class Modal extends React.Component {
   constructor (props) {
     super(props);
-    this.handleClose = this.handleClose.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
-  componentWillReceiveProps ({ open }) {
-    if (!!open === !!this.props.open) return;
-    if (!!open && !this.props.open) return this.closeListener = Events.onKey('esc', this.handleClose);
-    else Events.remove(this.closeListener);
-  }
-
-  handleClose () {
-    const { onClose } = this.props;
-    return onClose && onClose();
-  }
-
-  diffuseClick (event) {
-    return event.stopPropagation();
+  componentDidMount () {
+    
   }
 
   render () {
-    const { open, children, className } = this.props;
-    const _className = `Modal ${open ? 'Modal-Open' : 'Modal-Closed'} ${className || ''}`
-
     return (
-      <div className="Modal-Wrapper">
-        <div className={_className} onClick={this.handleClose}>
-          <div className="Modal-Body" onClick={this.diffuseClick}>
-            {children}
-          </div>
-        </div>
+      <div className={modalClass()}>
+        Modal!
       </div>
     );
   }
