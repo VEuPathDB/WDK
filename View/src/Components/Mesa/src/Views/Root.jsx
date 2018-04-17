@@ -4,37 +4,53 @@ import Header from 'Ui/Header';
 
 import Mesa from 'Mesa/Components/Mesa';
 import TableData from 'Content/TableData';
-import AlphaColumnSet from 'Content/AlphaColumnSet';
-import BravoColumnSet from 'Content/BravoColumnSet';
+import CustomSetup from 'Content/CustomSetup';
+import ProductionEmulation from 'Content/ProductionEmulation';
+
+const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color: 'blue' };
 
 const ConfigList = [
-  { label: 'Quick Setup', config: AlphaColumnSet },
-  { label: 'Prod Emulation', config: BravoColumnSet },
-  { label: 'No Configuration ("auto")', config: null }
+  {
+    label: 'Production Emulation',
+    config: ProductionEmulation,
+    title: 'Data Sets'
+  },
+  {
+    label: 'Custom Setup',
+    config: CustomSetup,
+    title: <span style={embarrassment}>Cool Internet ! (｡◕‿◕｡)</span>
+  },
+  {
+    label: 'No Configuration / Auto Mode',
+    config: null,
+    title: null
+  }
 ];
 
 class Root extends React.Component {
   constructor (props) {
     super(props);
+    let [ initial, ...others ] = ConfigList;
     this.state = {
-      columnConfig: BravoColumnSet
+      tableTitle: initial.title,
+      columnConfig: initial.config
     };
     this.changeConfig = this.changeConfig.bind(this);
     this.renderConfigMenu = this.renderConfigMenu.bind(this)
   }
 
-  changeConfig (columnConfig) {
-    this.setState({ columnConfig });
+  changeConfig (columnConfig, tableTitle) {
+    this.setState({ columnConfig, tableTitle });
   }
 
   renderConfigMenu () {
     const { columnConfig } = this.state;
-    const list = ConfigList.map(({ label, config }) => {
+    const list = ConfigList.map(({ label, config, title }) => {
       const isActive = columnConfig === config;
       return (
         <box
           key={label}
-          onClick={() => this.changeConfig(config)}
+          onClick={() => this.changeConfig(config, title)}
           className={'ConfigMenu-Item' + (isActive ? ' active' : '')}
         >
           {label}
@@ -42,21 +58,17 @@ class Root extends React.Component {
       );
     });
 
-    return (
-      <row className="ConfigMenu">
-        {list}
-      </row>
-    );
+    return <grid className="ConfigMenu">{list}</grid>
   }
 
   render () {
-    const { columnConfig } = this.state;
+    const { columnConfig, tableTitle } = this.state;
     return (
       <div className="Root">
         <Header />
         {this.renderConfigMenu()}
         <div style={{ padding: '30px' }}>
-          <Mesa rows={TableData} columns={columnConfig} title="Data Sets" />
+          <Mesa rows={TableData} columns={columnConfig} title={tableTitle} />
         </div>
       </div>
     );

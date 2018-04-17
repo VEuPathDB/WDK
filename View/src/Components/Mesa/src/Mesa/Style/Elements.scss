@@ -2,6 +2,69 @@
   display: inline-block;
 }
 
+.Checkbox {
+  display: inline-block;
+  &.Checkbox-Checked {
+    color: #458ed9;
+  }
+  &.Checkbox-Unchecked {
+    color: #acacac;
+  }
+}
+
+.ColumnEditor {
+  .ColumnEditor-List {
+    margin: 10px auto;
+    padding: 0;
+    list-style: none;
+    line-height: 140%;
+
+    .ColumnEditor-List-Item {
+      font-size: 0.9em;
+      .icon {
+        margin-right: 15px;
+      }
+    }
+  }
+}
+
+.Modal-Wrapper {
+  position: relative;
+
+  .Modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 101010;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100vw;
+    height: 100vh;
+
+    background-color: rgba(0, 0, 0, 0.15);
+    transition: all 0.5s;
+
+    opacity: 0;
+    pointer-events: none;
+
+    &.Modal-Open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .Modal-Body {
+      flex: 0 0 auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0px 0px 10% black;
+    }
+  }
+}
+
 .Trigger {
   margin: 0 0.5em;
   transition: all 0.4s;
@@ -10,7 +73,7 @@
   color: $accentColor;
   &.inactive {
     color: black;
-    opacity: 0.5;
+    opacity: 0.2;
   }
   &:hover {
     tramsform: scale(1.1);

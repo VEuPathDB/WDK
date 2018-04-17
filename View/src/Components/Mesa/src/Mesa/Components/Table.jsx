@@ -30,12 +30,14 @@ class Table extends React.Component {
       .map(this.makeRow);
 
     return (
-      <table className="Table" cellSpacing="0" cellPadding="0">
-        <tbody>
-          <HeadingRow rows={rows} columns={columns} />
-          {rowList}
-        </tbody>
-      </table>
+      <div className="Table-Wrapper">
+        <table className="Table" cellSpacing="0" cellPadding="0">
+          <tbody>
+            <HeadingRow rows={rows} columns={columns} />
+            {rowList}
+          </tbody>
+        </table>
+      </div>
     );
   }
 };

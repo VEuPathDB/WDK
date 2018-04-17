@@ -4,7 +4,7 @@ const Defaults = {
   column: {
     primary: false,
     searchable: true,
-    sortable: false,
+    sortable: true,
     editable: false,
     filterable: false,
     truncated: true,
@@ -13,7 +13,7 @@ const Defaults = {
     type: 'text'
   },
   searchPlaceholder: 'Search This Table',
-  overflowHeight: '8em'
+  overflowHeight: '16em'
 };
 
 export default Defaults;

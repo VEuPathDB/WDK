@@ -1,9 +1,10 @@
 import React from 'react';
 
-const BravoColumnSet = {
+const ProductionEmulation = {
   dataSet: {
     primary: true,
-    name: 'Data Set'
+    name: 'Data Set',
+    width: '25%'
   },
   organism: {
     type: 'html',
@@ -11,8 +12,7 @@ const BravoColumnSet = {
   },
   category: {
     name: 'Category',
-    sortable: true,
-    filterable: true
+    sortable: true
   },
   description: {
     type: 'html',
@@ -42,4 +42,4 @@ const BravoColumnSet = {
   contactInstitution: 'Contact Institution'
 };
 
-export default BravoColumnSet;
+export default ProductionEmulation;
