@@ -8,9 +8,13 @@
     width: 100%;
   }
   .DataTable-Header, .DataTable-Body {
+    display: block;
     table {
       table-layout: fixed;
       width: 100%;
     }
+  }
+  .DataTable-Body {
+    overflow-x: auto;
   }
 }
