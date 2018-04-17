@@ -1,6 +1,5 @@
 import React from 'react';
 
-import '../Style/Mesa';
 import Importer from '../Utils/Importer';
 import StoreFactory from '../State/StoreFactory';
 import TableController from '../Ui/TableController';
