@@ -10,6 +10,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -48,12 +52,13 @@ var SelectionCounter = function (_React$Component) {
       var _props2 = this.props,
           rows = _props2.rows,
           selection = _props2.selection,
-          onRowSelect = _props2.onRowSelect;
+          onRowSelect = _props2.onRowSelect,
+          onMultipleRowSelect = _props2.onMultipleRowSelect;
 
       var unselectedRows = rows.map(function (row) {
         return !selection.includes(row);
       });
-      unselectedRows.forEach(function (row) {
+      if (typeof onMultipleRowSelect === 'function') onMultipleRowSelect(unselectedRows);else unselectedRows.forEach(function (row) {
         return onRowSelect(row);
       });
     }
@@ -62,9 +67,10 @@ var SelectionCounter = function (_React$Component) {
     value: function deselectAllRows() {
       var _props3 = this.props,
           selection = _props3.selection,
-          onRowDeselect = _props3.onRowDeselect;
+          onRowDeselect = _props3.onRowDeselect,
+          onMultipleRowDeselect = _props3.onMultipleRowDeselect;
 
-      selection.forEach(function (row) {
+      if (typeof onMultipleRowDeselect === 'function') onMultipleRowDeselect(selection);else selection.forEach(function (row) {
         return onRowDeselect(row);
       });
     }
@@ -92,7 +98,7 @@ var SelectionCounter = function (_React$Component) {
         this.noun(selection),
         ' selected.',
         _react2.default.createElement('br', null),
-        _react2.default.createElement(
+        !onRowDeselect && !onMultipleRowSelect ? null : _react2.default.createElement(
           'a',
           { onClick: this.deselectAllRows },
           'Clear selection.'
@@ -105,5 +111,20 @@ var SelectionCounter = function (_React$Component) {
 }(_react2.default.Component);
 
 ;
+
+SelectionCounter.propTypes = {
+  // all/total "rows" in the table
+  rows: _propTypes2.default.array,
+  // exclusively the selected rows (checked by ref/inclusion)
+  selection: _propTypes2.default.array.isRequired,
+  // noun and plural to use for selections (e.g. "25 Datasets selected")
+  selectedNoun: _propTypes2.default.string,
+  selectedPluralNoun: _propTypes2.default.string,
+  // single and multiple select/deselect handlers
+  onRowSelect: _propTypes2.default.func,
+  onRowDeselect: _propTypes2.default.func,
+  onMultipleRowSelect: _propTypes2.default.func,
+  onMultipleRowDeselect: _propTypes2.default.func
+};
 
 exports.default = SelectionCounter;

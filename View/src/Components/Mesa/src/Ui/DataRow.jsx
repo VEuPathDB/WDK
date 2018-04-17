@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import DataCell from '../Ui/DataCell';
 import SelectionCell from '../Ui/SelectionCell';
@@ -10,7 +11,7 @@ class DataRow extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { expanded: false };
-    this.toggleRow = this.toggleRow.bind(this);
+    this.handleRowClick = this.handleRowClick.bind(this);
     this.expandRow = this.expandRow.bind(this);
     this.collapseRow = this.collapseRow.bind(this);
     this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
@@ -33,12 +34,13 @@ class DataRow extends React.PureComponent {
     this.setState({ expanded: false });
   }
 
-  toggleRow () {
-    const { options } = this.props;
-    if (!options.inline) return;
+  handleRowClick () {
+    const { row, rowIndex, options } = this.props;
+    const { inline, onRowClick } = options;
+    if (!inline && !onRowClick) return;
 
-    const { expanded } = this.state;
-    this.setState({ expanded: !expanded });
+    if (inline)  this.setState({ expanded: !this.state.expanded });
+    if (typeof onRowClick === 'function') onRowClick(row, rowIndex);
   }
 
   render () {
@@ -62,7 +64,7 @@ class DataRow extends React.PureComponent {
     const cellProps = { row, inline, options, rowIndex };
 
     return (
-      <tr className={className} style={rowStyle} onClick={this.toggleRow}>
+      <tr className={className} style={rowStyle} onClick={this.handleRowClick}>
         {!hasSelectionColumn
           ? null
           : <SelectionCell
@@ -75,6 +77,16 @@ class DataRow extends React.PureComponent {
       </tr>
     )
   }
+};
+
+DataRow.propTypes = {
+  row: PropTypes.object.isRequired,
+  rowIndex: PropTypes.number.isRequired,
+  columns: PropTypes.array.isRequired,
+
+  options: PropTypes.object,
+  actions: PropTypes.array,
+  eventHandlers: PropTypes.object
 };
 
 export default DataRow;
