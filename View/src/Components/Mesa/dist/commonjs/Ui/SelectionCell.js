@@ -52,6 +52,7 @@ var SelectionCell = function (_React$PureComponent) {
         return !isRowSelected(row);
       });
       console.log('selecting all, unselectedrows:', unselectedRows);
+      console.log('and this is multipleselect', onMultipleRowSelect);
       if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);else return unselectedRows.forEach(function (row) {
         return onRowSelect(row);
       });

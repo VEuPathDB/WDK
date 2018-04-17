@@ -58,7 +58,9 @@ var HeadingRow = function (_React$PureComponent) {
           onRowSelect = _ref3.onRowSelect,
           onRowDeselect = _ref3.onRowDeselect;
 
-      var hasSelectionColumn = typeof isRowSelected === 'function' && typeof onRowSelect === 'function' && typeof onRowDeselect === 'function';
+      var hasSelectionColumn = [isRowSelected, onRowSelect, onRowDeselect].every(function (fn) {
+        return typeof fn === 'function';
+      });
 
       return _react2.default.createElement(
         'tr',
