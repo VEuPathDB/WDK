@@ -183,7 +183,7 @@ var HeadingCell = function (_React$PureComponent) {
           { className: 'justify-center items-center' },
           _react2.default.createElement(
             'box',
-            null,
+            { className: 'grow-1' },
             _react2.default.createElement(SortTrigger, null)
           ),
           _react2.default.createElement(
@@ -193,7 +193,7 @@ var HeadingCell = function (_React$PureComponent) {
           ),
           _react2.default.createElement(
             'box',
-            null,
+            { className: 'grow-1' },
             _react2.default.createElement(
               ClickBoundary,
               null,
