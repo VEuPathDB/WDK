@@ -65,7 +65,7 @@ var Mesa = function (_React$Component) {
           uiState = _props.uiState,
           eventHandlers = _props.eventHandlers;
 
-      var _ref = uiState ? uiState.pagination : {},
+      var _ref = uiState && uiState.pagination ? uiState.pagination : {},
           currentPage = _ref.currentPage,
           totalPages = _ref.totalPages,
           rowsPerPage = _ref.rowsPerPage;
