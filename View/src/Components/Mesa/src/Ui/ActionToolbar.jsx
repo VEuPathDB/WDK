@@ -59,7 +59,7 @@ class ActionToolbar extends React.PureComponent {
   }
 
   render () {
-    const { rows, actions, eventHandlers } = this.props;
+    const { rows, actions, eventHandlers, children } = this.props;
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
 
     const ActionList = this.renderActionItemList;

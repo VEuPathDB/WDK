@@ -115,7 +115,8 @@ var ActionToolbar = function (_React$PureComponent) {
       var _props3 = this.props,
           rows = _props3.rows,
           actions = _props3.actions,
-          eventHandlers = _props3.eventHandlers;
+          eventHandlers = _props3.eventHandlers,
+          children = _props3.children;
 
       var _ref3 = eventHandlers ? eventHandlers : {},
           onRowSelect = _ref3.onRowSelect,
