@@ -20,6 +20,7 @@ class AnchoredTooltip extends React.Component {
       MesaScroll: Events.add('MesaScroll', this.updateOffset),
       MesaReflow: Events.add('MesaReflow', this.updateOffset)
     };
+    setTimeout(this.updateOffset, 100);
   }
 
   componentWillUnmount () {
@@ -27,13 +28,16 @@ class AnchoredTooltip extends React.Component {
   }
 
   updateOffset () {
-    console.log('Updating offset...');
+    if (this.props.debug) console.log('Updating offset...');
     const { element } = this;
-    if (!element) return console.log('...Returning out, no element');
+    if (!element) {
+      if (this.props.debug) console.log('...Returning out, no element');
+      return;
+    };
     const offset = element.getBoundingClientRect();
     const { top, left, height } = offset;
     const position = { left, top: top + height };
-    console.log('Offset is now...', position);
+    if (this.props.debug) console.log('Offset is now...', position);
     this.setState({ position });
   }
 
