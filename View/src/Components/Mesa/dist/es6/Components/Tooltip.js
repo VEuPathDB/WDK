@@ -60,13 +60,13 @@ var Tooltip = function (_React$Component) {
         this.events = new _Events.EventsFactory(this.el);
         this.events.use({
           focusIn: function focusIn() {
-            return _this2.setState({ isFocus: true });
+            console.log('focus in!');_this2.setState({ isFocus: true });
           },
           keypress: function keypress() {
-            return _this2.setState({ isFocus: true });
+            console.log('keypress!');_this2.setState({ isFocus: true });
           },
           focusOut: function focusOut() {
-            return _this2.setState({ isFocus: false });
+            console.log('focus out!!');_this2.setState({ isFocus: false });
           },
           mouseEnter: function mouseEnter() {
             return _this2.setState({ isHovered: true });
