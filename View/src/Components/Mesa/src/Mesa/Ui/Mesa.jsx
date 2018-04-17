@@ -34,24 +34,25 @@ class Mesa extends React.Component {
 
   componentWillReceiveProps (newProps) {
     const { dispatch } = this.store;
+    let { options, columns, rows, actions } = this.props;
 
-    if (newProps.options !== this.props.options) {
-      let options = Importer.importOptions(newProps.options);
+    if (newProps.rows !== rows) {
+      rows = Importer.importRows(newProps.rows)
+      dispatch(updateRows([...rows]));
+    };
+    if (newProps.options !== options) {
+      options = Importer.importOptions(newProps.options);
       dispatch(updateOptions(Object.assign({}, options)));
-    }
-    if (newProps.columns !== this.props.columns) {
-      let columns = Importer.importColumns(newProps.columns, newProps.rows, newProps.options);
+    };
+    if (newProps.columns !== columns) {
+      columns = Importer.importColumns(newProps.columns, rows, options);
       dispatch(updateColumns([...columns]));
       dispatch(resetUiState());
-    }
-    if (newProps.rows !== this.props.rows) {
-      let rows = Importer.importRows(newProps.rows)
-      dispatch(updateRows([...rows]));
-    }
-    if (newProps.actions !== this.props.actions) {
-      let actions = Importer.importActions(newProps.actions);
+    };
+    if (newProps.actions !== actions) {
+      actions = Importer.importActions(newProps.actions, options);
       dispatch(updateActions([...actions]));
-    }
+    };
   }
 
   componentDidMount () {

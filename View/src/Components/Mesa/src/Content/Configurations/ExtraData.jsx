@@ -24,12 +24,29 @@ const ExtraData = {
   },
   actions: [
     {
-      element: <button>Example Action <Icon fa="magic" /></button>,
+      element: <small><a>Click Me, As Well</a></small>,
+      callback (rows) {
+        let message = 'An action\'s "element" doesn\'t need to be a button, per se.';
+        message += '\nBy the way, you ' + (rows.length ? 'selected ' + rows.length + ' rows.' : 'haven\'t selected any rows.');
+        alert(message)
+      }
+    },
+    {
+      element: (selection) => {
+        return <button>Example Action for {selection.length} rows <Icon fa="magic" /></button>
+      },
       handler (row) {
         alert('one row has the category of '+ row.category);
       },
       callback (rows) {
-        alert('there are ' + rows.length + 'rows');
+        alert('there are ' + rows.length + ' rows');
+      },
+      selectionRequired: true
+    },
+    {
+      element: <button>This button doesn't really do much <Icon fa="meh-o" /></button>,
+      callback () {
+        alert('Hi!');
       }
     }
   ]

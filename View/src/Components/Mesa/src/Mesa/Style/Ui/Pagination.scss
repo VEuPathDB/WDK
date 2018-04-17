@@ -34,6 +34,9 @@
     font-weight: 600;
     border: 1px solid grey;
     width: 30px;
+    height: 30px;
+    line-height: 1.1em;
+
     &.ellipsis {
       border-color: transparent;
       margin: 0 5px;
