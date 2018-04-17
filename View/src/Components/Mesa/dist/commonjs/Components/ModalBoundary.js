@@ -50,9 +50,10 @@ var ModalBoundary = function (_React$Component) {
     value: function addModal(modal) {
       var modals = this.state.modals;
 
-      if (!'id' in modal || !modal.id) throw new Error('Modals must have an "id" property.');
-      if (modals.indexOf(modal) < 0) modals.push(modal);
+      modal._id = (0, _Utils.uid)();
+      modals.push(modal);
       this.setState({ modals: modals });
+      return modal._id;
     }
   }, {
     key: 'removeModal',
@@ -60,7 +61,7 @@ var ModalBoundary = function (_React$Component) {
       var modals = this.state.modals;
 
       var index = modals.findIndex(function (modal) {
-        return modal.id === id;
+        return modal._id === id;
       });
       if (index < 0) return;
       modals.splice(index, 1);

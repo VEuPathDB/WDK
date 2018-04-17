@@ -52,18 +52,20 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
+      if (this.modalId) return;
       var addModal = this.context.addModal;
 
       var textBox = { render: this.renderTextBox };
-      addModal(textBox);
+      this.modalId = addModal(textBox);
     }
   }, {
     key: 'hideTooltip',
     value: function hideTooltip() {
+      if (!this.modalId) return;
       var removeModal = this.context.removeModal;
 
-      var textBox = { render: this.renderTextBox };
-      removeModal(textBox);
+      removeModal(this.modalId);
+      this.modalId = null;
     }
   }, {
     key: 'renderTextBox',

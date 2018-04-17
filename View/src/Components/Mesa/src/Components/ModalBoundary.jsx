@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { makeClassifier } from '../Utils/Utils';
+import { uid, makeClassifier } from '../Utils/Utils';
 
 const modalBoundaryClass = makeClassifier('ModalBoundary');
 
@@ -21,14 +21,15 @@ class ModalBoundary extends React.Component {
 
   addModal (modal) {
     let { modals } = this.state;
-    if (!'id' in modal || !modal.id) throw new Error('Modals must have an "id" property.');
-    if (modals.indexOf(modal) < 0) modals.push(modal);
+    modal._id = uid();
+    modals.push(modal);
     this.setState({ modals });
+    return modal._id;
   }
 
   removeModal (id) {
     let { modals } = this.state;
-    let index = modals.findIndex(modal => modal.id === id);
+    let index = modals.findIndex(modal => modal._id === id);
     if (index < 0) return;
     modals.splice(index, 1);
     this.setState({ modals });
