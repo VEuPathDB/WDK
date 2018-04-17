@@ -14,10 +14,10 @@ class Tooltip extends React.Component {
 
     this.showTooltip = this.showTooltip.bind(this);
     this.hideTooltip = this.hideTooltip.bind(this);
-    this.renderTooltipBox = this.renderTooltipBox.bind(this);
-    this.engageTooltip = this.engageTooltip.bind(this);
     this.getHideDelay = this.getHideDelay.bind(this);
+    this.engageTooltip = this.engageTooltip.bind(this);
     this.disengageTooltip = this.disengageTooltip.bind(this);
+    this.renderTooltipBox = this.renderTooltipBox.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
