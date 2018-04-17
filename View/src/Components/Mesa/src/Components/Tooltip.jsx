@@ -25,6 +25,8 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount () {
+    console.log('hi lol');
+    console.log(this.context);
   }
 
   showTooltip () {

@@ -36,7 +36,10 @@ var Tooltip = function (_React$Component) {
 
   _createClass(Tooltip, [{
     key: 'componentDidMount',
-    value: function componentDidMount() {}
+    value: function componentDidMount() {
+      console.log('hi lol');
+      console.log(this.context);
+    }
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
