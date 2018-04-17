@@ -54,16 +54,6 @@ class MesaController extends React.Component {
     return renderEmptyState ? renderEmptyState() : <EmptyState culprit={emptinessCulprit} />
   }
 
-  renderBody () {
-    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
-    const Empty = this.renderEmptyState;
-
-    return rows.length
-      ? <DataTable {...props} />
-      : <Empty />
-  }
-
   render () {
     let { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
     if (!filteredRows) filteredRows = [...rows];
@@ -73,13 +63,17 @@ class MesaController extends React.Component {
     const Toolbar = this.renderToolbar;
     const ActionBar = this.renderActionBar;
     const PageNav = this.renderPaginationMenu;
+    const Empty = this.renderEmptyState;
 
     return (
       <div className="Mesa MesaComponent">
         <Toolbar />
         <ActionBar />
         <PageNav />
-        <Body />
+        {rows.length
+          ? <DataTable {...props} />
+          : <Empty />
+        }
         <PageNav />
       </div>
     );
