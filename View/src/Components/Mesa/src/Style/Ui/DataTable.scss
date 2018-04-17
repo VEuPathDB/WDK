@@ -13,7 +13,9 @@
     width: 100%;
     overflow-x: auto;
     overflow-y: visible;
+    max-width: 100%;
     border:1px solid orange;
+
     .DataTable-Header, .DataTable-Body {
       display: block;
       width: 100%;
