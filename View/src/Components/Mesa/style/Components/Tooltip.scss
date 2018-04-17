@@ -1,5 +1,6 @@
 $tooltipColor: hsl(50, 100%, 96%);
 
+
 .Tooltip-Content {
   overflow: visible;
   display: inline-block;
@@ -62,4 +63,8 @@ $tooltipColor: hsl(50, 100%, 96%);
   &.left-middle, &.right-middle {
     &::after { top: calc(50% - 5px); }
   }
+}
+
+.AnchoredTooltip {
+  display: inline-block;
 }

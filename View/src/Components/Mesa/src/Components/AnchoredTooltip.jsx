@@ -9,6 +9,7 @@ class AnchoredTooltip extends React.Component {
   }
 
   getOffsetPosition (position, offset) {
+    if (!typeof offset !== 'object' || typeof position !== 'object') return position;
     const output = {};
     for (let key in position) {
       output[key] = position[key] + (key in offset ? offset[key] : 0);
@@ -17,17 +18,17 @@ class AnchoredTooltip extends React.Component {
   }
 
   render () {
-    const defaults = { top: 0, left: 0 };
-    const { children, content, style, offset } = this.props;
+    const defaults = { top: 0, left: 0, width: 0, right: 0 };
+    const { offset } = this.props;
 
-    const { top, width, right, left } = this.anchor ? Tooltip.getOffset(this.anchor) : defaults;
-    const position = { top, left: left + (width)  };
-    const offsetPosition = offset ? this.getOffsetPosition(position, offset) : position;
-    const tooltipProps = { content, style, children, position: offsetPosition };
+    const { top, left, width, right } = (this.anchor ? Tooltip.getOffset(this.anchor) : defaults);
+    const position = { top, left: window.innerWidth - right };
+    const offsetPosition = this.getOffsetPosition(position, offset);
+    const tooltipProps = Object.assign({}, this.props, { position: offsetPosition });
     return (
       <div className="AnchoredTooltip" style={{ display: 'inline-block' }}>
         <Tooltip {...tooltipProps} />
-        <span ref={(a) => this.anchor = a} />
+        <span className="AnchoredTooltip-Anchor" ref={(a) => this.anchor = a} />
       </div>
     );
   }
