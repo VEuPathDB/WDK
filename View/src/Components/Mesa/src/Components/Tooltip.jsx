@@ -37,14 +37,12 @@ class Tooltip extends React.Component {
     const position = this.anchor ? getRealOffset(this.anchor) : { top: 0, left: 0 };
 
     const wrapperStyle = {
-      border: '1px solid orange',
-      position: 'absolute',
+      position: 'fixed',
       top: 0,
       left: 0,
       width: '100vw',
       height: '100%',
-      pointerEvents: 'none',
-      backgroundColor: 'rgba(0, 0,0,0.4)'
+      pointerEvents: 'none'
     };
 
     const textStyle = {
