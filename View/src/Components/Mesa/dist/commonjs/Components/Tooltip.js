@@ -18,6 +18,17 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+function getRealOffset(el) {
+  var top = 0;
+  var left = 0;
+  do {
+    top += el.offsetTop || 0;
+    left += el.offsetLeft || 0;
+    el = el.offsetParent;
+  } while (el);
+  return { top: top, left: left };
+};
+
 var Tooltip = function (_React$Component) {
   _inherits(Tooltip, _React$Component);
 
@@ -51,15 +62,24 @@ var Tooltip = function (_React$Component) {
       var text = this.props.text;
       var showText = this.state.showText;
 
+
+      var position = this.anchor ? getRealOffset(this.anchor) : { top: 0, left: 0 };
+
       var wrapperStyle = {
         border: '1px solid orange',
-        position: 'fixed',
+        position: 'absolute',
         top: 0,
         left: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100%',
         pointerEvents: 'none',
         backgroundColor: 'rgba(0, 0,0,0.4)'
+      };
+
+      var textStyle = {
+        position: relative,
+        top: position.top + 'px',
+        left: position.left + 'px'
       };
 
       return !showText ? null : _react2.default.createElement(
@@ -67,7 +87,7 @@ var Tooltip = function (_React$Component) {
         { className: 'Tooltip-Wrapper', style: wrapperStyle },
         _react2.default.createElement(
           'div',
-          { className: 'Tooltip-Text' },
+          { className: 'Tooltip-Text', style: textStyle },
           text
         )
       );

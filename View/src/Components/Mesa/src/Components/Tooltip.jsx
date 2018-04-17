@@ -1,5 +1,16 @@
 import React from 'react';
 
+function getRealOffset (el) {
+  let top = 0;
+  let left = 0;
+  do {
+    top += el.offsetTop || 0;
+    left += el.offsetLeft || 0;
+    el = el.offsetParent;
+  } while (el);
+  return { top, left };
+};
+
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
@@ -22,20 +33,29 @@ class Tooltip extends React.Component {
   renderTextBox () {
     const { text } = this.props;
     const { showText } = this.state;
+
+    const position = this.anchor ? getRealOffset(this.anchor) : { top: 0, left: 0 };
+
     const wrapperStyle = {
       border: '1px solid orange',
-      position: 'fixed',
+      position: 'absolute',
       top: 0,
       left: 0,
       width: '100vw',
-      height: '100vh',
+      height: '100%',
       pointerEvents: 'none',
       backgroundColor: 'rgba(0, 0,0,0.4)'
     };
 
+    const textStyle = {
+      position: relative,
+      top: position.top + 'px',
+      left: position.left + 'px'
+    };
+
     return !showText ? null : (
       <div className="Tooltip-Wrapper" style={wrapperStyle}>
-        <div className="Tooltip-Text">
+        <div className="Tooltip-Text" style={textStyle}>
           {text}
         </div>
       </div>
