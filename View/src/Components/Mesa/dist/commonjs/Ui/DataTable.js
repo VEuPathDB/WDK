@@ -67,12 +67,12 @@ var DataTable = function (_React$PureComponent) {
   }, {
     key: 'handleTableBodyScroll',
     value: function handleTableBodyScroll(e) {
-      console.log('body is at', this.refs.tableBody.scrollLeft);
+      // console.log('body is at', this.refs.tableBody.scrollLeft);
     }
   }, {
     key: 'handleTableHeaderScroll',
     value: function handleTableHeaderScroll(e) {
-      console.log('header is at', this.refs.tableHeader.scrollLeft);
+      // console.log('header is at', this.refs.tableHeader.scrollLeft);
     }
   }, {
     key: 'render',
