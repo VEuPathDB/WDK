@@ -37,9 +37,9 @@ var _MesaController = require('./Ui/MesaController');
 
 var _MesaController2 = _interopRequireDefault(_MesaController);
 
-var _Modal = require('./Components/Modal');
+var _Tooltip = require('./Components/Tooltip');
 
-var _Modal2 = _interopRequireDefault(_Modal);
+var _Tooltip2 = _interopRequireDefault(_Tooltip);
 
 var _Checkbox = require('./Components/Checkbox');
 
@@ -78,7 +78,7 @@ exports.ActionToolbar = _ActionToolbar2.default;
 exports.PaginationMenu = _PaginationMenu2.default;
 exports.ModalBoundary = _ModalBoundary2.default;
 exports.HelpTrigger = _HelpTrigger2.default;
-exports.Tooltip = _Modal2.default;
+exports.Tooltip = _Tooltip2.default;
 exports.Checkbox = _Checkbox2.default;
 exports.MesaController = _MesaController2.default;
 exports.MesaState = MesaState;

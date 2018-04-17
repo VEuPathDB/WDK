@@ -93,7 +93,6 @@ class Tooltip extends React.Component {
         onBlur={this.disengageTooltip}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
-        TEST
         {children}
       </div>
     )
