@@ -1,0 +1,36 @@
+$white: #f4f4f4;
+$black: #232323;
+$grey: #656565;
+$red: #d42918;
+$green: #21b034;
+$blue: #418bd9;
+$yellow: #e9d51f;
+
+
+.white { color: $white; }
+.white-border { border-color: $white; }
+.white-bg { background-color: $white; }
+
+.black { color: $black; }
+.black-border { border-color: $black; }
+.black-bg { background-color: $black; }
+
+.grey { color: $grey; }
+.grey-border { border-color: $grey; }
+.grey-bg { background-color: $grey; }
+
+.red { color: $red; }
+.red-border { border-color: $red; }
+.red-bg { background-color: $red; }
+
+.green { color: $green; }
+.green-border { border-color: $green; }
+.green-bg { background-color: $green; }
+
+.blue { color: $blue; }
+.blue-border { border-color: $blue; }
+.blue-bg { background-color: $blue; }
+
+.yellow { color: $yellow; }
+.yellow-border { border-color: $yellow; }
+.yellow-bg { background-color: $yellow; }
