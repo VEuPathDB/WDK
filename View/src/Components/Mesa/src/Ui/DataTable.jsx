@@ -36,57 +36,55 @@ class DataTable extends React.PureComponent {
   }
 
   render () {
-      const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
-      const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
+    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
-      if (!this.shouldUseStickyHeader()) {
-        return (
-          <div className="MesaComponent">
-            <div className={dataTableClass()}>
-              <table cellSpacing="0" cellPadding="0">
-                <thead>
-                  <HeadingRow {...props} />
-                </thead>
-                <DataRowList {...props} />
-              </table>
-            </div>
-          </div>
-        );
-      }
-
-      const { tableBodyMaxHeight } = options ? options : {};
-      const cumulativeWidth = combineWidths(columns.map(col => col.width));
-      const heightLayer = { maxHeight: tableBodyMaxHeight };
-      const widthLayer = { minWidth: cumulativeWidth };
-
+    if (!this.shouldUseStickyHeader()) {
       return (
-        <div className={dataTableClass('Sticky')}>
-          <div
-            ref="tableHeader"
-            className={dataTableClass('Header')}
-            onScroll={this.handleTableHeaderScroll}>
-            <table cellSpacing={0} cellPadding={0}>
+        <div className="MesaComponent">
+          <div className={dataTableClass()}>
+            <table cellSpacing="0" cellPadding="0">
               <thead>
                 <HeadingRow {...props} />
               </thead>
-            </table>
-          </div>
-          <div
-            ref="tableBody"
-            className={dataTableClass('Body')}
-            style={heightLayer}
-            onScroll={this.handleTableBodyScroll}>
-            <table cellSpacing={0} cellPadding={0}>
               <DataRowList {...props} />
             </table>
           </div>
         </div>
       );
+    };
+
+    const { tableBodyMaxHeight } = options ? options : {};
+    const cumulativeWidth = combineWidths(columns.map(col => col.width));
+    const heightLayer = { maxHeight: tableBodyMaxHeight };
+    const widthLayer = { minWidth: cumulativeWidth };
 
     return (
       <div className="MesaComponent">
         <div className={dataTableClass()}>
-
+          <div className={dataTableClass('Sticky')}>
+            <div
+              ref="tableHeader"
+              className={dataTableClass('Header')}
+              onScroll={this.handleTableHeaderScroll}
+            >
+              <table cellSpacing={0} cellPadding={0}>
+                <thead>
+                  <HeadingRow {...props} />
+                </thead>
+              </table>
+            </div>
+            <div
+              ref="tableBody"
+              style={heightLayer}
+              className={dataTableClass('Body')}
+              onScroll={this.handleTableBodyScroll}
+            >
+              <table cellSpacing={0} cellPadding={0}>
+                <DataRowList {...props} />
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     );

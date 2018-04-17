@@ -107,7 +107,7 @@ var DataTable = function (_React$PureComponent) {
             )
           )
         );
-      }
+      };
 
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
@@ -120,42 +120,46 @@ var DataTable = function (_React$PureComponent) {
 
       return _react2.default.createElement(
         'div',
-        { className: dataTableClass('Sticky') },
+        { className: 'MesaComponent' },
         _react2.default.createElement(
           'div',
-          {
-            ref: 'tableHeader',
-            className: dataTableClass('Header'),
-            onScroll: this.handleTableHeaderScroll },
+          { className: dataTableClass() },
           _react2.default.createElement(
-            'table',
-            { cellSpacing: 0, cellPadding: 0 },
+            'div',
+            { className: dataTableClass('Sticky') },
             _react2.default.createElement(
-              'thead',
-              null,
-              _react2.default.createElement(_HeadingRow2.default, props)
+              'div',
+              {
+                ref: 'tableHeader',
+                className: dataTableClass('Header'),
+                onScroll: this.handleTableHeaderScroll
+              },
+              _react2.default.createElement(
+                'table',
+                { cellSpacing: 0, cellPadding: 0 },
+                _react2.default.createElement(
+                  'thead',
+                  null,
+                  _react2.default.createElement(_HeadingRow2.default, props)
+                )
+              )
+            ),
+            _react2.default.createElement(
+              'div',
+              {
+                ref: 'tableBody',
+                style: heightLayer,
+                className: dataTableClass('Body'),
+                onScroll: this.handleTableBodyScroll
+              },
+              _react2.default.createElement(
+                'table',
+                { cellSpacing: 0, cellPadding: 0 },
+                _react2.default.createElement(_DataRowList2.default, props)
+              )
             )
           )
-        ),
-        _react2.default.createElement(
-          'div',
-          {
-            ref: 'tableBody',
-            className: dataTableClass('Body'),
-            style: heightLayer,
-            onScroll: this.handleTableBodyScroll },
-          _react2.default.createElement(
-            'table',
-            { cellSpacing: 0, cellPadding: 0 },
-            _react2.default.createElement(_DataRowList2.default, props)
-          )
         )
-      );
-
-      return _react2.default.createElement(
-        'div',
-        { className: 'MesaComponent' },
-        _react2.default.createElement('div', { className: dataTableClass() })
       );
     }
   }]);
