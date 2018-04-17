@@ -88,14 +88,11 @@ var ModalBoundary = function (_React$Component) {
         position: 'fixed',
         pointerEvents: 'none'
       };
-      console.log('rendering with modals...', modals);
       return !modals.length ? null : _react2.default.createElement(
         'div',
         { style: style, className: modalBoundaryClass('Wrapper') },
         modals.map(function (modal, index) {
-          console.log('rendering modal:', modal);
           var Element = modal.render;
-          console.log('element:', Element);
           return _react2.default.createElement(Element, { key: index });
         })
       );

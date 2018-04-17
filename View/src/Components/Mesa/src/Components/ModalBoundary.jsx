@@ -51,13 +51,10 @@ class ModalBoundary extends React.Component {
       position: 'fixed',
       pointerEvents: 'none'
     };
-    console.log('rendering with modals...', modals);
     return !modals.length ? null : (
       <div style={style} className={modalBoundaryClass('Wrapper')}>
         {modals.map((modal, index) => {
-          console.log('rendering modal:', modal);
           const Element = modal.render;
-          console.log('element:', Element);
           return <Element key={index} />
         })}
       </div>
