@@ -38,16 +38,15 @@ var Mesa = function (_React$Component) {
   _createClass(Mesa, [{
     key: 'render',
     value: function render() {
-      var state = this.props.state;
-      var rows = state.rows,
-          filteredRows = state.filteredRows,
-          columns = state.columns,
-          options = state.options,
-          actions = state.actions,
-          uiState = state.uiState,
-          eventHandlers = state.eventHandlers;
+      var _props = this.props,
+          state = _props.state,
+          children = _props.children;
 
-      return _react2.default.createElement(_MesaController2.default, state);
+      return _react2.default.createElement(
+        _MesaController2.default,
+        state,
+        children
+      );
     }
   }]);
 

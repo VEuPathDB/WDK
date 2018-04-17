@@ -9,9 +9,8 @@ class Mesa extends React.Component {
   }
 
   render () {
-    const { state } = this.props;
-    const { rows, filteredRows, columns, options, actions, uiState, eventHandlers } = state;
-    return <MesaController {...state} />
+    const { state, children } = this.props;
+    return <MesaController {...state}>{children}</MesaController>
   }
 };
 
