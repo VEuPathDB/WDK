@@ -84,6 +84,15 @@ var HeadingCell = function (_React$PureComponent) {
       this.updateOffset();
       _Events2.default.add('scroll', this.updateOffset);
       _Events2.default.add('resize', this.updateOffset);
+      _Events2.default.add('MesaScroll', this.updateOffset);
+      _Events2.default.add('MesaReflow', this.updateOffset);
+
+      _Events2.default.add('MesaScroll', function () {
+        return console.log('caught a scroll!');
+      });
+      _Events2.default.add('MesaReflow', function () {
+        return console.log('caught a reflow');
+      });
     }
   }, {
     key: 'componentWillReceiveProps',
