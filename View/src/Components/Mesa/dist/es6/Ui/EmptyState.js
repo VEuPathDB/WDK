@@ -14,6 +14,8 @@ var _Icon = require('../Components/Icon');
 
 var _Icon2 = _interopRequireDefault(_Icon);
 
+var _Utils = require('../Utils/Utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21,6 +23,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var EmptyStateClass = (0, _Utils.makeClassifier)('EmptyState');
 
 var EmptyState = function (_React$PureComponent) {
   _inherits(EmptyState, _React$PureComponent);
@@ -106,14 +110,14 @@ var EmptyState = function (_React$PureComponent) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'EmptyState' },
+        { className: emptyStateClass() },
         _react2.default.createElement(
           'div',
-          { className: 'EmptyState-Body-Wrapper' },
+          { className: emptyStateClass('BodyWrapper') },
           _react2.default.createElement(
             'div',
-            { className: 'EmptyState-Body' },
-            _react2.default.createElement(_Icon2.default, { fa: culprit.icon, className: 'EmptyState-Icon' }),
+            { className: emptyStateClass('Body') },
+            _react2.default.createElement(_Icon2.default, { fa: culprit.icon, className: emptyStateClass('Icon') }),
             _react2.default.createElement(
               'h2',
               null,

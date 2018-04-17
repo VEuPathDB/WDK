@@ -162,7 +162,7 @@ var MesaController = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'Mesa' },
+        { className: 'Mesa MesaComponent' },
         _react2.default.createElement(Toolbar, null),
         _react2.default.createElement(ActionBar, null),
         _react2.default.createElement(PageNav, null),

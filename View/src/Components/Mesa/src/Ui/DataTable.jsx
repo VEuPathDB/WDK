@@ -5,7 +5,7 @@ import HeadingRow from '../Ui/HeadingRow';
 import DataRowList from '../Ui/DataRowList';
 import { makeClassifier } from '../Utils/Utils';
 
-const DataTableClass = makeClassifier('DataTable');
+const dataTableClass = makeClassifier('DataTable');
 
 class DataTable extends React.PureComponent {
   constructor (props) {
@@ -34,15 +34,15 @@ class DataTable extends React.PureComponent {
     const tableBodyStyle = { maxHeight: tableBodyMaxHeight };
 
     return this.shouldUseStickyHeader() ? (
-      <div className={DataTableClass('Sticky')}>
-        <div className={DataTableClass('Header')}>
+      <div className={dataTableClass('Sticky')}>
+        <div className={dataTableClass('Header')}>
           <table cellSpacing={0} cellPadding={0}>
             <thead>
               <HeadingRow {...props} />
             </thead>
           </table>
         </div>
-        <div className={DataTableClass('Body')} style={tableBodyStyle}>
+        <div className={dataTableClass('Body')} style={tableBodyStyle}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
@@ -62,8 +62,8 @@ class DataTable extends React.PureComponent {
     const Layout = this.generateLayout;
 
     return (
-      <div className="Mesa">
-        <div className={DataTableClass()}>
+      <div className="MesaComponent">
+        <div className={dataTableClass()}>
           <Layout />
         </div>
       </div>

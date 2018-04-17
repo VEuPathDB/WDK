@@ -72,7 +72,7 @@ class MesaController extends React.Component {
     const PageNav = this.renderPaginationMenu;
 
     return (
-      <div className="Mesa">
+      <div className="Mesa MesaComponent">
         <Toolbar />
         <ActionBar />
         <PageNav />
