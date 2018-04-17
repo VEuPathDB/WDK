@@ -81,7 +81,7 @@ var DataCell = function (_React$PureComponent) {
       };
 
       width = typeof width === 'number' ? width + 'px' : width;
-      width = width ? { width: width } : {};
+      width = width ? { width: width, maxWidth: width, minWidth: width } : {};
 
       var cellStyle = Object.assign({}, style, width, whiteSpace);
 

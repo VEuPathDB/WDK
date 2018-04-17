@@ -71,7 +71,9 @@ class HeadingCell extends React.PureComponent {
     const { column, state, dispatch } = this.props;
     const { headingStyle, width } = column;
 
-    const style = Object.assign({}, headingStyle ? headingStyle : {}, width ? { width } : {});
+    const widthObj = width ? { width, maxWidth: width, minWidth: width } : {};
+
+    const style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
     const Content = this.renderContent;
     const SortTrigger = this.renderSortTrigger;

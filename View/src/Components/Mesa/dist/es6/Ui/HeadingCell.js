@@ -138,7 +138,9 @@ var HeadingCell = function (_React$PureComponent) {
           width = column.width;
 
 
-      var style = Object.assign({}, headingStyle ? headingStyle : {}, width ? { width: width } : {});
+      var widthObj = width ? { width: width, maxWidth: width, minWidth: width } : {};
+
+      var style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
       var Content = this.renderContent;
       var SortTrigger = this.renderSortTrigger;
