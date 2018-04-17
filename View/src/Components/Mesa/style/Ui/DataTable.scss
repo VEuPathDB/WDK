@@ -1,6 +1,6 @@
 .DataTable {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: inherit;
   font-size: $fontSize;
   width: 100%;
   table {
@@ -9,8 +9,8 @@
   .DataTable-Sticky {
     display: block;
     width: 100%;
-    overflow-x: visible;
-    overflow-y: visible;
+    // overflow-x: visible;
+    // overflow-y: visible;
     max-width: 100%;
 
     .DataTable-Header, .DataTable-Body {
@@ -23,8 +23,8 @@
       }
     }
     .DataTable-Body {
-      overflow-x: visible;
-      overflow-y: auto;
+      // overflow-x: visible;
+      // overflow-y: auto;
     }
     .DataTable-Header {
 
