@@ -31,12 +31,16 @@ class Tooltip extends React.Component {
 
   showTooltip () {
     const showText = true;
-    this.setState({ showText })
+    const textBox = { render: this.renderTextBox };
+    // this.setState({ showText });
+    this.context.addModal(textBox);
   }
 
   hideTooltip () {
     const showText = false;
-    this.setState({ showText });
+    const textBox = { render: this.renderTextBox };
+    // this.setState({ showText
+    this.context.removeModal(textBox);
   }
 
   renderTextBox () {

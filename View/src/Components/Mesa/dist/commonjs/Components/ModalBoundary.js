@@ -38,10 +38,10 @@ var ModalBoundary = function (_React$Component) {
       modals: []
     };
 
-    _this.getChildContext = _this.getChildContext.bind(_this);
     _this.addModal = _this.addModal.bind(_this);
     _this.removeModal = _this.removeModal.bind(_this);
-    _this.renderModalList = _this.renderModalList.bind(_this);
+    _this.getChildContext = _this.getChildContext.bind(_this);
+    _this.renderModalWrapper = _this.renderModalWrapper.bind(_this);
     return _this;
   }
 
@@ -72,58 +72,41 @@ var ModalBoundary = function (_React$Component) {
       return { addModal: addModal, removeModal: removeModal };
     }
   }, {
-    key: 'getBoundaryStyle',
-    value: function getBoundaryStyle() {
-      return {
-        width: '100%',
-        height: '100%',
-        display: 'block',
-        position: 'relative',
-        border: '10px solid orange'
-      };
-    }
-  }, {
-    key: 'renderModalList',
-    value: function renderModalList() {
+    key: 'renderModalWrapper',
+    value: function renderModalWrapper() {
       var modals = this.state.modals;
 
-      return _react2.default.createElement(
-        'div',
-        null,
-        'Lol'
-      );
-    }
-  }, {
-    key: 'getWrapperStyle',
-    value: function getWrapperStyle() {
-      return {
-        position: 'fixed',
+      var style = {
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        border: '2px solid orange'
+        position: 'fixed',
+        pointerEvents: 'none'
       };
+
+      return !modals.length ? null : _react2.default.createElement(
+        'div',
+        { style: style, className: modalBoundaryClass('Wrapper') },
+        modals.map(function (modal, index) {
+          var Element = modal.render;
+          return _react2.default.createElement(Element, { key: index });
+        })
+      );
     }
   }, {
     key: 'render',
     value: function render() {
       var children = this.props.children;
 
-      var ModalList = this.renderModalList;
-      var style = this.getBoundaryStyle();
+      var ModalWrapper = this.renderModalWrapper;
+      var style = { position: 'relative' };
 
       return _react2.default.createElement(
         'div',
         { className: modalBoundaryClass(), style: style },
         children,
-        _react2.default.createElement(
-          'div',
-          { style: this.getWrapperStyle() },
-          'Modals:',
-          _react2.default.createElement(ModalList, null)
-        )
+        _react2.default.createElement(ModalWrapper, null)
       );
     }
   }]);
