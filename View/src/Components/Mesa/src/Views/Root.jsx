@@ -11,6 +11,12 @@ const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color:
 
 const ConfigList = [
   {
+    label: 'No Data',
+    columns: null,
+    rows: [],
+    options: null
+  },
+  {
     label: 'Production Emulation',
     columns: ProductionEmulation,
     rows: TableData,
@@ -19,7 +25,7 @@ const ConfigList = [
     }
   },
   {
-    label: 'Custom Setup',
+    label: 'Custom Setup with Filter',
     columns: CustomSetup,
     rows: TableData,
     options: {
@@ -28,9 +34,21 @@ const ConfigList = [
   },
   {
     label: 'No Configuration / Auto Mode',
-    columns: null,
-    rows: TableData,
-    options: null
+    rows: TableData
+  },
+  {
+    label: 'Extra Data + Inline Mode!',
+    rows: [...TableData, ...TableData, ...TableData, ...TableData, ...TableData ],
+    options: {
+      title: '5x Regular Data!',
+      inline: true,
+      inlineMaxWidth: '100px',
+      columnDefaults: {
+        truncated: false,
+        overflowHeight: '2rem',
+        width: '20vw'
+      }
+    }
   }
 ];
 
@@ -63,7 +81,7 @@ class Root extends React.Component {
       );
     });
 
-    return <grid className="ConfigMenu">{list}</grid>
+    return <row className="ConfigMenu">{list}</row>
   }
 
   render () {

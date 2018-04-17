@@ -2,6 +2,7 @@ import React from 'react';
 
 import Templates from 'Mesa/Templates';
 import ColumnSorter from 'Mesa/Ui/ColumnSorter';
+import ColumnFilter from 'Mesa/Ui/ColumnFilter';
 import { toggleSortOrder, sortByColumn } from 'Mesa/State/Actions';
 
 class HeadingCell extends React.PureComponent {
@@ -10,21 +11,31 @@ class HeadingCell extends React.PureComponent {
   }
 
   renderContent () {
-    let { column } = this.props;
+    const { column } = this.props;
     if ('renderHeading' in column) return column.renderHeading(column);
     return Templates.heading(column);
   }
 
   handleSortClick () {
-    let { column, state, dispatch } = this.props;
-    let { sort } = state.ui;
-    let currentlySorting = sort.byColumn === column;
+    const { column, state, dispatch } = this.props;
+    const { sort } = state.ui;
+    const currentlySorting = sort.byColumn === column;
     dispatch(currentlySorting ? toggleSortOrder() : sortByColumn(column));
   }
 
+  defuseSortClick ({ children }) {
+    const style = { display: 'inline-block' };
+    return (
+      <div onClick={(e) => e.stopPropagation()} style={style}>
+        {children}
+      </div>
+    );
+  }
+
   render () {
-    let { column, state } = this.props;
-    let content = this.renderContent();
+    const { column, state, dispatch } = this.props;
+    const content = this.renderContent();
+    const DefuseSortClick = this.defuseSortClick;
 
     return column.hidden ? null : (
       <th
@@ -39,6 +50,15 @@ class HeadingCell extends React.PureComponent {
           />
         )}
         {content}
+        {column.filterable && (
+          <DefuseSortClick>
+            <ColumnFilter
+              column={column}
+              state={state}
+              dispatch={dispatch}
+            />
+          </DefuseSortClick>
+        )}
       </th>
     )
   }

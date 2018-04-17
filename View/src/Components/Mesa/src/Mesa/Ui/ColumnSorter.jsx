@@ -14,8 +14,8 @@ class ColumnSorter extends React.PureComponent {
     let sortIcon = !currentlySorting
       ? 'sort-amount-asc inactive'
       : sort.ascending
-        ? 'sort-amount-asc'
-        : 'sort-amount-desc';
+        ? 'sort-amount-asc active'
+        : 'sort-amount-desc active';
 
     return (<Icon fa={sortIcon + ' Trigger SortTrigger'} />);
   }

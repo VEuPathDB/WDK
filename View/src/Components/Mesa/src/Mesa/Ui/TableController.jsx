@@ -1,8 +1,9 @@
 import React from 'react';
 
+import TableBody from 'Mesa/Ui/TableBody';
 import RowUtils from 'Mesa/Utils/RowUtils';
 import TableToolbar from 'Mesa/Ui/TableToolbar';
-import TableBody from 'Mesa/Ui/TableBody';
+import { setEmptinessCulprit } from 'Mesa/State/Actions';
 
 class TableController extends React.PureComponent {
   constructor (props) {
@@ -11,12 +12,29 @@ class TableController extends React.PureComponent {
   }
 
   getFilteredRows () {
-    let { state } = this.props;
+    let { state, dispatch } = this.props;
     let { rows, ui, columns } = state;
-    let { searchQuery, sort } = ui;
+    let { searchQuery, sort, emptinessCulprit } = ui;
+
+    if (!rows.length) {
+      if (emptinessCulprit !== 'nodata') dispatch(setEmptinessCulprit('nodata'));
+      return rows;
+    }
 
     if (searchQuery && searchQuery.length)
       rows = RowUtils.searchRowsForQuery(rows, columns, searchQuery);
+    if (!rows.length) {
+      if (emptinessCulprit !== 'search') dispatch(setEmptinessCulprit('search'));
+      return rows;
+    }
+
+    if (columns.some(column => column.filterState.enabled))
+      rows = RowUtils.filterRowsByColumns(rows, columns);
+    if (!rows.length) {
+      if (emptinessCulprit !== 'filters') dispatch(setEmptinessCulprit('filters'));
+      return rows;
+    }
+
     if (sort.byColumn)
       rows = RowUtils.sortRowsByColumn(rows, sort.byColumn, sort.ascending);
 
@@ -24,21 +42,28 @@ class TableController extends React.PureComponent {
   }
 
   render () {
-    let { state, dispatch } = this.props;
-    let filtered = { rows: this.getFilteredRows() };
-    let filteredState = Object.assign({}, state, filtered);
+    let { state, dispatch, children } = this.props;
+    let filteredRows = this.getFilteredRows();
 
     return (
       <div className="TableController">
-        {state.options.toolbar && (
+        {state.options.toolbar ? (
           <TableToolbar
             state={state}
             dispatch={dispatch}
-          />
+            filteredRows={filteredRows}
+          >
+            {children}
+          </TableToolbar>
+        ) : (
+          <div>
+            {children}
+          </div>
         )}
         <TableBody
-          state={filteredState}
+          state={state}
           dispatch={dispatch}
+          filteredRows={filteredRows}
         />
       </div>
     );

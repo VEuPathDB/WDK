@@ -3,10 +3,14 @@
   transition: all 0.4s;
   cursor: pointer;
   display: inline-block;
-  color: $accentColor;
-  &.inactive {
+
+  &, &.inactive {
     color: black;
     opacity: 0.2;
+  }
+  &.active {
+    opacity: 1;
+    color: $accentColor;
   }
   &:hover {
     tramsform: scale(1.1);
