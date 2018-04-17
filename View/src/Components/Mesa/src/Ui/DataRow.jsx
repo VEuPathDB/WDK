@@ -69,6 +69,7 @@ class DataRow extends React.PureComponent {
         {!hasSelectionColumn
           ? null
           : <SelectionCell
+              key="_selection"
               row={row}
               eventHandlers={eventHandlers}
               isRowSelected={options.isRowSelected}

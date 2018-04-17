@@ -48,6 +48,7 @@ class HeadingRow extends React.PureComponent {
                 : <SelectionCell
                     inert={!isFirstRow}
                     heading={true}
+                    key="_selection"
                     rows={filteredRows}
                     options={options}
                     eventHandlers={eventHandlers}
