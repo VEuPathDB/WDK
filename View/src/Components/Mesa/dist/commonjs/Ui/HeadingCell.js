@@ -186,9 +186,7 @@ var HeadingCell = function (_React$PureComponent) {
           width = column.width,
           renderHeading = column.renderHeading;
 
-
       var widthObj = width ? { width: width, maxWidth: width, minWidth: width } : {};
-
       var style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
       var Content = this.renderContent;
@@ -201,7 +199,7 @@ var HeadingCell = function (_React$PureComponent) {
           ref: function ref(element) {
             return _this2.element = element;
           },
-          className: headingCellClass(),
+          className: headingCellClass() + ' ' + headingCellClass('key-' + column.key),
           onClick: this.handleSortClick
         },
         _react2.default.createElement(Content, null)

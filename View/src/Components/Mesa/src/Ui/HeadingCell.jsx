@@ -104,9 +104,7 @@ class HeadingCell extends React.PureComponent {
   render () {
     const { column, state, dispatch } = this.props;
     const { headingStyle, width, renderHeading } = column;
-
     const widthObj = width ? { width, maxWidth: width, minWidth: width } : {};
-
     const style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
     const Content = this.renderContent;
@@ -116,7 +114,7 @@ class HeadingCell extends React.PureComponent {
         style={style}
         key={column.key}
         ref={(element) => this.element = element}
-        className={headingCellClass()}
+        className={headingCellClass() + ' ' + headingCellClass('key-' + column.key)}
         onClick={this.handleSortClick}
       >
         <Content />
