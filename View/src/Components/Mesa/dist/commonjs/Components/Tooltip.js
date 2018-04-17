@@ -112,17 +112,18 @@ var Tooltip = function (_React$Component) {
   }], [{
     key: 'getOffset',
     value: function getOffset(node) {
-      var top = 0;
-      var left = 0;
-      var height = node.offsetHeight;
-      var width = node.offsetWidth;
-
-      do {
-        top += node.offsetTop || 0;
-        left += node.offsetLeft || 0;
-        node = node.offsetParent;
-      } while (node);
-      return { top: top, left: left, height: height, width: width };
+      return node.getClientBoundingRect();
+      // let top = 0;
+      // let left = 0;
+      // let height = node.offsetHeight;
+      // let width = node.offsetWidth;
+      //
+      // do {
+      //   top += node.offsetTop || 0;
+      //   left += node.offsetLeft || 0;
+      //   node = node.offsetParent;
+      // } while (node);
+      // return { top, left, height, width };
     }
   }]);
 

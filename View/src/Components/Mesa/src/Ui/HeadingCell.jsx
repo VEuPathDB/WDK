@@ -4,6 +4,7 @@ import Templates from '../Templates';
 import Icon from '../Components/Icon';
 import Tooltip from '../Components/Tooltip';
 import { makeClassifier } from '../Utils/Utils';
+import Events from '../Utils/Events';
 
 const headingCellClass = makeClassifier('HeadingCell');
 
@@ -11,6 +12,7 @@ class HeadingCell extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { offset: null };
+    this.updateOffset = this.updateOffset.bind(this);
     this.renderContent = this.renderContent.bind(this);
     this.handleSortClick = this.handleSortClick.bind(this);
     this.renderSortTrigger = this.renderSortTrigger.bind(this);
@@ -19,6 +21,11 @@ class HeadingCell extends React.PureComponent {
   }
 
   componentDidMount () {
+    this.updateOffset();
+    Events.add('scroll', this.updateOffset);
+  }
+
+  updateOffset () {
     const { element } = this;
     if (!element) return;
     let offset = Tooltip.getOffset(element);
