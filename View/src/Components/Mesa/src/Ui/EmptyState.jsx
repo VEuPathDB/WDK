@@ -56,21 +56,18 @@ class EmptyState extends React.PureComponent {
   }
 
   render () {
-    const { colspan } = this.props;
     const culprit = this.getCulprit();
 
     return (
-      <tr className="EmptyState">
-        <td colSpan={colspan}>
-          <div className="EmptyState-Body-Wrapper">
-            <div className="EmptyState-Body">
-              <Icon fa={culprit.icon} className="EmptyState-Icon" />
-              <h2>{culprit.title}</h2>
-              {culprit.content}
-            </div>
+      <div className="EmptyState">
+        <div className="EmptyState-Body-Wrapper">
+          <div className="EmptyState-Body">
+            <Icon fa={culprit.icon} className="EmptyState-Icon" />
+            <h2>{culprit.title}</h2>
+            {culprit.content}
           </div>
-        </td>
-      </tr>
+        </div>
+      </div>
     )
   }
 };
