@@ -73,7 +73,7 @@ class Tooltip extends React.Component {
   }
 
   hideTooltip () {
-    if (!this.id) return;
+    if (!this.id || this.state.isFocus || this.state.isHovered) return;
     const { removeModal } = this.context;
     removeModal(this.id);
     this.id = null;
