@@ -1,0 +1,10 @@
+.TableBody {
+  max-width: 100vw;
+  overflow-x: auto;
+  overflow-y: visible;
+  font-size: $fontSize;
+  width: 100%;
+  table {
+    width: 100%;
+  }
+}

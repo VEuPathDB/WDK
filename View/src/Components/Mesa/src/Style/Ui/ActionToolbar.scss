@@ -1,0 +1,19 @@
+.ActionToolbar {
+  .ActionToolbar-Info {
+    flex: 1;
+    padding: 5px;
+    font-size: 0.85em;
+    text-align: left;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    a {
+      cursor: pointer;
+    }
+  }
+
+  .ActionToolbar-Item {
+    flex: 0 0 auto;
+    margin: 10px 2.5px;
+  }
+}
