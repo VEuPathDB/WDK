@@ -61,6 +61,7 @@ var HeadingCell = function (_React$PureComponent) {
     value: function componentDidMount() {
       this.updateOffset();
       _Events2.default.add('scroll', this.updateOffset);
+      _Events2.default.add('resize', this.updateOffset);
     }
   }, {
     key: 'updateOffset',
