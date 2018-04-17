@@ -122,36 +122,6 @@ var HeadingRow = function (_React$PureComponent) {
           );
         })
       );
-      /*
-      return (
-        <tr className="Row HeadingRow">
-          {!hasSelectionColumn
-            ? null
-            : <SelectionCell
-                heading={true}
-                rows={filteredRows}
-                options={options}
-                eventHandlers={eventHandlers}
-                isRowSelected={isRowSelected}
-              />
-          }
-          {columns.map((column, columnIndex) => {
-            if (typeof columnDefaults === 'object')
-              column = Object.assign({}, columnDefaults, column);
-            return (
-              <HeadingCell
-                sort={sort}
-                key={column.key}
-                column={column}
-                offsetLeft={offsetLeft}
-                columnIndex={columnIndex}
-                eventHandlers={eventHandlers}
-              />
-            );
-          })}
-        </tr>
-      );
-      */
     }
   }]);
 
