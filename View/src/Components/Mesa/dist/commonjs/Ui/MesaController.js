@@ -36,6 +36,8 @@ var _EmptyState2 = _interopRequireDefault(_EmptyState);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -151,13 +153,15 @@ var MesaController = function (_React$Component) {
     value: function render() {
       var _props6 = this.props,
           rows = _props6.rows,
+          filteredRows = _props6.filteredRows,
           options = _props6.options,
           columns = _props6.columns,
           actions = _props6.actions,
           uiState = _props6.uiState,
           eventHandlers = _props6.eventHandlers;
 
-      var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
+      if (!filteredRows) filteredRows = [].concat(_toConsumableArray(rows));
+      var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
       var Body = this.renderBody;
       var Toolbar = this.renderToolbar;
@@ -182,8 +186,9 @@ var MesaController = function (_React$Component) {
 ;
 
 MesaController.propTypes = {
-  rows: _propTypes2.default.array,
-  columns: _propTypes2.default.array,
+  rows: _propTypes2.default.array.isRequired(),
+  columns: _propTypes2.default.array.isRequired(),
+  filteredRows: _propTypes2.default.array,
   options: _propTypes2.default.object,
   actions: _propTypes2.default.arrayOf(_propTypes2.default.shape({
     element: _propTypes2.default.oneOfType([_propTypes2.default.func, _propTypes2.default.node, _propTypes2.default.element]),
