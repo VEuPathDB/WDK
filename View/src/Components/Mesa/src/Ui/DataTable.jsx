@@ -61,7 +61,7 @@ class DataTable extends React.PureComponent {
     const widthLayer = { minWidth: cumulativeWidth };
 
     return (
-      <div className="MesaComponent">
+      <div className="MesaComponent" ref="test">
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
             <div className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>

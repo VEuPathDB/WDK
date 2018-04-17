@@ -121,7 +121,7 @@ var DataTable = function (_React$PureComponent) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'MesaComponent' },
+        { className: 'MesaComponent', ref: 'test' },
         _react2.default.createElement(
           'div',
           { className: dataTableClass() },
