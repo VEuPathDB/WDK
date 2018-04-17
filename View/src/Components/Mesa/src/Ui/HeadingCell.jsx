@@ -69,7 +69,9 @@ class HeadingCell extends React.PureComponent {
 
   render () {
     const { column, state, dispatch } = this.props;
-    const { headingStyle } = column;
+    const { headingStyle, width } = column;
+
+    const style = Object.assign({}, headingStyle ? headingStyle : {}, width ? { width } : {});
 
     const Content = this.renderContent;
     const SortTrigger = this.renderSortTrigger;
@@ -79,7 +81,7 @@ class HeadingCell extends React.PureComponent {
     return column.hidden ? null : (
       <th
         key={column.key}
-        style={headingStyle}
+        style={style}
         ref={el => this.element = el}
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >

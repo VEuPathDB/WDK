@@ -134,8 +134,11 @@ var HeadingCell = function (_React$PureComponent) {
           column = _props4.column,
           state = _props4.state,
           dispatch = _props4.dispatch;
-      var headingStyle = column.headingStyle;
+      var headingStyle = column.headingStyle,
+          width = column.width;
 
+
+      var style = Object.assign({}, headingStyle ? headingStyle : {}, width ? { width: width } : {});
 
       var Content = this.renderContent;
       var SortTrigger = this.renderSortTrigger;
@@ -146,7 +149,7 @@ var HeadingCell = function (_React$PureComponent) {
         'th',
         {
           key: column.key,
-          style: headingStyle,
+          style: style,
           ref: function ref(el) {
             return _this2.element = el;
           },
