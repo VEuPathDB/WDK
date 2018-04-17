@@ -20,6 +20,10 @@ class Tooltip extends React.Component {
     this.renderTextBox = this.renderTextBox.bind(this);
   }
 
+  static say (whatever) {
+    console.log('::::: ---> ', whatever);
+  }
+
   showTooltip () {
     const showText = true;
     this.setState({ showText })
