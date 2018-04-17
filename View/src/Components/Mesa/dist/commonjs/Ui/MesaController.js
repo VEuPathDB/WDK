@@ -65,18 +65,21 @@ var MesaController = function (_React$Component) {
           uiState = _props.uiState,
           eventHandlers = _props.eventHandlers;
 
-      var _ref = uiState && uiState.pagination ? uiState.pagination : {},
-          currentPage = _ref.currentPage,
-          totalPages = _ref.totalPages,
-          rowsPerPage = _ref.rowsPerPage;
+      var _ref = uiState ? uiState : {},
+          pagination = _ref.pagination;
 
-      var _ref2 = eventHandlers ? eventHandlers : {},
-          onPageChange = _ref2.onPageChange,
-          onRowsPerPageChange = _ref2.onRowsPerPageChange;
+      var _ref2 = pagination ? pagination : {},
+          currentPage = _ref2.currentPage,
+          totalPages = _ref2.totalPages,
+          rowsPerPage = _ref2.rowsPerPage;
+
+      var _ref3 = eventHandlers ? eventHandlers : {},
+          onPageChange = _ref3.onPageChange,
+          onRowsPerPageChange = _ref3.onRowsPerPageChange;
 
       if (!onPageChange) return null;
-      var props = { currentPage: currentPage, totalPages: totalPages, rowsPerPage: rowsPerPage, onPageChange: onPageChange, onRowsPerPageChange: onRowsPerPageChange };
 
+      var props = { currentPage: currentPage, totalPages: totalPages, rowsPerPage: rowsPerPage, onPageChange: onPageChange, onRowsPerPageChange: onRowsPerPageChange };
       return _react2.default.createElement(_PaginationMenu2.default, props);
     }
   }, {
@@ -118,11 +121,11 @@ var MesaController = function (_React$Component) {
           uiState = _props4.uiState,
           options = _props4.options;
 
-      var _ref3 = uiState ? uiState : {},
-          emptinessCulprit = _ref3.emptinessCulprit;
+      var _ref4 = uiState ? uiState : {},
+          emptinessCulprit = _ref4.emptinessCulprit;
 
-      var _ref4 = options ? options : {},
-          renderEmptyState = _ref4.renderEmptyState;
+      var _ref5 = options ? options : {},
+          renderEmptyState = _ref5.renderEmptyState;
 
       return renderEmptyState ? renderEmptyState() : _react2.default.createElement(_EmptyState2.default, { culprit: emptinessCulprit });
     }

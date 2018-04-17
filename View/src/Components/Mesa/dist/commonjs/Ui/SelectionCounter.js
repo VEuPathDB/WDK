@@ -79,7 +79,9 @@ var SelectionCounter = function (_React$Component) {
     value: function render() {
       var _props4 = this.props,
           rows = _props4.rows,
-          selection = _props4.selection;
+          selection = _props4.selection,
+          onRowDeselect = _props4.onRowDeselect,
+          onMultipleRowDeselect = _props4.onMultipleRowDeselect;
 
       if (!selection || !selection.length) return null;
       var allSelected = rows.every(function (row) {
@@ -98,7 +100,7 @@ var SelectionCounter = function (_React$Component) {
         this.noun(selection),
         ' selected.',
         _react2.default.createElement('br', null),
-        !onRowDeselect && !onMultipleRowSelect ? null : _react2.default.createElement(
+        !onRowDeselect && !onMultipleRowDeselect ? null : _react2.default.createElement(
           'a',
           { onClick: this.deselectAllRows },
           'Clear selection.'
@@ -120,6 +122,8 @@ SelectionCounter.propTypes = {
   // noun and plural to use for selections (e.g. "25 Datasets selected")
   selectedNoun: _propTypes2.default.string,
   selectedPluralNoun: _propTypes2.default.string,
+  // predicate to test for 'selectedness'
+  isRowSelected: _propTypes2.default.func,
   // single and multiple select/deselect handlers
   onRowSelect: _propTypes2.default.func,
   onRowDeselect: _propTypes2.default.func,
