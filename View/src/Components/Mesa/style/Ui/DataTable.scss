@@ -2,7 +2,7 @@
   font-size: $fontSize;
 
   .DataTable-Sticky {
-    overflow: auto;
+    overflow: visible;
 
     .DataTable-Header, .DataTable-Body {
       overflow: auto;
