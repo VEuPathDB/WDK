@@ -86,7 +86,7 @@ class HeadingCell extends React.PureComponent {
     if (!clickStart) return;
     const clickEnd = (new Date).getTime();
     const totalTime = (clickEnd - clickStart);
-    this.setState({ clickStart: null })
+    this.setState({ clickStart: null, isDragTarget: false })
     if (totalTime <= 500) this.sortColumn();
   }
 
@@ -182,7 +182,7 @@ class HeadingCell extends React.PureComponent {
   }
 
   onDragExit (event) {
-    const dragee = event.dataTransfer.getData('text');
+    this.setState({ isDragTarget: false });
     event.preventDefault();
   }
 

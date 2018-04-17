@@ -17,6 +17,7 @@
     }
   }
 
-  &.HeadingCell--Dragging {
+  .HelpTrigger .icon {
+    cursor: default;
   }
 }

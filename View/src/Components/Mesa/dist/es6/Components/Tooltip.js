@@ -58,12 +58,15 @@ var Tooltip = function (_React$Component) {
 
       var textBox = { render: this.renderTooltipBox };
       this.id = addModal(textBox);
+      if (this.hideTimeout) clearTimeout(this.hideTimeout);
     }
   }, {
     key: 'engageTooltip',
     value: function engageTooltip() {
-      if (this.timeout) clearTimeout(this.timeout);
-      this.showTooltip();
+      var showDelay = this.props.showDelay;
+
+      showDelay = typeof showDelay === 'number' ? showDelay : 500;
+      this.showTimeout = setTimeout(this.showTooltip, showDelay);
     }
   }, {
     key: 'disengageTooltip',
@@ -71,7 +74,8 @@ var Tooltip = function (_React$Component) {
       var hideDelay = this.props.hideDelay;
 
       hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
-      this.timeout = setTimeout(this.hideTooltip, hideDelay);
+      if (this.showTimeout) clearTimeout(this.showTimeout);
+      this.hideTimeout = setTimeout(this.hideTooltip, hideDelay);
     }
   }, {
     key: 'hideTooltip',
