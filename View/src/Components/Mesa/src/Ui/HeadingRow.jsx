@@ -63,6 +63,7 @@ class HeadingRow extends React.PureComponent {
                     key={column.key}
                     primary={isFirstRow}
                     column={column}
+                    headingRowIndex={index}
                     offsetLeft={offsetLeft}
                     columnIndex={columnIndex}
                     eventHandlers={eventHandlers}
