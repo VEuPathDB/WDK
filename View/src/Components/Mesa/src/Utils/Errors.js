@@ -5,7 +5,7 @@ export const fail = (fn, message, Err = Error) => {
 }
 
 export const badType = (fn, parameter, expected, actual) => {
-  const message = `parameter "${pararmeter}"  is not of type ${expected} (got ${actual})`;
+  const message = `parameter "${parameter}"  is not of type ${expected} (got ${actual})`;
   return fail(fn, message, TypeError);
 };
 
