@@ -7,9 +7,9 @@ class DataRow extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { expanded: false };
+    this.toggleRow = this.toggleRow.bind(this);
     this.expandRow = this.expandRow.bind(this);
     this.collapseRow = this.collapseRow.bind(this);
-    this.toggleRow = this.toggleRow.bind(this);
     this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
@@ -31,8 +31,8 @@ class DataRow extends React.PureComponent {
   }
 
   toggleRow () {
-    const { row } = this.props;
-    if (!this.props.state.options.inline) return;
+    const { options } = this.props;
+    if (!options.inline) return;
 
     const { expanded } = this.state;
     this.setState({ expanded: !expanded });
