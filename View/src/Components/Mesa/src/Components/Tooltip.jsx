@@ -52,11 +52,9 @@ class Tooltip extends React.Component {
       pointerEvents: 'none'
     };
 
-    const textStyle = {
-      position: 'relative',
-      top: position.top + 'px',
-      left: position.left + 'px'
-    };
+    const { top, left } = position ? position : { top: 0, left: 0 };
+
+    const textStyle = { top, left, position: 'relative' };
 
     return !showText ? null : (
       <div className="Tooltip-Wrapper" style={wrapperStyle}>
