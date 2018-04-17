@@ -3,7 +3,6 @@ import React from 'react';
 import Templates from '../Templates';
 import ColumnSorter from '../Ui/ColumnSorter';
 import ColumnFilter from '../Ui/ColumnFilter';
-import { toggleSortOrder, sortByColumn } from '../State/Actions';
 
 class HeadingCell extends React.PureComponent {
   constructor (props) {

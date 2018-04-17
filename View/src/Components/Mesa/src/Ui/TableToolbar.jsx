@@ -3,7 +3,6 @@ import React from 'react';
 import Icon from '../Components/Icon';
 import TableSearch from '../Ui/TableSearch';
 import ColumnEditor from '../Ui/ColumnEditor';
-import RowUtils from '../Utils/RowUtils';
 import RowCounter from '../Ui/RowCounter';
 
 class TableToolbar extends React.PureComponent {

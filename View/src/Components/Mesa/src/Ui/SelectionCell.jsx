@@ -1,8 +1,6 @@
 import React from 'react';
 
 import Checkbox from '../Components/Checkbox';
-import PaginationUtils from '../Utils/PaginationUtils';
-import { toggleRowSelectionById, selectRowsByIds, deselectRowsByIds } from '../State/Actions';
 
 class SelectionCell extends React.PureComponent {
   constructor (props) {
