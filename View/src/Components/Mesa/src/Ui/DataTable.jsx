@@ -42,16 +42,16 @@ class DataTable extends React.PureComponent {
       };
 
     return useStickyLayout ? (
-      <div className={dataTableClass('Sticky')} style={widthLayer}>
+      <div className={dataTableClass('Sticky')}>
         <div className={dataTableClass('Header')} style={widthLayer}>
-          <table cellSpacing={0} cellPadding={0} style={widthLayer}>
+          <table cellSpacing={0} cellPadding={0}>
             <thead>
               <HeadingRow {...props} />
             </thead>
           </table>
         </div>
         <div className={dataTableClass('Body')} style={Object.assign(tableBodyStyle, widthLayer)}>
-          <table cellSpacing={0} cellPadding={0} style={widthLayer}>
+          <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
         </div>

@@ -93,13 +93,13 @@ var DataTable = function (_React$PureComponent) {
 
       return useStickyLayout ? _react2.default.createElement(
         'div',
-        { className: dataTableClass('Sticky'), style: widthLayer },
+        { className: dataTableClass('Sticky') },
         _react2.default.createElement(
           'div',
           { className: dataTableClass('Header'), style: widthLayer },
           _react2.default.createElement(
             'table',
-            { cellSpacing: 0, cellPadding: 0, style: widthLayer },
+            { cellSpacing: 0, cellPadding: 0 },
             _react2.default.createElement(
               'thead',
               null,
@@ -112,7 +112,7 @@ var DataTable = function (_React$PureComponent) {
           { className: dataTableClass('Body'), style: Object.assign(tableBodyStyle, widthLayer) },
           _react2.default.createElement(
             'table',
-            { cellSpacing: 0, cellPadding: 0, style: widthLayer },
+            { cellSpacing: 0, cellPadding: 0 },
             _react2.default.createElement(_DataRowList2.default, props)
           )
         )
