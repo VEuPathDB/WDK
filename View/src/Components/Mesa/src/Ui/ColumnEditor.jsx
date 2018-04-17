@@ -4,6 +4,9 @@ import Events from '../Utils/Events';
 import Icon from '../Components/Icon';
 import Modal from '../Components/Modal';
 import Checkbox from '../Components/Checkbox';
+import { makeClassifier } from '../Utils/Utils';
+
+const columnEditorClass = makeClassifier('ColumnEditor');
 
 class ColumnEditor extends React.PureComponent {
   constructor (props) {
@@ -69,7 +72,7 @@ class ColumnEditor extends React.PureComponent {
   renderTrigger () {
     const { children } = this.props;
     return (
-      <div className="ColumnEditor-Trigger" onClick={this.toggleEditor}>
+      <div className={columnEditorClass('Trigger')} onClick={this.toggleEditor}>
         {children}
       </div>
     )
@@ -77,7 +80,7 @@ class ColumnEditor extends React.PureComponent {
 
   renderColumnListItem (column) {
     return (
-      <li className="ColumnEditor-List-Item" key={column.key}>
+      <li className={columnEditorClass('ListItem')} key={column.key}>
         <Checkbox
           checked={!column.hidden}
           disabled={!column.hideable}
@@ -98,7 +101,7 @@ class ColumnEditor extends React.PureComponent {
           <span> | </span>
           <a onClick={this.hideAllColumns}>Clear All</a>
         </small>
-        <ul className="ColumnEditor-List">
+        <ul className={columnEditorClass('List')}>
           {columns.map(this.renderColumnListItem)}
         </ul>
         <button onClick={this.closeEditor} style={{ margin: '0 auto', display: 'block' }}>
@@ -113,7 +116,7 @@ class ColumnEditor extends React.PureComponent {
     const trigger = this.renderTrigger();
 
     return (
-      <div className="ColumnEditor">
+      <div className={columnEditorClass()}>
         {trigger}
         {modal}
       </div>

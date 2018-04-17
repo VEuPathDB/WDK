@@ -22,6 +22,8 @@ var _Tooltip = require('../Components/Tooltip');
 
 var _Tooltip2 = _interopRequireDefault(_Tooltip);
 
+var _Utils = require('../Utils/Utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -30,8 +32,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-// import ColumnSorter from '../Ui/ColumnSorter';
-// import ColumnFilter from '../Ui/ColumnFilter';
+var headingCellClass = (0, _Utils.makeClassifier)('HeadingCell');
 
 var HeadingCell = function (_React$PureComponent) {
   _inherits(HeadingCell, _React$PureComponent);
@@ -66,8 +67,36 @@ var HeadingCell = function (_React$PureComponent) {
           column = _props.column,
           columnIndex = _props.columnIndex;
 
+
       if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
-      return _Templates2.default.heading(column, columnIndex);
+
+      var SortTrigger = this.renderSortTrigger;
+      var HelpTrigger = this.renderHelpTrigger;
+      var ClickBoundary = this.renderClickBoundary;
+
+      return _react2.default.createElement(
+        'div',
+        { className: headingCellClass('Content') },
+        _react2.default.createElement(
+          'div',
+          { className: headingCellClass(['Content', 'Aside']) },
+          _react2.default.createElement(SortTrigger, null)
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: headingCellClass(['Content', 'Label']) },
+          _Templates2.default.heading(column, columnIndex)
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: headingCellClass(['Content', 'Aside']) },
+          _react2.default.createElement(
+            ClickBoundary,
+            null,
+            _react2.default.createElement(HelpTrigger, null)
+          )
+        )
+      );
     }
   }, {
     key: 'handleSortClick',
@@ -78,7 +107,7 @@ var HeadingCell = function (_React$PureComponent) {
           eventHandlers = _props2.eventHandlers;
       var onSort = eventHandlers.onSort;
 
-      if (typeof onSort !== 'function') return;
+      if (typeof onSort !== 'function' || !column.sortable) return;
       var currentlySorting = sort.columnKey === column.key;
       var direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
       return onSort(column, direction);
@@ -147,14 +176,13 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'render',
     value: function render() {
-      var _this2 = this;
-
       var _props4 = this.props,
           column = _props4.column,
           state = _props4.state,
           dispatch = _props4.dispatch;
       var headingStyle = column.headingStyle,
-          width = column.width;
+          width = column.width,
+          renderHeading = column.renderHeading;
 
 
       var widthObj = width ? { width: width, maxWidth: width, minWidth: width } : {};
@@ -162,45 +190,16 @@ var HeadingCell = function (_React$PureComponent) {
       var style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
       var Content = this.renderContent;
-      var SortTrigger = this.renderSortTrigger;
-      var HelpTrigger = this.renderHelpTrigger;
-      var ClickBoundary = this.renderClickBoundary;
 
       return column.hidden ? null : _react2.default.createElement(
         'th',
         {
           style: style,
           key: column.key,
-          ref: function ref(el) {
-            return _this2.element = el;
-          },
-          onClick: function onClick(e) {
-            return column.sortable ? _this2.handleSortClick() : null;
-          }
+          className: headingCellClass(),
+          onClick: this.handleSortClick
         },
-        _react2.default.createElement(
-          'row',
-          { className: 'justify-center items-center nowrap' },
-          _react2.default.createElement(
-            'box',
-            { className: 'grow-1' },
-            _react2.default.createElement(SortTrigger, null)
-          ),
-          _react2.default.createElement(
-            'box',
-            null,
-            _react2.default.createElement(Content, null)
-          ),
-          _react2.default.createElement(
-            'box',
-            { className: 'grow-1' },
-            _react2.default.createElement(
-              ClickBoundary,
-              null,
-              _react2.default.createElement(HelpTrigger, null)
-            )
-          )
-        )
+        _react2.default.createElement(Content, null)
       );
     }
   }]);

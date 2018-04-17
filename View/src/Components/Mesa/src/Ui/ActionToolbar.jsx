@@ -2,6 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import SelectionCounter from '../Ui/SelectionCounter';
+import { makeClassifier } from '../Utils/Utils';
+
+const actionToolbarClass = makeClassifier('ActionToolbar');
 
 class ActionToolbar extends React.PureComponent {
   constructor (props) {
@@ -32,7 +35,7 @@ class ActionToolbar extends React.PureComponent {
   renderActionItem ({ action }) {
     let { element } = action;
     let selection = this.getSelection();
-    let className = 'ActionToolbar-Item' + (action.selectionRequired && !selection.length ? ' disabled' : '');
+    let disabled = (action.selectionRequired && !selection.length ? 'disabled' : null);
 
     if (typeof element !== 'string' && !React.isValidElement(element)) {
       if (typeof element === 'function') element = element(selection);
@@ -40,7 +43,10 @@ class ActionToolbar extends React.PureComponent {
 
     let handler = () => this.dispatchAction(action);
     return (
-      <div key={action.__id} className={className} onClick={handler}>
+      <div
+        key={action.__id}
+        onClick={handler}
+        className={actionToolbarClass('Item', disabled)}>
         {element}
       </div>
     );
@@ -49,7 +55,7 @@ class ActionToolbar extends React.PureComponent {
   renderActionItemList ({ actions }) {
     const ActionItem = this.renderActionItem;
     return (
-      <div>
+      <div className={actionToolbarClass('ItemList')}>
         {!actions ? null : actions
           .filter(action => action.element)
           .map((action, idx) => <ActionItem action={action} key={idx} />)
@@ -67,13 +73,13 @@ class ActionToolbar extends React.PureComponent {
     const selection = this.getSelection();
 
     return (
-       <div className="Toolbar ActionToolbar">
+       <div className={actionToolbarClass() + ' Toolbar'}>
          {!children ? null : (
-           <div className="ActionToolbar-Children">
+           <div className={actionToolbarClass('Children')}>
              {children}
            </div>
          )}
-         <div className="ActionToolbar-Info">
+         <div className={actionToolbarClass('Info')}>
            <SelectionCounter
              rows={rows}
              selection={selection}

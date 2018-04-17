@@ -1,6 +1,9 @@
 import React from 'react';
 
 import Templates from '../Templates';
+import { makeClassifier } from '../Utils/Utils';
+
+const dataCellClass = makeClassifier('DataCell');
 
 class DataCell extends React.PureComponent {
   constructor (props) {
@@ -33,7 +36,7 @@ class DataCell extends React.PureComponent {
   render () {
     let { column, row, inline } = this.props;
     let { style, width } = column;
-    let content = this.renderContent();
+    let Content = this.renderContent;
 
     let whiteSpace = !inline ? {} : {
       textOverflow: 'ellipsis',
@@ -48,8 +51,8 @@ class DataCell extends React.PureComponent {
     const cellStyle = Object.assign({}, style, width, whiteSpace);
 
     return column.hidden ? null : (
-      <td key={column.key} style={cellStyle}>
-        {content}
+      <td key={column.key} className={dataCellClass()} style={cellStyle}>
+        <Content />
       </td>
     );
   }

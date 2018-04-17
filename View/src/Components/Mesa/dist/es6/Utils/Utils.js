@@ -13,6 +13,7 @@ exports.sortFactory = sortFactory;
 exports.numberSort = numberSort;
 exports.arraysMatch = arraysMatch;
 exports.textSort = textSort;
+exports.makeClassifier = makeClassifier;
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -102,3 +103,16 @@ function textSort(_list, key) {
   var result = arraysMatch(preSort, postSort) ? list : sorted;
   return ascending ? result.reverse() : result;
 };
+
+function makeClassifier(namespace, globalNamespace) {
+  return function (element, modifiers) {
+    if (Array.isArray(element)) element = element.join('-');
+    var base = (globalNamespace ? globalNamespace : '') + (namespace ? '-' + namespace : '') + (element ? '-' + element : '');
+    if (!modifiers || !modifiers.length) return base;
+    if (!Array.isArray(modifiers)) modifiers = [modifiers];
+    return modifiers.reduce(function (output, modifier) {
+      var addendum = ' ' + base + '--' + modifier;
+      return output + addendum;
+    }, base);
+  };
+}

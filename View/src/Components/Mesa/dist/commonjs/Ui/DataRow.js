@@ -20,6 +20,8 @@ var _SelectionCell = require('../Ui/SelectionCell');
 
 var _SelectionCell2 = _interopRequireDefault(_SelectionCell);
 
+var _Utils = require('../Utils/Utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27,6 +29,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var dataRowClass = (0, _Utils.makeClassifier)('DataRow');
 
 var DataRow = function (_React$PureComponent) {
   _inherits(DataRow, _React$PureComponent);
@@ -95,7 +99,7 @@ var DataRow = function (_React$PureComponent) {
       var hasSelectionColumn = typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
 
       var rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
-      var className = 'Row DataRow' + (inline ? ' DataRow-Inline' : '');
+      var className = dataRowClass(null, inline ? 'inline' : '');
 
       var cellProps = { row: row, inline: inline, options: options, rowIndex: rowIndex };
 

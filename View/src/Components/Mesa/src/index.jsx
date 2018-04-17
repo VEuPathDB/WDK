@@ -6,7 +6,7 @@ import TableToolbar from './Ui/TableToolbar';
 import ActionToolbar from './Ui/ActionToolbar';
 import PaginationMenu from './Ui/PaginationMenu';
 import MesaController from './Ui/MesaController';
-import * as StringUtils from './Utils/StringUtils';
+import * as Utils from './Utils/Utils';
 
 export {
   Mesa,
@@ -17,5 +17,5 @@ export {
   ActionToolbar,
   PaginationMenu,
   MesaController,
-  StringUtils
+  Utils
 };

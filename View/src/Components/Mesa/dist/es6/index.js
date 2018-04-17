@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.StringUtils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
+exports.Utils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
@@ -37,9 +37,9 @@ var _MesaController = require('./Ui/MesaController');
 
 var _MesaController2 = _interopRequireDefault(_MesaController);
 
-var _StringUtils = require('./Utils/StringUtils');
+var _Utils = require('./Utils/Utils');
 
-var StringUtils = _interopRequireWildcard(_StringUtils);
+var Utils = _interopRequireWildcard(_Utils);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -53,4 +53,4 @@ exports.TableToolbar = _TableToolbar2.default;
 exports.ActionToolbar = _ActionToolbar2.default;
 exports.PaginationMenu = _PaginationMenu2.default;
 exports.MesaController = _MesaController2.default;
-exports.StringUtils = StringUtils;
+exports.Utils = Utils;

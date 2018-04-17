@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 
 import HeadingRow from '../Ui/HeadingRow';
 import DataRowList from '../Ui/DataRowList';
+import { makeClassifier } from '../Utils/Utils';
+
+const DataTableClass = makeClassifier('DataTable');
 
 class DataTable extends React.PureComponent {
   constructor (props) {
@@ -31,15 +34,15 @@ class DataTable extends React.PureComponent {
     const tableBodyStyle = { maxHeight: tableBodyMaxHeight };
 
     return this.shouldUseStickyHeader() ? (
-      <div className="DataTable-Sticky">
-        <div className="DataTable-Header">
+      <div className={DataTableClass('Sticky')}>
+        <div className={DataTableClass('Header')}>
           <table cellSpacing={0} cellPadding={0}>
             <thead>
               <HeadingRow {...props} />
             </thead>
           </table>
         </div>
-        <div className="DataTable-Body" style={tableBodyStyle}>
+        <div className={DataTableClass('Body')} style={tableBodyStyle}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
@@ -60,7 +63,7 @@ class DataTable extends React.PureComponent {
 
     return (
       <div className="Mesa">
-        <div className="DataTable">
+        <div className={DataTableClass()}>
           <Layout />
         </div>
       </div>

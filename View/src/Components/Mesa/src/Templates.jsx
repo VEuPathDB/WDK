@@ -3,7 +3,7 @@ import React from 'react';
 import { OptionsDefaults } from './Defaults';
 import OverScroll from './Components/OverScroll';
 import TruncatedText from './Components/TruncatedText';
-import { stringValue } from './Utils/StringUtils';
+import { stringValue } from './Utils/Utils';
 
 const Templates = {
   textCell ({ key, value, row, rowIndex, column }) {
