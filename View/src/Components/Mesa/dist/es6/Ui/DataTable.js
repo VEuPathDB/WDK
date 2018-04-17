@@ -42,6 +42,7 @@ var DataTable = function (_React$PureComponent) {
 
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
+    _this.render = _this.render.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
     _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
@@ -91,7 +92,7 @@ var DataTable = function (_React$PureComponent) {
       if (!this.shouldUseStickyHeader()) {
         return _react2.default.createElement(
           'div',
-          { className: 'MesaComponent' },
+          { className: 'MesaComponent', ref: 'WTF' },
           _react2.default.createElement(
             'div',
             { className: dataTableClass() },
@@ -129,7 +130,7 @@ var DataTable = function (_React$PureComponent) {
             { className: dataTableClass('Sticky') },
             _react2.default.createElement(
               'div',
-              { ref: 'tableHeader', className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
+              { className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
@@ -142,7 +143,7 @@ var DataTable = function (_React$PureComponent) {
             ),
             _react2.default.createElement(
               'div',
-              { ref: 'tableBody', style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
+              { style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
