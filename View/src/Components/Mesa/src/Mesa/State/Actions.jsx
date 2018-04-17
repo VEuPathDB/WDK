@@ -15,6 +15,16 @@ export function closeColumnEditor () {
   return { type: 'CLOSE_COLUMN_EDITOR' };
 }
 
+export function setPaginatedActiveItem (activeItem) {
+  if (typeof activeItem !== number || activeItem <= 0) return {};
+  return { type: 'SET_PAGINATED_ACTIVE_ITEM', activeItem };
+}
+
+export function setItemsPerPage (itemsPerPage) {
+  if (typeof itemsPerPage !== number || itemsPerPage <= 0) return {};
+  return { type: 'SET_ITEMS_PER_PAGE', itemsPerPage };
+}
+
 export function updateColumns (columns) {
   if (!columns || !Array.isArray(columns)) columns = [];
   return { type: 'UPDATE_COLUMNS', columns };

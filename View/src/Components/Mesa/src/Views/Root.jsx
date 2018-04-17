@@ -11,6 +11,31 @@ const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color:
 
 const ConfigList = [
   {
+    label: 'Extra Data + Inline Mode!',
+    rows: [
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData,
+    ...TableData
+  ],
+    options: {
+      title: '10x Regular Data!',
+      inline: true,
+      paginate: true,
+      inlineMaxWidth: '500px',
+      columnDefaults: {
+        truncated: false,
+        overflowHeight: '2rem'
+      }
+    }
+  },
+  {
     label: 'No Data',
     columns: null,
     rows: [],
@@ -35,31 +60,6 @@ const ConfigList = [
   {
     label: 'No Configuration / Auto Mode',
     rows: TableData
-  },
-  {
-    label: 'Extra Data + Inline Mode!',
-    rows: [
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData
-  ],
-    options: {
-      title: '10x Regular Data!',
-      inline: true,
-      paginate: true,
-      inlineMaxWidth: '100px',
-      columnDefaults: {
-        truncated: false,
-        overflowHeight: '2rem'
-      }
-    }
   }
 ];
 

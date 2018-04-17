@@ -2,9 +2,26 @@ import React from 'react';
 
 import Icon from 'Mesa/Components/Icon';
 
-class Pagination extends React.PureComponent {
+const settings = {
+  overflowPoint: 8,
+  innerRadius: 2
+}
+
+class PaginationMenu extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.renderPageLink = this.renderPageLink.bind(this);
+    this.renderEllipsis = this.renderEllipsis.bind(this);
+    this.renderPageList = this.renderPageList.bind(this);
+    this.renderDynamicPageLink = this.renderDynamicPageLink.bind(this);
+  }
+
+  renderEllipsis (key = '') {
+    return (
+      <a key={'ellipsis-' + key} className="ellipsis">
+        ...
+      </a>
+    );
   }
 
   renderPageLink (page) {
@@ -74,16 +91,44 @@ class Pagination extends React.PureComponent {
     )
   }
 
+  renderDynamicPageLink (page, idx, list) {
+    const link = this.renderPageLink(page);
+    const dots = this.renderEllipsis(page);
+    const { currentPage } = this.props;
+    const { innerRadius } = settings;
+    const activeIndex = list.indexOf(currentPage);
+
+    if (idx === 0 || idx + 1 === list.length) return link;
+    if (idx >= activeIndex - innerRadius && idx <= activeIndex + innerRadius) return link;
+    if (idx === activeIndex - innerRadius - 1) return dots;
+    if (idx === activeIndex + innerRadius + 1) return dots;
+    return null;
+  }
+
+  renderPageList (pageList) {
+    const count = pageList.length;
+    const { overflowPoint } = settings;
+
+    if (count > overflowPoint) {
+      return pageList.map(this.renderDynamicPageLink).filter(el => el);
+    } else {
+      return pageList.map(this.renderPageLink);
+    }
+  }
+
   render () {
     const { pages, onPageChange, currentPage } = this.props;
-    let list = new Array(pages).fill({}).map((empty, index) => this.renderPageLink(++index));
+    let pageList = new Array(pages).fill({}).map((empty, index) => index + 1);
+    let pageNav = this.renderPageList(pageList);
 
     return (
       <div className="Pagination">
         <span className="Pagination-Nav">
           {this.renderRelativeLink('previous')}
         </span>
-        {list}
+        <span className="Pagination-Nav">
+          {pageNav}
+        </span>
         <span className="Pagination-Nav">
           {this.renderRelativeLink('next')}
         </span>
@@ -92,4 +137,4 @@ class Pagination extends React.PureComponent {
   }
 };
 
-export default Pagination;
+export default PaginationMenu;

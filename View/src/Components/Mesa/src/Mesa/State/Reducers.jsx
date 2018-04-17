@@ -10,6 +10,10 @@ export const initialState = {
       byColumn: null,
       ascending: true
     },
+    pagination: {
+      activeItem: 1,
+      itemsPerPage: 20
+    }
   }
 };
 
@@ -18,6 +22,24 @@ export default function ReducerFactory (base = {}) {
 
   return function Reducer (state = startingState, action = {}) {
     switch (action.type) {
+
+      case 'SET_PAGINATED_ACTIVE_ITEM': {
+        let { activeItem } = action;
+        let { ui } = state;
+        let { pagination } = ui;
+        pagination = Object.assign({}, pagination, { activeItem });
+        ui = Object.assign({}, ui, { pagination });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'SET_ITEMS_PER_PAGE': {
+        let { itemsPerPage } = action;
+        let { ui } = state;
+        let { pagination } = ui;
+        pagination = Object.assign({}, pagination, { itemsPerPage });
+        ui = Object.assign({}, ui, pagination);
+        return Object.assign({}, state, { ui });
+      }
 
       /* Updates -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
       case 'UPDATE_OPTIONS': {
