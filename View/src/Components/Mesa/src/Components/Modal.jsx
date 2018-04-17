@@ -5,20 +5,9 @@ import { makeClassifier } from '../Utils/Utils';
 
 const modalClass = makeClassifier('Modal');
 
-class Modal extends React.Component {
-  constructor (props) {
-    super(props);
-    this.componentDidMount = this.componentDidMount.bind(this);
-  }
-  
-  render () {
-    return (
-      <div className={modalClass()}>
-        Modal!
-      </div>
-    );
-  }
-};
+// TODO: Delete or rewrite me.
+
+class Modal extends React.Component {};
 
 Modal.contextTypes = {
   addModal: PropTypes.func,

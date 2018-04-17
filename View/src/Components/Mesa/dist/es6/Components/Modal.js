@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
@@ -26,28 +24,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var modalClass = (0, _Utils.makeClassifier)('Modal');
 
+// TODO: Delete or rewrite me.
+
 var Modal = function (_React$Component) {
   _inherits(Modal, _React$Component);
 
-  function Modal(props) {
+  function Modal() {
     _classCallCheck(this, Modal);
 
-    var _this = _possibleConstructorReturn(this, (Modal.__proto__ || Object.getPrototypeOf(Modal)).call(this, props));
-
-    _this.componentDidMount = _this.componentDidMount.bind(_this);
-    return _this;
+    return _possibleConstructorReturn(this, (Modal.__proto__ || Object.getPrototypeOf(Modal)).apply(this, arguments));
   }
-
-  _createClass(Modal, [{
-    key: 'render',
-    value: function render() {
-      return _react2.default.createElement(
-        'div',
-        { className: modalClass() },
-        'Modal!'
-      );
-    }
-  }]);
 
   return Modal;
 }(_react2.default.Component);
