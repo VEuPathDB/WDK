@@ -47,8 +47,7 @@ var Tooltip = function (_React$Component) {
           removeModal = _context.removeModal;
 
       if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
-        console.log('boutta error out homie');
-        throw new Error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
+        console.error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
       }
     }
   }, {
