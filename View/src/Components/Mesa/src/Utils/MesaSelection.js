@@ -1,7 +1,7 @@
 import { fail, badType, missingFromState } from '../Utils/Errors';
 
 export const createSelection = (_selection = []) => {
-  const selection = new Set(_selection);
+  const selection = new Set(Array.isArray(_selection) ? _selection : []);
   return [...selection];
 };
 
@@ -20,7 +20,7 @@ export const addRowToSelection = (_selection, row, idAccessor) => {
 };
 
 export const addIdToSelection = (_selection, id) => {
-  const selection = new Set(_selection);
+  const selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.add(id);
   return [...selection];
 }
@@ -33,7 +33,7 @@ export const removeRowFromSelection = (_selection, row, idAccessor) => {
 };
 
 export const removeIdFromSelection = (_selection, id) => {
-  const selection = new Set(_selection);
+  const selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [...selection];
 }
@@ -55,7 +55,7 @@ export const intersectSelection = (_selection, _list, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('intersectSelection', 'idAccessor', 'function', typeof idAccessor);
   const idList = mapListToIds(_list);
-  const selection = new Set(_selection);
+  const selection = new Set(Array.isArray(_selection) ? _selection : []);
   const intersection = new Set(idList);
   return [...selection].filter(item => intersection.has(item));
 };

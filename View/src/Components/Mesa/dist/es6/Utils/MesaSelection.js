@@ -14,7 +14,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 var createSelection = exports.createSelection = function createSelection() {
   var _selection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
-  var selection = new Set(_selection);
+  var selection = new Set(Array.isArray(_selection) ? _selection : []);
   return [].concat(_toConsumableArray(selection));
 };
 
@@ -31,7 +31,7 @@ var addRowToSelection = exports.addRowToSelection = function addRowToSelection(_
 };
 
 var addIdToSelection = exports.addIdToSelection = function addIdToSelection(_selection, id) {
-  var selection = new Set(_selection);
+  var selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.add(id);
   return [].concat(_toConsumableArray(selection));
 };
@@ -43,7 +43,7 @@ var removeRowFromSelection = exports.removeRowFromSelection = function removeRow
 };
 
 var removeIdFromSelection = exports.removeIdFromSelection = function removeIdFromSelection(_selection, id) {
-  var selection = new Set(_selection);
+  var selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [].concat(_toConsumableArray(selection));
 };
@@ -62,7 +62,7 @@ var mapListToIds = exports.mapListToIds = function mapListToIds(list, idAccessor
 var intersectSelection = exports.intersectSelection = function intersectSelection(_selection, _list, idAccessor) {
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('intersectSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
   var idList = mapListToIds(_list);
-  var selection = new Set(_selection);
+  var selection = new Set(Array.isArray(_selection) ? _selection : []);
   var intersection = new Set(idList);
   return [].concat(_toConsumableArray(selection)).filter(function (item) {
     return intersection.has(item);
