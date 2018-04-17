@@ -46,10 +46,12 @@ var DataTable = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
+    _this.widthCache = {};
     _this.state = { dynamicWidths: null };
     _this.renderPlainTable = _this.renderPlainTable.bind(_this);
     _this.renderStickyTable = _this.renderStickyTable.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
+    _this.getInnerCellWidth = _this.getInnerCellWidth.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
     _this.componentWillReceiveProps = _this.componentWillReceiveProps.bind(_this);
@@ -84,6 +86,7 @@ var DataTable = function (_React$Component) {
   }, {
     key: 'setDynamicWidths',
     value: function setDynamicWidths() {
+      var columns = this.props.columns;
       var headingTable = this.headingTable,
           contentTable = this.contentTable,
           getInnerCellWidth = this.getInnerCellWidth;
@@ -91,22 +94,40 @@ var DataTable = function (_React$Component) {
       if (!headingTable || !contentTable) return;
       var headingCells = Array.from(headingTable.getElementsByTagName('th'));
       var contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
+
       if (this.hasSelectionColumn()) headingCells.shift() && contentCells.shift();
       var dynamicWidths = contentCells.map(function (c, i) {
-        return getInnerCellWidth(c, headingCells[i]);
+        return getInnerCellWidth(c, headingCells[i], columns[i]);
       });
       this.setState({ dynamicWidths: dynamicWidths });
     }
   }, {
     key: 'getInnerCellWidth',
-    value: function getInnerCellWidth(cell, headingCell) {
+    value: function getInnerCellWidth(cell, headingCell, _ref2) {
+      var key = _ref2.key;
+
+      if (key in this.widthCache) return this.widthCache[key];
+
       var contentWidth = cell.clientWidth;
       var headingWidth = headingCell.clientWidth;
-      var leftPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-left'));
-      var rightPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-right'));
+      var grabStyle = function grabStyle(prop) {
+        return parseInt(window.getComputedStyle(cell, null).getPropertyValue(prop));
+      };
+
+      var leftPadding = grabStyle('padding-left');
+      var rightPadding = grabStyle('padding-right');
+      var leftBorder = grabStyle('border-left-width');
+      var rightBorder = grabStyle('border-right-width');
+      var widthOffset = leftPadding + rightPadding + leftBorder + rightBorder;
+
+      var higher = Math.max(contentWidth, headingWidth);
+      return this.widthCache[key] = higher;
+
       var lower = Math.min(contentWidth, headingWidth);
-      var difference = Math.abs(contentWidth - headingWidth);
-      return Math.ceil(lower + difference / 2) - leftPadding - rightPadding + 'px';
+      var split = Math.abs(contentWidth - headingWidth) / 2;
+      var width = Math.ceil(lower + split) - widthOffset + 'px';
+
+      return this.widthCache[key] = width;
     }
   }, {
     key: 'hasSelectionColumn',
@@ -141,15 +162,15 @@ var DataTable = function (_React$Component) {
           uiState = _props3.uiState;
       var dynamicWidths = this.state.dynamicWidths;
 
-      var newColumns = columns.every(function (_ref2) {
-        var width = _ref2.width;
+      var newColumns = columns.every(function (_ref3) {
+        var width = _ref3.width;
         return width;
       }) || !dynamicWidths || dynamicWidths.length == 0 ? columns : columns.map(function (column, index) {
         return Object.assign({}, column, { width: dynamicWidths[index] });
       });
       var maxHeight = { maxHeight: options ? options.tableBodyMaxHeight : null };
-      var maxWidth = { minWidth: dynamicWidths ? (0, _Utils.combineWidths)(columns.map(function (_ref3) {
-          var width = _ref3.width;
+      var maxWidth = { minWidth: dynamicWidths ? (0, _Utils.combineWidths)(columns.map(function (_ref4) {
+          var width = _ref4.width;
           return width;
         })) : null };
       var tableLayout = { tableLayout: dynamicWidths ? 'fixed' : 'auto' };

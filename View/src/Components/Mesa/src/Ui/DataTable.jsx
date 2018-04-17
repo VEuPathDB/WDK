@@ -11,10 +11,12 @@ const hasWidthProperty = ({ width }) => typeof width === 'string';
 class DataTable extends React.Component {
   constructor (props) {
     super(props);
+    this.widthCache = {};
     this.state = { dynamicWidths: null };
     this.renderPlainTable = this.renderPlainTable.bind(this);
     this.renderStickyTable = this.renderStickyTable.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.getInnerCellWidth = this.getInnerCellWidth.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
     this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
@@ -40,23 +42,40 @@ class DataTable extends React.Component {
   }
 
   setDynamicWidths () {
+    const { columns } = this.props;
     const { headingTable, contentTable, getInnerCellWidth } = this;
     if (!headingTable || !contentTable) return;
     const headingCells = Array.from(headingTable.getElementsByTagName('th'));
     const contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
-    if (this.hasSelectionColumn()) headingCells.shift() && contentCells.shift();
-    const dynamicWidths = contentCells.map((c, i) => getInnerCellWidth(c, headingCells[i]));
+
+    if (this.hasSelectionColumn())
+      headingCells.shift() && contentCells.shift();
+    const dynamicWidths = contentCells.map((c, i) => getInnerCellWidth(c, headingCells[i], columns[i]));
     this.setState({ dynamicWidths });
   }
 
-  getInnerCellWidth (cell, headingCell) {
+  getInnerCellWidth (cell, headingCell, { key }) {
+    if (key in this.widthCache) return this.widthCache[key];
+
     const contentWidth = cell.clientWidth;
     const headingWidth = headingCell.clientWidth;
-    const leftPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-left'));
-    const rightPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-right'));
+    const grabStyle = (prop) => parseInt(window.getComputedStyle(cell, null).getPropertyValue(prop));
+
+    const leftPadding = grabStyle('padding-left');
+    const rightPadding = grabStyle('padding-right');
+    const leftBorder = grabStyle('border-left-width');
+    const rightBorder = grabStyle('border-right-width');
+    const widthOffset = leftPadding + rightPadding + leftBorder + rightBorder;
+
+    const higher = Math.max(contentWidth, headingWidth);
+    return this.widthCache[key] = higher;
+
+
     const lower = Math.min(contentWidth, headingWidth);
-    const difference = Math.abs(contentWidth - headingWidth);
-    return (Math.ceil(lower + (difference / 2)) - leftPadding - rightPadding) + 'px';
+    const split = Math.abs(contentWidth - headingWidth) / 2;
+    const width = (Math.ceil(lower + split) - widthOffset) + 'px';
+
+    return this.widthCache[key] = width;
   }
 
   hasSelectionColumn () {
