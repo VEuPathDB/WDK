@@ -17,14 +17,15 @@ const Importer = {
 
   columnsFromRows (rows = [], options) {
     if (!Array.isArray(rows)) return [];
-    const keys = Utils.keysInList(rows, ['__id']);
-    return keys.map(key => Importer.homogenizeColumn({ key }, rows, options));
+    const keys = Utils.keysInList(rows, ['__id']).map(key => { return { key }; });
+    return Importer.processColumns(keys, rows, options);
   },
 
   processColumns (columns, rows, options) {
     if (!Array.isArray(columns)) return null;
     return columns
       .map(column => Importer.homogenizeColumn(column, rows, options))
+      .map((col, __index) => Object.assign(col, { __index }))
       .filter(col => !col.disabled);
   },
 
@@ -56,9 +57,9 @@ const Importer = {
 
   importRows (rows) {
     if (!rows || !Array.isArray(rows) || rows.some(row => typeof row !== 'object')) return [];
-    rows = rows.map(row => {
+    rows = rows.map((row, __index) => {
       let __id = Utils.uid();
-      return Object.assign({}, row, { __id });
+      return Object.assign({}, row, { __id, __index });
     });
     return rows;
   },
