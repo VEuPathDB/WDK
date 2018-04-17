@@ -28,16 +28,11 @@ class AnchoredTooltip extends React.Component {
   }
 
   updateOffset () {
-    if (this.props.debug) console.log('Updating offset...');
     const { element } = this;
-    if (!element) {
-      if (this.props.debug) console.log('...Returning out, no element');
-      return;
-    };
+    if (!element) return;
     const offset = element.getBoundingClientRect();
     const { top, left } = offset;
     const position = { left, top: Math.ceil(top) + Math.ceil(element.offsetHeight) };
-    if (this.props.debug) console.log('Offset is now...', position);
     this.setState({ position });
   }
 
