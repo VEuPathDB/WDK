@@ -8,10 +8,12 @@
   "author": "Austin Billings <austinjb@upenn.edu>",
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-minify": "^0.2.0",
     "cross-env": "^5.0.5"
   },
   "peerDependencies": {
-    "react": ">=15.0.0"
+    "react": ">=15.0.0",
+    "prop-types": "^15.6.0"
   },
   "scripts": {
     "compile:sass": "sass src/Style/Mesa.scss dist/css/mesa.css -t compressed",
@@ -20,9 +22,5 @@
     "compile": "npm run compile:cjs && npm run compile:es && npm run compile:sass",
     "clean": "rm -rf dist/* && mkdir dist/css dist/es6 dist/commonjs",
     "build": "npm run clean && npm run compile"
-  },
-  "dependencies": {
-    "babel-minify": "^0.2.0",
-    "prop-types": "^15.6.0"
   }
 }
