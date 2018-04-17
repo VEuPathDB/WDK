@@ -63,7 +63,7 @@ class DataCell extends React.PureComponent {
 DataCell.propTypes = {
   column: PropTypes.object,
   row: PropTypes.object,
-  inline: PropTypes.boolean
+  inline: PropTypes.bool
 };
 
 export default DataCell;

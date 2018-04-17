@@ -34,6 +34,8 @@ var Tooltip = function (_React$Component) {
     _this.showTooltip = _this.showTooltip.bind(_this);
     _this.hideTooltip = _this.hideTooltip.bind(_this);
     _this.renderTextBox = _this.renderTextBox.bind(_this);
+    _this.engageTooltip = _this.engageTooltip.bind(_this);
+    _this.disengageTooltip = _this.disengageTooltip.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
     return _this;
   }
