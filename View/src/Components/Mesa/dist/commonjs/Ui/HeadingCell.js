@@ -180,7 +180,7 @@ var HeadingCell = function (_React$PureComponent) {
         },
         _react2.default.createElement(
           'row',
-          { className: 'justify-center items-center' },
+          { className: 'justify-center items-center nowrap' },
           _react2.default.createElement(
             'box',
             { className: 'grow-1' },
