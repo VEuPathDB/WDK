@@ -12,14 +12,14 @@ class DataTable extends React.Component {
   constructor (props) {
     super(props);
     this.widthCache = {};
-    this.state = { dynamicWidths: null, hasSelectionColumn: false };
+    this.state = { dynamicWidths: null };
     this.renderPlainTable = this.renderPlainTable.bind(this);
     this.renderStickyTable = this.renderStickyTable.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.getInnerCellWidth = this.getInnerCellWidth.bind(this);
+    this.hasSelectionColumn = this.hasSelectionColumn.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
-    this.checkForSelectionColumn = this.checkForSelectionColumn.bind(this);
     this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
@@ -35,7 +35,6 @@ class DataTable extends React.Component {
 
   componentDidMount () {
     this.setDynamicWidths();
-    this.checkForSelectionColumn();
   }
 
   componentWillReceiveProps (newProps) {
@@ -45,7 +44,7 @@ class DataTable extends React.Component {
 
   setDynamicWidths () {
     const { columns } = this.props;
-    const { hasSelectionColumn } = this.state;
+    const hasSelectionColumn = this.hasSelectionColumn();
     const { headingTable, contentTable, getInnerCellWidth } = this;
     if (!headingTable || !contentTable) return;
     const headingCells = Array.from(headingTable.getElementsByTagName('th'));
@@ -85,12 +84,11 @@ class DataTable extends React.Component {
     return this.widthCache[key] = width;
   }
 
-  checkForSelectionColumn () {
+  hasSelectionColumn () {
     const { options, eventHandlers } = this.props;
-    const hasSelectionColumn = typeof options.isRowSelected === 'function'
+    return typeof options.isRowSelected === 'function'
       && typeof eventHandlers.onRowSelect === 'function'
       && typeof eventHandlers.onRowDeselect === 'function';
-    this.setState({ hasSelectionColumn });
   }
 
   handleTableBodyScroll (e) {

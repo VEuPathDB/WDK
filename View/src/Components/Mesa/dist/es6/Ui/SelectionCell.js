@@ -51,9 +51,9 @@ var SelectionCell = function (_React$PureComponent) {
       var unselectedRows = rows.filter(function (row) {
         return !isRowSelected(row);
       });
-      if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);else return unselectedRows.forEach(function (row) {
-        return onRowSelect(row);
-      });
+      if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);
+      console.log('Selecting all manually', unselectedRows, onRowSelect);
+      return unselectedRows.forEach(onRowSelect);
     }
   }, {
     key: 'deselectAllRows',
@@ -67,9 +67,9 @@ var SelectionCell = function (_React$PureComponent) {
           onMultipleRowDeselect = eventHandlers.onMultipleRowDeselect;
 
       var selection = rows.filter(isRowSelected);
-      if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);else return selection.forEach(function (row) {
-        return onRowDeselect(row);
-      });
+      if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);
+      console.log('Deselecting all manually', selection, onRowDeselect);
+      return selection.forEach(onRowDeselect);
     }
   }, {
     key: 'renderPageCheckbox',

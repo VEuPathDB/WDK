@@ -47,14 +47,14 @@ var DataTable = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
     _this.widthCache = {};
-    _this.state = { dynamicWidths: null, hasSelectionColumn: false };
+    _this.state = { dynamicWidths: null };
     _this.renderPlainTable = _this.renderPlainTable.bind(_this);
     _this.renderStickyTable = _this.renderStickyTable.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
     _this.getInnerCellWidth = _this.getInnerCellWidth.bind(_this);
+    _this.hasSelectionColumn = _this.hasSelectionColumn.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
-    _this.checkForSelectionColumn = _this.checkForSelectionColumn.bind(_this);
     _this.componentWillReceiveProps = _this.componentWillReceiveProps.bind(_this);
     return _this;
   }
@@ -74,7 +74,6 @@ var DataTable = function (_React$Component) {
     key: 'componentDidMount',
     value: function componentDidMount() {
       this.setDynamicWidths();
-      this.checkForSelectionColumn();
     }
   }, {
     key: 'componentWillReceiveProps',
@@ -89,7 +88,8 @@ var DataTable = function (_React$Component) {
     key: 'setDynamicWidths',
     value: function setDynamicWidths() {
       var columns = this.props.columns;
-      var hasSelectionColumn = this.state.hasSelectionColumn;
+
+      var hasSelectionColumn = this.hasSelectionColumn();
       var headingTable = this.headingTable,
           contentTable = this.contentTable,
           getInnerCellWidth = this.getInnerCellWidth;
@@ -138,14 +138,13 @@ var DataTable = function (_React$Component) {
       return this.widthCache[key] = width;
     }
   }, {
-    key: 'checkForSelectionColumn',
-    value: function checkForSelectionColumn() {
+    key: 'hasSelectionColumn',
+    value: function hasSelectionColumn() {
       var _props2 = this.props,
           options = _props2.options,
           eventHandlers = _props2.eventHandlers;
 
-      var hasSelectionColumn = typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
-      this.setState({ hasSelectionColumn: hasSelectionColumn });
+      return typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
     }
   }, {
     key: 'handleTableBodyScroll',

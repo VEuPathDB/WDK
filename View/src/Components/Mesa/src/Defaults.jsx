@@ -33,7 +33,7 @@ export const OptionsDefaults = {
   editableColumns: true,
   overflowHeight: '16em',
   searchPlaceholder: 'Search This Table',
-  isRowSelected: (row, indexx) => {
+  isRowSelected: (row, index) => {
     return false;
   }
 };
