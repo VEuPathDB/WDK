@@ -77,7 +77,8 @@ var SelectionCell = function (_React$PureComponent) {
       var _props3 = this.props,
           rows = _props3.rows,
           isRowSelected = _props3.isRowSelected,
-          eventHandlers = _props3.eventHandlers;
+          eventHandlers = _props3.eventHandlers,
+          inert = _props3.inert;
 
       var selection = rows.filter(isRowSelected);
       var checked = rows.every(isRowSelected);
@@ -90,7 +91,7 @@ var SelectionCell = function (_React$PureComponent) {
       return _react2.default.createElement(
         'th',
         { className: 'SelectionCell', onClick: handler },
-        _react2.default.createElement(_Checkbox2.default, { checked: checked })
+        inert ? null : _react2.default.createElement(_Checkbox2.default, { checked: checked })
       );
     }
   }, {
@@ -99,7 +100,8 @@ var SelectionCell = function (_React$PureComponent) {
       var _props4 = this.props,
           row = _props4.row,
           isRowSelected = _props4.isRowSelected,
-          eventHandlers = _props4.eventHandlers;
+          eventHandlers = _props4.eventHandlers,
+          inert = _props4.inert;
       var onRowSelect = eventHandlers.onRowSelect,
           onRowDeselect = eventHandlers.onRowDeselect;
 
@@ -113,7 +115,7 @@ var SelectionCell = function (_React$PureComponent) {
       return _react2.default.createElement(
         'td',
         { className: 'SelectionCell', onClick: handler },
-        _react2.default.createElement(_Checkbox2.default, { checked: checked })
+        inert ? null : _react2.default.createElement(_Checkbox2.default, { checked: checked })
       );
     }
   }, {

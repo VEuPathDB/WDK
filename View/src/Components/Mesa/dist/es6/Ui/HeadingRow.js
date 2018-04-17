@@ -66,28 +66,92 @@ var HeadingRow = function (_React$PureComponent) {
         return typeof fn === 'function';
       });
 
+      var nullRenderer = function nullRenderer() {
+        return null;
+      };
+
+      var rowCount = columns.reduce(function (count, column) {
+        var thisCount = Array.isArray(column.renderHeading) ? column.renderHeading.length : 1;
+        return Math.max(thisCount, count);
+      }, 1);
+
+      var headingRows = new Array(rowCount).fill({}).map(function (blank, index) {
+        var isFirstRow = !index;
+        var cols = columns.map(function (col) {
+          var output = Object.assign({}, col);
+          if (Array.isArray(col.renderHeading)) {
+            output.renderHeading = col.renderHeading.length > index ? col.renderHeading[index] : false;
+          } else if (!isFirstRow) {
+            output.renderHeading = false;
+          };
+          return output;
+        });
+        return { cols: cols, isFirstRow: isFirstRow };
+      });
+
       return _react2.default.createElement(
-        'tr',
-        { className: 'Row HeadingRow' },
-        !hasSelectionColumn ? null : _react2.default.createElement(_SelectionCell2.default, {
-          heading: true,
-          rows: filteredRows,
-          options: options,
-          eventHandlers: eventHandlers,
-          isRowSelected: isRowSelected
-        }),
-        columns.map(function (column, columnIndex) {
-          if ((typeof columnDefaults === 'undefined' ? 'undefined' : _typeof(columnDefaults)) === 'object') column = Object.assign({}, columnDefaults, column);
-          return _react2.default.createElement(_HeadingCell2.default, {
-            sort: sort,
-            key: column.key,
-            column: column,
-            offsetLeft: offsetLeft,
-            columnIndex: columnIndex,
-            eventHandlers: eventHandlers
-          });
+        'thead',
+        null,
+        headingRows.map(function (_ref4, index) {
+          var cols = _ref4.cols,
+              isFirstRow = _ref4.isFirstRow;
+
+          return _react2.default.createElement(
+            'tr',
+            { className: 'Row HeadingRow', key: index },
+            !hasSelectionColumn ? null : _react2.default.createElement(_SelectionCell2.default, {
+              inert: !isFirstRow,
+              heading: true,
+              rows: filteredRows,
+              options: options,
+              eventHandlers: eventHandlers,
+              isRowSelected: isRowSelected
+            }),
+            cols.map(function (column, columnIndex) {
+              if ((typeof columnDefaults === 'undefined' ? 'undefined' : _typeof(columnDefaults)) === 'object') column = Object.assign({}, columnDefaults, column);
+              return _react2.default.createElement(_HeadingCell2.default, {
+                sort: sort,
+                key: column.key,
+                primary: isFirstRow,
+                column: column,
+                offsetLeft: offsetLeft,
+                columnIndex: columnIndex,
+                eventHandlers: eventHandlers
+              });
+            })
+          );
         })
       );
+      /*
+      return (
+        <tr className="Row HeadingRow">
+          {!hasSelectionColumn
+            ? null
+            : <SelectionCell
+                heading={true}
+                rows={filteredRows}
+                options={options}
+                eventHandlers={eventHandlers}
+                isRowSelected={isRowSelected}
+              />
+          }
+          {columns.map((column, columnIndex) => {
+            if (typeof columnDefaults === 'object')
+              column = Object.assign({}, columnDefaults, column);
+            return (
+              <HeadingCell
+                sort={sort}
+                key={column.key}
+                column={column}
+                offsetLeft={offsetLeft}
+                columnIndex={columnIndex}
+                eventHandlers={eventHandlers}
+              />
+            );
+          })}
+        </tr>
+      );
+      */
     }
   }]);
 

@@ -203,11 +203,7 @@ var DataTable = function (_React$Component) {
                   ref: function ref(node) {
                     return _this3.headingTable = node;
                   } },
-                _react2.default.createElement(
-                  'thead',
-                  null,
-                  _react2.default.createElement(_HeadingRow2.default, tableProps)
-                )
+                _react2.default.createElement(_HeadingRow2.default, tableProps)
               )
             ),
             _react2.default.createElement(

@@ -30,7 +30,7 @@ class SelectionCell extends React.PureComponent {
   }
 
   renderPageCheckbox () {
-    const { rows, isRowSelected, eventHandlers } = this.props;
+    const { rows, isRowSelected, eventHandlers, inert } = this.props;
     const selection = rows.filter(isRowSelected);
     const checked = rows.every(isRowSelected);
 
@@ -43,13 +43,13 @@ class SelectionCell extends React.PureComponent {
 
     return (
       <th className="SelectionCell" onClick={handler}>
-        <Checkbox checked={checked} />
+        {inert ? null : <Checkbox checked={checked} />}
       </th>
     )
   }
 
   renderRowCheckbox () {
-    const { row, isRowSelected, eventHandlers } = this.props;
+    const { row, isRowSelected, eventHandlers, inert } = this.props;
     const { onRowSelect, onRowDeselect } = eventHandlers;
     const checked = isRowSelected(row);
 
@@ -62,7 +62,7 @@ class SelectionCell extends React.PureComponent {
 
     return (
       <td className="SelectionCell" onClick={handler}>
-        <Checkbox checked={checked} />
+        {inert ? null : <Checkbox checked={checked} />}
       </td>
     );
   }
