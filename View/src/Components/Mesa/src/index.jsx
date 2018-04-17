@@ -11,6 +11,7 @@ import Tooltip from './Components/Tooltip';
 import Checkbox from './Components/Checkbox';
 import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
+import AnchoredTooltip from './Components/AnchoredTooltip';
 
 import Events, { EventsFactory } from './Utils/Events';
 import * as Utils from './Utils/Utils';
@@ -30,6 +31,7 @@ export {
   Events,
   EventsFactory,
   Tooltip,
+  AnchoredTooltip,
   Checkbox,
   MesaController,
   MesaState,

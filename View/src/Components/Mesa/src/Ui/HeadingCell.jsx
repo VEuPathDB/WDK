@@ -5,7 +5,7 @@ import Templates from '../Templates';
 import Icon from '../Components/Icon';
 import Tooltip from '../Components/Tooltip';
 import { makeClassifier } from '../Utils/Utils';
-import Events from '../Utils/Events';
+import Events, { EventsFactory } from '../Utils/Events';
 
 const headingCellClass = makeClassifier('HeadingCell');
 
@@ -127,25 +127,24 @@ class HeadingCell extends React.PureComponent {
       return this.wrapContent(Templates.heading(column, columnIndex));
 
     const content = column.renderHeading(column, columnIndex, { SortTrigger, HelpTrigger, ClickBoundary });
-
-    let shouldWrap;
     const { wrapCustomHeadings } = column;
-
-    if (wrapCustomHeadings && typeof wrapCustomHeadings === 'function')
-      shouldWrap = wrapCustomHeadings({ column, columnIndex, headingRowIndex });
-    else
-      shouldWrap = wrapCustomHeadings;
+    const shouldWrap = (wrapCustomHeadings && typeof wrapCustomHeadings === 'function')
+      ? wrapCustomHeadings({ column, columnIndex, headingRowIndex })
+      : wrapCustomHeadings;
 
     return shouldWrap ? this.wrapContent(content) : content;
   }
 
   renderClickBoundary ({ children }) {
     const style = { display: 'inline-block' };
-    return (
-      <div onClick={(e) => e.stopPropagation()} style={style}>
-        {children}
-      </div>
-    );
+    const stopPropagation = (node) => {
+      if (!node) return null;
+      const instance = new EventsFactory(node);
+      instance.add('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+    return <div ref={stopPropagation} style={style} children={children} />
   }
 
   renderSortTrigger () {
