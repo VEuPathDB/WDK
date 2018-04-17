@@ -190,7 +190,7 @@ var create = exports.create = function create(_ref) {
   state = setOptions(state, options ? options : {});
   state = setActions(state, actions ? actions : []);
   state = setFilteredRows(state, filteredRows ? filteredRows : rows ? rows : []);
-  state = setEventHandlers(state, eventHandlers ? eventHandlers : []);
+  state = setEventHandlers(state, eventHandlers ? eventHandlers : {});
   state = setUiState(state, uiState ? uiState : {});
   return state;
 };
