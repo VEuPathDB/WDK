@@ -38,10 +38,10 @@ class HeadingCell extends React.PureComponent {
 
   renderSortTrigger () {
     const { column, sort, eventHandlers } = this.props;
-    const { columnKey, direction } = sort;
-    const { onSort } = eventHandlers;
-    const { sortable } = column;
-    const isActive = columnKey === column.key;
+    const { columnKey, direction } = sort ? sort : {};
+    const { onSort } = eventHandlers ? eventHandlers : {};
+    const { key, sortable } = column ? column : {};
+    const isActive = columnKey === key;
 
     if (!sortable || (typeof onSort !== 'function' && !isActive)) return null;
 
