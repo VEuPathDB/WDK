@@ -13,6 +13,8 @@
     }
     .DataTable-Body {
     }
-    .DataTable-Header {}
+    .DataTable-Header {
+      overflow: hidden;
+    }
   }
 }

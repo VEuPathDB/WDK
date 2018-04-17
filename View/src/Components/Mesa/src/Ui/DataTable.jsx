@@ -32,11 +32,6 @@ class DataTable extends React.Component {
     this.headerNode.scrollLeft = offset;
   }
 
-  handleTableHeaderScroll (e) {
-    const offset = this.headerNode.scrollLeft;
-    this.bodyNode.scrollLeft = offset;
-  }
-
   render () {
     const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
@@ -65,18 +60,29 @@ class DataTable extends React.Component {
       <div className="MesaComponent">
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
-            <div ref={node => this.headerNode = node} className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
+
+            <div
+              ref={node => this.headerNode = node}
+              className={dataTableClass('Header')}
+            >
               <table cellSpacing={0} cellPadding={0}>
                 <thead>
                   <HeadingRow {...props} />
                 </thead>
               </table>
             </div>
-            <div ref={node => this.bodyNode = node} style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
+
+            <div
+              ref={node => this.bodyNode = node}
+              style={heightLayer}
+              className={dataTableClass('Body')}
+              onScroll={this.handleTableBodyScroll}
+            >
               <table cellSpacing={0} cellPadding={0}>
                 <DataRowList {...props} />
               </table>
             </div>
+
           </div>
         </div>
       </div>
