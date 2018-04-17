@@ -38,3 +38,7 @@ th, td {
 .Cell {
   display: inline-block;
 }
+
+th.SelectionCell, td.SelectionCell {
+  width: 10px;
+}
