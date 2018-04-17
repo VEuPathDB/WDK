@@ -44,11 +44,10 @@ var removeRowFromSelection = exports.removeRowFromSelection = function removeRow
   return [].concat(_toConsumableArray(selection));
 };
 
-var isRowSelected = exports.isRowSelected = function isRowSelected(_selection, row, idAccessor) {
+var isRowSelected = exports.isRowSelected = function isRowSelected(selection, row, idAccessor) {
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('isRowSelected', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
-  var selection = new Set(_selection);
   var id = idAccessor(row);
-  return selection.has(id);
+  return selection.includes(id);
 };
 
 var mapListToIds = exports.mapListToIds = function mapListToIds(list, idAccessor) {
