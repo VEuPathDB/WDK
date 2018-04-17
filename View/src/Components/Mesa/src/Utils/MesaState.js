@@ -168,9 +168,9 @@ export const create = ({ rows, filteredRows, columns, options, actions, eventHan
   state = setColumns(state, columns ? columns : []);
   state = setOptions(state, options ? options : {});
   state = setActions(state, actions ? actions : []);
-  state = setFilteredRows(state, filteredRows ? filteredRows : rows ? rows : []);
-  state = setEventHandlers(state, eventHandlers ? eventHandlers : {});
   state = setUiState(state, uiState ? uiState : {});
+  state = setEventHandlers(state, eventHandlers ? eventHandlers : {});
+  state = setFilteredRows(state, filteredRows ? filteredRows : rows ? rows : []);
   return state;
 };
 

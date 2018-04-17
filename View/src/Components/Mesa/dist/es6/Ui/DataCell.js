@@ -61,6 +61,8 @@ var DataCell = function (_React$PureComponent) {
         return column.renderCell(cellProps);
       }
 
+      if (!column.type) return _Templates2.default.textCell(cellProps);
+
       switch (column.type.toLowerCase()) {
         case 'link':
           return _Templates2.default.linkCell(cellProps);
