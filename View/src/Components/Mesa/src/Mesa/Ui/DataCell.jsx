@@ -8,14 +8,14 @@ class DataCell extends React.PureComponent {
   }
 
   renderContent () {
-    const { column, row, state } = this.props;
+    const { column, row, state, inline } = this.props;
     const { key } = column;
 
     if ('renderCell' in column) return column.renderCell(key, row[key], row);
 
     switch (column.type) {
       case 'html':
-        if (state.options.inline) return Templates.cell(column, row);
+        if (inline) return Templates.cell(column, row);
         return Templates.htmlCell(column, row);
       case 'text':
       default:
@@ -24,12 +24,12 @@ class DataCell extends React.PureComponent {
   }
 
   render () {
-    let { column, row, state } = this.props;
+    let { column, row, state, inline } = this.props;
     let { style, width } = column;
     let { options } = state;
     let content = this.renderContent();
 
-    let whiteSpace = !options.inline ? {} : {
+    let whiteSpace = !inline ? {} : {
       textOverflow: 'ellipsis',
       overflow: 'hidden',
       maxWidth: options.inlineMaxWidth ? options.inlineMaxWidth : '20vw',

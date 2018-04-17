@@ -1,4 +1,4 @@
-export const ColumnDefaults = {
+  export const ColumnDefaults = {
   primary: false,
   searchable: true,
   sortable: true,
@@ -29,5 +29,6 @@ export const OptionsDefaults = {
   paginate: false,
   rowsPerPage: 20,
   overflowHeight: '16em',
+  editableColumns: true,
   searchPlaceholder: 'Search This Table',
 };

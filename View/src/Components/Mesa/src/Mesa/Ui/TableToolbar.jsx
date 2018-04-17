@@ -42,7 +42,7 @@ class TableToolbar extends React.PureComponent {
             {children}
           </div>
         )}
-        {columnsAreHideable && (
+        {options.editableColumns && columnsAreHideable && (
           <ColumnEditor state={state} dispatch={dispatch}>
             <button>
               <Icon fa={'columns'} />

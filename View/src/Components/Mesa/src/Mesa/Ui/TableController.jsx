@@ -2,7 +2,7 @@ import React from 'react';
 
 import TableBody from 'Mesa/Ui/TableBody';
 import RowUtils from 'Mesa/Utils/RowUtils';
-import Pagination from 'Mesa/Ui/Pagination';
+import PaginationMenu from 'Mesa/Ui/PaginationMenu';
 import TableToolbar from 'Mesa/Ui/TableToolbar';
 import { setEmptinessCulprit } from 'Mesa/State/Actions';
 
@@ -62,7 +62,7 @@ class TableController extends React.PureComponent {
     let pageCount = RowUtils.getPageCount(filteredRows, options);
     if (!options.paginate || pageCount <= 1) return null;
     return (
-      <Pagination
+      <PaginationMenu
         pages={pageCount}
         currentPage={currentPage}
         onPageChange={this.handlePageChange}
