@@ -21,16 +21,15 @@ class ModalBoundary extends React.Component {
 
   addModal (modal) {
     let { modals } = this.state;
-    console.log('adding modal', modal);
+    if (!'id' in modal) throw new Error('Modals must have an "id" property.');
     if (modals.indexOf(modal) < 0) modals.push(modal);
     this.setState({ modals });
   }
 
-  removeModal (modal) {
+  removeModal (id) {
     let { modals } = this.state;
-    let index = modals.indexOf(modal)
+    let index = modals.findIndex(modal => modal.id === id);
     if (index < 0) return;
-    console.log('removing modal....', modal);
     modals.splice(index, 1);
     this.setState({ modals });
   }
@@ -68,11 +67,16 @@ class ModalBoundary extends React.Component {
     const { children } = this.props;
     const ModalWrapper = this.renderModalWrapper;
     const style = { position: 'relative' };
+    const zIndex = (z) => ({ position: 'relative', zIndex: z });
 
     return (
       <div className={modalBoundaryClass()} style={style}>
-        {children}
-        <ModalWrapper />
+        <div style={zIndex(1)}>
+          {children}
+        </div>
+        <div style={zIndex(2)}>
+          <ModalWrapper />
+        </div>
       </div>
     );
   }
