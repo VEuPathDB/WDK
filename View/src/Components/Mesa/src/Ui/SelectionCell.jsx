@@ -16,8 +16,6 @@ class SelectionCell extends React.PureComponent {
     const { isRowSelected } = options;
     const { onRowSelect, onMultipleRowSelect } = eventHandlers;
     const unselectedRows = rows.filter(row => !isRowSelected(row));
-    console.log('selecting all, unselectedrows:', unselectedRows);
-    console.log('and this is multipleselect', onMultipleRowSelect);
     if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);
     else return unselectedRows.forEach(row => onRowSelect(row));
   }
@@ -27,7 +25,6 @@ class SelectionCell extends React.PureComponent {
     const { isRowSelected } = options;
     const { onRowDeselect, onMultipleRowDeselect } = eventHandlers;
     const selection = rows.filter(isRowSelected);
-    console.log('deselecting all, selectedrows:', selection);
     if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);
     else return selection.forEach(row => onRowDeselect(row));
   }
