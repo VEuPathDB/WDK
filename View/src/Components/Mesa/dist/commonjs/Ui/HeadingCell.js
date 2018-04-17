@@ -120,7 +120,7 @@ var HeadingCell = function (_React$PureComponent) {
       var onSort = eventHandlers.onSort;
 
       if (typeof onSort !== 'function' || !column.sortable) return;
-      var currentlySorting = sort.columnKey === column.key;
+      var currentlySorting = sort && sort.columnKey === column.key;
       var direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
       return onSort(column, direction);
     }

@@ -55,7 +55,7 @@ var MesaState = _interopRequireWildcard(_MesaState);
 
 var _MesaSelection = require('./Utils/MesaSelection');
 
-var _MesaSelection2 = _interopRequireDefault(_MesaSelection);
+var MesaSelection = _interopRequireWildcard(_MesaSelection);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -72,5 +72,5 @@ exports.ModalBoundary = _ModalBoundary2.default;
 exports.Tooltip = _Modal2.default;
 exports.MesaController = _MesaController2.default;
 exports.MesaState = MesaState;
-exports.MesaSelection = _MesaSelection2.default;
+exports.MesaSelection = MesaSelection;
 exports.Utils = Utils;
