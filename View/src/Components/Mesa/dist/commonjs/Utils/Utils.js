@@ -97,7 +97,7 @@ function textSort(_list, key) {
 
   var list = [].concat(_toConsumableArray(_list));
   var accessor = function accessor(val) {
-    return typeof val[key] === 'string' ? val[key].trim() : stringValue(val[key]);
+    return typeof val[key] === 'string' ? val[key].trim().toLowerCase() : stringValue(val[key]).toLowerCase();
   };
   var preSort = list.map(accessor);
   var sorted = list.sort(sortFactory(accessor));

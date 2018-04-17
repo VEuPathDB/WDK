@@ -66,8 +66,8 @@ export function arraysMatch (a, b) {
 export function textSort (_list, key, ascending = true) {
   const list = [..._list];
   const accessor = (val) => typeof val[key] === 'string'
-    ? val[key].trim()
-    : stringValue(val[key]);
+    ? val[key].trim().toLowerCase()
+    : stringValue(val[key]).toLowerCase();
   const preSort = list.map(accessor);
   const sorted = list.sort(sortFactory(accessor));
   const postSort = sorted.map(accessor);
