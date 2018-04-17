@@ -27,6 +27,9 @@ class DataTable extends React.PureComponent {
     const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, options, columns, actions, uiState, eventHandlers };
 
+    const { tableBodyMaxHeight } = options ? options : {};
+    const tableBodyStyle = { maxHeight: tableBodyMaxHeight };
+
     return this.shouldUseStickyHeader() ? (
       <div className="DataTable-Sticky">
         <div className="DataTable-Header">
@@ -36,7 +39,7 @@ class DataTable extends React.PureComponent {
             </thead>
           </table>
         </div>
-        <div className="DataTable-Body">
+        <div className="DataTable-Body" style={tableBodyStyle}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>

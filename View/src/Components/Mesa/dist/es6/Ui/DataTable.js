@@ -72,6 +72,11 @@ var DataTable = function (_React$PureComponent) {
 
       var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
+      var _ref2 = options ? options : {},
+          tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
+
+      var tableBodyStyle = { maxHeight: tableBodyMaxHeight };
+
       return this.shouldUseStickyHeader() ? _react2.default.createElement(
         'div',
         { className: 'DataTable-Sticky' },
@@ -90,7 +95,7 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: 'DataTable-Body' },
+          { className: 'DataTable-Body', style: tableBodyStyle },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
