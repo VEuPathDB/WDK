@@ -94,7 +94,7 @@ var MesaController = function (_React$Component) {
           children = _props2.children;
 
       var props = { rows: rows, options: options, columns: columns, uiState: uiState, eventHandlers: eventHandlers, children: children };
-      if (!options.toolbar) return null;
+      if (!options || !options.toolbar) return null;
 
       return _react2.default.createElement(_TableToolbar2.default, props);
     }
