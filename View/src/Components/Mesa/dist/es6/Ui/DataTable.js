@@ -34,8 +34,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var dataTableClass = (0, _Utils.makeClassifier)('DataTable');
 
-var DataTable = function (_React$PureComponent) {
-  _inherits(DataTable, _React$PureComponent);
+var DataTable = function (_React$Component) {
+  _inherits(DataTable, _React$Component);
 
   function DataTable(props) {
     _classCallCheck(this, DataTable);
@@ -157,7 +157,7 @@ var DataTable = function (_React$PureComponent) {
   }]);
 
   return DataTable;
-}(_react2.default.PureComponent);
+}(_react2.default.Component);
 
 ;
 
