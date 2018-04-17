@@ -39,7 +39,7 @@ class AnchoredTooltip extends React.Component {
     };
     const offset = element.getBoundingClientRect();
     const { top, left, height, bottom } = offset;
-    const position = { left, top: window.innerHeight - bottom };
+    const position = { left, top: Math.ceil(top) + Math.ceil(height) };
     if (this.props.debug) console.log('Offset is now...', position);
     this.setState({ position });
   }
