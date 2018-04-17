@@ -10,8 +10,6 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-require('../Style/Mesa');
-
 var _Importer = require('../Utils/Importer');
 
 var _Importer2 = _interopRequireDefault(_Importer);
