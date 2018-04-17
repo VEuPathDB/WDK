@@ -7,7 +7,9 @@
     "clean": "rm -rf ./dist/*",
     "compile": "NODE_ENV=production webpack",
     "build": "npm run clean && npm run compile",
-    "dev": "atom . && wds"
+    "wds": "webpack-dev-server --content-base . --hot --inline",
+    "dev": "atom . && npm run wds",
+    "start": "npm run wds"
   },
   "dependencies": {
     "axios": "^0.16.1",
