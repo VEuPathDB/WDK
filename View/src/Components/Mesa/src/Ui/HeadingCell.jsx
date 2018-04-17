@@ -44,7 +44,7 @@ class HeadingCell extends React.PureComponent {
   }
 
   componentWillReceiveProps (newProps) {
-    if (newProps && newProps.column !== this.props.column) {
+    if (newProps && newProps.column !== this.props.column || newProps.column.width !== this.props.column.width) {
       this.updateOffset();
     }
   }
@@ -126,8 +126,7 @@ class HeadingCell extends React.PureComponent {
     const { column } = this.props;
     const { offset } = this.state;
     const { top, left, right, width, height, x, y } = offset ? offset : {};
-    console.log('rendering help trigger with', offset);
-    const position = { top: y + height, left: x };
+    const position = { top: top + height, left };
 
     if (!column.helpText) return null;
     return (

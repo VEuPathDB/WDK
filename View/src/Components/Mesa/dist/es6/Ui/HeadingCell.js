@@ -88,7 +88,7 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(newProps) {
-      if (newProps && newProps.column !== this.props.column) {
+      if (newProps && newProps.column !== this.props.column || newProps.column.width !== this.props.column.width) {
         this.updateOffset();
       }
     }
@@ -213,8 +213,7 @@ var HeadingCell = function (_React$PureComponent) {
           x = _ref5.x,
           y = _ref5.y;
 
-      console.log('rendering help trigger with', offset);
-      var position = { top: y + height, left: x };
+      var position = { top: top + height, left: left };
 
       if (!column.helpText) return null;
       return _react2.default.createElement(
