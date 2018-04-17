@@ -143,7 +143,7 @@ var HeadingCell = function (_React$PureComponent) {
       if (!clickStart) return;
       var clickEnd = new Date().getTime();
       var totalTime = clickEnd - clickStart;
-      this.setState({ clickStart: null });
+      this.setState({ clickStart: null, isDragTarget: false });
       if (totalTime <= 500) this.sortColumn();
     }
 
@@ -276,7 +276,7 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'onDragExit',
     value: function onDragExit(event) {
-      var dragee = event.dataTransfer.getData('text');
+      this.setState({ isDragTarget: false });
       event.preventDefault();
     }
   }, {

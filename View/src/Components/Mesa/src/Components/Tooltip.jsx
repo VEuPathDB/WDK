@@ -31,17 +31,20 @@ class Tooltip extends React.Component {
     const { addModal } = this.context;
     const textBox = { render: this.renderTooltipBox };
     this.id = addModal(textBox);
+    if (this.hideTimeout) clearTimeout(this.hideTimeout);
   }
 
   engageTooltip () {
-    if (this.timeout) clearTimeout(this.timeout);
-    this.showTooltip();
+    let { showDelay } = this.props;
+    showDelay = typeof showDelay === 'number' ? showDelay : 500;
+    this.showTimeout = setTimeout(this.showTooltip, showDelay);
   }
 
   disengageTooltip () {
     let { hideDelay } = this.props;
     hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
-    this.timeout = setTimeout(this.hideTooltip, hideDelay);
+    if (this.showTimeout) clearTimeout(this.showTimeout);
+    this.hideTimeout = setTimeout(this.hideTooltip, hideDelay);
   }
 
   hideTooltip () {
