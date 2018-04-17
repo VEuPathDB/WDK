@@ -90,15 +90,13 @@ var Tooltip = function (_React$Component) {
       var children = this.props.children;
 
       var className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
-      var TextBox = this.renderTextBox;
       return _react2.default.createElement(
         'div',
         {
           className: className,
           onMouseEnter: this.showTooltip,
           onMouseLeave: this.hideTooltip },
-        children,
-        _react2.default.createElement(TextBox, null)
+        children
       );
     }
   }], [{
@@ -124,6 +122,8 @@ var Tooltip = function (_React$Component) {
 ;
 
 Tooltip.contextTypes = {
-  yo: _propTypes2.default.string
+  addModal: _propTypes2.default.func,
+  removeModal: _propTypes2.default.func
 };
+
 exports.default = Tooltip;

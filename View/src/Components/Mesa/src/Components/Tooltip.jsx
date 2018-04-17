@@ -64,20 +64,20 @@ class Tooltip extends React.Component {
   render () {
     const { children } = this.props;
     const className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
-    const TextBox = this.renderTextBox;
     return (
       <div
         className={className}
         onMouseEnter={this.showTooltip}
         onMouseLeave={this.hideTooltip}>
         {children}
-        <TextBox />
       </div>
     )
   }
 };
 
 Tooltip.contextTypes = {
-  yo: PropTypes.string
+  addModal: PropTypes.func,
+  removeModal: PropTypes.func
 };
+
 export default Tooltip;
