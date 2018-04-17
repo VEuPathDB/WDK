@@ -48,9 +48,14 @@ class ActionToolbar extends React.PureComponent {
 
   renderActionItemList ({ actions }) {
     const ActionItem = this.renderActionItem;
-    return !actions ? null : actions
-      .filter(action => action.element)
-      .map(action => <ActionItem action={action} />);
+    return (
+      <div>
+        {!actions ? null : actions
+          .filter(action => action.element)
+          .map((action, idx) => <ActionItem action={action} key={idx} />)
+        }
+      </div>
+    );
   }
 
   render () {
