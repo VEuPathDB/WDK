@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
@@ -102,6 +104,9 @@ var DataRow = function (_React$PureComponent) {
           eventHandlers = _props2.eventHandlers;
       var expanded = this.state.expanded;
 
+      var _ref = options ? options : {},
+          columnDefaults = _ref.columnDefaults;
+
       var inline = options.inline ? !expanded : false;
 
       var hasSelectionColumn = typeof options.isRowSelected === 'function' && typeof eventHandlers.onRowSelect === 'function' && typeof eventHandlers.onRowDeselect === 'function';
@@ -116,7 +121,7 @@ var DataRow = function (_React$PureComponent) {
         className += typeof derivedClassName === 'string' ? ' ' + derivedClassName : '';
       };
 
-      var cellProps = { row: row, inline: inline, options: options, rowIndex: rowIndex };
+      var sharedProps = { row: row, inline: inline, options: options, rowIndex: rowIndex };
 
       return _react2.default.createElement(
         'tr',
@@ -127,7 +132,12 @@ var DataRow = function (_React$PureComponent) {
           isRowSelected: options.isRowSelected
         }),
         columns.map(function (column, columnIndex) {
-          return _react2.default.createElement(_DataCell2.default, _extends({ key: column.key, column: column, columnIndex: columnIndex }, cellProps));
+          if ((typeof columnDefaults === 'undefined' ? 'undefined' : _typeof(columnDefaults)) === 'object') column = Object.assign({}, columnDefaults, column);
+          return _react2.default.createElement(_DataCell2.default, _extends({
+            key: column.key,
+            column: column,
+            columnIndex: columnIndex
+          }, sharedProps));
         })
       );
     }

@@ -20,7 +20,7 @@ class DataTable extends React.Component {
     if (!options || !options.useStickyHeader) return false;
     if (!options.tableBodyMaxHeight) return console.error(`
       "useStickyHeader" option enabled but no maxHeight for the table is set.
-      Use a css height as the "tableBodyMaxHeight" option to use this setting;
+      Use a css height as the "tableBodyMaxHeight" option to use this setting.
     `);
     if (!columns.every(hasWidthProperty)) return console.error(`
       "useStickyHeader" opeion enabled but not all columns have explicit widths (required).

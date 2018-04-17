@@ -11,7 +11,7 @@ class HeadingRow extends React.PureComponent {
 
   render () {
     const { filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const { isRowSelected } = options ? options : {};
+    const { isRowSelected, columnDefaults } = options ? options : {};
     const { sort } = uiState ? uiState : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
     const hasSelectionColumn = [ isRowSelected, onRowSelect, onRowDeselect ].every(fn => typeof fn === 'function');
@@ -28,15 +28,19 @@ class HeadingRow extends React.PureComponent {
               isRowSelected={isRowSelected}
             />
         }
-        {columns.map((column, columnIndex) => (
-          <HeadingCell
-            sort={sort}
-            key={column.key}
-            column={column}
-            columnIndex={columnIndex}
-            eventHandlers={eventHandlers}
-          />
-        ))}
+        {columns.map((column, columnIndex) => {
+          if (typeof columnDefaults === 'object')
+            column = Object.assign({}, columnDefaults, column);
+          return (
+            <HeadingCell
+              sort={sort}
+              key={column.key}
+              column={column}
+              columnIndex={columnIndex}
+              eventHandlers={eventHandlers}
+            />
+          );
+        })}
       </tr>
     );
   }
