@@ -40,5 +40,8 @@ th, td {
 }
 
 th.SelectionCell, td.SelectionCell {
-  width: 10px;
+  text-align: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  width: 3em;
 }
