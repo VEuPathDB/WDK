@@ -48,26 +48,16 @@ const ConfigList = [
     ...TableData,
     ...TableData,
     ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
+    ...TableData
   ],
     options: {
-      title: '20x Regular Data!',
+      title: '10x Regular Data!',
       inline: true,
+      paginate: true,
       inlineMaxWidth: '100px',
       columnDefaults: {
         truncated: false,
-        overflowHeight: '2rem',
-        width: '20vw'
+        overflowHeight: '2rem'
       }
     }
   }

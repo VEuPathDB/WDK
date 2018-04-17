@@ -63,10 +63,12 @@ class Pagination extends React.PureComponent {
     const { currentPage, pages, onCh } = this.props;
     const page = this.getRelativePageNumber(relative);
     const icon = this.getRelativeIcon(relative);
-    if (!page || !icon) return null;
-    const handler = () => this.goToPage(page);
-    return (
-      <a onClick={handler} title={'Jump to the ' + relative + ' page'}>
+
+    return (!page || !icon) ? null : (
+      <a
+        onClick={() => this.goToPage(page)}
+        title={'Jump to the ' + relative + ' page'}
+      >
         <Icon fa={icon} />
       </a>
     )

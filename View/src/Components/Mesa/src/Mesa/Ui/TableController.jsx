@@ -77,17 +77,20 @@ class TableController extends React.PureComponent {
 
     let filteredRows = this.getFilteredRows();
     let pageRows = RowUtils.getRowsByPage(filteredRows, currentPage, options);
+    let pageCount = RowUtils.getPageCount(filteredRows, options);
     let pageNav = this.renderPageNav(filteredRows);
 
     return (
       <div className="TableController">
         {!options.toolbar
           ? <div>{children}</div>
-          : (
-            <TableToolbar state={state} dispatch={dispatch} filteredRows={filteredRows}>
+          : <TableToolbar
+              state={state}
+              dispatch={dispatch}
+              filteredRows={filteredRows}
+            >
               {children}
             </TableToolbar>
-          )
         }
         {pageNav}
         <TableBody
