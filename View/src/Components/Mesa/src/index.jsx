@@ -12,7 +12,7 @@ import ModalBoundary from './Components/ModalBoundary';
 
 import * as Utils from './Utils/Utils';
 import * as MesaState from './Utils/MesaState';
-import MesaSelection from './Utils/MesaSelection';
+import * as MesaSelection from './Utils/MesaSelection';
 
 export {
   Mesa,

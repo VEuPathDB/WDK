@@ -100,50 +100,64 @@ export const getSelectedRows = (state, onlyFilteredRows = true) => {
 
 export const getRows = (state) => {
   const { rows } = state;
-  if (!Array.isArray(rows))
-    return badType('getRows', 'rows', 'array', typeof rows) || [];
+  if (!Array.isArray(rows)) {
+    badType('getRows', 'rows', 'array', typeof rows);
+    return [];
+  }
   return rows;
 }
 
 export const getFilteredRows = (state) => {
   const { filteredRows } = state;
-  if (!Array.isArray(filteredRows))
-    return badType('getFilteredRows', 'filteredRows', 'array', typeof filteredRows) || [];
+  if (!Array.isArray(filteredRows)) {
+    badType('getFilteredRows', 'filteredRows', 'array', typeof filteredRows);
+    return [];
+  }
   return filteredRows;
 }
 
 export const getColumns = (state) => {
   const { columns } = state;
-  if (!Array.isArray(columns))
-    return badType('getColumns', 'columns', 'array', typeof columns) || [];
+  if (!Array.isArray(columns)) {
+    badType('getColumns', 'columns', 'array', typeof columns);
+    return [];
+  }
   return columns;
 }
 
 export const getActions = (state) => {
   const { actions } = state;
-  if (!Array.isArray(actions))
-    return badType('getActions', 'actions', 'array', typeof actions) || [];
+  if (!Array.isArray(actions)) {
+    badType('getActions', 'actions', 'array', typeof actions);
+    return [];
+  }
   return actions;
 }
 
 export const getOptions = (state) => {
   const { options } = state;
-  if (typeof options !== 'object')
-    return badType('getOptions', 'options', 'object', typeof options) || {};
+  if (typeof options !== 'object') {
+    badType('getOptions', 'options', 'object', typeof options);
+    return {};
+  }
   return options;
 }
 
 export const getEventHandlers = (state) => {
   const { eventHandlers } = state;
-  if (typeof eventHandlers !== 'object')
-    return badType('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers) || [];
+  if (typeof eventHandlers !== 'object') {
+    badType('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers);
+    return [];
+  }
   return eventHandlers;
 }
 
 export const getUiState = (state) => {
   const { uiState } = state;
-  if (typeof uiState !== 'object')
-    return badType('getUiState', 'uiState', 'object', typeof uiState) || {};
+  if (typeof uiState !== 'object') {
+    badType('getUiState', 'uiState', 'object', typeof uiState);
+    return {};
+  }
   return uiState;
 }
 

@@ -106,49 +106,70 @@ var getSelectedRows = exports.getSelectedRows = function getSelectedRows(state) 
 var getRows = exports.getRows = function getRows(state) {
   var rows = state.rows;
 
-  if (!Array.isArray(rows)) return (0, _Errors.badType)('getRows', 'rows', 'array', typeof rows === 'undefined' ? 'undefined' : _typeof(rows)) || [];
+  if (!Array.isArray(rows)) {
+    (0, _Errors.badType)('getRows', 'rows', 'array', typeof rows === 'undefined' ? 'undefined' : _typeof(rows));
+    return [];
+  }
   return rows;
 };
 
 var getFilteredRows = exports.getFilteredRows = function getFilteredRows(state) {
   var filteredRows = state.filteredRows;
 
-  if (!Array.isArray(filteredRows)) return (0, _Errors.badType)('getFilteredRows', 'filteredRows', 'array', typeof filteredRows === 'undefined' ? 'undefined' : _typeof(filteredRows)) || [];
+  if (!Array.isArray(filteredRows)) {
+    (0, _Errors.badType)('getFilteredRows', 'filteredRows', 'array', typeof filteredRows === 'undefined' ? 'undefined' : _typeof(filteredRows));
+    return [];
+  }
   return filteredRows;
 };
 
 var getColumns = exports.getColumns = function getColumns(state) {
   var columns = state.columns;
 
-  if (!Array.isArray(columns)) return (0, _Errors.badType)('getColumns', 'columns', 'array', typeof columns === 'undefined' ? 'undefined' : _typeof(columns)) || [];
+  if (!Array.isArray(columns)) {
+    (0, _Errors.badType)('getColumns', 'columns', 'array', typeof columns === 'undefined' ? 'undefined' : _typeof(columns));
+    return [];
+  }
   return columns;
 };
 
 var getActions = exports.getActions = function getActions(state) {
   var actions = state.actions;
 
-  if (!Array.isArray(actions)) return (0, _Errors.badType)('getActions', 'actions', 'array', typeof actions === 'undefined' ? 'undefined' : _typeof(actions)) || [];
+  if (!Array.isArray(actions)) {
+    (0, _Errors.badType)('getActions', 'actions', 'array', typeof actions === 'undefined' ? 'undefined' : _typeof(actions));
+    return [];
+  }
   return actions;
 };
 
 var getOptions = exports.getOptions = function getOptions(state) {
   var options = state.options;
 
-  if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') return (0, _Errors.badType)('getOptions', 'options', 'object', typeof options === 'undefined' ? 'undefined' : _typeof(options)) || {};
+  if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
+    (0, _Errors.badType)('getOptions', 'options', 'object', typeof options === 'undefined' ? 'undefined' : _typeof(options));
+    return {};
+  }
   return options;
 };
 
 var getEventHandlers = exports.getEventHandlers = function getEventHandlers(state) {
   var eventHandlers = state.eventHandlers;
 
-  if ((typeof eventHandlers === 'undefined' ? 'undefined' : _typeof(eventHandlers)) !== 'object') return (0, _Errors.badType)('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers === 'undefined' ? 'undefined' : _typeof(eventHandlers)) || [];
+  if ((typeof eventHandlers === 'undefined' ? 'undefined' : _typeof(eventHandlers)) !== 'object') {
+    (0, _Errors.badType)('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers === 'undefined' ? 'undefined' : _typeof(eventHandlers));
+    return [];
+  }
   return eventHandlers;
 };
 
 var getUiState = exports.getUiState = function getUiState(state) {
   var uiState = state.uiState;
 
-  if ((typeof uiState === 'undefined' ? 'undefined' : _typeof(uiState)) !== 'object') return (0, _Errors.badType)('getUiState', 'uiState', 'object', typeof uiState === 'undefined' ? 'undefined' : _typeof(uiState)) || {};
+  if ((typeof uiState === 'undefined' ? 'undefined' : _typeof(uiState)) !== 'object') {
+    (0, _Errors.badType)('getUiState', 'uiState', 'object', typeof uiState === 'undefined' ? 'undefined' : _typeof(uiState));
+    return {};
+  }
   return uiState;
 };
 

@@ -63,7 +63,7 @@ class HeadingCell extends React.PureComponent {
     const { column, sort, eventHandlers } = this.props;
     const { onSort } = eventHandlers;
     if (typeof onSort !== 'function' || !column.sortable) return;
-    const currentlySorting = sort.columnKey === column.key;
+    const currentlySorting = sort && sort.columnKey === column.key;
     const direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
     return onSort(column, direction);
   }
