@@ -53,7 +53,7 @@ class Tooltip extends React.Component {
     return !showText ? null : (
       <div
         style={textStyle}
-        className="Tooltip-Text"
+        className="Tooltip-Text">
         {text}
       </div>
     );
