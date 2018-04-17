@@ -1,7 +1,7 @@
 import React from 'react';
 
 import './Modal.scss';
-import { BodyLayer } from 'mesa';
+import { BodyLayer } from 'Components/Mesa';
 
 class Modal extends React.Component {
   constructor (props) {

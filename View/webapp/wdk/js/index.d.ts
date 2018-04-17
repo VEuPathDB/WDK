@@ -1,4 +1,4 @@
-declare module 'mesa';
+declare module 'Components/Mesa';
 
 // Type definitions for legacy code base
 // -------------------------------------

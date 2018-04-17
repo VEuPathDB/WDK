@@ -1,3 +1,4 @@
+import * as Mesa from 'Components/Mesa';
 import Link from 'Components/Link/Link';
 import Icon from 'Components/Icon/Icon';
 import Main from 'Components/Layout/Main';
@@ -54,6 +55,7 @@ import ApplicationSpecificProperties from 'Views/User/ApplicationSpecificPropert
 import RecordAttributeSection from 'Views/Records/RecordAttributes/RecordAttributeSection';
 
 export {
+  Mesa,
   Icon,
   Main,
   Page,

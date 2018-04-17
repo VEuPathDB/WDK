@@ -6,7 +6,7 @@ import {
   MesaState,
   Utils as MesaUtils,
   AnchoredTooltip as Tooltip
-} from 'mesa';
+} from 'Components/Mesa';
 
 
 import './UserDatasetList.scss';

@@ -1,5 +1,5 @@
 import { bindAll, curry, escapeRegExp, get, keyBy } from 'lodash';
-import { MesaController as Mesa } from 'mesa';
+import { MesaController as Mesa } from 'Components/Mesa';
 import React from 'react';
 
 import Icon from 'Components/Icon/IconAlt';
