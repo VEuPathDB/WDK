@@ -15,10 +15,16 @@ const fancy = {
   backgroundImage: `url(${bgImage})`
 };
 
-const AlphaColumnSet = {
+const CustomSetup = {
   dataSet: {
     primary: true,
     style: { width: '20%' },
+    renderCell (key, value) {
+      let style = { fontWeight: 400, letterSpacing: 0 };
+      return (
+        <h2 style={style}>{value}</h2>
+      )
+    },
     renderHeading: () => {
       return (
         <div style={fancy}>
@@ -30,7 +36,7 @@ const AlphaColumnSet = {
   organism: {
     name: 'Organism',
     type: 'html',
-    width: '15%'
+    width: '150px'
   },
   released: { name: 'Released', width: '10%' },
   category: 'Category',
@@ -61,4 +67,4 @@ const AlphaColumnSet = {
   }
 ];                       */
 
-export default AlphaColumnSet;
+export default CustomSetup;

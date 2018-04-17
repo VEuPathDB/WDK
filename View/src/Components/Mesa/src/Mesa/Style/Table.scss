@@ -1,5 +1,5 @@
-.TableController {
-  max-width: 100%;
+.TableController, .Table-Wrapper {
+  max-width: 100vw;
   overflow-x: auto;
   overflow-y: visible;
 }
@@ -14,5 +14,5 @@
 }
 
 .Table-Toolbar {
-  
+
 }

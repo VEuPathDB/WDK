@@ -5,6 +5,7 @@ import Utils from 'Mesa/Utils/Utils';
 import Icon from 'Mesa/Components/Icon';
 import Table from 'Mesa/Components/Table';
 import TableSearch from 'Mesa/Components/TableSearch';
+import ColumnEditor from 'Mesa/Components/ColumnEditor';
 import { autoWidth, autoFactor } from 'Mesa/Utils/Breakpoints';
 
 class TableController extends React.Component {
@@ -13,7 +14,7 @@ class TableController extends React.Component {
     let initialState = Store.getState();
     let { columns } = this.props;
     let hiddenColumns = columns.filter(column => column.hidden);
-    this.state = Object.assign({}, initialState, hiddenColumns);
+    this.state = Object.assign({}, initialState, { hiddenColumns });
 
     this.componentDidMount = this.componentDidMount.bind(this);
     this.getColumnList = this.getColumnList.bind(this);
@@ -79,18 +80,20 @@ class TableController extends React.Component {
 
   render () {
     const { searchQuery, filter, sort, hiddenColumns } = this.state;
-    const { title } = this.props;
-    const columns = this.getColumnList();
-    const rows = this.getRowList();
+    const { title, columns } = this.props;
+    const filteredRows = this.getRowList();
+    const filteredColumns = this.getColumnList();
 
     return (
       <div className="TableController">
         <div className="Table-Toolbar">
           {title && <h1 className="Table-Title">{title}</h1>}
           <TableSearch />
-          <button><Icon fa={'columns'} />Add/Remove Columns</button>
+          <ColumnEditor columns={columns}>
+            <button><Icon fa={'columns'} />Add/Remove Columns</button>
+          </ColumnEditor>
         </div>
-        <Table rows={rows} columns={columns} />
+        <Table rows={filteredRows} columns={filteredColumns} />
       </div>
     );
   }
