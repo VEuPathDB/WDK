@@ -95,8 +95,8 @@ class HeadingCell extends React.PureComponent {
 
     return column.hidden ? null : (
       <th
-        key={column.key}
         style={style}
+        key={column.key}
         ref={el => this.element = el}
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
