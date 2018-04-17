@@ -48,7 +48,10 @@ class Tooltip extends React.Component {
 
   renderTextBox () {
     const { text, position } = this.props;
-    const { top, left } = position ? position : { top: 0, left: 0 };
+    let { top, left } = position ? position : { top: 0, left: 0 };
+    top = (typeof top === 'number' ? top : 0);
+    console.log('top is...', top);
+
 
     const textStyle = {
       top,
