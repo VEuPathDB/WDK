@@ -7,9 +7,8 @@ export const ColumnDefaults = {
   primary: false,
   searchable: true,
   sortable: true,
-  editable: false,
   resizeable: true,
-  truncated: true,
+  truncated: false,
 
   filterable: false,
   filterState: {
@@ -28,16 +27,31 @@ export const ColumnDefaults = {
 export const OptionsDefaults = {
   title: null,
   toolbar: true,
-  search: true,
   inline: false,
   className: null,
-  paginate: false,
-  rowsPerPage: 20,
-  selectAllPages: false,
+  showCount: true,
+  errOnOverflow: false,
   editableColumns: true,
   overflowHeight: '16em',
-  useDefaultActions: false,
-  searchPlaceholder: 'Search This Table'
+  searchPlaceholder: 'Search This Table',
+  isRowSelected: (row, indexx) => {
+    return false;
+  }
+};
+
+export const UiStateDefaults = {
+  searchQuery: null,
+  filteredRowCount: 0,
+  sort: {
+    columnKey: null,
+    direction: 'asc'
+  },
+  pagination: {
+    currentPage: 1,
+    totalPages: null,
+    totalRows: null,
+    rowsPerPage: 20
+  }
 };
 
 export const ActionDefaults = [

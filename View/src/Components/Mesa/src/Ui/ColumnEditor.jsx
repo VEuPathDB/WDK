@@ -4,56 +4,66 @@ import Events from '../Utils/Events';
 import Icon from '../Components/Icon';
 import Modal from '../Components/Modal';
 import Checkbox from '../Components/Checkbox';
-import {
-  hideColumn,
-  showColumn,
-  toggleColumnEditor,
-  openColumnEditor,
-  closeColumnEditor
-} from '../State/Actions';
 
 class ColumnEditor extends React.PureComponent {
   constructor (props) {
     super(props);
 
+    this.state = {
+      editorOpen: false
+    };
+
     this.openEditor = this.openEditor.bind(this);
     this.closeEditor = this.closeEditor.bind(this);
-    this.renderModal = this.renderModal.bind(this);
     this.toggleEditor = this.toggleEditor.bind(this);
+
+    this.renderModal = this.renderModal.bind(this);
     this.renderTrigger = this.renderTrigger.bind(this);
+    this.renderColumnListItem = this.renderColumnListItem.bind(this);
+
+    this.showColumn = this.showColumn.bind(this);
+    this.hideColumn = this.hideColumn.bind(this);
     this.showAllColumns = this.showAllColumns.bind(this);
     this.hideAllColumns = this.hideAllColumns.bind(this);
-    this.renderColumnListItem = this.renderColumnListItem.bind(this);
   }
 
   openEditor () {
-    const { dispatch } = this.props;
-    dispatch(openColumnEditor());
+    this.setState({ editorOpen: true })
     if (!this.closeListener) this.closeListener = Events.onKey('esc', this.closeEditor);
   }
 
-  showAllColumns () {
-    const { state, dispatch } = this.props;
-    const { columns } = state;
-    return columns.forEach(col => dispatch(showColumn(col)));
-  }
-
-  hideAllColumns () {
-    const { state, dispatch } = this.props;
-    const { columns } = state;
-    const hideableColumns = columns.filter(col => col.hideable && !col.hidden);
-    return hideableColumns.forEach(col => dispatch(hideColumn(col)));
-  }
-
   closeEditor () {
-    const { dispatch } = this.props;
-    dispatch(closeColumnEditor());
+    this.setState({ editorOpen: false })
     if (this.closeListener) Events.remove(this.closeListener);
   }
 
   toggleEditor () {
-    const { dispatch } = this.props;
-    dispatch(toggleColumnEditor());
+    let { editorOpen } = this.state;
+    return editorOpen ? this.closeEditor() : this.openEditor();
+  }
+
+  showColumn (column) {
+    const { eventHandlers } = this.props;
+    const { onShowColumn } = eventHandlers;
+    if (onShowColumn) onShowColumn(column);
+  }
+
+  hideColumn (column) {
+    const { eventHandlers } = this.props;
+    const { onHideColumn } = eventHandlers;
+    if (onHideColumn) onHideColumn(column);
+  }
+
+  showAllColumns () {
+    const { columns, eventHandlers } = this.props;
+    const hiddenColumns = columns.filter(col => col.hidden);
+    hiddenColumns.forEach(column => this.showColumn(column));
+  }
+
+  hideAllColumns () {
+    const { columns, eventHandlers } = this.props;
+    const shownColumns = columns.filter(col => !col.hidden);
+    shownColumns.forEach(column => this.hideColumn(column));
   }
 
   renderTrigger () {
@@ -66,14 +76,12 @@ class ColumnEditor extends React.PureComponent {
   }
 
   renderColumnListItem (column) {
-    const { dispatch } = this.props;
-    const toggler = () => dispatch(column.hidden ? showColumn(column) : hideColumn(column));
     return (
       <li className="ColumnEditor-List-Item" key={column.key}>
         <Checkbox
           checked={!column.hidden}
           disabled={!column.hideable}
-          onChange={toggler}
+          onChange={() => ((column.hidden ? this.showColumn : this.hideColumn)(column))}
         />
         {' ' + (column.name || column.key)}
       </li>
@@ -81,12 +89,9 @@ class ColumnEditor extends React.PureComponent {
   }
 
   renderModal () {
-    const { state } = this.props;
-    const { columns, uiState } = state;
-    const { columnEditorOpen } = uiState;
-
+    const { editorOpen } = this.state;
     return (
-      <Modal open={columnEditorOpen} onClose={this.closeEditor}>
+      <Modal open={editorOpen} onClose={this.closeEditor}>
         <h3>Add / Remove Columns</h3>
         <small>
           <a onClick={this.showAllColumns}>Select All</a>

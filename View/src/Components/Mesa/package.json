@@ -14,15 +14,14 @@
     "react": ">=15.0.0"
   },
   "scripts": {
-    "copy:css": "cp dist/css/mesa.cs* dist/commonjs && cp dist/css/mesa.cs* dist/es6",
-    "copy": "npm run copy:css",
-
     "compile:sass": "sass src/Style/Mesa.scss dist/css/mesa.css -t compressed",
     "compile:cjs": "babel src --out-dir dist/commonjs",
     "compile:es": "cross-env BABEL_ENV=es babel src --out-dir dist/es6",
     "compile": "npm run compile:cjs && npm run compile:es && npm run compile:sass",
-
     "clean": "rm -rf dist/* && mkdir dist/css dist/es6 dist/commonjs",
-    "build": "npm run clean && npm run compile && npm run copy"
+    "build": "npm run clean && npm run compile"
+  },
+  "dependencies": {
+    "prop-types": "^15.6.0"
   }
 }

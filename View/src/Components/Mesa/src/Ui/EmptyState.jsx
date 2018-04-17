@@ -1,7 +1,6 @@
 import React from 'react';
 
 import Icon from '../Components/Icon';
-import { disableAllColumnFilters } from '../State/Actions';
 
 class EmptyState extends React.PureComponent {
   constructor (props) {
@@ -10,16 +9,15 @@ class EmptyState extends React.PureComponent {
   }
 
   getCulprit () {
-    const { state, dispatch } = this.props;
-    const { emptinessCulprit, searchQuery } = state.uiState;
-    switch (emptinessCulprit) {
+    const { culprit } = this.props;
+    switch (culprit) {
       case 'search':
         return {
           icon: 'search',
           title: 'No Results',
           content: (
             <div>
-              <p>Sorry, "{searchQuery}" returned no results.</p>
+              <p>Sorry, your search returned no results.</p>
             </div>
           )
         };
@@ -40,9 +38,6 @@ class EmptyState extends React.PureComponent {
           content: (
             <div>
               <p>No rows exist that match all of your column filter settings.</p>
-              <button onClick={() => dispatch(disableAllColumnFilters())}>
-                Disable All Filters <Icon fa={'times-rectangle'} />
-              </button>
             </div>
           )
         };
@@ -61,11 +56,8 @@ class EmptyState extends React.PureComponent {
   }
 
   render () {
-    let { state } = this.props;
-    let { columns, uiState, actions } = state;
-    let { emptinessCulprit } = uiState;
-    let colspan = columns.filter(column => !column.hidden).length + (actions.length ? 1 : 0);
-    let culprit = this.getCulprit();
+    const { colspan } = this.props;
+    const culprit = this.getCulprit();
 
     return (
       <tr className="EmptyState">

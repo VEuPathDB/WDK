@@ -1,7 +1,6 @@
 import React from 'react';
 
 import Icon from '../Components/Icon';
-import { searchByQuery } from '../State/Actions';
 
 class TableSearch extends React.PureComponent {
   constructor (props) {
@@ -11,33 +10,35 @@ class TableSearch extends React.PureComponent {
   }
 
   handleQueryChange (e) {
-    let { dispatch } = this.props;
-    let query = e.target.value;
-    dispatch(searchByQuery(query));
+    const query = e.target.value;
+    const { onSearch } = this.props;
+    if (onSearch) onSearch(query);
   }
 
   clearSearchQuery () {
-    let { dispatch } = this.props;
-    dispatch(searchByQuery(null));
+    const query = null;
+    const { onSearch } = this.props;
+    if (onSearch) onSearch(query);
   }
 
   render () {
-    let { state } = this.props;
-    let { uiState, options } = state;
-    let { searchQuery } = uiState;
+    const { options, query } = this.props;
+    const { searchPlaceholder } = options;
+    const { handleQueryChange, clearSearchQuery } = this;
 
     return (
       <div className="TableSearch">
         <Icon fa={'search'} />
         <input
           type="text"
-          onChange={this.handleQueryChange}
+          name="Search"
           value={searchQuery || ''}
-          placeholder={options.searchPlaceholder}
+          onChange={handleQueryChange}
+          placeholder={searchPlaceholder}
         />
         {searchQuery && (
-          <button onClick={this.clearSearchQuery}>
-            <Icon fa="times-circle" />
+          <button onClick={clearSearchQuery}>
+            <Icon fa={'times-circle'} />
             Clear Search
           </button>
         )}

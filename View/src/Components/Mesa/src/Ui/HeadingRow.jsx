@@ -2,6 +2,7 @@ import React from 'react';
 
 import HeadingCell from '../Ui/HeadingCell';
 import SelectionCell from '../Ui/SelectionCell';
+import { ColumnDefaults } from '../Defaults';
 
 class HeadingRow extends React.PureComponent {
   constructor (props) {
@@ -9,26 +10,28 @@ class HeadingRow extends React.PureComponent {
   }
 
   render () {
-    const { state, dispatch, filteredRows } = this.props;
-    const { columns, actions } = state;
+    const { options, columns, actions, uiState, eventHandlers } = this.props;
+    const hasSelectionColumn = typeof options.isRowSelected === 'function'
+      && typeof eventHandlers.onRowSelect === 'function'
+      && typeof eventHandlers.onRowDeselect === 'function';
 
     return (
-      <tr className="HeadingRow">
-        {actions.length
-          ? <SelectionCell
+      <tr className="Row HeadingRow">
+        {!hasSelectionColumn
+          ? null
+          : <SelectionCell
               heading={true}
-              state={state}
-              dispatch={dispatch}
-              filteredRows={filteredRows}
+              rows={rows}
+              eventHandlers={eventHandlers}
+              isRowSelected={options.isRowSelected}
             />
-          : null
         }
         {columns.map(column => (
           <HeadingCell
             key={column.key}
             column={column}
-            state={state}
-            dispatch={dispatch}
+            sort={uiState.sort}
+            eventHandlers={eventHandlers}
           />
         ))}
       </tr>
