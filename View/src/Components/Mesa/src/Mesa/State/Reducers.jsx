@@ -25,6 +25,7 @@ export default function ReducerFactory (base = {}) {
       }
 
       /* Updates -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
+      
       case 'UPDATE_OPTIONS': {
         let { options } = action;
         return Object.assign({}, state, { options });

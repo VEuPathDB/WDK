@@ -58,10 +58,12 @@ const Utils = {
 
   trimPunctuation (text) {
     if (typeof text !== 'string' || !text.length) return text;
+
     text = Utils.trimInitialPunctuation(text);
     text = Utils.reverseText(text);
     text = Utils.trimInitialPunctuation(text);
     text = Utils.reverseText(text);
+
     return text;
   },
 
@@ -69,6 +71,7 @@ const Utils = {
     if (typeof text !== 'string' || typeof cutoff !== 'number') return text;
     let count = Utils.wordCount(text);
     if (count < cutoff) return text;
+
     let words = text.trim().split(' ').filter(x => x.length);
     let threshold = Math.ceil(cutoff * 0.66);
     let short = words.slice(0, threshold).join(' ');
@@ -90,16 +93,26 @@ const Utils = {
     let result = items.sort((a, b) => {
       let A = a[sortByKey] ? parseFloat(a[sortByKey]) : 0;
       let B = b[sortByKey] ? parseFloat(b[sortByKey]) : 0;
-      return A < B;
+      return A === B ? 0 :(A < B ? 1 : -1);
+      return result;
     });
     return ascending ? result.reverse() : result;
+  },
+
+  sortFactory (accessor) {
+    accessor = (typeof accessor == 'function' ? accessor : (value) => value);
+    return function (a, b) {
+      let A = accessor(a);
+      let B = accessor(b);
+      return A === B ? 0 :(A < B ? 1 : -1);
+    };
   },
 
   textSort (items, sortByKey, ascending = true) {
     let result = items.sort((a, b) => {
       let A = typeof a[sortByKey] === 'string' ? a[sortByKey].trim() : Utils.stringValue(a[sortByKey]);
       let B = typeof b[sortByKey] === 'string' ?  b[sortByKey].trim() : Utils.stringValue(b[sortByKey]);
-      return A < B;
+      return A === B ? 0 :(A < B ? 1 : -1);
     });
     return ascending ? result.reverse() : result;
   },
@@ -119,7 +132,22 @@ const Utils = {
 
   isNumeric (value) {
     return !Array.isArray(value) && (value - parseFloat(value) + 1) >= 0;
+  },
+
+  randomize (low = 0, high = 99) {
+    return Math.floor(Math.random() * (high - low + 1) + low);
+  },
+
+  uid (len = 8) {
+    let output = '';
+    while (output.length < len) {
+      let index = Utils.randomize(0, 35);
+      if (index >= 10) output += String.fromCharCode(87 + index);
+      else output += index.toString();
+    };
+    return output;
   }
+
 };
 
 export default Utils;

@@ -40,34 +40,6 @@ const RowUtils = {
       let result = !filters.some(({ key, blacklist }) => blacklist.includes(row[key]));
       return result;
     });
-  },
-
-  getRowsByPage (rows, page, options) {
-    if (!rows || !page || !options) return rows;
-    const { paginate, rowsPerPage } = options;
-    if (!paginate || !rowsPerPage || typeof rowsPerPage !== 'number') return rows;
-    if (rows.length <= rowsPerPage) return rows;
-    let start = (rowsPerPage * (page - 1));
-    return rows.slice(start, start + rowsPerPage);
-  },
-
-  getPageCount (rows, options) {
-    if (!rows || !options) return 1;
-    const { paginate, rowsPerPage } = options;
-    if (!paginate || !rowsPerPage || typeof rowsPerPage !== 'number') return 1;
-    if (rows.length <= rowsPerPage) return 1;
-    else return Math.floor(rows.length / rowsPerPage) + (rows.length % rowsPerPage === 0 ? 0 : 1);
-  },
-
-  getSpanByPage (rows, page, options) {
-    if (!rows || !page || !options) return [1, rows.length, rows.length];
-    const { paginate, rowsPerPage } = options;
-    if (!paginate || !rowsPerPage || typeof rowsPerPage !== 'number') return [1, rows.length, rows.length];
-    if (rows.length <= rowsPerPage) return [1, rows.length, rows.length];
-    let start = (rowsPerPage * (page - 1)) + 1;
-    let end = (start + rowsPerPage - 1) > rows.length ? rows.length : (start + rowsPerPage - 1);
-    let total = rows.length;
-    return [ start, end, total ];
   }
 };
 

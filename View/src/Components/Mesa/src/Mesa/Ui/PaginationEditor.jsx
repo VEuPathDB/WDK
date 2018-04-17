@@ -17,7 +17,7 @@ class PaginationEditor extends React.PureComponent {
 
   render () {
     const { pagination } = this.props;
-    let options = [ 5, 10, 15, 20, 30 ];
+    let options = [ 5, 10, 20, 35, 50, 100 ];
 
     return (
       <div className="PaginationEditor">

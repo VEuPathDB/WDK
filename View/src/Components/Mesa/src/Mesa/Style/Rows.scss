@@ -1,7 +1,10 @@
-tr {
-  transition: all 0.3s;
-
-  &:first-child {
+tbody:first-of-type {
+  tr:first-of-type {
+    th, td {
+      border-top: 1px solid $borderColor;
+    }
+  }
+  tr:first-of-type {
     th:first-child, td:first-child {
       border-top-left-radius: $borderRadius;
       overflow: hidden;
@@ -11,8 +14,10 @@ tr {
       overflow: hidden;
     }
   }
+}
 
-  &:last-child {
+tbody:last-of-type {
+  tr:last-child {
     th:first-child, td:first-child {
       border-bottom-left-radius: $borderRadius;
       overflow: hidden;
@@ -22,17 +27,14 @@ tr {
       overflow: hidden;
     }
   }
+}
 
-  &:nth-child(odd) {
-    background: rgba(0, 0, 0, 0.02);
-  }
-
-  &:first-of-type {
-    th, td {
-      border-top: 1px solid $borderColor;
-    }
-  }
+tr {
+  transition: all 0.3s;
   &:hover {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+  }
+  &:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.02);
   }
 }

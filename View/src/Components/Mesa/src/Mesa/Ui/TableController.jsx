@@ -6,7 +6,7 @@ import PaginationMenu from 'Mesa/Ui/PaginationMenu';
 import TableToolbar from 'Mesa/Ui/TableToolbar';
 import { setEmptinessCulprit } from 'Mesa/State/Actions';
 
-class TableController extends React.PureComponent {
+class TableController extends React.Component {
   constructor (props) {
     super(props);
     this.getFilteredRows = this.getFilteredRows.bind(this);
@@ -19,25 +19,23 @@ class TableController extends React.PureComponent {
 
     if (!rows.length) {
       if (emptinessCulprit !== 'nodata') dispatch(setEmptinessCulprit('nodata'));
-      return rows;
+      return [];
     }
 
     if (searchQuery && searchQuery.length)
       rows = RowUtils.searchRowsForQuery(rows, columns, searchQuery);
     if (!rows.length) {
       if (emptinessCulprit !== 'search') dispatch(setEmptinessCulprit('search'));
-      return rows;
+      return [];
     }
 
-    if (columns.some(column => column.filterState.enabled))
-      rows = RowUtils.filterRowsByColumns(rows, columns);
+    rows = RowUtils.filterRowsByColumns(rows, columns);
     if (!rows.length) {
       if (emptinessCulprit !== 'filters') dispatch(setEmptinessCulprit('filters'));
-      return rows;
+      return [];
     }
 
-    if (sort.byColumn)
-      rows = RowUtils.sortRowsByColumn(rows, sort.byColumn, sort.ascending);
+    if (sort.byColumn) rows = RowUtils.sortRowsByColumn(rows, sort.byColumn, sort.ascending);
 
     return rows;
   }
@@ -64,18 +62,21 @@ class TableController extends React.PureComponent {
           : <TableToolbar
               state={state}
               dispatch={dispatch}
-              filteredRows={filteredRows}
-            >
+              filteredRows={filteredRows}>
               {children}
             </TableToolbar>
         }
+
         {pageNav}
+
         <TableBody
           state={state}
           dispatch={dispatch}
           filteredRows={filteredRows}
         />
+
         {pageNav}
+
       </div>
     );
   }

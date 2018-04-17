@@ -36,11 +36,13 @@ class HeadingCell extends React.PureComponent {
     const { column, state, dispatch } = this.props;
     const content = this.renderContent();
     const DefuseSortClick = this.defuseSortClick;
+    const { headingStyle } = column;
 
     return column.hidden ? null : (
       <th
         key={column.key}
         ref={el => this.element = el}
+        style={headingStyle}
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
         {column.sortable && (

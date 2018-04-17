@@ -2,7 +2,7 @@ import React from 'react';
 
 import PaginationUtils from 'Mesa/Utils/PaginationUtils';
 
-class PaginatedList extends React.PureComponent {
+class PaginatedList extends React.Component {
   constructor (props) {
     super(props);
   }

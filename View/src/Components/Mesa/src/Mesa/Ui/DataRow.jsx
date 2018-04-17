@@ -32,6 +32,8 @@ class DataRow extends React.PureComponent {
   }
 
   toggleRow () {
+    const { row } = this.props;
+    console.log('u clicked' ,row);
     if (!this.props.state.options.inline) return;
     const { expanded } = this.state;
     this.setState({ expanded: !expanded });

@@ -18,6 +18,7 @@ class Mesa extends React.Component {
   componentWillMount () {
     let { options, columns, rows } = this.props;
 
+    rows = Importer.importRows(rows);
     options = Importer.importOptions(options);
     columns = Importer.importColumns(columns, rows, options);
 
@@ -30,14 +31,15 @@ class Mesa extends React.Component {
 
     if (newProps.options !== this.props.options) {
       let options = Importer.importOptions(newProps.options);
-      dispatch(updateOptions(options));
+      dispatch(updateOptions(Object.assign({}, options)));
     }
     if (newProps.columns !== this.props.columns) {
       let columns = Importer.importColumns(newProps.columns, newProps.rows, newProps.options);
-      dispatch(updateColumns(columns));
+      dispatch(updateColumns([...columns]));
     }
     if (newProps.rows !== this.props.rows) {
-      dispatch(updateRows(newProps.rows));
+      let rows = Importer.importRows(newProps.rows)
+      dispatch(updateRows([...rows]));
     }
   }
 
