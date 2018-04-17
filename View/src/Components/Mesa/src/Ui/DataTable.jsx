@@ -40,9 +40,7 @@ class DataTable extends React.PureComponent {
     };
 
     const widthLayer = {
-      minWidth: cumulativeWidth,
-      maxWidth: cumulativeWidth,
-      width: cumulativeWidth
+      minWidth: cumulativeWidth
     };
 
     return useStickyLayout ? (

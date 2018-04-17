@@ -91,9 +91,7 @@ var DataTable = function (_React$PureComponent) {
       };
 
       var widthLayer = {
-        minWidth: cumulativeWidth,
-        maxWidth: cumulativeWidth,
-        width: cumulativeWidth
+        minWidth: cumulativeWidth
       };
 
       return useStickyLayout ? _react2.default.createElement(
