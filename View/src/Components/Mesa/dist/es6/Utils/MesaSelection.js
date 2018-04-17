@@ -14,7 +14,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 var createSelection = exports.createSelection = function createSelection() {
   var _selection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
-  var selection = new Set(Array.isArray(_selection) ? _selection : []);
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
+  var selection = new Set(_selection);
   return [].concat(_toConsumableArray(selection));
 };
 
@@ -25,24 +26,34 @@ var selectionFromRows = exports.selectionFromRows = function selectionFromRows(r
 };
 
 var addRowToSelection = exports.addRowToSelection = function addRowToSelection(_selection, row, idAccessor) {
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('addRowToSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
   var id = idAccessor(row);
   return addIdToSelection(_selection, id);
 };
 
-var addIdToSelection = exports.addIdToSelection = function addIdToSelection(_selection, id) {
-  var selection = new Set(Array.isArray(_selection) ? _selection : []);
+var addIdToSelection = exports.addIdToSelection = function addIdToSelection() {
+  var _selection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
+  var id = arguments[1];
+
+  console.log('adding id', id, 'to selection', _selection);
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
+  var selection = new Set(_selection);
   selection.add(id);
   return [].concat(_toConsumableArray(selection));
 };
 
 var removeRowFromSelection = exports.removeRowFromSelection = function removeRowFromSelection(_selection, row, idAccessor) {
+  console.log('removing row', row, 'from selection', _selection);
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
   var id = idAccessor(row);
   return removeIdFromSelection(_selection, id);
 };
 
 var removeIdFromSelection = exports.removeIdFromSelection = function removeIdFromSelection(_selection, id) {
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   var selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [].concat(_toConsumableArray(selection));
