@@ -4,7 +4,6 @@ import Icon from 'Mesa/Components/Icon';
 import TableSearch from 'Mesa/Ui/TableSearch';
 import ColumnEditor from 'Mesa/Ui/ColumnEditor';
 import RowUtils from 'Mesa/Utils/RowUtils';
-import PaginationEditor from 'Mesa/Ui/PaginationEditor';
 import RowCounter from 'Mesa/Ui/RowCounter';
 
 class TableToolbar extends React.PureComponent {
@@ -36,14 +35,6 @@ class TableToolbar extends React.PureComponent {
         <div className="TableToolbar-Info">
           <RowCounter state={state} filteredRows={filteredRows} />
         </div>
-        {options.paginate
-          ? (
-            <div className="TableToolbar-Info">
-              <PaginationEditor pagination={pagination} dispatch={dispatch} />
-            </div>
-          )
-          : null
-        }
         {children && (
           <div className="TableToolbar-Children">
             {children}

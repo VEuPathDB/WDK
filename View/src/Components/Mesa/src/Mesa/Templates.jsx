@@ -19,6 +19,17 @@ const Templates = {
       : <div className={className}>{text}</div>
   },
 
+  numberCell (column, row) {
+    const { key, truncated } = column;
+    if (!key) return;
+
+    const className = 'Cell NumberCell Cell-' + key;
+    const value = row[key]
+    const display = typeof value === 'number' ? value.toLocaleString() : Utils.stringValue(value);
+
+    return <div className={className}>{display}</div>
+  },
+
   htmlCell (column, row) {
     const { key, truncated } = column;
     if (!key) return;
@@ -36,7 +47,7 @@ const Templates = {
     let { key, name } = column;
     if (!key) return;
 
-    const className = 'Cell Heading-Cell Heading-Cell-' + key;
+    const className = 'Cell HeadingCell HeadingCell-' + key;
     const content = (<b>{name || key}</b>);
 
     return (

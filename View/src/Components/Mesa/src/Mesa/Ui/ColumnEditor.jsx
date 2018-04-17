@@ -80,33 +80,22 @@ class ColumnEditor extends React.PureComponent {
     );
   }
 
-  renderColumnList () {
-    const { state } = this.props;
-    const { columns } = state;
-    const columnList = columns.map(this.renderColumnListItem);
-
-    return (
-      <ul className="ColumnEditor-List">
-        {columnList}
-      </ul>
-    )
-  }
-
   renderModal () {
     const { state } = this.props;
-    const { ui } = state;
+    const { columns, ui } = state;
     const { columnEditorOpen } = ui;
-    const columnList = this.renderColumnList();
 
     return (
       <Modal open={columnEditorOpen} onClose={this.closeEditor}>
-        <h3>Add / Remove Column</h3>
+        <h3>Add / Remove Columns</h3>
         <small>
           <a onClick={this.showAllColumns}>Select All</a>
           <span> | </span>
           <a onClick={this.hideAllColumns}>Clear All</a>
         </small>
-        {columnList}
+        <ul className="ColumnEditor-List">
+          {columns.map(this.renderColumnListItem)}
+        </ul>
         <button onClick={this.closeEditor} style={{ margin: '0 auto', display: 'block' }}>
           Close
         </button>

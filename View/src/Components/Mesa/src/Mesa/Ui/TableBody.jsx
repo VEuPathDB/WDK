@@ -6,7 +6,7 @@ import HeadingRow from 'Mesa/Ui/HeadingRow';
 import EmptyState from 'Mesa/Ui/EmptyState';
 import PaginatedList from 'Mesa/Ui/PaginatedList';
 
-class TableBody extends React.PureComponent {
+class TableBody extends React.Component {
   constructor (props) {
     super(props);
     this.renderDataRow = this.renderDataRow.bind(this);
@@ -16,7 +16,7 @@ class TableBody extends React.PureComponent {
     const { state, dispatch } = this.props;
     return (
       <DataRow
-        key={idx}
+        key={row.__id}
         row={row}
         state={state}
         dispatch={dispatch}

@@ -18,7 +18,11 @@ const Importer = {
   columnsFromRows (rows = [], options) {
     const keys = [];
     if (!Array.isArray(rows)) return [];
-    rows.forEach(row => Object.keys(row).forEach(prop => keys.indexOf(prop) < 0 && keys.push(prop)));
+    rows.forEach(row => {
+      Object.keys(row).forEach(prop => {
+        if (prop !== '__id' && keys.indexOf(prop) < 0) keys.push(prop)
+      });
+    });
     return keys.map(key => Importer.homogenizeColumn({ key }, rows, options));
   },
 
@@ -53,6 +57,15 @@ const Importer = {
       if (!Array.isArray(columns)) return Importer.columnsFromMap(columns, rows, options);
       return Importer.processColumns(columns, rows, options);
     }
+  },
+
+  importRows (rows) {
+    if (!rows || !Array.isArray(rows) || rows.some(row => typeof row !== 'object')) return [];
+    rows = rows.map(row => {
+      let __id = Utils.uid();
+      return Object.assign({}, row, { __id });
+    });
+    return rows;
   },
 
   importOptions (options = {}) {

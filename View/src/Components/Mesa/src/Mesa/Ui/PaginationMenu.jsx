@@ -2,6 +2,7 @@ import React from 'react';
 
 import Icon from 'Mesa/Components/Icon';
 import PaginationUtils from 'Mesa/Utils/PaginationUtils';
+import PaginationEditor from 'Mesa/Ui/PaginationEditor';
 import { setPaginatedActiveItem } from 'Mesa/State/Actions';
 
 const settings = {
@@ -120,9 +121,10 @@ class PaginationMenu extends React.PureComponent {
   }
 
   render () {
-    const { list } = this.props;
+    const { list, pagination, dispatch } = this.props;
     return !list.length ? null : (
-      <div className="Pagination">
+      <div className="PaginationMenu">
+        <span className="Pagination-Spacer" />
         <span className="Pagination-Nav">
           {this.renderRelativeLink('previous')}
         </span>
@@ -131,6 +133,9 @@ class PaginationMenu extends React.PureComponent {
         </span>
         <span className="Pagination-Nav">
           {this.renderRelativeLink('next')}
+        </span>
+        <span className="Pagination-Editor">
+          <PaginationEditor pagination={pagination} dispatch={dispatch} />
         </span>
       </div>
     );

@@ -14,6 +14,8 @@ class DataCell extends React.PureComponent {
     if ('renderCell' in column) return column.renderCell(key, row[key], row);
 
     switch (column.type) {
+      case 'number':
+        return Templates.numberCell(column, row);
       case 'html':
         if (inline) return Templates.cell(column, row);
         return Templates.htmlCell(column, row);

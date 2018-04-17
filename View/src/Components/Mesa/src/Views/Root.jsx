@@ -5,30 +5,69 @@ import Header from 'Ui/Header';
 import Mesa from 'Mesa/Ui/Mesa';
 import TableData from 'Content/TableData';
 import CustomSetup from 'Content/CustomSetup';
+import Icon from 'Mesa/Components/Icon';
 import ProductionEmulation from 'Content/ProductionEmulation';
+
+import PopulationByAge from 'Content/PopulationByAge.json';
+
+const genderCell = (key, value, row) => {
+  let total = row.total;
+  let icon = key === 'females' ? 'female' : 'male';
+  let percent = Math.floor(((value / total) * 100) * 100) / 100;
+  return (
+    <div>
+      <Icon fa={icon} />
+      &nbsp; {value.toLocaleString()} &nbsp;  / &nbsp; {percent}%
+    </div>
+  );
+};
 
 const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color: 'blue' };
 
 const ConfigList = [
   {
+    label: 'US Population 1980 (paginated)',
+    rows: PopulationByAge,
+    columns: [
+      { key: 'age', name: 'Age', primary: true, width: '100px' },
+      { key: 'total', name: 'Total Population' },
+      {
+        key: 'males',
+        name: 'Males',
+        renderCell: genderCell
+      },
+      {
+        key: 'females',
+        name: 'Females',
+        renderCell: genderCell
+      }
+    ],
+    options: {
+      paginate: true,
+      columnDefaults: {
+        style: {
+          textAlign: 'center'
+        },
+        headingStyle: {
+          textAlign: 'center'
+        }
+      }
+    }
+  },
+  {
     label: 'Extra Data + Inline Mode!',
     rows: [
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData,
-    ...TableData
-  ],
+      ...TableData, ...TableData,
+      ...TableData, ...TableData,
+      ...TableData, ...TableData,
+      ...TableData, ...TableData,
+      ...TableData, ...TableData
+    ],
     options: {
       title: '10x Regular Data!',
       inline: true,
       paginate: true,
-      inlineMaxWidth: '500px',
+      inlineMaxWidth: '300px',
       columnDefaults: {
         truncated: false,
         overflowHeight: '2rem'
