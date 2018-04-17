@@ -63,14 +63,14 @@ class EmptyState extends React.PureComponent {
     return (
       <div className={emptyStateClass()}>
         <div className={emptyStateClass('BodyWrapper')}>
-          <div className={emptyStateClass('Body')}>
+          <div className={emptyStateClass('Body')} style={{ textAlign: 'center' }}>
             <Icon fa={culprit.icon} className={emptyStateClass('Icon')} />
             <h2>{culprit.title}</h2>
             {culprit.content}
           </div>
         </div>
       </div>
-    )
+    );
   }
 };
 
