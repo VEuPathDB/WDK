@@ -69,7 +69,7 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'disengageTooltip',
     value: function disengageTooltip() {
-      console.log('disengaging', argument.callee);
+      console.log('disengaging', arguments.callee);
       var hideDelay = this.props.hideDelay;
 
       hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
