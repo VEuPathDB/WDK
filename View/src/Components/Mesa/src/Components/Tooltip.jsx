@@ -35,9 +35,9 @@ class Tooltip extends React.Component {
     } else {
       this.events = new EventsFactory(this.el);
       this.events.use({
-        focusIn: () => { console.log('focus in!'); this.setState({ isFocus: true }) },
-        keypress: () => { console.log('keypress!'); this.setState({ isFocus: true }) },
-        focusOut: () => { console.log('focus out!!'); this.setState({ isFocus: false }) },
+        focusIn: () => this.setState({ isFocus: true }),
+        keypress: () => this.setState({ isFocus: true }),
+        focusOut: () => this.setState({ isFocus: false }),
         mouseEnter: () => this.setState({ isHovered: true }),
         mouseLeave: () => this.setState({ isHovered: false })
       });

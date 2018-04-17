@@ -114,9 +114,7 @@ class DataTable extends React.Component {
                 cellPadding={0}
                 style={tableLayout}
                 ref={node => this.headingTable = node}>
-                <thead>
-                  <HeadingRow {...tableProps} />
-                </thead>
+                <HeadingRow {...tableProps} />
               </table>
             </div>
             <div

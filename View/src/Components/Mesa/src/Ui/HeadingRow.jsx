@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import HeadingCell from '../Ui/HeadingCell';
 import SelectionCell from '../Ui/SelectionCell';
@@ -16,6 +16,65 @@ class HeadingRow extends React.PureComponent {
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
     const hasSelectionColumn = [ isRowSelected, onRowSelect, onRowDeselect ].every(fn => typeof fn === 'function');
 
+    const nullRenderer = () => null;
+
+    const rowCount = columns.reduce((count, column) => {
+      const thisCount = Array.isArray(column.renderHeading) ? column.renderHeading.length : 1;
+      return Math.max(thisCount, count);
+    }, 1);
+
+    const headingRows = new Array(rowCount).fill({})
+      .map((blank, index) => {
+        const isFirstRow = !index;
+        const cols = columns.map(col => {
+          const output = Object.assign({}, col);
+          if (Array.isArray(col.renderHeading)) {
+            output.renderHeading = (col.renderHeading.length > index ? col.renderHeading[index] : false);
+          } else if (!isFirstRow) {
+            output.renderHeading = false;
+          };
+          return output;
+        });
+        return { cols, isFirstRow };
+      });
+
+    return (
+      <thead>
+        {headingRows.map(({ cols, isFirstRow }, index) => {
+          return (
+            <tr className="Row HeadingRow" key={index}>
+              {!hasSelectionColumn
+                ? null
+                : <SelectionCell
+                    inert={!isFirstRow}
+                    heading={true}
+                    rows={filteredRows}
+                    options={options}
+                    eventHandlers={eventHandlers}
+                    isRowSelected={isRowSelected}
+                  />
+                }
+              {cols.map((column, columnIndex) => {
+                if (typeof columnDefaults === 'object')
+                  column = Object.assign({}, columnDefaults, column);
+                return (
+                  <HeadingCell
+                    sort={sort}
+                    key={column.key}
+                    primary={isFirstRow}
+                    column={column}
+                    offsetLeft={offsetLeft}
+                    columnIndex={columnIndex}
+                    eventHandlers={eventHandlers}
+                  />
+                );
+              })}
+            </tr>
+          );
+        })}
+      </thead>
+    );
+    /*
     return (
       <tr className="Row HeadingRow">
         {!hasSelectionColumn
@@ -44,6 +103,7 @@ class HeadingRow extends React.PureComponent {
         })}
       </tr>
     );
+    */
   }
 };
 

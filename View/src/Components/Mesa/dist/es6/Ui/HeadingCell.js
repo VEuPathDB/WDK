@@ -61,7 +61,6 @@ var HeadingCell = function (_React$PureComponent) {
 
     _this.getClassName = _this.getClassName.bind(_this);
     _this.getDomEvents = _this.getDomEvents.bind(_this);
-
     _this.sortColumn = _this.sortColumn.bind(_this);
     _this.updateOffset = _this.updateOffset.bind(_this);
     _this.renderContent = _this.renderContent.bind(_this);
@@ -157,7 +156,8 @@ var HeadingCell = function (_React$PureComponent) {
           column = _props2.column,
           columnIndex = _props2.columnIndex;
 
-      if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
+      if ('renderHeading' in column && typeof column.renderHeading === 'function') return column.renderHeading(column, columnIndex);
+      if ('renderHeading' in column && column.renderHeading === false) return null;
 
       var SortTrigger = this.renderSortTrigger;
       var HelpTrigger = this.renderHelpTrigger;
@@ -311,6 +311,9 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'getDomEvents',
     value: function getDomEvents() {
+      var primary = this.props.primary;
+
+      if (!primary) return null;
       var onMouseDown = this.onMouseDown,
           onMouseUp = this.onMouseUp,
           onDragStart = this.onDragStart,
@@ -350,7 +353,8 @@ var HeadingCell = function (_React$PureComponent) {
 
       var _props5 = this.props,
           column = _props5.column,
-          eventHandlers = _props5.eventHandlers;
+          eventHandlers = _props5.eventHandlers,
+          primary = _props5.primary;
       var key = column.key,
           headingStyle = column.headingStyle,
           width = column.width,
@@ -367,7 +371,7 @@ var HeadingCell = function (_React$PureComponent) {
       var className = this.getClassName();
       var domEvents = this.getDomEvents();
 
-      var draggable = column.moveable && !column.primary && typeof eventHandlers.onColumnReorder === 'function';
+      var draggable = primary && column.moveable && !column.primary && typeof eventHandlers.onColumnReorder === 'function';
 
       var props = { style: style, key: key, ref: ref, draggable: draggable, children: children, className: className };
 

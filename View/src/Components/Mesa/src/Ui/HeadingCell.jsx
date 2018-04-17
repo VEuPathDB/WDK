@@ -21,7 +21,6 @@ class HeadingCell extends React.PureComponent {
 
     this.getClassName = this.getClassName.bind(this);
     this.getDomEvents = this.getDomEvents.bind(this);
-
     this.sortColumn = this.sortColumn.bind(this);
     this.updateOffset = this.updateOffset.bind(this);
     this.renderContent = this.renderContent.bind(this);
@@ -97,8 +96,10 @@ class HeadingCell extends React.PureComponent {
 
   renderContent () {
     const { column, columnIndex } = this.props;
-    if ('renderHeading' in column)
+    if ('renderHeading' in column && typeof column.renderHeading === 'function')
       return column.renderHeading(column, columnIndex);
+    if ('renderHeading' in column && column.renderHeading === false)
+      return null;
 
     const SortTrigger = this.renderSortTrigger;
     const HelpTrigger = this.renderHelpTrigger;
@@ -209,6 +210,8 @@ class HeadingCell extends React.PureComponent {
   }
 
   getDomEvents () {
+    const { primary } = this.props;
+    if (!primary) return null;
     const {
       onMouseDown, onMouseUp,
       onDragStart, onDragEnd,
@@ -237,7 +240,7 @@ class HeadingCell extends React.PureComponent {
   }
 
   render () {
-    const { column, eventHandlers } = this.props;
+    const { column, eventHandlers, primary } = this.props;
     const { key, headingStyle, width, renderHeading } = column;
     const widthStyle = width ? { width, maxWidth: width, minWidth: width } : {};
 
@@ -248,7 +251,8 @@ class HeadingCell extends React.PureComponent {
     const className = this.getClassName();
     const domEvents = this.getDomEvents();
 
-    const draggable = column.moveable
+    const draggable = primary
+      && column.moveable
       && !column.primary
       && typeof eventHandlers.onColumnReorder === 'function';
 
