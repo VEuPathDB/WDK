@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 var fail = exports.fail = function fail(fn, message) {
   var Err = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Error;
 
-  throw new Err('<' + fn + '>: ' + message);
+  console.error('<' + fn + '>: ' + message);
   return undefined;
 };
 
