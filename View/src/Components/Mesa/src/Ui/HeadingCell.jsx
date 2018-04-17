@@ -45,7 +45,7 @@ class HeadingCell extends React.PureComponent {
 
     if (!sortable || (typeof onSort !== 'function' && !isActive)) return null;
 
-    const sortIcon = !active
+    const sortIcon = !isActive
       ? 'sort-amount-asc inactive'
       : direction === 'asc'
         ? 'sort-amount-asc active'
