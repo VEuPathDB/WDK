@@ -70,7 +70,7 @@ class ActionToolbar extends React.PureComponent {
              onRowDeselect={onRowDeselect}
            />
          </div>
-         <ActionList />
+         <ActionList actions={actions} />
        </div>
     );
   }
