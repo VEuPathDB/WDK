@@ -11,6 +11,7 @@ class HeadingCell extends React.PureComponent {
     this.renderContent = this.renderContent.bind(this);
     this.handleSortClick = this.handleSortClick.bind(this);
     this.renderSortTrigger = this.renderSortTrigger.bind(this);
+    this.renderHelpTrigger = this.renderHelpTrigger.bind(this);
   }
 
   renderContent () {
@@ -81,18 +82,11 @@ class HeadingCell extends React.PureComponent {
       >
         <SortTrigger />
         <Content />
-        <HelpTrigger />
-        {/* {column.filterable && (
-          <ClickBoundary>
-            <ColumnFilter
-              column={column}
-              state={state}
-              dispatch={dispatch}
-            />
-          </ClickBoundary>
-        )} */}
+        <ClickBoundary>
+          <HelpTrigger />
+        </ClickBoundary>
       </th>
-    )
+    );
   }
 };
 
