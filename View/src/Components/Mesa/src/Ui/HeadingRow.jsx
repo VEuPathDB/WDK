@@ -11,9 +11,13 @@ class HeadingRow extends React.PureComponent {
 
   render () {
     const { options, columns, actions, uiState, eventHandlers } = this.props;
-    const hasSelectionColumn = typeof options.isRowSelected === 'function'
-      && typeof eventHandlers.onRowSelect === 'function'
-      && typeof eventHandlers.onRowDeselect === 'function';
+    const { isRowSelected } = options ? options : {};
+    const { sort } = uiState ? uiState : {};
+    const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
+    const hasSelectionColumn = typeof isRowSelected === 'function'
+      && typeof onRowSelect === 'function'
+      && typeof onRowDeselect === 'function';
+
 
     return (
       <tr className="Row HeadingRow">
@@ -23,14 +27,14 @@ class HeadingRow extends React.PureComponent {
               heading={true}
               rows={rows}
               eventHandlers={eventHandlers}
-              isRowSelected={options.isRowSelected}
+              isRowSelected={isRowSelected}
             />
         }
         {columns.map(column => (
           <HeadingCell
             key={column.key}
             column={column}
-            sort={uiState.sort}
+            sort={sort}
             eventHandlers={eventHandlers}
           />
         ))}
