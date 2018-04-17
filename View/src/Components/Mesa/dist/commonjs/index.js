@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Utils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
+exports.Utils = exports.MesaController = exports.Modal = exports.ModalBoundary = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
@@ -37,6 +37,14 @@ var _MesaController = require('./Ui/MesaController');
 
 var _MesaController2 = _interopRequireDefault(_MesaController);
 
+var _Modal = require('./Components/Modal');
+
+var _Modal2 = _interopRequireDefault(_Modal);
+
+var _ModalBoundary = require('./Components/ModalBoundary');
+
+var _ModalBoundary2 = _interopRequireDefault(_ModalBoundary);
+
 var _Utils = require('./Utils/Utils');
 
 var Utils = _interopRequireWildcard(_Utils);
@@ -52,5 +60,7 @@ exports.TableSearch = _TableSearch2.default;
 exports.TableToolbar = _TableToolbar2.default;
 exports.ActionToolbar = _ActionToolbar2.default;
 exports.PaginationMenu = _PaginationMenu2.default;
+exports.ModalBoundary = _ModalBoundary2.default;
+exports.Modal = _Modal2.default;
 exports.MesaController = _MesaController2.default;
 exports.Utils = Utils;
