@@ -2,7 +2,7 @@ import React from 'react';
 
 import Header from 'Ui/Header';
 
-import Mesa from 'Mesa/Components/Mesa';
+import Mesa from 'Mesa/Ui/Mesa';
 import TableData from 'Content/TableData';
 import CustomSetup from 'Content/CustomSetup';
 import ProductionEmulation from 'Content/ProductionEmulation';
@@ -12,18 +12,25 @@ const embarrassment = { fontFamily: 'Comic Sans, Comic Sans MS, Papyrus', color:
 const ConfigList = [
   {
     label: 'Production Emulation',
-    config: ProductionEmulation,
-    title: 'Data Sets'
+    columns: ProductionEmulation,
+    rows: TableData,
+    options: {
+      title: 'Data Sets'
+    }
   },
   {
     label: 'Custom Setup',
-    config: CustomSetup,
-    title: <span style={embarrassment}>Cool Internet ! (｡◕‿◕｡)</span>
+    columns: CustomSetup,
+    rows: TableData,
+    options: {
+      title: <span style={embarrassment}>Cool Internet ! (｡◕‿◕｡)</span>
+    }
   },
   {
     label: 'No Configuration / Auto Mode',
-    config: null,
-    title: null
+    columns: null,
+    rows: TableData,
+    options: null
   }
 ];
 
@@ -31,29 +38,27 @@ class Root extends React.Component {
   constructor (props) {
     super(props);
     let [ initial, ...others ] = ConfigList;
-    this.state = {
-      tableTitle: initial.title,
-      columnConfig: initial.config
-    };
+    this.state = { config: initial };
+
     this.changeConfig = this.changeConfig.bind(this);
     this.renderConfigMenu = this.renderConfigMenu.bind(this)
   }
 
-  changeConfig (columnConfig, tableTitle) {
-    this.setState({ columnConfig, tableTitle });
+  changeConfig (config) {
+    this.setState({ config });
   }
 
   renderConfigMenu () {
-    const { columnConfig } = this.state;
-    const list = ConfigList.map(({ label, config, title }) => {
-      const isActive = columnConfig === config;
+    const active = this.state.config;
+    const list = ConfigList.map(config => {
+      const isActive = config === active;
       return (
         <box
-          key={label}
-          onClick={() => this.changeConfig(config, title)}
+          key={config.label}
+          onClick={() => this.changeConfig(config)}
           className={'ConfigMenu-Item' + (isActive ? ' active' : '')}
         >
-          {label}
+          {config.label}
         </box>
       );
     });
@@ -62,13 +67,17 @@ class Root extends React.Component {
   }
 
   render () {
-    const { columnConfig, tableTitle } = this.state;
+    const { config } = this.state;
     return (
       <div className="Root">
         <Header />
         {this.renderConfigMenu()}
         <div style={{ padding: '30px' }}>
-          <Mesa rows={TableData} />
+          <Mesa
+            rows={config.rows}
+            options={config.options}
+            columns={config.columns}
+          />
         </div>
       </div>
     );

@@ -1,20 +1,31 @@
-import React from 'react';
+export const ColumnDefaults = {
+  primary: false,
+  searchable: true,
+  sortable: true,
+  editable: false,
+  resizeable: true,
+  truncated: true,
 
-const Defaults = {
-  column: {
-    primary: false,
-    searchable: true,
-    sortable: true,
-    editable: false,
-    filterable: false,
-    truncated: true,
-    hideable: true,
-    disabled: false,
-    resizeable: true,
-    type: 'text'
+  filterable: false,
+  filter: {
+    enabled: false,
+    visible: false,
+    blacklist: []
   },
-  searchPlaceholder: 'Search This Table',
-  overflowHeight: '16em'
+
+  hideable: true,
+  hidden: false,
+
+  disabled: false,
+  type: 'text'
 };
 
-export default Defaults;
+export const OptionsDefaults = {
+  title: null,
+  searchPlaceholder: 'Search This Table',
+  toolbar: true,
+  search: true,
+  className: null,
+  fixedWidth: false,
+  overflowHeight: '16em'
+};

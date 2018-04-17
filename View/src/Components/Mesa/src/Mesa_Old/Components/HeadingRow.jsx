@@ -28,34 +28,6 @@ class HeadingRow extends React.Component {
     this.closeFilterMenu = this.closeFilterMenu.bind(this);
   }
 
-  getRenderer (column) {
-    if ('renderHeading' in column) return column.renderHeading(column);
-    switch (column.type) {
-      case 'text':
-      default:
-        return Templates.heading(column);
-    }
-  }
-
-  handleSortClick ({ column }) {
-    let { sort, filter } = Store.getState();
-    let currentlySorting = sort.byColumn === column;
-    if (currentlySorting) Store.dispatch(toggleSortOrder());
-    else Store.dispatch(sortByColumn(column));
-  }
-
-  renderSortTrigger (column) {
-    let { sort } = Store.getState();
-    let isActiveSort = sort.byColumn === column;
-    let sortIcon = !isActiveSort
-      ? 'sort-amount-asc inactive'
-      : sort.ascending
-        ? 'sort-amount-asc'
-        : 'sort-amount-desc';
-    let sortTrigger = !column.sortable ? null : (<Icon fa={sortIcon + ' Trigger SortTrigger'} />)
-    return sortTrigger;
-  }
-
   toggleColumnFilterValue (value) {
     Store.dispatch(toggleColumnFilterValue(value));
   }
@@ -174,17 +146,6 @@ class HeadingRow extends React.Component {
         {filterMenu}
         {resizeBar}
       </th>
-    );
-  }
-
-  render () {
-    const { columns } = this.props;
-    const columnList = columns.map(this.renderHeadingCell);
-
-    return (
-      <tr className="HeadingRow">
-        {columnList}
-      </tr>
     );
   }
 };
