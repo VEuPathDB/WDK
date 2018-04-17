@@ -90,7 +90,6 @@ var SelectionCounter = function (_React$Component) {
           ' '
         ),
         this.noun(selection),
-        allSelected ? ' are' : '',
         ' selected.',
         _react2.default.createElement('br', null),
         _react2.default.createElement(

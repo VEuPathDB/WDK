@@ -38,8 +38,7 @@ class SelectionCounter extends React.Component {
       <div className="SelectionCounter">
         {/* {allSelected ? 'All ' : ''} */}
         <b>{selection.length} </b>
-        {this.noun(selection)}
-        {allSelected ? ' are' : ''} selected.
+        {this.noun(selection)} selected.
         <br />
         <a onClick={this.deselectAllRows}>Clear selection.</a>
       </div>
