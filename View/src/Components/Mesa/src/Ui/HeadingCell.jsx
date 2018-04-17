@@ -158,7 +158,6 @@ class HeadingCell extends React.PureComponent {
 
   onDragExit (event) {
     const dragee = event.dataTransfer.getData('text');
-    this.setState({ isDragTarget: false });
     event.preventDefault();
   }
 
