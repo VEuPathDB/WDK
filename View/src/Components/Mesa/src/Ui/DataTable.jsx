@@ -63,14 +63,14 @@ class DataTable extends React.PureComponent {
       <div className="MesaComponent">
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
-            <div ref="tableHeader" className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
+            <div className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <thead>
                   <HeadingRow {...props} />
                 </thead>
               </table>
             </div>
-            <div ref="tableBody" style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
+            <div style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <DataRowList {...props} />
               </table>

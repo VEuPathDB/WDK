@@ -129,7 +129,7 @@ var DataTable = function (_React$PureComponent) {
             { className: dataTableClass('Sticky') },
             _react2.default.createElement(
               'div',
-              { ref: 'tableHeader', className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
+              { className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
@@ -142,7 +142,7 @@ var DataTable = function (_React$PureComponent) {
             ),
             _react2.default.createElement(
               'div',
-              { ref: 'tableBody', style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
+              { style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
