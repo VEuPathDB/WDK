@@ -3,8 +3,9 @@ import React from 'react';
 import Templates from '../Templates';
 import Icon from '../Components/Icon';
 import Tooltip from '../Components/Tooltip';
-// import ColumnSorter from '../Ui/ColumnSorter';
-// import ColumnFilter from '../Ui/ColumnFilter';
+import { makeClassifier } from '../Utils/Utils';
+
+const headingCellClass = makeClassifier('HeadingCell');
 
 class HeadingCell extends React.PureComponent {
   constructor (props) {
@@ -26,14 +27,34 @@ class HeadingCell extends React.PureComponent {
 
   renderContent () {
     const { column, columnIndex } = this.props;
+
     if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
-    return Templates.heading(column, columnIndex);
+
+    const SortTrigger = this.renderSortTrigger;
+    const HelpTrigger = this.renderHelpTrigger;
+    const ClickBoundary = this.renderClickBoundary;
+
+    return (
+      <div className={headingCellClass('Content')}>
+        <div className={headingCellClass(['Content', 'Aside'])}>
+          <SortTrigger />
+        </div>
+        <div className={headingCellClass(['Content', 'Label'])}>
+          {Templates.heading(column, columnIndex)}
+        </div>
+        <div className={headingCellClass(['Content', 'Aside'])}>
+          <ClickBoundary>
+            <HelpTrigger />
+          </ClickBoundary>
+        </div>
+      </div>
+    );
   }
 
   handleSortClick () {
     const { column, sort, eventHandlers } = this.props;
     const { onSort } = eventHandlers;
-    if (typeof onSort !== 'function') return;
+    if (typeof onSort !== 'function' || !column.sortable) return;
     const currentlySorting = sort.columnKey === column.key;
     const direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
     return onSort(column, direction);
@@ -82,37 +103,22 @@ class HeadingCell extends React.PureComponent {
 
   render () {
     const { column, state, dispatch } = this.props;
-    const { headingStyle, width } = column;
+    const { headingStyle, width, renderHeading } = column;
 
     const widthObj = width ? { width, maxWidth: width, minWidth: width } : {};
 
     const style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
 
     const Content = this.renderContent;
-    const SortTrigger = this.renderSortTrigger;
-    const HelpTrigger = this.renderHelpTrigger;
-    const ClickBoundary = this.renderClickBoundary;
 
     return column.hidden ? null : (
       <th
         style={style}
         key={column.key}
-        ref={el => this.element = el}
-        onClick={e => column.sortable ? this.handleSortClick() : null}
+        className={headingCellClass()}
+        onClick={this.handleSortClick}
       >
-        <row className="justify-center items-center nowrap">
-          <box className="grow-1">
-            <SortTrigger />
-          </box>
-          <box>
-            <Content />
-          </box>
-          <box className="grow-1">
-            <ClickBoundary>
-              <HelpTrigger />
-            </ClickBoundary>
-          </box>
-        </row>
+        <Content />
       </th>
     );
   }

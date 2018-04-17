@@ -22,6 +22,8 @@ var _DataRowList = require('../Ui/DataRowList');
 
 var _DataRowList2 = _interopRequireDefault(_DataRowList);
 
+var _Utils = require('../Utils/Utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -29,6 +31,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DataTableClass = (0, _Utils.makeClassifier)('DataTable');
 
 var DataTable = function (_React$PureComponent) {
   _inherits(DataTable, _React$PureComponent);
@@ -79,10 +83,10 @@ var DataTable = function (_React$PureComponent) {
 
       return this.shouldUseStickyHeader() ? _react2.default.createElement(
         'div',
-        { className: 'DataTable-Sticky' },
+        { className: DataTableClass('Sticky') },
         _react2.default.createElement(
           'div',
-          { className: 'DataTable-Header' },
+          { className: DataTableClass('Header') },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
@@ -95,7 +99,7 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: 'DataTable-Body', style: tableBodyStyle },
+          { className: DataTableClass('Body'), style: tableBodyStyle },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
@@ -123,7 +127,7 @@ var DataTable = function (_React$PureComponent) {
         { className: 'Mesa' },
         _react2.default.createElement(
           'div',
-          { className: 'DataTable' },
+          { className: DataTableClass() },
           _react2.default.createElement(Layout, null)
         )
       );

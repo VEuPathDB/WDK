@@ -2,6 +2,9 @@ import React from 'react';
 
 import DataCell from '../Ui/DataCell';
 import SelectionCell from '../Ui/SelectionCell';
+import { makeClassifier } from '../Utils/Utils';
+
+const dataRowClass = makeClassifier('DataRow');
 
 class DataRow extends React.PureComponent {
   constructor (props) {
@@ -48,7 +51,7 @@ class DataRow extends React.PureComponent {
       && typeof eventHandlers.onRowDeselect === 'function';
 
     const rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
-    const className = 'Row DataRow' + (inline ? ' DataRow-Inline' : '');
+    const className = dataRowClass(null, inline ? 'inline' : '');
 
     const cellProps = { row, inline, options, rowIndex };
 

@@ -74,3 +74,20 @@ export function textSort (_list, key, ascending = true) {
   const result = arraysMatch(preSort, postSort) ? list : sorted;
   return ascending ? result.reverse() : result;
 };
+
+export function makeClassifier (namespace, globalNamespace) {
+  return (element, modifiers) => {
+    if (Array.isArray(element)) element = element.join('-');
+    let base = (
+      (globalNamespace ? globalNamespace : '') +
+      (namespace ? '-' + namespace : '') +
+      (element ? '-' + element : '')
+    );
+    if (!modifiers || !modifiers.length) return base;
+    if (!Array.isArray(modifiers)) modifiers = [modifiers];
+    return modifiers.reduce((output, modifier) => {
+      let addendum = ' ' + base + '--' + modifier;
+      return output + addendum;
+    }, base);
+  };
+}

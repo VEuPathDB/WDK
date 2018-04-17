@@ -18,6 +18,8 @@ var _SelectionCounter = require('../Ui/SelectionCounter');
 
 var _SelectionCounter2 = _interopRequireDefault(_SelectionCounter);
 
+var _Utils = require('../Utils/Utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -25,6 +27,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var actionToolbarClass = (0, _Utils.makeClassifier)('ActionToolbar');
 
 var ActionToolbar = function (_React$PureComponent) {
   _inherits(ActionToolbar, _React$PureComponent);
@@ -78,7 +82,7 @@ var ActionToolbar = function (_React$PureComponent) {
       var element = action.element;
 
       var selection = this.getSelection();
-      var className = 'ActionToolbar-Item' + (action.selectionRequired && !selection.length ? ' disabled' : '');
+      var disabled = action.selectionRequired && !selection.length ? 'disabled' : null;
 
       if (typeof element !== 'string' && !_react2.default.isValidElement(element)) {
         if (typeof element === 'function') element = element(selection);
@@ -89,7 +93,10 @@ var ActionToolbar = function (_React$PureComponent) {
       };
       return _react2.default.createElement(
         'div',
-        { key: action.__id, className: className, onClick: handler },
+        {
+          key: action.__id,
+          onClick: handler,
+          className: actionToolbarClass('Item', disabled) },
         element
       );
     }
@@ -101,7 +108,7 @@ var ActionToolbar = function (_React$PureComponent) {
       var ActionItem = this.renderActionItem;
       return _react2.default.createElement(
         'div',
-        null,
+        { className: actionToolbarClass('ItemList') },
         !actions ? null : actions.filter(function (action) {
           return action.element;
         }).map(function (action, idx) {
@@ -132,15 +139,15 @@ var ActionToolbar = function (_React$PureComponent) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'Toolbar ActionToolbar' },
+        { className: actionToolbarClass() + ' Toolbar' },
         !children ? null : _react2.default.createElement(
           'div',
-          { className: 'ActionToolbar-Children' },
+          { className: actionToolbarClass('Children') },
           children
         ),
         _react2.default.createElement(
           'div',
-          { className: 'ActionToolbar-Info' },
+          { className: actionToolbarClass('Info') },
           _react2.default.createElement(_SelectionCounter2.default, {
             rows: rows,
             selection: selection,
