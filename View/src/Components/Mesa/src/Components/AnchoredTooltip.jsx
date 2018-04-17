@@ -21,7 +21,7 @@ class AnchoredTooltip extends React.Component {
     const { children, content, style, offset } = this.props;
 
     const { top, width, right, left } = this.anchor ? Tooltip.getOffset(this.anchor) : defaults;
-    const position = { top, left: window.innerWidth - right };
+    const position = { top, left: left + (width)  };
     const offsetPosition = offset ? this.getOffsetPosition(position, offset) : position;
     const tooltipProps = { content, style, children, position: offsetPosition };
     return (
