@@ -3,11 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
+exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Utils = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
 var _Mesa2 = _interopRequireDefault(_Mesa);
+
+var _Utils = require('./Utils/Utils');
+
+var _Utils2 = _interopRequireDefault(_Utils);
 
 var _DataTable = require('./Ui/DataTable');
 
@@ -36,6 +40,7 @@ var _PaginationMenu2 = _interopRequireDefault(_PaginationMenu);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.Mesa = _Mesa2.default;
+exports.Utils = _Utils2.default;
 exports.DataTable = _DataTable2.default;
 exports.RowCounter = _RowCounter2.default;
 exports.TableSearch = _TableSearch2.default;
