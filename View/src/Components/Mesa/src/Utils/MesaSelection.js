@@ -24,7 +24,6 @@ export const addRowToSelection = (_selection, row, idAccessor) => {
 };
 
 export const addIdToSelection = (_selection = [], id) => {
-  console.log('adding id', id, 'to selection', _selection);
   if (!Array.isArray(_selection))
     return badType('addIdToSelection', '_selection', 'array', typeof _selection);
   const selection = new Set(_selection);
@@ -32,10 +31,18 @@ export const addIdToSelection = (_selection = [], id) => {
   return [...selection];
 }
 
-export const removeRowFromSelection = (_selection, row, idAccessor) => {
-  console.log('removing row', row, 'from selection', _selection);
+export const addIdsToSelection = (_selection = [], ids) => {
   if (!Array.isArray(_selection))
     return badType('addIdToSelection', '_selection', 'array', typeof _selection);
+  if (!Array.isArray(ids))
+    return badType('addIdToSelection', 'ids', 'array', typeof ids);
+  const selection = new Set([..._selection, ...ids]);
+  return [...selection];
+}
+
+export const removeRowFromSelection = (_selection, row, idAccessor) => {
+  if (!Array.isArray(_selection))
+    return badType('removeRowFromSelection', '_selection', 'array', typeof _selection);
   if (typeof idAccessor !== 'function')
     return badType('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor);
   const id = idAccessor(row);
@@ -44,10 +51,20 @@ export const removeRowFromSelection = (_selection, row, idAccessor) => {
 
 export const removeIdFromSelection = (_selection, id) => {
   if (!Array.isArray(_selection))
-    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
+    return badType('removeIdFromSelection', '_selection', 'array', typeof _selection);
   const selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [...selection];
+}
+
+export const removeIdsFromSelection = (_selection ,ids) => {
+  if (!Array.isArray(_selection))
+    return badType('removeIdsFromSelection', '_selection', 'array', typeof _selection);
+  if (!Array.isArray(ids))
+    return badType('removeIdsFromSelection', 'ids', 'array', typeof ids);
+  const selection = new Set(_selection);
+  const removable = new Set(ids);
+  return [...selection].filter(item => !removable.has(item));
 }
 
 export const isRowSelected = (selection, row, idAccessor) => {

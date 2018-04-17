@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.intersectSelection = exports.mapListToIds = exports.isRowSelected = exports.removeIdFromSelection = exports.removeRowFromSelection = exports.addIdToSelection = exports.addRowToSelection = exports.selectionFromRows = exports.createSelection = undefined;
+exports.intersectSelection = exports.mapListToIds = exports.isRowSelected = exports.removeIdsFromSelection = exports.removeIdFromSelection = exports.removeRowFromSelection = exports.addIdsToSelection = exports.addIdToSelection = exports.addRowToSelection = exports.selectionFromRows = exports.createSelection = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -37,26 +37,45 @@ var addIdToSelection = exports.addIdToSelection = function addIdToSelection() {
 
   var id = arguments[1];
 
-  console.log('adding id', id, 'to selection', _selection);
   if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   var selection = new Set(_selection);
   selection.add(id);
   return [].concat(_toConsumableArray(selection));
 };
 
-var removeRowFromSelection = exports.removeRowFromSelection = function removeRowFromSelection(_selection, row, idAccessor) {
-  console.log('removing row', row, 'from selection', _selection);
+var addIdsToSelection = exports.addIdsToSelection = function addIdsToSelection() {
+  var _selection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
+  var ids = arguments[1];
+
   if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
+  if (!Array.isArray(ids)) return (0, _Errors.badType)('addIdToSelection', 'ids', 'array', typeof ids === 'undefined' ? 'undefined' : _typeof(ids));
+  var selection = new Set([].concat(_toConsumableArray(_selection), _toConsumableArray(ids)));
+  return [].concat(_toConsumableArray(selection));
+};
+
+var removeRowFromSelection = exports.removeRowFromSelection = function removeRowFromSelection(_selection, row, idAccessor) {
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('removeRowFromSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   if (typeof idAccessor !== 'function') return (0, _Errors.badType)('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
   var id = idAccessor(row);
   return removeIdFromSelection(_selection, id);
 };
 
 var removeIdFromSelection = exports.removeIdFromSelection = function removeIdFromSelection(_selection, id) {
-  if (!Array.isArray(_selection)) return (0, _Errors.badType)('addIdToSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('removeIdFromSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
   var selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [].concat(_toConsumableArray(selection));
+};
+
+var removeIdsFromSelection = exports.removeIdsFromSelection = function removeIdsFromSelection(_selection, ids) {
+  if (!Array.isArray(_selection)) return (0, _Errors.badType)('removeIdsFromSelection', '_selection', 'array', typeof _selection === 'undefined' ? 'undefined' : _typeof(_selection));
+  if (!Array.isArray(ids)) return (0, _Errors.badType)('removeIdsFromSelection', 'ids', 'array', typeof ids === 'undefined' ? 'undefined' : _typeof(ids));
+  var selection = new Set(_selection);
+  var removable = new Set(ids);
+  return [].concat(_toConsumableArray(selection)).filter(function (item) {
+    return !removable.has(item);
+  });
 };
 
 var isRowSelected = exports.isRowSelected = function isRowSelected(selection, row, idAccessor) {
