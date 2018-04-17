@@ -44,6 +44,8 @@ var DataTable = function (_React$PureComponent) {
 
     _this.generateLayout = _this.generateLayout.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
+    _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
+    _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
     return _this;
   }
 
@@ -62,6 +64,16 @@ var DataTable = function (_React$PureComponent) {
       if (columns.every(hasWidthProperty)) return true;
       console.error('\n      "useStickyHeader" enabled but not all columns have explicit widths (required).\n      Use a CSS width (e.g. "250px" or "30%") as each column\'s .width property.\n    ');
       return false;
+    }
+  }, {
+    key: 'handleTableBodyScroll',
+    value: function handleTableBodyScroll(e) {
+      console.log('scrolling on BODY', e);
+    }
+  }, {
+    key: 'handleTableHeaderScroll',
+    value: function handleTableHeaderScroll(e) {
+      console.log('scrolling on HEADER', e);
     }
   }, {
     key: 'generateLayout',
@@ -107,7 +119,7 @@ var DataTable = function (_React$PureComponent) {
           { className: dataTableClass('Header') },
           _react2.default.createElement(
             'table',
-            { cellSpacing: 0, cellPadding: 0 },
+            { cellSpacing: 0, cellPadding: 0, onScroll: this.handleTableHeaderScroll },
             _react2.default.createElement(
               'thead',
               null,
@@ -117,7 +129,7 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Body'), style: heightLayer },
+          { className: dataTableClass('Body'), style: heightLayer, onScroll: this.handleTableBodyScroll },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },

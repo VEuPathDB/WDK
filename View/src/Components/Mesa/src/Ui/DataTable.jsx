@@ -12,6 +12,8 @@ class DataTable extends React.PureComponent {
     super(props);
     this.generateLayout = this.generateLayout.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
+    this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
+    this.handleTableHeaderScroll = this.handleTableHeaderScroll.bind(this);
   }
 
   shouldUseStickyHeader () {
@@ -24,6 +26,14 @@ class DataTable extends React.PureComponent {
       Use a CSS width (e.g. "250px" or "30%") as each column's .width property.
     `);
     return false;
+  }
+
+  handleTableBodyScroll (e) {
+    console.log('scrolling on BODY', e);
+  }
+
+  handleTableHeaderScroll (e) {
+    console.log('scrolling on HEADER', e);
   }
 
   generateLayout () {
@@ -49,13 +59,13 @@ class DataTable extends React.PureComponent {
     return (
       <div className={dataTableClass('Sticky')}>
         <div className={dataTableClass('Header')}>
-          <table cellSpacing={0} cellPadding={0}>
+          <table cellSpacing={0} cellPadding={0} onScroll={this.handleTableHeaderScroll}>
             <thead>
               <HeadingRow {...props} />
             </thead>
           </table>
         </div>
-        <div className={dataTableClass('Body')} style={heightLayer}>
+        <div className={dataTableClass('Body')} style={heightLayer} onScroll={this.handleTableBodyScroll}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
