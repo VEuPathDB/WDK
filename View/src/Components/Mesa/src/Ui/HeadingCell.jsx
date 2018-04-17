@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Templates from '../Templates';
-import ColumnSorter from '../Ui/ColumnSorter';
+// import ColumnSorter from '../Ui/ColumnSorter';
 // import ColumnFilter from '../Ui/ColumnFilter';
 
 class HeadingCell extends React.PureComponent {
