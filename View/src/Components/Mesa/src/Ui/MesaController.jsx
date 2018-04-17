@@ -55,8 +55,8 @@ class MesaController extends React.Component {
   }
 
   renderBody () {
-    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, options, columns, actions, uiState, eventHandlers };
+    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
     const Empty = this.renderEmptyState;
 
     return rows.length

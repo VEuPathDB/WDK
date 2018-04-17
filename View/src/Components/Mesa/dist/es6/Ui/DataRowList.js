@@ -41,13 +41,14 @@ var DataRowList = function (_React$Component) {
     key: 'render',
     value: function render() {
       var props = this.props;
-      var rows = props.rows;
+      var rows = props.rows,
+          filteredRows = props.filteredRows;
 
 
       return _react2.default.createElement(
         'tbody',
         { className: dataRowListClass() },
-        rows.map(function (row, rowIndex) {
+        filteredRows.map(function (row, rowIndex) {
           return _react2.default.createElement(_DataRow2.default, _extends({
             row: row,
             key: rowIndex,

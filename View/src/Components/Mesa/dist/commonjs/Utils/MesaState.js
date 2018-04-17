@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.callActionOnSelectedRows = exports.setSortDirection = exports.setSortColumnKey = exports.setSearchQuery = exports.setSelectionPredicate = exports.create = exports.getUiState = exports.getEventHandlers = exports.getOptions = exports.getActions = exports.getColumns = exports.getFilteredRows = exports.getRows = exports.getSelectedRows = exports.setEventHandlers = exports.setOptions = exports.setUiState = exports.setActions = exports.setColumnOrder = exports.setColumns = exports.setFilteredRows = exports.setRows = undefined;
+exports.callActionOnSelectedRows = exports.setSortDirection = exports.setSortColumnKey = exports.setEmptinessCulprit = exports.setSearchQuery = exports.setSelectionPredicate = exports.create = exports.getUiState = exports.getEventHandlers = exports.getOptions = exports.getActions = exports.getColumns = exports.getFilteredRows = exports.getRows = exports.getSelectedRows = exports.setEventHandlers = exports.setOptions = exports.setUiState = exports.setActions = exports.setColumnOrder = exports.setColumns = exports.filterRows = exports.setFilteredRows = exports.setRows = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -24,6 +24,13 @@ var setRows = exports.setRows = function setRows(state, rows) {
 var setFilteredRows = exports.setFilteredRows = function setFilteredRows(state, filteredRows) {
   if (!Array.isArray(filteredRows)) return (0, _Errors.badType)('setFilteredRows', 'filteredRows', 'array', typeof filteredRows === 'undefined' ? 'undefined' : _typeof(filteredRows)) || state;
   return Object.assign({}, state, { filteredRows: filteredRows });
+};
+
+var filterRows = exports.filterRows = function filterRows(state, predicate) {
+  if (typeof predicate !== 'function') return (0, _Errors.badType)('filterRows', 'predicate', 'function', typeof predicate === 'undefined' ? 'undefined' : _typeof(predicate)) || state;
+  if (!Array.isArray(state.rows)) return (0, _Errors.missingFromState)('filterRows', 'rows', state) || state;
+  var filteredRows = state.rows.filter(predicate);
+  return setFilteredRows(state, filteredRows);
 };
 
 var setColumns = exports.setColumns = function setColumns(state, columns) {
@@ -179,6 +186,13 @@ var setSearchQuery = exports.setSearchQuery = function setSearchQuery(state, sea
   if (typeof searchQuery !== 'string' && searchQuery !== null) return (0, _Errors.badType)('setSearchQuery', 'searchQuery', 'string', typeof searchQuery === 'undefined' ? 'undefined' : _typeof(searchQuery)) || state;
 
   var uiState = Object.assign({}, state.uiState ? state.uiState : {}, { searchQuery: searchQuery });
+  return Object.assign({}, state, { uiState: uiState });
+};
+
+var setEmptinessCulprit = exports.setEmptinessCulprit = function setEmptinessCulprit(state, emptinessCulprit) {
+  if (typeof emptinessCulprit !== 'string' && emptinessCulprit !== null) return (0, _Errors.badType)('setEmptinessCulprit', 'emptinessCulprit', 'string', typeof emptinessCulprit === 'undefined' ? 'undefined' : _typeof(emptinessCulprit)) || state;
+
+  var uiState = Object.assign({}, state.uiState ? state.uiState : {}, { emptinessCulprit: emptinessCulprit });
   return Object.assign({}, state, { uiState: uiState });
 };
 

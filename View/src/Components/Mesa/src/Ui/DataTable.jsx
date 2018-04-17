@@ -27,8 +27,8 @@ class DataTable extends React.PureComponent {
   }
 
   generateLayout () {
-    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, options, columns, actions, uiState, eventHandlers };
+    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
     const { tableBodyMaxHeight } = options ? options : {};
     const tableBodyStyle = { maxHeight: tableBodyMaxHeight };

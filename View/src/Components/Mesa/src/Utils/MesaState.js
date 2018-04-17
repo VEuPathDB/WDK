@@ -15,6 +15,15 @@ export const setFilteredRows = (state, filteredRows) => {
   return Object.assign({}, state, { filteredRows });
 };
 
+export const filterRows = (state, predicate) => {
+  if (typeof predicate !== 'function')
+    return badType('filterRows', 'predicate', 'function', typeof predicate) || state;
+  if (!Array.isArray(state.rows))
+    return missingFromState('filterRows', 'rows', state) || state;
+  const filteredRows = state.rows.filter(predicate);
+  return setFilteredRows(state, filteredRows);
+}
+
 export const setColumns = (state, columns) => {
   if (!Array.isArray(columns))
     return badType('setColumns', 'columns', 'array', typeof columns) || state;
@@ -165,6 +174,14 @@ export const setSearchQuery = (state, searchQuery) => {
     return badType('setSearchQuery', 'searchQuery', 'string', typeof searchQuery) || state;
 
   const uiState = Object.assign({}, state.uiState ? state.uiState : {}, { searchQuery });
+  return Object.assign({}, state, { uiState });
+};
+
+export const setEmptinessCulprit = (state, emptinessCulprit) => {
+  if (typeof emptinessCulprit !== 'string' && emptinessCulprit !== null)
+    return badType('setEmptinessCulprit', 'emptinessCulprit', 'string', typeof emptinessCulprit) || state;
+
+  const uiState = Object.assign({}, state.uiState ? state.uiState : {}, { emptinessCulprit });
   return Object.assign({}, state, { uiState });
 };
 
