@@ -42,11 +42,9 @@ var DataTable = function (_React$PureComponent) {
 
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
-    _this.generateLayout = _this.generateLayout.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
     _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
-    _this.state = { leftScroll: 0 };
     return _this;
   }
 
@@ -77,8 +75,8 @@ var DataTable = function (_React$PureComponent) {
       console.log('header is at', this.refs.tableHeader.scrollLeft);
     }
   }, {
-    key: 'generateLayout',
-    value: function generateLayout() {
+    key: 'render',
+    value: function render() {
       var _props2 = this.props,
           rows = _props2.rows,
           filteredRows = _props2.filteredRows,
@@ -92,14 +90,22 @@ var DataTable = function (_React$PureComponent) {
 
       if (!this.shouldUseStickyHeader()) {
         return _react2.default.createElement(
-          'table',
-          { cellSpacing: '0', cellPadding: '0' },
+          'div',
+          { className: 'MesaComponent' },
           _react2.default.createElement(
-            'thead',
-            null,
-            _react2.default.createElement(_HeadingRow2.default, props)
-          ),
-          _react2.default.createElement(_DataRowList2.default, props)
+            'div',
+            { className: dataTableClass() },
+            _react2.default.createElement(
+              'table',
+              { cellSpacing: '0', cellPadding: '0' },
+              _react2.default.createElement(
+                'thead',
+                null,
+                _react2.default.createElement(_HeadingRow2.default, props)
+              ),
+              _react2.default.createElement(_DataRowList2.default, props)
+            )
+          )
         );
       }
 
@@ -145,20 +151,11 @@ var DataTable = function (_React$PureComponent) {
           )
         )
       );
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var Layout = this.generateLayout;
 
       return _react2.default.createElement(
         'div',
         { className: 'MesaComponent' },
-        _react2.default.createElement(
-          'div',
-          { className: dataTableClass() },
-          _react2.default.createElement(Layout, null)
-        )
+        _react2.default.createElement('div', { className: dataTableClass() })
       );
     }
   }]);
