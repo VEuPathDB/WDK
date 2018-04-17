@@ -1,6 +1,8 @@
 import React from 'react';
 
-const ProductionEmulation = {
+import Datasets from 'Content/Data/Datasets';
+
+const ProductionEmulationColumns = {
   dataSet: {
     primary: true,
     name: 'Data Set',
@@ -61,6 +63,15 @@ const ProductionEmulation = {
   contactInstitution: {
     name: 'Contact Institution',
     hidden: true
+  }
+};
+
+const ProductionEmulation = {
+  label: 'Production Emulation',
+  columns: ProductionEmulationColumns,
+  rows: Datasets,
+  options: {
+    title: 'Data Sets'
   }
 };
 
