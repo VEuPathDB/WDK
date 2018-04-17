@@ -26,7 +26,7 @@ class TableBody extends React.Component {
 
   render () {
     let { dispatch, state, filteredRows } = this.props;
-    let { columns, options, uiState } = state;
+    let { columns, options, uiState, rows } = state;
     let { paginationState } = uiState;
 
     let content;

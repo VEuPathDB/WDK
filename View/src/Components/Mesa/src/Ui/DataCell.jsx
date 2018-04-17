@@ -10,8 +10,11 @@ class DataCell extends React.PureComponent {
   renderContent () {
     const { column, row, state, inline } = this.props;
     const { key } = column;
+    const value = row[key];
 
-    if ('renderCell' in column) return column.renderCell(key, row[key], row);
+    if ('renderCell' in column) {
+      return column.renderCell(key, value, row, column);
+    }
 
     switch (column.type) {
       case 'number':
