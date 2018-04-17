@@ -7,6 +7,7 @@ class TableSearch extends React.PureComponent {
   constructor (props) {
     super(props);
     this.handleQueryChange = this.handleQueryChange.bind(this);
+    this.clearSearchQuery = this.clearSearchQuery.bind(this);
   }
 
   handleQueryChange (e) {
@@ -15,9 +16,15 @@ class TableSearch extends React.PureComponent {
     dispatch(searchByQuery(query));
   }
 
+  clearSearchQuery () {
+    let { dispatch } = this.props;
+    dispatch(searchByQuery(null));
+  }
+
   render () {
     let { state } = this.props;
     let { ui, options } = state;
+    let { searchQuery } = ui;
 
     return (
       <div className="TableSearch">
@@ -25,9 +32,15 @@ class TableSearch extends React.PureComponent {
         <input
           type="text"
           onChange={this.handleQueryChange}
-          value={ui.searchQuery || ''}
+          value={searchQuery || ''}
           placeholder={options.searchPlaceholder}
         />
+        {searchQuery && (
+          <button onClick={this.clearSearchQuery}>
+            <Icon fa="times-circle" />
+            Clear Search
+          </button>
+        )}
       </div>
     );
   }

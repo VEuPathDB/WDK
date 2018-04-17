@@ -4,12 +4,17 @@ import Events from 'Mesa/Utils/Events';
 import Icon from 'Mesa/Components/Icon';
 import Modal from 'Mesa/Components/Modal';
 import Checkbox from 'Mesa/Components/Checkbox';
-import { hideColumn, showColumn } from 'Mesa/State/Actions';
+import {
+  hideColumn,
+  showColumn,
+  toggleColumnEditor,
+  openColumnEditor,
+  closeColumnEditor
+} from 'Mesa/State/Actions';
 
 class ColumnEditor extends React.PureComponent {
   constructor (props) {
     super(props);
-    this.state = { editorOpen: false };
 
     this.openEditor = this.openEditor.bind(this);
     this.closeEditor = this.closeEditor.bind(this);
@@ -22,33 +27,33 @@ class ColumnEditor extends React.PureComponent {
   }
 
   openEditor () {
-    let editorOpen = true;
-    this.setState({ editorOpen }, () => {
-      this.closeListener = Events.onKey('esc', this.closeEditor);
-    });
+    const { dispatch } = this.props;
+    dispatch(openColumnEditor());
+    if (!this.closeListener) this.closeListener = Events.onKey('esc', this.closeEditor);
   }
 
   showAllColumns () {
-    const { columns, dispatch } = this.props;
+    const { state, dispatch } = this.props;
+    const { columns } = state;
     return columns.forEach(col => dispatch(showColumn(col)));
   }
 
   hideAllColumns () {
-    const { columns, dispatch } = this.props;
+    const { state, dispatch } = this.props;
+    const { columns } = state;
     const hideableColumns = columns.filter(col => col.hideable && !col.hidden);
     return hideableColumns.forEach(col => dispatch(hideColumn(col)));
   }
 
   closeEditor () {
-    let editorOpen = false;
-    this.setState({ editorOpen },() => {
-      Events.remove(this.closeListener);
-    });
+    const { dispatch } = this.props;
+    dispatch(closeColumnEditor());
+    if (this.closeListener) Events.remove(this.closeListener);
   }
 
   toggleEditor () {
-    let { editorOpen } = this.state;
-    return editorOpen ? this.closeEditor() : this.openEditor();
+    const { dispatch } = this.props;
+    dispatch(toggleColumnEditor());
   }
 
   renderTrigger () {
@@ -76,7 +81,8 @@ class ColumnEditor extends React.PureComponent {
   }
 
   renderColumnList () {
-    const { columns } = this.props;
+    const { state } = this.props;
+    const { columns } = state;
     const columnList = columns.map(this.renderColumnListItem);
 
     return (
@@ -87,10 +93,13 @@ class ColumnEditor extends React.PureComponent {
   }
 
   renderModal () {
-    const { editorOpen } = this.state;
-    let columnList = this.renderColumnList();
+    const { state } = this.props;
+    const { ui } = state;
+    const { columnEditorOpen } = ui;
+    const columnList = this.renderColumnList();
+
     return (
-      <Modal open={editorOpen} onClose={this.closeEditor}>
+      <Modal open={columnEditorOpen} onClose={this.closeEditor}>
         <h3>Add / Remove Column</h3>
         <small>
           <a onClick={this.showAllColumns}>Select All</a>

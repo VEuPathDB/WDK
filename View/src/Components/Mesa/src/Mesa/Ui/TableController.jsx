@@ -2,13 +2,17 @@ import React from 'react';
 
 import TableBody from 'Mesa/Ui/TableBody';
 import RowUtils from 'Mesa/Utils/RowUtils';
+import Pagination from 'Mesa/Ui/Pagination';
 import TableToolbar from 'Mesa/Ui/TableToolbar';
 import { setEmptinessCulprit } from 'Mesa/State/Actions';
 
 class TableController extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.state = { currentPage: 1 };
     this.getFilteredRows = this.getFilteredRows.bind(this);
+    this.handlePageChange = this.handlePageChange.bind(this);
+    this.renderPageNav = this.renderPageNav.bind(this);
   }
 
   getFilteredRows () {
@@ -41,30 +45,57 @@ class TableController extends React.PureComponent {
     return rows;
   }
 
+  handlePageChange (currentPage) {
+    let { state } = this.props;
+    let { options } = state;
+    let filteredRows = this.getFilteredRows();
+    let pageCount = RowUtils.getPageCount(filteredRows, options);
+    if (currentPage > pageCount) currentPage = pageCount;
+    if (currentPage < 1) currentPage = 1;
+    this.setState({ currentPage });
+  }
+
+  renderPageNav (filteredRows) {
+    let { state, dispatch, children } = this.props;
+    let { options } = state;
+    let { currentPage } = this.state;
+    let pageCount = RowUtils.getPageCount(filteredRows, options);
+    if (!options.paginate || pageCount <= 1) return null;
+    return (
+      <Pagination
+        pages={pageCount}
+        currentPage={currentPage}
+        onPageChange={this.handlePageChange}
+      />
+    );
+  }
+
   render () {
     let { state, dispatch, children } = this.props;
+    let { options } = state;
+    let { currentPage } = this.state;
+
     let filteredRows = this.getFilteredRows();
+    let pageRows = RowUtils.getRowsByPage(filteredRows, currentPage, options);
+    let pageNav = this.renderPageNav(filteredRows);
 
     return (
       <div className="TableController">
-        {state.options.toolbar ? (
-          <TableToolbar
-            state={state}
-            dispatch={dispatch}
-            filteredRows={filteredRows}
-          >
-            {children}
-          </TableToolbar>
-        ) : (
-          <div>
-            {children}
-          </div>
-        )}
+        {!options.toolbar
+          ? <div>{children}</div>
+          : (
+            <TableToolbar state={state} dispatch={dispatch} filteredRows={filteredRows}>
+              {children}
+            </TableToolbar>
+          )
+        }
+        {pageNav}
         <TableBody
           state={state}
           dispatch={dispatch}
-          filteredRows={filteredRows}
+          filteredRows={pageRows}
         />
+        {pageNav}
       </div>
     );
   }

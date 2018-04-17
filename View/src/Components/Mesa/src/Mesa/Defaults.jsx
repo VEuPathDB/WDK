@@ -22,11 +22,13 @@ export const ColumnDefaults = {
 
 export const OptionsDefaults = {
   title: null,
-  searchPlaceholder: 'Search This Table',
   toolbar: true,
   search: true,
   className: null,
   inline: false,
+  paginate: true,
+  rowsPerPage: 20,
   fixedWidth: false,
-  overflowHeight: '16em'
+  overflowHeight: '16em',
+  searchPlaceholder: 'Search This Table',
 };
