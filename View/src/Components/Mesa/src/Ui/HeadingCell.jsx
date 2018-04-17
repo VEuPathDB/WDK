@@ -18,7 +18,7 @@ class HeadingCell extends React.PureComponent {
 
   handleSortClick () {
     const { column, state, dispatch } = this.props;
-    const { sort } = state.ui;
+    const { sort } = state.uiState;
     const currentlySorting = sort.byColumn === column;
     dispatch(currentlySorting ? toggleSortOrder() : sortByColumn(column));
   }

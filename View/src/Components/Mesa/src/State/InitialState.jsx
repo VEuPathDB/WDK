@@ -3,7 +3,7 @@ const InitialState = {
   columns: [],
   options: {},
   actions: [],
-  ui: {
+  uiState: {
     columnEditorOpen: false,
     emptinessCulprit: null,
     searchQuery: null,
@@ -12,8 +12,8 @@ const InitialState = {
       byColumn: null,
       ascending: true
     },
-    pagination: {
-      activeItem: 1,
+    paginationState: {
+      anchorIndex: 1,
       itemsPerPage: 20
     }
   }

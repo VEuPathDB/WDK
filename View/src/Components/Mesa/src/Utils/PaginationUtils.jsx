@@ -1,19 +1,19 @@
 const PaginationUtils = {
-  getCurrentPage (list, { itemsPerPage, activeItem }) {
+  getCurrentPage (list, { itemsPerPage, anchorIndex }) {
     let pages = PaginationUtils.splitIntoPages(list, { itemsPerPage });
-    let pageIndex = PaginationUtils.getCurrentPageIndex({ itemsPerPage, activeItem });
+    let pageIndex = PaginationUtils.getCurrentPageIndex({ itemsPerPage, anchorIndex });
     return pages[pageIndex];
   },
-  getCurrentPageNumber ({ itemsPerPage, activeItem }) {
-    return Math.ceil(activeItem / itemsPerPage);
+  getCurrentPageNumber ({ itemsPerPage, anchorIndex }) {
+    return Math.ceil(anchorIndex / itemsPerPage);
   },
-  getCurrentPageIndex ({ itemsPerPage, activeItem }) {
-    let pageNumber = PaginationUtils.getCurrentPageNumber({ itemsPerPage, activeItem });
+  getCurrentPageIndex ({ itemsPerPage, anchorIndex }) {
+    let pageNumber = PaginationUtils.getCurrentPageNumber({ itemsPerPage, anchorIndex });
     return pageNumber - 1;
   },
-  getSpread (list, { itemsPerPage, activeItem }, usePagination) {
+  getSpread (list, { itemsPerPage, anchorIndex }, usePagination) {
     let spread = usePagination
-      ? PaginationUtils.getCurrentPage(list, { itemsPerPage, activeItem })
+      ? PaginationUtils.getCurrentPage(list, { itemsPerPage, anchorIndex })
       : list;
     return spread ? spread.map(item => item.__id) : [];
   },
@@ -49,15 +49,15 @@ const PaginationUtils = {
     let result = (pageNumber * itemsPerPage);
     return list && result > list.length ? list.length : result;
   },
-  nextPageNumber (list, { itemsPerPage, activeItem }) {
+  nextPageNumber (list, { itemsPerPage, anchorIndex }) {
     let totalPages = PaginationUtils.totalPages(list, { itemsPerPage });
-    let currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage, activeItem });
+    let currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage, anchorIndex });
     let nextPage = currentPage + 1 > totalPages ? 1 : currentPage + 1;
     return nextPage;
   },
-  prevPageNumber (list, { itemsPerPage, activeItem }) {
+  prevPageNumber (list, { itemsPerPage, anchorIndex }) {
     let totalPages = PaginationUtils.totalPages(list, { itemsPerPage });
-    let currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage, activeItem });
+    let currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage, anchorIndex });
     let prevPage = currentPage - 1 < 1 ? totalPages : currentPage - 1;
     return prevPage;
   }

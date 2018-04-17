@@ -53,12 +53,12 @@ var SelectionCell = function (_React$PureComponent) {
           filteredRows = _props.filteredRows,
           state = _props.state,
           dispatch = _props.dispatch;
-      var _state$ui = state.ui,
-          selection = _state$ui.selection,
-          pagination = _state$ui.pagination;
+      var _state$uiState = state.uiState,
+          selection = _state$uiState.selection,
+          paginationState = _state$uiState.paginationState;
       var paginate = state.options.paginate;
 
-      var spread = _PaginationUtils2.default.getSpread(filteredRows, pagination, paginate);
+      var spread = _PaginationUtils2.default.getSpread(filteredRows, paginationState, paginate);
       var checked = filteredRows.length && _PaginationUtils2.default.isSpreadSelected(spread, selection);
 
       var handler = function handler(e) {
@@ -79,7 +79,7 @@ var SelectionCell = function (_React$PureComponent) {
           row = _props2.row,
           state = _props2.state,
           dispatch = _props2.dispatch;
-      var selection = state.ui.selection;
+      var selection = state.uiState.selection;
 
       var checked = selection.includes(row.__id);
 

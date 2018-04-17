@@ -8,9 +8,9 @@ class PaginatedList extends React.Component {
   }
 
   render () {
-    const { container, list, pagination, renderItem } = this.props;
+    const { container, list, paginationState, renderItem } = this.props;
     const Container = container || 'div';
-    const currentPage = PaginationUtils.getCurrentPage(list, pagination);
+    const currentPage = PaginationUtils.getCurrentPage(list, paginationState);
     const content = Array.isArray(currentPage) ? currentPage.map(renderItem) : null;
 
     return (

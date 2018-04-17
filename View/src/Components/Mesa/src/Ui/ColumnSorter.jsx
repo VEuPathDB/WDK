@@ -9,7 +9,7 @@ class ColumnSorter extends React.PureComponent {
 
   render () {
     let { column, state, dispatch } = this.props;
-    let { sort } = state.ui;
+    let { sort } = state.uiState;
     let currentlySorting = sort.byColumn === column;
     let sortIcon = !currentlySorting
       ? 'sort-amount-asc inactive'

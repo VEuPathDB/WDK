@@ -15,8 +15,8 @@ class TableController extends React.Component {
 
   getFilteredRows () {
     let { state, dispatch } = this.props;
-    let { rows, ui, columns } = state;
-    let { searchQuery, sort, emptinessCulprit } = ui;
+    let { rows, uiState, columns } = state;
+    let { searchQuery, sort, emptinessCulprit } = uiState;
 
     if (!rows.length) {
       if (emptinessCulprit && emptinessCulprit !== 'nodata') dispatch(setEmptinessCulprit('nodata'));
@@ -43,8 +43,8 @@ class TableController extends React.Component {
 
   render () {
     let { state, dispatch, children } = this.props;
-    let { ui, options, actions } = state;
-    let { pagination } = ui;
+    let { uiState, options, actions } = state;
+    let { paginationState } = uiState;
 
     let filteredRows = this.getFilteredRows();
 
@@ -52,7 +52,7 @@ class TableController extends React.Component {
       <PaginationMenu
         dispatch={dispatch}
         list={filteredRows}
-        pagination={pagination}
+        paginationState={paginationState}
       />
     );
 

@@ -56,7 +56,7 @@ var HeadingCell = function (_React$PureComponent) {
           column = _props.column,
           state = _props.state,
           dispatch = _props.dispatch;
-      var sort = state.ui.sort;
+      var sort = state.uiState.sort;
 
       var currentlySorting = sort.byColumn === column;
       dispatch(currentlySorting ? (0, _Actions.toggleSortOrder)() : (0, _Actions.sortByColumn)(column));

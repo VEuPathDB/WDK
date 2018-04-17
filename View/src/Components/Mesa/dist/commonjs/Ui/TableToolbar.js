@@ -58,8 +58,8 @@ var TableToolbar = function (_React$PureComponent) {
       var rows = state.rows,
           columns = state.columns,
           options = state.options,
-          ui = state.ui;
-      var pagination = ui.pagination;
+          uiState = state.uiState;
+      var paginationState = uiState.paginationState;
 
 
       var hiddenRowCount = rows.length - filteredRows.length;

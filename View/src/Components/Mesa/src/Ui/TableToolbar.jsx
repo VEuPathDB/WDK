@@ -13,8 +13,8 @@ class TableToolbar extends React.PureComponent {
 
   render () {
     const { dispatch, state, filteredRows, children } = this.props;
-    const { rows, columns, options, ui } = state;
-    const { pagination } = ui;
+    const { rows, columns, options, uiState } = state;
+    const { paginationState } = uiState;
 
     const hiddenRowCount = rows.length - filteredRows.length;
     const columnsAreHideable = columns.some(column => column.hideable);

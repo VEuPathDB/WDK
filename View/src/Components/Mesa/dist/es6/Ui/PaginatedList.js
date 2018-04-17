@@ -37,11 +37,11 @@ var PaginatedList = function (_React$Component) {
       var _props = this.props,
           container = _props.container,
           list = _props.list,
-          pagination = _props.pagination,
+          paginationState = _props.paginationState,
           renderItem = _props.renderItem;
 
       var Container = container || 'div';
-      var currentPage = _PaginationUtils2.default.getCurrentPage(list, pagination);
+      var currentPage = _PaginationUtils2.default.getCurrentPage(list, paginationState);
       var content = Array.isArray(currentPage) ? currentPage.map(renderItem) : null;
 
       return _react2.default.createElement(

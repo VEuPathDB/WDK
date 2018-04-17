@@ -3,7 +3,7 @@ import React from 'react';
 import Icon from '../Components/Icon';
 import PaginationUtils from '../Utils/PaginationUtils';
 import PaginationEditor from '../Ui/PaginationEditor';
-import { setPaginatedActiveItem } from '../State/Actions';
+import { setPaginationAnchor } from '../State/Actions';
 
 const settings = {
   overflowPoint: 8,
@@ -37,7 +37,7 @@ class PaginationMenu extends React.PureComponent {
   }
 
   getRelativePageNumber (relative) {
-    const { list, pagination } = this.props;
+    const { list, paginationState } = this.props;
 
     switch (relative.toLowerCase()) {
       case 'first':
@@ -45,12 +45,12 @@ class PaginationMenu extends React.PureComponent {
         return 1;
       case 'last':
       case 'end':
-        return PaginationUtils.totalPages(list, pagination);
+        return PaginationUtils.totalPages(list, paginationState);
       case 'next':
-        return PaginationUtils.nextPageNumber(list, pagination);
+        return PaginationUtils.nextPageNumber(list, paginationState);
       case 'prev':
       case 'previous':
-        return PaginationUtils.prevPageNumber(list, pagination);
+        return PaginationUtils.prevPageNumber(list, paginationState);
       default:
         return null;
     }
@@ -75,9 +75,9 @@ class PaginationMenu extends React.PureComponent {
   }
 
   goToPage (page) {
-    let { pagination, dispatch } = this.props;
-    let activeItem = PaginationUtils.firstItemOnPage(page, pagination);
-    dispatch(setPaginatedActiveItem(activeItem));
+    let { paginationState, dispatch } = this.props;
+    let anchorIndex = PaginationUtils.firstItemOnPage(page, paginationState);
+    dispatch(setPaginationAnchor(anchorIndex));
   }
 
   renderRelativeLink (relative) {
@@ -107,10 +107,10 @@ class PaginationMenu extends React.PureComponent {
   }
 
   renderPageList () {
-    const { pagination, list } = this.props;
+    const { paginationState, list } = this.props;
     const { overflowPoint } = settings;
-    const current = PaginationUtils.getCurrentPageNumber(pagination);
-    const total = PaginationUtils.totalPages(list, pagination);
+    const current = PaginationUtils.getCurrentPageNumber(paginationState);
+    const total = PaginationUtils.totalPages(list, paginationState);
     const pageList = PaginationUtils.generatePageList(total);
 
     if (total > overflowPoint) {
@@ -121,7 +121,7 @@ class PaginationMenu extends React.PureComponent {
   }
 
   render () {
-    const { list, pagination, dispatch } = this.props;
+    const { list, paginationState, dispatch } = this.props;
     return !list.length ? null : (
       <div className="PaginationMenu">
         <span className="Pagination-Spacer" />
@@ -135,7 +135,7 @@ class PaginationMenu extends React.PureComponent {
           {this.renderRelativeLink('next')}
         </span>
         <span className="Pagination-Editor">
-          <PaginationEditor pagination={pagination} dispatch={dispatch} />
+          <PaginationEditor paginationState={paginationState} dispatch={dispatch} />
         </span>
       </div>
     );

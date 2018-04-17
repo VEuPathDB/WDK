@@ -78,12 +78,12 @@ var SelectionCounter = function (_React$Component) {
           state = _props3.state,
           dispatch = _props3.dispatch,
           filteredRows = _props3.filteredRows;
-      var _state$ui = state.ui,
-          selection = _state$ui.selection,
-          pagination = _state$ui.pagination;
+      var _state$uiState = state.uiState,
+          selection = _state$uiState.selection,
+          paginationState = _state$uiState.paginationState;
       var paginate = state.options.paginate;
 
-      var spread = _PaginationUtils2.default.getSpread(filteredRows, pagination, paginate);
+      var spread = _PaginationUtils2.default.getSpread(filteredRows, paginationState, paginate);
 
       var target = selection.find(function (id) {
         return !spread.includes(id);
@@ -95,7 +95,7 @@ var SelectionCounter = function (_React$Component) {
       });
       if (targetIndex < 0) return;
 
-      dispatch((0, _Actions.setPaginatedActiveItem)(targetIndex + 1));
+      dispatch((0, _Actions.setPaginationAnchor)(targetIndex + 1));
     }
 
     /* Renderers -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
@@ -107,7 +107,7 @@ var SelectionCounter = function (_React$Component) {
           state = _props4.state,
           dispatch = _props4.dispatch,
           filteredRows = _props4.filteredRows;
-      var selection = state.ui.selection;
+      var selection = state.uiState.selection;
 
 
       var allIds = filteredRows.map(function (row) {
@@ -144,15 +144,15 @@ var SelectionCounter = function (_React$Component) {
           state = _props5.state,
           dispatch = _props5.dispatch,
           filteredRows = _props5.filteredRows;
-      var _state$ui2 = state.ui,
-          selection = _state$ui2.selection,
-          pagination = _state$ui2.pagination;
+      var _state$uiState2 = state.uiState,
+          selection = _state$uiState2.selection,
+          paginationState = _state$uiState2.paginationState;
 
       var allIds = filteredRows.map(function (row) {
         return row.__id;
       });
       var allSelected = _PaginationUtils2.default.isSpreadSelected(allIds, selection);
-      var spread = _PaginationUtils2.default.getSpread(filteredRows, pagination, true);
+      var spread = _PaginationUtils2.default.getSpread(filteredRows, paginationState, true);
       var pageCoverage = _PaginationUtils2.default.countSelectedInSpread(spread, selection);
       var totalCoverage = _PaginationUtils2.default.countSelectedInSpread(allIds, selection);
 
@@ -243,7 +243,7 @@ var SelectionCounter = function (_React$Component) {
     key: 'render',
     value: function render() {
       var paginate = this.props.state.options.paginate;
-      var selection = this.props.state.ui.selection;
+      var selection = this.props.state.uiState.selection;
 
 
       if (!selection.length) return null;

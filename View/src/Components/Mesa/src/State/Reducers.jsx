@@ -6,22 +6,22 @@ export default function ReducerFactory (base = {}) {
   return function Reducer (state = startingState, action = {}) {
     switch (action.type) {
 
-      case 'SET_PAGINATED_ACTIVE_ITEM': {
-        let { activeItem } = action;
-        let { ui } = state;
-        let { pagination } = ui;
-        pagination = Object.assign({}, pagination, { activeItem });
-        ui = Object.assign({}, ui, { pagination });
-        return Object.assign({}, state, { ui });
+      case 'SET_PAGINATION_ANCHOR': {
+        let { anchorIndex } = action;
+        let { uiState } = state;
+        let { paginationState } = uiState;
+        paginationState = Object.assign({}, paginationState, { anchorIndex });
+        uiState = Object.assign({}, uiState, { paginationState });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'SET_PAGINATED_ITEMS_PER_PAGE': {
         let { itemsPerPage } = action;
-        let { ui } = state;
-        let { pagination } = ui;
-        pagination = Object.assign({}, pagination, { itemsPerPage });
-        ui = Object.assign({}, ui, { pagination });
-        return Object.assign({}, state, { ui });
+        let { uiState } = state;
+        let { paginationState } = uiState;
+        paginationState = Object.assign({}, paginationState, { itemsPerPage });
+        uiState = Object.assign({}, uiState, { paginationState });
+        return Object.assign({}, state, { uiState });
       }
 
       /* Updates -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~ */
@@ -131,46 +131,46 @@ export default function ReducerFactory (base = {}) {
 
       case 'SET_EMPTINESS_CULPRIT': {
         let { emptinessCulprit } = action;
-        let { ui } = state;
-        ui = Object.assign({}, ui, { emptinessCulprit });
-        return Object.assign({}, state, { ui });
+        let { uiState } = state;
+        uiState = Object.assign({}, uiState, { emptinessCulprit });
+        return Object.assign({}, state, { uiState });
       }
 
       /* COLUMN SORTING -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~= */
       case 'SORT_BY_COLUMN': {
         let byColumn = action.column;
-        let sort = Object.assign({}, state.ui.sort, { byColumn, ascending: true });
-        let ui = Object.assign({}, state.ui, { sort });
-        return Object.assign({}, state, { ui });
+        let sort = Object.assign({}, state.uiState.sort, { byColumn, ascending: true });
+        let uiState = Object.assign({}, state.uiState, { sort });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'TOGGLE_SORT_ORDER': {
-        let { ascending } = state.ui.sort;
-        let sort = Object.assign({}, state.ui.sort, { ascending: !ascending });
-        let ui = Object.assign({}, state.ui, { sort });
-        return Object.assign({}, state, { ui });
+        let { ascending } = state.uiState.sort;
+        let sort = Object.assign({}, state.uiState.sort, { ascending: !ascending });
+        let uiState = Object.assign({}, state.uiState, { sort });
+        return Object.assign({}, state, { uiState });
       }
 
       /* SHOW/HIDE COLUMN -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-= */
       case 'TOGGLE_COLUMN_EDITOR': {
-        let { ui } = state;
-        let columnEditorOpen = !ui.columnEditorOpen;
-        ui = Object.assign({}, ui, { columnEditorOpen });
-        return Object.assign({}, state, { ui });
+        let { uiState } = state;
+        let columnEditorOpen = !uiState.columnEditorOpen;
+        uiState = Object.assign({}, uiState, { columnEditorOpen });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'OPEN_COLUMN_EDITOR': {
-        let { ui } = state;
+        let { uiState } = state;
         let columnEditorOpen = true;
-        ui = Object.assign({}, ui, { columnEditorOpen });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { columnEditorOpen });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'CLOSE_COLUMN_EDITOR': {
-        let { ui } = state;
+        let { uiState } = state;
         let columnEditorOpen = false;
-        ui = Object.assign({}, ui, { columnEditorOpen });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { columnEditorOpen });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'HIDE_COLUMN': {
@@ -198,83 +198,83 @@ export default function ReducerFactory (base = {}) {
       /* SEARCH -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~= */
       case 'SEARCH_BY_QUERY': {
         let { searchQuery } = action;
-        let { ui } = state;
+        let { uiState } = state;
         if (!searchQuery || !searchQuery.length) searchQuery = null;
-        let { pagination } = ui;
-        pagination = Object.assign({}, pagination, { activeItem: 1 });
-        ui = Object.assign({}, ui, { searchQuery }, { pagination });
-        return Object.assign({}, state, { ui })
+        let { paginationState } = uiState;
+        paginationState = Object.assign({}, paginationState, { anchorIndex: 1 });
+        uiState = Object.assign({}, uiState, { searchQuery }, { paginationState });
+        return Object.assign({}, state, { uiState })
       }
 
       case 'SELECT_ROW_BY_ID': {
         let { id } = action;
-        let { ui } = state;
-        let { selection } = ui;
+        let { uiState } = state;
+        let { selection } = uiState;
         if (selection.includes(id)) return state;
         selection.push(id);
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'SELECT_ROWS_BY_IDS': {
         let { ids } = action;
-        let { ui } = state;
-        let { selection } = ui;
+        let { uiState } = state;
+        let { selection } = uiState;
         let selectable = ids.filter(id => !selection.includes(id));
         selection = [...selection, ...selectable];
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'DESELECT_ROWS_BY_IDS': {
         let { ids } = action;
-        let { ui } = state;
-        let { selection } = ui;
+        let { uiState } = state;
+        let { selection } = uiState;
         selection = selection.filter(id => !ids.includes(id));
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'DESELECT_ROW_BY_ID': {
         let { id } = action;
-        let { ui } = state;
-        let { selection } = ui;
+        let { uiState } = state;
+        let { selection } = uiState;
         let index = selection.indexOf(id);
         if (index < 0) return state;
         selection.splice(index, 1);
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'TOGGLE_ROW_SELECTION_BY_ID': {
         let { id } = action;
-        let { ui } = state;
-        let { selection } = ui;
+        let { uiState } = state;
+        let { selection } = uiState;
         let index = selection.indexOf(id);
         if (index < 0) selection.push(id);
         else selection.splice(index, 1);
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'SELECT_ALL_ROWS': {
-        let { ui, rows } = state;
-        let { selection } = ui;
+        let { uiState, rows } = state;
+        let { selection } = uiState;
         selection = rows.map(row => row.__id);
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'CLEAR_ROW_SELECTION': {
-        let { ui } = state;
+        let { uiState } = state;
         let selection = []
-        ui = Object.assign({}, ui, { selection });
-        return Object.assign({}, state, { ui });
+        uiState = Object.assign({}, uiState, { selection });
+        return Object.assign({}, state, { uiState });
       }
 
       case 'RESET_UI_STATE': {
-        let ui = Object.assign({}, startingState.ui);
-        return Object.assign({}, state, { ui });
+        let uiState = Object.assign({}, startingState.uiState);
+        return Object.assign({}, state, { uiState });
       }
 
       default:

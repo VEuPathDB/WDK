@@ -23,8 +23,8 @@ class TableSearch extends React.PureComponent {
 
   render () {
     let { state } = this.props;
-    let { ui, options } = state;
-    let { searchQuery } = ui;
+    let { uiState, options } = state;
+    let { searchQuery } = uiState;
 
     return (
       <div className="TableSearch">

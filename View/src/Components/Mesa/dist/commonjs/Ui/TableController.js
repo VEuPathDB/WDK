@@ -59,11 +59,11 @@ var TableController = function (_React$Component) {
           state = _props.state,
           dispatch = _props.dispatch;
       var rows = state.rows,
-          ui = state.ui,
+          uiState = state.uiState,
           columns = state.columns;
-      var searchQuery = ui.searchQuery,
-          sort = ui.sort,
-          emptinessCulprit = ui.emptinessCulprit;
+      var searchQuery = uiState.searchQuery,
+          sort = uiState.sort,
+          emptinessCulprit = uiState.emptinessCulprit;
 
 
       if (!rows.length) {
@@ -94,10 +94,10 @@ var TableController = function (_React$Component) {
           state = _props2.state,
           dispatch = _props2.dispatch,
           children = _props2.children;
-      var ui = state.ui,
+      var uiState = state.uiState,
           options = state.options,
           actions = state.actions;
-      var pagination = ui.pagination;
+      var paginationState = uiState.paginationState;
 
 
       var filteredRows = this.getFilteredRows();
@@ -106,7 +106,7 @@ var TableController = function (_React$Component) {
         return !options.paginate ? null : _react2.default.createElement(_PaginationMenu2.default, {
           dispatch: dispatch,
           list: filteredRows,
-          pagination: pagination
+          paginationState: paginationState
         });
       };
 

@@ -17,9 +17,9 @@ class SelectionCell extends React.PureComponent {
 
   renderPageCheckbox () {
     let { filteredRows, state, dispatch } = this.props;
-    let { selection, pagination } = state.ui;
+    let { selection, paginationState } = state.uiState;
     let { paginate } = state.options;
-    let spread = PaginationUtils.getSpread(filteredRows, pagination, paginate);
+    let spread = PaginationUtils.getSpread(filteredRows, paginationState, paginate);
     let checked = filteredRows.length && PaginationUtils.isSpreadSelected(spread, selection);
 
     let handler = (e) => {
@@ -36,7 +36,7 @@ class SelectionCell extends React.PureComponent {
 
   renderRowCheckbox () {
     let { row, state, dispatch } = this.props;
-    let { selection } = state.ui;
+    let { selection } = state.uiState;
     let checked = selection.includes(row.__id);
 
     let handler = (e) => {

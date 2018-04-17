@@ -47,9 +47,9 @@ export function clearRowSelection () {
   return { type: 'CLEAR_ROW_SELECTION' };
 }
 
-export function setPaginatedActiveItem (activeItem) {
-  if (typeof activeItem !== 'number' || activeItem <= 0) return;
-  return { type: 'SET_PAGINATED_ACTIVE_ITEM', activeItem };
+export function setPaginationAnchor (anchorIndex) {
+  if (typeof anchorIndex !== 'number' || anchorIndex <= 0) return;
+  return { type: 'SET_PAGINATION_ANCHOR', anchorIndex };
 }
 
 export function setPaginatedItemsPerPage (itemsPerPage) {
