@@ -31,7 +31,7 @@ class BodyLayer extends React.Component {
 
   componentDidUpdate () {
     const { props } = this;
-    ReactDOM.render(<div {...props} />, this.parentElement);
+    ReactDOM.render(<div className="BodyLayer" {...props} />, this.parentElement);
   }
 };
 
