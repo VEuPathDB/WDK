@@ -8,6 +8,7 @@ class ActionToolbar extends React.PureComponent {
     super(props);
     this.dispatchAction = this.dispatchAction.bind(this);
     this.renderActionItem = this.renderActionItem.bind(this);
+    this.renderActionItemList = this.renderActionItemList.bind(this);
   }
 
   getSelection () {
