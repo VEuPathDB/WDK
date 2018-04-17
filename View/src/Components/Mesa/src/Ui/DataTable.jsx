@@ -17,9 +17,9 @@ class DataTable extends React.PureComponent {
       <div className="Mesa">
         <div className="DataTable">
           <table cellSpacing="0" cellPadding="0">
-            <tbody>
+            <thead>
               <HeadingRow {...props} />
-            </tbody>
+            </thead>
             <DataRowList {...props} />
           </table>
         </div>
