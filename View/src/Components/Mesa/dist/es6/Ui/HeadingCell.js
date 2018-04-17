@@ -270,7 +270,7 @@ var HeadingCell = function (_React$PureComponent) {
 
       if (typeof onColumnReorder !== 'function') return;
       var draggedColumn = event.dataTransfer.getData('text');
-      this.setState({ isDragTarget: false });
+      if (this.state.isDragTarget) this.setState({ isDragTarget: false });
       onColumnReorder(draggedColumn, columnIndex);
     }
   }, {
@@ -282,16 +282,15 @@ var HeadingCell = function (_React$PureComponent) {
           onDragEnter = this.onDragEnter,
           onDragExit = this.onDragExit,
           onDragOver = this.onDragOver,
-          onDrop = this.onDrop,
-          onDragLeave = this.onDragLeave;
+          onDragLeave = this.onDragLeave,
+          onDrop = this.onDrop;
 
       return {
         onClick: onClick,
         onDragStart: onDragStart, onDragEnd: onDragEnd,
         onDragEnter: onDragEnter, onDragExit: onDragExit,
-        onDragOver: onDragOver,
-        onDrop: onDrop,
-        onDragLeave: onDragLeave
+        onDragOver: onDragOver, onDragLeave: onDragLeave,
+        onDrop: onDrop
       };
     }
   }, {

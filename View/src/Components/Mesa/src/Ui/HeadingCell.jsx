@@ -176,7 +176,7 @@ class HeadingCell extends React.PureComponent {
     const { onColumnReorder } = eventHandlers;
     if (typeof onColumnReorder !== 'function') return;
     const draggedColumn = event.dataTransfer.getData('text');
-    this.setState({ isDragTarget: false });
+    if (this.state.isDragTarget) this.setState({ isDragTarget: false });
     onColumnReorder(draggedColumn, columnIndex);
   }
 
@@ -185,17 +185,15 @@ class HeadingCell extends React.PureComponent {
       onClick,
       onDragStart, onDragEnd,
       onDragEnter, onDragExit,
-      onDragOver,
-      onDrop,
-      onDragLeave
+      onDragOver, onDragLeave,
+      onDrop
     } = this;
     return {
       onClick,
       onDragStart, onDragEnd,
       onDragEnter, onDragExit,
-      onDragOver,
-      onDrop,
-      onDragLeave
+      onDragOver, onDragLeave,
+      onDrop
     };
   }
 
