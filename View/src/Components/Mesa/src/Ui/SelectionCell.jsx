@@ -12,27 +12,29 @@ class SelectionCell extends React.PureComponent {
   }
 
   selectAllRows () {
-    const { filteredRows, options, eventHandlers } = this.props;
+    const { rows, options, eventHandlers } = this.props;
     const { isRowSelected } = options;
     const { onRowSelect, onMultipleRowSelect } = eventHandlers;
-    const unselectedRows = filteredRows.filter(row => !isRowSelected(row));
+    const unselectedRows = rows.filter(row => !isRowSelected(row));
+    console.log('selecting all, unselectedrows:', unselectedRows);
     if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);
     else return unselectedRows.forEach(row => onRowSelect(row));
   }
 
   deselectAllRows () {
-    const { filteredRows, options, eventHandlers } = this.props;
+    const { rows, options, eventHandlers } = this.props;
     const { isRowSelected } = options;
     const { onRowDeselect, onMultipleRowDeselect } = eventHandlers;
-    const selection = filteredRows.filter(isRowSelected);
+    const selection = rows.filter(isRowSelected);
+    console.log('deselecting all, selectedrows:', selection);
     if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);
     else return selection.forEach(row => onRowDeselect(row));
   }
 
   renderPageCheckbox () {
-    const { filteredRows, isRowSelected, eventHandlers } = this.props;
-    const selection = filteredRows.filter(isRowSelected);
-    const checked = filteredRows.every(isRowSelected);
+    const { rows, isRowSelected, eventHandlers } = this.props;
+    const selection = rows.filter(isRowSelected);
+    const checked = rows.every(isRowSelected);
 
     let handler = (e) => {
       e.stopPropagation();

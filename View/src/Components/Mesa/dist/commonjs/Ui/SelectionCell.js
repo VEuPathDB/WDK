@@ -41,16 +41,17 @@ var SelectionCell = function (_React$PureComponent) {
     key: 'selectAllRows',
     value: function selectAllRows() {
       var _props = this.props,
-          filteredRows = _props.filteredRows,
+          rows = _props.rows,
           options = _props.options,
           eventHandlers = _props.eventHandlers;
       var isRowSelected = options.isRowSelected;
       var onRowSelect = eventHandlers.onRowSelect,
           onMultipleRowSelect = eventHandlers.onMultipleRowSelect;
 
-      var unselectedRows = filteredRows.filter(function (row) {
+      var unselectedRows = rows.filter(function (row) {
         return !isRowSelected(row);
       });
+      console.log('selecting all, unselectedrows:', unselectedRows);
       if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);else return unselectedRows.forEach(function (row) {
         return onRowSelect(row);
       });
@@ -59,14 +60,15 @@ var SelectionCell = function (_React$PureComponent) {
     key: 'deselectAllRows',
     value: function deselectAllRows() {
       var _props2 = this.props,
-          filteredRows = _props2.filteredRows,
+          rows = _props2.rows,
           options = _props2.options,
           eventHandlers = _props2.eventHandlers;
       var isRowSelected = options.isRowSelected;
       var onRowDeselect = eventHandlers.onRowDeselect,
           onMultipleRowDeselect = eventHandlers.onMultipleRowDeselect;
 
-      var selection = filteredRows.filter(isRowSelected);
+      var selection = rows.filter(isRowSelected);
+      console.log('deselecting all, selectedrows:', selection);
       if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);else return selection.forEach(function (row) {
         return onRowDeselect(row);
       });
@@ -77,12 +79,12 @@ var SelectionCell = function (_React$PureComponent) {
       var _this2 = this;
 
       var _props3 = this.props,
-          filteredRows = _props3.filteredRows,
+          rows = _props3.rows,
           isRowSelected = _props3.isRowSelected,
           eventHandlers = _props3.eventHandlers;
 
-      var selection = filteredRows.filter(isRowSelected);
-      var checked = filteredRows.every(isRowSelected);
+      var selection = rows.filter(isRowSelected);
+      var checked = rows.every(isRowSelected);
 
       var handler = function handler(e) {
         e.stopPropagation();
