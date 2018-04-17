@@ -12,7 +12,7 @@ var fail = exports.fail = function fail(fn, message) {
 };
 
 var badType = exports.badType = function badType(fn, parameter, expected, actual) {
-  var message = 'parameter "' + pararmeter + '"  is not of type ' + expected + ' (got ' + actual + ')';
+  var message = 'parameter "' + parameter + '"  is not of type ' + expected + ' (got ' + actual + ')';
   return fail(fn, message, TypeError);
 };
 
