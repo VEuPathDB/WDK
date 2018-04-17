@@ -46,6 +46,7 @@ var DataTable = function (_React$PureComponent) {
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
     _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
+    _this.state = { leftScroll: 0 };
     return _this;
   }
 
@@ -68,12 +69,12 @@ var DataTable = function (_React$PureComponent) {
   }, {
     key: 'handleTableBodyScroll',
     value: function handleTableBodyScroll(e) {
-      console.log('scrolling on BODY', e);
+      console.log('body is at', this.refs.tableBody.scrollLeft);
     }
   }, {
     key: 'handleTableHeaderScroll',
     value: function handleTableHeaderScroll(e) {
-      console.log('scrolling on HEADER', e);
+      console.log('header is at', this.refs.tableHeader.scrollLeft);
     }
   }, {
     key: 'generateLayout',
@@ -116,10 +117,13 @@ var DataTable = function (_React$PureComponent) {
         { className: dataTableClass('Sticky') },
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Header') },
+          {
+            ref: 'tableHeader',
+            className: dataTableClass('Header'),
+            onScroll: this.handleTableHeaderScroll },
           _react2.default.createElement(
             'table',
-            { cellSpacing: 0, cellPadding: 0, onScroll: this.handleTableHeaderScroll },
+            { cellSpacing: 0, cellPadding: 0 },
             _react2.default.createElement(
               'thead',
               null,
@@ -129,7 +133,11 @@ var DataTable = function (_React$PureComponent) {
         ),
         _react2.default.createElement(
           'div',
-          { className: dataTableClass('Body'), style: heightLayer, onScroll: this.handleTableBodyScroll },
+          {
+            ref: 'tableBody',
+            className: dataTableClass('Body'),
+            style: heightLayer,
+            onScroll: this.handleTableBodyScroll },
           _react2.default.createElement(
             'table',
             { cellSpacing: 0, cellPadding: 0 },
