@@ -80,7 +80,10 @@ var DataTable = function (_React$PureComponent) {
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
 
-      var tableBodyStyle = { maxHeight: tableBodyMaxHeight };
+      var tableBodyStyle = {
+        maxHeight: tableBodyMaxHeight,
+        overflow: 'auto'
+      };
       var useStickyLayout = this.shouldUseStickyHeader();
       var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
         return col.width;
@@ -93,7 +96,7 @@ var DataTable = function (_React$PureComponent) {
 
       return useStickyLayout ? _react2.default.createElement(
         'div',
-        { className: dataTableClass('Sticky'), style: widthLayer },
+        { className: dataTableClass('Sticky'), style: Object.assign({}, tableBodyStyle, widthLayer) },
         _react2.default.createElement(
           'div',
           { className: dataTableClass('Header') },
