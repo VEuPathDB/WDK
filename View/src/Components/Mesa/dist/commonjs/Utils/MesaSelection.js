@@ -16,8 +16,10 @@ var MesaSelection = function () {
   function MesaSelection(idAccessor) {
     _classCallCheck(this, MesaSelection);
 
-    if (typeof idAccessor !== 'function') return (0, _Errors.badType)('selectionFactory', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
+    if (typeof idAccessor !== 'function') return (0, _Errors.badType)('MesaSelection:constructor', 'idAccessor', 'function', typeof idAccessor === 'undefined' ? 'undefined' : _typeof(idAccessor));
+    this.idAccessor = idAccessor;
     this.selection = new Set();
+
     this.getSelection = this.getSelection.bind(this);
     this.onRowSelect = this.onRowSelect.bind(this);
     this.onMultiRowSelect = this.onMultiRowSelect.bind(this);
@@ -34,7 +36,7 @@ var MesaSelection = function () {
   }, {
     key: 'onRowSelect',
     value: function onRowSelect(row) {
-      var id = idAccessor(row);
+      var id = this.idAccessor(row);
       this.selection.add(id);
       return this.selection;
     }
@@ -44,14 +46,14 @@ var MesaSelection = function () {
       var _this = this;
 
       rows.forEach(function (row) {
-        return _this.selection.add(idAccessor(row));
+        return _this.selection.add(_this.idAccessor(row));
       });
       return this.selection;
     }
   }, {
     key: 'onRowDeselect',
     value: function onRowDeselect(row) {
-      var id = idAccessor(row);
+      var id = this.idAccessor(row);
       this.selection.delete(id);
       return this.selection;
     }
@@ -61,7 +63,7 @@ var MesaSelection = function () {
       var _this2 = this;
 
       rows.forEach(function (row) {
-        return _this2.selection.delete(idAccessor(row));
+        return _this2.selection.delete(_this2.idAccessor(row));
       });
       return this.selection;
     }
@@ -70,15 +72,16 @@ var MesaSelection = function () {
     value: function intersectWith(rows) {
       var _this3 = this;
 
-      var rowIds = rows.map(idAccessor);
+      var rowIds = rows.map(this.idAccessor);
       this.selection.forEach(function (row) {
-        if (!rowIds.includes(row)) _this3.selection.delete(row);
+        return rowIds.includes(row) ? null : _this3.selection.delete(row);
       });
+      return this.selection;
     }
   }, {
     key: 'isRowSelected',
     value: function isRowSelected(row) {
-      var id = idAccessor(row);
+      var id = this.idAccessor(row);
       return this.selection.has(id);
     }
   }]);
