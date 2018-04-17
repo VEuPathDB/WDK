@@ -8,6 +8,7 @@ import PaginationMenu from './Ui/PaginationMenu';
 import MesaController from './Ui/MesaController';
 
 import Tooltip from './Components/Modal';
+import Checkbox from './Components/Checkbox';
 import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
 
@@ -26,6 +27,7 @@ export {
   ModalBoundary,
   HelpTrigger,
   Tooltip,
+  Checkbox,
   MesaController,
   MesaState,
   MesaSelection,

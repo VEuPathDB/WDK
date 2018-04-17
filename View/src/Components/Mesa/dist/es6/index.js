@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Utils = exports.MesaSelection = exports.MesaState = exports.MesaController = exports.Tooltip = exports.HelpTrigger = exports.ModalBoundary = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
+exports.Utils = exports.MesaSelection = exports.MesaState = exports.MesaController = exports.Checkbox = exports.Tooltip = exports.HelpTrigger = exports.ModalBoundary = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
@@ -41,6 +41,10 @@ var _Modal = require('./Components/Modal');
 
 var _Modal2 = _interopRequireDefault(_Modal);
 
+var _Checkbox = require('./Components/Checkbox');
+
+var _Checkbox2 = _interopRequireDefault(_Checkbox);
+
 var _HelpTrigger = require('./Components/HelpTrigger');
 
 var _HelpTrigger2 = _interopRequireDefault(_HelpTrigger);
@@ -75,6 +79,7 @@ exports.PaginationMenu = _PaginationMenu2.default;
 exports.ModalBoundary = _ModalBoundary2.default;
 exports.HelpTrigger = _HelpTrigger2.default;
 exports.Tooltip = _Modal2.default;
+exports.Checkbox = _Checkbox2.default;
 exports.MesaController = _MesaController2.default;
 exports.MesaState = MesaState;
 exports.MesaSelection = MesaSelection;
