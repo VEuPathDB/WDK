@@ -25,7 +25,8 @@ class Table extends React.Component {
   render () {
     const { rows, columns } = this.props;
     const { filter } = Store.getState();
-    const rowList = rows
+    const emptyRows = !Array.isArray(rows) || !rows.length;
+    const rowList = emptyRows ? null : rows
       .filter(row => this.rowShouldAppear(row, filter))
       .map(this.makeRow);
 
