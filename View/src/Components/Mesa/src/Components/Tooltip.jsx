@@ -39,6 +39,7 @@ class Tooltip extends React.Component {
   }
 
   disengageTooltip () {
+    console.log('disengaging', argument.callee);
     let { hideDelay } = this.props;
     hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
     this.timeout = setTimeout(this.hideTooltip, hideDelay);
