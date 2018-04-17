@@ -31,21 +31,20 @@ class DataTable extends React.PureComponent {
     const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
     const { tableBodyMaxHeight } = options ? options : {};
-    const tableBodyStyle = {
+    const useStickyLayout = this.shouldUseStickyHeader();
+    const cumulativeWidth = combineWidths(columns.map(col => col.width));
+    const heightLayer = {
       maxHeight: tableBodyMaxHeight,
       overflow: 'auto'
     };
-    const useStickyLayout = this.shouldUseStickyHeader();
-    const cumulativeWidth = combineWidths(columns.map(col => col.width));
-    const widthLayer = !useStickyLayout
-      ? null : {
-        minWidth: cumulativeWidth,
-        maxWidth: cumulativeWidth,
-        width: cumulativeWidth
-      };
+    const widthLayer = {
+      minWidth: cumulativeWidth,
+      maxWidth: cumulativeWidth,
+      width: cumulativeWidth
+    };
 
     return useStickyLayout ? (
-      <div className={dataTableClass('Sticky')} style={Object.assign({}, tableBodyStyle, widthLayer)}>
+      <div className={dataTableClass('Sticky')} style={Object.assign({}, heightLayer, widthLayer)}>
         <div className={dataTableClass('Header')}>
           <table cellSpacing={0} cellPadding={0}>
             <thead>
