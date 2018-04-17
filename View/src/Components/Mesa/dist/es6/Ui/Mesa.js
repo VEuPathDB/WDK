@@ -14,6 +14,10 @@ var _MesaController = require('../Ui/MesaController');
 
 var _MesaController2 = _interopRequireDefault(_MesaController);
 
+var _MesaState = require('../Utils/MesaState');
+
+var _MesaState2 = _interopRequireDefault(_MesaState);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -33,8 +37,16 @@ var Mesa = function (_React$Component) {
 
   _createClass(Mesa, [{
     key: 'render',
-    value: function render(props) {
-      return _react2.default.createElement(_MesaController2.default, props);
+    value: function render() {
+      var state = this.props.state;
+      var rows = state.rows,
+          columns = state.columns,
+          options = state.options,
+          actions = state.actions,
+          uiState = state.uiState,
+          eventHandlers = state.eventHandlers;
+
+      return _react2.default.createElement(_MesaController2.default, state);
     }
   }]);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import Icon from '../Components/Icon';
 
 class TableSearch extends React.PureComponent {
@@ -45,6 +45,12 @@ class TableSearch extends React.PureComponent {
       </div>
     );
   }
+};
+
+TableSearch.propTypes = {
+  query: PropTypes.string,
+  options: PropTypes.object,
+  onSearch: PropTypes.func
 };
 
 export default TableSearch;

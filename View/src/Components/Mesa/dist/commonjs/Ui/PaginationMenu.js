@@ -10,6 +10,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 var _Icon = require('../Components/Icon');
 
 var _Icon2 = _interopRequireDefault(_Icon);
@@ -227,5 +231,14 @@ var PaginationMenu = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 ;
+
+PaginationMenu.propTypes = {
+  totalPages: _propTypes2.default.number,
+  currentPage: _propTypes2.default.number,
+  rowsPerPage: _propTypes2.default.number,
+  onPageChange: _propTypes2.default.func,
+  rowsPerPageOptions: _propTypes2.default.array,
+  onRowsPerPageChange: _propTypes2.default.func
+};
 
 exports.default = PaginationMenu;

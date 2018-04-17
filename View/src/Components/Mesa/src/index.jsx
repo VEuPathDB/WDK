@@ -11,6 +11,8 @@ import Tooltip from './Components/Modal';
 import ModalBoundary from './Components/ModalBoundary';
 
 import * as Utils from './Utils/Utils';
+import * as MesaState from './Utils/MesaState';
+import SelectionController from './Utils/SelectionController';
 
 export {
   Mesa,
@@ -23,5 +25,7 @@ export {
   ModalBoundary,
   Tooltip,
   MesaController,
+  MesaState,
+  SelectionController,
   Utils
 };
