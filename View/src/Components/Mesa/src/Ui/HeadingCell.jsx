@@ -244,12 +244,12 @@ class HeadingCell extends React.PureComponent {
 
 
   getClassName () {
-    const { key, headingClassName } = this.props.column;
+    const { key, className } = this.props.column;
     const { isDragging, isDragTarget } = this.state;
     const modifiers = ['key-' + key];
     if (isDragging) modifiers.push('Dragging');
     if (isDragTarget) modifiers.push('DragTarget');
-    return (typeof headingClassName === 'string' ? headingClassName + ' ' : '') + headingCellClass(null, modifiers);
+    return (typeof className === 'string' ? className + ' ' : '') + headingCellClass(null, modifiers);
   }
 
   render () {
