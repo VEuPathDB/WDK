@@ -50,9 +50,7 @@ class DataTable extends React.PureComponent {
             </thead>
           </table>
         </div>
-        <div
-          className={dataTableClass('Body')}
-          style={Object.assign(tableBodyStyle, widthLayer)}>
+        <div className={dataTableClass('Body')}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
