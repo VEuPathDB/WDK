@@ -125,9 +125,9 @@ class HeadingCell extends React.PureComponent {
   renderHelpTrigger () {
     const { column } = this.props;
     const { offset } = this.state;
-    const { top, left, right, width, height } = offset ? offset : {};
+    const { top, left, right, width, height, x, y } = offset ? offset : {};
     console.log('rendering help trigger with', offset);
-    const position = { top: top + height, left: right - width  };
+    const position = { top: y + height, left: x };
 
     if (!column.helpText) return null;
     return (
