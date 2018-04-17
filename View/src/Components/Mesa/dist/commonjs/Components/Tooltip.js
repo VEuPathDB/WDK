@@ -30,7 +30,6 @@ var Tooltip = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Tooltip.__proto__ || Object.getPrototypeOf(Tooltip)).call(this, props));
 
-    _this.state = { showText: false };
     _this.showTooltip = _this.showTooltip.bind(_this);
     _this.hideTooltip = _this.hideTooltip.bind(_this);
     _this.renderTooltipBox = _this.renderTooltipBox.bind(_this);
@@ -69,7 +68,6 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'disengageTooltip',
     value: function disengageTooltip() {
-      console.log('disengaging', arguments.callee);
       var hideDelay = this.props.hideDelay;
 
       hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
