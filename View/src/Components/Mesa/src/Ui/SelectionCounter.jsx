@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class SelectionCounter extends React.Component {
   constructor (props) {
@@ -19,14 +20,16 @@ class SelectionCounter extends React.Component {
   }
 
   selectAllRows () {
-    const { rows, selection, onRowSelect } = this.props;
+    const { rows, selection, onRowSelect, onMultipleRowSelect } = this.props;
     const unselectedRows = rows.map(row => !selection.includes(row));
-    unselectedRows.forEach(row => onRowSelect(row));
+    if (typeof onMultipleRowSelect === 'function') onMultipleRowSelect(unselectedRows);
+    else unselectedRows.forEach(row => onRowSelect(row));
   }
 
   deselectAllRows () {
-    const { selection, onRowDeselect } = this.props;
-    selection.forEach(row => onRowDeselect(row));
+    const { selection, onRowDeselect, onMultipleRowDeselect } = this.props;
+    if (typeof onMultipleRowDeselect === 'function') onMultipleRowDeselect(selection)
+    else selection.forEach(row => onRowDeselect(row));
   }
 
   render () {
@@ -36,14 +39,28 @@ class SelectionCounter extends React.Component {
 
     return (
       <div className="SelectionCounter">
-        {/* {allSelected ? 'All ' : ''} */}
         <b>{selection.length} </b>
         {this.noun(selection)} selected.
         <br />
-        <a onClick={this.deselectAllRows}>Clear selection.</a>
+        {!onRowDeselect && !onMultipleRowSelect ? null : (<a onClick={this.deselectAllRows}>Clear selection.</a>)}
       </div>
     );
   }
+};
+
+SelectionCounter.propTypes = {
+  // all/total "rows" in the table
+  rows: PropTypes.array,
+  // exclusively the selected rows (checked by ref/inclusion)
+  selection: PropTypes.array.isRequired,
+  // noun and plural to use for selections (e.g. "25 Datasets selected")
+  selectedNoun: PropTypes.string,
+  selectedPluralNoun: PropTypes.string,
+  // single and multiple select/deselect handlers
+  onRowSelect: PropTypes.func,
+  onRowDeselect: PropTypes.func,
+  onMultipleRowSelect: PropTypes.func,
+  onMultipleRowDeselect: PropTypes.func
 };
 
 export default SelectionCounter;

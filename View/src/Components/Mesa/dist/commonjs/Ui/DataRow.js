@@ -12,6 +12,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 var _DataCell = require('../Ui/DataCell');
 
 var _DataCell2 = _interopRequireDefault(_DataCell);
@@ -41,7 +45,7 @@ var DataRow = function (_React$PureComponent) {
     var _this = _possibleConstructorReturn(this, (DataRow.__proto__ || Object.getPrototypeOf(DataRow)).call(this, props));
 
     _this.state = { expanded: false };
-    _this.toggleRow = _this.toggleRow.bind(_this);
+    _this.handleRowClick = _this.handleRowClick.bind(_this);
     _this.expandRow = _this.expandRow.bind(_this);
     _this.collapseRow = _this.collapseRow.bind(_this);
     _this.componentWillReceiveProps = _this.componentWillReceiveProps.bind(_this);
@@ -72,26 +76,30 @@ var DataRow = function (_React$PureComponent) {
       this.setState({ expanded: false });
     }
   }, {
-    key: 'toggleRow',
-    value: function toggleRow() {
-      var options = this.props.options;
+    key: 'handleRowClick',
+    value: function handleRowClick() {
+      var _props = this.props,
+          row = _props.row,
+          rowIndex = _props.rowIndex,
+          options = _props.options;
+      var inline = options.inline,
+          onRowClick = options.onRowClick;
 
-      if (!options.inline) return;
+      if (!inline && !onRowClick) return;
 
-      var expanded = this.state.expanded;
-
-      this.setState({ expanded: !expanded });
+      if (inline) this.setState({ expanded: !this.state.expanded });
+      if (typeof onRowClick === 'function') onRowClick(row, rowIndex);
     }
   }, {
     key: 'render',
     value: function render() {
-      var _props = this.props,
-          row = _props.row,
-          rowIndex = _props.rowIndex,
-          columns = _props.columns,
-          options = _props.options,
-          actions = _props.actions,
-          eventHandlers = _props.eventHandlers;
+      var _props2 = this.props,
+          row = _props2.row,
+          rowIndex = _props2.rowIndex,
+          columns = _props2.columns,
+          options = _props2.options,
+          actions = _props2.actions,
+          eventHandlers = _props2.eventHandlers;
       var expanded = this.state.expanded;
 
       var inline = options.inline ? !expanded : false;
@@ -112,7 +120,7 @@ var DataRow = function (_React$PureComponent) {
 
       return _react2.default.createElement(
         'tr',
-        { className: className, style: rowStyle, onClick: this.toggleRow },
+        { className: className, style: rowStyle, onClick: this.handleRowClick },
         !hasSelectionColumn ? null : _react2.default.createElement(_SelectionCell2.default, {
           row: row,
           eventHandlers: eventHandlers,
@@ -129,5 +137,15 @@ var DataRow = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 ;
+
+DataRow.propTypes = {
+  row: _propTypes2.default.object.isRequired,
+  rowIndex: _propTypes2.default.number.isRequired,
+  columns: _propTypes2.default.array.isRequired,
+
+  options: _propTypes2.default.object,
+  actions: _propTypes2.default.array,
+  eventHandlers: _propTypes2.default.object
+};
 
 exports.default = DataRow;
