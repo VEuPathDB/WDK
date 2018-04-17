@@ -31,6 +31,9 @@ tbody:last-of-type {
       background-color: $evenRowBg;
     }
     &:last-child {
+      th, td {
+        border-bottom: 1px solid $borderColor;
+      }
       th:first-child, td:first-child {
         border-bottom-left-radius: $borderRadius;
         overflow: hidden;
