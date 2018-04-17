@@ -40,7 +40,6 @@ class ModalBoundary extends React.Component {
     return { addModal, removeModal };
   }
 
-
   renderModalWrapper () {
     const { modals } = this.state;
     const style = {

@@ -89,13 +89,15 @@ var Tooltip = function (_React$Component) {
           content = _props.content,
           position = _props.position;
 
-      var _ref = position ? position : { top: 0, left: 0 },
+      var _ref = position ? position : { top: 0, left: 0, right: 0 },
           top = _ref.top,
-          left = _ref.left;
+          left = _ref.left,
+          right = _ref.right;
 
       var boxStyle = {
         top: top,
         left: left,
+        right: right,
         display: 'block',
         position: 'absolute',
         pointerEvents: 'auto',

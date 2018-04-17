@@ -51,8 +51,10 @@ class HeadingCell extends React.PureComponent {
 
   updateOffset () {
     const { element } = this;
+    const { offsetLeft } = this.props;
     if (!element) return;
     let offset = Tooltip.getOffset(element);
+    if (offsetLeft && offset.left) offset.left += offsetLeft;
     this.setState({ offset });
   }
 
@@ -123,8 +125,9 @@ class HeadingCell extends React.PureComponent {
   renderHelpTrigger () {
     const { column } = this.props;
     const { offset } = this.state;
-    const { top, left, height } = offset ? offset : {};
-    const position = { top: top + height, left };
+    const { top, left, right, width, height } = offset ? offset : {};
+    console.log('rendering help trigger with', offset);
+    const position = { top: top + height, left: right - width  };
 
     if (!column.helpText) return null;
     return (
