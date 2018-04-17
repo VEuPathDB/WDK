@@ -101,6 +101,13 @@ var DataRow = function (_React$PureComponent) {
       var rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
       var className = dataRowClass(null, inline ? 'inline' : '');
 
+      var deriveRowClassName = options.deriveRowClassName;
+
+      if (typeof deriveRowClassName === 'function') {
+        var derivedClassName = deriveRowClassName(row);
+        className += typeof derivedClassName === 'string' ? ' ' + derivedClassName : '';
+      };
+
       var cellProps = { row: row, inline: inline, options: options, rowIndex: rowIndex };
 
       return _react2.default.createElement(

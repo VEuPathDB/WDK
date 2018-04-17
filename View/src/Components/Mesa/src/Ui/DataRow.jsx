@@ -51,7 +51,13 @@ class DataRow extends React.PureComponent {
       && typeof eventHandlers.onRowDeselect === 'function';
 
     const rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
-    const className = dataRowClass(null, inline ? 'inline' : '');
+    let className = dataRowClass(null, inline ? 'inline' : '');
+
+    const { deriveRowClassName } = options;
+    if (typeof deriveRowClassName === 'function') {
+      let derivedClassName = deriveRowClassName(row);
+      className += (typeof derivedClassName === 'string') ? ' ' + derivedClassName : '';
+    };
 
     const cellProps = { row, inline, options, rowIndex };
 
