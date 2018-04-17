@@ -63,6 +63,7 @@ class HeadingCell extends React.PureComponent {
     return (
       <Tooltip className="Trigger HelpTrigger" text={column.helpText}>
         <Icon fa="question-circle" />
+        <span ref={ref => this.triggerSpot = ref}>yo</span>
       </Tooltip>
     )
   }
