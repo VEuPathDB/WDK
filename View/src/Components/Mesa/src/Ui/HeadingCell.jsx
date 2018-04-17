@@ -100,11 +100,19 @@ class HeadingCell extends React.PureComponent {
         ref={el => this.element = el}
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
-        <SortTrigger />
-        <Content />
-        <ClickBoundary>
-          <HelpTrigger />
-        </ClickBoundary>
+        <row className="justify-center items-center">
+          <box>
+            <SortTrigger />
+          </box>
+          <box>
+            <Content />
+          </box>
+          <box>
+            <ClickBoundary>
+              <HelpTrigger />
+            </ClickBoundary>
+          </box>
+        </row>
       </th>
     );
   }
