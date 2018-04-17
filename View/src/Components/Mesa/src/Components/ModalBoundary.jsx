@@ -42,4 +42,8 @@ class ModalBoundary extends React.Component {
   }
 };
 
+ModalBoundary.childContextTypes = {
+  yo: string
+};
+
 export default ModalBoundary;

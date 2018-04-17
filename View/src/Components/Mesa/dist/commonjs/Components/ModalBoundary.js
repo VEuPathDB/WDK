@@ -75,4 +75,8 @@ var ModalBoundary = function (_React$Component) {
 
 ;
 
+ModalBoundary.childContextTypes = {
+  yo: string
+};
+
 exports.default = ModalBoundary;
