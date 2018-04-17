@@ -10,7 +10,7 @@ export const selectionFromRows = (rows, idAccessor) => {
     return badType('selectionFromRows', 'idAccessor', 'function', typeof idAccessor);
   const idList = mapListToIds(rows, idAccessor);
   return createSelection(idList);
-}
+};
 
 export const addRowToSelection = (_selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
@@ -28,20 +28,20 @@ export const removeRowFromSelection = (_selection, row, idAccessor) => {
   const id = idAccessor(row);
   selection.delete(id);
   return [...selection];
-}
+};
 
 export const isRowSelected = (selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('isRowSelected', 'idAccessor', 'function', typeof idAccessor);
   const id = idAccessor(row);
   return selection.includes(id);
-}
+};
 
 export const mapListToIds = (list, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('mapListToIds', 'idAccessor', 'function', typeof idAccessor);
   return list.map(idAccessor);
-}
+};
 
 export const intersectSelection = (_selection, _list, idAccessor) => {
   if (typeof idAccessor !== 'function')
@@ -50,4 +50,4 @@ export const intersectSelection = (_selection, _list, idAccessor) => {
   const selection = new Set(_selection);
   const intersection = new Set(idList);
   return [...selection].filter(item => intersection.has(item));
-}
+};

@@ -18,8 +18,24 @@ export const setFilteredRows = (state, filteredRows) => {
 export const setColumns = (state, columns) => {
   if (!Array.isArray(columns))
     return badType('setColumns', 'columns', 'array', typeof columns) || state;
-  return Object.assign({}, state, { columns });
+  const keys = columns.map(col => col.key);
+  const initialUiState = state.uiState ? state.uiState : {};
+  let columnOrder = initialUiState.columnOrder ? initialUiState.columnOrder : [];
+  keys.forEach(key => {
+    if (!columnOrder.includes(key)) columnOrder = [...columnOrder, key];
+  });
+  columnOrder = columnOrder.filter(key => keys.includes(key));
+  const uiState = Object.assign({}, initialUiState, { columnOrder });
+  return Object.assign({}, state, { columns, uiState });
 };
+
+export const setColumnOrder = (state, columnOrder) => {
+  if (!Array.isArray(columnOrder))
+    return badType('setColumnOrder', 'columnOrder', 'array', typeof columnOrder);
+  const initialUiState = state.uiState ? state.uiState : {};
+  const uiState = Object.assign({}, initialUiState, { columnOrder });
+  return Object.assign({}, state, { uiState });
+}
 
 export const setActions = (state, actions) => {
   if (!Array.isArray(actions))
