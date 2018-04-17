@@ -178,12 +178,28 @@ var HeadingCell = function (_React$PureComponent) {
             return column.sortable ? _this2.handleSortClick() : null;
           }
         },
-        _react2.default.createElement(SortTrigger, null),
-        _react2.default.createElement(Content, null),
         _react2.default.createElement(
-          ClickBoundary,
-          null,
-          _react2.default.createElement(HelpTrigger, null)
+          'row',
+          { className: 'justify-center items-center' },
+          _react2.default.createElement(
+            'box',
+            null,
+            _react2.default.createElement(SortTrigger, null)
+          ),
+          _react2.default.createElement(
+            'box',
+            null,
+            _react2.default.createElement(Content, null)
+          ),
+          _react2.default.createElement(
+            'box',
+            null,
+            _react2.default.createElement(
+              ClickBoundary,
+              null,
+              _react2.default.createElement(HelpTrigger, null)
+            )
+          )
         )
       );
     }
