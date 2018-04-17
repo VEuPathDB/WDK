@@ -11,9 +11,9 @@
     "babel-minify": "^0.2.0",
     "cross-env": "^5.0.5"
   },
-  "peerDependencies": {
+  "dependencies": {
     "react": ">=15.0.0",
-    "prop-types": "^15.6.0"
+    "prop-types": ">=15.0.0"
   },
   "scripts": {
     "compile:sass": "sass src/Style/Mesa.scss dist/css/mesa.css -t compressed",
