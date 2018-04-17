@@ -50,7 +50,7 @@ class DataRow extends React.PureComponent {
     const rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
     const className = 'Row DataRow' + (inline ? ' DataRow-Inline' : '');
 
-    const cellProps = { row, column, inline, options, key, rowIndex };
+    const cellProps = { row, inline, options, rowIndex };
 
     return (
       <tr className={className} style={rowStyle} onClick={this.toggleRow}>
@@ -62,7 +62,7 @@ class DataRow extends React.PureComponent {
               isRowSelected={options.isRowSelected}
             />
         }
-        {columns.map(column => <DataCell key={column.key} {...cellProps} />)}
+        {columns.map(column => <DataCell key={column.key} column={column} {...cellProps} />)}
       </tr>
     )
   }
