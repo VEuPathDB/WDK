@@ -7,13 +7,27 @@
   table {
     width: 100%;
   }
-  .DataTable-Header, .DataTable-Body {
+  .DataTable-Sticky {
     display: block;
-    overflow-x: visible;
-    overflow-y: auto;
-    table {
-      table-layout: fixed;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    border:1px solid orange;
+    .DataTable-Header, .DataTable-Body {
+      display: block;
       width: 100%;
+      overflow-x: visible;
+      overflow-y: auto;
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+    }
+    .DataTable-Body {
+      border: 1px solid green;
+    }
+    .DataTable-Header {
+      border: 1px solid pink;
     }
   }
 }

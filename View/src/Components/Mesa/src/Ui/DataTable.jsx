@@ -28,7 +28,7 @@ class DataTable extends React.PureComponent {
     const props = { rows, options, columns, actions, uiState, eventHandlers };
 
     return this.shouldUseStickyHeader() ? (
-      <div>
+      <div className="DataTable-Sticky">
         <div className="DataTable-Header">
           <table cellSpacing={0} cellPadding={0}>
             <thead>
