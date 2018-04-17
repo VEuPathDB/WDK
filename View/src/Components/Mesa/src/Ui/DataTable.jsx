@@ -10,7 +10,6 @@ const dataTableClass = makeClassifier('DataTable');
 class DataTable extends React.Component {
   constructor (props) {
     super(props);
-    this.render = this.render.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
     this.handleTableHeaderScroll = this.handleTableHeaderScroll.bind(this);
@@ -61,7 +60,7 @@ class DataTable extends React.Component {
     const widthLayer = { minWidth: cumulativeWidth };
 
     return (
-      <div className="MesaComponent" ref="test">
+      <div className="MesaComponent" ref={(node) => console.log(node)}>
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
             <div className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
