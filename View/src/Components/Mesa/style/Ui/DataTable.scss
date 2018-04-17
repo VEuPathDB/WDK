@@ -9,10 +9,10 @@
 
     .DataTable-Header, .DataTable-Body {
       overflow: visible;
+      overflow-y: auto;
       table { table-layout: fixed; }
     }
     .DataTable-Body {
-      overflow-y: auto;
     }
     .DataTable-Header {}
   }
