@@ -10,7 +10,7 @@ export const warn = (fn, message) => {
 }
 
 export const badType = (fn, parameter, expected, actual, fatal = false) => {
-  const message = `parameter "${parameter}"  is not of type ${expected} (got ${actual})`;
+  const message = `parameter "${parameter}"  is not of type ${expected} (got ${actual})` + (fatal ? '' : `; using empty ${expected}`);
   return fatal ? fail(fn, message, TypeError) : warn(fn, message);
 };
 

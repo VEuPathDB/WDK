@@ -19,7 +19,7 @@ var warn = exports.warn = function warn(fn, message) {
 var badType = exports.badType = function badType(fn, parameter, expected, actual) {
   var fatal = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 
-  var message = 'parameter "' + parameter + '"  is not of type ' + expected + ' (got ' + actual + ')';
+  var message = 'parameter "' + parameter + '"  is not of type ' + expected + ' (got ' + actual + ')' + (fatal ? '' : '; using empty ' + expected);
   return fatal ? fail(fn, message, TypeError) : warn(fn, message);
 };
 
