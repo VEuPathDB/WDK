@@ -1,0 +1,15 @@
+.ColumnEditor {
+  .ColumnEditor-List {
+    margin: 10px auto;
+    padding: 0;
+    list-style: none;
+    line-height: 140%;
+
+    .ColumnEditor-List-Item {
+      font-size: 0.9em;
+      .icon {
+        margin-right: 15px;
+      }
+    }
+  }
+}

@@ -1,10 +1,25 @@
+export function updateRows (rows) {
+  if (!rows || !Array.isArray(rows)) return {};
+  return { type: 'UPDATE_ROWS', rows };
+}
+
+export function updateColumns (columns) {
+  if (!columns || !Array.isArray(columns)) return {};
+  return { type: 'UPDATE_COLUMNS', columns };
+}
+
+export function updateOptions (options) {
+  if (!options || typeof options !== 'object') return {};
+  return { type: 'UPDATE_OPTIONS', options };
+}
+
 export function sortByColumn (column) {
   if (!column) return {};
   return { type: 'SORT_BY_COLUMN', column };
 };
 
 export function setColumnWidth (column, width) {
-  if (!column || !width) return {};
+  if (!column || typeof width !== 'number') return {};
   return { type: 'SET_COLUMN_WIDTH', column, width };
 }
 
@@ -12,18 +27,14 @@ export function toggleSortOrder () {
   return { type: 'TOGGLE_SORT_ORDER' };
 };
 
-export function setSortOrder (ascending = true) {
-  return { type: 'SET_SORT_ORDER', ascending };
-};
-
-export function filterByColumnValues (column, values) {
-  if (!column || !values) return;
-  return { type: 'FILTER_BY_COLUMN_VALUES', column, values };
+export function toggleColumnFilter (column) {
+  if (!column) return {};
+  return { type: 'TOGGLE_COLUMN_FILTER', column };
 }
 
-export function toggleColumnFilterValue (value) {
-  if (!value) return;
-  return { type: 'TOGGLE_COLUMN_FILTER_VALUE', value };
+export function toggleColumnFilterValue (column, value) {
+  if (!column || !value) return {};
+  return { type: 'TOGGLE_COLUMN_FILTER_VALUE', column, value };
 }
 
 export function searchByQuery (searchQuery) {

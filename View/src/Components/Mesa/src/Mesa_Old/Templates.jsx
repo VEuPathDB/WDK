@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { OptionsDefaults } from 'Mesa/Defaults';
 import OverScroll from 'Mesa/Components/OverScroll';
 import TruncatedText from 'Mesa/Components/TruncatedText';
 import Utils from 'Mesa/Utils/Utils';
@@ -15,7 +14,7 @@ const Templates = {
     const text = Utils.stringValue(value);
 
     return truncated
-      ? <TruncatedText className={className} cutoff={truncated ? OptionsDefaults.overflowHeight : null} text={text} />
+      ? <TruncatedText className={className} cutoff={truncated} text={text} />
       : <div className={className}>{text}</div>
   },
 
@@ -25,15 +24,14 @@ const Templates = {
 
     const className = 'Cell HtmlCell Cell-' + key;
     const content = (<div dangerouslySetInnerHTML={{ __html: row[key] }} />);
-    const size = (truncated === true ? '16em' : truncated);
 
     return truncated
-      ? <OverScroll className={className} size={size}>{content}</OverScroll>
+      ? <OverScroll className={className} size={truncated}>{content}</OverScroll>
       : <div className={className}>{content}</div>
   },
 
   heading (column) {
-    let { key, name } = column;
+    let { key, name, filterable, hideable, sortable } = column;
     if (!key) return;
 
     const className = 'Cell Heading-Cell Heading-Cell-' + key;

@@ -11,7 +11,7 @@ class OverScroll extends React.Component {
   render () {
     let { className, height } = this.props;
     className = 'OverScroll' + (className ? ' ' + className : '');
-    height = typeof height === 'number' ? height + 'px' : 'none';
+    height = typeof height === 'number' ? height + 'px' : Defaults.overflowHeight;
 
     const style = {
       maxHeight: height,

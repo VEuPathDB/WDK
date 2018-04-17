@@ -86,6 +86,55 @@ const Utils = {
     return queryParts.every(part => str.indexOf(part) >= 0);
   },
 
+  homogenizeColumn (column = {}, rows = []) {
+    if (!column || !column.key) throw new Error('Cannot homogenize a column without a `.key`');
+    if (!column.type && rows.length) {
+      let isHtmlColumn = rows.some(row => Utils.isHtml(row[column.key]));
+      let isNumberColumn = rows.every(row => !row[column.key] || !row[column.key].length || Utils.isNumeric(column.key));
+      if (isHtmlColumn) column.type = 'html';
+      else if (isNumberColumn) column.type = 'number';
+    }
+    if (column.primary) column.hideable = false;
+    return Object.assign({}, Defaults.column, column);
+  },
+
+  processColumns (columns = []) {
+    return columns.map(Utils.homogenizeColumn);
+  },
+
+  columnFromKey (key, rows = []) {
+    return Utils.homogenizeColumn({ key }, rows);
+  },
+
+  columnsFromRows (rows = []) {
+    const keys = [];
+    if (!Array.isArray(rows)) return [];
+    rows.forEach(row => {
+      Object.keys(row).forEach(prop => keys.indexOf(prop) < 0 && keys.push(prop));
+    });
+    return keys.map(key => Utils.columnFromKey(key, rows));
+  },
+
+  columnsFromMap (map = {}) {
+    let columns = [];
+    for (let key in map) {
+      let column = { key };
+      let value = map[key];
+      switch (typeof value) {
+        case 'string':
+          column.name = value;
+        case 'object':
+          column = Object.assign({}, column, value);
+          break;
+        default:
+          break;
+      }
+      columns.push(column);
+    };
+    columns = Utils.processColumns(columns);
+    return columns;
+  },
+
   numberSort (items, sortByKey, ascending) {
     let result = items.sort((a, b) => {
       let A = a[sortByKey] ? parseFloat(a[sortByKey]) : 0;
