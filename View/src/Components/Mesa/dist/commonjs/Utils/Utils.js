@@ -102,7 +102,6 @@ var Utils = {
       var A = a[sortByKey] ? parseFloat(a[sortByKey]) : 0;
       var B = b[sortByKey] ? parseFloat(b[sortByKey]) : 0;
       return A === B ? 0 : A < B ? 1 : -1;
-      return result;
     });
     return ascending ? result.reverse() : result;
   },
