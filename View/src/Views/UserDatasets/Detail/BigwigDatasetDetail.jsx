@@ -19,7 +19,7 @@ class BigwigDatasetDetail extends UserDatasetDetail {
     const { userDataset, appUrl, rootUrl, config } = this.props;
     const { id, ownerUserId, type } = userDataset;
     const { projectId } = config;
-    const { seqId } = type ? type.data : { seqId: null };
+    const { seqId } = type && type.data ? type.data : { seqId: null };
     return [
       {
         key: 'datafileName',
