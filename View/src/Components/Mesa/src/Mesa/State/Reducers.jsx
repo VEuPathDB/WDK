@@ -1,24 +1,7 @@
-export const initialState = {
-  rows: [],
-  columns: [],
-  options: {},
-  ui: {
-    columnEditorOpen: false,
-    emptinessCulprit: null,
-    searchQuery: null,
-    sort: {
-      byColumn: null,
-      ascending: true
-    },
-    pagination: {
-      activeItem: 1,
-      itemsPerPage: 20
-    }
-  }
-};
+import InitialState from 'Mesa/State/InitialState';
 
 export default function ReducerFactory (base = {}) {
-  let startingState = Object.assign({}, initialState, base);
+  let startingState = Object.assign({}, InitialState, base);
 
   return function Reducer (state = startingState, action = {}) {
     switch (action.type) {
