@@ -51,15 +51,32 @@ var Tooltip = function (_React$Component) {
       var text = this.props.text;
       var showText = this.state.showText;
 
+      var wrapperStyle = {
+        border: '1px solid orange',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        backgroundColor: 'rgba(0, 0,0,0.4)'
+      };
+
       return !showText ? null : _react2.default.createElement(
         'div',
-        { className: 'Tooltip-Text' },
-        text
+        { className: 'Tooltip-Wrapper', style: wrapperStyle },
+        _react2.default.createElement(
+          'div',
+          { className: 'Tooltip-Text' },
+          text
+        )
       );
     }
   }, {
     key: 'render',
     value: function render() {
+      var _this2 = this;
+
       var children = this.props.children;
 
       var className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
@@ -67,6 +84,9 @@ var Tooltip = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         {
+          ref: function ref(_ref) {
+            return _this2.anchor = _ref;
+          },
           className: className,
           onMouseEnter: this.showTooltip,
           onMouseLeave: this.hideTooltip },

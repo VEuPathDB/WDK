@@ -22,9 +22,22 @@ class Tooltip extends React.Component {
   renderTextBox () {
     const { text } = this.props;
     const { showText } = this.state;
+    const wrapperStyle = {
+      border: '1px solid orange',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      pointerEvents: 'none',
+      backgroundColor: 'rgba(0, 0,0,0.4)'
+    };
+
     return !showText ? null : (
-      <div className="Tooltip-Text">
-        {text}
+      <div className="Tooltip-Wrapper" style={wrapperStyle}>
+        <div className="Tooltip-Text">
+          {text}
+        </div>
       </div>
     );
   }
@@ -35,6 +48,7 @@ class Tooltip extends React.Component {
     const TextBox = this.renderTextBox;
     return (
       <div
+        ref={(ref) => this.anchor = ref}
         className={className}
         onMouseEnter={this.showTooltip}
         onMouseLeave={this.hideTooltip}>
