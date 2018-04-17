@@ -9,6 +9,7 @@
   .DataTable-Sticky {
     width: 100%;
     max-width: 100%;
+    overflow: auto;
 
     .DataTable-Header, .DataTable-Body {
       table { table-layout: fixed; }
