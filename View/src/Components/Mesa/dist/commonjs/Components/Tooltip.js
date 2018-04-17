@@ -54,7 +54,6 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
-      this.engageTooltip();
       if (this.id) return;
       var addModal = this.context.addModal;
 
@@ -65,6 +64,7 @@ var Tooltip = function (_React$Component) {
     key: 'engageTooltip',
     value: function engageTooltip() {
       if (this.timeout) clearTimeout(this.timeout);
+      this.showTooltip();
     }
   }, {
     key: 'disengageTooltip',
@@ -108,7 +108,7 @@ var Tooltip = function (_React$Component) {
         {
           style: boxStyle,
           className: 'Tooltip-Content',
-          onMouseEnter: this.showTooltip,
+          onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
         content
       );
@@ -123,7 +123,7 @@ var Tooltip = function (_React$Component) {
         'div',
         {
           className: className,
-          onMouseEnter: this.showTooltip,
+          onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
         children
       );
