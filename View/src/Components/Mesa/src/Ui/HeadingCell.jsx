@@ -55,13 +55,22 @@ class HeadingCell extends React.PureComponent {
     return (<Icon fa={sortIcon + ' Trigger SortTrigger'} />);
   }
 
+  renderHelpTrigger () {
+    const { column } = this.props;
+    if (!column.helpText) return null;
+    return (
+      <h2>{column.helpText}</h2>
+    )
+  }
+
   render () {
     const { column, state, dispatch } = this.props;
     const { headingStyle } = column;
 
     const Content = this.renderContent;
-    const ClickBoundary = this.renderClickBoundary;
     const SortTrigger = this.renderSortTrigger;
+    const HelpTrigger = this.renderHelpTrigger;
+    const ClickBoundary = this.renderClickBoundary;
 
     return column.hidden ? null : (
       <th
@@ -72,6 +81,7 @@ class HeadingCell extends React.PureComponent {
       >
         <SortTrigger />
         <Content />
+        <HelpTrigger />
         {/* {column.filterable && (
           <ClickBoundary>
             <ColumnFilter

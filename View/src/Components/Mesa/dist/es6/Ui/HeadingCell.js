@@ -109,6 +109,18 @@ var HeadingCell = function (_React$PureComponent) {
       return _react2.default.createElement(_Icon2.default, { fa: sortIcon + ' Trigger SortTrigger' });
     }
   }, {
+    key: 'renderHelpTrigger',
+    value: function renderHelpTrigger() {
+      var column = this.props.column;
+
+      if (!column.helpText) return null;
+      return _react2.default.createElement(
+        'h2',
+        null,
+        column.helpText
+      );
+    }
+  }, {
     key: 'render',
     value: function render() {
       var _this2 = this;
@@ -121,8 +133,9 @@ var HeadingCell = function (_React$PureComponent) {
 
 
       var Content = this.renderContent;
-      var ClickBoundary = this.renderClickBoundary;
       var SortTrigger = this.renderSortTrigger;
+      var HelpTrigger = this.renderHelpTrigger;
+      var ClickBoundary = this.renderClickBoundary;
 
       return column.hidden ? null : _react2.default.createElement(
         'th',
@@ -137,7 +150,8 @@ var HeadingCell = function (_React$PureComponent) {
           }
         },
         _react2.default.createElement(SortTrigger, null),
-        _react2.default.createElement(Content, null)
+        _react2.default.createElement(Content, null),
+        _react2.default.createElement(HelpTrigger, null)
       );
     }
   }]);
