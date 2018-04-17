@@ -55,7 +55,7 @@ class DataTable extends React.Component {
       headingCells.shift();
       contentCells.shift();
     }
-    const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c));
+    const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c) - (hasSelectionColumn && !i ? 1 : 0));
     this.setState({ dynamicWidths }, () => {
       window.dispatchEvent(new Event('MesaReflow'));
     });

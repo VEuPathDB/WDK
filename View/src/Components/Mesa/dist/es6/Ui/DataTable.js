@@ -103,7 +103,7 @@ var DataTable = function (_React$Component) {
         contentCells.shift();
       }
       var dynamicWidths = columns.map(function (c, i) {
-        return getInnerCellWidth(contentCells[i], headingCells[i], c);
+        return getInnerCellWidth(contentCells[i], headingCells[i], c) - (hasSelectionColumn && !i ? 1 : 0);
       });
       this.setState({ dynamicWidths: dynamicWidths }, function () {
         window.dispatchEvent(new Event('MesaReflow'));

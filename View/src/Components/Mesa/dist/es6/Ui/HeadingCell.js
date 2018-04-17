@@ -145,6 +145,7 @@ var HeadingCell = function (_React$PureComponent) {
       var totalTime = clickEnd - clickStart;
       this.setState({ clickStart: null, isDragTarget: false });
       if (totalTime <= 500) this.sortColumn();
+      if (this.element) this.element.blur();
     }
 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -223,7 +224,7 @@ var HeadingCell = function (_React$PureComponent) {
 
       if (!sortable || typeof onSort !== 'function' && !isActive) return null;
 
-      var sortIcon = !isActive ? 'sort inactive' : direction === 'asc' ? 'sort-amount-asc active' : 'sort-amount-desc active';
+      var sortIcon = !isActive ? 'sort inactive' : 'sort-amount-' + direction + ' active';
 
       return _react2.default.createElement(_Icon2.default, { fa: sortIcon + ' Trigger SortTrigger' });
     }
@@ -263,7 +264,8 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'onDragEnd',
     value: function onDragEnd(event) {
-      if (this.state.isDragging || this.state.isDragTarget) this.setState({ isDragging: false, isDragTarget: false });
+      this.setState({ isDragging: false, isDragTarget: false });
+      this.element.blur();
       event.preventDefault();
     }
   }, {
@@ -288,11 +290,13 @@ var HeadingCell = function (_React$PureComponent) {
     key: 'onDragLeave',
     value: function onDragLeave(event) {
       this.setState({ isDragTarget: false });
+      this.element.blur();
       event.preventDefault();
     }
   }, {
     key: 'onDrop',
     value: function onDrop(event) {
+      this.element.blur();
       event.preventDefault();
       var _props4 = this.props,
           eventHandlers = _props4.eventHandlers,
