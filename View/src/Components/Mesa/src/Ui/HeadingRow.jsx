@@ -14,9 +14,7 @@ class HeadingRow extends React.PureComponent {
     const { isRowSelected } = options ? options : {};
     const { sort } = uiState ? uiState : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
-    const hasSelectionColumn = typeof isRowSelected === 'function'
-      && typeof onRowSelect === 'function'
-      && typeof onRowDeselect === 'function';
+    const hasSelectionColumn = [ isRowSelected, onRowSelect, onRowDeselect ].every(fn => typeof fn === 'function');
 
     return (
       <tr className="Row HeadingRow">
