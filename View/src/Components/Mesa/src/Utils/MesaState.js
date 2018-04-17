@@ -101,49 +101,49 @@ export const getSelectedRows = (state, onlyFilteredRows = true) => {
 export const getRows = (state) => {
   const { rows } = state;
   if (!Array.isArray(rows))
-    return badType('getRows', 'rows', 'array', typeof rows);
+    return badType('getRows', 'rows', 'array', typeof rows) || [];
   return rows;
 }
 
 export const getFilteredRows = (state) => {
   const { filteredRows } = state;
   if (!Array.isArray(filteredRows))
-    return badType('getFilteredRows', 'filteredRows', 'array', typeof filteredRows);
+    return badType('getFilteredRows', 'filteredRows', 'array', typeof filteredRows) || [];
   return filteredRows;
 }
 
 export const getColumns = (state) => {
   const { columns } = state;
   if (!Array.isArray(columns))
-    return badType('getColumns', 'columns', 'array', typeof columns);
+    return badType('getColumns', 'columns', 'array', typeof columns) || [];
   return columns;
 }
 
 export const getActions = (state) => {
   const { actions } = state;
   if (!Array.isArray(actions))
-    return badType('getActions', 'actions', 'array', typeof actions);
+    return badType('getActions', 'actions', 'array', typeof actions) || [];
   return actions;
 }
 
 export const getOptions = (state) => {
   const { options } = state;
   if (typeof options !== 'object')
-    return badType('getOptions', 'options', 'object', typeof options);
+    return badType('getOptions', 'options', 'object', typeof options) || {};
   return options;
 }
 
 export const getEventHandlers = (state) => {
   const { eventHandlers } = state;
   if (typeof eventHandlers !== 'object')
-    return badType('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers);
+    return badType('getEventHandlers', 'eventHandlers', 'object', typeof eventHandlers) || [];
   return eventHandlers;
 }
 
 export const getUiState = (state) => {
   const { uiState } = state;
   if (typeof uiState !== 'object')
-    return badType('getUiState', 'uiState', 'object', typeof uiState);
+    return badType('getUiState', 'uiState', 'object', typeof uiState) || {};
   return uiState;
 }
 
