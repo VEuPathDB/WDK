@@ -3,6 +3,7 @@ export const initialState = {
   columns: [],
   options: {},
   ui: {
+    columnEditorOpen: false,
     emptinessCulprit: null,
     searchQuery: null,
     sort: {
@@ -70,7 +71,7 @@ export default function ReducerFactory (base = {}) {
         let { filterState } = column;
         let { blacklist } = filterState;
         if (blacklist.includes(value)) blacklist = blacklist.filter(item => item !== value)
-        else blacklist = [...blacklist, value];
+        else blacklist = [ ...blacklist, value ];
         filterState = Object.assign({}, filterState, { blacklist });
         columns.splice(index, 1, Object.assign({}, column, { filterState }));
         return Object.assign({}, state, { columns });
@@ -138,6 +139,27 @@ export default function ReducerFactory (base = {}) {
       }
 
       /* SHOW/HIDE COLUMN -=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-=~=-= */
+      case 'TOGGLE_COLUMN_EDITOR': {
+        let { ui } = state;
+        let columnEditorOpen = !ui.columnEditorOpen;
+        ui = Object.assign({}, ui, { columnEditorOpen });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'OPEN_COLUMN_EDITOR': {
+        let { ui } = state;
+        let columnEditorOpen = true;
+        ui = Object.assign({}, ui, { columnEditorOpen });
+        return Object.assign({}, state, { ui });
+      }
+
+      case 'CLOSE_COLUMN_EDITOR': {
+        let { ui } = state;
+        let columnEditorOpen = false;
+        ui = Object.assign({}, ui, { columnEditorOpen });
+        return Object.assign({}, state, { ui });
+      }
+
       case 'HIDE_COLUMN': {
         let { column } = action;
         let { columns } = state;

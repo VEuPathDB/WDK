@@ -1,6 +1,7 @@
 import React from 'react';
 
 import DataRow from 'Mesa/Ui/DataRow';
+import RowUtils from 'Mesa/Utils/RowUtils';
 import HeadingRow from 'Mesa/Ui/HeadingRow';
 import EmptyState from 'Mesa/Ui/EmptyState';
 
@@ -10,8 +11,11 @@ class TableBody extends React.PureComponent {
   }
 
   render () {
-    let { dispatch, state, filteredRows } = this.props;
-    let rows = filteredRows;
+    let { dispatch, state, currentPage, onPageChange, filteredRows } = this.props;
+    let { columns, options } = state;
+    let colSpan = columns.filter(column => !column.hidden).length
+    let pages = RowUtils.getPageCount(filteredRows, options);
+    let rows = RowUtils.getRowsByPage(filteredRows, currentPage, options);
 
     return (
       <div className="TableBody">

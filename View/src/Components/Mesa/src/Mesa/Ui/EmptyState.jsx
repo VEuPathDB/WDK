@@ -23,6 +23,16 @@ class EmptyState extends React.PureComponent {
             </div>
           )
         };
+      case 'nocolumns':
+        return {
+          icon: 'columns',
+          title: 'No Columns Shown',
+          content: (
+            <div>
+              <p>Whoops, looks like you've hidden all columns. Use the column editor to show some columns.</p>
+            </div>
+          )
+        };
       case 'filters':
         return {
           icon: 'filter',
@@ -37,22 +47,13 @@ class EmptyState extends React.PureComponent {
           )
         };
       case 'nodata':
+      default:
         return {
           icon: 'table',
           title: 'No Data',
           content: (
             <div>
               <p>Whoops! Either no table data was provided, or the data provided could not be parsed.</p>
-            </div>
-          )
-        };
-      default:
-        return {
-          icon: 'question-circle-o',
-          title: 'No Data',
-          content: (
-            <div>
-              <p>There is no data here.</p>
             </div>
           )
         };

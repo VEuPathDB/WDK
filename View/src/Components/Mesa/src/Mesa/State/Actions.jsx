@@ -3,6 +3,18 @@ export function updateRows (rows) {
   return { type: 'UPDATE_ROWS', rows };
 };
 
+export function toggleColumnEditor () {
+  return { type: 'TOGGLE_COLUMN_EDITOR' };
+}
+
+export function openColumnEditor () {
+  return { type: 'OPEN_COLUMN_EDITOR' };
+}
+
+export function closeColumnEditor () {
+  return { type: 'CLOSE_COLUMN_EDITOR' };
+}
+
 export function updateColumns (columns) {
   if (!columns || !Array.isArray(columns)) columns = [];
   return { type: 'UPDATE_COLUMNS', columns };

@@ -28,19 +28,14 @@ class TableToolbar extends React.PureComponent {
         )}
         <div className="TableToolbar-Info">
           {!filteredRows.length
-          ? (
-            <p><span className="faded">No results.</span></p>
-          )
-          : (
-            <p>
+          ? (<p><span className="faded">No results.</span></p>)
+          : (<p>
               Showing
               <b> {filteredRows.length} </b>
-              {!hiddenRowCount ? null : (
-                <span> of {rows.length} </span>
-              )}
-              Rows
-            </p>
-          )}
+              {!hiddenRowCount ? null : <span> of {rows.length} </span>}
+              rows
+            </p>)
+          }
         </div>
         {children && (
           <div className="TableToolbar-Children">
@@ -48,7 +43,7 @@ class TableToolbar extends React.PureComponent {
           </div>
         )}
         {columnsAreHideable && (
-          <ColumnEditor columns={columns} dispatch={dispatch}>
+          <ColumnEditor state={state} dispatch={dispatch}>
             <button>
               <Icon fa={'columns'} />
               Add/Remove Columns
