@@ -2,8 +2,8 @@ import React from 'react';
 
 class Icon extends React.PureComponent {
   render () {
-    let { fa, onClick, style } = this.props;
-    let className = `icon fa fa-${fa}`;
+    let { fa, className, onClick, style } = this.props;
+className = `icon fa fa-${fa} ${(className || '')}`;
     return <i onClick={onClick} style={style} className={className}> </i>
   }
 };

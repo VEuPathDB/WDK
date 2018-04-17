@@ -1,35 +1,11 @@
 {
-  "name": "TableView",
+  "name": "mesa",
   "version": "1.0.0",
+  "description": "All-in-one table solution for React apps.",
   "main": "index.js",
-  "license": "MIT",
-  "scripts": {
-    "clean": "rm -rf ./dist/*",
-    "compile": "NODE_ENV=production webpack",
-    "build": "npm run clean && npm run compile",
-    "wds": "webpack-dev-server --content-base . --hot --inline",
-    "dev": "atom . && npm run wds",
-    "start": "npm run wds"
-  },
-  "devDependencies": {
-    "webpack-dev-server": "^2.4.5"
-  },
+  "repository": "https://github.com/austinbillings/mesa.git",
+  "author": "Austin Billings <austinjb@upenn.edu>",
   "dependencies": {
-    "babel-core": "^6.24.1",
-    "babel-loader": "^7.0.0",
-    "babel-preset-env": "^1.5.1",
-    "babel-preset-react": "^6.24.1",
-    "css-loader": "^0.28.2",
-    "deep-equal": "^1.0.1",
-    "file-loader": "^0.11.1",
-    "node-sass": "^4.5.3",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
-    "react-router": "^4.1.1",
-    "redux": "^3.6.0",
-    "sass-loader": "^6.0.5",
-    "style-loader": "^0.18.1",
-    "url-loader": "^0.5.8",
-    "webpack": "^2.6.0"
+    "react": "^15.6.1"
   }
 }
