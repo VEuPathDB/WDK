@@ -41,7 +41,7 @@ var HeadingRow = function (_React$PureComponent) {
     key: 'render',
     value: function render() {
       var _props = this.props,
-          rows = _props.rows,
+          filteredRows = _props.filteredRows,
           options = _props.options,
           columns = _props.columns,
           actions = _props.actions,
@@ -58,7 +58,6 @@ var HeadingRow = function (_React$PureComponent) {
           onRowSelect = _ref3.onRowSelect,
           onRowDeselect = _ref3.onRowDeselect;
 
-      var rowList = this.props.rows;
       var hasSelectionColumn = typeof isRowSelected === 'function' && typeof onRowSelect === 'function' && typeof onRowDeselect === 'function';
 
       return _react2.default.createElement(
@@ -66,7 +65,7 @@ var HeadingRow = function (_React$PureComponent) {
         { className: 'Row HeadingRow' },
         !hasSelectionColumn ? null : _react2.default.createElement(_SelectionCell2.default, {
           heading: true,
-          rows: rowList,
+          filteredRows: filteredRows,
           options: options,
           eventHandlers: eventHandlers,
           isRowSelected: isRowSelected

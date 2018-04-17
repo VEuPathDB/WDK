@@ -10,11 +10,10 @@ class HeadingRow extends React.PureComponent {
   }
 
   render () {
-    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const { filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
     const { isRowSelected } = options ? options : {};
     const { sort } = uiState ? uiState : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
-    const rowList = this.props.rows;
     const hasSelectionColumn = typeof isRowSelected === 'function'
       && typeof onRowSelect === 'function'
       && typeof onRowDeselect === 'function';
@@ -25,7 +24,7 @@ class HeadingRow extends React.PureComponent {
           ? null
           : <SelectionCell
               heading={true}
-              rows={rowList}
+              filteredRows={filteredRows}
               options={options}
               eventHandlers={eventHandlers}
               isRowSelected={isRowSelected}
