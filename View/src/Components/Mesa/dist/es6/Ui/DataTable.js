@@ -42,7 +42,6 @@ var DataTable = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (DataTable.__proto__ || Object.getPrototypeOf(DataTable)).call(this, props));
 
-    _this.render = _this.render.bind(_this);
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
     _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
@@ -121,7 +120,9 @@ var DataTable = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'MesaComponent', ref: 'test' },
+        { className: 'MesaComponent', ref: function ref(node) {
+            return console.log(node);
+          } },
         _react2.default.createElement(
           'div',
           { className: dataTableClass() },
