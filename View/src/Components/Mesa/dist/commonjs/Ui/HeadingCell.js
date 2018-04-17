@@ -40,6 +40,7 @@ var HeadingCell = function (_React$PureComponent) {
     _this.renderContent = _this.renderContent.bind(_this);
     _this.handleSortClick = _this.handleSortClick.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
+    _this.renderHelpTrigger = _this.renderHelpTrigger.bind(_this);
     return _this;
   }
 
@@ -151,7 +152,11 @@ var HeadingCell = function (_React$PureComponent) {
         },
         _react2.default.createElement(SortTrigger, null),
         _react2.default.createElement(Content, null),
-        _react2.default.createElement(HelpTrigger, null)
+        _react2.default.createElement(
+          ClickBoundary,
+          null,
+          _react2.default.createElement(HelpTrigger, null)
+        )
       );
     }
   }]);
