@@ -46,12 +46,8 @@ class EmptyState extends React.PureComponent {
       default:
         return {
           icon: 'table',
-          title: 'No Data',
-          content: (
-            <div>
-              <p>Whoops! Either no table data was provided, or the data provided could not be parsed.</p>
-            </div>
-          )
+          title: 'No Results',
+          content: null
         };
     }
   }
