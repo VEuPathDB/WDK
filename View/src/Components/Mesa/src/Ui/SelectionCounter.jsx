@@ -19,9 +19,9 @@ class SelectionCounter extends React.Component {
   }
 
   deselectAllRows () {
-    const { rows, selection, onRowDeselect } = this.props;
-    const selectedRows = rows.map(row => selection.includes(row));
-    selectedRows.forEach(row => onRowDeselect(row));
+    const { selection, onRowDeselect } = this.props;
+    console.log('deselecting all rows from selectioncounter', selection);
+    selection.forEach(row => onRowDeselect(row));
   }
 
   render () {
