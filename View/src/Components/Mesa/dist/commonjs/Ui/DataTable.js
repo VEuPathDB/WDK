@@ -44,7 +44,6 @@ var DataTable = function (_React$Component) {
 
     _this.shouldUseStickyHeader = _this.shouldUseStickyHeader.bind(_this);
     _this.handleTableBodyScroll = _this.handleTableBodyScroll.bind(_this);
-    _this.handleTableHeaderScroll = _this.handleTableHeaderScroll.bind(_this);
     return _this;
   }
 

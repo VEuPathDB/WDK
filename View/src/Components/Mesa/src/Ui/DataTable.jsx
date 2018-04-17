@@ -12,7 +12,6 @@ class DataTable extends React.Component {
     super(props);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
-    this.handleTableHeaderScroll = this.handleTableHeaderScroll.bind(this);
   }
 
   shouldUseStickyHeader () {
