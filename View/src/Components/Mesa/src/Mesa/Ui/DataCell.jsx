@@ -28,18 +28,18 @@ class DataCell extends React.PureComponent {
     let { style, width } = column;
     let { options } = state;
     let content = this.renderContent();
-    let whiteSpace = options.inline !== true || !options.inline.enabled ? {} : {
+
+    let whiteSpace = !options.inline ? {} : {
       textOverflow: 'ellipsis',
       overflow: 'hidden',
-      maxWidth: options.inlineMaxWidth || '400px',
-      maxHeight: options.inlineMaxHeight || '2em',
+      maxWidth: options.inlineMaxWidth ? options.inlineMaxWidth : '20vw',
+      maxHeight: options.inlineMaxHeight ? options.inlineMaxHeight : '2em',
     };
-    width = (typeof width === 'number')
-      ? width + 'px'
-      : (typeof width === 'string')
-        ? width
-        : null;
-    const cellStyle = Object.assign({}, style, (width ? { width } : {}), whiteSpace);
+
+    width = (typeof width === 'number' ? width + 'px' : width);
+    width = width ? { width } : {};
+
+    const cellStyle = Object.assign({}, style, width, whiteSpace);
 
     return column.hidden ? null : (
       <td key={column.key} style={cellStyle}>

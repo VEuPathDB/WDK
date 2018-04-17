@@ -26,9 +26,8 @@ export const OptionsDefaults = {
   search: true,
   className: null,
   inline: false,
-  paginate: true,
+  paginate: false,
   rowsPerPage: 20,
-  fixedWidth: false,
   overflowHeight: '16em',
   searchPlaceholder: 'Search This Table',
 };
