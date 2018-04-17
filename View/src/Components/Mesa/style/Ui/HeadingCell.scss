@@ -1,23 +1,25 @@
-.HeadingCell {
-  .HeadingCell-Content {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
+.MesaComponent {
+  .HeadingCell {
+    .HeadingCell-Content {
+      display: flex;
+      width: 100%;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
 
-    .HeadingCell-Content-Aside {
-      flex-basis: 0 1 30px;
-      &:last-of-type {
-        text-align: right;
+      .HeadingCell-Content-Aside {
+        flex-basis: 0 1 30px;
+        &:last-of-type {
+          text-align: right;
+        }
+      }
+      .HeadingCell-Content-Label {
+        flex-basis: 0 0 auto;
       }
     }
-    .HeadingCell-Content-Label {
-      flex-basis: 0 0 auto;
-    }
-  }
 
-  .HelpTrigger .icon {
-    cursor: default;
+    .HelpTrigger .icon {
+      cursor: default;
+    }
   }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import BodyLayer from './BodyLayer';
 import { EventsFactory } from '../Utils/Events';
 
 class Tooltip extends React.Component {
@@ -8,22 +9,50 @@ class Tooltip extends React.Component {
     super(props);
 
     this.state = {
+      isShown: false,
       isFocus: false,
       isHovered: false,
+      isDisengaged: true
     };
 
-    this.showTooltip = this.showTooltip.bind(this);
-    this.hideTooltip = this.hideTooltip.bind(this);
-
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
     this.getHideDelay = this.getHideDelay.bind(this);
     this.getShowDelay = this.getShowDelay.bind(this);
-
+    this.getCornerClass = this.getCornerClass.bind(this);
+    this.showTooltip = this.showTooltip.bind(this);
+    this.hideTooltip = this.hideTooltip.bind(this);
     this.engageTooltip = this.engageTooltip.bind(this);
     this.disengageTooltip = this.disengageTooltip.bind(this);
-
-    this.renderTooltipBox = this.renderTooltipBox.bind(this);
-    this.componentDidMount = this.componentDidMount.bind(this);
+    this.renderTooltipContent = this.renderTooltipContent.bind(this);
   }
+
+  /* -=-=-=-=-=-=-=-=-=-=-=-= Lifecycle -=-=-=-=-=-=-=-=-=-=-=-= */
+
+  componentDidMount () {
+    if (!this.el) {
+      console.error(`
+        Tooltip Error: Can't setup focusIn/focusOut events.
+        Element ref could not be found; was render interrupted?
+      `);
+    } else {
+      this.events = new EventsFactory(this.el);
+      this.events.use({
+        focusIn: this.engageTooltip,
+        keypress: this.engageTooltip,
+        mouseEnter: this.engageTooltip,
+
+        focusOut: this.disengageTooltip,
+        mouseLeave: this.disengageTooltip,
+      });
+    }
+  }
+
+  componentWillUnmount () {
+    if (this.events) this.events.clearAll();
+  }
+
+  /* -=-=-=-=-=-=-=-=-=-=-=-= Utilities -=-=-=-=-=-=-=-=-=-=-=-= */
 
   static getOffset (node) {
     return node.getBoundingClientRect();
@@ -35,86 +64,11 @@ class Tooltip extends React.Component {
       ? showDelay
       : 250;
   }
-
-  componentDidMount () {
-    const { addModal, removeModal } = this.context;
-    if (
-      typeof addModal !== 'function'
-      || typeof removeModal !== 'function'
-    ) {
-      throw new Error(`
-        Tooltip Error: No "addModal" or "removeModal" detected in context.
-        Please use a <ModalBoundary> in your element tree to catch modals.
-      `);
-    }
-    if (!this.el) {
-      console.error(`
-        Tooltip Error: Can't setup focusIn/focusOut events.
-        Element ref could not be found; was render interrupted?
-      `);
-    } else {
-      this.events = new EventsFactory(this.el);
-      this.events.use({
-        focusIn: () => this.setState({ isFocus: true }),
-        keypress: () => this.setState({ isFocus: true }),
-        focusOut: () => this.setState({ isFocus: false }),
-        mouseEnter: () => this.setState({ isHovered: true }),
-        mouseLeave: () => this.setState({ isHovered: false })
-      });
-    }
-  }
-
-  componentWillUnmount () {
-    if (this.events) this.events.clearAll();
-  }
-
   getHideDelay () {
     let { hideDelay } = this.props;
     return typeof hideDelay === 'number'
       ? hideDelay
       : 500;
-  }
-
-  showTooltip () {
-    if (this.id) return;
-    const { addModal } = this.context;
-    this.id = addModal({ render: () => this.renderTooltipBox() });
-    if (this.hideTimeout) clearTimeout(this.hideTimeout);
-  }
-
-  engageTooltip () {
-    const { fadeOut } = this.props;
-    const showDelay = this.getShowDelay();
-
-    if (this.isDisengaged && fadeOut) {
-      this.isDisengaged = false;
-    }
-
-    this.showTimeout = setTimeout(() => {
-      this.showTooltip();
-      if (this.hideTimeout) clearTimeout(this.hideTimeout);
-    }, showDelay);
-  }
-
-  disengageTooltip () {
-    const { fadeOut } = this.props;
-    const { triggerModalRefresh } = this.context;
-    const hideDelay = this.getHideDelay();
-
-    if (!this.isDisengaged && fadeOut) {
-      this.isDisengaged = true;
-      triggerModalRefresh();
-    }
-
-    if (this.showTimeout) clearTimeout(this.showTimeout);
-    this.hideTimeout = setTimeout(this.hideTooltip, hideDelay);
-  }
-
-  hideTooltip () {
-    if (!this.id || this.state.isFocus || this.state.isHovered) return;
-    const { removeModal } = this.context;
-    removeModal(this.id);
-    this.id = null;
   }
 
   getCornerClass () {
@@ -123,49 +77,75 @@ class Tooltip extends React.Component {
     return corner.split(' ').filter(s => s).join('-');
   }
 
-  renderTooltipBox () {
-    const { isDisengaged } = this;
+  /* -=-=-=-=-=-=-=-=-=-=-=-= Show/Hide -=-=-=-=-=-=-=-=-=-=-=-= */
+
+  showTooltip () {
+    this.setState({ isShown: true });
+    if (this.hideTimeout) clearTimeout(this.hideTimeout);
+  }
+
+  hideTooltip () {
+    if (!this.state.isDisengaged) return;
+    this.setState({ isShown: false });
+  }
+
+  /* -=-=-=-=-=-=-=-=-=-=-=-= Engage/Disengage -=-=-=-=-=-=-=-=-=-=-=-= */
+
+  engageTooltip () {
+    this.setState({ isDisengaged: false });
+    this.showTimeout = setTimeout(() => {
+      this.showTooltip();
+      if (this.hideTimeout) clearTimeout(this.hideTimeout);
+    }, this.getShowDelay());
+  }
+
+  disengageTooltip () {
+    this.setState({ isDisengaged: true });
+    if (this.showTimeout) clearTimeout(this.showTimeout);
+    this.hideTimeout = setTimeout(this.hideTooltip, this.getHideDelay());
+  }
+
+  /* -=-=-=-=-=-=-=-=-=-=-=-= Renderers -=-=-=-=-=-=-=-=-=-=-=-= */
+
+  renderTooltipContent () {
+    const { isDisengaged } = this.state;
     const { content, position, style, renderHtml } = this.props;
-    const { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
+
+    const opacity = isDisengaged ? 0.01 : 1;
+    const { top, left } = Object.assign({ top: 0, left: 0 }, position);
+    const existingStyle = style && Object.keys(style).length ? style : {};
+    const contentStyle = Object.assign({}, { top, left, opacity }, existingStyle);
+
     const cornerClass = this.getCornerClass();
-    const opacity = isDisengaged ? 0.05 : 1;
-    const boxStyle = Object.assign({}, {
-      top,
-      left,
-      right,
-      zIndex: 1000000,
-      display: 'block',
-      position: 'absolute',
-      pointerEvents: 'auto',
-      transition: 'opacity 0.7s',
-      opacity,
-    }, style && Object.keys(style).length ? style : {});
+    const disengagedClass = isDisengaged ? ' Tooltip-Content--Disengaged' : '';
+    const className = ['Tooltip-Content', cornerClass, disengagedClass].join(' ');
 
     return (
       <div
-        style={boxStyle}
-        className={'Tooltip-Content ' + cornerClass + (isDisengaged ? ' Tooltip-Content--Disengaged' : '')}
+        style={contentStyle}
+        className={className}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
-        {renderHtml ? <div dangerouslySetInnerHTML={{ __html: content }} /> : content}
+        {renderHtml
+          ? <div dangerouslySetInnerHTML={{ __html: content }} />
+          : content
+        }
       </div>
     );
   }
 
   render () {
-    const { isFocus, isHovered, isDisengaged } = this.state;
-    if (this.el && (isFocus || isHovered)) this.engageTooltip();
-    else this.disengageTooltip();
+    const { isShown } = this.state;
+    const TooltipContent = this.renderTooltipContent;
 
     const { children, className } = this.props;
-    const fullClassName = 'Tooltip'
-      + (isDisengaged ? ' Tooltip--Disengaged' : '')
-      + (className ? ' ' + className : '');
     return (
-      <div
-        tabIndex={0}
-        className={fullClassName}
-        ref={(el) => this.el = el}>
+      <div className={'Tooltip' + (className ? ' ' + className : '')} ref={(el) => this.el = el}>
+        {!isShown ? null : (
+          <BodyLayer className="Tooltip-Wrapper">
+            <TooltipContent />
+          </BodyLayer>
+        )}
         {children}
       </div>
     )
@@ -180,12 +160,6 @@ Tooltip.propTypes = {
   corner: PropTypes.string,
   fadeOut: PropTypes.bool,
   position: PropTypes.object
-};
-
-Tooltip.contextTypes = {
-  addModal: PropTypes.func,
-  removeModal: PropTypes.func,
-  triggerModalRefresh: PropTypes.func
 };
 
 export default Tooltip;

@@ -1,22 +1,33 @@
 $tooltipColor: hsl(50, 100%, 96%);
 
+.Tooltip-Wrapper {
+  top: 0;
+  left: 0;
+  position: fixed;
+  min-width: 100vw;
+  min-height: 100vh;
+  pointer-events: none;
+  display: inline-block;
+}
+
+.Tooltip {
+  display: inline-block;
+}
 
 .Tooltip-Content {
-  overflow: visible;
-  display: inline-block;
   padding: 8px;
-  background-color: $tooltipColor;
-  font-weight: normal;
   color: black;
-  position: relative;
-  border-radius: 4px;
+  display: inline-block;
   text-align: left;
-  max-width: 550px;
+  overflow: visible;
+  position: absolute;
+  border-radius: 4px;
+  font-weight: normal;
+  pointer-events: all;
+  transition: all 0.6s;
+  background-color: $tooltipColor;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 
-  transition: all 0.3s;
-  opacity: 1;
-  
   &.Tooltip-Content--Disengaged {
     opacity: 0;
   }
@@ -26,7 +37,7 @@ $tooltipColor: hsl(50, 100%, 96%);
     box-sizing: border-box;
     position: absolute;
     display: block;
-    z-index: -1;
+    z-index: 1;
     background-color: $tooltipColor;
     height: 10px;
     width: 10px;
@@ -70,8 +81,4 @@ $tooltipColor: hsl(50, 100%, 96%);
   &.left-middle, &.right-middle {
     &::after { top: calc(50% - 5px); }
   }
-}
-
-.AnchoredTooltip {
-  display: inline-block;
 }

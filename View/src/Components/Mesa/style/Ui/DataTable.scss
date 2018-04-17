@@ -1,29 +1,31 @@
-.DataTable {
-  font-size: $fontSize;
-  width: 100%;
-  display: block;
-
-  table {
+.MesaComponent {
+  .DataTable {
+    font-size: $fontSize;
     width: 100%;
-  }
-
-  .DataTable-Sticky {
     display: block;
-    overflow: visible;
-    position: relative;
 
+    table {
+      width: 100%;
+    }
 
-    .DataTable-Header, .DataTable-Body {
+    .DataTable-Sticky {
       display: block;
       overflow: visible;
-      overflow-y: auto;
-      // table { table-layout: fixed; }
-    }
-    .DataTable-Body {
+      position: relative;
 
-    }
-    .DataTable-Header {
-      overflow: hidden;
+
+      .DataTable-Header, .DataTable-Body {
+        display: block;
+        overflow: visible;
+        overflow-y: auto;
+        // table { table-layout: fixed; }
+      }
+      .DataTable-Body {
+
+      }
+      .DataTable-Header {
+        overflow: hidden;
+      }
     }
   }
 }

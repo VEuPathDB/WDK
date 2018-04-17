@@ -9,6 +9,7 @@ import MesaController from './Ui/MesaController';
 
 import Tooltip from './Components/Tooltip';
 import Checkbox from './Components/Checkbox';
+import BodyLayer from './Components/BodyLayer';
 import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
 import AnchoredTooltip from './Components/AnchoredTooltip';
@@ -26,15 +27,17 @@ export {
   TableToolbar,
   ActionToolbar,
   PaginationMenu,
-  ModalBoundary,
-  HelpTrigger,
-  Events,
-  EventsFactory,
+
   Tooltip,
-  AnchoredTooltip,
   Checkbox,
+  BodyLayer,
+  HelpTrigger,
+  ModalBoundary,
   MesaController,
+  AnchoredTooltip,
+
+  Events, EventsFactory,
+  Utils,
   MesaState,
-  MesaSelection,
-  Utils
+  MesaSelection
 };
