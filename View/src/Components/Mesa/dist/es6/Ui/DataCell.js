@@ -113,7 +113,7 @@ var DataCell = function (_React$PureComponent) {
 DataCell.propTypes = {
   column: _propTypes2.default.object,
   row: _propTypes2.default.object,
-  inline: _propTypes2.default.boolean
+  inline: _propTypes2.default.bool
 };
 
 exports.default = DataCell;
