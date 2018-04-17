@@ -39,9 +39,6 @@ var Modal = function (_React$Component) {
   }
 
   _createClass(Modal, [{
-    key: 'componentDidMount',
-    value: function componentDidMount() {}
-  }, {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(

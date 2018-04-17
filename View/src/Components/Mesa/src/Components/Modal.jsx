@@ -10,11 +10,7 @@ class Modal extends React.Component {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
-
-  componentDidMount () {
-
-  }
-
+  
   render () {
     return (
       <div className={modalClass()}>
