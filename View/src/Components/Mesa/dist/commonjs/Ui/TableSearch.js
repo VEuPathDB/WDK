@@ -10,6 +10,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 var _Icon = require('../Components/Icon');
 
 var _Icon2 = _interopRequireDefault(_Icon);
@@ -87,5 +91,11 @@ var TableSearch = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 ;
+
+TableSearch.propTypes = {
+  query: _propTypes2.default.string,
+  options: _propTypes2.default.object,
+  onSearch: _propTypes2.default.func
+};
 
 exports.default = TableSearch;

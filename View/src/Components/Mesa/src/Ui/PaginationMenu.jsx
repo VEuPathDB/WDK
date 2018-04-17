@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import Icon from '../Components/Icon';
 import RowsPerPageMenu from '../Ui/RowsPerPageMenu';
@@ -148,6 +149,15 @@ class PaginationMenu extends React.PureComponent {
       </div>
     );
   }
+};
+
+PaginationMenu.propTypes = {
+  totalPages: PropTypes.number,
+  currentPage: PropTypes.number,
+  rowsPerPage: PropTypes.number,
+  onPageChange: PropTypes.func,
+  rowsPerPageOptions: PropTypes.array,
+  onRowsPerPageChange: PropTypes.func
 };
 
 export default PaginationMenu;
