@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import { makeClassifier } from '../Utils/Utils';
 
@@ -43,7 +44,7 @@ class ModalBoundary extends React.Component {
 };
 
 ModalBoundary.childContextTypes = {
-  yo: string
+  yo: PropTypes.string
 };
 
 export default ModalBoundary;
