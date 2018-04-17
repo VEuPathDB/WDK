@@ -7,6 +7,9 @@ import Templates from '../Templates';
 class HeadingCell extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.renderContent = this.renderContent.bind(this);
+    this.handleSortClick = this.handleSortClick.bind(this);
+    this.renderSortTrigger = this.renderSortTrigger.bind(this);
   }
 
   renderContent () {
