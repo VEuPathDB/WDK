@@ -1,7 +1,7 @@
 import React from 'react';
 
 import PaginationUtils from '../Utils/PaginationUtils';
-import { selectRowsByIds, deselectRowsByIds, setPaginatedActiveItem } from '../State/Actions';
+import { selectRowsByIds, deselectRowsByIds, setPaginationAnchor } from '../State/Actions';
 
 class SelectionCounter extends React.Component {
   constructor (props) {
@@ -32,9 +32,9 @@ class SelectionCounter extends React.Component {
 
   goToSelection () {
     const { state, dispatch, filteredRows } = this.props;
-    const { selection, pagination } = state.ui;
+    const { selection, paginationState } = state.uiState;
     const { paginate } = state.options;
-    const spread = PaginationUtils.getSpread(filteredRows, pagination, paginate);
+    const spread = PaginationUtils.getSpread(filteredRows, paginationState, paginate);
 
     const target = selection.find(id => !spread.includes(id));
     if (!target) return;
@@ -42,14 +42,14 @@ class SelectionCounter extends React.Component {
     const targetIndex = filteredRows.findIndex(row => row.__id === target);
     if (targetIndex < 0) return;
 
-    dispatch(setPaginatedActiveItem(targetIndex + 1));
+    dispatch(setPaginationAnchor(targetIndex + 1));
   }
 
   /* Renderers -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
   renderSelectionCount () {
     const { state, dispatch, filteredRows } = this.props;
-    const { selection } = state.ui;
+    const { selection } = state.uiState;
 
     const allIds = filteredRows.map(row => row.__id);
     const allSelected = PaginationUtils.isSpreadSelected(allIds, selection);
@@ -65,10 +65,10 @@ class SelectionCounter extends React.Component {
 
   renderPaginatedSelectionCount () {
     const { state, dispatch, filteredRows } = this.props;
-    const { selection, pagination } = state.ui;
+    const { selection, paginationState } = state.uiState;
     const allIds = filteredRows.map(row => row.__id);
     const allSelected = PaginationUtils.isSpreadSelected(allIds, selection);
-    const spread = PaginationUtils.getSpread(filteredRows, pagination, true);
+    const spread = PaginationUtils.getSpread(filteredRows, paginationState, true);
     const pageCoverage = PaginationUtils.countSelectedInSpread(spread, selection);
     const totalCoverage = PaginationUtils.countSelectedInSpread(allIds, selection);
 
@@ -107,7 +107,7 @@ class SelectionCounter extends React.Component {
 
   render () {
     const { paginate } = this.props.state.options;
-    const { selection } = this.props.state.ui;
+    const { selection } = this.props.state.uiState;
 
     if (!selection.length) return null;
     return !paginate ? this.renderSelectionCount() : this.renderPaginatedSelectionCount();

@@ -11,8 +11,8 @@ class ActionToolbar extends React.PureComponent {
 
   getSelectedRows () {
     const { state } = this.props;
-    const { rows, ui } = state;
-    const { selection } = ui;
+    const { rows, uiState } = state;
+    const { selection } = uiState;
     return selection
       .map(id => rows.find(row => row.__id === id))
       .filter(row => row);

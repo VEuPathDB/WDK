@@ -40,8 +40,8 @@ var ActionToolbar = function (_React$PureComponent) {
     value: function getSelectedRows() {
       var state = this.props.state;
       var rows = state.rows,
-          ui = state.ui;
-      var selection = ui.selection;
+          uiState = state.uiState;
+      var selection = uiState.selection;
 
       return selection.map(function (id) {
         return rows.find(function (row) {

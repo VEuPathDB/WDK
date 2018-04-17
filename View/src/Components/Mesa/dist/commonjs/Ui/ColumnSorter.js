@@ -38,7 +38,7 @@ var ColumnSorter = function (_React$PureComponent) {
           column = _props.column,
           state = _props.state,
           dispatch = _props.dispatch;
-      var sort = state.ui.sort;
+      var sort = state.uiState.sort;
 
       var currentlySorting = sort.byColumn === column;
       var sortIcon = !currentlySorting ? 'sort-amount-asc inactive' : sort.ascending ? 'sort-amount-asc active' : 'sort-amount-desc active';

@@ -42,7 +42,7 @@ var RowCounter = function (_React$PureComponent) {
       var _getStatistics = this.getStatistics(),
           filtered = _getStatistics.filtered;
 
-      var searchQuery = this.props.state.ui.searchQuery;
+      var searchQuery = this.props.state.uiState.searchQuery;
 
       return filtered && !searchQuery ? _react2.default.createElement(
         'span',
@@ -75,9 +75,9 @@ var RowCounter = function (_React$PureComponent) {
           filteredRows = _props2.filteredRows,
           state = _props2.state;
       var paginate = state.options.paginate;
-      var _state$ui = state.ui,
-          pagination = _state$ui.pagination,
-          searchQuery = _state$ui.searchQuery;
+      var _state$uiState = state.uiState,
+          paginationState = _state$uiState.paginationState,
+          searchQuery = _state$uiState.searchQuery;
 
       var _getStatistics2 = this.getStatistics(),
           total = _getStatistics2.total,
@@ -101,9 +101,9 @@ var RowCounter = function (_React$PureComponent) {
 
       if (!paginate) return simple;
 
-      var currentPage = _PaginationUtils2.default.getCurrentPageNumber(pagination);
-      var firstOnPage = _PaginationUtils2.default.firstItemOnPage(currentPage, pagination);
-      var lastOnPage = _PaginationUtils2.default.lastItemOnPage(currentPage, pagination, filteredRows);
+      var currentPage = _PaginationUtils2.default.getCurrentPageNumber(paginationState);
+      var firstOnPage = _PaginationUtils2.default.firstItemOnPage(currentPage, paginationState);
+      var lastOnPage = _PaginationUtils2.default.lastItemOnPage(currentPage, paginationState, filteredRows);
 
       if (effective === lastOnPage && firstOnPage === 1) return simple;
 

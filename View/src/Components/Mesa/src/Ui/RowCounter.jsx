@@ -12,7 +12,7 @@ class RowCounter extends React.PureComponent {
 
   getFilteredString () {
     let { filtered } = this.getStatistics();
-    let { searchQuery } = this.props.state.ui;
+    let { searchQuery } = this.props.state.uiState;
     return filtered && !searchQuery ? <span className="faded"> (<b>{filtered}</b> filtered)</span> : null
   }
 
@@ -27,7 +27,7 @@ class RowCounter extends React.PureComponent {
   getPageString () {
     let { filteredRows, state } = this.props;
     let { paginate } = state.options;
-    let { pagination, searchQuery } = state.ui;
+    let { paginationState, searchQuery } = state.uiState;
 
     let { total, effective, filtered } = this.getStatistics();
 
@@ -38,9 +38,9 @@ class RowCounter extends React.PureComponent {
 
     if (!paginate) return simple;
 
-    let currentPage = PaginationUtils.getCurrentPageNumber(pagination);
-    let firstOnPage = PaginationUtils.firstItemOnPage(currentPage, pagination);
-    let lastOnPage = PaginationUtils.lastItemOnPage(currentPage, pagination, filteredRows);
+    let currentPage = PaginationUtils.getCurrentPageNumber(paginationState);
+    let firstOnPage = PaginationUtils.firstItemOnPage(currentPage, paginationState);
+    let lastOnPage = PaginationUtils.lastItemOnPage(currentPage, paginationState, filteredRows);
 
     if (effective === lastOnPage && firstOnPage === 1) return simple;
 

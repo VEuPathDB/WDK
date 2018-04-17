@@ -16,7 +16,7 @@ class PaginationEditor extends React.PureComponent {
   }
 
   render () {
-    const { pagination } = this.props;
+    const { paginationState } = this.props;
     let options = [ 5, 10, 20, 35, 50, 100 ];
 
     return (
@@ -24,7 +24,7 @@ class PaginationEditor extends React.PureComponent {
         <span>Rows per page: </span>
         <SelectBox
           options={options}
-          selected={pagination.itemsPerPage}
+          selected={paginationState.itemsPerPage}
           onChange={this.handleItemsPerPageChange}
         />
       </div>

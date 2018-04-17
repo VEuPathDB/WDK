@@ -18,7 +18,7 @@ exports.deselectRowsByIds = deselectRowsByIds;
 exports.toggleRowSelectionById = toggleRowSelectionById;
 exports.selectAllRows = selectAllRows;
 exports.clearRowSelection = clearRowSelection;
-exports.setPaginatedActiveItem = setPaginatedActiveItem;
+exports.setPaginationAnchor = setPaginationAnchor;
 exports.setPaginatedItemsPerPage = setPaginatedItemsPerPage;
 exports.updateColumns = updateColumns;
 exports.updateOptions = updateOptions;
@@ -84,9 +84,9 @@ function clearRowSelection() {
   return { type: 'CLEAR_ROW_SELECTION' };
 }
 
-function setPaginatedActiveItem(activeItem) {
-  if (typeof activeItem !== 'number' || activeItem <= 0) return;
-  return { type: 'SET_PAGINATED_ACTIVE_ITEM', activeItem: activeItem };
+function setPaginationAnchor(anchorIndex) {
+  if (typeof anchorIndex !== 'number' || anchorIndex <= 0) return;
+  return { type: 'SET_PAGINATION_ANCHOR', anchorIndex: anchorIndex };
 }
 
 function setPaginatedItemsPerPage(itemsPerPage) {

@@ -26,8 +26,8 @@ class TableBody extends React.Component {
 
   render () {
     let { dispatch, state, filteredRows } = this.props;
-    let { columns, options, ui } = state;
-    let { pagination } = ui;
+    let { columns, options, uiState } = state;
+    let { paginationState } = uiState;
 
     let content;
     if (!filteredRows.length)
@@ -39,7 +39,7 @@ class TableBody extends React.Component {
         <PaginatedList
           container="tbody"
           list={filteredRows}
-          pagination={pagination}
+          paginationState={paginationState}
           renderItem={this.renderDataRow}
         />
       );

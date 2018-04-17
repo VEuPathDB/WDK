@@ -82,7 +82,7 @@ var PaginationMenu = function (_React$PureComponent) {
     value: function getRelativePageNumber(relative) {
       var _props = this.props,
           list = _props.list,
-          pagination = _props.pagination;
+          paginationState = _props.paginationState;
 
 
       switch (relative.toLowerCase()) {
@@ -91,12 +91,12 @@ var PaginationMenu = function (_React$PureComponent) {
           return 1;
         case 'last':
         case 'end':
-          return _PaginationUtils2.default.totalPages(list, pagination);
+          return _PaginationUtils2.default.totalPages(list, paginationState);
         case 'next':
-          return _PaginationUtils2.default.nextPageNumber(list, pagination);
+          return _PaginationUtils2.default.nextPageNumber(list, paginationState);
         case 'prev':
         case 'previous':
-          return _PaginationUtils2.default.prevPageNumber(list, pagination);
+          return _PaginationUtils2.default.prevPageNumber(list, paginationState);
         default:
           return null;
       }
@@ -124,11 +124,11 @@ var PaginationMenu = function (_React$PureComponent) {
     key: 'goToPage',
     value: function goToPage(page) {
       var _props2 = this.props,
-          pagination = _props2.pagination,
+          paginationState = _props2.paginationState,
           dispatch = _props2.dispatch;
 
-      var activeItem = _PaginationUtils2.default.firstItemOnPage(page, pagination);
-      dispatch((0, _Actions.setPaginatedActiveItem)(activeItem));
+      var anchorIndex = _PaginationUtils2.default.firstItemOnPage(page, paginationState);
+      dispatch((0, _Actions.setPaginationAnchor)(anchorIndex));
     }
   }, {
     key: 'renderRelativeLink',
@@ -169,12 +169,12 @@ var PaginationMenu = function (_React$PureComponent) {
       var _this4 = this;
 
       var _props3 = this.props,
-          pagination = _props3.pagination,
+          paginationState = _props3.paginationState,
           list = _props3.list;
       var overflowPoint = settings.overflowPoint;
 
-      var current = _PaginationUtils2.default.getCurrentPageNumber(pagination);
-      var total = _PaginationUtils2.default.totalPages(list, pagination);
+      var current = _PaginationUtils2.default.getCurrentPageNumber(paginationState);
+      var total = _PaginationUtils2.default.totalPages(list, paginationState);
       var pageList = _PaginationUtils2.default.generatePageList(total);
 
       if (total > overflowPoint) {
@@ -194,7 +194,7 @@ var PaginationMenu = function (_React$PureComponent) {
     value: function render() {
       var _props4 = this.props,
           list = _props4.list,
-          pagination = _props4.pagination,
+          paginationState = _props4.paginationState,
           dispatch = _props4.dispatch;
 
       return !list.length ? null : _react2.default.createElement(
@@ -219,7 +219,7 @@ var PaginationMenu = function (_React$PureComponent) {
         _react2.default.createElement(
           'span',
           { className: 'Pagination-Editor' },
-          _react2.default.createElement(_PaginationEditor2.default, { pagination: pagination, dispatch: dispatch })
+          _react2.default.createElement(_PaginationEditor2.default, { paginationState: paginationState, dispatch: dispatch })
         )
       );
     }

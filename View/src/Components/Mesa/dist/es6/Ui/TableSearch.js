@@ -56,9 +56,9 @@ var TableSearch = function (_React$PureComponent) {
     key: 'render',
     value: function render() {
       var state = this.props.state;
-      var ui = state.ui,
+      var uiState = state.uiState,
           options = state.options;
-      var searchQuery = ui.searchQuery;
+      var searchQuery = uiState.searchQuery;
 
 
       return _react2.default.createElement(

@@ -6,30 +6,30 @@ Object.defineProperty(exports, "__esModule", {
 var PaginationUtils = {
   getCurrentPage: function getCurrentPage(list, _ref) {
     var itemsPerPage = _ref.itemsPerPage,
-        activeItem = _ref.activeItem;
+        anchorIndex = _ref.anchorIndex;
 
     var pages = PaginationUtils.splitIntoPages(list, { itemsPerPage: itemsPerPage });
-    var pageIndex = PaginationUtils.getCurrentPageIndex({ itemsPerPage: itemsPerPage, activeItem: activeItem });
+    var pageIndex = PaginationUtils.getCurrentPageIndex({ itemsPerPage: itemsPerPage, anchorIndex: anchorIndex });
     return pages[pageIndex];
   },
   getCurrentPageNumber: function getCurrentPageNumber(_ref2) {
     var itemsPerPage = _ref2.itemsPerPage,
-        activeItem = _ref2.activeItem;
+        anchorIndex = _ref2.anchorIndex;
 
-    return Math.ceil(activeItem / itemsPerPage);
+    return Math.ceil(anchorIndex / itemsPerPage);
   },
   getCurrentPageIndex: function getCurrentPageIndex(_ref3) {
     var itemsPerPage = _ref3.itemsPerPage,
-        activeItem = _ref3.activeItem;
+        anchorIndex = _ref3.anchorIndex;
 
-    var pageNumber = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, activeItem: activeItem });
+    var pageNumber = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, anchorIndex: anchorIndex });
     return pageNumber - 1;
   },
   getSpread: function getSpread(list, _ref4, usePagination) {
     var itemsPerPage = _ref4.itemsPerPage,
-        activeItem = _ref4.activeItem;
+        anchorIndex = _ref4.anchorIndex;
 
-    var spread = usePagination ? PaginationUtils.getCurrentPage(list, { itemsPerPage: itemsPerPage, activeItem: activeItem }) : list;
+    var spread = usePagination ? PaginationUtils.getCurrentPage(list, { itemsPerPage: itemsPerPage, anchorIndex: anchorIndex }) : list;
     return spread ? spread.map(function (item) {
       return item.__id;
     }) : [];
@@ -86,19 +86,19 @@ var PaginationUtils = {
   },
   nextPageNumber: function nextPageNumber(list, _ref9) {
     var itemsPerPage = _ref9.itemsPerPage,
-        activeItem = _ref9.activeItem;
+        anchorIndex = _ref9.anchorIndex;
 
     var totalPages = PaginationUtils.totalPages(list, { itemsPerPage: itemsPerPage });
-    var currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, activeItem: activeItem });
+    var currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, anchorIndex: anchorIndex });
     var nextPage = currentPage + 1 > totalPages ? 1 : currentPage + 1;
     return nextPage;
   },
   prevPageNumber: function prevPageNumber(list, _ref10) {
     var itemsPerPage = _ref10.itemsPerPage,
-        activeItem = _ref10.activeItem;
+        anchorIndex = _ref10.anchorIndex;
 
     var totalPages = PaginationUtils.totalPages(list, { itemsPerPage: itemsPerPage });
-    var currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, activeItem: activeItem });
+    var currentPage = PaginationUtils.getCurrentPageNumber({ itemsPerPage: itemsPerPage, anchorIndex: anchorIndex });
     var prevPage = currentPage - 1 < 1 ? totalPages : currentPage - 1;
     return prevPage;
   }

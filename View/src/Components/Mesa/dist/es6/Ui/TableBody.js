@@ -73,8 +73,8 @@ var TableBody = function (_React$Component) {
           filteredRows = _props2.filteredRows;
       var columns = state.columns,
           options = state.options,
-          ui = state.ui;
-      var pagination = ui.pagination;
+          uiState = state.uiState;
+      var paginationState = uiState.paginationState;
 
 
       var content = void 0;
@@ -89,7 +89,7 @@ var TableBody = function (_React$Component) {
       );else content = _react2.default.createElement(_PaginatedList2.default, {
         container: 'tbody',
         list: filteredRows,
-        pagination: pagination,
+        paginationState: paginationState,
         renderItem: this.renderDataRow
       });
 

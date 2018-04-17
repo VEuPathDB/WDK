@@ -42,9 +42,9 @@ var EmptyState = function (_React$PureComponent) {
       var _props = this.props,
           state = _props.state,
           dispatch = _props.dispatch;
-      var _state$ui = state.ui,
-          emptinessCulprit = _state$ui.emptinessCulprit,
-          searchQuery = _state$ui.searchQuery;
+      var _state$uiState = state.uiState,
+          emptinessCulprit = _state$uiState.emptinessCulprit,
+          searchQuery = _state$uiState.searchQuery;
 
       switch (emptinessCulprit) {
         case 'search':
@@ -121,9 +121,9 @@ var EmptyState = function (_React$PureComponent) {
     value: function render() {
       var state = this.props.state;
       var columns = state.columns,
-          ui = state.ui,
+          uiState = state.uiState,
           actions = state.actions;
-      var emptinessCulprit = ui.emptinessCulprit;
+      var emptinessCulprit = uiState.emptinessCulprit;
 
       var colspan = columns.filter(function (column) {
         return !column.hidden;

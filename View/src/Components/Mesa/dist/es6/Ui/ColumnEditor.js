@@ -140,8 +140,8 @@ var ColumnEditor = function (_React$PureComponent) {
     value: function renderModal() {
       var state = this.props.state;
       var columns = state.columns,
-          ui = state.ui;
-      var columnEditorOpen = ui.columnEditorOpen;
+          uiState = state.uiState;
+      var columnEditorOpen = uiState.columnEditorOpen;
 
 
       return _react2.default.createElement(

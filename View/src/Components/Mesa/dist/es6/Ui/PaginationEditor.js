@@ -47,7 +47,7 @@ var PaginationEditor = function (_React$PureComponent) {
   }, {
     key: 'render',
     value: function render() {
-      var pagination = this.props.pagination;
+      var paginationState = this.props.paginationState;
 
       var options = [5, 10, 20, 35, 50, 100];
 
@@ -61,7 +61,7 @@ var PaginationEditor = function (_React$PureComponent) {
         ),
         _react2.default.createElement(_SelectBox2.default, {
           options: options,
-          selected: pagination.itemsPerPage,
+          selected: paginationState.itemsPerPage,
           onChange: this.handleItemsPerPageChange
         })
       );

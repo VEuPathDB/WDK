@@ -11,7 +11,7 @@ class EmptyState extends React.PureComponent {
 
   getCulprit () {
     const { state, dispatch } = this.props;
-    const { emptinessCulprit, searchQuery } = state.ui;
+    const { emptinessCulprit, searchQuery } = state.uiState;
     switch (emptinessCulprit) {
       case 'search':
         return {
@@ -62,8 +62,8 @@ class EmptyState extends React.PureComponent {
 
   render () {
     let { state } = this.props;
-    let { columns, ui, actions } = state;
-    let { emptinessCulprit } = ui;
+    let { columns, uiState, actions } = state;
+    let { emptinessCulprit } = uiState;
     let colspan = columns.filter(column => !column.hidden).length + (actions.length ? 1 : 0);
     let culprit = this.getCulprit();
 

@@ -82,8 +82,8 @@ class ColumnEditor extends React.PureComponent {
 
   renderModal () {
     const { state } = this.props;
-    const { columns, ui } = state;
-    const { columnEditorOpen } = ui;
+    const { columns, uiState } = state;
+    const { columnEditorOpen } = uiState;
 
     return (
       <Modal open={columnEditorOpen} onClose={this.closeEditor}>
