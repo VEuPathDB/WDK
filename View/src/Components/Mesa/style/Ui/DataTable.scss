@@ -20,12 +20,12 @@
       max-width: none;
       table {
         table-layout: fixed;
-        width: auto;
+        width: 100%;
       }
     }
     .DataTable-Body {
       overflow-x: visible;
-      overflow-y: visible;
+      overflow-y: auto;
     }
     .DataTable-Header {
     }
