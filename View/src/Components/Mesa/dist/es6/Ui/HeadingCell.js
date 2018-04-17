@@ -209,10 +209,12 @@ var HeadingCell = function (_React$PureComponent) {
           left = _ref5.left,
           right = _ref5.right,
           width = _ref5.width,
-          height = _ref5.height;
+          height = _ref5.height,
+          x = _ref5.x,
+          y = _ref5.y;
 
       console.log('rendering help trigger with', offset);
-      var position = { top: top + height, left: right - width };
+      var position = { top: y + height, left: x };
 
       if (!column.helpText) return null;
       return _react2.default.createElement(
