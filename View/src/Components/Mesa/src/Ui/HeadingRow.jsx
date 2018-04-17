@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import HeadingCell from '../Ui/HeadingCell';
 import SelectionCell from '../Ui/SelectionCell';
@@ -74,36 +74,6 @@ class HeadingRow extends React.PureComponent {
         })}
       </thead>
     );
-    /*
-    return (
-      <tr className="Row HeadingRow">
-        {!hasSelectionColumn
-          ? null
-          : <SelectionCell
-              heading={true}
-              rows={filteredRows}
-              options={options}
-              eventHandlers={eventHandlers}
-              isRowSelected={isRowSelected}
-            />
-        }
-        {columns.map((column, columnIndex) => {
-          if (typeof columnDefaults === 'object')
-            column = Object.assign({}, columnDefaults, column);
-          return (
-            <HeadingCell
-              sort={sort}
-              key={column.key}
-              column={column}
-              offsetLeft={offsetLeft}
-              columnIndex={columnIndex}
-              eventHandlers={eventHandlers}
-            />
-          );
-        })}
-      </tr>
-    );
-    */
   }
 };
 
