@@ -36,13 +36,7 @@ var Tooltip = function (_React$Component) {
 
   _createClass(Tooltip, [{
     key: 'componentDidMount',
-    value: function componentDidMount() {
-      // const { anchor } = this.refs;
-      // if (!anchor) return;
-      // const position = getRealOffset(anchor);
-      // console.log('got position as', position);
-      // this.setState({ position });
-    }
+    value: function componentDidMount() {}
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
@@ -63,32 +57,25 @@ var Tooltip = function (_React$Component) {
           position = _props.position;
       var showText = this.state.showText;
 
-
-      var wrapperStyle = {
-        top: 0,
-        left: 0,
-        width: '100vw',
-        minHeight: '100vh',
-        height: '100%',
-        zIndex: 1000000,
-        position: 'absolute',
-        pointerEvents: 'none'
-      };
-
       var _ref = position ? position : { top: 0, left: 0 },
           top = _ref.top,
           left = _ref.left;
 
-      var textStyle = { top: top, left: left, position: 'relative' };
+      var textStyle = {
+        top: top,
+        left: left,
+        position: 'absolute',
+        zIndex: 1000000
+      };
 
       return !showText ? null : _react2.default.createElement(
         'div',
-        { className: 'Tooltip-Wrapper', style: wrapperStyle },
-        _react2.default.createElement(
-          'div',
-          { className: 'Tooltip-Text', style: textStyle },
-          text
-        )
+        {
+          style: textStyle,
+          className: 'Tooltip-Text',
+          onMouseEnter: this.showTooltip,
+          onMouseLeave: this.hideTooltip },
+        text
       );
     }
   }, {

@@ -25,11 +25,6 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount () {
-    // const { anchor } = this.refs;
-    // if (!anchor) return;
-    // const position = getRealOffset(anchor);
-    // console.log('got position as', position);
-    // this.setState({ position });
   }
 
   showTooltip () {
@@ -45,28 +40,23 @@ class Tooltip extends React.Component {
   renderTextBox () {
     const { text, position } = this.props;
     const { showText } = this.state;
-
-    const wrapperStyle = {
-      top: 0,
-      left: 0,
-      width: '100vw',
-      minHeight: '100vh',
-      height: '100%',
-      zIndex: 1000000,
-      position: 'absolute',
-      pointerEvents: 'none',
-    };
-
     const { top, left } = position ? position : { top: 0, left: 0 };
 
-    const textStyle = { top, left, position: 'relative' };
+    const textStyle = {
+      top,
+      left,
+      position: 'absolute',
+      zIndex: 1000000
+    };
 
     return !showText ? null : (
-      <div className="Tooltip-Wrapper" style={wrapperStyle}>
-        <div className="Tooltip-Text" style={textStyle}>
+        <div
+          style={textStyle}
+          className="Tooltip-Text"
+          onMouseEnter={this.showTooltip}
+          onMouseLeave={this.hideTooltip}>
           {text}
         </div>
-      </div>
     );
   }
 
