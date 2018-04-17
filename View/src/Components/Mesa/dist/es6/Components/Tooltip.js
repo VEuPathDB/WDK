@@ -119,4 +119,7 @@ var Tooltip = function (_React$Component) {
 
 ;
 
+Tooltip.contextTypes = {
+  yo: PropTypes.string
+};
 exports.default = Tooltip;
