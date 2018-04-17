@@ -2,7 +2,6 @@ import React from 'react';
 
 import Icon from '../Components/Icon';
 import TableSearch from '../Ui/TableSearch';
-import ColumnEditor from '../Ui/ColumnEditor';
 import RowCounter from '../Ui/RowCounter';
 
 class TableToolbar extends React.PureComponent {
@@ -75,33 +74,11 @@ class TableToolbar extends React.PureComponent {
     );
   }
 
-  renderAddRemoveColumns () {
-    const { options, columns, eventHandlers } = this.props;
-    const { editableColumns } = options;
-    const columnsAreHideable = columns.some(column => column.hideable);
-    if (!editableColumns  || !columnsAreHideable) return null;
-
-    const { onShowColumn, onHideColumn } = eventHandlers;
-    return (
-      <ColumnEditor
-        columns={columns}
-        onShowColumn={onShowColumn}
-        onHideColumn={onHideColumn}
-      >
-        <button>
-          <Icon fa={'columns'} />
-          <span>Add/Remove Columns</span>
-        </button>
-      </ColumnEditor>
-    );
-  }
-
   render () {
     const Title = this.renderTitle;
     const Search = this.renderSearch;
     const Counter = this.renderCounter;
     const Children = this.renderChildren;
-    const AddRemove = this.renderAddRemoveColumns;
 
     return (
       <div className="Toolbar TableToolbar">
@@ -109,7 +86,6 @@ class TableToolbar extends React.PureComponent {
         <Search />
         <Counter />
         <Children />
-        <AddRemove />
       </div>
     );
   }

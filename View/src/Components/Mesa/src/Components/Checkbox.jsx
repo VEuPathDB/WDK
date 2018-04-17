@@ -22,7 +22,6 @@ class Checkbox extends React.Component {
     return (
       <div className={className} onClick={disabled ? null : this.handleClick}>
         <input type="checkbox" checked={checked} />
-        {/* <Icon fa={checked ? 'check-square' : 'square'} /> */}
       </div>
     );
   }

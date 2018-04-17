@@ -16,6 +16,13 @@ class ModalBoundary extends React.Component {
     this.getChildContext = this.getChildContext.bind(this);
     this.renderModalWrapper = this.renderModalWrapper.bind(this);
     this.triggerModalRefresh = this.triggerModalRefresh.bind(this);
+
+    console.error(`
+      <ModalBoundary> is Deprecated!
+      Now declaratively render your modals inside a <BodyLayer>.
+      Stop using ModalBoundary.
+      Props Received:
+    `, { props });
   }
 
   addModal (modal) {

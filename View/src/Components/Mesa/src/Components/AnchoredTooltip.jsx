@@ -1,37 +1,53 @@
 import React from 'react';
 
 import Tooltip from './Tooltip';
+import Events from '../Utils/Events';
 
 class AnchoredTooltip extends React.Component {
   constructor (props) {
     super(props);
-    this.getOffsetPosition = this.getOffsetPosition.bind(this);
+    this.state = { position: {} };
+    this.updateOffset = this.updateOffset.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
   }
 
-  getOffsetPosition (position, offset) {
-    if (!typeof offset !== 'object' || typeof position !== 'object') return position;
-    const output = {};
-    for (let key in position) {
-      output[key] = position[key] + (key in offset ? offset[key] : 0);
+  componentDidMount () {
+    this.updateOffset();
+    this.listeners = {
+      scroll: Events.add('scroll', this.updateOffset),
+      resize: Events.add('resize', this.updateOffset),
+      MesaScroll: Events.add('MesaScroll', this.updateOffset),
+      MesaReflow: Events.add('MesaReflow', this.updateOffset)
     };
-    return output;
+  }
+
+  componentWillUnmount () {
+    Object.values(this.listeners).forEach(listenerId => Events.remove(listenerId));
+  }
+
+  updateOffset () {
+    const { element } = this;
+    if (!element) return;
+    const offset = element.getBoundingClientRect();
+    const { top, left, height } = offset;
+    const position = { left, top: top + height };
+    this.setState({ position });
   }
 
   render () {
-    const corner = 'left-middle';
-    const defaults = { top: 0, left: 0, width: 0, right: 0 };
-    const { offset } = this.props;
+    const { props } = this;
+    const { position } = this.state;
+    const ref = (el) => this.element = el;
+    const children = (<div ref={ref} style={{ display: 'inline-block' }} children={props.children} />);
+    const extractedProps = { ...props, position, children };
 
-    const { top, left, width, height, right } = (this.anchor ? Tooltip.getOffset(this.anchor) : defaults);
-    const position = { top: top + height, left: right + width };
-    const offsetPosition = this.getOffsetPosition(position, offset);
-
-    const tooltipProps = Object.assign({ corner }, this.props, { position: offsetPosition });
     return (
-      <div className="AnchoredTooltip" style={{ display: 'inline-block' }}>
-        <span className="AnchoredTooltip-Anchor" style={{ float: 'right' }} ref={(a) => this.anchor = a} />
-        <Tooltip {...tooltipProps} />
-      </div>
+      <Tooltip
+        corner="top-left"
+        className="AnchoredTooltip"
+        {...extractedProps}
+      />
     );
   }
 };
