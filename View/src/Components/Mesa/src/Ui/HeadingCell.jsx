@@ -103,7 +103,7 @@ class HeadingCell extends React.PureComponent {
 
     if (!column.helpText) return null;
     return (
-      <Tooltip position={position} className="Trigger HelpTrigger" text={column.helpText}>
+      <Tooltip position={position} className="Trigger HelpTrigger" content={column.helpText}>
         <Icon fa="question-circle" />
       </Tooltip>
     )

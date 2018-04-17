@@ -33,7 +33,7 @@ var Tooltip = function (_React$Component) {
     _this.state = { showText: false };
     _this.showTooltip = _this.showTooltip.bind(_this);
     _this.hideTooltip = _this.hideTooltip.bind(_this);
-    _this.renderTextBox = _this.renderTextBox.bind(_this);
+    _this.renderTooltipBox = _this.renderTooltipBox.bind(_this);
     _this.engageTooltip = _this.engageTooltip.bind(_this);
     _this.disengageTooltip = _this.disengageTooltip.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
@@ -58,20 +58,21 @@ var Tooltip = function (_React$Component) {
       if (this.id) return;
       var addModal = this.context.addModal;
 
-      var textBox = { render: this.renderTextBox };
+      var textBox = { render: this.renderTooltipBox };
       this.id = addModal(textBox);
     }
   }, {
     key: 'engageTooltip',
     value: function engageTooltip() {
-      console.log('calling engagetooltip');
       if (this.timeout) clearTimeout(this.timeout);
     }
   }, {
     key: 'disengageTooltip',
     value: function disengageTooltip() {
-      console.log('calling disengagetooltip');
-      this.timeout = setTimeout(this.hideTooltip, 1000);
+      var hideDelay = this.props.hideDelay;
+
+      hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
+      this.timeout = setTimeout(this.hideTooltip, hideDelay);
     }
   }, {
     key: 'hideTooltip',
@@ -83,17 +84,17 @@ var Tooltip = function (_React$Component) {
       this.id = null;
     }
   }, {
-    key: 'renderTextBox',
-    value: function renderTextBox() {
+    key: 'renderTooltipBox',
+    value: function renderTooltipBox() {
       var _props = this.props,
-          text = _props.text,
+          content = _props.content,
           position = _props.position;
 
       var _ref = position ? position : { top: 0, left: 0 },
           top = _ref.top,
           left = _ref.left;
 
-      var textStyle = {
+      var boxStyle = {
         top: top,
         left: left,
         display: 'block',
@@ -104,11 +105,11 @@ var Tooltip = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         {
-          style: textStyle,
-          className: 'Tooltip-Text',
+          style: boxStyle,
+          className: 'Tooltip-Content',
           onMouseEnter: this.showTooltip,
           onMouseLeave: this.disengageTooltip },
-        text
+        content
       );
     }
   }, {
@@ -137,6 +138,14 @@ var Tooltip = function (_React$Component) {
 }(_react2.default.Component);
 
 ;
+
+Tooltip.propTypes = {
+  hideDelay: _propTypes2.default.number,
+  children: _propTypes2.default.node,
+  className: _propTypes2.default.string,
+  content: _propTypes2.default.node,
+  position: _propTypes2.default.object
+};
 
 Tooltip.contextTypes = {
   addModal: _propTypes2.default.func,
