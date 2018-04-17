@@ -19,6 +19,7 @@ class Tooltip extends React.Component {
   componentDidMount () {
     const { addModal, removeModal } = this.context;
     if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
+      console.log('boutta error out homie');
       throw new Error(`
         Tooltip Error: No "addModal" or "removeModal" detected in context.
         Please use a <ModalBoundary> in your element tree to catch modals.
