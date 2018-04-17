@@ -13,13 +13,13 @@ class HeadingCell extends React.PureComponent {
     this.handleSortClick = this.handleSortClick.bind(this);
     this.renderSortTrigger = this.renderSortTrigger.bind(this);
     this.renderHelpTrigger = this.renderHelpTrigger.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   componentDidMount () {
-    const { element } = this.refs;
-    console.log('refs here', this.refs);
+    const { element } = this;
+    console.log('element?', element);
     if (!element) return;
-    console.log('got element', element);
     let offset = Tooltip.getOffset(element);
     console.log('got offset', offset);
   }
@@ -93,7 +93,7 @@ class HeadingCell extends React.PureComponent {
       <th
         key={column.key}
         style={style}
-        ref="element"
+        ref={el => this.element = el}
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
         <SortTrigger />

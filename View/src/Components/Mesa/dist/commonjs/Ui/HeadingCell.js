@@ -45,17 +45,17 @@ var HeadingCell = function (_React$PureComponent) {
     _this.handleSortClick = _this.handleSortClick.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
     _this.renderHelpTrigger = _this.renderHelpTrigger.bind(_this);
+    _this.componentDidMount = _this.componentDidMount.bind(_this);
     return _this;
   }
 
   _createClass(HeadingCell, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      var element = this.refs.element;
+      var element = this.element;
 
-      console.log('refs here', this.refs);
+      console.log('element?', element);
       if (!element) return;
-      console.log('got element', element);
       var offset = _Tooltip2.default.getOffset(element);
       console.log('got offset', offset);
     }
@@ -163,7 +163,9 @@ var HeadingCell = function (_React$PureComponent) {
         {
           key: column.key,
           style: style,
-          ref: 'element',
+          ref: function ref(el) {
+            return _this2.element = el;
+          },
           onClick: function onClick(e) {
             return column.sortable ? _this2.handleSortClick() : null;
           }
