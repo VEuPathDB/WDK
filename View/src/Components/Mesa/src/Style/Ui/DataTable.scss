@@ -7,4 +7,10 @@
   table {
     width: 100%;
   }
+  .DataTable-Header, .DataTable-Body {
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+  }
 }

@@ -7,21 +7,58 @@ import DataRowList from '../Ui/DataRowList';
 class DataTable extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.generateLayout = this.generateLayout.bind(this);
+    this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
+  }
+
+  shouldUseStickyHeader () {
+    const { columns, options } = this.props;
+    if (!options || !options.useStickyHeader) return false;
+    const hasWidthProperty = ({ width }) => typeof width === 'string';
+    if (columns.every(hasWidthProperty)) return true;
+    console.error(`
+      "useStickyHeader" enabled but not all columns have explicit widths (required).
+      Use a CSS width (e.g. "250px" or "30%") as each column's .width property.
+    `);
+    return false;
+  }
+
+  generateLayout () {
+    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, options, columns, actions, uiState, eventHandlers };
+
+    return this.shouldUseStickyHeader() ? (
+      <div>
+        <div className="DataTable-Header">
+          <table cellSpacing={0} cellPadding={0}>
+            <thead>
+              <HeadingRow {...props} />
+            </thead>
+          </table>
+        </div>
+        <div className="DataTable-Body">
+          <table cellSpacing={0} cellPadding={0}>
+            <DataRowList {...props} />
+          </table>
+        </div>
+      </div>
+    ) : (
+      <table cellSpacing="0" cellPadding="0">
+        <thead>
+          <HeadingRow {...props} />
+        </thead>
+        <DataRowList {...props} />
+      </table>
+    );
   }
 
   render () {
-    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, options, columns, actions, uiState, eventHandlers };
+    const Layout = this.generateLayout;
 
     return (
       <div className="Mesa">
         <div className="DataTable">
-          <table cellSpacing="0" cellPadding="0">
-            <thead>
-              <HeadingRow {...props} />
-            </thead>
-            <DataRowList {...props} />
-          </table>
+          <Layout />
         </div>
       </div>
     );
