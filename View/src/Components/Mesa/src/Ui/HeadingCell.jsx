@@ -59,6 +59,7 @@ class HeadingCell extends React.PureComponent {
 
   renderHelpTrigger () {
     const { column } = this.props;
+    Tooltip.say('man it works ahaha');
     if (!column.helpText) return null;
     return (
       <Tooltip className="Trigger HelpTrigger" text={column.helpText}>

@@ -112,6 +112,11 @@ var Tooltip = function (_React$Component) {
         _react2.default.createElement(TextBox, null)
       );
     }
+  }], [{
+    key: 'say',
+    value: function say(whatever) {
+      console.log('::::: ---> ', whatever);
+    }
   }]);
 
   return Tooltip;

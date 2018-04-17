@@ -118,6 +118,7 @@ var HeadingCell = function (_React$PureComponent) {
     value: function renderHelpTrigger() {
       var column = this.props.column;
 
+      _Tooltip2.default.say('man it works ahaha');
       if (!column.helpText) return null;
       return _react2.default.createElement(
         _Tooltip2.default,
