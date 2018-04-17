@@ -2,6 +2,7 @@ import React from 'react';
 
 import Templates from '../Templates';
 import Icon from '../Components/Icon';
+import Tooltip from '../Components/Tooltip';
 // import ColumnSorter from '../Ui/ColumnSorter';
 // import ColumnFilter from '../Ui/ColumnFilter';
 
@@ -60,7 +61,9 @@ class HeadingCell extends React.PureComponent {
     const { column } = this.props;
     if (!column.helpText) return null;
     return (
-      <h2>{column.helpText}</h2>
+      <Tooltip text={column.helpText}>
+        <Icon fa="question-circle" />
+      </Tooltip>
     )
   }
 

@@ -18,6 +18,10 @@ var _Icon = require('../Components/Icon');
 
 var _Icon2 = _interopRequireDefault(_Icon);
 
+var _Tooltip = require('../Components/Tooltip');
+
+var _Tooltip2 = _interopRequireDefault(_Tooltip);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -116,9 +120,9 @@ var HeadingCell = function (_React$PureComponent) {
 
       if (!column.helpText) return null;
       return _react2.default.createElement(
-        'h2',
-        null,
-        column.helpText
+        _Tooltip2.default,
+        { text: column.helpText },
+        _react2.default.createElement(_Icon2.default, { fa: 'question-circle' })
       );
     }
   }, {
