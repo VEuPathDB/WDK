@@ -46,7 +46,7 @@ var OptionsDefaults = exports.OptionsDefaults = {
   editableColumns: true,
   overflowHeight: '16em',
   searchPlaceholder: 'Search This Table',
-  isRowSelected: function isRowSelected(row, indexx) {
+  isRowSelected: function isRowSelected(row, index) {
     return false;
   }
 };
