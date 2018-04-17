@@ -19,11 +19,13 @@ class MesaController extends React.Component {
 
   renderPaginationMenu () {
     const { uiState, eventHandlers } = this.props;
-    const { currentPage, totalPages, rowsPerPage } = uiState && uiState.pagination ? uiState.pagination : {};
+    const { pagination } = uiState ? uiState : {};
+    const { currentPage, totalPages, rowsPerPage } = pagination ? pagination : {};
     const { onPageChange, onRowsPerPageChange } = eventHandlers ? eventHandlers : {};
-    if (!onPageChange) return null;
-    const props = { currentPage, totalPages, rowsPerPage, onPageChange, onRowsPerPageChange };
 
+    if (!onPageChange) return null;
+
+    const props = { currentPage, totalPages, rowsPerPage, onPageChange, onRowsPerPageChange };
     return <PaginationMenu {...props} />
   }
 

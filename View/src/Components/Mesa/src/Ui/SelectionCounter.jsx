@@ -33,7 +33,7 @@ class SelectionCounter extends React.Component {
   }
 
   render () {
-    const { rows, selection } = this.props;
+    const { rows, selection, onRowDeselect, onMultipleRowDeselect } = this.props;
     if (!selection || !selection.length) return null;
     const allSelected = rows.every(row => selection.includes(row));
 
@@ -42,7 +42,7 @@ class SelectionCounter extends React.Component {
         <b>{selection.length} </b>
         {this.noun(selection)} selected.
         <br />
-        {!onRowDeselect && !onMultipleRowSelect ? null : (<a onClick={this.deselectAllRows}>Clear selection.</a>)}
+        {!onRowDeselect && !onMultipleRowDeselect ? null : (<a onClick={this.deselectAllRows}>Clear selection.</a>)}
       </div>
     );
   }
@@ -56,6 +56,8 @@ SelectionCounter.propTypes = {
   // noun and plural to use for selections (e.g. "25 Datasets selected")
   selectedNoun: PropTypes.string,
   selectedPluralNoun: PropTypes.string,
+  // predicate to test for 'selectedness'
+  isRowSelected: PropTypes.func,
   // single and multiple select/deselect handlers
   onRowSelect: PropTypes.func,
   onRowDeselect: PropTypes.func,
