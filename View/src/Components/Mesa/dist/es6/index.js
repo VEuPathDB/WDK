@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Utils = exports.MesaSelection = exports.MesaState = exports.MesaController = exports.Checkbox = exports.Tooltip = exports.HelpTrigger = exports.ModalBoundary = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
+exports.Utils = exports.MesaSelection = exports.MesaState = exports.MesaController = exports.Checkbox = exports.Tooltip = exports.EventsFactory = exports.Events = exports.HelpTrigger = exports.ModalBoundary = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
@@ -53,6 +53,10 @@ var _ModalBoundary = require('./Components/ModalBoundary');
 
 var _ModalBoundary2 = _interopRequireDefault(_ModalBoundary);
 
+var _Events = require('./Utils/Events');
+
+var _Events2 = _interopRequireDefault(_Events);
+
 var _Utils = require('./Utils/Utils');
 
 var Utils = _interopRequireWildcard(_Utils);
@@ -78,6 +82,8 @@ exports.ActionToolbar = _ActionToolbar2.default;
 exports.PaginationMenu = _PaginationMenu2.default;
 exports.ModalBoundary = _ModalBoundary2.default;
 exports.HelpTrigger = _HelpTrigger2.default;
+exports.Events = _Events2.default;
+exports.EventsFactory = _Events.EventsFactory;
 exports.Tooltip = _Tooltip2.default;
 exports.Checkbox = _Checkbox2.default;
 exports.MesaController = _MesaController2.default;
