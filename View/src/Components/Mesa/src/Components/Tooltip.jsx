@@ -25,27 +25,29 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount () {
-    console.log('hi lol');
-    console.log(this.context);
+    const { addModal, removeModal } = this.context;
+    if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
+      throw new Error(`
+        Tooltip Error: No "addModal" or "removeModal" detected in context.
+        Please use a <ModalBoundary> in your element tree to catch modals.
+      `);
+    }
   }
 
   showTooltip () {
     const showText = true;
     const textBox = { render: this.renderTextBox };
-    // this.setState({ showText });
     this.context.addModal(textBox);
   }
 
   hideTooltip () {
     const showText = false;
     const textBox = { render: this.renderTextBox };
-    // this.setState({ showText
     this.context.removeModal(textBox);
   }
 
   renderTextBox () {
     const { text, position } = this.props;
-    const { showText } = this.state;
     const { top, left } = position ? position : { top: 0, left: 0 };
 
     const textStyle = {
@@ -56,7 +58,7 @@ class Tooltip extends React.Component {
       zIndex: 1000000
     };
 
-    return !showText ? null : (
+    return (
       <div
         style={textStyle}
         className="Tooltip-Text">
