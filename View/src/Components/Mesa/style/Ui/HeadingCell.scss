@@ -1,0 +1,18 @@
+.HeadingCell {
+  .HeadingCell-Content {
+    display: flex;
+    width: 100%
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    .HeadingCell-Content-Aside {
+      flex-basis: 0 1 30px;
+      &:last-of-type {
+        text-align: right;
+      }
+    }
+    .HeadingCell-Content-Label {
+      flex-basis: 0 0 auto;
+    }
+  }
+}
