@@ -62,6 +62,9 @@ var Tooltip = function (_React$Component) {
           focusIn: function focusIn() {
             return _this2.setState({ isFocus: true });
           },
+          keypress: function keypress() {
+            return _this2.setState({ isFocus: true });
+          },
           focusOut: function focusOut() {
             return _this2.setState({ isFocus: false });
           },
