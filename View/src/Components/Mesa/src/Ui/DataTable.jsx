@@ -28,11 +28,11 @@ class DataTable extends React.PureComponent {
   }
 
   handleTableBodyScroll (e) {
-    console.log('body is at', this.refs.tableBody.scrollLeft);
+    // console.log('body is at', this.refs.tableBody.scrollLeft);
   }
 
   handleTableHeaderScroll (e) {
-    console.log('header is at', this.refs.tableHeader.scrollLeft);
+    // console.log('header is at', this.refs.tableHeader.scrollLeft);
   }
 
   render () {
