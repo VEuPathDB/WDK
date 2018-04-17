@@ -21,6 +21,17 @@ const Utils = {
     };
   },
 
+  getRealOffset (el) {
+    let top = 0;
+    let left = 0;
+    do {
+      top += el.offsetTop || 0;
+      left += el.offsetLeft || 0;
+      el = el.offsetParent;
+    } while (el);
+    return { top, left };
+  },
+
   htmlStringValue (html) {
     let tmp = document.createElement("DIV");
     tmp.innerHTML = html;
@@ -83,7 +94,7 @@ const Utils = {
       if (isHtmlColumn) column.type = 'html';
       else if (isNumberColumn) column.type = 'number';
     }
-    if (!column.name) column.name = Utils.ucFirst(column.key);
+    if (column.primary) column.hideable = false;
     return Object.assign({}, Defaults.column, column);
   },
 
@@ -134,8 +145,8 @@ const Utils = {
 
   textSort (items, sortByKey, ascending = true) {
     let result = items.sort((a, b) => {
-      let A = typeof a[sortByKey] === 'string' ? a[sortByKey].trim() : '';
-      let B = typeof b[sortByKey] === 'string' ?  b[sortByKey].trim() : '';
+      let A = typeof a[sortByKey] === 'string' ? a[sortByKey].trim() : Utils.stringValue(a[sortByKey]);
+      let B = typeof b[sortByKey] === 'string' ?  b[sortByKey].trim() : Utils.stringValue(b[sortByKey]);
       return A < B;
     });
     return ascending ? result.reverse() : result;

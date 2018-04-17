@@ -10,10 +10,20 @@ export const initialState = {
   },
   selectedRows: [],
   hiddenColumns: [],
+  columnWidths: {}
 };
 
 export function Reducers (state = initialState, action = {}) {
   switch (action.type) {
+
+    case 'SET_COLUMN_WIDTH': {
+      let { column, width } = action;
+      let { key } = column;
+      let { columnWidths } = state;
+      if (!key || typeof width !== 'number') return state;
+      columnWidths = Object.assign({}, columnWidths, { [key]: width });
+      return Object.assign({}, state, { columnWidths });
+    }
 
     case 'FILTER_BY_COLUMN_VALUES': {
       let byColumn = action.column;

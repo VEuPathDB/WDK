@@ -6,6 +6,7 @@ import Icon from 'Mesa/Components/Icon';
 import Table from 'Mesa/Components/Table';
 import TableSearch from 'Mesa/Components/TableSearch';
 import ColumnEditor from 'Mesa/Components/ColumnEditor';
+import { hideColumn } from 'Mesa/State/Actions';
 import { autoWidth, autoFactor } from 'Mesa/Utils/Breakpoints';
 
 class TableController extends React.Component {
@@ -15,14 +16,16 @@ class TableController extends React.Component {
     let { columns } = this.props;
     let hiddenColumns = columns.filter(column => column.hidden);
     this.state = Object.assign({}, initialState, { hiddenColumns });
-
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.getColumnList = this.getColumnList.bind(this);
     this.getRowList = this.getRowList.bind(this);
+    this.getColumnList = this.getColumnList.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
     this.searchRowsForQuery = this.searchRowsForQuery.bind(this);
   }
 
   componentDidMount () {
+    let { columns } = this.props;
+    let hiddenColumns = columns.filter(column => column.hidden);
+    hiddenColumns.forEach(col => Store.dispatch(hideColumn(col)));
     Store.subscribe(() => {
       let state = Store.getState();
       if (state === this.state) return;

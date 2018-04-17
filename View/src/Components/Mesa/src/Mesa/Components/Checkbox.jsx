@@ -14,12 +14,13 @@ class Checkbox extends React.Component {
   }
 
   render () {
-    let { checked, className } = this.props;
+    let { checked, className, disabled } = this.props;
     className = 'Checkbox' + (className ? ' ' + className : '');
     className += ' ' + (checked ? 'Checkbox-Checked' : 'Checkbox-Unchecked');
+    className += disabled ? ' Checkbox-Disabled' : '';
 
     return (
-      <div className={className} onClick={this.handleClick}>
+      <div className={className} onClick={disabled ? null : this.handleClick}>
         <Icon fa={checked ? 'check-square' : 'square'} />
       </div>
     );

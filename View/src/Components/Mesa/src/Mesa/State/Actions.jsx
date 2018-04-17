@@ -1,7 +1,12 @@
 export function sortByColumn (column) {
-  if (!column) return;
+  if (!column) return {};
   return { type: 'SORT_BY_COLUMN', column };
 };
+
+export function setColumnWidth (column, width) {
+  if (!column || !width) return {};
+  return { type: 'SET_COLUMN_WIDTH', column, width };
+}
 
 export function toggleSortOrder () {
   return { type: 'TOGGLE_SORT_ORDER' };
