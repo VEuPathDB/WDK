@@ -10,10 +10,6 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _Utils = require('../Utils/Utils');
-
-var _Utils2 = _interopRequireDefault(_Utils);
-
 var _Icon = require('../Components/Icon');
 
 var _Icon2 = _interopRequireDefault(_Icon);
@@ -40,6 +36,56 @@ var TruncatedText = function (_React$Component) {
   }
 
   _createClass(TruncatedText, [{
+    key: 'wordCount',
+    value: function wordCount(text) {
+      if (typeof text !== 'string') return undefined;
+      return text.trim().split(' ').filter(function (x) {
+        return x.length;
+      }).length;
+    }
+  }, {
+    key: 'reverseText',
+    value: function reverseText(text) {
+      if (typeof text !== 'string' || !text.length) return text;
+      return text.split('').reverse().join('');
+    }
+  }, {
+    key: 'trimInitialPunctuation',
+    value: function trimInitialPunctuation(text) {
+      if (typeof text !== 'string' || !text.length) return text;
+      while (text.search(/[a-zA-Z0-9]/) !== 0) {
+        text = text.substring(1);
+      };
+      return text;
+    }
+  }, {
+    key: 'trimPunctuation',
+    value: function trimPunctuation(text) {
+      if (typeof text !== 'string' || !text.length) return text;
+
+      text = this.trimInitialPunctuation(text);
+      text = this.reverseText(text);
+      text = this.trimInitialPunctuation(text);
+      text = this.reverseText(text);
+
+      return text;
+    }
+  }, {
+    key: 'truncate',
+    value: function truncate(text, cutoff) {
+      if (typeof text !== 'string' || typeof cutoff !== 'number') return text;
+      var count = this.wordCount(text);
+      if (count < cutoff) return text;
+
+      var words = text.trim().split(' ').filter(function (x) {
+        return x.length;
+      });
+      var threshold = Math.ceil(cutoff * 0.66);
+      var short = words.slice(0, threshold).join(' ');
+
+      return this.trimPunctuation(short) + '...';
+    }
+  }, {
     key: 'toggleExpansion',
     value: function toggleExpansion() {
       var expanded = this.state.expanded;
@@ -56,10 +102,10 @@ var TruncatedText = function (_React$Component) {
           text = _props.text;
 
       cutoff = typeof cutoff === 'number' ? cutoff : 100;
-      var expandable = _Utils2.default.wordCount(text) > cutoff;
+      var expandable = this.wordCount(text) > cutoff;
 
       className = 'TruncatedText' + (className ? ' ' + className : '');
-      text = expanded ? text : _Utils2.default.truncate(text, cutoff);
+      text = expanded ? text : this.truncate(text, cutoff);
 
       return _react2.default.createElement(
         'div',

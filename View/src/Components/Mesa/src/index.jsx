@@ -1,11 +1,12 @@
 import Mesa from './Ui/Mesa';
-import Utils from './Utils/Utils';
 import DataTable from './Ui/DataTable';
 import RowCounter from './Ui/RowCounter';
 import TableSearch from './Ui/TableSearch';
 import TableToolbar from './Ui/TableToolbar';
 import ActionToolbar from './Ui/ActionToolbar';
 import PaginationMenu from './Ui/PaginationMenu';
+import MesaController from './Ui/MesaController';
+import * as StringUtils from './Utils/StringUtils';
 
 export {
   Mesa,
@@ -15,5 +16,7 @@ export {
   TableSearch,
   TableToolbar,
   ActionToolbar,
-  PaginationMenu
+  PaginationMenu,
+  MesaController,
+  StringUtils
 };

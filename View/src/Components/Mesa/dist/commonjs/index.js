@@ -3,15 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Utils = exports.Mesa = undefined;
+exports.StringUtils = exports.MesaController = exports.PaginationMenu = exports.ActionToolbar = exports.TableToolbar = exports.TableSearch = exports.RowCounter = exports.DataTable = exports.Utils = exports.Mesa = undefined;
 
 var _Mesa = require('./Ui/Mesa');
 
 var _Mesa2 = _interopRequireDefault(_Mesa);
-
-var _Utils = require('./Utils/Utils');
-
-var _Utils2 = _interopRequireDefault(_Utils);
 
 var _DataTable = require('./Ui/DataTable');
 
@@ -37,13 +33,25 @@ var _PaginationMenu = require('./Ui/PaginationMenu');
 
 var _PaginationMenu2 = _interopRequireDefault(_PaginationMenu);
 
+var _MesaController = require('./Ui/MesaController');
+
+var _MesaController2 = _interopRequireDefault(_MesaController);
+
+var _StringUtils = require('./Utils/StringUtils');
+
+var StringUtils = _interopRequireWildcard(_StringUtils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.Mesa = _Mesa2.default;
-exports.Utils = _Utils2.default;
+exports.Utils = Utils;
 exports.DataTable = _DataTable2.default;
 exports.RowCounter = _RowCounter2.default;
 exports.TableSearch = _TableSearch2.default;
 exports.TableToolbar = _TableToolbar2.default;
 exports.ActionToolbar = _ActionToolbar2.default;
 exports.PaginationMenu = _PaginationMenu2.default;
+exports.MesaController = _MesaController2.default;
+exports.StringUtils = StringUtils;

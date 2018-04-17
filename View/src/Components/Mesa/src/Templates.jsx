@@ -3,13 +3,13 @@ import React from 'react';
 import { OptionsDefaults } from './Defaults';
 import OverScroll from './Components/OverScroll';
 import TruncatedText from './Components/TruncatedText';
-import Utils from './Utils/Utils';
+import { stringValue } from './Utils/StringUtils';
 
 const Templates = {
   textCell ({ key, value, row, rowIndex, column }) {
     const { truncated } = column;
     const className = 'Cell Cell-' + key;
-    const text = Utils.stringValue(value);
+    const text = stringValue(value);
 
     return truncated
       ? <TruncatedText className={className} cutoff={truncated ? OptionsDefaults.overflowHeight : null} text={text} />
@@ -18,7 +18,7 @@ const Templates = {
 
   numberCell ({ key, value, row, rowIndex, column }) {
     const className = 'Cell NumberCell Cell-' + key;
-    const display = typeof value === 'number' ? value.toLocaleString() : Utils.stringValue(value);
+    const display = typeof value === 'number' ? value.toLocaleString() : stringValue(value);
 
     return <div className={className}>{display}</div>
   },
