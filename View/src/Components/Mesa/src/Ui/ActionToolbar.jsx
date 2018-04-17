@@ -59,7 +59,8 @@ class ActionToolbar extends React.PureComponent {
   }
 
   render () {
-    const { rows, actions, eventHandlers, children } = this.props;
+    const { rows, actions, eventHandlers, children, options } = this.props;
+    const { selectedNoun, selectedPluralNoun } = options ? options : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
 
     const ActionList = this.renderActionItemList;
@@ -78,6 +79,8 @@ class ActionToolbar extends React.PureComponent {
              selection={selection}
              onRowSelect={onRowSelect}
              onRowDeselect={onRowDeselect}
+             selectedNoun={selectedNoun}
+             selectedPluralNoun={selectedPluralNoun}
            />
          </div>
          <ActionList actions={actions} />

@@ -3,13 +3,19 @@ import React from 'react';
 class SelectionCounter extends React.Component {
   constructor (props) {
     super(props);
+    this.noun = this.noun.bind(this);
     this.selectAllRows = this.selectAllRows.bind(this);
     this.deselectAllRows = this.deselectAllRows.bind(this);
   }
 
   noun (size) {
+    const { selectedNoun, selectedPluralNoun } = this.props;
     size = (typeof size === 'number' ? size : size.length);
-    return 'row' + (size === 1 ? '' : 's');
+    return (!selectedNoun && !selectedPluralNoun)
+      ? 'row' + (size === 1 ? '' : 's')
+      : size === 1
+        ? selectedNoun || 'row',
+        : selectedPluralNoun || 'rows';
   }
 
   selectAllRows () {
@@ -30,7 +36,7 @@ class SelectionCounter extends React.Component {
 
     return (
       <div className="SelectionCounter">
-        {allSelected ? 'All ' : ''}
+        {/* {allSelected ? 'All ' : ''} */}
         <b>{selection.length} </b>
         {this.noun(selection)}
         {allSelected ? ' are' : ''} selected.
