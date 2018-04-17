@@ -94,7 +94,6 @@ const Utils = {
       let A = a[sortByKey] ? parseFloat(a[sortByKey]) : 0;
       let B = b[sortByKey] ? parseFloat(b[sortByKey]) : 0;
       return A === B ? 0 :(A < B ? 1 : -1);
-      return result;
     });
     return ascending ? result.reverse() : result;
   },
@@ -176,7 +175,7 @@ const Utils = {
     });
     return outputLines.join('\n');
   }
-  
+
 };
 
 export default Utils;
