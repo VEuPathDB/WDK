@@ -84,10 +84,12 @@ var DataTable = function (_React$PureComponent) {
       var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
         return col.width;
       }));
+
       var heightLayer = {
         maxHeight: tableBodyMaxHeight,
         overflow: 'auto'
       };
+
       var widthLayer = {
         minWidth: cumulativeWidth,
         maxWidth: cumulativeWidth,
