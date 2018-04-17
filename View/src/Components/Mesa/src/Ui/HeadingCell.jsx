@@ -39,13 +39,16 @@ class HeadingCell extends React.PureComponent {
 
   componentDidMount () {
     this.updateOffset();
-    Events.add('scroll', this.updateOffset);
-    Events.add('resize', this.updateOffset);
-    Events.add('MesaScroll', this.updateOffset);
-    Events.add('MesaReflow', this.updateOffset);
+    this.listeners = {
+      scroll: Events.add('scroll', this.updateOffset),
+      resize: Events.add('resize', this.updateOffset),
+      MesaScroll: Events.add('MesaScroll', this.updateOffset),
+      MesaReflow: Events.add('MesaReflow', this.updateOffset)
+    };
+  }
 
-    Events.add('MesaScroll', () => console.log('caught a scroll!'));
-    Events.add('MesaReflow', () => console.log('caught a reflow'));
+  componentWillUnmount () {
+    Object.values(this.listeners).forEach(listenerId => Events.remove(listenerId));
   }
 
   componentWillReceiveProps (newProps) {
