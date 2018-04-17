@@ -1,7 +1,9 @@
 import { fail, badType, missingFromState } from '../Utils/Errors';
 
 export const createSelection = (_selection = []) => {
-  const selection = new Set(Array.isArray(_selection) ? _selection : []);
+  if (!Array.isArray(_selection))
+    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
+  const selection = new Set(_selection);
   return [...selection];
 };
 
@@ -13,19 +15,27 @@ export const selectionFromRows = (rows, idAccessor) => {
 };
 
 export const addRowToSelection = (_selection, row, idAccessor) => {
+  if (!Array.isArray(_selection))
+    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
   if (typeof idAccessor !== 'function')
     return badType('addRowToSelection', 'idAccessor', 'function', typeof idAccessor);
   const id = idAccessor(row);
   return addIdToSelection(_selection, id);
 };
 
-export const addIdToSelection = (_selection, id) => {
-  const selection = new Set(Array.isArray(_selection) ? _selection : []);
+export const addIdToSelection = (_selection = [], id) => {
+  console.log('adding id', id, 'to selection', _selection);
+  if (!Array.isArray(_selection))
+    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
+  const selection = new Set(_selection);
   selection.add(id);
   return [...selection];
 }
 
 export const removeRowFromSelection = (_selection, row, idAccessor) => {
+  console.log('removing row', row, 'from selection', _selection);
+  if (!Array.isArray(_selection))
+    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
   if (typeof idAccessor !== 'function')
     return badType('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor);
   const id = idAccessor(row);
@@ -33,6 +43,8 @@ export const removeRowFromSelection = (_selection, row, idAccessor) => {
 };
 
 export const removeIdFromSelection = (_selection, id) => {
+  if (!Array.isArray(_selection))
+    return badType('addIdToSelection', '_selection', 'array', typeof _selection);
   const selection = new Set(Array.isArray(_selection) ? _selection : []);
   selection.delete(id);
   return [...selection];
