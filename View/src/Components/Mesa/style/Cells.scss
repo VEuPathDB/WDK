@@ -3,6 +3,8 @@ th {
   transition: background 0.25s;
   position: relative;
   color: #444;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
   text-align: left;
 
   &:active {
@@ -36,13 +38,21 @@ th, td {
   }
 }
 
-.Cell {
-  display: inline-block;
-}
-
 th.SelectionCell, td.SelectionCell {
   text-align: center;
   padding-left: 1em;
   padding-right: 1em;
   width: 3em;
+}
+
+.HeadingCell--Dragging {
+  background: rgba(0, 0, 0, 0.2);
+  color: #444;
+  opacity: 0.75;
+}
+.HeadingCell--DragTarget {
+  border-right-style: dashed;
+  border-right-color: rgba(0, 0, 0, 0.3);
+  padding-right: 12px;
+  border-right-width: 3px;
 }

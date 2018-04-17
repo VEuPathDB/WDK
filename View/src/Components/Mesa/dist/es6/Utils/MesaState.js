@@ -3,11 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.callActionOnSelectedRows = exports.setSortDirection = exports.setSortColumnKey = exports.setEmptinessCulprit = exports.setSearchQuery = exports.setSelectionPredicate = exports.create = exports.getUiState = exports.getEventHandlers = exports.getOptions = exports.getActions = exports.getColumns = exports.getFilteredRows = exports.getRows = exports.getSelectedRows = exports.setEventHandlers = exports.setOptions = exports.setUiState = exports.setActions = exports.setColumnOrder = exports.setColumns = exports.filterRows = exports.setFilteredRows = exports.setRows = undefined;
+exports.callActionOnSelectedRows = exports.moveColumnToIndex = exports.setSortDirection = exports.setSortColumnKey = exports.setEmptinessCulprit = exports.setSearchQuery = exports.setSelectionPredicate = exports.create = exports.getUiState = exports.getEventHandlers = exports.getOptions = exports.getActions = exports.getColumns = exports.getFilteredRows = exports.getRows = exports.getSelectedRows = exports.setEventHandlers = exports.setOptions = exports.setUiState = exports.setActions = exports.setColumnOrder = exports.setColumns = exports.filterRows = exports.setFilteredRows = exports.setRows = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _Errors = require('../Utils/Errors');
+
+var _Utils = require('../Utils/Utils');
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -234,6 +236,21 @@ var setSortDirection = exports.setSortDirection = function setSortDirection(stat
   var sort = Object.assign({}, currentUiState.sort ? currentUiState.sort : {}, { direction: direction });
   var uiState = Object.assign({}, currentUiState, { sort: sort });
   return Object.assign({}, state, { uiState: uiState });
+};
+
+var moveColumnToIndex = exports.moveColumnToIndex = function moveColumnToIndex(state, columnKey, toIndex) {
+  if (typeof columnKey !== 'string') return (0, _Errors.badType)('changeColumnIndex', '"columnKey" should be a string.', TypeError);
+  if (typeof toIndex !== 'number') return (0, _Errors.badType)('changeColumnIndex', '"toIndex" should be a number"', TypeError);
+  if (!'columns' in state) return (0, _Errors.missingFromState)('changeColumnIndex', 'columns', state) || state;
+
+  var oldColumns = getColumns(state);
+  var fromIndex = oldColumns.findIndex(function (_ref2) {
+    var key = _ref2.key;
+    return columnKey === key;
+  });
+  if (fromIndex < 0) return (0, _Errors.fail)('changeColumnIndex', 'column with key "' + columnKey + '" not found.') || state;
+  var columns = (0, _Utils.repositionItemInList)(oldColumns, fromIndex, toIndex);
+  return Object.assign({}, state, { columns: columns });
 };
 
 var callActionOnSelectedRows = exports.callActionOnSelectedRows = function callActionOnSelectedRows(state, action) {

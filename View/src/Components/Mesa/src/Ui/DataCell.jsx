@@ -23,7 +23,7 @@ class DataCell extends React.PureComponent {
     }
 
     if (!column.type) return Templates.textCell(cellProps);
-    
+
     switch (column.type.toLowerCase()) {
       case 'link':
         return Templates.linkCell(cellProps);
@@ -39,8 +39,8 @@ class DataCell extends React.PureComponent {
 
   render () {
     let { column, row, inline } = this.props;
-    let { style, width } = column;
-    let Content = this.renderContent;
+    let { style, width, className, key } = column;
+
 
     let whiteSpace = !inline ? {} : {
       textOverflow: 'ellipsis',
@@ -51,14 +51,12 @@ class DataCell extends React.PureComponent {
 
     width = (typeof width === 'number' ? width + 'px' : width);
     width = width ? { width, maxWidth: width, minWidth: width } : {};
+    style = Object.assign({}, style, width, whiteSpace);
+    className = dataCellClass() + (className ? ' ' + className : '');
+    const children = this.renderContent();
+    const props = { style, children, key, className };
 
-    const cellStyle = Object.assign({}, style, width, whiteSpace);
-
-    return column.hidden ? null : (
-      <td key={column.key} className={dataCellClass()} style={cellStyle}>
-        <Content />
-      </td>
-    );
+    return column.hidden ? null : <td {...props} />
   }
 };
 

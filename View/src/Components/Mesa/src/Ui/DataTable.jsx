@@ -11,8 +11,13 @@ const hasWidthProperty = ({ width }) => typeof width === 'string';
 class DataTable extends React.Component {
   constructor (props) {
     super(props);
+    this.state = { dynamicWidths: null };
+    this.renderPlainTable = this.renderPlainTable.bind(this);
+    this.renderStickyTable = this.renderStickyTable.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
+    this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
   shouldUseStickyHeader () {
@@ -22,11 +27,43 @@ class DataTable extends React.Component {
       "useStickyHeader" option enabled but no maxHeight for the table is set.
       Use a css height as the "tableBodyMaxHeight" option to use this setting.
     `);
-    if (!columns.every(hasWidthProperty)) return console.error(`
-      "useStickyHeader" opeion enabled but not all columns have explicit widths (required).
-      Use a CSS width (e.g. "250px" or "30%") as each column's .width property.
-    `);
     return true;
+  }
+
+  componentDidMount () {
+    this.setDynamicWidths();
+  }
+
+  componentWillReceiveProps (newProps) {
+    if (newProps && newProps.columns && newProps.columns !== this.props.columns)
+      this.setState({ dynamicWidths: null }, () => this.setDynamicWidths());
+  }
+
+  setDynamicWidths () {
+    const { headingTable, contentTable, getInnerCellWidth } = this;
+    if (!headingTable || !contentTable) return;
+    const headingCells = Array.from(headingTable.getElementsByTagName('th'));
+    const contentCells = Array.from(contentTable.getElementsByTagName('td')).slice(0, headingCells.length);
+    if (this.hasSelectionColumn()) headingCells.shift() && contentCells.shift();
+    const dynamicWidths = contentCells.map((c, i) => getInnerCellWidth(c, headingCells[i]));
+    this.setState({ dynamicWidths });
+  }
+
+  getInnerCellWidth (cell, headingCell) {
+    const contentWidth = cell.clientWidth;
+    const headingWidth = headingCell.clientWidth;
+    const leftPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-left'));
+    const rightPadding = parseInt(window.getComputedStyle(cell, null).getPropertyValue('padding-right'));
+    const lower = Math.min(contentWidth, headingWidth);
+    const difference = Math.abs(contentWidth - headingWidth);
+    return (Math.ceil(lower + (difference / 2)) - leftPadding - rightPadding) + 'px';
+  }
+
+  hasSelectionColumn () {
+    const { options, eventHandlers } = this.props;
+    return typeof options.isRowSelected === 'function'
+      && typeof eventHandlers.onRowSelect === 'function'
+      && typeof eventHandlers.onRowDeselect === 'function';
   }
 
   handleTableBodyScroll (e) {
@@ -34,54 +71,46 @@ class DataTable extends React.Component {
     this.headerNode.scrollLeft = offset;
   }
 
-  render () {
-    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    if (!this.shouldUseStickyHeader()) {
-      return (
-        <div className="MesaComponent">
-          <div className={dataTableClass()}>
-            <table cellSpacing="0" cellPadding="0">
-              <thead>
-                <HeadingRow {...props} />
-              </thead>
-              <DataRowList {...props} />
-            </table>
-          </div>
-        </div>
-      );
-    };
-
-    const { tableBodyMaxHeight } = options ? options : {};
-    const cumulativeWidth = combineWidths(columns.map(col => col.width));
-    const heightLayer = { maxHeight: tableBodyMaxHeight };
-    const widthLayer = { minWidth: cumulativeWidth };
-
+  renderStickyTable () {
+    const { options, columns, rows, filteredRows, actions, eventHandlers, uiState } = this.props;
+    const { dynamicWidths } = this.state;
+    const newColumns = columns.every(({ width }) => width) || !dynamicWidths || dynamicWidths.length == 0
+      ? columns
+      : columns.map((column, index) => Object.assign({}, column, { width: dynamicWidths[index] }));
+    const maxHeight = { maxHeight: options ? options.tableBodyMaxHeight : null };
+    const maxWidth = { minWidth: dynamicWidths ? combineWidths(columns.map(({ width }) => width)) : null };
+    const tableLayout = { tableLayout: dynamicWidths ? 'fixed' : 'auto' };
+    const tableProps = { options, rows, filteredRows, actions, eventHandlers, uiState, columns: newColumns };
     return (
       <div className="MesaComponent">
-        <div className={dataTableClass()}>
-          <div className={dataTableClass('Sticky')}>
-
+        <div className={dataTableClass()} style={maxWidth}>
+          <div className={dataTableClass('Sticky')} style={maxWidth}>
             <div
               ref={node => this.headerNode = node}
-              className={dataTableClass('Header')}
-            >
-              <table cellSpacing={0} cellPadding={0}>
+              className={dataTableClass('Header')}>
+              <table
+                cellSpacing={0}
+                cellPadding={0}
+                style={tableLayout}
+                ref={node => this.headingTable = node}>
                 <thead>
-                  <HeadingRow {...props} />
+                  <HeadingRow {...tableProps} />
                 </thead>
               </table>
             </div>
-
             <div
+              style={maxHeight}
               ref={node => this.bodyNode = node}
-              style={heightLayer}
               className={dataTableClass('Body')}
-              onScroll={this.handleTableBodyScroll}
-            >
-              <table cellSpacing={0} cellPadding={0}>
-                <DataRowList {...props} />
+              onScroll={this.handleTableBodyScroll}>
+              <table
+                cellSpacing={0}
+                cellPadding={0}
+                style={tableLayout}
+                ref={node => this.contentTable = node}>
+                <DataRowList {...tableProps} />
               </table>
             </div>
 
@@ -89,6 +118,27 @@ class DataTable extends React.Component {
         </div>
       </div>
     );
+  }
+
+  renderPlainTable () {
+    const { props } = this;
+    return (
+      <div className="MesaComponent">
+        <div className={dataTableClass()}>
+          <table cellSpacing="0" cellPadding="0">
+            <thead>
+              <HeadingRow {...props} />
+            </thead>
+            <DataRowList {...props} />
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  render () {
+    const { shouldUseStickyHeader, renderStickyTable, renderPlainTable } = this;
+    return shouldUseStickyHeader() ? renderStickyTable() : renderPlainTable();
   }
 };
 

@@ -83,9 +83,10 @@ var DataCell = function (_React$PureComponent) {
           row = _props2.row,
           inline = _props2.inline;
       var style = column.style,
-          width = column.width;
+          width = column.width,
+          className = column.className,
+          key = column.key;
 
-      var Content = this.renderContent;
 
       var whiteSpace = !inline ? {} : {
         textOverflow: 'ellipsis',
@@ -96,14 +97,12 @@ var DataCell = function (_React$PureComponent) {
 
       width = typeof width === 'number' ? width + 'px' : width;
       width = width ? { width: width, maxWidth: width, minWidth: width } : {};
+      style = Object.assign({}, style, width, whiteSpace);
+      className = dataCellClass() + (className ? ' ' + className : '');
+      var children = this.renderContent();
+      var props = { style: style, children: children, key: key, className: className };
 
-      var cellStyle = Object.assign({}, style, width, whiteSpace);
-
-      return column.hidden ? null : _react2.default.createElement(
-        'td',
-        { key: column.key, className: dataCellClass(), style: cellStyle },
-        _react2.default.createElement(Content, null)
-      );
+      return column.hidden ? null : _react2.default.createElement('td', props);
     }
   }]);
 

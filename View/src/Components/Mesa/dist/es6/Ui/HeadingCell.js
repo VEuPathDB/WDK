@@ -4,11 +4,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
 
 var _Templates = require('../Templates');
 
@@ -46,13 +52,29 @@ var HeadingCell = function (_React$PureComponent) {
 
     var _this = _possibleConstructorReturn(this, (HeadingCell.__proto__ || Object.getPrototypeOf(HeadingCell)).call(this, props));
 
-    _this.state = { offset: null };
+    _this.state = {
+      offset: null,
+      isDragging: false,
+      isDragTarget: false
+    };
+
+    _this.getClassName = _this.getClassName.bind(_this);
+    _this.getDomEvents = _this.getDomEvents.bind(_this);
+
     _this.updateOffset = _this.updateOffset.bind(_this);
     _this.renderContent = _this.renderContent.bind(_this);
-    _this.handleSortClick = _this.handleSortClick.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
     _this.renderHelpTrigger = _this.renderHelpTrigger.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
+
+    _this.onDrop = _this.onDrop.bind(_this);
+    _this.onClick = _this.onClick.bind(_this);
+    _this.onDragEnd = _this.onDragEnd.bind(_this);
+    _this.onDragExit = _this.onDragExit.bind(_this);
+    _this.onDragOver = _this.onDragOver.bind(_this);
+    _this.onDragStart = _this.onDragStart.bind(_this);
+    _this.onDragEnter = _this.onDragEnter.bind(_this);
+    _this.onDragLeave = _this.onDragLeave.bind(_this);
     return _this;
   }
 
@@ -64,6 +86,13 @@ var HeadingCell = function (_React$PureComponent) {
       _Events2.default.add('resize', this.updateOffset);
     }
   }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(newProps) {
+      if (newProps && newProps.column !== this.props.column) {
+        this.updateOffset();
+      }
+    }
+  }, {
     key: 'updateOffset',
     value: function updateOffset() {
       var element = this.element;
@@ -73,12 +102,28 @@ var HeadingCell = function (_React$PureComponent) {
       this.setState({ offset: offset });
     }
   }, {
-    key: 'renderContent',
-    value: function renderContent() {
+    key: 'onClick',
+    value: function onClick() {
       var _props = this.props,
           column = _props.column,
-          columnIndex = _props.columnIndex;
+          sort = _props.sort,
+          eventHandlers = _props.eventHandlers;
+      var onSort = eventHandlers.onSort;
 
+      if (typeof onSort !== 'function' || !column.sortable) return;
+      var currentlySorting = sort && sort.columnKey === column.key;
+      var direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
+      return onSort(column, direction);
+    }
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  }, {
+    key: 'renderContent',
+    value: function renderContent() {
+      var _props2 = this.props,
+          column = _props2.column,
+          columnIndex = _props2.columnIndex;
 
       if ('renderHeading' in column) return column.renderHeading(column, columnIndex);
 
@@ -111,20 +156,6 @@ var HeadingCell = function (_React$PureComponent) {
       );
     }
   }, {
-    key: 'handleSortClick',
-    value: function handleSortClick() {
-      var _props2 = this.props,
-          column = _props2.column,
-          sort = _props2.sort,
-          eventHandlers = _props2.eventHandlers;
-      var onSort = eventHandlers.onSort;
-
-      if (typeof onSort !== 'function' || !column.sortable) return;
-      var currentlySorting = sort && sort.columnKey === column.key;
-      var direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
-      return onSort(column, direction);
-    }
-  }, {
     key: 'renderClickBoundary',
     value: function renderClickBoundary(_ref) {
       var children = _ref.children;
@@ -150,12 +181,12 @@ var HeadingCell = function (_React$PureComponent) {
           columnKey = _ref2.columnKey,
           direction = _ref2.direction;
 
-      var _ref3 = eventHandlers ? eventHandlers : {},
-          onSort = _ref3.onSort;
+      var _ref3 = column ? column : {},
+          key = _ref3.key,
+          sortable = _ref3.sortable;
 
-      var _ref4 = column ? column : {},
-          key = _ref4.key,
-          sortable = _ref4.sortable;
+      var _ref4 = eventHandlers ? eventHandlers : {},
+          onSort = _ref4.onSort;
 
       var isActive = columnKey === key;
 
@@ -185,37 +216,128 @@ var HeadingCell = function (_React$PureComponent) {
         _react2.default.createElement(_Icon2.default, { fa: 'question-circle' })
       );
     }
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  }, {
+    key: 'onDragStart',
+    value: function onDragStart(event) {
+      var key = this.props.column.key;
+
+      event.dataTransfer.effectAllowed = 'copy';
+      event.dataTransfer.setData('text', key);
+      this.setState({ isDragging: true });
+      return event;
+    }
+  }, {
+    key: 'onDragEnd',
+    value: function onDragEnd(event) {
+      if (this.state.isDragging || this.state.isDragTarget) this.setState({ isDragging: false, isDragTarget: false });
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDragEnter',
+    value: function onDragEnter(event) {
+      var dragee = event.dataTransfer.getData('text');
+      if (!this.state.isDragTarget) this.setState({ isDragTarget: true });
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDragExit',
+    value: function onDragExit(event) {
+      var dragee = event.dataTransfer.getData('text');
+      this.setState({ isDragTarget: false });
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDragOver',
+    value: function onDragOver(event) {
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDragLeave',
+    value: function onDragLeave(event) {
+      if (this.state.isDragTarget) this.setState({ isDragTarget: false });
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDrop',
+    value: function onDrop(event) {
+      event.preventDefault();
+      var _props4 = this.props,
+          eventHandlers = _props4.eventHandlers,
+          columnIndex = _props4.columnIndex;
+      var onColumnReorder = eventHandlers.onColumnReorder;
+
+      if (typeof onColumnReorder !== 'function') return;
+      var draggedColumn = event.dataTransfer.getData('text');
+      this.setState({ isDragTarget: false });
+      onColumnReorder(draggedColumn, columnIndex);
+    }
+  }, {
+    key: 'getDomEvents',
+    value: function getDomEvents() {
+      var onClick = this.onClick,
+          onDragStart = this.onDragStart,
+          onDragEnd = this.onDragEnd,
+          onDragEnter = this.onDragEnter,
+          onDragExit = this.onDragExit,
+          onDragOver = this.onDragOver,
+          onDrop = this.onDrop,
+          onDragLeave = this.onDragLeave;
+
+      return {
+        onClick: onClick,
+        onDragStart: onDragStart, onDragEnd: onDragEnd,
+        onDragEnter: onDragEnter, onDragExit: onDragExit,
+        onDragOver: onDragOver,
+        onDrop: onDrop,
+        onDragLeave: onDragLeave
+      };
+    }
+  }, {
+    key: 'getClassName',
+    value: function getClassName() {
+      var key = this.props.column.key;
+      var _state = this.state,
+          isDragging = _state.isDragging,
+          isDragTarget = _state.isDragTarget;
+
+      var modifiers = ['key-' + key];
+      if (isDragging) modifiers.push('Dragging');
+      if (isDragTarget) modifiers.push('DragTarget');
+      var className = headingCellClass(null, modifiers);
+      return className;
+    }
   }, {
     key: 'render',
     value: function render() {
       var _this2 = this;
 
-      var _props4 = this.props,
-          column = _props4.column,
-          state = _props4.state,
-          dispatch = _props4.dispatch;
-      var headingStyle = column.headingStyle,
+      var _props5 = this.props,
+          column = _props5.column,
+          eventHandlers = _props5.eventHandlers;
+      var key = column.key,
+          headingStyle = column.headingStyle,
           width = column.width,
           renderHeading = column.renderHeading;
 
-      var widthObj = width ? { width: width, maxWidth: width, minWidth: width } : {};
-      var style = Object.assign({}, headingStyle ? headingStyle : {}, widthObj);
+      var widthStyle = width ? { width: width, maxWidth: width, minWidth: width } : {};
 
-      var Content = this.renderContent;
+      var style = Object.assign({}, headingStyle ? headingStyle : {}, widthStyle);
+      var ref = function ref(element) {
+        return _this2.element = element;
+      };
 
-      return column.hidden ? null : _react2.default.createElement(
-        'th',
-        {
-          style: style,
-          key: column.key,
-          ref: function ref(element) {
-            return _this2.element = element;
-          },
-          className: headingCellClass() + ' ' + headingCellClass('key-' + column.key),
-          onClick: this.handleSortClick
-        },
-        _react2.default.createElement(Content, null)
-      );
+      var children = this.renderContent();
+      var className = this.getClassName();
+      var domEvents = this.getDomEvents();
+
+      var draggable = column.moveable && !column.primary && typeof eventHandlers.onColumnReorder === 'function';
+
+      var props = { style: style, key: key, ref: ref, draggable: draggable, children: children, className: className };
+
+      return column.hidden ? null : _react2.default.createElement('th', _extends({}, props, domEvents));
     }
   }]);
 
@@ -223,5 +345,12 @@ var HeadingCell = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 ;
+
+HeadingCell.propTypes = {
+  sort: _propTypes2.default.object,
+  eventHandlers: _propTypes2.default.object,
+  column: _propTypes2.default.object.isRequired,
+  columnIndex: _propTypes2.default.number.isRequired
+};
 
 exports.default = HeadingCell;

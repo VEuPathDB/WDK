@@ -1,4 +1,5 @@
 import { fail, badType, missingFromState } from '../Utils/Errors';
+import { repositionItemInList } from '../Utils/Utils';
 
 /*    Basic Setters   */
 export const setRows = (state, rows, resetFilteredRows = true) => {
@@ -220,6 +221,21 @@ export const setSortDirection = (state, direction) => {
   const uiState = Object.assign({}, currentUiState, { sort });
   return Object.assign({}, state, { uiState });
 };
+
+export const moveColumnToIndex = (state, columnKey, toIndex) => {
+  if (typeof columnKey !== 'string')
+    return badType('changeColumnIndex', '"columnKey" should be a string.', TypeError);
+  if (typeof toIndex !== 'number')
+    return badType('changeColumnIndex', '"toIndex" should be a number"', TypeError);
+  if (!'columns' in state)
+    return missingFromState('changeColumnIndex', 'columns', state)  || state;
+
+  const oldColumns = getColumns(state);
+  const fromIndex = oldColumns.findIndex(({ key }) => columnKey === key);
+  if (fromIndex < 0) return fail('changeColumnIndex', `column with key "${columnKey}" not found.`) || state;
+  const columns = repositionItemInList(oldColumns, fromIndex, toIndex);
+  return Object.assign({}, state, { columns });
+}
 
 export const callActionOnSelectedRows = (state, action, batch = false, onlyFilteredRows = true) => {
   if (!'selectedRows' in state)

@@ -16,6 +16,7 @@ exports.htmlStringValue = htmlStringValue;
 exports.sortFactory = sortFactory;
 exports.numberSort = numberSort;
 exports.arraysMatch = arraysMatch;
+exports.repositionItemInList = repositionItemInList;
 exports.textSort = textSort;
 exports.makeClassifier = makeClassifier;
 exports.randomize = randomize;
@@ -98,6 +99,18 @@ function arraysMatch(a, b) {
     if (a.shift() !== b.shift()) return false;
   }
   return true;
+};
+
+function repositionItemInList(list, fromIndex, toIndex) {
+  if (!list || !list.length) return list;
+  if (fromIndex === toIndex) return list;
+  if (fromIndex < 0 || toIndex < 0) return list;
+  toIndex = toIndex < fromIndex ? toIndex + 1 : toIndex;
+  var updatedList = [].concat(_toConsumableArray(list));
+  var item = updatedList[fromIndex];
+  updatedList.splice(fromIndex, 1);
+  updatedList.splice(toIndex, 0, item);
+  return [].concat(_toConsumableArray(updatedList));
 }
 
 function textSort(_list, key) {

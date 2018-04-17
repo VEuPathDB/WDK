@@ -1,6 +1,7 @@
 .DataTable {
   font-size: $fontSize;
   width: 100%;
+  display: block;
 
   table {
     width: 100%;
@@ -13,6 +14,7 @@
 
 
     .DataTable-Header, .DataTable-Body {
+      display: block;
       overflow: visible;
       overflow-y: auto;
       // table { table-layout: fixed; }
