@@ -51,8 +51,6 @@ var SelectionCell = function (_React$PureComponent) {
       var unselectedRows = rows.filter(function (row) {
         return !isRowSelected(row);
       });
-      console.log('selecting all, unselectedrows:', unselectedRows);
-      console.log('and this is multipleselect', onMultipleRowSelect);
       if (onMultipleRowSelect) return onMultipleRowSelect(unselectedRows);else return unselectedRows.forEach(function (row) {
         return onRowSelect(row);
       });
@@ -69,7 +67,6 @@ var SelectionCell = function (_React$PureComponent) {
           onMultipleRowDeselect = eventHandlers.onMultipleRowDeselect;
 
       var selection = rows.filter(isRowSelected);
-      console.log('deselecting all, selectedrows:', selection);
       if (onMultipleRowDeselect) return onMultipleRowDeselect(selection);else return selection.forEach(function (row) {
         return onRowDeselect(row);
       });
