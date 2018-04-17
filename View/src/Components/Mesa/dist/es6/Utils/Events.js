@@ -22,7 +22,6 @@ var EventsFactory = exports.EventsFactory = function EventsFactory(node) {
     listenerStore: [],
     add: function add(eventName, callback) {
       eventName = eventName.toLowerCase();
-      console.log('adding...', eventName, callback);
       var signature = [eventName, callback];
       var length = instance.listenerStore.push(signature);
       node.addEventListener(eventName, callback);
