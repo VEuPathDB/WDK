@@ -1,5 +1,61 @@
 import { fail, badType, missingFromState } from '../Utils/Errors';
 
+export const createSelection = (_selection = []) => {
+  const selection = new Set(_selection);
+  return [...selection];
+};
+
+export const selectionFromRows = (rows, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('selectionFromRows', 'idAccessor', 'function', typeof idAccessor);
+  const idList = mapListToIds(rows, idAccessor);
+  return createSelection(idList);
+}
+
+export const addRowToSelection = (_selection, row, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('addRowToSelection', 'idAccessor', 'function', typeof idAccessor);
+  const selection = new Set(_selection);
+  const id = idAccessor(row);
+  selection.add(id);
+  return [...selection]
+};
+
+export const removeRowFromSelection = (_selection, row, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor);
+  const selection = new Set(_selection);
+  const id = idAccessor(row);
+  selection.delete(id);
+  return [...selection];
+}
+
+export const isRowSelected = (_selection, row, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('isRowSelected', 'idAccessor', 'function', typeof idAccessor);
+  const selection = new Set(_selection);
+  const id = idAccessor(row);
+  return selection.has(id);
+}
+
+export const mapListToIds = (list, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('mapListToIds', 'idAccessor', 'function', typeof idAccessor);
+  return list.map(idAccessor);
+}
+
+export const intersectSelection = (_selection, _list, idAccessor) => {
+  if (typeof idAccessor !== 'function')
+    return badType('intersectSelection', 'idAccessor', 'function', typeof idAccessor);
+  const idList = mapListToIds(_list);
+  const selection = new Set(_selection);
+  const intersection = new Set(idList);
+  return [...selection].filter(item => intersection.has(item));
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
 class MesaSelection {
   constructor (idAccessor) {
     if (typeof idAccessor !== 'function')
