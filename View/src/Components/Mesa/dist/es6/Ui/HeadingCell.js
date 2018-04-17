@@ -246,7 +246,6 @@ var HeadingCell = function (_React$PureComponent) {
     key: 'onDragExit',
     value: function onDragExit(event) {
       var dragee = event.dataTransfer.getData('text');
-      this.setState({ isDragTarget: false });
       event.preventDefault();
     }
   }, {
