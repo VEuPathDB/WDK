@@ -19,6 +19,7 @@ class BodyLayer extends React.Component {
     if (!element) {
       element = document.createElement('div');
       element.id = this.id;
+      element.className = '_BodyLayer';
       document.body.appendChild(element);
     }
     this.parentElement = element;
@@ -31,7 +32,7 @@ class BodyLayer extends React.Component {
 
   componentDidUpdate () {
     const { props } = this;
-    ReactDOM.render(<div className="BodyLayer" {...props} />, this.parentElement);
+    ReactDOM.render(<div {...props} />, this.parentElement);
   }
 };
 
