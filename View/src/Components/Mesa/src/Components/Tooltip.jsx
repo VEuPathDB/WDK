@@ -178,7 +178,7 @@ Tooltip.propTypes = {
   className: PropTypes.string,
   content: PropTypes.node,
   corner: PropTypes.string,
-  fadeOut: PropTypes.boolean,
+  fadeOut: PropTypes.bool,
   position: PropTypes.object
 };
 
