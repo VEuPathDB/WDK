@@ -105,3 +105,56 @@ export function uid (len = 8) {
   };
   return output;
 };
+
+export const displayUnits = {
+  px: /[0-9]+(px)?$/,
+  vw: /[0-9]+vw$/,
+  vw: /[0-9]+vw$/,
+  em: /[0-9]+em$/,
+  rem: /[0-9]+rem$/,
+  percent: /[0-9]+%$/
+};
+
+export function getUnitValue (size) {
+  if (typeof size !== 'string')
+    throw new TypeError('<getUnitValue>: invalid "size" string param:', size);
+  return parseInt(size.match(/[0-9]+/)[0]);
+}
+
+export function combineWidths (...widths) {
+  if (!Array.isArray(widths))
+    return null;
+  if (widths.length === 1 && Array.isArray(widths[0]))
+    widths = widths.shift();
+  if (!Array.isArray(widths))
+    throw new TypeError('<combineWidths>: invalid widths provided:', widths);
+
+  const totals = {};
+
+  widths.forEach(width => {
+    if (typeof width === 'number')
+      return totals.px = (typeof totals.px === 'number' ? totals.px + width : width);
+    if (typeof width !== 'string')
+      return;
+    else width = width.toLowerCase();
+
+    Object.entries(displayUnits).forEach(([ unit, pattern ]) => {
+      if (pattern.test(width)) {
+        totals[unit] = (
+          typeof totals[unit] === 'number'
+            ? totals[unit] + getUnitValue(width)
+            : getUnitValue(width)
+        );
+      }
+    });
+  });
+  
+  return Object.keys(totals)
+    .reduce((outputString, unit, index) => {
+      if (!totals[unit]) return outputString;
+      let displayUnit = (unit === 'percent' ? '%' : unit);
+      let value = totals[unit];
+      if (index === 0) return (value + displayUnit);
+      else return `calc(${outputString} + ${value + displayUnit})`;
+    }, '');
+};
