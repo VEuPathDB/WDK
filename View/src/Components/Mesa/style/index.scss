@@ -7,54 +7,63 @@ body {
   @extend .white-bg;
 }
 
+aside {
+  flex: 0 0 320px;
+  max-height: 100vh;
+  overflow: auto;
+  padding-bottom: 20px;
+  text-align: center;
+  background-color: #111;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+header {
+  .Logo {
+    max-width: 100%;
+    padding: 30px;
+  }
+}
+
+main {
+  flex: 1 0 auto;
+  padding: 20px;
+  max-width: calc(100vw - 320px);
+  max-height: 100vh;
+  overflow: auto;
+}
+
+.Root {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 .ConfigMenu {
   .ConfigMenu-Item {
     transition: all 0.5s;
-    background-color: #e0e3e4;
-    margin: 20px;
-    color: #333;
-    padding: 20px;
+    background-color: #222;
+    margin: 5px 15px;
+    color: #999;
+    padding: 10px;
+    font-size: 0.8rem;
     cursor: pointer;
     text-align: center;
     border-radius: 3px;
     border: 1px solid rgba(0, 0, 0, 0.2);
+
+    &:first-child {
+      margin-top: 0;
+    }
     &:hover {
       transform: scale(0.95);
     }
     &.active {
-      background-color: $blue;
+      background-color: #e52225;
       color: $white;
     }
   }
 }
 
 a { color: $blue; }
-
-.Header {
-  background-color: #fff;
-
-  grid {
-    align-items: center;
-    box {
-      flex-grow: 1;
-
-      &.attribution {
-        @extend .red;
-        text-transform: uppercase;
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-align: right;
-        text-shadow: 0px 0px 3px $white;
-      }
-    }
-  }
-
-  h1 {
-    padding: 30px 0;
-    font-weight: 800;
-    font-size: 1.5rem;
-  }
-}
 
 .RawTable, .CustomTable {
   font-size: 15px;

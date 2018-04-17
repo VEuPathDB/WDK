@@ -81,23 +81,25 @@ class Root extends React.Component {
       );
     });
 
-    return <row className="ConfigMenu">{list}</row>
+    return <stack className="ConfigMenu">{list}</stack>
   }
 
   render () {
     const { config } = this.state;
     return (
-      <div className="Root">
-        <Header />
-        {this.renderConfigMenu()}
-        <div style={{ padding: '30px' }}>
+      <row className="Root">
+        <aside>
+          <Header />
+          {this.renderConfigMenu()}
+        </aside>
+        <main>
           <Mesa
             rows={config.rows}
             options={config.options}
             columns={config.columns}
           />
-        </div>
-      </div>
+        </main>
+      </row>
     );
   }
 };
