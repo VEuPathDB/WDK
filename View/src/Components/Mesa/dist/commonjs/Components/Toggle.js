@@ -1,1 +1,86 @@
-'use strict';var _createClass=function(){function defineProperties(target,props){for(var descriptor,i=0;i<props.length;i++)descriptor=props[i],descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,'value'in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),_react=require('react'),_react2=_interopRequireDefault(_react),_Icon=require('../Components/Icon'),_Icon2=_interopRequireDefault(_Icon);Object.defineProperty(exports,'__esModule',{value:!0});function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj}}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError('Cannot call a class as a function')}function _possibleConstructorReturn(self,call){if(!self)throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');return call&&('object'==typeof call||'function'==typeof call)?call:self}function _inherits(subClass,superClass){if('function'!=typeof superClass&&null!==superClass)throw new TypeError('Super expression must either be null or a function, not '+typeof superClass);subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,enumerable:!1,writable:!0,configurable:!0}}),superClass&&(Object.setPrototypeOf?Object.setPrototypeOf(subClass,superClass):subClass.__proto__=superClass)}var Toggle=function(_React$Component){function Toggle(props){_classCallCheck(this,Toggle);var _this=_possibleConstructorReturn(this,(Toggle.__proto__||Object.getPrototypeOf(Toggle)).call(this,props));return _this.handleClick=_this.handleClick.bind(_this),_this}return _inherits(Toggle,_React$Component),_createClass(Toggle,[{key:'handleClick',value:function handleClick(){var _props=this.props,enabled=_props.enabled,onChange=_props.onChange;'function'==typeof onChange&&onChange(!!enabled)}},{key:'render',value:function render(){var _props2=this.props,enabled=_props2.enabled,className=_props2.className,disabled=_props2.disabled,style=_props2.style;className='Toggle'+(className?' '+className:''),className+=' '+(enabled?'Toggle-On':'Toggle-Off'),className+=disabled?' Toggle-Disabled':'';var offStyle={fontSize:'1.2rem',color:'#989898'},onStyle=Object.assign({},offStyle,{color:'#198835'});return _react2.default.createElement('span',{style:style,className:className,onClick:disabled?null:this.handleClick},_react2.default.createElement(_Icon2.default,{fa:enabled?'toggle-on':'toggle-off',style:enabled?onStyle:offStyle}))}}]),Toggle}(_react2.default.Component);exports.default=Toggle;
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _Icon = require('../Components/Icon');
+
+var _Icon2 = _interopRequireDefault(_Icon);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Toggle = function (_React$Component) {
+  _inherits(Toggle, _React$Component);
+
+  function Toggle(props) {
+    _classCallCheck(this, Toggle);
+
+    var _this = _possibleConstructorReturn(this, (Toggle.__proto__ || Object.getPrototypeOf(Toggle)).call(this, props));
+
+    _this.handleClick = _this.handleClick.bind(_this);
+    return _this;
+  }
+
+  _createClass(Toggle, [{
+    key: 'handleClick',
+    value: function handleClick(e) {
+      var _props = this.props,
+          enabled = _props.enabled,
+          onChange = _props.onChange;
+
+      if (typeof onChange === 'function') onChange(!!enabled);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props2 = this.props,
+          enabled = _props2.enabled,
+          className = _props2.className,
+          disabled = _props2.disabled,
+          style = _props2.style;
+
+      className = 'Toggle' + (className ? ' ' + className : '');
+      className += ' ' + (enabled ? 'Toggle-On' : 'Toggle-Off');
+      className += disabled ? ' Toggle-Disabled' : '';
+      var offStyle = {
+        fontSize: '1.2rem',
+        color: '#989898'
+      };
+      var onStyle = Object.assign({}, offStyle, {
+        color: '#198835'
+      });
+
+      return _react2.default.createElement(
+        'span',
+        {
+          style: style,
+          className: className,
+          onClick: disabled ? null : this.handleClick
+        },
+        _react2.default.createElement(_Icon2.default, {
+          fa: enabled ? 'toggle-on' : 'toggle-off',
+          style: enabled ? onStyle : offStyle
+        })
+      );
+    }
+  }]);
+
+  return Toggle;
+}(_react2.default.Component);
+
+;
+
+exports.default = Toggle;
