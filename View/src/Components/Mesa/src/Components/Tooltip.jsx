@@ -48,7 +48,7 @@ class Tooltip extends React.Component {
     };
 
     const textStyle = {
-      position: relative,
+      position: 'relative',
       top: position.top + 'px',
       left: position.left + 'px'
     };

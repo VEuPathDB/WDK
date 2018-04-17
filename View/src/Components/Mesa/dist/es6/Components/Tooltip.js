@@ -77,7 +77,7 @@ var Tooltip = function (_React$Component) {
       };
 
       var textStyle = {
-        position: relative,
+        position: 'relative',
         top: position.top + 'px',
         left: position.left + 'px'
       };
