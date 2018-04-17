@@ -8,6 +8,7 @@ import PaginationMenu from './Ui/PaginationMenu';
 import MesaController from './Ui/MesaController';
 
 import Tooltip from './Components/Modal';
+import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
 
 import * as Utils from './Utils/Utils';
@@ -23,6 +24,7 @@ export {
   ActionToolbar,
   PaginationMenu,
   ModalBoundary,
+  HelpTrigger,
   Tooltip,
   MesaController,
   MesaState,
