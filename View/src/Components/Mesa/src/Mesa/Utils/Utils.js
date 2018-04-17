@@ -108,6 +108,7 @@ const Utils = {
 
   columnsFromRows (rows = []) {
     const keys = [];
+    if (!Array.isArray(rows)) return [];
     rows.forEach(row => {
       Object.keys(row).forEach(prop => keys.indexOf(prop) < 0 && keys.push(prop));
     });

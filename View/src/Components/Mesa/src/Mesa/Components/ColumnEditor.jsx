@@ -30,7 +30,6 @@ class ColumnEditor extends React.Component {
       let { hiddenColumns } = Store.getState();
       if (hiddenColumns === this.state.hiddenColumns) return;
       let { editorOpen } = this.state;
-      console.log('Store updated:', hiddenColumns);
       let newState = Object.assign({ hiddenColumns, editorOpen });
     });
   }

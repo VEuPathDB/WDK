@@ -68,7 +68,7 @@ class Root extends React.Component {
         <Header />
         {this.renderConfigMenu()}
         <div style={{ padding: '30px' }}>
-          <Mesa rows={TableData} columns={columnConfig} title={tableTitle} />
+          <Mesa rows={TableData} />
         </div>
       </div>
     );
