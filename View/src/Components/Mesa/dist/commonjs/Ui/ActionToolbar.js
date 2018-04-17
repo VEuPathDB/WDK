@@ -102,8 +102,8 @@ var ActionToolbar = function (_React$PureComponent) {
     }
   }, {
     key: 'renderActionItemList',
-    value: function renderActionItemList(_ref2) {
-      var actions = _ref2.actions;
+    value: function renderActionItemList() {
+      var actions = this.props.actions;
 
       var ActionItem = this.renderActionItem;
       return _react2.default.createElement(
@@ -121,21 +121,20 @@ var ActionToolbar = function (_React$PureComponent) {
     value: function render() {
       var _props3 = this.props,
           rows = _props3.rows,
-          actions = _props3.actions,
           eventHandlers = _props3.eventHandlers,
           children = _props3.children,
           options = _props3.options;
 
-      var _ref3 = options ? options : {},
-          selectedNoun = _ref3.selectedNoun,
-          selectedPluralNoun = _ref3.selectedPluralNoun,
-          isRowSelected = _ref3.isRowSelected;
+      var _ref2 = options ? options : {},
+          selectedNoun = _ref2.selectedNoun,
+          selectedPluralNoun = _ref2.selectedPluralNoun,
+          isRowSelected = _ref2.isRowSelected;
 
-      var _ref4 = eventHandlers ? eventHandlers : {},
-          onRowSelect = _ref4.onRowSelect,
-          onRowDeselect = _ref4.onRowDeselect,
-          onMultipleRowSelect = _ref4.onMultipleRowSelect,
-          onMultipleRowDeselect = _ref4.onMultipleRowDeselect;
+      var _ref3 = eventHandlers ? eventHandlers : {},
+          onRowSelect = _ref3.onRowSelect,
+          onRowDeselect = _ref3.onRowDeselect,
+          onMultipleRowSelect = _ref3.onMultipleRowSelect,
+          onMultipleRowDeselect = _ref3.onMultipleRowDeselect;
 
       var ActionList = this.renderActionItemList;
       var selection = this.getSelection();
@@ -155,7 +154,7 @@ var ActionToolbar = function (_React$PureComponent) {
           { className: actionToolbarClass('Info') },
           _react2.default.createElement(_SelectionCounter2.default, selectionCounterProps)
         ),
-        _react2.default.createElement(ActionList, { actions: actions })
+        _react2.default.createElement(ActionList, null)
       );
     }
   }]);

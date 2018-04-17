@@ -52,7 +52,8 @@ class ActionToolbar extends React.PureComponent {
     );
   }
 
-  renderActionItemList ({ actions }) {
+  renderActionItemList () {
+    const { actions } = this.props;
     const ActionItem = this.renderActionItem;
     return (
       <div className={actionToolbarClass('ItemList')}>
@@ -65,7 +66,7 @@ class ActionToolbar extends React.PureComponent {
   }
 
   render () {
-    const { rows, actions, eventHandlers, children, options } = this.props;
+    const { rows, eventHandlers, children, options } = this.props;
     const { selectedNoun, selectedPluralNoun, isRowSelected } = options ? options : {};
     const { onRowSelect, onRowDeselect, onMultipleRowSelect, onMultipleRowDeselect } = eventHandlers ? eventHandlers : {};
 
@@ -84,7 +85,7 @@ class ActionToolbar extends React.PureComponent {
          <div className={actionToolbarClass('Info')}>
            <SelectionCounter {...selectionCounterProps} />
          </div>
-         <ActionList actions={actions} />
+         <ActionList />
        </div>
     );
   }
