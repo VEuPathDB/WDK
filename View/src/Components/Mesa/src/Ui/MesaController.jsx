@@ -10,7 +10,6 @@ import EmptyState from '../Ui/EmptyState';
 class MesaController extends React.Component {
   constructor (props) {
     super(props);
-    this.renderBody = this.renderBody.bind(this);
     this.renderToolbar = this.renderToolbar.bind(this);
     this.renderActionBar = this.renderActionBar.bind(this);
     this.renderEmptyState = this.renderEmptyState.bind(this);

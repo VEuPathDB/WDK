@@ -52,7 +52,6 @@ var MesaController = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (MesaController.__proto__ || Object.getPrototypeOf(MesaController)).call(this, props));
 
-    _this.renderBody = _this.renderBody.bind(_this);
     _this.renderToolbar = _this.renderToolbar.bind(_this);
     _this.renderActionBar = _this.renderActionBar.bind(_this);
     _this.renderEmptyState = _this.renderEmptyState.bind(_this);
