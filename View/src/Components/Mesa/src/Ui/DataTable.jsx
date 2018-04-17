@@ -143,9 +143,7 @@ class DataTable extends React.Component {
       <div className="MesaComponent">
         <div className={dataTableClass()}>
           <table cellSpacing="0" cellPadding="0">
-            <thead>
-              <HeadingRow {...props} />
-            </thead>
+            <HeadingRow {...props} />
             <DataRowList {...props} />
           </table>
         </div>
