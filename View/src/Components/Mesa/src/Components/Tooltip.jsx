@@ -50,9 +50,10 @@ class Tooltip extends React.Component {
       top: 0,
       left: 0,
       width: '100vw',
-      height: '100vh',
+      minHeight: '100vh',
+      height: '100%',
       zIndex: 1000000,
-      position: 'fixed',
+      position: 'absolute',
       pointerEvents: 'none',
     };
 
