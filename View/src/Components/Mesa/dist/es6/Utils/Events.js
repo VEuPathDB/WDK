@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.EventsFactory = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -14,36 +15,40 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var idPrefix = 'listener_';
 
-var Events = {
-  listenerStore: [],
-  add: function add(event, callback) {
-    var signature = [event, callback];
-    var length = Events.listenerStore.push(signature);
-    window.addEventListener(event, callback);
-    return idPrefix + --length;
-  },
-  remove: function remove(id) {
-    var offset = idPrefix.length;
-    var index = parseInt(id.substring(offset));
+var EventsFactory = exports.EventsFactory = function EventsFactory(node) {
+  var instance = {
+    listenerStore: [],
+    add: function add(event, callback) {
+      var signature = [event, callback];
+      var length = instance.listenerStore.push(signature);
+      node.addEventListener(event, callback);
+      return idPrefix + --length;
+    },
+    remove: function remove(id) {
+      var offset = idPrefix.length;
+      var index = parseInt(id.substring(offset));
 
-    var _Events$listenerStore = _slicedToArray(Events.listenerStore[index], 2),
-        event = _Events$listenerStore[0],
-        callback = _Events$listenerStore[1];
+      var _instance$listenerSto = _slicedToArray(instance.listenerStore[index], 2),
+          event = _instance$listenerSto[0],
+          callback = _instance$listenerSto[1];
 
-    window.removeEventListener(event, callback);
-    delete Events.listenerStore[index];
-  },
-  onKey: function onKey(key, callback) {
-    if (!key in _KeyCodes2.default) return;
-    return Events.onKeyCode(_KeyCodes2.default[key], callback);
-  },
-  onKeyCode: function onKeyCode(keyCodeOrSet, callback) {
-    var handler = function handler(e) {
-      var acceptable = Array.isArray(keyCodeOrSet) ? keyCodeOrSet : [keyCodeOrSet];
-      if (acceptable.includes(e.keyCode)) callback(e);
-    };
-    return Events.add('keydown', handler);
-  }
+      node.removeEventListener(event, callback);
+      delete instance.listenerStore[index];
+    },
+    onKey: function onKey(key, callback) {
+      if (!key in _KeyCodes2.default) return;
+      return instance.onKeyCode(_KeyCodes2.default[key], callback);
+    },
+    onKeyCode: function onKeyCode(keyCodeOrSet, callback) {
+      var handler = function handler(e) {
+        var acceptable = Array.isArray(keyCodeOrSet) ? keyCodeOrSet : [keyCodeOrSet];
+        if (acceptable.includes(e.keyCode)) callback(e);
+      };
+      return instance.add('keydown', handler);
+    }
+  };
+  return instance;
 };
 
+var Events = EventsFactory(window);
 exports.default = Events;

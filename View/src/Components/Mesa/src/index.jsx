@@ -7,7 +7,7 @@ import ActionToolbar from './Ui/ActionToolbar';
 import PaginationMenu from './Ui/PaginationMenu';
 import MesaController from './Ui/MesaController';
 
-import Modal from './Components/Modal';
+import Tooltip from './Components/Modal';
 import ModalBoundary from './Components/ModalBoundary';
 
 import * as Utils from './Utils/Utils';
@@ -21,7 +21,7 @@ export {
   ActionToolbar,
   PaginationMenu,
   ModalBoundary,
-  Modal,
+  Tooltip,
   MesaController,
   Utils
 };
