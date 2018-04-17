@@ -1,1 +1,12 @@
-{ "presets": ["env","react"] }
+{
+  "presets": [
+    "env",
+    "react",
+    [
+      "minify",
+      {
+        "mangle": false
+      }
+    ]
+  ]
+}
