@@ -122,7 +122,7 @@ var Tooltip = function (_React$Component) {
           className: 'Tooltip-Content',
           onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
-        renderHtml ? _react2.default.createElement('div', { dangerouslySetInnerHtml: { __html: content } }) : content
+        renderHtml ? _react2.default.createElement('div', { dangerouslySetInnerHTML: { __html: content } }) : content
       );
     }
   }, {
