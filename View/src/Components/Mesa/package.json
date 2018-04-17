@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "prop-types": ">=15.6.0",
-    "react": "15.6"
+    "react": "^16.2.0"
   },
   "scripts": {
     "compile:sass": "sass style/Mesa.scss dist/css/mesa.css -t compressed",
