@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import HeadingRow from '../Ui/HeadingRow';
 import DataRowList from '../Ui/DataRowList';
-import { makeClassifier } from '../Utils/Utils';
+import { makeClassifier, combineWidths } from '../Utils/Utils';
 
 const dataTableClass = makeClassifier('DataTable');
 
@@ -30,27 +30,24 @@ class DataTable extends React.PureComponent {
     const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
 
-
-    console.log('generating dataTable layout...');
-    const cumulativeWidth = columns.reduce((initial, col) => {
-      return initial + ' ' + col.width;
-    }, '');
-
-    console.log('cumulative width...', cumulativeWidth);
-
     const { tableBodyMaxHeight } = options ? options : {};
     const tableBodyStyle = { maxHeight: tableBodyMaxHeight };
+    const useStickyLayout = this.shouldUseStickyHeader();
+    const cumulativeWidth = useStickyLayout
+      ? { minWidth: combineWidths(columns.map(col => col.width)) }
+      : null;
+    console.log('cumulative width...', cumulativeWidth);
 
-    return this.shouldUseStickyHeader() ? (
-      <div className={dataTableClass('Sticky')}>
-        <div className={dataTableClass('Header')}>
+    return useStickyLayout ? (
+      <div className={dataTableClass('Sticky')} style={cumulativeWidth}>
+        <div className={dataTableClass('Header')} style={cumulativeWidth}>>
           <table cellSpacing={0} cellPadding={0}>
             <thead>
               <HeadingRow {...props} />
             </thead>
           </table>
         </div>
-        <div className={dataTableClass('Body')} style={tableBodyStyle}>
+        <div className={dataTableClass('Body')} style={Object.assign(tableBodyStyle, cumulativeWidth)}>
           <table cellSpacing={0} cellPadding={0}>
             <DataRowList {...props} />
           </table>
