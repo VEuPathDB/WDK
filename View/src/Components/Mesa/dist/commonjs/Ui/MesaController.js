@@ -114,23 +114,28 @@ var MesaController = function (_React$Component) {
   }, {
     key: 'renderEmptyState',
     value: function renderEmptyState() {
-      var uiState = this.props.uiState;
+      var _props4 = this.props,
+          uiState = _props4.uiState,
+          options = _props4.options;
 
       var _ref3 = uiState ? uiState : {},
           emptinessCulprit = _ref3.emptinessCulprit;
 
-      return _react2.default.createElement(_EmptyState2.default, { culprit: emptinessCulprit });
+      var _ref4 = options ? options : {},
+          renderEmptyState = _ref4.renderEmptyState;
+
+      return renderEmptyState ? renderEmptyState() : _react2.default.createElement(_EmptyState2.default, { culprit: emptinessCulprit });
     }
   }, {
     key: 'renderBody',
     value: function renderBody() {
-      var _props4 = this.props,
-          rows = _props4.rows,
-          options = _props4.options,
-          columns = _props4.columns,
-          actions = _props4.actions,
-          uiState = _props4.uiState,
-          eventHandlers = _props4.eventHandlers;
+      var _props5 = this.props,
+          rows = _props5.rows,
+          options = _props5.options,
+          columns = _props5.columns,
+          actions = _props5.actions,
+          uiState = _props5.uiState,
+          eventHandlers = _props5.eventHandlers;
 
       var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
       var Empty = this.renderEmptyState;
@@ -140,13 +145,13 @@ var MesaController = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _props5 = this.props,
-          rows = _props5.rows,
-          options = _props5.options,
-          columns = _props5.columns,
-          actions = _props5.actions,
-          uiState = _props5.uiState,
-          eventHandlers = _props5.eventHandlers;
+      var _props6 = this.props,
+          rows = _props6.rows,
+          options = _props6.options,
+          columns = _props6.columns,
+          actions = _props6.actions,
+          uiState = _props6.uiState,
+          eventHandlers = _props6.eventHandlers;
 
       var props = { rows: rows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 

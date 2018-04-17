@@ -116,11 +116,16 @@ var ActionToolbar = function (_React$PureComponent) {
           rows = _props3.rows,
           actions = _props3.actions,
           eventHandlers = _props3.eventHandlers,
-          children = _props3.children;
+          children = _props3.children,
+          options = _props3.options;
 
-      var _ref3 = eventHandlers ? eventHandlers : {},
-          onRowSelect = _ref3.onRowSelect,
-          onRowDeselect = _ref3.onRowDeselect;
+      var _ref3 = options ? options : {},
+          selectedNoun = _ref3.selectedNoun,
+          selectedPluralNoun = _ref3.selectedPluralNoun;
+
+      var _ref4 = eventHandlers ? eventHandlers : {},
+          onRowSelect = _ref4.onRowSelect,
+          onRowDeselect = _ref4.onRowDeselect;
 
       var ActionList = this.renderActionItemList;
       var selection = this.getSelection();
@@ -140,7 +145,9 @@ var ActionToolbar = function (_React$PureComponent) {
             rows: rows,
             selection: selection,
             onRowSelect: onRowSelect,
-            onRowDeselect: onRowDeselect
+            onRowDeselect: onRowDeselect,
+            selectedNoun: selectedNoun,
+            selectedPluralNoun: selectedPluralNoun
           })
         ),
         _react2.default.createElement(ActionList, { actions: actions })

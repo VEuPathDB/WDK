@@ -45,10 +45,11 @@ class MesaController extends React.Component {
   }
 
   renderEmptyState () {
-    const { uiState } = this.props;
+    const { uiState, options } = this.props;
     const { emptinessCulprit } = uiState ? uiState : {};
+    const { renderEmptyState } = options ? options : {};
 
-    return <EmptyState culprit={emptinessCulprit} />
+    return renderEmptyState ? renderEmptyState() : <EmptyState culprit={emptinessCulprit} />
   }
 
   renderBody () {
