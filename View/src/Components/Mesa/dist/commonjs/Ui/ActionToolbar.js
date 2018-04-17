@@ -127,6 +127,11 @@ var ActionToolbar = function (_React$PureComponent) {
       return _react2.default.createElement(
         'div',
         { className: 'Toolbar ActionToolbar' },
+        !children ? null : _react2.default.createElement(
+          'div',
+          { className: 'ActionToolbar-Children' },
+          children
+        ),
         _react2.default.createElement(
           'div',
           { className: 'ActionToolbar-Info' },

@@ -109,7 +109,7 @@ var HeadingCell = function (_React$PureComponent) {
 
       if (!sortable || typeof onSort !== 'function' && !isActive) return null;
 
-      var sortIcon = !isActive ? 'sort-amount-asc inactive' : direction === 'asc' ? 'sort-amount-asc active' : 'sort-amount-desc active';
+      var sortIcon = !isActive ? 'sort inactive' : direction === 'asc' ? 'sort-amount-asc active' : 'sort-amount-desc active';
 
       return _react2.default.createElement(_Icon2.default, { fa: sortIcon + ' Trigger SortTrigger' });
     }
