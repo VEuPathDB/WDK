@@ -51,12 +51,12 @@ var SelectionCounter = function (_React$Component) {
     value: function selectAllRows() {
       var _props2 = this.props,
           rows = _props2.rows,
-          selection = _props2.selection,
+          isRowSelected = _props2.isRowSelected,
           onRowSelect = _props2.onRowSelect,
           onMultipleRowSelect = _props2.onMultipleRowSelect;
 
-      var unselectedRows = rows.map(function (row) {
-        return !selection.includes(row);
+      var unselectedRows = rows.filter(function (row) {
+        return !isRowSelected(row);
       });
       if (typeof onMultipleRowSelect === 'function') onMultipleRowSelect(unselectedRows);else unselectedRows.forEach(function (row) {
         return onRowSelect(row);
@@ -66,10 +66,12 @@ var SelectionCounter = function (_React$Component) {
     key: 'deselectAllRows',
     value: function deselectAllRows() {
       var _props3 = this.props,
-          selection = _props3.selection,
+          rows = _props3.rows,
+          isRowSelected = _props3.isRowSelected,
           onRowDeselect = _props3.onRowDeselect,
           onMultipleRowDeselect = _props3.onMultipleRowDeselect;
 
+      var selection = rows.filter(isRowSelected);
       if (typeof onMultipleRowDeselect === 'function') onMultipleRowDeselect(selection);else selection.forEach(function (row) {
         return onRowDeselect(row);
       });
@@ -79,11 +81,12 @@ var SelectionCounter = function (_React$Component) {
     value: function render() {
       var _props4 = this.props,
           rows = _props4.rows,
-          selection = _props4.selection,
+          isRowSelected = _props4.isRowSelected,
           onRowDeselect = _props4.onRowDeselect,
           onMultipleRowDeselect = _props4.onMultipleRowDeselect;
 
-      if (!selection || !selection.length) return null;
+      var selection = rows.filter(isRowSelected);
+      if (!selection.length) return null;
       var allSelected = rows.every(function (row) {
         return selection.includes(row);
       });
@@ -116,14 +119,13 @@ var SelectionCounter = function (_React$Component) {
 
 SelectionCounter.propTypes = {
   // all/total "rows" in the table
-  rows: _propTypes2.default.array,
-  // exclusively the selected rows (checked by ref/inclusion)
-  selection: _propTypes2.default.array.isRequired,
+  rows: _propTypes2.default.array.isRequired,
+  // predicate to test for 'selectedness'
+  isRowSelected: _propTypes2.default.func.isRequired,
+
   // noun and plural to use for selections (e.g. "25 Datasets selected")
   selectedNoun: _propTypes2.default.string,
   selectedPluralNoun: _propTypes2.default.string,
-  // predicate to test for 'selectedness'
-  isRowSelected: _propTypes2.default.func,
   // single and multiple select/deselect handlers
   onRowSelect: _propTypes2.default.func,
   onRowDeselect: _propTypes2.default.func,

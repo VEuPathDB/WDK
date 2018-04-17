@@ -66,11 +66,13 @@ class ActionToolbar extends React.PureComponent {
 
   render () {
     const { rows, actions, eventHandlers, children, options } = this.props;
-    const { selectedNoun, selectedPluralNoun } = options ? options : {};
-    const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
+    const { selectedNoun, selectedPluralNoun, isRowSelected } = options ? options : {};
+    const { onRowSelect, onRowDeselect, onMultipleRowSelect, onMultipleRowDeselect } = eventHandlers ? eventHandlers : {};
 
     const ActionList = this.renderActionItemList;
     const selection = this.getSelection();
+
+    const selectionCounterProps = { rows, isRowSelected, onRowSelect, onRowDeselect, onMultipleRowSelect, onMultipleRowDeselect, selectedNoun, selectedPluralNoun };
 
     return (
        <div className={actionToolbarClass() + ' Toolbar'}>
@@ -80,14 +82,7 @@ class ActionToolbar extends React.PureComponent {
            </div>
          )}
          <div className={actionToolbarClass('Info')}>
-           <SelectionCounter
-             rows={rows}
-             selection={selection}
-             onRowSelect={onRowSelect}
-             onRowDeselect={onRowDeselect}
-             selectedNoun={selectedNoun}
-             selectedPluralNoun={selectedPluralNoun}
-           />
+           <SelectionCounter {...selectionCounterProps} />
          </div>
          <ActionList actions={actions} />
        </div>
@@ -98,6 +93,7 @@ class ActionToolbar extends React.PureComponent {
 ActionToolbar.propTypes = {
   rows: PropTypes.array,
   actions: PropTypes.array,
+  options: PropTypes.object,
   eventHandlers: PropTypes.object
 };
 

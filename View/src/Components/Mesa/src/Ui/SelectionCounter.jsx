@@ -20,21 +20,23 @@ class SelectionCounter extends React.Component {
   }
 
   selectAllRows () {
-    const { rows, selection, onRowSelect, onMultipleRowSelect } = this.props;
-    const unselectedRows = rows.map(row => !selection.includes(row));
+    const { rows, isRowSelected, onRowSelect, onMultipleRowSelect } = this.props;
+    const unselectedRows = rows.filter(row => !isRowSelected(row));
     if (typeof onMultipleRowSelect === 'function') onMultipleRowSelect(unselectedRows);
     else unselectedRows.forEach(row => onRowSelect(row));
   }
 
   deselectAllRows () {
-    const { selection, onRowDeselect, onMultipleRowDeselect } = this.props;
+    const { rows, isRowSelected, onRowDeselect, onMultipleRowDeselect } = this.props;
+    const selection = rows.filter(isRowSelected);
     if (typeof onMultipleRowDeselect === 'function') onMultipleRowDeselect(selection)
     else selection.forEach(row => onRowDeselect(row));
   }
 
   render () {
-    const { rows, selection, onRowDeselect, onMultipleRowDeselect } = this.props;
-    if (!selection || !selection.length) return null;
+    const { rows, isRowSelected, onRowDeselect, onMultipleRowDeselect } = this.props;
+    const selection = rows.filter(isRowSelected);
+    if (!selection.length) return null;
     const allSelected = rows.every(row => selection.includes(row));
 
     return (
@@ -50,14 +52,13 @@ class SelectionCounter extends React.Component {
 
 SelectionCounter.propTypes = {
   // all/total "rows" in the table
-  rows: PropTypes.array,
-  // exclusively the selected rows (checked by ref/inclusion)
-  selection: PropTypes.array.isRequired,
+  rows: PropTypes.array.isRequired,
+  // predicate to test for 'selectedness'
+  isRowSelected: PropTypes.func.isRequired,
+
   // noun and plural to use for selections (e.g. "25 Datasets selected")
   selectedNoun: PropTypes.string,
   selectedPluralNoun: PropTypes.string,
-  // predicate to test for 'selectedness'
-  isRowSelected: PropTypes.func,
   // single and multiple select/deselect handlers
   onRowSelect: PropTypes.func,
   onRowDeselect: PropTypes.func,

@@ -128,14 +128,19 @@ var ActionToolbar = function (_React$PureComponent) {
 
       var _ref3 = options ? options : {},
           selectedNoun = _ref3.selectedNoun,
-          selectedPluralNoun = _ref3.selectedPluralNoun;
+          selectedPluralNoun = _ref3.selectedPluralNoun,
+          isRowSelected = _ref3.isRowSelected;
 
       var _ref4 = eventHandlers ? eventHandlers : {},
           onRowSelect = _ref4.onRowSelect,
-          onRowDeselect = _ref4.onRowDeselect;
+          onRowDeselect = _ref4.onRowDeselect,
+          onMultipleRowSelect = _ref4.onMultipleRowSelect,
+          onMultipleRowDeselect = _ref4.onMultipleRowDeselect;
 
       var ActionList = this.renderActionItemList;
       var selection = this.getSelection();
+
+      var selectionCounterProps = { rows: rows, isRowSelected: isRowSelected, onRowSelect: onRowSelect, onRowDeselect: onRowDeselect, onMultipleRowSelect: onMultipleRowSelect, onMultipleRowDeselect: onMultipleRowDeselect, selectedNoun: selectedNoun, selectedPluralNoun: selectedPluralNoun };
 
       return _react2.default.createElement(
         'div',
@@ -148,14 +153,7 @@ var ActionToolbar = function (_React$PureComponent) {
         _react2.default.createElement(
           'div',
           { className: actionToolbarClass('Info') },
-          _react2.default.createElement(_SelectionCounter2.default, {
-            rows: rows,
-            selection: selection,
-            onRowSelect: onRowSelect,
-            onRowDeselect: onRowDeselect,
-            selectedNoun: selectedNoun,
-            selectedPluralNoun: selectedPluralNoun
-          })
+          _react2.default.createElement(_SelectionCounter2.default, selectionCounterProps)
         ),
         _react2.default.createElement(ActionList, { actions: actions })
       );
@@ -170,6 +168,7 @@ var ActionToolbar = function (_React$PureComponent) {
 ActionToolbar.propTypes = {
   rows: _propTypes2.default.array,
   actions: _propTypes2.default.array,
+  options: _propTypes2.default.object,
   eventHandlers: _propTypes2.default.object
 };
 
