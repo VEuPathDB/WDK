@@ -33,7 +33,9 @@ var Mesa = function (_React$Component) {
 
   _createClass(Mesa, [{
     key: 'render',
-    value: function render() {}
+    value: function render(props) {
+      return _react2.default.createElement(_MesaController2.default, props);
+    }
   }]);
 
   return Mesa;

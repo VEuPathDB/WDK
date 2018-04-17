@@ -3,7 +3,7 @@ $evenRowBg: rgba(0, 0, 0, 0.02);
 $oddRowBg: transparent;
 
 
-tbody:first-of-type {
+thead {
   tr:first-of-type {
     background-color: $headingRowBg;
     th, td {
@@ -22,7 +22,7 @@ tbody:first-of-type {
   }
 }
 
-tbody:last-of-type {
+tbody {
   tr {
     &:nth-child(odd) {
       background-color: $oddRowBg;

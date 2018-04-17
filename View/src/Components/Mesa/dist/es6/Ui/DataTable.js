@@ -62,7 +62,7 @@ var DataTable = function (_React$PureComponent) {
             'table',
             { cellSpacing: '0', cellPadding: '0' },
             _react2.default.createElement(
-              'tbody',
+              'thead',
               null,
               _react2.default.createElement(_HeadingRow2.default, props)
             ),

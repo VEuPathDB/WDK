@@ -7,9 +7,9 @@ class Mesa extends React.Component {
     super(props);
   }
 
-  render () {
-    
+  render (props) {
+    return <MesaController {...props} />
   }
 };
 
-export default Mesa
+export default Mesa;
