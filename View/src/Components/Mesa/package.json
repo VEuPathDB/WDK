@@ -2,7 +2,7 @@
   "name": "mesa",
   "version": "1.0.0",
   "description": "All-in-one table solution for React apps.",
-  "main": "index.js",
+  "main": "index.jsx",
   "repository": "https://github.com/austinbillings/mesa.git",
   "author": "Austin Billings <austinjb@upenn.edu>",
   "dependencies": {
