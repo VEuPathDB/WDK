@@ -1,5 +1,7 @@
-import { differenceWith, flow, unionWith } from 'lodash';
+import { differenceWith, unionWith } from 'lodash';
 
+import { Action } from 'Utils/ActionCreatorUtils';
+import { composeReducers, matchAction } from 'Utils/ReducerUtils';
 import { UserDataset, UserDatasetShare } from 'Utils/WdkModel';
 
 import { SharingSuccessAction } from '../UserDatasetsActionCreators';
@@ -9,34 +11,30 @@ type State = Record<string, {
   resource?: UserDataset
 }>;
 
-export default function reduce(state: State, action: SharingSuccessAction): State {
-  switch(action.type) {
-
-    case 'user-datasets/sharing-success': {
-      const { response } = action.payload;
-      const compositeHandler = flow(
-        handleMethod(response.add, true),
-        handleMethod(response.delete, false)
-      );
-      return compositeHandler(state);
-    }
-    default: return state;
-  }
+function isSharingAction(action: Action): action is SharingSuccessAction {
+  return action.type === 'user-datasets/sharing-success';
 }
 
-function handleMethod(sharesBySelfId: Record<string, UserDatasetShare[] | void>, add: boolean) {
-  return function (state: State): State {
-    if (sharesBySelfId == null) return state;
+export default matchAction([
+  [ isSharingAction, composeReducers(handleMethod(false), handleMethod(true)) ]
+])
 
-    return Object.entries(sharesBySelfId).reduce((userDatasetsById, [userDatasetId, shares]) => {
-      const entry = userDatasetsById[userDatasetId];
+function handleMethod(add: boolean) {
+  return function (state: State, action: SharingSuccessAction): State {
+    const sharesByTargetId = action.payload.response[add ? 'add' : 'delete'];
+
+    if (sharesByTargetId == null) return state;
+
+    return Object.entries(sharesByTargetId).reduce((state, [userDatasetId, shares]) => {
+      const entry = state[userDatasetId];
       if (entry.resource == null || shares == null) {
-        return userDatasetsById;
+        return state;
       }
       const operator = add ? unionWith : differenceWith;
       const sharedWith = operator(entry.resource.sharedWith, shares, shareComparator);
 
-      return Object.assign(userDatasetsById, {
+      return {
+        ...state,
         [userDatasetId]: {
           ...entry,
           resource: {
@@ -44,8 +42,8 @@ function handleMethod(sharesBySelfId: Record<string, UserDatasetShare[] | void>,
             sharedWith
           }
         }
-      })
-    }, { ...state })
+      };
+    }, state)
   }
 }
 
