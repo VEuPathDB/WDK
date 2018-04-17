@@ -4,6 +4,7 @@
   .DataTable-Sticky {
     display: block;
     overflow: visible;
+    position: relative;
     border: 1px solid cyan;
 
     .DataTable-Header, .DataTable-Body {
@@ -12,7 +13,6 @@
     }
     .DataTable-Body {
       overflow-y: auto;
-      // overflow-y: auto;
     }
     .DataTable-Header {}
   }

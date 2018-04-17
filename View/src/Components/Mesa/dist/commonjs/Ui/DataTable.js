@@ -77,10 +77,22 @@ var DataTable = function (_React$PureComponent) {
 
       var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
+      if (!this.shouldUseStickyHeader()) {
+        return _react2.default.createElement(
+          'table',
+          { cellSpacing: '0', cellPadding: '0' },
+          _react2.default.createElement(
+            'thead',
+            null,
+            _react2.default.createElement(_HeadingRow2.default, props)
+          ),
+          _react2.default.createElement(_DataRowList2.default, props)
+        );
+      }
+
       var _ref2 = options ? options : {},
           tableBodyMaxHeight = _ref2.tableBodyMaxHeight;
 
-      var useStickyLayout = this.shouldUseStickyHeader();
       var cumulativeWidth = (0, _Utils.combineWidths)(columns.map(function (col) {
         return col.width;
       }));
@@ -94,7 +106,7 @@ var DataTable = function (_React$PureComponent) {
         minWidth: cumulativeWidth
       };
 
-      return useStickyLayout ? _react2.default.createElement(
+      return _react2.default.createElement(
         'div',
         { className: dataTableClass('Sticky') },
         _react2.default.createElement(
@@ -119,15 +131,6 @@ var DataTable = function (_React$PureComponent) {
             _react2.default.createElement(_DataRowList2.default, props)
           )
         )
-      ) : _react2.default.createElement(
-        'table',
-        { cellSpacing: '0', cellPadding: '0' },
-        _react2.default.createElement(
-          'thead',
-          null,
-          _react2.default.createElement(_HeadingRow2.default, props)
-        ),
-        _react2.default.createElement(_DataRowList2.default, props)
       );
     }
   }, {
