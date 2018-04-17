@@ -18,7 +18,7 @@
     "react": ">=15.0.0"
   },
   "scripts": {
-    "compile:sass": "sass src/Style/Mesa.scss dist/css/mesa.css -t compressed",
+    "compile:sass": "sass style/Mesa.scss dist/css/mesa.css -t compressed",
     "compile:cjs": "babel src --out-dir dist/commonjs",
     "compile:es": "cross-env BABEL_ENV=es babel src --out-dir dist/es6",
     "compile": "npm run compile:cjs && npm run compile:es && npm run compile:sass",
