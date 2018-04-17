@@ -21,14 +21,14 @@ class AnchoredTooltip extends React.Component {
     const defaults = { top: 0, left: 0, width: 0, right: 0 };
     const { offset } = this.props;
 
-    const { top, left, width, right } = (this.anchor ? Tooltip.getOffset(this.anchor) : defaults);
-    const position = { top, left: window.innerWidth - right };
+    const { top, left, width, height, right } = (this.anchor ? Tooltip.getOffset(this.anchor) : defaults);
+    const position = { top: top + height, left: right + width };
     const offsetPosition = this.getOffsetPosition(position, offset);
     const tooltipProps = Object.assign({}, this.props, { position: offsetPosition });
     return (
       <div className="AnchoredTooltip" style={{ display: 'inline-block' }}>
+        <span className="AnchoredTooltip-Anchor" style={{ float: 'right' }} ref={(a) => this.anchor = a} />
         <Tooltip {...tooltipProps} />
-        <span className="AnchoredTooltip-Anchor" ref={(a) => this.anchor = a} />
       </div>
     );
   }
