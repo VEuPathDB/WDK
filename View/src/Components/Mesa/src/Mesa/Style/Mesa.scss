@@ -7,3 +7,7 @@
 .Mesa .faded {
   opacity: 0.5;
 }
+.Mesa .disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -31,5 +31,6 @@ export const OptionsDefaults = {
   selectAllPages: false,
   editableColumns: true,
   overflowHeight: '16em',
+  useDefaultActions: true,
   searchPlaceholder: 'Search This Table',
 };

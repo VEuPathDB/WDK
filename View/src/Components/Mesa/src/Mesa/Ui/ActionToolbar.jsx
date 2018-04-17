@@ -5,6 +5,42 @@ import SelectionCounter from 'Mesa/Ui/SelectionCounter';
 class ActionToolbar extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.dispatchAction = this.dispatchAction.bind(this);
+    this.renderActionItem = this.renderActionItem.bind(this);
+  }
+
+  getSelectedRows () {
+    const { state } = this.props;
+    const { rows, ui } = state;
+    const { selection } = ui;
+    return selection
+      .map(id => rows.find(row => row.__id === id))
+      .filter(row => row);
+  }
+
+  dispatchAction (action) {
+    const { handler, callback } = action;
+    const { columns } = this.props.state;
+    const selectedRows = this.getSelectedRows();
+
+    if (typeof handler === 'function') selectedRows.forEach(row => handler(row, columns));
+    if (typeof callback === 'function') callback(selectedRows, columns);
+  }
+
+  renderActionItem (action) {
+    let { element } = action;
+    let selectedRows = this.getSelectedRows();
+    let className = 'ActionToolbar-Item' + (action.selectionRequired && !selectedRows.length ? ' disabled' : '');
+
+    if (typeof element !== 'string' && !React.isValidElement(element)) {
+      if (typeof element === 'function') element = element(selectedRows);
+    }
+    const handler = () => this.dispatchAction(action);
+    return (
+      <div key={action.__id} className={className} onClick={handler}>
+        {element}
+      </div>
+    );
   }
 
   render () {
@@ -13,11 +49,7 @@ class ActionToolbar extends React.PureComponent {
 
     let list = actions
       .filter(action => action.element)
-      .map(action => (
-        <div key={action.__id} className="ActionToolbar-Item">
-          {action.element}
-        </div>
-      ));
+      .map(this.renderActionItem);
 
     return (
        <div className="Toolbar ActionToolbar">

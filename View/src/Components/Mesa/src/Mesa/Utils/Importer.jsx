@@ -73,7 +73,7 @@ const Importer = {
     return result;
   },
 
-  importActions (actions) {
+  importActions (actions, options = {}) {
     if (!actions || !Array.isArray(actions) || actions.some(action => typeof action !== 'object')) return [];
     actions = actions.map(action => {
       let __id = Utils.uid();
