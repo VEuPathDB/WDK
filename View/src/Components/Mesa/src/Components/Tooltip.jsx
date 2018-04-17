@@ -37,7 +37,10 @@ class Tooltip extends React.Component {
   engageTooltip () {
     let { showDelay } = this.props;
     showDelay = typeof showDelay === 'number' ? showDelay : 250;
-    this.showTimeout = setTimeout(this.showTooltip, showDelay);
+    this.showTimeout = setTimeout(() => {
+      this.showTooltip();
+      if (this.hideTimeout) clearTimeout(this.hideTimeout);
+    }, showDelay);
   }
 
   disengageTooltip () {

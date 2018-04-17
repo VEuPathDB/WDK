@@ -63,10 +63,15 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'engageTooltip',
     value: function engageTooltip() {
+      var _this2 = this;
+
       var showDelay = this.props.showDelay;
 
       showDelay = typeof showDelay === 'number' ? showDelay : 250;
-      this.showTimeout = setTimeout(this.showTooltip, showDelay);
+      this.showTimeout = setTimeout(function () {
+        _this2.showTooltip();
+        if (_this2.hideTimeout) clearTimeout(_this2.hideTimeout);
+      }, showDelay);
     }
   }, {
     key: 'disengageTooltip',

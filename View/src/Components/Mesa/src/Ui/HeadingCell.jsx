@@ -55,7 +55,9 @@ class HeadingCell extends React.PureComponent {
   }
 
   componentWillReceiveProps (newProps) {
-    if (newProps && newProps.column !== this.props.column || newProps.column.width !== this.props.column.width) {
+    if (newProps
+      && newProps.column !== this.props.column
+      || newProps.column.width !== this.props.column.width) {
       this.updateOffset();
     }
   }
@@ -88,6 +90,7 @@ class HeadingCell extends React.PureComponent {
     const totalTime = (clickEnd - clickStart);
     this.setState({ clickStart: null, isDragTarget: false })
     if (totalTime <= 500) this.sortColumn();
+    if (this.element) this.element.blur();
   }
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -138,9 +141,7 @@ class HeadingCell extends React.PureComponent {
 
     const sortIcon = !isActive
       ? 'sort inactive'
-      : direction === 'asc'
-        ? 'sort-amount-asc active'
-        : 'sort-amount-desc active';
+      : 'sort-amount-' + direction + ' active';
 
     return (<Icon fa={sortIcon + ' Trigger SortTrigger'} />);
   }
@@ -171,6 +172,7 @@ class HeadingCell extends React.PureComponent {
 
   onDragEnd (event) {
     this.setState({ isDragging: false, isDragTarget: false });
+    this.element.blur();
     event.preventDefault();
   }
 
@@ -191,10 +193,12 @@ class HeadingCell extends React.PureComponent {
 
   onDragLeave (event) {
     this.setState({ isDragTarget: false });
+    this.element.blur();
     event.preventDefault();
   }
 
   onDrop (event) {
+    this.element.blur();
     event.preventDefault();
     const { eventHandlers, columnIndex } = this.props;
     const { onColumnReorder } = eventHandlers;
