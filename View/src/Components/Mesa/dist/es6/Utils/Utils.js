@@ -107,7 +107,7 @@ function textSort(_list, key) {
 function makeClassifier(namespace, globalNamespace) {
   return function (element, modifiers) {
     if (Array.isArray(element)) element = element.join('-');
-    var base = (globalNamespace ? globalNamespace : '') + (namespace ? '-' + namespace : '') + (element ? '-' + element : '');
+    var base = (globalNamespace ? globalNamespace + '-' : '') + (namespace ? namespace : '') + (element ? '-' + element : '');
     if (!modifiers || !modifiers.length) return base;
     if (!Array.isArray(modifiers)) modifiers = [modifiers];
     return modifiers.reduce(function (output, modifier) {
