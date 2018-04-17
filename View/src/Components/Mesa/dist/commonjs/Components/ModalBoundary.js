@@ -50,18 +50,19 @@ var ModalBoundary = function (_React$Component) {
     value: function addModal(modal) {
       var modals = this.state.modals;
 
-      console.log('adding modal', modal);
+      if (!'id' in modal) throw new Error('Modals must have an "id" property.');
       if (modals.indexOf(modal) < 0) modals.push(modal);
       this.setState({ modals: modals });
     }
   }, {
     key: 'removeModal',
-    value: function removeModal(modal) {
+    value: function removeModal(id) {
       var modals = this.state.modals;
 
-      var index = modals.indexOf(modal);
+      var index = modals.findIndex(function (modal) {
+        return modal.id === id;
+      });
       if (index < 0) return;
-      console.log('removing modal....', modal);
       modals.splice(index, 1);
       this.setState({ modals: modals });
     }
@@ -105,12 +106,23 @@ var ModalBoundary = function (_React$Component) {
 
       var ModalWrapper = this.renderModalWrapper;
       var style = { position: 'relative' };
+      var zIndex = function zIndex(z) {
+        return { position: 'relative', zIndex: z };
+      };
 
       return _react2.default.createElement(
         'div',
         { className: modalBoundaryClass(), style: style },
-        children,
-        _react2.default.createElement(ModalWrapper, null)
+        _react2.default.createElement(
+          'div',
+          { style: zIndex(1) },
+          children
+        ),
+        _react2.default.createElement(
+          'div',
+          { style: zIndex(2) },
+          _react2.default.createElement(ModalWrapper, null)
+        )
       );
     }
   }]);
