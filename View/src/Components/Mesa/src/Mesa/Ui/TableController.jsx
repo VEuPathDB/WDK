@@ -9,10 +9,7 @@ import { setEmptinessCulprit } from 'Mesa/State/Actions';
 class TableController extends React.PureComponent {
   constructor (props) {
     super(props);
-    this.state = { currentPage: 1 };
     this.getFilteredRows = this.getFilteredRows.bind(this);
-    this.handlePageChange = this.handlePageChange.bind(this);
-    this.renderPageNav = this.renderPageNav.bind(this);
   }
 
   getFilteredRows () {
@@ -45,40 +42,20 @@ class TableController extends React.PureComponent {
     return rows;
   }
 
-  handlePageChange (currentPage) {
-    let { state } = this.props;
-    let { options } = state;
-    let filteredRows = this.getFilteredRows();
-    let pageCount = RowUtils.getPageCount(filteredRows, options);
-    if (currentPage > pageCount) currentPage = pageCount;
-    if (currentPage < 1) currentPage = 1;
-    this.setState({ currentPage });
-  }
-
-  renderPageNav (filteredRows) {
-    let { state, dispatch, children } = this.props;
-    let { options } = state;
-    let { currentPage } = this.state;
-    let pageCount = RowUtils.getPageCount(filteredRows, options);
-    if (!options.paginate || pageCount <= 1) return null;
-    return (
-      <PaginationMenu
-        pages={pageCount}
-        currentPage={currentPage}
-        onPageChange={this.handlePageChange}
-      />
-    );
-  }
-
   render () {
     let { state, dispatch, children } = this.props;
-    let { options } = state;
-    let { currentPage } = this.state;
+    let { ui, options } = state;
+    let { pagination } = ui;
 
     let filteredRows = this.getFilteredRows();
-    let pageRows = RowUtils.getRowsByPage(filteredRows, currentPage, options);
-    let pageCount = RowUtils.getPageCount(filteredRows, options);
-    let pageNav = this.renderPageNav(filteredRows);
+
+    let pageNav = !options.paginate ? null : (
+      <PaginationMenu
+        dispatch={dispatch}
+        list={filteredRows}
+        pagination={pagination}
+      />
+    );
 
     return (
       <div className="TableController">
@@ -96,7 +73,7 @@ class TableController extends React.PureComponent {
         <TableBody
           state={state}
           dispatch={dispatch}
-          filteredRows={pageRows}
+          filteredRows={filteredRows}
         />
         {pageNav}
       </div>

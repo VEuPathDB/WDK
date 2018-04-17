@@ -4,6 +4,8 @@ import Icon from 'Mesa/Components/Icon';
 import TableSearch from 'Mesa/Ui/TableSearch';
 import ColumnEditor from 'Mesa/Ui/ColumnEditor';
 import RowUtils from 'Mesa/Utils/RowUtils';
+import PaginationEditor from 'Mesa/Ui/PaginationEditor';
+import RowCounter from 'Mesa/Ui/RowCounter';
 
 class TableToolbar extends React.PureComponent {
   constructor (props) {
@@ -11,14 +13,14 @@ class TableToolbar extends React.PureComponent {
   }
 
   render () {
-    const { dispatch, state, filteredRows, children, currentPage, pages } = this.props;
-    const { rows, columns, options } = state;
+    const { dispatch, state, filteredRows, children } = this.props;
+    const { rows, columns, options, ui } = state;
+    const { pagination } = ui;
 
     const hiddenRowCount = rows.length - filteredRows.length;
     const columnsAreHideable = columns.some(column => column.hideable);
 
-    const { paginate, rowsPerPage } = options;
-    const [ first, last, total ] = RowUtils.getSpanByPage(filteredRows, currentPage, options);
+    const [ first, last, total ] = [1,2,3];
 
     return (
       <div className="TableToolbar">
@@ -32,11 +34,16 @@ class TableToolbar extends React.PureComponent {
           />
         )}
         <div className="TableToolbar-Info">
-          {!filteredRows.length
-          ? (<p><span className="faded">No results.</span></p>)
-          : (<p>Rows {first} to {last} of {total}</p>)
-          }
+          <RowCounter state={state} filteredRows={filteredRows} />
         </div>
+        {options.paginate
+          ? (
+            <div className="TableToolbar-Info">
+              <PaginationEditor pagination={pagination} dispatch={dispatch} />
+            </div>
+          )
+          : null
+        }
         {children && (
           <div className="TableToolbar-Children">
             {children}

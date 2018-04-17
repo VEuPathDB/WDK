@@ -16,13 +16,13 @@ export function closeColumnEditor () {
 }
 
 export function setPaginatedActiveItem (activeItem) {
-  if (typeof activeItem !== number || activeItem <= 0) return {};
+  if (typeof activeItem !== 'number' || activeItem <= 0) return;
   return { type: 'SET_PAGINATED_ACTIVE_ITEM', activeItem };
 }
 
-export function setItemsPerPage (itemsPerPage) {
-  if (typeof itemsPerPage !== number || itemsPerPage <= 0) return {};
-  return { type: 'SET_ITEMS_PER_PAGE', itemsPerPage };
+export function setPaginatedItemsPerPage (itemsPerPage) {
+  if (typeof itemsPerPage !== 'number' || itemsPerPage <= 0) return;
+  return { type: 'SET_PAGINATED_ITEMS_PER_PAGE', itemsPerPage };
 }
 
 export function updateColumns (columns) {

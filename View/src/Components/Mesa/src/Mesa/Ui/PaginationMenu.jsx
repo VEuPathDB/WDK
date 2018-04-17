@@ -1,6 +1,8 @@
 import React from 'react';
 
 import Icon from 'Mesa/Components/Icon';
+import PaginationUtils from 'Mesa/Utils/PaginationUtils';
+import { setPaginatedActiveItem } from 'Mesa/State/Actions';
 
 const settings = {
   overflowPoint: 8,
@@ -24,30 +26,30 @@ class PaginationMenu extends React.PureComponent {
     );
   }
 
-  renderPageLink (page) {
-    const { onPageChange, currentPage } = this.props;
+  renderPageLink (page, current) {
     let handler = () => this.goToPage(page);
     return (
-      <a onClick={handler} key={page} className={currentPage === page ? 'active' : 'inactive'}>
+      <a onClick={handler} key={page} className={current === page ? 'active' : 'inactive'}>
         {page}
       </a>
     );
   }
 
   getRelativePageNumber (relative) {
-    let { currentPage, pages } = this.props;
+    const { list, pagination } = this.props;
+
     switch (relative.toLowerCase()) {
       case 'first':
       case 'start':
         return 1;
       case 'last':
       case 'end':
-        return pages;
+        return PaginationUtils.totalPages(list, pagination);
       case 'next':
-        return (++currentPage <= pages ? currentPage : 1);
+        return PaginationUtils.nextPageNumber(list, pagination);
       case 'prev':
       case 'previous':
-        return (--currentPage >= 1 ? currentPage : pages);
+        return PaginationUtils.prevPageNumber(list, pagination);
       default:
         return null;
     }
@@ -72,12 +74,12 @@ class PaginationMenu extends React.PureComponent {
   }
 
   goToPage (page) {
-    const { onPageChange } = this.props;
-    if (onPageChange && page) onPageChange(page);
+    let { pagination, dispatch } = this.props;
+    let activeItem = PaginationUtils.firstItemOnPage(page, pagination);
+    dispatch(setPaginatedActiveItem(activeItem));
   }
 
   renderRelativeLink (relative) {
-    const { currentPage, pages, onCh } = this.props;
     const page = this.getRelativePageNumber(relative);
     const icon = this.getRelativeIcon(relative);
 
@@ -91,43 +93,41 @@ class PaginationMenu extends React.PureComponent {
     )
   }
 
-  renderDynamicPageLink (page, idx, list) {
-    const link = this.renderPageLink(page);
+  renderDynamicPageLink (page, current, total) {
+    const link = this.renderPageLink(page, current);
     const dots = this.renderEllipsis(page);
-    const { currentPage } = this.props;
     const { innerRadius } = settings;
-    const activeIndex = list.indexOf(currentPage);
 
-    if (idx === 0 || idx + 1 === list.length) return link;
-    if (idx >= activeIndex - innerRadius && idx <= activeIndex + innerRadius) return link;
-    if (idx === activeIndex - innerRadius - 1) return dots;
-    if (idx === activeIndex + innerRadius + 1) return dots;
+    if (page === 1 || page === total) return link;
+    if (page >= current - innerRadius && page <= current + innerRadius) return link;
+    if (page === current - innerRadius - 1) return dots;
+    if (page === current + innerRadius + 1) return dots;
     return null;
   }
 
-  renderPageList (pageList) {
-    const count = pageList.length;
+  renderPageList () {
+    const { pagination, list } = this.props;
     const { overflowPoint } = settings;
+    const current = PaginationUtils.getCurrentPageNumber(pagination);
+    const total = PaginationUtils.totalPages(list, pagination);
+    const pageList = PaginationUtils.generatePageList(total);
 
-    if (count > overflowPoint) {
-      return pageList.map(this.renderDynamicPageLink).filter(el => el);
+    if (total > overflowPoint) {
+      return pageList.map(page => this.renderDynamicPageLink(page, current, total)).filter(el => el);
     } else {
-      return pageList.map(this.renderPageLink);
+      return pageList.map(page => this.renderPageLink(page, current));
     }
   }
 
   render () {
-    const { pages, onPageChange, currentPage } = this.props;
-    let pageList = new Array(pages).fill({}).map((empty, index) => index + 1);
-    let pageNav = this.renderPageList(pageList);
-
-    return (
+    const { list } = this.props;
+    return !list.length ? null : (
       <div className="Pagination">
         <span className="Pagination-Nav">
           {this.renderRelativeLink('previous')}
         </span>
         <span className="Pagination-Nav">
-          {pageNav}
+          {this.renderPageList()}
         </span>
         <span className="Pagination-Nav">
           {this.renderRelativeLink('next')}

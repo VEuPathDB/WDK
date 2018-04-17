@@ -4,18 +4,45 @@ import DataRow from 'Mesa/Ui/DataRow';
 import RowUtils from 'Mesa/Utils/RowUtils';
 import HeadingRow from 'Mesa/Ui/HeadingRow';
 import EmptyState from 'Mesa/Ui/EmptyState';
+import PaginatedList from 'Mesa/Ui/PaginatedList';
 
 class TableBody extends React.PureComponent {
   constructor (props) {
     super(props);
+    this.renderDataRow = this.renderDataRow.bind(this);
+  }
+
+  renderDataRow (row, idx) {
+    const { state, dispatch } = this.props;
+    return (
+      <DataRow
+        key={idx}
+        row={row}
+        state={state}
+        dispatch={dispatch}
+      />
+    );
   }
 
   render () {
-    let { dispatch, state, currentPage, onPageChange, filteredRows } = this.props;
-    let { columns, options } = state;
-    let colSpan = columns.filter(column => !column.hidden).length
-    let pages = RowUtils.getPageCount(filteredRows, options);
-    let rows = RowUtils.getRowsByPage(filteredRows, currentPage, options);
+    let { dispatch, state, filteredRows } = this.props;
+    let { columns, options, ui } = state;
+    let { pagination } = ui;
+
+    let content;
+    if (!filteredRows.length)
+      content = (<tbody><EmptyState state={state} dispatch={dispatch} /></tbody>);
+    else if (!options.paginate)
+      content = (<tbody>{filteredRows.map(this.renderDataRow)}</tbody>);
+    else
+      content = (
+        <PaginatedList
+          container="tbody"
+          list={filteredRows}
+          pagination={pagination}
+          renderItem={this.renderDataRow}
+        />
+      );
 
     return (
       <div className="TableBody">
@@ -25,23 +52,8 @@ class TableBody extends React.PureComponent {
               dispatch={dispatch}
               state={state}
             />
-            {rows.length
-              ? rows.map((row, idx) => (
-                <DataRow
-                  key={idx}
-                  row={row}
-                  dispatch={dispatch}
-                  state={state}
-                />
-              ))
-              : (
-                <EmptyState
-                  state={state}
-                  dispatch={dispatch}
-                />
-              )
-            }
           </tbody>
+          {content}
         </table>
       </div>
     );
