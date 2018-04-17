@@ -19,9 +19,6 @@ class HeadingRow extends React.PureComponent {
       && typeof onRowSelect === 'function'
       && typeof onRowDeselect === 'function';
 
-      console.log('USING ROWS!', rowList);
-
-
     return (
       <tr className="Row HeadingRow">
         {!hasSelectionColumn

@@ -61,8 +61,6 @@ var HeadingRow = function (_React$PureComponent) {
       var rowList = this.props.rows;
       var hasSelectionColumn = typeof isRowSelected === 'function' && typeof onRowSelect === 'function' && typeof onRowDeselect === 'function';
 
-      console.log('USING ROWS!', rowList);
-
       return _react2.default.createElement(
         'tr',
         { className: 'Row HeadingRow' },
