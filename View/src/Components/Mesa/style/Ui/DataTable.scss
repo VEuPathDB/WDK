@@ -1,5 +1,4 @@
 .DataTable {
-  max-width: 100vw;
   overflow-x: auto;
   overflow-y: visible;
   font-size: $fontSize;
@@ -28,7 +27,7 @@
       overflow-y: auto;
     }
     .DataTable-Header {
-      
+
     }
   }
 }
