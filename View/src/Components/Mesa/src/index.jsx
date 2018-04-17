@@ -7,7 +7,7 @@ import ActionToolbar from './Ui/ActionToolbar';
 import PaginationMenu from './Ui/PaginationMenu';
 import MesaController from './Ui/MesaController';
 
-import Tooltip from './Components/Modal';
+import Tooltip from './Components/Tooltip';
 import Checkbox from './Components/Checkbox';
 import HelpTrigger from './Components/HelpTrigger';
 import ModalBoundary from './Components/ModalBoundary';
