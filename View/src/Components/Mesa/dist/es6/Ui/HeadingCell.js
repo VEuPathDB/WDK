@@ -55,12 +55,14 @@ var HeadingCell = function (_React$PureComponent) {
     _this.state = {
       offset: null,
       isDragging: false,
-      isDragTarget: false
+      isDragTarget: false,
+      clickStart: null
     };
 
     _this.getClassName = _this.getClassName.bind(_this);
     _this.getDomEvents = _this.getDomEvents.bind(_this);
 
+    _this.sortColumn = _this.sortColumn.bind(_this);
     _this.updateOffset = _this.updateOffset.bind(_this);
     _this.renderContent = _this.renderContent.bind(_this);
     _this.renderSortTrigger = _this.renderSortTrigger.bind(_this);
@@ -68,13 +70,14 @@ var HeadingCell = function (_React$PureComponent) {
     _this.componentDidMount = _this.componentDidMount.bind(_this);
 
     _this.onDrop = _this.onDrop.bind(_this);
-    _this.onClick = _this.onClick.bind(_this);
     _this.onDragEnd = _this.onDragEnd.bind(_this);
     _this.onDragExit = _this.onDragExit.bind(_this);
     _this.onDragOver = _this.onDragOver.bind(_this);
     _this.onDragStart = _this.onDragStart.bind(_this);
     _this.onDragEnter = _this.onDragEnter.bind(_this);
     _this.onDragLeave = _this.onDragLeave.bind(_this);
+    _this.onMouseDown = _this.onMouseDown.bind(_this);
+    _this.onMouseUp = _this.onMouseUp.bind(_this);
     return _this;
   }
 
@@ -113,8 +116,8 @@ var HeadingCell = function (_React$PureComponent) {
       this.setState({ offset: offset });
     }
   }, {
-    key: 'onClick',
-    value: function onClick() {
+    key: 'sortColumn',
+    value: function sortColumn() {
       var _props = this.props,
           column = _props.column,
           sort = _props.sort,
@@ -125,6 +128,23 @@ var HeadingCell = function (_React$PureComponent) {
       var currentlySorting = sort && sort.columnKey === column.key;
       var direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
       return onSort(column, direction);
+    }
+  }, {
+    key: 'onMouseDown',
+    value: function onMouseDown(e) {
+      var clickStart = new Date().getTime();
+      this.setState({ clickStart: clickStart });
+    }
+  }, {
+    key: 'onMouseUp',
+    value: function onMouseUp(e) {
+      var clickStart = this.state.clickStart;
+
+      if (!clickStart) return;
+      var clickEnd = new Date().getTime();
+      var totalTime = clickEnd - clickStart;
+      this.setState({ clickStart: null });
+      if (totalTime <= 500) this.sortColumn();
     }
 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -287,7 +307,8 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'getDomEvents',
     value: function getDomEvents() {
-      var onClick = this.onClick,
+      var onMouseDown = this.onMouseDown,
+          onMouseUp = this.onMouseUp,
           onDragStart = this.onDragStart,
           onDragEnd = this.onDragEnd,
           onDragEnter = this.onDragEnter,
@@ -297,7 +318,7 @@ var HeadingCell = function (_React$PureComponent) {
           onDrop = this.onDrop;
 
       return {
-        onClick: onClick,
+        onMouseDown: onMouseDown, onMouseUp: onMouseUp,
         onDragStart: onDragStart, onDragEnd: onDragEnd,
         onDragEnter: onDragEnter, onDragExit: onDragExit,
         onDragOver: onDragOver, onDragLeave: onDragLeave,

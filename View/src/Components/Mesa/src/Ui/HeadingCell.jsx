@@ -15,12 +15,14 @@ class HeadingCell extends React.PureComponent {
     this.state = {
       offset: null,
       isDragging: false,
-      isDragTarget: false
+      isDragTarget: false,
+      clickStart: null
     };
 
     this.getClassName = this.getClassName.bind(this);
     this.getDomEvents = this.getDomEvents.bind(this);
 
+    this.sortColumn = this.sortColumn.bind(this);
     this.updateOffset = this.updateOffset.bind(this);
     this.renderContent = this.renderContent.bind(this);
     this.renderSortTrigger = this.renderSortTrigger.bind(this);
@@ -28,13 +30,14 @@ class HeadingCell extends React.PureComponent {
     this.componentDidMount = this.componentDidMount.bind(this);
 
     this.onDrop = this.onDrop.bind(this);
-    this.onClick = this.onClick.bind(this);
     this.onDragEnd = this.onDragEnd.bind(this);
     this.onDragExit = this.onDragExit.bind(this);
     this.onDragOver = this.onDragOver.bind(this);
     this.onDragStart = this.onDragStart.bind(this);
     this.onDragEnter = this.onDragEnter.bind(this);
     this.onDragLeave = this.onDragLeave.bind(this);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
   }
 
   componentDidMount () {
@@ -64,13 +67,27 @@ class HeadingCell extends React.PureComponent {
     this.setState({ offset });
   }
 
-  onClick () {
+  sortColumn () {
     const { column, sort, eventHandlers } = this.props;
     const { onSort } = eventHandlers;
     if (typeof onSort !== 'function' || !column.sortable) return;
     const currentlySorting = sort && sort.columnKey === column.key;
     const direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
     return onSort(column, direction);
+  }
+
+  onMouseDown (e) {
+    const clickStart = (new Date).getTime();
+    this.setState({ clickStart });
+  }
+
+  onMouseUp (e) {
+    const { clickStart } = this.state;
+    if (!clickStart) return;
+    const clickEnd = (new Date).getTime();
+    const totalTime = (clickEnd - clickStart);
+    this.setState({ clickStart: null })
+    if (totalTime <= 500) this.sortColumn();
   }
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -190,14 +207,14 @@ class HeadingCell extends React.PureComponent {
 
   getDomEvents () {
     const {
-      onClick,
+      onMouseDown, onMouseUp,
       onDragStart, onDragEnd,
       onDragEnter, onDragExit,
       onDragOver, onDragLeave,
       onDrop
     } = this;
     return {
-      onClick,
+      onMouseDown, onMouseUp,
       onDragStart, onDragEnd,
       onDragEnter, onDragExit,
       onDragOver, onDragLeave,
