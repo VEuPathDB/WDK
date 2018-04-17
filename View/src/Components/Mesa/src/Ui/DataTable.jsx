@@ -7,7 +7,7 @@ import { makeClassifier, combineWidths } from '../Utils/Utils';
 
 const dataTableClass = makeClassifier('DataTable');
 
-class DataTable extends React.PureComponent {
+class DataTable extends React.Component {
   constructor (props) {
     super(props);
     this.render = this.render.bind(this);
