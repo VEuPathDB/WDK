@@ -22,7 +22,7 @@ class HeadingCell extends React.PureComponent {
     if (typeof onSort !== 'function') return;
     const currentlySorting = sort.columnKey === column.key;
     const direction = currentlySorting && sort.direction === 'asc' ? 'desc' : 'asc';
-    return currentlySorting ? onSort(column, direction);
+    return onSort(column, direction);
   }
 
   renderClickBoundary ({ children }) {

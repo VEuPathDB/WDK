@@ -44,10 +44,10 @@ class PaginationMenu extends React.PureComponent {
       case 'end':
         return totalPages;
       case 'next':
-        return currentPage < totalPages ? ++currentPage : 1;
+        return currentPage < totalPages ? currentPage + 1 : 1;
       case 'prev':
       case 'previous':
-        return currentPage > 1 ? --currentPage : totalPages;
+        return currentPage > 1 ? currentPage - 1 : totalPages;
       default:
         return null;
     }

@@ -29,7 +29,6 @@ class Mesa extends React.Component {
     if (!options.toolbar) return <div>{children}</div>;
 
     return <TableToolbar {...props}>{children}</TableToolbar>
-    );
   }
 
   renderActionBar () {
