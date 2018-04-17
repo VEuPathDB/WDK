@@ -10,11 +10,9 @@ const dataTableClass = makeClassifier('DataTable');
 class DataTable extends React.PureComponent {
   constructor (props) {
     super(props);
-    this.generateLayout = this.generateLayout.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
     this.handleTableHeaderScroll = this.handleTableHeaderScroll.bind(this);
-    this.state = { leftScroll: 0 };
   }
 
   shouldUseStickyHeader () {
@@ -37,58 +35,58 @@ class DataTable extends React.PureComponent {
     console.log('header is at', this.refs.tableHeader.scrollLeft);
   }
 
-  generateLayout () {
-    const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
-    const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
-
-    if (!this.shouldUseStickyHeader()) {
-      return (
-        <table cellSpacing="0" cellPadding="0">
-          <thead>
-            <HeadingRow {...props} />
-          </thead>
-          <DataRowList {...props} />
-        </table>
-      );
-    }
-
-    const { tableBodyMaxHeight } = options ? options : {};
-    const cumulativeWidth = combineWidths(columns.map(col => col.width));
-    const heightLayer = { maxHeight: tableBodyMaxHeight };
-    const widthLayer = { minWidth: cumulativeWidth };
-
-    return (
-      <div className={dataTableClass('Sticky')}>
-        <div
-          ref="tableHeader"
-          className={dataTableClass('Header')}
-          onScroll={this.handleTableHeaderScroll}>
-          <table cellSpacing={0} cellPadding={0}>
-            <thead>
-              <HeadingRow {...props} />
-            </thead>
-          </table>
-        </div>
-        <div
-          ref="tableBody"
-          className={dataTableClass('Body')}
-          style={heightLayer}
-          onScroll={this.handleTableBodyScroll}>
-          <table cellSpacing={0} cellPadding={0}>
-            <DataRowList {...props} />
-          </table>
-        </div>
-      </div>
-    );
-  }
-
   render () {
-    const Layout = this.generateLayout;
+      const { rows, filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+      const props = { rows, filteredRows, options, columns, actions, uiState, eventHandlers };
+
+      if (!this.shouldUseStickyHeader()) {
+        return (
+          <div className="MesaComponent">
+            <div className={dataTableClass()}>
+              <table cellSpacing="0" cellPadding="0">
+                <thead>
+                  <HeadingRow {...props} />
+                </thead>
+                <DataRowList {...props} />
+              </table>
+            </div>
+          </div>
+        );
+      }
+
+      const { tableBodyMaxHeight } = options ? options : {};
+      const cumulativeWidth = combineWidths(columns.map(col => col.width));
+      const heightLayer = { maxHeight: tableBodyMaxHeight };
+      const widthLayer = { minWidth: cumulativeWidth };
+
+      return (
+        <div className={dataTableClass('Sticky')}>
+          <div
+            ref="tableHeader"
+            className={dataTableClass('Header')}
+            onScroll={this.handleTableHeaderScroll}>
+            <table cellSpacing={0} cellPadding={0}>
+              <thead>
+                <HeadingRow {...props} />
+              </thead>
+            </table>
+          </div>
+          <div
+            ref="tableBody"
+            className={dataTableClass('Body')}
+            style={heightLayer}
+            onScroll={this.handleTableBodyScroll}>
+            <table cellSpacing={0} cellPadding={0}>
+              <DataRowList {...props} />
+            </table>
+          </div>
+        </div>
+      );
 
     return (
       <div className="MesaComponent">
         <div className={dataTableClass()}>
-          <Layout />
+
         </div>
       </div>
     );
