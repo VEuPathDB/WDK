@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import DataRow from '../Ui/DataRow';
 import HeadingRow from '../Ui/HeadingRow';
-import EmptyState from '../Ui/EmptyState';
+import DataRowList from '../Ui/DataRowList';
 
-class DataTable extends React.Component {
+class DataTable extends React.PureComponent {
   constructor (props) {
     super(props);
   }
@@ -13,12 +12,6 @@ class DataTable extends React.Component {
   render () {
     const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
     const props = { rows, options, columns, actions, uiState, eventHandlers };
-    const { emptinessCulprit, sort } = uiState;
-
-    const hasSelectionColumn = typeof options.isRowSelected === 'function'
-      && typeof eventHandlers.onRowSelect === 'function'
-      && typeof eventHandlers.onRowDeselect === 'function';
-    const colspan = columns.filter(column => !column.hidden).length + (hasSelectionColumn ? 1 : 0);
 
     return (
       <div className="DataTable">
@@ -26,19 +19,7 @@ class DataTable extends React.Component {
           <tbody>
             <HeadingRow {...props} />
           </tbody>
-          <tbody>
-            {rows.length
-              ? rows.map((row, idx) => (
-                <DataRow
-                  key={key}
-                  row={row}
-                  rowIndex={idx}
-                  {...props}
-                />
-              ))
-              : <EmptyState colspan={colspan} culprit={emptinessCulprit} />
-            }
-          </tbody>
+          <DataRowList {...props} />
         </table>
       </div>
     );
