@@ -1,15 +1,17 @@
 .DataTable {
   font-size: $fontSize;
+  width: 100%;
 
   .DataTable-Sticky {
     display: block;
     overflow: visible;
     position: relative;
+    width: 100%;
 
     .DataTable-Header, .DataTable-Body {
       overflow: visible;
       overflow-y: auto;
-      table { table-layout: fixed; }
+      // table { table-layout: fixed; }
     }
     .DataTable-Body {
     }
