@@ -3,7 +3,7 @@ import React from 'react';
 import Icon from '../Components/Icon';
 import { makeClassifier } from '../Utils/Utils';
 
-const EmptyStateClass = makeClassifier('EmptyState');
+const emptyStateClass = makeClassifier('EmptyState');
 
 class EmptyState extends React.PureComponent {
   constructor (props) {

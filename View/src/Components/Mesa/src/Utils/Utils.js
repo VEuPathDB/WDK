@@ -148,7 +148,7 @@ export function combineWidths (...widths) {
       }
     });
   });
-  
+
   return Object.keys(totals)
     .reduce((outputString, unit, index) => {
       if (!totals[unit]) return outputString;
