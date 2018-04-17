@@ -170,8 +170,7 @@ class HeadingCell extends React.PureComponent {
   }
 
   onDragEnd (event) {
-    if (this.state.isDragging || this.state.isDragTarget)
-      this.setState({ isDragging: false, isDragTarget: false });
+    this.setState({ isDragging: false, isDragTarget: false });
     event.preventDefault();
   }
 
@@ -191,7 +190,7 @@ class HeadingCell extends React.PureComponent {
   }
 
   onDragLeave (event) {
-    if (this.state.isDragTarget) this.setState({ isDragTarget: false });
+    this.setState({ isDragTarget: false });
     event.preventDefault();
   }
 
