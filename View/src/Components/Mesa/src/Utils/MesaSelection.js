@@ -30,12 +30,11 @@ export const removeRowFromSelection = (_selection, row, idAccessor) => {
   return [...selection];
 }
 
-export const isRowSelected = (_selection, row, idAccessor) => {
+export const isRowSelected = (selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('isRowSelected', 'idAccessor', 'function', typeof idAccessor);
-  const selection = new Set(_selection);
   const id = idAccessor(row);
-  return selection.has(id);
+  return selection.includes(id);
 }
 
 export const mapListToIds = (list, idAccessor) => {
