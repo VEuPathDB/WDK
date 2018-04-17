@@ -96,9 +96,11 @@ var HeadingCell = function (_React$PureComponent) {
     key: 'updateOffset',
     value: function updateOffset() {
       var element = this.element;
+      var offsetLeft = this.props.offsetLeft;
 
       if (!element) return;
       var offset = _Tooltip2.default.getOffset(element);
+      if (offsetLeft && offset.left) offset.left += offsetLeft;
       this.setState({ offset: offset });
     }
   }, {
@@ -205,9 +207,12 @@ var HeadingCell = function (_React$PureComponent) {
       var _ref5 = offset ? offset : {},
           top = _ref5.top,
           left = _ref5.left,
+          right = _ref5.right,
+          width = _ref5.width,
           height = _ref5.height;
 
-      var position = { top: top + height, left: left };
+      console.log('rendering help trigger with', offset);
+      var position = { top: top + height, left: right - width };
 
       if (!column.helpText) return null;
       return _react2.default.createElement(

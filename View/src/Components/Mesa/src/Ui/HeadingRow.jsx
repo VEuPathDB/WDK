@@ -10,7 +10,7 @@ class HeadingRow extends React.PureComponent {
   }
 
   render () {
-    const { filteredRows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const { filteredRows, options, columns, actions, uiState, eventHandlers, offsetLeft } = this.props;
     const { isRowSelected, columnDefaults } = options ? options : {};
     const { sort } = uiState ? uiState : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
@@ -36,6 +36,7 @@ class HeadingRow extends React.PureComponent {
               sort={sort}
               key={column.key}
               column={column}
+              offsetLeft={offsetLeft}
               columnIndex={columnIndex}
               eventHandlers={eventHandlers}
             />

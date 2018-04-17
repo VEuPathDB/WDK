@@ -48,7 +48,8 @@ var HeadingRow = function (_React$PureComponent) {
           columns = _props.columns,
           actions = _props.actions,
           uiState = _props.uiState,
-          eventHandlers = _props.eventHandlers;
+          eventHandlers = _props.eventHandlers,
+          offsetLeft = _props.offsetLeft;
 
       var _ref = options ? options : {},
           isRowSelected = _ref.isRowSelected,
@@ -81,6 +82,7 @@ var HeadingRow = function (_React$PureComponent) {
             sort: sort,
             key: column.key,
             column: column,
+            offsetLeft: offsetLeft,
             columnIndex: columnIndex,
             eventHandlers: eventHandlers
           });

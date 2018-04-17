@@ -53,11 +53,12 @@ class Tooltip extends React.Component {
 
   renderTooltipBox () {
     const { content, position } = this.props;
-    let { top, left } = position ? position : { top: 0, left: 0 };
+    let { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
 
     const boxStyle = {
       top,
       left,
+      right,
       display: 'block',
       position: 'absolute',
       pointerEvents: 'auto',
