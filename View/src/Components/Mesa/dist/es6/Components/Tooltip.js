@@ -97,7 +97,8 @@ var Tooltip = function (_React$Component) {
       var _props = this.props,
           content = _props.content,
           position = _props.position,
-          style = _props.style;
+          style = _props.style,
+          renderHtml = _props.renderHtml;
 
       var _ref = position ? position : { top: 0, left: 0, right: 0 },
           top = _ref.top,
@@ -121,7 +122,7 @@ var Tooltip = function (_React$Component) {
           className: 'Tooltip-Content',
           onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
-        content
+        renderHtml ? _react2.default.createElement('div', { dangerouslySetInnerHtml: { __html: content } }) : content
       );
     }
   }, {

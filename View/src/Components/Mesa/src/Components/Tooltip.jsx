@@ -58,7 +58,7 @@ class Tooltip extends React.Component {
   }
 
   renderTooltipBox () {
-    const { content, position, style } = this.props;
+    const { content, position, style, renderHtml } = this.props;
     let { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
 
     const boxStyle = Object.assign({}, {
@@ -77,7 +77,7 @@ class Tooltip extends React.Component {
         className={'Tooltip-Content'}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
-        {content}
+        {renderHtml ? <div dangerouslySetInnerHtml={{ __html: content }} /> : content}
       </div>
     );
   }
