@@ -20,7 +20,6 @@ class SelectionCounter extends React.Component {
 
   deselectAllRows () {
     const { selection, onRowDeselect } = this.props;
-    console.log('deselecting all rows from selectioncounter', selection);
     selection.forEach(row => onRowDeselect(row));
   }
 
@@ -31,7 +30,10 @@ class SelectionCounter extends React.Component {
 
     return (
       <div className="SelectionCounter">
-        {allSelected ? 'All ' : ''}<b>{selection.length}</b> {this.noun(selection)} {allSelected ? 'are' : ''} selected.
+        {allSelected ? 'All ' : ''}
+        <b>{selection.length} </b>
+        {this.noun(selection)}
+        {allSelected ? ' are' : ''} selected.
         <br />
         <a onClick={this.deselectAllRows}>Clear selection.</a>
       </div>
