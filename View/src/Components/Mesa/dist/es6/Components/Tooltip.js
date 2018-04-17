@@ -138,6 +138,7 @@ var Tooltip = function (_React$Component) {
           onBlur: this.disengageTooltip,
           onMouseEnter: this.engageTooltip,
           onMouseLeave: this.disengageTooltip },
+        'TEST',
         children
       );
     }
