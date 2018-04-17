@@ -74,7 +74,7 @@ class Mesa extends React.Component {
     const Body = this.renderBody;
 
     return (
-      <div className="TableController">
+      <div className="Mesa">
         <Toolbar />
         <ActionBar />
         <PageNav />
