@@ -10,7 +10,7 @@ class DataCell extends React.PureComponent {
   renderContent () {
     const { row, column, rowIndex, columnIndex, inline } = this.props;
     const { key } = column;
-    const value = row[key];
+    const value = typeof key === 'function' ? key(row) : row[key];
     const cellProps = { key, value, row, column, rowIndex, columnIndex };
 
     if ('renderCell' in column) {

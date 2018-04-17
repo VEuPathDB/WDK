@@ -42,7 +42,7 @@ var DataCell = function (_React$PureComponent) {
           inline = _props.inline;
       var key = column.key;
 
-      var value = row[key];
+      var value = typeof key === 'function' ? key(row) : row[key];
       var cellProps = { key: key, value: value, row: row, column: column, rowIndex: rowIndex, columnIndex: columnIndex };
 
       if ('renderCell' in column) {
