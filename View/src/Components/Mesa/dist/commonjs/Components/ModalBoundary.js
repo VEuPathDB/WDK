@@ -50,6 +50,7 @@ var ModalBoundary = function (_React$Component) {
     value: function addModal(modal) {
       var modals = this.state.modals;
 
+      console.log('adding modal', modal);
       if (modals.indexOf(modal) < 0) modals.push(modal);
       this.setState({ modals: modals });
     }
@@ -60,6 +61,7 @@ var ModalBoundary = function (_React$Component) {
 
       var index = modals.indexOf(modal);
       if (index < 0) return;
+      console.log('removing modal....', modal);
       modals.splice(index, 1);
       this.setState({ modals: modals });
     }
@@ -84,12 +86,14 @@ var ModalBoundary = function (_React$Component) {
         position: 'fixed',
         pointerEvents: 'none'
       };
-
+      console.log('rendering with modals...', modals);
       return !modals.length ? null : _react2.default.createElement(
         'div',
         { style: style, className: modalBoundaryClass('Wrapper') },
         modals.map(function (modal, index) {
+          console.log('rendering modal:', modal);
           var Element = modal.render;
+          console.log('element:', Element);
           return _react2.default.createElement(Element, { key: index });
         })
       );

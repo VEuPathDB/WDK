@@ -21,6 +21,7 @@ class ModalBoundary extends React.Component {
 
   addModal (modal) {
     let { modals } = this.state;
+    console.log('adding modal', modal);
     if (modals.indexOf(modal) < 0) modals.push(modal);
     this.setState({ modals });
   }
@@ -29,6 +30,7 @@ class ModalBoundary extends React.Component {
     let { modals } = this.state;
     let index = modals.indexOf(modal)
     if (index < 0) return;
+    console.log('removing modal....', modal);
     modals.splice(index, 1);
     this.setState({ modals });
   }
@@ -49,11 +51,13 @@ class ModalBoundary extends React.Component {
       position: 'fixed',
       pointerEvents: 'none'
     };
-
+    console.log('rendering with modals...', modals);
     return !modals.length ? null : (
       <div style={style} className={modalBoundaryClass('Wrapper')}>
         {modals.map((modal, index) => {
+          console.log('rendering modal:', modal);
           const Element = modal.render;
+          console.log('element:', Element);
           return <Element key={index} />
         })}
       </div>
