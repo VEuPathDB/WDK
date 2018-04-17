@@ -2,8 +2,6 @@ th {
   background: rgba(0, 0, 10, 0.02);
   transition: background 0.25s;
   position: relative;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   color: #444;
   text-align: left;
   &:active {
