@@ -7,7 +7,11 @@ const modalClass = makeClassifier('Modal');
 
 // TODO: Delete or rewrite me.
 
-class Modal extends React.Component {};
+class Modal extends React.Component {
+  render () {
+    return null;
+  }
+};
 
 Modal.contextTypes = {
   addModal: PropTypes.func,
