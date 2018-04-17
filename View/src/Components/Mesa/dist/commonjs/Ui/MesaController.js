@@ -186,8 +186,8 @@ var MesaController = function (_React$Component) {
 ;
 
 MesaController.propTypes = {
-  rows: _propTypes2.default.array.isRequired(),
-  columns: _propTypes2.default.array.isRequired(),
+  rows: _propTypes2.default.array.isRequired,
+  columns: _propTypes2.default.array.isRequired,
   filteredRows: _propTypes2.default.array,
   options: _propTypes2.default.object,
   actions: _propTypes2.default.arrayOf(_propTypes2.default.shape({

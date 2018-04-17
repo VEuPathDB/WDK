@@ -87,8 +87,8 @@ class MesaController extends React.Component {
 };
 
 MesaController.propTypes = {
-  rows: PropTypes.array.isRequired(),
-  columns: PropTypes.array.isRequired(),
+  rows: PropTypes.array.isRequired,
+  columns: PropTypes.array.isRequired,
   filteredRows: PropTypes.array,
   options: PropTypes.object,
   actions: PropTypes.arrayOf(PropTypes.shape({
