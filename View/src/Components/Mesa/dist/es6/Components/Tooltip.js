@@ -121,7 +121,7 @@ var Tooltip = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         {
-          tabindex: 0,
+          tabIndex: 0,
           className: className,
           onFocus: this.engageTooltip,
           onBlur: this.disengageTooltip,

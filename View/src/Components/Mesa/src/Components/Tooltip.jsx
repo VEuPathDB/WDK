@@ -80,7 +80,7 @@ class Tooltip extends React.Component {
     const className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
     return (
       <div
-        tabindex={0}
+        tabIndex={0}
         className={className}
         onFocus={this.engageTooltip}
         onBlur={this.disengageTooltip}
