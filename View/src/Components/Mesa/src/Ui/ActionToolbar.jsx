@@ -9,33 +9,34 @@ class ActionToolbar extends React.PureComponent {
     this.renderActionItem = this.renderActionItem.bind(this);
   }
 
-  getSelectedRows () {
-    const { state } = this.props;
-    const { rows, uiState } = state;
-    const { selection } = uiState;
-    return selection
-      .map(id => rows.find(row => row.__id === id))
-      .filter(row => row);
+  getSelection () {
+    const { rows, options } = this.props;
+    const { isRowSelected } = options;
+
+    if (typeof isRowSelected !== 'function') return [];
+    return rows.filter(isRowSelected);
   }
 
   dispatchAction (action) {
     const { handler, callback } = action;
-    const { columns, rows } = this.props.state;
-    const selectedRows = this.getSelectedRows();
+    const { rows, columns } = this.props;
+    const selection = this.getSelection();
 
-    if (typeof handler === 'function') selectedRows.forEach(row => handler(row, columns));
-    if (typeof callback === 'function') callback(selectedRows, columns, rows);
+    if (action.selectionRequired && !selection.length) return;
+    if (typeof handler === 'function') selection.forEach(row => handler(row, columns));
+    if (typeof callback === 'function') return callback(selection, columns, rows);
   }
 
-  renderActionItem (action) {
+  renderActionItem ({ action }) {
     let { element } = action;
-    let selectedRows = this.getSelectedRows();
-    let className = 'ActionToolbar-Item' + (action.selectionRequired && !selectedRows.length ? ' disabled' : '');
+    let selection = this.getSelection();
+    let className = 'ActionToolbar-Item' + (action.selectionRequired && !selection.length ? ' disabled' : '');
 
     if (typeof element !== 'string' && !React.isValidElement(element)) {
-      if (typeof element === 'function') element = element(selectedRows);
+      if (typeof element === 'function') element = element(selection);
     }
-    const handler = () => this.dispatchAction(action);
+
+    let handler = () => this.dispatchAction(action);
     return (
       <div key={action.__id} className={className} onClick={handler}>
         {element}
@@ -43,24 +44,31 @@ class ActionToolbar extends React.PureComponent {
     );
   }
 
-  render () {
-    const { state, dispatch, filteredRows } = this.props;
-    const { actions } = state;
-
-    let list = actions
+  renderActionItemList ({ actions }) {
+    const ActionItem = this.renderActionItem;
+    return actions
       .filter(action => action.element)
-      .map(this.renderActionItem);
+      .map(action => <ActionItem action={action} />);
+  }
+
+  render () {
+    const { rows, actions, eventHandlers } = this.props;
+    const { onRowSelect, onRowDeselect } = eventHandlers;
+
+    const ActionList = this.renderActionItemList;
+    const selection = this.getSelection();
 
     return (
        <div className="Toolbar ActionToolbar">
          <div className="ActionToolbar-Info">
            <SelectionCounter
-             state={state}
-             dispatch={dispatch}
-             filteredRows={filteredRows}
+             rows={rows}
+             selection={selection}
+             onRowSelect={onRowSelect}
+             onRowDeselect={onRowDeselect}
            />
          </div>
-         {list}
+         <ActionList />
        </div>
     );
   }

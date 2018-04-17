@@ -6,12 +6,9 @@ import TruncatedText from './Components/TruncatedText';
 import Utils from './Utils/Utils';
 
 const Templates = {
-  cell (column, row) {
-    const { key, truncated } = column;
-    if (!key) return;
-
+  textCell ({ key, value, row, rowIndex, column }) {
+    const { truncated } = column;
     const className = 'Cell Cell-' + key;
-    const value = row[key];
     const text = Utils.stringValue(value);
 
     return truncated
@@ -19,23 +16,29 @@ const Templates = {
       : <div className={className}>{text}</div>
   },
 
-  numberCell (column, row) {
-    const { key, truncated } = column;
-    if (!key) return;
-
+  numberCell ({ key, value, row, rowIndex, column }) {
     const className = 'Cell NumberCell Cell-' + key;
-    const value = row[key]
     const display = typeof value === 'number' ? value.toLocaleString() : Utils.stringValue(value);
 
     return <div className={className}>{display}</div>
   },
 
-  htmlCell (column, row) {
-    const { key, truncated } = column;
-    if (!key) return;
+  linkCell ({ key, value, row, rowIndex, column }) {
+    const className = 'Cell LinkCell Cell-' + key;
+    const defaults = { href: null, target: '_blank', text: '' };
+    let { href, target, text } = (typeof value === 'object' ? value : defaults);
+    href = (href ? href : (typeof value === 'string' ? value : '#'));
+    text = (text.length ? text : href);
+    
+    const props = { href, target, className, name: text };
 
+    return <a {...props}>{text}</a>
+  }
+
+  htmlCell ({ key, value, row, rowIndex, column }) {
+    const { truncated } = column;
     const className = 'Cell HtmlCell Cell-' + key;
-    const content = (<div dangerouslySetInnerHTML={{ __html: row[key] }} />);
+    const content = (<div dangerouslySetInnerHTML={{ __html: value }} />);
     const size = (truncated === true ? '16em' : truncated);
 
     return truncated
@@ -43,10 +46,7 @@ const Templates = {
       : <div className={className}>{content}</div>
   },
 
-  heading (column) {
-    let { key, name } = column;
-    if (!key) return;
-
+  heading ({ key, name }) {
     const className = 'Cell HeadingCell HeadingCell-' + key;
     const content = (<b>{name || key}</b>);
 

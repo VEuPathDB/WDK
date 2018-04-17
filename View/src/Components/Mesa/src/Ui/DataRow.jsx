@@ -14,19 +14,19 @@ class DataRow extends React.PureComponent {
   }
 
   componentWillReceiveProps (newProps) {
-    const { row } = newProps;
-    if (row !== this.props.row) {
-      this.collapseRow();
-    }
+    const { row } = this.props;
+    if (newProps.row !== row) this.collapseRow();
   }
 
   expandRow () {
-    if (!this.props.state.options.inline) return;
+    const { options } = this.props;
+    if (!options.inline) return;
     this.setState({ expanded: true });
   }
 
   collapseRow () {
-    if (!this.props.state.options.inline) return;
+    const { options } = this.props;
+    if (!options.inline) return;
     this.setState({ expanded: false });
   }
 
@@ -39,31 +39,31 @@ class DataRow extends React.PureComponent {
   }
 
   render () {
-    let { row, state, dispatch } = this.props;
-    let { columns, options, actions } = state;
+    const { row, rowIndex, columns, options, actions, eventHandlers } = this.props;
+    const { expanded } = this.state;
+    const { key } = column;
+    const inline = options.inline ? !expanded : false;
 
-    let { inline } = options;
-    let { expanded } = this.state;
-    inline = (inline ? !expanded : inline);
+    const hasSelectionColumn = typeof options.isRowSelected === 'function'
+      && typeof eventHandlers.onRowSelect === 'function'
+      && typeof eventHandlers.onRowDeselect === 'function';
 
-    let rowStyle = !inline ? {} : { whiteSpace: 'nowrap' };
-    let className = 'DataRow' + (inline ? ' DataRow-Inline' : '');
+    const rowStyle = !inline ? {} : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
+    const className = 'Row DataRow' + (inline ? ' DataRow-Inline' : '');
+
+    const cellProps = { row, column, inline, options, key, rowIndex };
 
     return (
       <tr className={className} style={rowStyle} onClick={this.toggleRow}>
-        {actions.length
-          ? <SelectionCell row={row} state={state} dispatch={dispatch} />
-          : null
+        {!hasSelectionColumn
+          ? null
+          ? <SelectionCell
+              row={row}
+              eventHandlers={eventHandlers}
+              isRowSelected={options.isRowSelected}
+            />
         }
-        {columns.map(column => (
-          <DataCell
-            column={column}
-            row={row}
-            state={state}
-            inline={inline}
-            key={column.key}
-          />
-        ))}
+        {columns.map(column => <DataCell {...cellProps} />)}
       </tr>
     )
   }

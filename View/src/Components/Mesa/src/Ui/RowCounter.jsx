@@ -1,67 +1,28 @@
 import React from 'react';
 
-import PaginationUtils from '../Utils/PaginationUtils';
-
 class RowCounter extends React.PureComponent {
   constructor (props) {
     super(props);
-    this.getPageString = this.getPageString.bind(this);
-    this.getFilteredString = this.getFilteredString.bind(this);
-    this.getStatistics = this.getStatistics.bind(this);
-  }
-
-  getFilteredString () {
-    let { filtered } = this.getStatistics();
-    let { searchQuery } = this.props.state.uiState;
-    return filtered && !searchQuery ? <span className="faded"> (<b>{filtered}</b> filtered)</span> : null
-  }
-
-  getStatistics () {
-    let { state, filteredRows } = this.props;
-    let total = state.rows.length;
-    let effective = filteredRows.length;
-    let filtered = total - effective;
-    return { total, effective, filtered };
-  }
-
-  getPageString () {
-    let { filteredRows, state } = this.props;
-    let { paginate } = state.options;
-    let { paginationState, searchQuery } = state.uiState;
-
-    let { total, effective, filtered } = this.getStatistics();
-
-    let noun = searchQuery ? 'Result' : 'Row';
-    let plural = noun + (effective !== 1 ? 's' : '');
-
-    let simple = (<span><b>{effective}</b>  {plural}</span>);
-
-    if (!paginate) return simple;
-
-    let currentPage = PaginationUtils.getCurrentPageNumber(paginationState);
-    let firstOnPage = PaginationUtils.firstItemOnPage(currentPage, paginationState);
-    let lastOnPage = PaginationUtils.lastItemOnPage(currentPage, paginationState, filteredRows);
-
-    if (effective === lastOnPage && firstOnPage === 1) return simple;
-
-    return (
-      <span>
-        {effective !== firstOnPage ? plural : noun} <b>{firstOnPage}</b>
-        {firstOnPage !== lastOnPage ? <span> - <b>{lastOnPage}</b></span> : null}
-        {effective !== firstOnPage ? <span> of <b>{effective}</b></span> : null}
-      </span>
-    );
   }
 
   render () {
-    let { filteredRows } = this.props;
-    let filteredString = this.getFilteredString();
-    let pageString = this.getPageString();
+    let { count, noun, filtered, start, end } = this.props;
+    let filterString = !filtered ? null : <span className="faded"> ({filtered} filtered)</span>;
+    let countString = (<span><b>{count}</b> {noun}</span>);
+    let allResultsShown = (!start || !end || (start === 1 && end === count));
 
-    return !filteredRows.length ? null : (
+    if (!allResultsShown) {
+      countString = (
+        <span>
+          {noun} <b>{start}</b> - <b>{end}</b> of <b>{count}</b>
+        </span>
+      );
+    }
+
+    return (
       <div className="RowCounter">
-        {pageString}
-        {filteredString}
+        {countString}
+        {filterString}
       </div>
     );
   }

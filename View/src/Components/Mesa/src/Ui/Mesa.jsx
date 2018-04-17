@@ -1,85 +1,77 @@
 import React from 'react';
 
-import Importer from '../Utils/Importer';
-import StoreFactory from '../State/StoreFactory';
-import TableController from '../Ui/TableController';
-import {
-  updateOptions,
-  updateColumns,
-  updateRows,
-  updateActions,
-  resetUiState
-} from '../State/Actions';
+import DataTable from '../Ui/DataTable';
+import TableToolbar from '../Ui/TableToolbar';
+import ActionToolbar from '../Ui/ActionToolbar';
+import PaginationMenu from '../Ui/PaginationMenu';
 
 class Mesa extends React.Component {
   constructor (props) {
     super(props);
-    this.state = {};
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.componentWillMount = this.componentWillMount.bind(this);
-    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.renderToolbar = this.renderToolbar.bind(this);
+    this.renderActionBar = this.renderActionBar.bind(this);
+    this.renderPaginationMenu = this.renderPaginationMenu.bind(this);
   }
 
-  componentWillMount () {
-    let { options, columns, rows, actions } = this.props;
+  renderPaginationMenu () {
+    const { uiState, eventHandlers } = this.props;
+    const { currentPage, totalPages, rowsPerPage } = uiState.pagination;
+    const { onPageChange, onRowsPerPageChange } = eventHandlers;
+    if (!onPageChange) return null;
+    const props = { currentPage, totalPages, rowsPerPage, onPageChange, onRowsPerPageChange };
 
-    rows = Importer.importRows(rows);
-    options = Importer.importOptions(options);
-    columns = Importer.importColumns(columns, rows, options);
-    actions = Importer.importActions(actions, options);
-    this.store = StoreFactory.create({ options, columns, rows, actions });
-    this.setState(this.store.getState());
+    return <PaginationMenu {...props} />
   }
 
-  componentWillReceiveProps (newProps) {
-    const { dispatch } = this.store;
-    let { options, columns, rows, actions } = this.props;
+  renderToolbar () {
+    const { rows, options, columns, uiState, eventHandlers, children } = this.props;
+    const props = { rows, options, columns, uiState, eventHandlers };
+    if (!options.toolbar) return <div>{children}</div>;
 
-    if (newProps.rows !== rows) {
-      rows = Importer.importRows(newProps.rows)
-      dispatch(updateRows([...rows]));
-    };
-    if (newProps.options !== options) {
-      options = Importer.importOptions(newProps.options);
-      dispatch(updateOptions(Object.assign({}, options)));
-    };
-    if (newProps.columns !== columns) {
-      columns = Importer.importColumns(newProps.columns, rows, options);
-      dispatch(updateColumns([...columns]));
-      dispatch(resetUiState());
-    };
-    if (newProps.actions !== actions) {
-      actions = Importer.importActions(newProps.actions, options);
-      dispatch(updateActions([...actions]));
-    };
+    return <TableToolbar {...props}>{children}</TableToolbar>
+    );
   }
 
-  componentDidMount () {
-    this.unsubscribe = this.store.subscribe(() => {
-      this.setState(this.store.getState());
-    });
-  }
+  renderActionBar () {
+    const { rows, options, actions, eventHandlers } = this.props;
+    const props = { rows, options, actions, eventHandlers };
+    if (!actions.length) return null;
 
-  componentWillUnmount () {
-    this.unsubscribe();
+    return <ActionToolbar {...props} />
   }
 
   render () {
-    const state = this.state;
-    const { children } = this.props;
-    const { dispatch } = this.store;
+    const { rows, options, columns, actions, uiState, eventHandlers } = this.props;
+    const props = { rows, options, columns, actions, uiState, eventHandlers };
+
+    const PageNav = this.renderPaginationMenu;
+    const Toolbar = this.renderToolbar;
+    const ActionBar = this.renderActionBar;
 
     return (
-      <div className="Mesa">
-        <TableController
-          state={state}
-          dispatch={dispatch}
-        >
-          {children}
-        </TableController>
+      <div className="TableController">
+        <Toolbar />
+        <ActionBar />
+        <PageNav />
+        <DataTable {...props} />
+        <PageNav />
       </div>
     );
   }
+};
+
+
+DataTable.propTypes = {
+  rows: PropTypes.array,
+  columns: PropTypes.array,
+  options: PropTypes.object,
+  actions: PropTypes.arrayOf(PropTypes.shape({
+    element: PropTypes.oneOfType([ PropTypes.func, PropTypes.node, PropTypes.element ]),
+    handler: PropTypes.func,
+    callback: PropTypes.func
+  })),
+  uiState: PropTypes.object,
+  eventHandlers: PropTypes.objectOf(PropTypes.func)
 };
 
 export default Mesa;

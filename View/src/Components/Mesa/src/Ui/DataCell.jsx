@@ -8,30 +8,31 @@ class DataCell extends React.PureComponent {
   }
 
   renderContent () {
-    const { column, row, state, inline } = this.props;
+    const { row, column, rowIndex, inline } = this.props;
     const { key } = column;
     const value = row[key];
+    const cellProps = { key, value, row, column, rowIndex };
 
     if ('renderCell' in column) {
-      return column.renderCell(key, value, row, column);
+      return column.renderCell(cellProps);
     }
 
-    switch (column.type) {
+    switch (column.type.toLowerCase()) {
+      case 'link':
+        return Templates.linkCell(cellProps);
       case 'number':
-        return Templates.numberCell(column, row);
+        return Templates.numberCell(cellProps);
       case 'html':
-        if (inline) return Templates.cell(column, row);
-        return Templates.htmlCell(column, row);
+        return Templates[inline ? textCell : htmlCell](cellProps);
       case 'text':
       default:
-        return Templates.cell(column, row);
+        return Templates.textCell(cellProps);
     };
   }
 
   render () {
-    let { column, row, state, inline } = this.props;
+    let { column, row, inline } = this.props;
     let { style, width } = column;
-    let { options } = state;
     let content = this.renderContent();
 
     let whiteSpace = !inline ? {} : {

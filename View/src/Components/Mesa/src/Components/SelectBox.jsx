@@ -15,8 +15,11 @@ class SelectBox extends React.PureComponent {
   getOptions () {
     let { options } = this.props;
     if (!Array.isArray(options)) return [];
-    if (!options.every(opt => typeof opt === 'object'))
-      options = options.map(option => { return { name: option.toString(), value: option }; });
+    options = options.map(option => {
+      return (typeof option === 'object' && 'name' in option && 'value' in option)
+        ? option
+        : { name: option.toString(), value: option };
+    });
     return options;
   }
 
