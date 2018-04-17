@@ -117,7 +117,7 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'hideTooltip',
     value: function hideTooltip() {
-      if (!this.id) return;
+      if (!this.id || this.state.isFocus || this.state.isHovered) return;
       var removeModal = this.context.removeModal;
 
       removeModal(this.id);
