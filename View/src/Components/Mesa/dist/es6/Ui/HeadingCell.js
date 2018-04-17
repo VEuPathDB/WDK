@@ -121,7 +121,7 @@ var HeadingCell = function (_React$PureComponent) {
       if (!column.helpText) return null;
       return _react2.default.createElement(
         _Tooltip2.default,
-        { text: column.helpText },
+        { className: 'Trigger HelpTrigger', text: column.helpText },
         _react2.default.createElement(_Icon2.default, { fa: 'question-circle' })
       );
     }

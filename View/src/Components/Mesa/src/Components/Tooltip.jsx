@@ -31,9 +31,13 @@ class Tooltip extends React.Component {
 
   render () {
     const { children } = this.props;
+    const className = 'Tooltip' + (this.props.className ? ' ' + this.props.className : '');
     const TextBox = this.renderTextBox;
     return (
-      <div className="Tooltip" onMouseEnter={this.showTooltip} onMouseLeave={this.hideTooltip}>
+      <div
+        className={className}
+        onMouseEnter={this.showTooltip}
+        onMouseLeave={this.hideTooltip}>
         {children}
         <TextBox />
       </div>
