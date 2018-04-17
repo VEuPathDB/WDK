@@ -34,4 +34,7 @@ tr {
   &:hover {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
   }
+  &:nth-child(odd) {
+    background-color: red;
+  }
 }
