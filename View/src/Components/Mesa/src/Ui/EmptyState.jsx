@@ -1,6 +1,9 @@
 import React from 'react';
 
 import Icon from '../Components/Icon';
+import { makeClassifier } from '../Utils/Utils';
+
+const EmptyStateClass = makeClassifier('EmptyState');
 
 class EmptyState extends React.PureComponent {
   constructor (props) {
@@ -59,10 +62,10 @@ class EmptyState extends React.PureComponent {
     const culprit = this.getCulprit();
 
     return (
-      <div className="EmptyState">
-        <div className="EmptyState-Body-Wrapper">
-          <div className="EmptyState-Body">
-            <Icon fa={culprit.icon} className="EmptyState-Icon" />
+      <div className={emptyStateClass()}>
+        <div className={emptyStateClass('BodyWrapper')}>
+          <div className={emptyStateClass('Body')}>
+            <Icon fa={culprit.icon} className={emptyStateClass('Icon')} />
             <h2>{culprit.title}</h2>
             {culprit.content}
           </div>
