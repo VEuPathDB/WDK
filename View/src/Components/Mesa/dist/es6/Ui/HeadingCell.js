@@ -164,7 +164,6 @@ var HeadingCell = function (_React$PureComponent) {
           left = _ref5.left,
           height = _ref5.height;
 
-      console.log('got top, left, height', top, left, height);
       var position = { top: top + height, left: left };
 
       if (!column.helpText) return null;
@@ -177,6 +176,8 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'render',
     value: function render() {
+      var _this2 = this;
+
       var _props4 = this.props,
           column = _props4.column,
           state = _props4.state,
@@ -197,6 +198,9 @@ var HeadingCell = function (_React$PureComponent) {
         {
           style: style,
           key: column.key,
+          ref: function ref(element) {
+            return _this2.element = element;
+          },
           className: headingCellClass(),
           onClick: this.handleSortClick
         },

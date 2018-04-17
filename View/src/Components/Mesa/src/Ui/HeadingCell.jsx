@@ -91,7 +91,6 @@ class HeadingCell extends React.PureComponent {
     const { column } = this.props;
     const { offset } = this.state;
     const { top, left, height } = offset ? offset : {};
-    console.log('got top, left, height', top, left, height);
     const position = { top: top + height, left };
 
     if (!column.helpText) return null;
@@ -116,6 +115,7 @@ class HeadingCell extends React.PureComponent {
       <th
         style={style}
         key={column.key}
+        ref={(element) => this.element = element}
         className={headingCellClass()}
         onClick={this.handleSortClick}
       >
