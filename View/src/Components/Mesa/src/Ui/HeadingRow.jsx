@@ -14,11 +14,12 @@ class HeadingRow extends React.PureComponent {
     const { isRowSelected } = options ? options : {};
     const { sort } = uiState ? uiState : {};
     const { onRowSelect, onRowDeselect } = eventHandlers ? eventHandlers : {};
+    const rowList = this.props.rows;
     const hasSelectionColumn = typeof isRowSelected === 'function'
       && typeof onRowSelect === 'function'
       && typeof onRowDeselect === 'function';
 
-      console.log('USING ROWS!', rows);
+      console.log('USING ROWS!', rowList);
 
 
     return (
@@ -27,7 +28,7 @@ class HeadingRow extends React.PureComponent {
           ? null
           : <SelectionCell
               heading={true}
-              rows={rows}
+              rows={rowList}
               eventHandlers={eventHandlers}
               isRowSelected={isRowSelected}
             />
