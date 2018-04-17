@@ -94,24 +94,17 @@ class HeadingCell extends React.PureComponent {
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-  renderContent () {
-    const { column, columnIndex } = this.props;
+  wrapContent (content = null) {
     const SortTrigger = this.renderSortTrigger;
     const HelpTrigger = this.renderHelpTrigger;
     const ClickBoundary = this.renderClickBoundary;
-
-    if ('renderHeading' in column && typeof column.renderHeading === 'function')
-      return column.renderHeading(column, columnIndex, { SortTrigger, HelpTrigger, ClickBoundary });
-    if ('renderHeading' in column && column.renderHeading === false)
-      return null;
-
     return (
       <div className={headingCellClass('Content')}>
         <div className={headingCellClass(['Content', 'Aside'])}>
           <SortTrigger />
         </div>
         <div className={headingCellClass(['Content', 'Label'])}>
-          {Templates.heading(column, columnIndex)}
+          {content}
         </div>
         <div className={headingCellClass(['Content', 'Aside'])}>
           <ClickBoundary>
@@ -120,6 +113,30 @@ class HeadingCell extends React.PureComponent {
         </div>
       </div>
     );
+  }
+
+  renderContent () {
+    const { column, columnIndex, headingRowIndex } = this.props;
+    const SortTrigger = this.renderSortTrigger;
+    const HelpTrigger = this.renderHelpTrigger;
+    const ClickBoundary = this.renderClickBoundary;
+
+    if ('renderHeading' in column && column.renderHeading === false)
+      return null;
+    if (!'renderHeading' in column || typeof column.renderHeading !== 'function')
+      return this.wrapContent(Templates.heading(column, columnIndex));
+
+    const content = column.renderHeading(column, columnIndex, { SortTrigger, HelpTrigger, ClickBoundary });
+
+    let shouldWrap;
+    const { wrapCustomHeadings } = column;
+
+    if (wrapCustomHeadings && typeof wrapCustomHeadings === 'function')
+      shouldWrap = wrapCustomHeadings({ column, columnIndex, headingRowIndex });
+    else
+      shouldWrap = wrapCustomHeadings;
+
+    return shouldWrap ? this.wrapContent(content) : content;
   }
 
   renderClickBoundary ({ children }) {

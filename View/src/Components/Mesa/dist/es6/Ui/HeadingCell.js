@@ -150,19 +150,13 @@ var HeadingCell = function (_React$PureComponent) {
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
   }, {
-    key: 'renderContent',
-    value: function renderContent() {
-      var _props2 = this.props,
-          column = _props2.column,
-          columnIndex = _props2.columnIndex;
+    key: 'wrapContent',
+    value: function wrapContent() {
+      var content = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       var SortTrigger = this.renderSortTrigger;
       var HelpTrigger = this.renderHelpTrigger;
       var ClickBoundary = this.renderClickBoundary;
-
-      if ('renderHeading' in column && typeof column.renderHeading === 'function') return column.renderHeading(column, columnIndex, { SortTrigger: SortTrigger, HelpTrigger: HelpTrigger, ClickBoundary: ClickBoundary });
-      if ('renderHeading' in column && column.renderHeading === false) return null;
-
       return _react2.default.createElement(
         'div',
         { className: headingCellClass('Content') },
@@ -174,7 +168,7 @@ var HeadingCell = function (_React$PureComponent) {
         _react2.default.createElement(
           'div',
           { className: headingCellClass(['Content', 'Label']) },
-          _Templates2.default.heading(column, columnIndex)
+          content
         ),
         _react2.default.createElement(
           'div',
@@ -186,6 +180,31 @@ var HeadingCell = function (_React$PureComponent) {
           )
         )
       );
+    }
+  }, {
+    key: 'renderContent',
+    value: function renderContent() {
+      var _props2 = this.props,
+          column = _props2.column,
+          columnIndex = _props2.columnIndex,
+          headingRowIndex = _props2.headingRowIndex;
+
+      var SortTrigger = this.renderSortTrigger;
+      var HelpTrigger = this.renderHelpTrigger;
+      var ClickBoundary = this.renderClickBoundary;
+
+      if ('renderHeading' in column && column.renderHeading === false) return null;
+      if (!'renderHeading' in column || typeof column.renderHeading !== 'function') return this.wrapContent(_Templates2.default.heading(column, columnIndex));
+
+      var content = column.renderHeading(column, columnIndex, { SortTrigger: SortTrigger, HelpTrigger: HelpTrigger, ClickBoundary: ClickBoundary });
+
+      var shouldWrap = void 0;
+      var wrapCustomHeadings = column.wrapCustomHeadings;
+
+
+      if (wrapCustomHeadings && typeof wrapCustomHeadings === 'function') shouldWrap = wrapCustomHeadings({ column: column, columnIndex: columnIndex, headingRowIndex: headingRowIndex });else shouldWrap = wrapCustomHeadings;
+
+      return shouldWrap ? this.wrapContent(content) : content;
     }
   }, {
     key: 'renderClickBoundary',
