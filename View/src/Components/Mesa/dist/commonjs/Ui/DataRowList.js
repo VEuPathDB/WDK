@@ -1,1 +1,62 @@
-'use strict';var _extends=Object.assign||function(target){for(var source,i=1;i<arguments.length;i++)for(var key in source=arguments[i],source)Object.prototype.hasOwnProperty.call(source,key)&&(target[key]=source[key]);return target},_createClass=function(){function defineProperties(target,props){for(var descriptor,i=0;i<props.length;i++)descriptor=props[i],descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,'value'in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),_react=require('react'),_react2=_interopRequireDefault(_react),_DataRow=require('../Ui/DataRow'),_DataRow2=_interopRequireDefault(_DataRow);Object.defineProperty(exports,'__esModule',{value:!0});function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj}}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError('Cannot call a class as a function')}function _possibleConstructorReturn(self,call){if(!self)throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');return call&&('object'==typeof call||'function'==typeof call)?call:self}function _inherits(subClass,superClass){if('function'!=typeof superClass&&null!==superClass)throw new TypeError('Super expression must either be null or a function, not '+typeof superClass);subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,enumerable:!1,writable:!0,configurable:!0}}),superClass&&(Object.setPrototypeOf?Object.setPrototypeOf(subClass,superClass):subClass.__proto__=superClass)}var DataRowList=function(_React$Component){function DataRowList(props){return _classCallCheck(this,DataRowList),_possibleConstructorReturn(this,(DataRowList.__proto__||Object.getPrototypeOf(DataRowList)).call(this,props))}return _inherits(DataRowList,_React$Component),_createClass(DataRowList,[{key:'render',value:function render(){var props=this.props,rows=props.rows;return _react2.default.createElement('tbody',null,rows.map(function(row,rowIndex){return _react2.default.createElement(_DataRow2.default,_extends({row:row,key:rowIndex,rowIndex:rowIndex},props))}))}}]),DataRowList}(_react2.default.Component);exports.default=DataRowList;
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _DataRow = require('../Ui/DataRow');
+
+var _DataRow2 = _interopRequireDefault(_DataRow);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DataRowList = function (_React$Component) {
+  _inherits(DataRowList, _React$Component);
+
+  function DataRowList(props) {
+    _classCallCheck(this, DataRowList);
+
+    return _possibleConstructorReturn(this, (DataRowList.__proto__ || Object.getPrototypeOf(DataRowList)).call(this, props));
+  }
+
+  _createClass(DataRowList, [{
+    key: 'render',
+    value: function render() {
+      var props = this.props;
+      var rows = props.rows;
+
+
+      return _react2.default.createElement(
+        'tbody',
+        null,
+        rows.map(function (row, rowIndex) {
+          return _react2.default.createElement(_DataRow2.default, _extends({
+            row: row,
+            key: rowIndex,
+            rowIndex: rowIndex
+          }, props));
+        })
+      );
+    }
+  }]);
+
+  return DataRowList;
+}(_react2.default.Component);
+
+;
+
+exports.default = DataRowList;
