@@ -1,0 +1,67 @@
+@import 'palette';
+@import 'fonts';
+
+body {
+  @extend .sans;
+  @extend .black;
+  @extend .white-bg;
+}
+
+.ConfigMenu {
+  .ConfigMenu-Item {
+    transition: all 0.5s;
+    background-color: #e0e3e4;
+    margin: 20px;
+    color: #333;
+    padding: 20px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    &:hover {
+      transform: scale(0.95);
+    }
+    &.active {
+      background-color: $blue;
+      color: $white;
+    }
+  }
+}
+
+.Header {
+  background-color: #fff;
+
+  grid {
+    align-items: center;
+    box {
+      flex-grow: 1;
+
+      &.attribution {
+        @extend .red;
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-align: right;
+        text-shadow: 0px 0px 3px $white;
+      }
+    }
+  }
+
+  h1 {
+    padding: 30px 0;
+    font-weight: 800;
+    font-size: 1.5rem;
+  }
+}
+
+.RawTable, .CustomTable {
+  font-size: 15px;
+  padding: 35px;
+  grid, grid-fluid {
+    overflow: hidden;
+    flex-wrap: wrap;
+    box {
+      max-width: 100%;
+    }
+  }
+}
