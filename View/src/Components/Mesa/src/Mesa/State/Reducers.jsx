@@ -32,12 +32,12 @@ export default function ReducerFactory (base = {}) {
         return Object.assign({}, state, { ui });
       }
 
-      case 'SET_ITEMS_PER_PAGE': {
+      case 'SET_PAGINATED_ITEMS_PER_PAGE': {
         let { itemsPerPage } = action;
         let { ui } = state;
         let { pagination } = ui;
         pagination = Object.assign({}, pagination, { itemsPerPage });
-        ui = Object.assign({}, ui, pagination);
+        ui = Object.assign({}, ui, { pagination });
         return Object.assign({}, state, { ui });
       }
 
