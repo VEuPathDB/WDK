@@ -77,4 +77,7 @@ class Tooltip extends React.Component {
   }
 };
 
+Tooltip.contextTypes = {
+  yo: PropTypes.string
+};
 export default Tooltip;
