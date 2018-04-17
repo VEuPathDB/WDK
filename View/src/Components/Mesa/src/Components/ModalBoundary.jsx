@@ -13,7 +13,6 @@ class ModalBoundary extends React.Component {
       modals: []
     };
 
-    this.componentDidMount = this.componentDidMount.bind(this);
     this.getChildContext = this.getChildContext.bind(this);
     this.addModal = this.addModal.bind(this);
     this.removeModal = this.removeModal.bind(this);
