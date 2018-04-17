@@ -164,6 +164,7 @@ var HeadingCell = function (_React$PureComponent) {
           left = _ref5.left,
           height = _ref5.height;
 
+      console.log('got top, left, height', top, left, height);
       var position = { top: top + height, left: left };
 
       if (!column.helpText) return null;
