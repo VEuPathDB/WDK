@@ -6,13 +6,19 @@ import { EventsFactory } from '../Utils/Events';
 class Tooltip extends React.Component {
   constructor (props) {
     super(props);
+
+    this.state = {
+      isFocus: false,
+      isHovered: false,
+    };
+
     this.showTooltip = this.showTooltip.bind(this);
     this.hideTooltip = this.hideTooltip.bind(this);
     this.renderTooltipBox = this.renderTooltipBox.bind(this);
     this.engageTooltip = this.engageTooltip.bind(this);
+    this.getHideDelay = this.getHideDelay.bind(this);
     this.disengageTooltip = this.disengageTooltip.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
-    this.state = { isFocus: false, isHovered: false };
   }
 
   static getOffset (node) {
@@ -48,6 +54,13 @@ class Tooltip extends React.Component {
     if (this.events) this.events.clearAll();
   }
 
+  getHideDelay () {
+    let { hideDelay } = this.props;
+    return typeof hideDelay === 'number'
+      ? hideDelay
+      : 500;
+  }
+
   showTooltip () {
     if (this.id) return;
     const { addModal } = this.context;
@@ -66,8 +79,7 @@ class Tooltip extends React.Component {
   }
 
   disengageTooltip () {
-    let { hideDelay } = this.props;
-    hideDelay = typeof hideDelay === 'number' ? hideDelay : 500;
+    const hideDelay = this.getHideDelay();
     if (this.showTimeout) clearTimeout(this.showTimeout);
     this.hideTimeout = setTimeout(this.hideTooltip, hideDelay);
   }
@@ -86,8 +98,9 @@ class Tooltip extends React.Component {
   }
 
   renderTooltipBox () {
+    const { isDisengaged } = this.state;
     const { content, position, style, renderHtml } = this.props;
-    let { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
+    const { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
     const cornerClass = this.getCornerClass();
     const boxStyle = Object.assign({}, {
       top,
@@ -111,12 +124,14 @@ class Tooltip extends React.Component {
   }
 
   render () {
-    const { isFocus, isHovered } = this.state;
+    const { isFocus, isHovered, isDisengaged } = this.state;
     if (this.el && (isFocus || isHovered)) this.engageTooltip();
     else this.disengageTooltip();
 
     const { children, className } = this.props;
-    const fullClassName = 'Tooltip' + (className ? ' ' + className : '');
+    const fullClassName = 'Tooltip'
+      + (isDisengaged ? ' Tooltip--Disengaged' : '')
+      + (className ? ' ' + className : '');
     return (
       <div
         tabIndex={0}
