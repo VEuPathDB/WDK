@@ -174,7 +174,7 @@ var MesaController = function (_React$Component) {
 
 ;
 
-_DataTable2.default.propTypes = {
+MesaController.propTypes = {
   rows: _propTypes2.default.array,
   columns: _propTypes2.default.array,
   options: _propTypes2.default.object,

@@ -54,10 +54,23 @@ export function numberSort (list, key, ascending = true) {
   return ascending ? result.reverse() : result;
 };
 
-export function textSort (list, key, ascending = true) {
+export function arraysMatch (a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return undefined;
+  if (a.length !== b.length) return false;
+  while (a.length) {
+    if (a.shift() !== b.shift()) return false;
+  }
+  return true;
+}
+
+export function textSort (_list, key, ascending = true) {
+  const list = [..._list];
   const accessor = (val) => typeof val[key] === 'string'
     ? val[key].trim()
     : stringValue(val[key]);
-  const result = list.sort(sortFactory(accessor));
+  const preSort = list.map(accessor);
+  const sorted = list.sort(sortFactory(accessor));
+  const postSort = sorted.map(accessor);
+  const result = arraysMatch(preSort, postSort) ? list : sorted;
   return ascending ? result.reverse() : result;
 };
