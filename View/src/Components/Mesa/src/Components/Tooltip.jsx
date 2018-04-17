@@ -26,8 +26,15 @@ class Tooltip extends React.Component {
         Please use a <ModalBoundary> in your element tree to catch modals.
       `);
     }
+    if (!this.el) {
+      console.error(`
+        Tooltip Error: Can't setup focusIn/focusOut events.
+        Element ref could not be found.
+      `);
+    }
     this.events = EventsFactory(this.el);
-    this.events.add('focusIn', () => console.log('focus in detected brah'));
+    this.events.add('focusIn', () => this.engageTooltip());
+    this.events.add('focusOut', () => this.disengageTooltip());
   }
 
   showTooltip () {

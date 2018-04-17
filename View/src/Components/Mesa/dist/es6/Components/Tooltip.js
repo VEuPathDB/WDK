@@ -44,6 +44,8 @@ var Tooltip = function (_React$Component) {
   _createClass(Tooltip, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      var _this2 = this;
+
       var _context = this.context,
           addModal = _context.addModal,
           removeModal = _context.removeModal;
@@ -51,9 +53,15 @@ var Tooltip = function (_React$Component) {
       if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
         throw new Error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
       }
+      if (!this.el) {
+        console.error('\n        Tooltip Error: Can\'t setup focusIn/focusOut events.\n        Element ref could not be found.\n      ');
+      }
       this.events = (0, _Events.EventsFactory)(this.el);
       this.events.add('focusIn', function () {
-        return console.log('focus in detected brah');
+        return _this2.engageTooltip();
+      });
+      this.events.add('focusOut', function () {
+        return _this2.disengageTooltip();
       });
     }
   }, {
@@ -69,14 +77,14 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'engageTooltip',
     value: function engageTooltip() {
-      var _this2 = this;
+      var _this3 = this;
 
       var showDelay = this.props.showDelay;
 
       showDelay = typeof showDelay === 'number' ? showDelay : 250;
       this.showTimeout = setTimeout(function () {
-        _this2.showTooltip();
-        if (_this2.hideTimeout) clearTimeout(_this2.hideTimeout);
+        _this3.showTooltip();
+        if (_this3.hideTimeout) clearTimeout(_this3.hideTimeout);
       }, showDelay);
     }
   }, {
@@ -134,7 +142,7 @@ var Tooltip = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _this3 = this;
+      var _this4 = this;
 
       var children = this.props.children;
 
@@ -145,7 +153,7 @@ var Tooltip = function (_React$Component) {
           tabIndex: 0,
           className: className,
           ref: function ref(el) {
-            return _this3.el = el;
+            return _this4.el = el;
           },
           onFocus: this.engageTooltip,
           onBlur: this.disengageTooltip,
