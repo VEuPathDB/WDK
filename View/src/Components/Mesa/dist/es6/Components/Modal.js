@@ -58,7 +58,8 @@ var Modal = function (_React$Component) {
 ;
 
 Modal.contextTypes = {
-  yo: _propTypes2.default.string
+  addModal: _propTypes2.default.func,
+  removeModal: _propTypes2.default.func
 };
 
 exports.default = Modal;

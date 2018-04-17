@@ -25,7 +25,8 @@ class Modal extends React.Component {
 };
 
 Modal.contextTypes = {
-  yo: PropTypes.string
+  addModal: PropTypes.func,
+  removeModal: PropTypes.func
 };
 
 export default Modal;
