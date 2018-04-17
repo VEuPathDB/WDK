@@ -32,7 +32,7 @@ class SelectionCell extends React.PureComponent {
   renderPageCheckbox () {
     const { rows, isRowSelected, eventHandlers, inert } = this.props;
     const selection = rows.filter(isRowSelected);
-    const checked = rows.every(isRowSelected);
+    const checked = rows.length && rows.every(isRowSelected);
 
     let handler = (e) => {
       e.stopPropagation();
