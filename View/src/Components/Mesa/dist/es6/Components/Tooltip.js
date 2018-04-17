@@ -112,7 +112,7 @@ var Tooltip = function (_React$Component) {
   }], [{
     key: 'getOffset',
     value: function getOffset(node) {
-      return node.getClientBoundingRect();
+      return node.getBoundingClientRect();
       // let top = 0;
       // let left = 0;
       // let height = node.offsetHeight;
