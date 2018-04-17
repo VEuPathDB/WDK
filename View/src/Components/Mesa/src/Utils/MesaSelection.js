@@ -15,20 +15,28 @@ export const selectionFromRows = (rows, idAccessor) => {
 export const addRowToSelection = (_selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('addRowToSelection', 'idAccessor', 'function', typeof idAccessor);
-  const selection = new Set(_selection);
   const id = idAccessor(row);
-  selection.add(id);
-  return [...selection]
+  return addIdToSelection(_selection, id);
 };
+
+export const addIdToSelection = (_selection, id) => {
+  const selection = new Set(_selection);
+  selection.add(id);
+  return [...selection];
+}
 
 export const removeRowFromSelection = (_selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
     return badType('removeRowFromSelection', 'idAccessor', 'function', typeof idAccessor);
-  const selection = new Set(_selection);
   const id = idAccessor(row);
+  return removeIdFromSelection(_selection, id);
+};
+
+export const removeIdFromSelection = (_selection, id) => {
+  const selection = new Set(_selection);
   selection.delete(id);
   return [...selection];
-};
+}
 
 export const isRowSelected = (selection, row, idAccessor) => {
   if (typeof idAccessor !== 'function')
