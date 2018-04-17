@@ -43,7 +43,7 @@ class DataCell extends React.PureComponent {
     };
 
     width = (typeof width === 'number' ? width + 'px' : width);
-    width = width ? { width } : {};
+    width = width ? { width, maxWidth: width, minWidth: width } : {};
 
     const cellStyle = Object.assign({}, style, width, whiteSpace);
 
