@@ -1,34 +1,22 @@
 .DataTable {
-  overflow-x: auto;
-  overflow-y: inherit;
   font-size: $fontSize;
   width: 100%;
+
   table {
     width: 100%;
   }
+
   .DataTable-Sticky {
-    display: block;
     width: 100%;
-    // overflow-x: visible;
-    // overflow-y: visible;
     max-width: 100%;
-    position: relative;
 
     .DataTable-Header, .DataTable-Body {
-      display: block;
-      width: 100%;
-      max-width: none;
-      table {
-        table-layout: fixed;
-        width: 100%;
-      }
+      table { table-layout: fixed; }
     }
     .DataTable-Body {
-      // overflow-x: visible;
-      // overflow-y: auto;
+      display: block;
+      overflow-y: auto;
     }
-    .DataTable-Header {
-      position: absolute;
-    }
+    .DataTable-Header {}
   }
 }
