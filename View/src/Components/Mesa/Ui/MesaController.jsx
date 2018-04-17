@@ -69,8 +69,13 @@ class MesaController extends React.Component {
         <Toolbar />
         <ActionBar />
         <PageNav />
-        {filteredRows.length
-          ? <DataTable {...props} />
+        {rows.length
+          ? (
+            <React.Fragment>
+              <DataTable {...props} />
+              {filteredRows.length ? null : <Empty/>}
+            </React.Fragment>
+          )
           : <Empty />
         }
         <PageNav />
