@@ -132,8 +132,8 @@ var MesaController = function (_React$Component) {
       return renderEmptyState ? renderEmptyState() : _react2.default.createElement(_EmptyState2.default, { culprit: emptinessCulprit });
     }
   }, {
-    key: 'renderBody',
-    value: function renderBody() {
+    key: 'render',
+    value: function render() {
       var _props5 = this.props,
           rows = _props5.rows,
           filteredRows = _props5.filteredRows,
@@ -143,23 +143,6 @@ var MesaController = function (_React$Component) {
           uiState = _props5.uiState,
           eventHandlers = _props5.eventHandlers;
 
-      var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
-      var Empty = this.renderEmptyState;
-
-      return rows.length ? _react2.default.createElement(_DataTable2.default, props) : _react2.default.createElement(Empty, null);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var _props6 = this.props,
-          rows = _props6.rows,
-          filteredRows = _props6.filteredRows,
-          options = _props6.options,
-          columns = _props6.columns,
-          actions = _props6.actions,
-          uiState = _props6.uiState,
-          eventHandlers = _props6.eventHandlers;
-
       if (!filteredRows) filteredRows = [].concat(_toConsumableArray(rows));
       var props = { rows: rows, filteredRows: filteredRows, options: options, columns: columns, actions: actions, uiState: uiState, eventHandlers: eventHandlers };
 
@@ -167,6 +150,7 @@ var MesaController = function (_React$Component) {
       var Toolbar = this.renderToolbar;
       var ActionBar = this.renderActionBar;
       var PageNav = this.renderPaginationMenu;
+      var Empty = this.renderEmptyState;
 
       return _react2.default.createElement(
         'div',
@@ -174,7 +158,7 @@ var MesaController = function (_React$Component) {
         _react2.default.createElement(Toolbar, null),
         _react2.default.createElement(ActionBar, null),
         _react2.default.createElement(PageNav, null),
-        _react2.default.createElement(Body, null),
+        rows.length ? _react2.default.createElement(_DataTable2.default, props) : _react2.default.createElement(Empty, null),
         _react2.default.createElement(PageNav, null)
       );
     }
