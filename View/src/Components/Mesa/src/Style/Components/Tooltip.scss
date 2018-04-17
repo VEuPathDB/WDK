@@ -1,0 +1,12 @@
+.Tooltip {
+  position: relative;
+  .Tooltip-Text {
+    position:absolute;
+    bottom: 0;
+    right: 0;
+    display: block;
+    padding: 5px;
+    background-color: #FFF;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+  }
+}
