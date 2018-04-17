@@ -79,7 +79,7 @@ class ActionToolbar extends React.PureComponent {
 ActionToolbar.propTypes = {
   rows: PropTypes.array,
   actions: PropTypes.array,
-  eventHandlers: PropTypes.array
+  eventHandlers: PropTypes.object
 };
 
 export default ActionToolbar;
