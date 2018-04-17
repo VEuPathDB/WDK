@@ -41,15 +41,19 @@ var Tooltip = function (_React$Component) {
   _createClass(Tooltip, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      console.log('hi lol');
-      console.log(this.context);
+      var _context = this.context,
+          addModal = _context.addModal,
+          removeModal = _context.removeModal;
+
+      if (typeof addModal !== 'function' || typeof removeModal !== 'function') {
+        throw new Error('\n        Tooltip Error: No "addModal" or "removeModal" detected in context.\n        Please use a <ModalBoundary> in your element tree to catch modals.\n      ');
+      }
     }
   }, {
     key: 'showTooltip',
     value: function showTooltip() {
       var showText = true;
       var textBox = { render: this.renderTextBox };
-      // this.setState({ showText });
       this.context.addModal(textBox);
     }
   }, {
@@ -57,7 +61,6 @@ var Tooltip = function (_React$Component) {
     value: function hideTooltip() {
       var showText = false;
       var textBox = { render: this.renderTextBox };
-      // this.setState({ showText
       this.context.removeModal(textBox);
     }
   }, {
@@ -66,7 +69,6 @@ var Tooltip = function (_React$Component) {
       var _props = this.props,
           text = _props.text,
           position = _props.position;
-      var showText = this.state.showText;
 
       var _ref = position ? position : { top: 0, left: 0 },
           top = _ref.top,
@@ -80,7 +82,7 @@ var Tooltip = function (_React$Component) {
         zIndex: 1000000
       };
 
-      return !showText ? null : _react2.default.createElement(
+      return _react2.default.createElement(
         'div',
         {
           style: textStyle,
