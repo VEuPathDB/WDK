@@ -146,6 +146,35 @@ const Utils = {
       else output += index.toString();
     };
     return output;
+  },
+
+  keysInList (list, blacklist = []) {
+    if (!Array.isArray(list) || list.some(item => typeof item !== 'object')) return list;
+    return list.reduce((keys, currentValue) => {
+      Object.keys(currentValue)
+        .forEach(key => keys.includes(key) || blacklist.includes(key) || keys.push(key));
+      return keys;
+    }, []);
+  },
+
+  createCsv (rows, columns) {
+    if (!columns) columns = Utils.keysInList(rows).map(key => { key });
+    columns = columns.filter(column => !column.hidden && !column.disabled);
+
+    let outputLines = [];
+    let keys = columns.map(({ key }) => key);
+    let names = columns.map(column => column.name ? column.name : column.key);
+    outputLines.push(names.join(','));
+    rows.forEach(row => {
+      let values = keys.map(key => {
+        return Utils
+          .stringValue(row[key])
+          .replace(',', '\,')
+          .replace('\n', '');
+      });
+      outputLines.push(values.join(','));
+    });
+    return outputLines.join('\n');
   }
 
 };

@@ -1,5 +1,5 @@
 import Utils from 'Mesa/Utils/Utils';
-import { ColumnDefaults, OptionsDefaults } from 'Mesa/Defaults';
+import { ColumnDefaults, OptionsDefaults, ActionDefaults } from 'Mesa/Defaults';
 
 const Importer = {
   homogenizeColumn (column = {}, rows = [], options = {}) {
@@ -16,13 +16,8 @@ const Importer = {
   },
 
   columnsFromRows (rows = [], options) {
-    const keys = [];
     if (!Array.isArray(rows)) return [];
-    rows.forEach(row => {
-      Object.keys(row).forEach(prop => {
-        if (prop !== '__id' && keys.indexOf(prop) < 0) keys.push(prop)
-      });
-    });
+    const keys = Utils.keysInList(rows, ['__id']);
     return keys.map(key => Importer.homogenizeColumn({ key }, rows, options));
   },
 
@@ -75,8 +70,9 @@ const Importer = {
 
   importActions (actions, options = {}) {
     if (!actions || !Array.isArray(actions) || actions.some(action => typeof action !== 'object')) return [];
+    actions = (options.useDefaultActions ? [...actions, ...ActionDefaults] : actions);
     actions = actions.map(action => {
-      let __id = Utils.uid();
+      let __id = action.__id ? action.__id : Utils.uid();
       return Object.assign({}, action, { __id });
     });
     return actions;

@@ -20,11 +20,11 @@ class ActionToolbar extends React.PureComponent {
 
   dispatchAction (action) {
     const { handler, callback } = action;
-    const { columns } = this.props.state;
+    const { columns, rows } = this.props.state;
     const selectedRows = this.getSelectedRows();
 
     if (typeof handler === 'function') selectedRows.forEach(row => handler(row, columns));
-    if (typeof callback === 'function') callback(selectedRows, columns);
+    if (typeof callback === 'function') callback(selectedRows, columns, rows);
   }
 
   renderActionItem (action) {

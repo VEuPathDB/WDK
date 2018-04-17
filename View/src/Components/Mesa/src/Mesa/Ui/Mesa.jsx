@@ -27,7 +27,7 @@ class Mesa extends React.Component {
     rows = Importer.importRows(rows);
     options = Importer.importOptions(options);
     columns = Importer.importColumns(columns, rows, options);
-    actions = Importer.importActions(actions);
+    actions = Importer.importActions(actions, options);
     this.store = StoreFactory.create({ options, columns, rows, actions });
     this.setState(this.store.getState());
   }
