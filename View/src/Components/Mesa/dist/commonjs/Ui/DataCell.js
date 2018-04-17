@@ -32,7 +32,10 @@ var DataCell = function (_React$PureComponent) {
   function DataCell(props) {
     _classCallCheck(this, DataCell);
 
-    return _possibleConstructorReturn(this, (DataCell.__proto__ || Object.getPrototypeOf(DataCell)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (DataCell.__proto__ || Object.getPrototypeOf(DataCell)).call(this, props));
+
+    _this.renderContent = _this.renderContent.bind(_this);
+    return _this;
   }
 
   _createClass(DataCell, [{
