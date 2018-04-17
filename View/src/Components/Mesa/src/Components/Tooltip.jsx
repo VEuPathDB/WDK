@@ -68,10 +68,16 @@ class Tooltip extends React.Component {
     this.id = null;
   }
 
+  getCornerClass () {
+    const { corner } = this.props;
+    if (typeof corner !== 'string' || !corner.length) return 'no-corner';
+    return corner.split(' ').filter(s => s).join('-');
+  }
+
   renderTooltipBox () {
     const { content, position, style, renderHtml } = this.props;
     let { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
-
+    const cornerClass = this.getCornerClass();
     const boxStyle = Object.assign({}, {
       top,
       left,
@@ -85,7 +91,7 @@ class Tooltip extends React.Component {
     return (
       <div
         style={boxStyle}
-        className={'Tooltip-Content'}
+        className={'Tooltip-Content ' + cornerClass}
         onMouseEnter={this.engageTooltip}
         onMouseLeave={this.disengageTooltip}>
         {renderHtml ? <div dangerouslySetInnerHTML={{ __html: content }} /> : content}

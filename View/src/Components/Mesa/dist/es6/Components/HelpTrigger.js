@@ -88,7 +88,11 @@ var HelpTrigger = function (_React$Component) {
 
       return _react2.default.createElement(
         _Tooltip2.default,
-        { position: position, className: 'Trigger HelpTrigger', content: children },
+        {
+          corner: 'top-left',
+          position: position,
+          className: 'Trigger HelpTrigger',
+          content: children },
         _react2.default.createElement(
           'div',
           { ref: function ref(el) {
