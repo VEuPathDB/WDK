@@ -17,6 +17,7 @@ class HeadingCell extends React.PureComponent {
 
   componentDidMount () {
     const { element } = this.refs;
+    console.log('refs here', this.refs);
     if (!element) return;
     console.log('got element', element);
     let offset = Tooltip.getOffset(element);
@@ -92,7 +93,7 @@ class HeadingCell extends React.PureComponent {
       <th
         key={column.key}
         style={style}
-        ref={el => this.element = el}
+        ref="element"
         onClick={e => column.sortable ? this.handleSortClick() : null}
       >
         <SortTrigger />
