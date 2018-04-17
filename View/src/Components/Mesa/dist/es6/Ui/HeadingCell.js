@@ -156,12 +156,12 @@ var HeadingCell = function (_React$PureComponent) {
           column = _props2.column,
           columnIndex = _props2.columnIndex;
 
-      if ('renderHeading' in column && typeof column.renderHeading === 'function') return column.renderHeading(column, columnIndex);
-      if ('renderHeading' in column && column.renderHeading === false) return null;
-
       var SortTrigger = this.renderSortTrigger;
       var HelpTrigger = this.renderHelpTrigger;
       var ClickBoundary = this.renderClickBoundary;
+
+      if ('renderHeading' in column && typeof column.renderHeading === 'function') return column.renderHeading(column, columnIndex, { SortTrigger: SortTrigger, HelpTrigger: HelpTrigger, ClickBoundary: ClickBoundary });
+      if ('renderHeading' in column && column.renderHeading === false) return null;
 
       return _react2.default.createElement(
         'div',
@@ -311,9 +311,6 @@ var HeadingCell = function (_React$PureComponent) {
   }, {
     key: 'getDomEvents',
     value: function getDomEvents() {
-      var primary = this.props.primary;
-
-      if (!primary) return null;
       var onMouseDown = this.onMouseDown,
           onMouseUp = this.onMouseUp,
           onDragStart = this.onDragStart,
