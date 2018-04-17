@@ -38,6 +38,13 @@ var ModalBoundary = function (_React$Component) {
     key: 'componentDidMount',
     value: function componentDidMount() {}
   }, {
+    key: 'getChildContext',
+    value: function getChildContext() {
+      return {
+        yo: 'lol!'
+      };
+    }
+  }, {
     key: 'getBoundaryStyle',
     value: function getBoundaryStyle() {
       return {

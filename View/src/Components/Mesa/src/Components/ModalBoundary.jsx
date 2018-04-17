@@ -14,6 +14,12 @@ class ModalBoundary extends React.Component {
 
   }
 
+  getChildContext () {
+    return {
+      yo: 'lol!'
+    }
+  }
+
   getBoundaryStyle () {
     return {
       width: '100%',
