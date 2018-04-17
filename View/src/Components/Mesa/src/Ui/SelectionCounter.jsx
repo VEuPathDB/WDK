@@ -1,8 +1,5 @@
 import React from 'react';
 
-import PaginationUtils from '../Utils/PaginationUtils';
-import { selectRowsByIds, deselectRowsByIds, setPaginationAnchor } from '../State/Actions';
-
 class SelectionCounter extends React.Component {
   constructor (props) {
     super(props);
