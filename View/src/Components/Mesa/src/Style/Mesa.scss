@@ -1,0 +1,13 @@
+@import 'Vars';
+@import 'Rows';
+@import 'Cells';
+@import 'Components/all';
+@import 'Ui/all';
+
+.Mesa .faded {
+  opacity: 0.5;
+}
+.Mesa .disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
