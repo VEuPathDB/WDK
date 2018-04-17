@@ -41,7 +41,6 @@ class DataRow extends React.PureComponent {
   render () {
     const { row, rowIndex, columns, options, actions, eventHandlers } = this.props;
     const { expanded } = this.state;
-    const { key } = column;
     const inline = options.inline ? !expanded : false;
 
     const hasSelectionColumn = typeof options.isRowSelected === 'function'
@@ -63,7 +62,7 @@ class DataRow extends React.PureComponent {
               isRowSelected={options.isRowSelected}
             />
         }
-        {columns.map(column => <DataCell {...cellProps} />)}
+        {columns.map(column => <DataCell key={column.key} {...cellProps} />)}
       </tr>
     )
   }
