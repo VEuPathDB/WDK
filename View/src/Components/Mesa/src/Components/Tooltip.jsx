@@ -58,10 +58,10 @@ class Tooltip extends React.Component {
   }
 
   renderTooltipBox () {
-    const { content, position } = this.props;
+    const { content, position, style } = this.props;
     let { top, left, right } = position ? position : { top: 0, left: 0, right: 0 };
 
-    const boxStyle = {
+    const boxStyle = Object.assign({}, {
       top,
       left,
       right,
@@ -69,7 +69,7 @@ class Tooltip extends React.Component {
       position: 'absolute',
       pointerEvents: 'auto',
       zIndex: 1000000
-    };
+    }, style && Object.keys(style).length ? style : {});
 
     return (
       <div

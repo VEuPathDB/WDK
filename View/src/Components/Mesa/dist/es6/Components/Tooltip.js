@@ -96,14 +96,15 @@ var Tooltip = function (_React$Component) {
     value: function renderTooltipBox() {
       var _props = this.props,
           content = _props.content,
-          position = _props.position;
+          position = _props.position,
+          style = _props.style;
 
       var _ref = position ? position : { top: 0, left: 0, right: 0 },
           top = _ref.top,
           left = _ref.left,
           right = _ref.right;
 
-      var boxStyle = {
+      var boxStyle = Object.assign({}, {
         top: top,
         left: left,
         right: right,
@@ -111,7 +112,7 @@ var Tooltip = function (_React$Component) {
         position: 'absolute',
         pointerEvents: 'auto',
         zIndex: 1000000
-      };
+      }, style && Object.keys(style).length ? style : {});
 
       return _react2.default.createElement(
         'div',
