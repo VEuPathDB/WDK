@@ -2,8 +2,8 @@
   "name": "mesa",
   "version": "1.0.0",
   "description": "All-in-one table solution for React apps.",
-  "main": "dist/commonjs/Index.js",
-  "module": "dist/es6/Index.js",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/es6/index.js",
   "repository": "https://github.com/austinbillings/mesa.git",
   "author": "Austin Billings <austinjb@upenn.edu>",
   "dependencies": {
