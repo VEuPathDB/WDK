@@ -71,12 +71,6 @@ var DataTable = function (_React$Component) {
       this.headerNode.scrollLeft = offset;
     }
   }, {
-    key: 'handleTableHeaderScroll',
-    value: function handleTableHeaderScroll(e) {
-      var offset = this.headerNode.scrollLeft;
-      this.bodyNode.scrollLeft = offset;
-    }
-  }, {
     key: 'render',
     value: function render() {
       var _this2 = this;
@@ -133,9 +127,12 @@ var DataTable = function (_React$Component) {
             { className: dataTableClass('Sticky') },
             _react2.default.createElement(
               'div',
-              { ref: function ref(node) {
+              {
+                ref: function ref(node) {
                   return _this2.headerNode = node;
-                }, className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
+                },
+                className: dataTableClass('Header')
+              },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
@@ -148,9 +145,14 @@ var DataTable = function (_React$Component) {
             ),
             _react2.default.createElement(
               'div',
-              { ref: function ref(node) {
+              {
+                ref: function ref(node) {
                   return _this2.bodyNode = node;
-                }, style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
+                },
+                style: heightLayer,
+                className: dataTableClass('Body'),
+                onScroll: this.handleTableBodyScroll
+              },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
