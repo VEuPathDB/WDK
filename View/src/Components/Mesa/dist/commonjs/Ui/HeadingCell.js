@@ -53,6 +53,7 @@ var HeadingCell = function (_React$PureComponent) {
     value: function componentDidMount() {
       var element = this.refs.element;
 
+      console.log('refs here', this.refs);
       if (!element) return;
       console.log('got element', element);
       var offset = _Tooltip2.default.getOffset(element);
@@ -162,9 +163,7 @@ var HeadingCell = function (_React$PureComponent) {
         {
           key: column.key,
           style: style,
-          ref: function ref(el) {
-            return _this2.element = el;
-          },
+          ref: 'element',
           onClick: function onClick(e) {
             return column.sortable ? _this2.handleSortClick() : null;
           }
