@@ -2,10 +2,18 @@
   "name": "mesa",
   "version": "1.0.0",
   "description": "All-in-one table solution for React apps.",
-  "main": "index.jsx",
+  "main": "dist/commonjs/Index.js",
+  "module": "dist/es6/Index.js",
   "repository": "https://github.com/austinbillings/mesa.git",
   "author": "Austin Billings <austinjb@upenn.edu>",
   "dependencies": {
     "react": "^15.6.1"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "compile:cjs": "babel src --out-dir dist/commonjs",
+    "compile:es": "cross-env BABEL_ENV=es babel src --out-dir dist/es6",
+    "compile": "npm run compile:cjs && npm run compile:es",
+    "build": "npm run clean && npm run compile"
   }
 }

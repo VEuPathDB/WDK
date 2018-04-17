@@ -70,7 +70,8 @@ class Mesa extends React.Component {
     const { children } = this.props;
     const { dispatch } = this.store;
 
-    return (<div className="Mesa">
+    return (
+      <div className="Mesa">
         <TableController
           state={state}
           dispatch={dispatch}
