@@ -60,6 +60,7 @@ class Tooltip extends React.Component {
       left,
       display: 'block',
       position: 'absolute',
+      pointerEvents: 'auto',
       zIndex: 1000000
     };
 
