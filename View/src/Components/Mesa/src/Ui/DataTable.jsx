@@ -28,11 +28,11 @@ class DataTable extends React.Component {
   }
 
   handleTableBodyScroll (e) {
-    // console.log('body is at', this.refs.tableBody.scrollLeft);
+    console.log('body is at', this.bodyNode.scrollLeft);
   }
 
   handleTableHeaderScroll (e) {
-    // console.log('header is at', this.refs.tableHeader.scrollLeft);
+    console.log('header is at', this.headerNode.scrollLeft);
   }
 
   render () {
@@ -41,7 +41,7 @@ class DataTable extends React.Component {
 
     if (!this.shouldUseStickyHeader()) {
       return (
-        <div className="MesaComponent" ref="WTF">
+        <div className="MesaComponent">
           <div className={dataTableClass()}>
             <table cellSpacing="0" cellPadding="0">
               <thead>
@@ -60,17 +60,17 @@ class DataTable extends React.Component {
     const widthLayer = { minWidth: cumulativeWidth };
 
     return (
-      <div className="MesaComponent" ref={(node) => console.log(node)}>
+      <div className="MesaComponent">
         <div className={dataTableClass()}>
           <div className={dataTableClass('Sticky')}>
-            <div className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
+            <div ref={node => this.headerNode = node} className={dataTableClass('Header')} onScroll={this.handleTableHeaderScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <thead>
                   <HeadingRow {...props} />
                 </thead>
               </table>
             </div>
-            <div style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
+            <div ref={node => this.bodyNode = node} style={heightLayer} className={dataTableClass('Body')} onScroll={this.handleTableBodyScroll}>
               <table cellSpacing={0} cellPadding={0}>
                 <DataRowList {...props} />
               </table>

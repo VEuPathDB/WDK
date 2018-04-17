@@ -67,16 +67,18 @@ var DataTable = function (_React$Component) {
   }, {
     key: 'handleTableBodyScroll',
     value: function handleTableBodyScroll(e) {
-      // console.log('body is at', this.refs.tableBody.scrollLeft);
+      console.log('body is at', this.bodyNode.scrollLeft);
     }
   }, {
     key: 'handleTableHeaderScroll',
     value: function handleTableHeaderScroll(e) {
-      // console.log('header is at', this.refs.tableHeader.scrollLeft);
+      console.log('header is at', this.headerNode.scrollLeft);
     }
   }, {
     key: 'render',
     value: function render() {
+      var _this2 = this;
+
       var _props2 = this.props,
           rows = _props2.rows,
           filteredRows = _props2.filteredRows,
@@ -91,7 +93,7 @@ var DataTable = function (_React$Component) {
       if (!this.shouldUseStickyHeader()) {
         return _react2.default.createElement(
           'div',
-          { className: 'MesaComponent', ref: 'WTF' },
+          { className: 'MesaComponent' },
           _react2.default.createElement(
             'div',
             { className: dataTableClass() },
@@ -120,9 +122,7 @@ var DataTable = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'MesaComponent', ref: function ref(node) {
-            return console.log(node);
-          } },
+        { className: 'MesaComponent' },
         _react2.default.createElement(
           'div',
           { className: dataTableClass() },
@@ -131,7 +131,9 @@ var DataTable = function (_React$Component) {
             { className: dataTableClass('Sticky') },
             _react2.default.createElement(
               'div',
-              { className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
+              { ref: function ref(node) {
+                  return _this2.headerNode = node;
+                }, className: dataTableClass('Header'), onScroll: this.handleTableHeaderScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
@@ -144,7 +146,9 @@ var DataTable = function (_React$Component) {
             ),
             _react2.default.createElement(
               'div',
-              { style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
+              { ref: function ref(node) {
+                  return _this2.bodyNode = node;
+                }, style: heightLayer, className: dataTableClass('Body'), onScroll: this.handleTableBodyScroll },
               _react2.default.createElement(
                 'table',
                 { cellSpacing: 0, cellPadding: 0 },
