@@ -45,12 +45,12 @@ export default class UserDatasetListStore extends WdkStore<State> {
     switch (action.type) {
       case 'user-datasets/list-loading': return {
         ...state,
-        userDatasetsLoading: true,
-        filterByProject: true
+        userDatasetsLoading: true
       };
 
       case 'user-datasets/list-received': return {
         ...state,
+        filterByProject: action.payload.filterByProject,
         userDatasetsLoading: false,
         userDatasets: action.payload.userDatasets,
         userDatasetsById: action.payload.userDatasets.reduce((uds, ud) =>

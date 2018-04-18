@@ -14,8 +14,7 @@ import {
   shareUserDatasets,
   unshareUserDatasets,
   updateProjectFilter,
-  updateUserDatasetDetail,
-  loadProjectFilter
+  updateUserDatasetDetail
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 
 const ActionCreators = {
@@ -63,7 +62,6 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
   loadData () {
     this.dispatchAction(loadUserDatasetList());
-    this.dispatchAction(loadProjectFilter());
   }
 
   isRenderDataLoaded () {
