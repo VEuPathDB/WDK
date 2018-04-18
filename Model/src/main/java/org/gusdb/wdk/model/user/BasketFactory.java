@@ -318,7 +318,7 @@ public class BasketFactory {
     return queryBasketStatus(user, PrimaryKeyValue.toStringArrays(pksToQuery), recordClass);
   }
 
-  private List<Boolean> queryBasketStatus(User user, List<String[]> records, RecordClass recordClass) throws WdkModelException {
+  public List<Boolean> queryBasketStatus(User user, List<String[]> records, RecordClass recordClass) throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
