@@ -35,7 +35,7 @@ const ActionCreators = {
 type EventHandlers = typeof ActionCreators;
 
 /**
- * View Controller for User Dataset record.
+ * View Controller for a userDataset record.
  *
  * Note that we are accessing the userDataset from an object keyed by the
  * userDataset's id. This avoids race conditions that arise when ajax requests
@@ -75,12 +75,12 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
   getTitle () {
     const entry = this.state.userDatasetsById[this.props.match.params.id];
     if (entry && entry.resource) {
-      return `User Dataset ${entry.resource.meta.name}`;
+      return `My Data Set ${entry.resource.meta.name}`;
     }
     if (entry && !entry.resource) {
-      return `User Dataset not found`;
+      return `My Data Set not found`;
     }
-    return `User Dataset ...`;
+    return `My Data Set ...`;
   }
 
   getActionCreators () {
@@ -149,7 +149,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
 
     const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
-      ? <EmptyState message="Please log in to view and edit your user datasets."/>
+      ? <EmptyState message="Please log in to view and edit My Data Sets."/>
       : <DetailView {...props}/>
   }
 }
