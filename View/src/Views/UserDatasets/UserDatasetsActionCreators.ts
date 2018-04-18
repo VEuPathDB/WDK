@@ -1,7 +1,10 @@
-import { ActionThunk, EmptyAction, emptyAction } from "Utils/ActionCreatorUtils";
-import { UserDatasetMeta, UserDataset } from "Utils/WdkModel";
-import { ServiceError, UserDatasetShareResponse } from "Utils/WdkService";
-import { transitionToInternalPage } from "Core/ActionCreators/RouterActionCreators";
+import { get } from 'lodash';
+
+import { transitionToInternalPage } from 'Core/ActionCreators/RouterActionCreators';
+import { PreferenceUpdateAction, updateUserPreference } from 'Core/ActionCreators/UserActionCreators';
+import { ActionThunk, EmptyAction, emptyAction } from 'Utils/ActionCreatorUtils';
+import { UserDataset, UserDatasetMeta } from 'Utils/WdkModel';
+import { ServiceError, UserDatasetShareResponse } from 'Utils/WdkService';
 
 export type ListLoadingAction = {
   type: 'user-datasets/list-loading'
@@ -101,6 +104,13 @@ export type SharingErrorAction = {
   }
 }
 
+export type ProjectFilterAction = {
+  type: 'user-datasets/project-filter-preference-received',
+  payload: {
+    filterByProject: boolean
+  }
+}
+
 type ListAction = ListLoadingAction|ListReceivedAction|ListErrorReceivedAction;
 type DetailAction = DetailLoading|DetailReceivedAction|DetailErrorAction;
 type UpdateAction = DetailUpdatingAction|DetailUpdateSuccessAction|DetailUpdateErrorAction;
@@ -181,4 +191,27 @@ export function removeUserDataset (userDataset: UserDataset, redirectTo?: string
         (error: ServiceError) => (<DetailRemoveErrorAction>{ type: 'user-datasets/detail-remove-error', payload: { error } })
       )
   ];
+}
+
+const FILTER_BY_PROJECT_PREF = 'userDatasets.filterByProject';
+
+function projectFilterPreferenceReceived(filterByProject: boolean): ProjectFilterAction {
+  return { type: 'user-datasets/project-filter-preference-received', payload: { filterByProject } };
+}
+
+export function updateProjectFilter (filterByProject: boolean): ActionThunk<PreferenceUpdateAction|ProjectFilterAction> {
+  return () => [
+    updateUserPreference('global', FILTER_BY_PROJECT_PREF, JSON.stringify(filterByProject)),
+    projectFilterPreferenceReceived(filterByProject)
+  ];
+}
+
+export function loadProjectFilter(): ActionThunk<ProjectFilterAction> {
+  return ({ wdkService }) => wdkService.getCurrentUserPreferences()
+    .then(
+      preferences => get(preferences.project, FILTER_BY_PROJECT_PREF, 'true') !== 'false',
+      // ignore error and default to true
+      () => true
+    )
+    .then(projectFilterPreferenceReceived)
 }
