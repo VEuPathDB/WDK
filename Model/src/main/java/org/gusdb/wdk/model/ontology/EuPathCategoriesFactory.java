@@ -91,6 +91,10 @@ public class EuPathCategoriesFactory {
       { "Households", "DS_0ad509829eHouseholdRecordClasses.DS_0ad509829eHouseholdRecordClass" },
       { "Observations", "DS_0ad509829eObservationRecordClasses.DS_0ad509829eObservationRecordClass" },
       { "CDC Light Traps", "DS_0ad509829eLightTrapRecordClasses.DS_0ad509829eLightTrapRecordClass" },
+      //India
+      { "Participants", "DS_f6c59e88c1ParticipantRecordClasses.DS_f6c59e88c1ParticipantRecordClass" },
+      { "Households", "DS_f6c59e88c1HouseholdRecordClasses.DS_f6c59e88c1HouseholdRecordClass" },
+      { "Observations", "DS_f6c59e88c1ObservationRecordClasses.DS_f6c59e88c1ObservationRecordClass" },
       //Maled DCC phase1
       { "Participants", "DS_121f2c2f02ParticipantRecordClasses.DS_121f2c2f02ParticipantRecordClass" },
       { "Observations", "DS_121f2c2f02ObservationRecordClasses.DS_121f2c2f02ObservationRecordClass" },
