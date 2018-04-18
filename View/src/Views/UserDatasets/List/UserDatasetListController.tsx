@@ -17,7 +17,6 @@ import {
   updateUserDatasetDetail,
   loadProjectFilter
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
-import { FILTER_BY_PROJECT_PREF } from 'Views/UserDatasets/UserDatasetUtils';
 
 const ActionCreators = {
   updateUserDatasetDetail,
