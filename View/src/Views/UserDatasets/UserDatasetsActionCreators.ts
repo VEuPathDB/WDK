@@ -13,7 +13,8 @@ export type ListLoadingAction = {
 export type ListReceivedAction = {
   type: 'user-datasets/list-received',
   payload: {
-    userDatasets: UserDataset[]
+    userDatasets: UserDataset[],
+    filterByProject: boolean;
   }
 }
 
@@ -117,11 +118,22 @@ type UpdateAction = DetailUpdatingAction|DetailUpdateSuccessAction|DetailUpdateE
 type RemovalAction = DetailRemovingAction|DetailRemoveSuccessAction|DetailRemoveErrorAction;
 type SharingAction = SharingDatasetAction|SharingSuccessAction|SharingErrorAction;
 
+const FILTER_BY_PROJECT_PREF = 'userDatasets.filterByProject';
+
 export function loadUserDatasetList(): ActionThunk<ListAction> {
   return ({ wdkService }) => [
     <ListLoadingAction>{ type: 'user-datasets/list-loading' },
-    wdkService.getCurrentUserDatasets().then(
-      userDatasets => (<ListReceivedAction>{ type: 'user-datasets/list-received', payload: { userDatasets } }),
+    Promise.all([
+      wdkService.getCurrentUserPreferences()
+        .then(
+          preferences => get(preferences.project, FILTER_BY_PROJECT_PREF, 'true') !== 'false',
+          // ignore error and default to true
+          () => true
+        ),
+      wdkService.getCurrentUserDatasets()
+    ])
+      .then(
+      ([ filterByProject, userDatasets ]) => (<ListReceivedAction>{ type: 'user-datasets/list-received', payload: { userDatasets, filterByProject } }),
       (error: ServiceError) => (<ListErrorReceivedAction>{ type: 'user-datasets/list-error', payload: { error } })
     )
   ];
@@ -193,12 +205,6 @@ export function removeUserDataset (userDataset: UserDataset, redirectTo?: string
   ];
 }
 
-const FILTER_BY_PROJECT_PREF = 'userDatasets.filterByProject';
-
-function projectFilterPreferenceReceived(filterByProject: boolean): ProjectFilterAction {
-  return { type: 'user-datasets/project-filter-preference-received', payload: { filterByProject } };
-}
-
 export function updateProjectFilter (filterByProject: boolean): ActionThunk<PreferenceUpdateAction|ProjectFilterAction> {
   return () => [
     updateUserPreference('global', FILTER_BY_PROJECT_PREF, JSON.stringify(filterByProject)),
@@ -206,12 +212,6 @@ export function updateProjectFilter (filterByProject: boolean): ActionThunk<Pref
   ];
 }
 
-export function loadProjectFilter(): ActionThunk<ProjectFilterAction> {
-  return ({ wdkService }) => wdkService.getCurrentUserPreferences()
-    .then(
-      preferences => get(preferences.project, FILTER_BY_PROJECT_PREF, 'true') !== 'false',
-      // ignore error and default to true
-      () => true
-    )
-    .then(projectFilterPreferenceReceived)
+function projectFilterPreferenceReceived(filterByProject: boolean): ProjectFilterAction {
+  return { type: 'user-datasets/project-filter-preference-received', payload: { filterByProject } };
 }
