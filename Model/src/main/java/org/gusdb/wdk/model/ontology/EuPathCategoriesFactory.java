@@ -147,6 +147,7 @@ public class EuPathCategoriesFactory {
       case "MicrobiomeDB": infos = mbioRecordClassInfo;    break;
       case "ClinEpiDB":    infos = clinepiRecordClassInfo; break;
       case "Gates":        infos = clinepiRecordClassInfo; break;
+      case "ICEMR":        infos = clinepiRecordClassInfo; break;
       default:             infos = otherRecordClassInfo;
     }
 
