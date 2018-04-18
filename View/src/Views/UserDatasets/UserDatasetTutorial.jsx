@@ -16,7 +16,7 @@ function UserDatasetTutorial ({ projectName, rootUrl }) {
         </ul>
       </div>
       <div className="box xs-12 md-6">
-        <h2>My User Datasets page</h2>
+        <h2>My Data Sets page</h2>
         <img src={`${rootUrl}/wdk/images/userDatasetHelp/tut-step-3.jpg`} />
         <ul>
           <li>You can now view, manage, share, and utilize your data set in <b>{projectName}</b>.</li>
