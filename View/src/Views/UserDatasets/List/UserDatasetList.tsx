@@ -37,10 +37,12 @@ interface Props {
   projectId: string;
   projectName: string;
   userDatasets: UserDataset[];
+  filterByProject: boolean;
   shareUserDatasets: (userDatasetIds: number[], recipientUserIds: number[]) => any;
   unshareUserDatasets: (userDatasetIds: number[], recipientUserIds: number[]) => any;
   removeUserDataset: (dataset: UserDataset) => any;
   updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any;
+  updateProjectFilter: (filterByProject: boolean) => any;
 };
 
 interface State {
@@ -49,7 +51,6 @@ interface State {
   searchTerm: string;
   sharingModalOpen: boolean;
   editingCache: any;
-  showOnlyCurrentProject: boolean;
 }
 
 class UserDatasetList extends React.Component <Props, State> {
@@ -68,8 +69,7 @@ class UserDatasetList extends React.Component <Props, State> {
       },
       editingCache: {},
       sharingModalOpen: false,
-      searchTerm: '',
-      showOnlyCurrentProject: true
+      searchTerm: ''
     };
 
     this.onRowSelect = this.onRowSelect.bind(this);
@@ -397,8 +397,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
   getTableOptions () {
     const { isRowSelected, toggleProjectScope } = this;
-    const { userDatasets, projectName, location } = this.props;
-    const { showOnlyCurrentProject } = this.state;
+    const { userDatasets, projectName, location, filterByProject } = this.props;
     const emptyMessage = !userDatasets.length
       ? (
         <React.Fragment>
@@ -408,7 +407,7 @@ class UserDatasetList extends React.Component <Props, State> {
               See <b>{projectName}</b>'s Public Data Sets.
             </Link>
         </React.Fragment>
-      ) : showOnlyCurrentProject
+      ) : filterByProject
         ? (
           <React.Fragment>
             <p>You have no <b>{projectName}</b> data sets.</p>
@@ -442,10 +441,10 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   filterAndSortRows (rows: UserDataset[]): UserDataset[] {
-    const { searchTerm, uiState, showOnlyCurrentProject } = this.state;
-    const { projectName } = this.props;
+    const { searchTerm, uiState } = this.state;
+    const { projectName, filterByProject } = this.props;
     const sort: MesaSortObject = uiState.sort;
-    if (showOnlyCurrentProject) rows = rows.filter(dataset => dataset.projects.includes(projectName));
+    if (filterByProject) rows = rows.filter(dataset => dataset.projects.includes(projectName));
     if (searchTerm && searchTerm.length) rows = this.filterRowsBySearchTerm([ ...rows ], searchTerm);
     if (sort.columnKey.length) rows = this.sortRowsByColumnKey([ ...rows ], sort);
     return [...rows];
@@ -499,13 +498,13 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   toggleProjectScope (newValue: boolean) {
-    this.setState({ showOnlyCurrentProject: newValue });
+    this.props.updateProjectFilter(newValue);
   }
 
   render () {
     const { isRowSelected, toggleProjectScope } = this;
-    const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets } = this.props;
-    const { uiState, selectedRows, searchTerm, sharingModalOpen, showOnlyCurrentProject } = this.state;
+    const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets, filterByProject } = this.props;
+    const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
 
     const rows = userDatasets;
     const selectedDatasets = rows.filter(isRowSelected);
@@ -572,9 +571,9 @@ class UserDatasetList extends React.Component <Props, State> {
                 Showing {filteredRows.length} of {rows.length} {`data set${rows.length == 1 ? '' : 's'}`}
               </div>
               <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
-                <Checkbox value={showOnlyCurrentProject} onChange={toggleProjectScope} />
+                <Checkbox value={filterByProject} onChange={toggleProjectScope} />
                 {' '}
-                <div onClick={() => toggleProjectScope(!showOnlyCurrentProject)} style={{ display: 'inline-block' }}>
+                <div onClick={() => toggleProjectScope(!filterByProject)} style={{ display: 'inline-block' }}>
                   Only show data sets related to <b>{projectName}</b>
                 </div>
               </div>

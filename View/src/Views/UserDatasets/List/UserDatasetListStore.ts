@@ -1,16 +1,16 @@
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
+import { UserDataset } from 'Utils/WdkModel';
+import sharingReducer from 'Views/UserDatasets/Sharing/UserDatasetSharingReducer';
 import {
-  ListLoadingAction,
-  ListReceivedAction,
-  ListErrorReceivedAction,
+  DetailRemoveSuccessAction,
   DetailUpdateErrorAction,
   DetailUpdateSuccessAction,
-  DetailRemoveSuccessAction,
-  SharingSuccessAction
+  ListErrorReceivedAction,
+  ListLoadingAction,
+  ListReceivedAction,
+  ProjectFilterAction,
+  SharingSuccessAction,
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
-import sharingReducer from 'Views/UserDatasets/Sharing/UserDatasetSharingReducer';
-import { UserDataset } from 'Utils/WdkModel';
-import { keyBy } from 'lodash';
 
 type Action = ListLoadingAction
   | ListReceivedAction
@@ -18,13 +18,15 @@ type Action = ListLoadingAction
   | DetailUpdateErrorAction
   | DetailUpdateSuccessAction
   | DetailRemoveSuccessAction
-  | SharingSuccessAction;
+  | SharingSuccessAction
+  | ProjectFilterAction;
 
 export interface State extends BaseState {
   userDatasetsLoading: boolean;
   userDatasets: UserDataset[];
   userDatasetsById: Record<string, { isLoading: boolean, resource?: UserDataset }>;
   loadError: Error | null;
+  filterByProject: boolean;
 }
 
 export default class UserDatasetListStore extends WdkStore<State> {
@@ -34,7 +36,8 @@ export default class UserDatasetListStore extends WdkStore<State> {
       userDatasetsLoading: false,
       userDatasets: [],
       userDatasetsById: {},
-      loadError: null
+      loadError: null,
+      filterByProject: true
     }, super.getInitialState());
   }
 
@@ -42,7 +45,8 @@ export default class UserDatasetListStore extends WdkStore<State> {
     switch (action.type) {
       case 'user-datasets/list-loading': return {
         ...state,
-        userDatasetsLoading: true
+        userDatasetsLoading: true,
+        filterByProject: true
       };
 
       case 'user-datasets/list-received': return {
@@ -92,6 +96,13 @@ export default class UserDatasetListStore extends WdkStore<State> {
           ...state,
           userDatasetsById,
           userDatasets
+        }
+      }
+
+      case 'user-datasets/project-filter-preference-received': {
+        return {
+          ...state,
+          filterByProject: action.payload.filterByProject
         }
       }
 

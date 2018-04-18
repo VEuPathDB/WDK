@@ -1,29 +1,33 @@
+import { get } from 'lodash';
 import * as React from 'react';
-import { wrappable } from 'Utils/ComponentUtils';
-import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
-import { User } from 'Utils/WdkUser';
 import 'Views/UserDatasets/UserDatasets.scss';
+import AbstractPageController from 'Core/Controllers/AbstractPageController';
+import { wrappable } from 'Utils/ComponentUtils';
+import { User } from 'Utils/WdkUser';
+import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
+import UserDatasetListStore, { State as StoreState } from 'Views/UserDatasets/List/UserDatasetListStore';
 import {
   loadUserDatasetList,
-  updateUserDatasetDetail,
   removeUserDataset,
   shareUserDatasets,
-  unshareUserDatasets
+  unshareUserDatasets,
+  updateProjectFilter,
+  updateUserDatasetDetail,
+  loadProjectFilter
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
-import UserDatasetListStore, { State as StoreState } from "Views/UserDatasets/List/UserDatasetListStore";
-
-import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
+import { FILTER_BY_PROJECT_PREF } from 'Views/UserDatasets/UserDatasetUtils';
 
 const ActionCreators = {
   updateUserDatasetDetail,
   removeUserDataset,
   shareUserDatasets,
-  unshareUserDatasets
+  unshareUserDatasets,
+  updateProjectFilter
 };
 
-type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError'>
+type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError' | 'filterByProject'>
            & Pick<StoreState["globalData"], 'user' | 'config'>;
 
 class UserDatasetListController extends AbstractPageController <State, UserDatasetListStore, typeof ActionCreators> {
@@ -36,7 +40,8 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       globalData: { user, config },
       userDatasetsLoading,
       userDatasets,
-      loadError
+      loadError,
+      filterByProject
     } = this.store.getState();
 
     return {
@@ -44,7 +49,8 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       config,
       userDatasetsLoading,
       userDatasets,
-      loadError
+      loadError,
+      filterByProject
     };
   }
 
@@ -58,16 +64,18 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
 
   loadData () {
     this.dispatchAction(loadUserDatasetList());
+    this.dispatchAction(loadProjectFilter());
   }
 
   isRenderDataLoaded () {
     return this.state.user != null
       && this.state.config != null
-      && this.state.userDatasetsLoading === false;
+      && this.state.userDatasetsLoading === false
+      && this.state.filterByProject != null;
   }
 
   renderView () {
-    const { userDatasets, loadError, config } = this.state;
+    const { userDatasets, loadError, config, filterByProject } = this.state;
     const { projectId, displayName: projectName } = config;
     const user: User = this.state.user;
     const { history, location } = this.props;
@@ -81,6 +89,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       projectId,
       projectName,
       userDatasets,
+      filterByProject,
       ...this.eventHandlers
     };
     return (
