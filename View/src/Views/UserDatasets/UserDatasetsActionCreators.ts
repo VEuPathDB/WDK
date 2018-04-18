@@ -126,7 +126,7 @@ export function loadUserDatasetList(): ActionThunk<ListAction> {
     Promise.all([
       wdkService.getCurrentUserPreferences()
         .then(
-          preferences => get(preferences.global, FILTER_BY_PROJECT_PREF, 'false') !== 'true',
+          preferences => get(preferences.global, FILTER_BY_PROJECT_PREF, 'false') !== 'false',
           // ignore error and default to false
           () => false
         ),
