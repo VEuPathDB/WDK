@@ -97,7 +97,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
         }
         <div className="UserDatasetList-Content">
           {!loggedIn
-            ? <UserDatasetEmptyState message="Please log in to upload and view your user data sets."/>
+            ? <UserDatasetEmptyState message="Please log in to access My Data Sets."/>
             : <UserDatasetList {...listProps} />
           }
         </div>

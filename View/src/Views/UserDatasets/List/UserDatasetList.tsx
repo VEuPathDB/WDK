@@ -540,11 +540,12 @@ class UserDatasetList extends React.Component <Props, State> {
               My Data Sets
               <HelpIcon>
                 <div>
-                  As a part of your My Data Sets, you can now upload your own data sets to use in <b>{projectName}</b>.
+                  Bring your own data sets to <b>{projectName}</b>. 
                   <ul style={{ marginTop: '10px' }}>
-                    <li>This data can be used in all the same ways as our public data sets.</li>
-                    <li>Easily manage how you leverage your data: push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
-                    <li>Share your data set with others and receive shared data from your own colleagues.</li>
+                    <li>My Data Sets is currently enabled for data sets containing one or more bigwig files. </li>
+                    <li>Export this type of data set from your history in <a href='http://eupathdb.globusgenomics.org'>EuPathDB Galaxy</a> into <b>{projectName}</b>.</li>
+                    <li>Push compatible data straight to <a>GBrowse</a>, with other tooling coming soon.</li>
+                    <li>Share your data set with others and receive shared data from your colleagues.</li>
                   </ul>
                 </div>
               </HelpIcon>
