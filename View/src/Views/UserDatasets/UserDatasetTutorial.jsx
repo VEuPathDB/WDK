@@ -11,7 +11,7 @@ function UserDatasetTutorial ({ projectName, rootUrl }) {
         <ul>
           <li>Use the <b>EuPathDB Export Tools</b> on the left-side navigation, at <b><a href={galaxyUrl} target="_blank">EuPathDB Galaxy</a></b>.</li>
           <li>Prepare your export data set by selecting the files (galaxy datasets) in your history. </li>
-          <li>The data set name, summary and description can be edited later in the <i>My Datasets</i> page.</li>
+          <li>The data set name, summary and description can be edited later in the <i>My Data Sets</i> page.</li>
           <li>When you’re ready, <code>Execute</code> the export. The process of exporting to EuPathDB may take some time. Progress can be monitored from the right-side history panel in Galaxy.</li>
         </ul>
       </div>
