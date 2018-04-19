@@ -46,15 +46,19 @@ public class UserDatasetEventHandler {
         UserDatasetCompatibility compatibility = typeHandler.getCompatibility(userDataset, appDbDataSource);
         if(compatibility.isCompatible()) {
         
+          // insert into the installedTable
           String sql = "insert into " + userDatasetSchemaName + installedTable +
           " (user_dataset_id, name) values (?, ?)";
           SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
           Object[] args = { event.getUserDatasetId(), userDataset.getMeta().getName() };
           sqlRunner.executeUpdate(args);
 
+          // insert into the type-specific tables
           typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
+          
+          // grant access to the owner, by installing into the ownerTable
           grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-          "UserDatasetOwner");
+          ownerTable);
         }
         else {
         	  logger.info("User dataset " + event.getUserDatasetId() + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
@@ -97,25 +101,6 @@ public class UserDatasetEventHandler {
     }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
-
-//  public static void handleExternalDatasetEvent (UserDatasetExternalDatasetEvent event, DataSource appDbDataSource, String userDatasetSchemaName) {
-//
-//    logger.info("Updating access to user dataset " + event.getUserDatasetId() );
-//    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-//
-//    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
-//      // this can happen if the install was skipped, because the ud was deleted first
-//      logger.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
-//    } else {
-//      if (event.getAction() == ExternalDatasetAction.CREATE)
-//        grantAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-//            externalTable);
-//      else
-//        revokeAccess(event.getUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-//            externalTable);
-//    }
-//    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
-//  }
   
   /**
    * check if a user dataset is installed (in the installed table).
@@ -178,13 +163,9 @@ public class UserDatasetEventHandler {
     SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
     
-    //sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
-    //sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
-    //sqlRunner.executeUpdate(args);
-
-    //sql = "delete from " + userDatasetSchemaName + externalTable + " where user_dataset_id = ?";
-    //sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
-    //sqlRunner.executeUpdate(args);
+    sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
+    sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
+    sqlRunner.executeUpdate(args);
   }
 
   private static void openEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
