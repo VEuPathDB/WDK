@@ -1,39 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { uid } from '../Utils/Utils';
-
 class BodyLayer extends React.Component {
   constructor (props) {
     super(props);
-    this.id = '_BodyLayer_' + uid();
-    this.parentElement = null;
-  }
-
-  render () {
-    return null;
-  }
-
-  componentDidMount () {
-    let element = document.getElementById(this.id);
-    if (!element) {
-      element = document.createElement('div');
-      element.id = this.id;
-      element.className = '_BodyLayer';
-      document.body.appendChild(element);
-    }
-    this.parentElement = element;
-    this.componentDidUpdate();
+    // XXX This will have to be guarded if we ever use server side rendering
+    this.el = document.createElement('div');
+    this.el.className = '_BodyLayer';
+    document.body.appendChild(this.el);
   }
 
   componentWillUnmount () {
-    document.body.removeChild(this.parentElement);
+    document.body.removeChild(this.el);
   }
 
-  componentDidUpdate () {
-    const { props } = this;
-    ReactDOM.render(<div {...props} />, this.parentElement);
+  render () {
+    return ReactDOM.createPortal(<div {...this.props} />, this.el);
   }
-};
+}
 
 export default BodyLayer;
