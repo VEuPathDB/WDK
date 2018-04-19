@@ -32,7 +32,7 @@ public class UserDatasetFactory {
   }
 
   /**
-   * Return the dataset IDs the provided user can see, i.e. that are installed and has access to (which can
+   * Return the dataset IDs the provided user can use in this website, i.e. that are installed and has access to (which can
    * include those owned by or shared with a user)
    * 
    * @param userId user for whom to get installed dataset ids
