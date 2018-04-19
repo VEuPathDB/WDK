@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModelException;
@@ -67,6 +68,14 @@ public class BasketService extends UserService {
   private static final String BASE_BASKET_PATH = "baskets";
   private static final String NAMED_BASKET_PATH = BASE_BASKET_PATH + "/{" + BASKET_NAME_PARAM + "}";
 
+  protected static class RevisedRequest<T> extends TwoTuple<RecordClass, T> {
+    public RevisedRequest(RecordClass recordClass, T object) {
+      super(recordClass, object);
+    }
+    public RecordClass getRecordClass() { return getFirst(); }
+    public T getObject() { return getSecond(); }
+  }
+
   public BasketService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {
     super(userIdStr);
   }
@@ -94,14 +103,24 @@ public class BasketService extends UserService {
       User user = getPrivateRegisteredUser();
       RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
       BasketActions actions = new BasketActions(new JSONObject(body), recordClass);
+      RevisedRequest<BasketActions> revisedRequest = translatePatchRequest(recordClass, actions);
       BasketFactory factory = getWdkModel().getBasketFactory();
-      factory.addPksToBasket(user, recordClass, actions.getRecordsToAdd());
-      factory.removePksFromBasket(user, recordClass, actions.getRecordsToRemove());
+      factory.addPksToBasket(user, revisedRequest.getRecordClass(), revisedRequest.getObject().getRecordsToAdd());
+      factory.removePksFromBasket(user, revisedRequest.getRecordClass(), revisedRequest.getObject().getRecordsToRemove());
       return Response.noContent().build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
+  }
+
+  /**
+   * Present so subclasses can override if desired
+   * @throws WdkModelException
+   */
+  protected RevisedRequest<BasketActions> translatePatchRequest(
+      RecordClass recordClass, BasketActions actions) throws WdkModelException {
+    return new RevisedRequest<>(recordClass, actions);
   }
 
   @DELETE
@@ -151,12 +170,23 @@ public class BasketService extends UserService {
         }
         pksToQuery.add(RecordRequest.parsePrimaryKey(pkArray.getJSONArray(), recordClass));
       }
-      List<Boolean> result = getWdkModel().getBasketFactory().queryBasketStatus(user, recordClass, pksToQuery);
+      RevisedRequest<List<PrimaryKeyValue>> translatedRequest = translateQueryRequest(recordClass, pksToQuery);
+      List<Boolean> result = getWdkModel().getBasketFactory().queryBasketStatus(user,
+          translatedRequest.getRecordClass(), translatedRequest.getObject());
       return Response.ok(new JSONArray(result).toString()).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
+  }
+
+  /**
+   * Present so subclasses can override if desired
+   * @throws WdkModelException
+   */
+  protected RevisedRequest<List<PrimaryKeyValue>> translateQueryRequest(
+      RecordClass recordClass, List<PrimaryKeyValue> pksToQuery) throws WdkModelException {
+    return new RevisedRequest<>(recordClass, pksToQuery);
   }
 
   @POST
