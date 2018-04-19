@@ -50,6 +50,11 @@ public class PatchMap<T> extends HashMap<String,List<T>> {
     loadIds(json, valueConverter);
   }
 
+  // create an empty patch map
+  protected PatchMap(List<String> validActions) {
+    _validActions = validActions;
+  }
+
   private void loadIds(JSONObject json, ValueConverter<T> valueConverter)
       throws DataValidationException, WdkModelException, JSONException {
     // load IDs for each action and record unrecognized actions
