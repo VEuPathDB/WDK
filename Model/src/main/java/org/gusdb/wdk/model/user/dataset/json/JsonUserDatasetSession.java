@@ -778,7 +778,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   private class UserDatasetUser {   
     Map<Long, UserDataset> datasetsMap = new HashMap<Long, UserDataset>();
     Map<Long, Set<UserDatasetShare>> sharedWithUsers = new HashMap<Long, Set<UserDatasetShare>>();
-    Map<Long, Path> sharedWithDirs;
+    Map<Long, Path> sharedWithDirs = new HashMap<>();
     Map<Long, UserDataset> externalDatasetsMap;
     Map<Long, Boolean> userDatasetExistsMap  = new HashMap<Long, Boolean>();
     List<Path> datasetDirsList;
