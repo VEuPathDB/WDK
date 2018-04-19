@@ -121,6 +121,7 @@ public class UserDatasetFormatter {
     json.put("ownerUserId", dataset.getOwnerId());
     json.put("size", dataset.getSize());
     json.put("created", dataset.getCreatedDate());
+    json.put("age", System.currentTimeMillis() - dataset.getCreatedDate());
 
     // external users don't get to know who else it is shared with
     if (includeSharingData) {

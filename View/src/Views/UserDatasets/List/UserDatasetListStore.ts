@@ -11,6 +11,7 @@ import {
   ProjectFilterAction,
   SharingSuccessAction,
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { difference } from 'lodash';
 
 type Action = ListLoadingAction
   | ListReceivedAction
@@ -23,7 +24,7 @@ type Action = ListLoadingAction
 
 export interface State extends BaseState {
   userDatasetsLoading: boolean;
-  userDatasets: UserDataset[];
+  userDatasets: number[];
   userDatasetsById: Record<string, { isLoading: boolean, resource?: UserDataset }>;
   loadError: Error | null;
   filterByProject: boolean;
@@ -52,7 +53,7 @@ export default class UserDatasetListStore extends WdkStore<State> {
         ...state,
         filterByProject: action.payload.filterByProject,
         userDatasetsLoading: false,
-        userDatasets: action.payload.userDatasets,
+        userDatasets: action.payload.userDatasets.map(ud => ud.id),
         userDatasetsById: action.payload.userDatasets.reduce((uds, ud) =>
           Object.assign(uds, { [ud.id]: { loading: false, resource: ud }}), {} as State['userDatasetsById'])
       };
@@ -65,37 +66,26 @@ export default class UserDatasetListStore extends WdkStore<State> {
 
       case 'user-datasets/detail-update-success': return {
         ...state,
-        userDatasets: [...state.userDatasets].map((userDataset: UserDataset): UserDataset => {
-          return userDataset.id === action.payload.userDataset.id
-            ? action.payload.userDataset
-            : userDataset
-        })
+        userDatasetsById: {
+          ...state.userDatasetsById,
+          [action.payload.userDataset.id]: action.payload.userDataset
+        }
       };
 
       case 'user-datasets/detail-remove-success': return {
         ...state,
-        userDatasets: [...state.userDatasets].filter((userDataset: UserDataset): boolean => {
-          return userDataset.id !== action.payload.userDataset.id;
-        })
-      };
-
-      case 'user-datasets/detail-update-success': return {
-        ...state,
-        userDatasets: [...state.userDatasets].map((userDataset: UserDataset): UserDataset => {
-          return userDataset.id === action.payload.userDataset.id
-            ? action.payload.userDataset
-            : userDataset
-        })
+        userDatasets: difference(state.userDatasets, [action.payload.userDataset.id]),
+        userDatasetsById: {
+          ...state.userDatasetsById,
+          [action.payload.userDataset.id]: undefined
+        }
       };
 
       case 'user-datasets/sharing-success': {
         const userDatasetsById = sharingReducer(state.userDatasetsById, action);
-        const userDatasets = state.userDatasets.map(ud =>
-          userDatasetsById[ud.id].resource || ud);
         return {
           ...state,
-          userDatasetsById,
-          userDatasets
+          userDatasetsById
         }
       }
 

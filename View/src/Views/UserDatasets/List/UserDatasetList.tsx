@@ -28,6 +28,7 @@ import { textCell, normalizePercentage } from 'Views/UserDatasets/UserDatasetUti
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetTutorial from 'Views/UserDatasets/UserDatasetTutorial';
 import { MesaColumn, MesaDataCellProps, MesaSortObject } from 'Core/CommonTypes';
+import UserDatasetStatus from 'Views/UserDatasets/UserDatasetStatus';
 import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 
 interface Props {
@@ -123,42 +124,17 @@ class UserDatasetList extends React.Component <Props, State> {
   }
 
   renderStatusCell (cellProps: MesaDataCellProps) {
-    const dataset: UserDataset = cellProps.row;
+    const userDataset: UserDataset = cellProps.row;
     const { projectId, projectName } = this.props;
-    const { isInstalled, isCompatible, projects } = dataset;
-    const isInstallable = projects.includes(projectId);
-    const appNames = projects.join(', ');
-    const content = !isInstallable
-      ? <span>This dataset is not compatible with {projectName}.</span>
-      : isInstalled
-        ? (
-          <span>
-            The files in this dataset have been installed to <b>{projectName}</b>.<br />
-            Visit this dataset's page to see how to use it in <b>{projectName}</b>.
-          </span>
-        ) : (
-          isCompatible
-            ? (
-              <span>
-                This dataset could not be installed to {projectName} due to a server error.
-                <br />
-                Please remove this dataset and try again.
-              </span>
-            ) : (
-              <span>
-                This dataset is not compatible with resources in this release of {projectName}.
-                <br />
-                Click this icon for more compatibility information.
-              </span>
-            )
-          );
-    const children = <Icon fa={!isInstallable ? 'minus-circle' : isInstalled ? 'check-circle' : isCompatible ? 'times-circle' : 'exclamation-circle'}/>;
-    const tooltipProps = { content, children };
     return (
-      <Link to={`/workspace/datasets/${dataset.id}`}>
-        <Tooltip {...tooltipProps}/>
-      </Link>
-    );
+      <UserDatasetStatus
+        linkToDataset={true}
+        useTooltip={true}
+        userDataset={userDataset}
+        projectId={projectId}
+        displayName={projectName}
+      />
+    )
   }
 
   renderOwnerCell (cellProps: MesaDataCellProps) {
@@ -540,7 +516,7 @@ class UserDatasetList extends React.Component <Props, State> {
               My Data Sets
               <HelpIcon>
                 <div>
-                  Bring your own data sets to <b>{projectName}</b>. 
+                  Bring your own data sets to <b>{projectName}</b>.
                   <ul style={{ marginTop: '10px' }}>
                     <li>My Data Sets is currently enabled for data sets containing one or more bigwig files. </li>
                     <li>Export this type of data set from your history in <a href='http://eupathdb.globusgenomics.org'>EuPathDB Galaxy</a> into <b>{projectName}</b>.</li>

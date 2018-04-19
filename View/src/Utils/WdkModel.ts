@@ -300,6 +300,7 @@ export type UserDatasetShare = {
 
 export type UserDataset = {
   created: number;
+  age: number;
   isInstalled: boolean;
   isCompatible: boolean;
   dependencies: Array<{
