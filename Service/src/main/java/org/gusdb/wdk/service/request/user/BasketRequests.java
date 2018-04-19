@@ -40,6 +40,13 @@ public class BasketRequests {
       removeSharedIds(ADD, REMOVE);
     }
 
+    public BasketActions(List<PrimaryKeyValue> recordsToAdd, List<PrimaryKeyValue> recordsToRemove) {
+      super(ACTION_TYPES);
+      put(ADD, recordsToAdd);
+      put(REMOVE, recordsToRemove);
+      removeSharedIds(ADD, REMOVE);
+    }
+
     public List<PrimaryKeyValue> getRecordsToAdd() { return get(ADD); }
     public List<PrimaryKeyValue> getRecordsToRemove() { return get(REMOVE); }
 
