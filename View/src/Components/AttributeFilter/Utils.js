@@ -48,12 +48,13 @@ const dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
  */
 export function getFormatFromDateString(dateString) {
   var matches = dateString.match(dateStringRe);
-  if (matches !== null) {
-    var [ , , m, d ] = matches;
-    return  d !== undefined ? '%Y-%m-%d'
-          : m !== undefined ? '%Y-%m'
-          : '%Y';
+  if (matches == null) {
+    throw new Error(`Expected a date string using the ISO 8601 format, but got "${dateString}".`);
   }
+  var [ , , m, d ] = matches;
+  return  d !== undefined ? '%Y-%m-%d'
+    : m !== undefined ? '%Y-%m'
+    : '%Y';
 }
 
 /**
