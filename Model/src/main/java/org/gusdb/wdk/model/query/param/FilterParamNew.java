@@ -565,10 +565,11 @@ public class FilterParamNew extends AbstractDependentParam {
       ps = SqlUtils.getPreparedStatement(dataSource, unfilteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
+      QueryLogger.logEndStatementExecution(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", start);
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctInternal(count.intValue());
-      QueryLogger.logEndStatementExecution(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", start);
+      QueryLogger.logEndResultsProcessing(resultSet); 
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
@@ -582,10 +583,11 @@ public class FilterParamNew extends AbstractDependentParam {
       ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
+      QueryLogger.logEndStatementExecution(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", start);
       resultSet.next();
       BigDecimal count = resultSet.getBigDecimal(1);
       summary.setDistinctMatchingInternal(count.intValue());
-      QueryLogger.logEndStatementExecution(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", start);
+      QueryLogger.logEndResultsProcessing(resultSet); 
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
@@ -681,6 +683,7 @@ public class FilterParamNew extends AbstractDependentParam {
       ps.setString(2, ontologyItem.getOntologyId());
       long start = System.currentTimeMillis();
       resultSet = ps.executeQuery();
+      QueryLogger.logEndStatementExecution(sql, "FilterParamNew-getMetaDataForOntologyTerm", start);
       while (resultSet.next()) {
         String internal = resultSet.getString(_filterItemIdColumn);
         T value = OntologyItemType.resolveTypedValue(resultSet, ontologyItem, ontologyItemClass);
@@ -695,7 +698,7 @@ public class FilterParamNew extends AbstractDependentParam {
         // add next value to the list
         values.add(value);
       }
-      QueryLogger.logEndStatementExecution(sql, "FilterParamNew-getMetaDataForOntologyTerm", start);
+      QueryLogger.logEndResultsProcessing(resultSet); 
 
     }
     catch (SQLException ex) {
