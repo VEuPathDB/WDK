@@ -24,8 +24,29 @@ public interface Reporter {
   // public Reporter(AnswerValue answerValue);
 
   // methods to configure reporter
+  /**
+   * Properties for the reporter set in the WDK Model XML.
+   * @param properties
+   * @throws WdkModelException
+   */
   public void setProperties(Map<String, String> properties) throws WdkModelException;
+  
+  /**
+   * A legacy method to gather user configurations for the reporter.  Called by struts actions.
+   * @param config
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
   public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException;
+  
+  /**
+   * Gather end-user configurations for this reporter.  Uses the builder pattern (returns this reporter). 
+   * @param config
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
   public Reporter configure(JSONObject config) throws WdkUserException, WdkModelException;
 
   // methods used to deliver report
