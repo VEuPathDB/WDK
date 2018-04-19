@@ -1,9 +1,9 @@
-import { get } from 'lodash';
 import * as React from 'react';
 
 import 'Views/UserDatasets/UserDatasets.scss';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import { wrappable } from 'Utils/ComponentUtils';
+import { UserDataset } from 'Utils/WdkModel';
 import { User } from 'Utils/WdkUser';
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
@@ -14,7 +14,7 @@ import {
   shareUserDatasets,
   unshareUserDatasets,
   updateProjectFilter,
-  updateUserDatasetDetail
+  updateUserDatasetDetail,
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 
 const ActionCreators = {
@@ -25,10 +25,11 @@ const ActionCreators = {
   updateProjectFilter
 };
 
-type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'loadError' | 'filterByProject'>
+type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'userDatasetsById' | 'loadError' | 'filterByProject'>
            & Pick<StoreState["globalData"], 'user' | 'config'>;
 
 class UserDatasetListController extends AbstractPageController <State, UserDatasetListStore, typeof ActionCreators> {
+
   getStoreClass () {
     return UserDatasetListStore;
   }
@@ -38,6 +39,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       globalData: { user, config },
       userDatasetsLoading,
       userDatasets,
+      userDatasetsById,
       loadError,
       filterByProject
     } = this.store.getState();
@@ -47,6 +49,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       config,
       userDatasetsLoading,
       userDatasets,
+      userDatasetsById,
       loadError,
       filterByProject
     };
@@ -72,7 +75,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   renderView () {
-    const { userDatasets, loadError, config, filterByProject } = this.state;
+    const { userDatasets, userDatasetsById, loadError, config, filterByProject } = this.state;
     const { projectId, displayName: projectName } = config;
     const user: User = this.state.user;
     const { history, location } = this.props;
@@ -85,7 +88,7 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
       location,
       projectId,
       projectName,
-      userDatasets,
+      userDatasets: userDatasets.map(id => userDatasetsById[id].resource) as UserDataset[],
       filterByProject,
       ...this.eventHandlers
     };

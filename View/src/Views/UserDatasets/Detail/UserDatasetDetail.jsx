@@ -8,6 +8,7 @@ import NotFound from 'Views/NotFound/NotFound';
 import { bytesToHuman } from 'Utils/Converters';
 import { Mesa, MesaState, AnchoredTooltip } from 'Components/Mesa';
 import SaveableTextEditor from 'Components/InputControls/SaveableTextEditor';
+import UserDatasetStatus from 'Views/UserDatasets/UserDatasetStatus';
 import SharingModal from 'Views/UserDatasets/Sharing/UserDatasetSharingModal';
 import { textCell, getDownloadUrl, makeClassifier, normalizePercentage } from 'Views/UserDatasets/UserDatasetUtils';
 
@@ -112,6 +113,18 @@ class UserDatasetDetail extends React.Component {
           />
         )
       },
+      {
+        attribute: 'Status',
+        value: (
+          <UserDatasetStatus
+            linkToDataset={false}
+            useTooltip={false}
+            userDataset={userDataset}
+            projectId={this.props.config.projectId}
+            displayName={this.props.config.displayName}
+          />
+        )
+      },
       { attribute: 'Owner', value: isOwner ? <span className="faded">Me</span> : owner },
       {
         attribute: 'Description',
@@ -180,7 +193,7 @@ class UserDatasetDetail extends React.Component {
     const DatasetActions = this.renderDatasetActions;
 
     return (
-      <section>
+      <section id="dataset-header">
         <AllLink />
         <div className={classify('Header')}>
           <div className={classify('Header-Attributes')}>
@@ -256,7 +269,7 @@ class UserDatasetDetail extends React.Component {
     });
 
     return (
-      <section>
+      <section id="dataset-files">
         <h1>Data Files</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="files-o"/>
@@ -335,7 +348,7 @@ class UserDatasetDetail extends React.Component {
     const isCompatibleProject = userDataset.projects.includes(projectId);
 
     return (
-      <section>
+      <section id="dataset-compatibility">
         <h1>Use This Dataset in {displayName}</h1>
         <h3 className={classify('SectionTitle')}>
           <Icon fa="puzzle-piece"/>
