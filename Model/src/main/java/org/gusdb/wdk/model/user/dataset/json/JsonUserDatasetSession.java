@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.jfree.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -134,15 +133,15 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
     Path userDatasetDir = getUserDatasetDir(userId, datasetId);
     
-    // if stmt breaks un/sharing of multiple UDs
-    //if (user.sharedWithDir == null) {
-      user.sharedWithDir = userDatasetDir.resolve(SHARED_WITH_DIR);
+    if (user.sharedWithDirs.get(datasetId) == null) {
+      Path sharedWithDir = userDatasetDir.resolve(SHARED_WITH_DIR);
       //TODO should we handle this upon setting up the dataset rather than on the fly?
-      if (!adaptor.fileExists(user.sharedWithDir)) {
-        adaptor.createDirectory(user.sharedWithDir);
+      if (!adaptor.fileExists(sharedWithDir)) {
+        adaptor.createDirectory(sharedWithDir);
       }
-    //}
-    return user.sharedWithDir;
+      user.sharedWithDirs.put(datasetId, sharedWithDir);
+    }
+    return user.sharedWithDirs.get(datasetId);
   }
 
   @Override
@@ -779,7 +778,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   private class UserDatasetUser {   
     Map<Long, UserDataset> datasetsMap = new HashMap<Long, UserDataset>();
     Map<Long, Set<UserDatasetShare>> sharedWithUsers = new HashMap<Long, Set<UserDatasetShare>>();
-    Path sharedWithDir;
+    Map<Long, Path> sharedWithDirs;
     Map<Long, UserDataset> externalDatasetsMap;
     Map<Long, Boolean> userDatasetExistsMap  = new HashMap<Long, Boolean>();
     List<Path> datasetDirsList;
