@@ -15,7 +15,36 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 
-
+/**
+ * Handle events that impact which user datasets a user can use in this website.  We use the word
+ * "installed" to mean that a user dataset is available for use on this website for this user.  It never means
+ * anything else.
+ * 
+ * Three database tables control if a user sees a dataset as installed.  
+ *   1) The InstalledUserDataset table holds the IDs of all datasets that are installed for use on this site.
+ *      It includes the name of the UD, to show to the user in parameters in WDK Searches.
+ *   2) the UserDatasetOwner table tells us who owns the UD that is in the InstalledUserDataset table. It
+ *      has a foreign key to the InstalledUserDataset table.
+ *   3) the UserDatasetSharedWith table tells us who has share access to an installed UD.  has a foreign key
+ *      to the InstalledUserDataset table.
+ *      
+ *   An install event causes the UD to be inserted into the install table and the owner table.
+ *   
+ *   A share event causes the a row to be inserted into the shared table, (and unshare is vice versa)
+ *   
+ *   A delete event causes rows from share, owner and install table to be removed.
+ *   
+ *   To see which UDs a user has installed, we query the union of the Owner and Shared table.
+ *   
+ *   TODO: it seems we should add the owner as a column to the InstalledUserDatasets table, and lose the Owner table, 
+ *   since they are 1-1
+ *   
+ *   TODO: if the user changes the name of their UD, this will not be reflected in installed UDs, since there is
+ *   no event to convey that.
+ *   
+ * @author Steve
+ *
+ */
 public class UserDatasetEventHandler {
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventHandler.class);
