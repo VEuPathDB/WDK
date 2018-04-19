@@ -75,9 +75,15 @@ public class UserDatasetService extends UserService {
     UserDatasetStore dsStore = getUserDatasetStore();
     String responseJson = null;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
+      
+      // get all the user datasets this user can see that are installed in this application db.
       Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
+      
+      // get all datasets owned by this user
       List<UserDatasetInfo> userDatasets = getDatasetInfo(dsSession.getUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel(), user);
+      
+      // get all datasets shared to this user
       List<UserDatasetInfo> sharedDatasets = getDatasetInfo(dsSession.getExternalUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory, getWdkModel(), user);
       responseJson = UserDatasetFormatter.getUserDatasetsJson(dsSession, userDatasets,
