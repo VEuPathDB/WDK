@@ -15,6 +15,12 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 
+/**
+ * a class to manage a disk cache for reporters that output wdk tables.  
+ * the db table has columns for PK, number of rows and a clob, 
+ * which is the reporter-specific format for the table value of a specific record instance.
+ * reporters that use the cache populate this table as they acquire data for specific records.
+ */
 public class TableCache {
 
   public static final String PROPERTY_TABLE_CACHE = "table_cache";

@@ -661,6 +661,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return map from internal_id to that id's values.
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
+   * TODO: instead of building the map in java, use SQL GROUP BY to do it in the DBMS
    */
   private <T> Map<String, List<T>> getMetaDataForOntologyTerm(User user, Map<String, String> contextParamValues,
       OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
