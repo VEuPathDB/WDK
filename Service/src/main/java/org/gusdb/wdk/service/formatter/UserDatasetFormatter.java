@@ -138,6 +138,9 @@ public class UserDatasetFormatter {
       json.put("sharedWith", sharesJson);
       // Convert quota from megabytes to bytes
       long quota = 1000000 * datasetInfo.getOwnerQuota();
+      // Display quota in gigabytes (more appropriate place would be once per listing but that
+      // requires a change from JSONArray to JSONObject).
+      json.put("quota", datasetInfo.getOwnerQuota() / 1000.0);
       DecimalFormat df = new DecimalFormat("#.####");
       json.put("percentQuotaUsed", df.format(dataset.getSize() * 100.0 / quota));
     }
