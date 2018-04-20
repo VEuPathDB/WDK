@@ -61,7 +61,6 @@ public class ComparisonService extends WdkService {
     invalidQuestionList.stream().forEach(entry -> {invalidQuestionJson.put(entry);});
     ComparisonBean comparison = new ComparisonBean();
     comparison.setContext("");
-    comparison.setProject(getWdkModel().getProjectId());
     comparison.setMissingFromProdName("New Questions");
     comparison.setMissingFromQaName("Invalid Questions");
     comparison.setMissingFromProd(newQuestionList);
