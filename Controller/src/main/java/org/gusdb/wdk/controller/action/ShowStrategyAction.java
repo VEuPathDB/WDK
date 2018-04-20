@@ -95,6 +95,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 logger.info("OPEN requested strategies...");
                 // first, see which strategies can be opened; do not make strat active if
                 //   exception thrown during opening will prevent panel from even being displayed
+                // FIXME: THIS CODE DOES NOT WORK; HERE AS PLACEHOLDER- maybe we will fix before this action is purged or maybe not
                 //TwoTuple<List<Strategy>,List<String>> openableResult = StepUtilities.getOpenableStrategies(wdkModel.getModel(), stratKeys);
                 //stratKeys = filter(stratKeys, key -> !openableResult.getSecond().contains(key));
 
