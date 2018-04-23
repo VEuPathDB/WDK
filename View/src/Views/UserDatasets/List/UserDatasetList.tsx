@@ -64,7 +64,7 @@ class UserDatasetList extends React.Component <Props, State> {
       selectedRows: [],
       uiState: {
         sort: {
-          columnKey: '',
+          columnKey: 'created',
           direction: 'asc'
         }
       },
@@ -153,7 +153,7 @@ class UserDatasetList extends React.Component <Props, State> {
     };
     return [
       {
-        key: 'id',
+        key: 'meta.name',
         sortable: true,
         name: 'Name / ID',
         helpText: '',
@@ -438,7 +438,9 @@ class UserDatasetList extends React.Component <Props, State> {
     if (columnKey === null) return (data: any) => data;
     switch (columnKey) {
       case 'type':
-        return (data: any, index: number): string => data.type.display;
+        return (data: UserDataset, index: number): string => data.type.display.toLowerCase();
+      case 'meta.name':
+        return (data: UserDataset) => data.meta.name.toLowerCase();
       default:
         return (data: any, index: number) => {
           return typeof data[columnKey] !== 'undefined'
