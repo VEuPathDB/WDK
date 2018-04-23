@@ -475,7 +475,6 @@ public class FilterParamNew extends AbstractDependentParam {
       Class<T> ontologyItemClass) throws WdkModelException {
 
     contextParamValues = ensureRequiredContext(user, contextParamValues);
-    FilterParamNewInstance paramInstance = createFilterParamNewInstance();
 
     ////////////////////////////////////////////
     /* GET UNFILTERED MAP AND POPULATE COUNTS */
@@ -500,7 +499,7 @@ public class FilterParamNew extends AbstractDependentParam {
         " = ?";
     
     // read into a map of filter_item_id -> value(s)
-    Map<String, List<T>> unfiltered = getMetaDataForOntologyTerm(user, contextParamValues, ontologyItem, paramInstance,
+    Map<T, Long> unfiltered = countMetaDataForOntologyTerm(user, contextParamValues, ontologyItem,
         unfilteredSqlPerOntologyId, ontologyItemClass);
 
     // get histogram of those, stored in JSON
@@ -521,7 +520,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
-    Map<String, List<T>> filtered = getMetaDataForOntologyTerm(user, contextParamValues, ontologyItem, paramInstance,
+    Map<T, Long> filtered = countMetaDataForOntologyTerm(user, contextParamValues, ontologyItem,
         filteredSqlPerOntologyId, ontologyItemClass);
 
     // add the filtered set into the histogram
@@ -615,27 +614,24 @@ public class FilterParamNew extends AbstractDependentParam {
    * stuff counts per ontology term value into json structure. first pair position is unfiltered, second is
    * filtered
    * 
-   * @param metadataForOntologyId
-   * @param metadataForOntologyId
-   * @param summary
    */
-  private <T> void populateSummaryCounts(Map<String, List<T>> metadataForOntologyId,
-      Map<T, FilterParamSummaryCounts> summary, boolean filtered) {
-    for (List<T> values : metadataForOntologyId.values()) {
-      for (T value : values) {
-        FilterParamSummaryCounts counts;
-        if (summary.containsKey(value)) {
-          counts = summary.get(value);
-        }
-        else {
-          counts = new FilterParamSummaryCounts();
-          summary.put(value, counts);
-        }
-        if (filtered)
-          counts.filteredFilterItemCount++;
-        else
-          counts.unfilteredFilterItemCount++;
+  private <T> void populateSummaryCounts(Map<T, Long> countsMap, Map<T, FilterParamSummaryCounts> summary,
+      boolean filtered) {
+
+    for (T value : countsMap.keySet()) {
+
+      FilterParamSummaryCounts counts;
+      if (summary.containsKey(value)) {
+        counts = summary.get(value);
       }
+      else {
+        counts = new FilterParamSummaryCounts();
+        summary.put(value, counts);
+      }
+      if (filtered)
+        counts.filteredFilterItemCount = countsMap.get(value);
+      else
+        counts.unfilteredFilterItemCount = countsMap.get(value);
     }
   }
 
@@ -648,29 +644,29 @@ public class FilterParamNew extends AbstractDependentParam {
     throw new WdkModelException(nestedException);
   }
 
+  
   /**
-   * get an in-memory copy of meta data for a specified ontology_id
-   * 
+   * for a specified ontology term, return a map of value -> count of that value
    * @param user
    * @param contextParamValues
+   * @param ontologyItem
    * @param cache
-   *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
-   *          initialized when a cache is created.)
    * @param metaDataSql
-   *          - sql that provides the meta data. has a single bind variable for ontology id
-   * @return map from internal_id to that id's values.
+   * @param ontologyItemClass
+   * @return
    * @throws WdkModelException
-   * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
-   * TODO: instead of building the map in java, use SQL GROUP BY to do it in the DBMS
    */
-  private <T> Map<String, List<T>> getMetaDataForOntologyTerm(User user, Map<String, String> contextParamValues,
-      OntologyItem ontologyItem, FilterParamNewInstance cache, String metaDataSql, Class<T> ontologyItemClass)
+  private <T> Map<T, Long> countMetaDataForOntologyTerm(User user, Map<String, String> contextParamValues,
+      OntologyItem ontologyItem, String metaDataSql, Class<T> ontologyItemClass)
       throws WdkModelException {
+    
+    String valueColumnName = ontologyItem.getType().getMetadataQueryColumn();
 
-    String sql = "SELECT mq.* FROM (" + metaDataSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
+    String sql = "SELECT " + valueColumnName + ", count(*) as CNT FROM (" + metaDataSql + ") mq WHERE mq."
+    + COLUMN_ONTOLOGY_ID + " = ? GROUP BY " + valueColumnName;
 
-    // run the composed sql, and get the metadata back
-    Map<String, List<T>> metadata = new LinkedHashMap<>();
+     Map<T, Long> metadata = new LinkedHashMap<>();
+    
     PreparedStatement ps = null;
     ResultSet resultSet = null;
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
@@ -681,20 +677,11 @@ public class FilterParamNew extends AbstractDependentParam {
       ps.setString(2, ontologyItem.getOntologyId());
       long start = System.currentTimeMillis();
       resultSet = ps.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "FilterParamNew-getMetaDataForOntologyTerm", start, resultSet);
+      QueryLogger.logStartResultsProcessing(sql, "FilterParamNew-countMetaDataForOntologyTerm", start, resultSet);
       while (resultSet.next()) {
-        String internal = resultSet.getString(_filterItemIdColumn);
         T value = OntologyItemType.resolveTypedValue(resultSet, ontologyItem, ontologyItemClass);
-
-        // get list of values for this internal value, creating if not yet present
-        List<T> values = metadata.get(internal);
-        if (values == null) {
-          values = new ArrayList<>();
-          metadata.put(internal, values);
-        }
-
-        // add next value to the list
-        values.add(value);
+        Long count = resultSet.getLong("CNT");
+        metadata.put(value, count);
       }
    }
     catch (SQLException ex) {
@@ -706,6 +693,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
     return metadata;
   }
+  
+
   
   public Map<String, Set<String>> getValuesMap(User user,
       Map<String, String> contextParamValues) throws WdkModelException {
