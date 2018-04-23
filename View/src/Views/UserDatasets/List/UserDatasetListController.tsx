@@ -25,34 +25,14 @@ const ActionCreators = {
   updateProjectFilter
 };
 
-type State = Pick<StoreState, 'userDatasetsLoading' | 'userDatasets' | 'userDatasetsById' | 'loadError' | 'filterByProject'>
-           & Pick<StoreState["globalData"], 'user' | 'config'>;
-
-class UserDatasetListController extends AbstractPageController <State, UserDatasetListStore, typeof ActionCreators> {
+class UserDatasetListController extends AbstractPageController <StoreState, UserDatasetListStore, typeof ActionCreators> {
 
   getStoreClass () {
     return UserDatasetListStore;
   }
 
   getStateFromStore () {
-    const {
-      globalData: { user, config },
-      userDatasetsLoading,
-      userDatasets,
-      userDatasetsById,
-      loadError,
-      filterByProject
-    } = this.store.getState();
-
-    return {
-      user,
-      config,
-      userDatasetsLoading,
-      userDatasets,
-      userDatasetsById,
-      loadError,
-      filterByProject
-    };
+    return this.store.getState();
   }
 
   getTitle () {
@@ -64,20 +44,24 @@ class UserDatasetListController extends AbstractPageController <State, UserDatas
   }
 
   loadData () {
-    this.dispatchAction(loadUserDatasetList());
+    if (this.state.status === 'not-requested') {
+      this.dispatchAction(loadUserDatasetList());
+    }
   }
 
   isRenderDataLoaded () {
-    return this.state.user != null
-      && this.state.config != null
-      && this.state.userDatasetsLoading === false
-      && this.state.filterByProject != null;
+    return this.state.status === 'complete';
+  }
+
+  isRenderDataLoadError() {
+    return this.state.status === 'error';
   }
 
   renderView () {
-    const { userDatasets, userDatasetsById, loadError, config, filterByProject } = this.state;
+    if (this.state.status !== 'complete') return null;
+
+    const { userDatasets, userDatasetsById, filterByProject, globalData: { user, config } } = this.state;
     const { projectId, displayName: projectName } = config;
-    const user: User = this.state.user;
     const { history, location } = this.props;
 
     const title = this.getTitle();

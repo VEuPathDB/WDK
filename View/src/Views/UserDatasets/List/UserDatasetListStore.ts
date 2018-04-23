@@ -22,78 +22,106 @@ type Action = ListLoadingAction
   | SharingSuccessAction
   | ProjectFilterAction;
 
-export interface State extends BaseState {
-  userDatasetsLoading: boolean;
+type InitialState = BaseState & {
+  status: 'not-requested';
+}
+
+type LoadingState = BaseState & {
+  status: 'loading';
+}
+
+type ErrorState = BaseState & {
+  status: 'error';
+  loadError: Error;
+}
+
+type CompleteState = BaseState & {
+  status: 'complete';
   userDatasets: number[];
-  userDatasetsById: Record<string, { isLoading: boolean, resource?: UserDataset }>;
-  loadError: Error | null;
+  userDatasetsById: Record<string, { isLoading: false; resource: UserDataset }>;
   filterByProject: boolean;
 }
 
+export type State =  InitialState | LoadingState | ErrorState | CompleteState;
+
 export default class UserDatasetListStore extends WdkStore<State> {
 
-  getInitialState () {
-    return Object.assign({
-      userDatasetsLoading: false,
-      userDatasets: [],
-      userDatasetsById: {},
-      loadError: null,
-      filterByProject: true
-    }, super.getInitialState());
+  storeShouldReceiveAction(channel?: string) {
+    return (
+      super.storeShouldReceiveAction(channel) ||
+      channel === 'UserDatasetDetailStore'
+    );
+  }
+
+  getInitialState(): InitialState {
+    return {
+      globalData: super.getInitialState().globalData,
+      status: 'not-requested'
+    };
   }
 
   handleAction (state: State, action: Action): State {
     switch (action.type) {
-      case 'user-datasets/list-loading': return {
-        ...state,
-        userDatasetsLoading: true
+      case 'user-datasets/list-loading': return <LoadingState> {
+        globalData: state.globalData,
+        status: 'loading'
       };
 
-      case 'user-datasets/list-received': return {
-        ...state,
+      case 'user-datasets/list-received': return <CompleteState> {
+        globalData: state.globalData,
+        status: 'complete',
         filterByProject: action.payload.filterByProject,
-        userDatasetsLoading: false,
         userDatasets: action.payload.userDatasets.map(ud => ud.id),
         userDatasetsById: action.payload.userDatasets.reduce((uds, ud) =>
-          Object.assign(uds, { [ud.id]: { loading: false, resource: ud }}), {} as State['userDatasetsById'])
+          Object.assign(uds, { [ud.id]: { loading: false, resource: ud }}), {} as CompleteState['userDatasetsById'])
       };
 
-      case 'user-datasets/list-error': return {
-        ...state,
-        userDatasetsLoading: false,
+      case 'user-datasets/list-error': return <ErrorState>{
+        globalData: state.globalData,
+        status: 'error',
         loadError: action.payload.error
       };
 
-      case 'user-datasets/detail-update-success': return {
-        ...state,
-        userDatasetsById: {
-          ...state.userDatasetsById,
-          [action.payload.userDataset.id]: action.payload.userDataset
-        }
-      };
+      case 'user-datasets/detail-update-success': return state.status === 'complete'
+          ? <CompleteState> {
+            ...state,
+            userDatasetsById: {
+              ...state.userDatasetsById,
+              [action.payload.userDataset.id]: action.payload.userDataset
+            }
+          }
+          : state;
 
-      case 'user-datasets/detail-remove-success': return {
-        ...state,
-        userDatasets: difference(state.userDatasets, [action.payload.userDataset.id]),
-        userDatasetsById: {
-          ...state.userDatasetsById,
-          [action.payload.userDataset.id]: undefined
-        }
-      };
+      case 'user-datasets/detail-remove-success': return state.status === 'complete'
+          ? <CompleteState> {
+            ...state,
+            userDatasets: difference(state.userDatasets, [action.payload.userDataset.id]),
+            userDatasetsById: {
+              ...state.userDatasetsById,
+              [action.payload.userDataset.id]: undefined
+            }
+          }
+          : state
 
       case 'user-datasets/sharing-success': {
-        const userDatasetsById = sharingReducer(state.userDatasetsById, action);
-        return {
-          ...state,
-          userDatasetsById
+        if (state.status === 'complete') {
+          const userDatasetsById = sharingReducer(state.userDatasetsById, action);
+          return <CompleteState> {
+            ...state,
+            userDatasetsById
+          }
         }
+        return state;
       }
 
       case 'user-datasets/project-filter-preference-received': {
-        return {
-          ...state,
-          filterByProject: action.payload.filterByProject
+        if (state.status === 'complete') {
+          return <CompleteState> {
+            ...state,
+            filterByProject: action.payload.filterByProject
+          }
         }
+        return state;
       }
 
       default:

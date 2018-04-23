@@ -52,6 +52,13 @@ export interface State extends BaseState {
  */
 export default class UserDatasetDetailStore extends WdkStore<State> {
 
+  storeShouldReceiveAction(channel?: string) {
+    return (
+      super.storeShouldReceiveAction(channel) ||
+      channel === 'UserDatasetListStore'
+    );
+  }
+
   getInitialState (): State {
     return Object.assign({
       userDatasetsById: {},
