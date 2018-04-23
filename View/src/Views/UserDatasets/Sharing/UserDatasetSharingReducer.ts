@@ -9,7 +9,7 @@ import { SharingSuccessAction } from '../UserDatasetsActionCreators';
 type State = Record<string, {
   isLoading: boolean;
   resource?: UserDataset
-} | undefined >;
+}>;
 
 function isSharingAction(action: Action): action is SharingSuccessAction {
   return action.type === 'user-datasets/sharing-success';
@@ -27,6 +27,7 @@ function handleMethod(add: boolean) {
 
     return Object.entries(sharesByTargetId).reduce((state, [userDatasetId, shares]) => {
       const entry = state[userDatasetId];
+      // entry can be undefined
       if (entry == null || entry.resource == null || shares == null) {
         return state;
       }
