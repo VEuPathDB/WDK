@@ -79,7 +79,6 @@ public class WdkServiceApplication extends Application {
     .add(StrategyService.class)
     .add(StepAnalysisService.class)
     .add(ClientErrorReportingService.class)
-    .add(ComparisonService.class)
 
     // test
     .add(SampleService.class)
