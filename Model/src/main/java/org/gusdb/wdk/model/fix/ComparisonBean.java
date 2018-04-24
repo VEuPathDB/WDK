@@ -10,52 +10,42 @@ import org.apache.commons.lang.StringUtils;
 
 public class ComparisonBean {
   public static String NL = System.getProperty("line.separator");
-  private String context;	
-  private String missingFromQaName;
-  private String missingFromProdName;
-  private List<String> missingFromQa = new ArrayList<>();
-  private List<String> missingFromProd = new ArrayList<>();
+  private String _context;	
+  private String _missingFromQaName;
+  private String _missingFromProdName;
+  private List<String> _missingFromQa = new ArrayList<>();
+  private List<String> _missingFromProd = new ArrayList<>();
   
-  public String getContext() {
-	return context;
+  public ComparisonBean() {}
+  
+  public ComparisonBean(String context, String missingFromQaName, String missingFromProdName, List<String> missingFromQa, List<String> missingFromProd) {
+    _context = context;
+    _missingFromQaName = missingFromQaName;
+    _missingFromProdName = missingFromProdName;
+    _missingFromQa = missingFromQa;
+    _missingFromProd = missingFromProd;
   }
   
-  public void setContext(String context) {
-	this.context = context;
+  public String getContext() {
+	return _context;
   }
   
   public String getMissingFromQaName() {
-	return missingFromQaName;
-  }
-  
-  public void setMissingFromQaName(String missingFromQaName) {
-	this.missingFromQaName = missingFromQaName;
+	return _missingFromQaName;
   }
   
   public String getMissingFromProdName() {
-	return missingFromProdName;
-  }
-  
-  public void setMissingFromProdName(String missingFromProdName) {
-	this.missingFromProdName = missingFromProdName;
+	return _missingFromProdName;
   }
   
   public List<String> getMissingFromQa() {
-	return missingFromQa;
-  }
-  
-  public void setMissingFromQa(List<String> missingFromQa) {
-	this.missingFromQa = missingFromQa;
+	return _missingFromQa;
   }
   
   public List<String> getMissingFromProd() {
-	return missingFromProd;
+	return _missingFromProd;
   }
-  
-  public void setMissingFromProd(List<String> missingFromProd) {
-	this.missingFromProd = missingFromProd;
-  }
-  
+ 
   public String toString() {
     return NL + getContext() + ":" + NL +
      getMissingFromQaName() + "-" +
@@ -68,9 +58,9 @@ public class ComparisonBean {
 	if(getMissingFromQa().isEmpty() && getMissingFromProd().isEmpty()) return;
 	System.out.println(NL + getContext());
 	Optional<String> missingFromQaLongestString = getMissingFromQa().stream().max(Comparator.comparingInt(String::length));
-	int missingFromQaLength = missingFromQaLongestString.isPresent() ? missingFromQaLongestString.get().length() : getMissingFromQaName().length();
+	int missingFromQaLength = missingFromQaLongestString.isPresent() ? Math.max(getMissingFromQaName().length(), missingFromQaLongestString.get().length()) : getMissingFromQaName().length();
 	Optional<String> missingFromProdLongestString = getMissingFromProd().stream().max(Comparator.comparingInt(String::length));
-	int missingFromProdLength = missingFromProdLongestString.isPresent() ? missingFromProdLongestString.get().length() : getMissingFromProdName().length();
+	int missingFromProdLength = missingFromProdLongestString.isPresent() ? Math.max(getMissingFromProdName().length(), missingFromProdLongestString.get().length()) : getMissingFromProdName().length();
 	String line = new String(new char[5 + missingFromQaLength + missingFromProdLength]).replace('\0', '-');
 	System.out.println(line);
     System.out.printf("%s|%s|%n",
