@@ -1032,7 +1032,6 @@ wdk.namespace("window.wdk.strategy.view", function(ns, $) {
         "    <table></table><hr class='clear' />" + filteredName +
         "    <p><b>Results:&nbsp;</b>" + jsonStep.results + "&nbsp;" +
         wdk.util.getDisplayType(jsonStep);
-        // + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
 
     inner += "<hr class='clear' />" + createWeightSection(jsonStep,modelstep,sid);
 
