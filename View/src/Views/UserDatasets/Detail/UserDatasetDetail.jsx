@@ -95,7 +95,7 @@ class UserDatasetDetail extends React.Component {
   }
 
   getAttributes () {
-    const { userDataset } = this.props;
+    const { userDataset, quotaSize } = this.props;
     const { onMetaSave } = this;
     const { id, type, meta, projects, size, percentQuotaUsed, owner, created, sharedWith } = userDataset;
     const { display, name, version } = type;
@@ -165,7 +165,10 @@ class UserDatasetDetail extends React.Component {
         )
       },
       { attribute: 'Dataset Size', value: bytesToHuman(size) },
-      (!isOwner ? null : { attribute: 'Quota Usage', value: `${normalizePercentage(percentQuotaUsed)}%` }),
+      (!isOwner ? null : {
+        attribute: 'Quota Usage',
+        value: `${normalizePercentage(percentQuotaUsed)}% of ${bytesToHuman(quotaSize)}`
+      }),
       (
         !isOwner || !sharedWith || !sharedWith.length
           ? null

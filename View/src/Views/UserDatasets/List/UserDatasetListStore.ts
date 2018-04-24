@@ -35,6 +35,11 @@ type ErrorState = BaseState & {
   loadError: Error;
 }
 
+type ForbiddenState = BaseState & {
+  status: 'forbidden';
+  loadError: Error;
+}
+
 type CompleteState = BaseState & {
   status: 'complete';
   userDatasets: number[];
@@ -42,7 +47,7 @@ type CompleteState = BaseState & {
   filterByProject: boolean;
 }
 
-export type State =  InitialState | LoadingState | ErrorState | CompleteState;
+export type State =  InitialState | LoadingState | ErrorState | ForbiddenState | CompleteState;
 
 export default class UserDatasetListStore extends WdkStore<State> {
 
@@ -76,9 +81,9 @@ export default class UserDatasetListStore extends WdkStore<State> {
           Object.assign(uds, { [ud.id]: { loading: false, resource: ud }}), {} as CompleteState['userDatasetsById'])
       };
 
-      case 'user-datasets/list-error': return <ErrorState>{
+      case 'user-datasets/list-error': return <ErrorState|ForbiddenState>{
         globalData: state.globalData,
-        status: 'error',
+        status: action.payload.error.status === 403 ? 'forbidden' : 'error',
         loadError: action.payload.error
       };
 
