@@ -377,13 +377,7 @@ class UserDatasetList extends React.Component <Props, State> {
     const { userDatasets, projectName, location, filterByProject } = this.props;
     const emptyMessage = !userDatasets.length
       ? (
-        <React.Fragment>
-          <p  style={{ textAlign: 'center' }}>This page is empty because you do not have any data sets.  <br/> To add a data set, go to EuPathDB Galaxy via 'Analyze My Experiment' and then use the EuPathDB Export Tool as outlined below.</p>
-          <br/>
-            <Link to="/search/dataset/AllDatasets/result">
-              See <b>{projectName}</b>'s Public Data Sets.
-            </Link>
-        </React.Fragment>
+        <p  style={{ textAlign: 'center' }}>This page is empty because you do not have any data sets.  <br/> To add a data set, go to EuPathDB Galaxy via 'Analyze My Experiment' and then use the EuPathDB Export Tool as outlined below.</p>
       ) : filterByProject
         ? (
           <React.Fragment>
