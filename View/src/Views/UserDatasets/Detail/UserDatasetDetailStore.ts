@@ -13,6 +13,7 @@ import {
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
 import sharingReducer from 'Views/UserDatasets/Sharing/UserDatasetSharingReducer';
 import { UserDataset } from 'Utils/WdkModel';
+import { ServiceError } from 'Utils/WdkService';
 
 type Action = DetailLoading
             | DetailUpdatingAction
@@ -39,9 +40,9 @@ export interface State extends BaseState {
   userDatasetUpdating: boolean;
   userDatasetLoading: boolean;
   userDatasetRemoving: boolean;
-  loadError?: Error;
-  updateError?: Error;
-  removalError? : Error;
+  loadError?: ServiceError;
+  updateError?: ServiceError;
+  removalError? : ServiceError;
 }
 
 /**

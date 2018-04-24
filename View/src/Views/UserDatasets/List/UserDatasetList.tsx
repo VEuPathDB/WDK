@@ -1,5 +1,5 @@
 import React from 'react';
-import { escape } from 'lodash';
+import { escape, add } from 'lodash';
 import { History } from 'history';
 import {
   Mesa,
@@ -44,6 +44,7 @@ interface Props {
   removeUserDataset: (dataset: UserDataset) => any;
   updateUserDatasetDetail: (userDataset: UserDataset, meta: UserDatasetMeta) => any;
   updateProjectFilter: (filterByProject: boolean) => any;
+  quotaSize: number;
 };
 
 interface State {
@@ -396,11 +397,9 @@ class UserDatasetList extends React.Component <Props, State> {
           <React.Fragment>
             <p>Your search returned no results.</p>
             <br/>
-            <small>
-              <a onClick={() => this.setState({ searchTerm: '' })} href="#">
-                Clear Search Query <Icon fa="chevron-right"/>
-              </a>
-            </small>
+            <button type="button" className="btn" onClick={() => this.setState({ searchTerm: '' })}>
+              Clear Search Query
+            </button>
           </React.Fragment>
         );
     return {
@@ -481,7 +480,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
   render () {
     const { isRowSelected, toggleProjectScope } = this;
-    const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets, filterByProject } = this.props;
+    const { userDatasets, history, user, projectName, shareUserDatasets, unshareUserDatasets, filterByProject, quotaSize } = this.props;
     const { uiState, selectedRows, searchTerm, sharingModalOpen } = this.state;
 
     const rows = userDatasets;
@@ -509,6 +508,12 @@ class UserDatasetList extends React.Component <Props, State> {
           : null
         },
     };
+
+    const totalSize = userDatasets
+      .filter(ud => ud.ownerUserId === user.id)
+      .map(ud => ud.size).reduce(add);
+
+    const totalPercent = totalSize / quotaSize;
 
     return (
       <div className="UserDatasetList">
@@ -559,6 +564,13 @@ class UserDatasetList extends React.Component <Props, State> {
             </div>
           </div>
         </Mesa>
+        <div>
+          <small>
+            <strong>
+              {bytesToHuman(totalSize)} ({normalizePercentage(totalPercent)}%) of {bytesToHuman(quotaSize)} used
+            </strong>
+          </small>
+        </div>
         {userDatasets.length ? null : <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>}
       </div>
     )
