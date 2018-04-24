@@ -32,10 +32,10 @@ export default function UserDatasetStatus(props: Props) {
       <span>This data set is installed and ready for use in {displayName}.</span>
     )
     : isPending ? (
-      <span>This dataset is currently being installed in {displayName}. Please check again soon.</span>
+      <span>This data set is currently being installed in {displayName}. Please check again soon.</span>
     )
     : isError ? (
-      <span>This dataset could not be installed in {displayName} due to a server error.</span>
+      <span>This data set could not be installed in {displayName} due to a server error.</span>
     )
     : (
       <span>
