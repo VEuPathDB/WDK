@@ -53,7 +53,9 @@ class UserDatasetListController extends AbstractPageController <StoreState, User
   isRenderDataLoaded () {
     return (
       this.state.status !== 'not-requested' &&
-      this.state.status !== 'loading'
+      this.state.status !== 'loading' &&
+      this.state.globalData.config != null &&
+      this.state.globalData.user != null
     );
   }
 

@@ -511,7 +511,7 @@ class UserDatasetList extends React.Component <Props, State> {
 
     const totalSize = userDatasets
       .filter(ud => ud.ownerUserId === user.id)
-      .map(ud => ud.size).reduce(add);
+      .map(ud => ud.size).reduce(add, 0);
 
     const totalPercent = totalSize / quotaSize;
 
@@ -533,44 +533,42 @@ class UserDatasetList extends React.Component <Props, State> {
                 </div>
               </HelpIcon>
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {sharingModalOpen && selectedDatasets.length
-                ? <SharingModal
-                    user={user}
-                    rootUrl={rootUrl}
-                    datasets={selectedDatasets}
-                    deselectDataset={this.onRowDeselect}
-                    shareUserDatasets={shareUserDatasets}
-                    unshareUserDatasets={unshareUserDatasets}
-                    onClose={this.closeSharingModal}
-                  />
-                : null
-              }
-              <SearchBox
-                placeholderText="Search Datasets"
-                searchTerm={searchTerm}
-                onSearchTermChange={this.onSearchTermChange}
-              />
-              <div style={{ flex: '0 0 auto', padding: '0 10px' }}>
-                Showing {filteredRows.length} of {rows.length} {`data set${rows.length == 1 ? '' : 's'}`}
-              </div>
-              <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
-                <Checkbox value={filterByProject} onChange={toggleProjectScope} />
-                {' '}
-                <div onClick={() => toggleProjectScope(!filterByProject)} style={{ display: 'inline-block' }}>
-                  Only show data sets related to <b>{projectName}</b>
+            {userDatasets.length > 0 &&
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {sharingModalOpen && selectedDatasets.length
+                  ? <SharingModal
+                      user={user}
+                      rootUrl={rootUrl}
+                      datasets={selectedDatasets}
+                      deselectDataset={this.onRowDeselect}
+                      shareUserDatasets={shareUserDatasets}
+                      unshareUserDatasets={unshareUserDatasets}
+                      onClose={this.closeSharingModal}
+                    />
+                  : null
+                }
+                <SearchBox
+                  placeholderText="Search Datasets"
+                  searchTerm={searchTerm}
+                  onSearchTermChange={this.onSearchTermChange}
+                />
+                <div style={{ flex: '0 0 auto', padding: '0 10px' }}>
+                  Showing {filteredRows.length} of {rows.length} {`data set${rows.length == 1 ? '' : 's'}`}
+                </div>
+                <div className="UserDatasetList-ProjectToggle" style={{ flex: '0 0 auto', padding: '0 10px' }}>
+                  <Checkbox value={filterByProject} onChange={toggleProjectScope} />
+                  {' '}
+                  <div onClick={() => toggleProjectScope(!filterByProject)} style={{ display: 'inline-block' }}>
+                    Only show data sets related to <b>{projectName}</b>
+                  </div>
+                </div>
+                <div style={{ flex: '0 0 auto', padding: '0 10px' }}>
+                  <Icon fa="info-circle"/> {bytesToHuman(totalSize)} ({normalizePercentage(totalPercent)}%) of {bytesToHuman(quotaSize)} used
                 </div>
               </div>
-            </div>
+            }
           </div>
         </Mesa>
-        <div>
-          <small>
-            <strong>
-              {bytesToHuman(totalSize)} ({normalizePercentage(totalPercent)}%) of {bytesToHuman(quotaSize)} used
-            </strong>
-          </small>
-        </div>
         {userDatasets.length ? null : <UserDatasetTutorial projectName={projectName} rootUrl={rootUrl}/>}
       </div>
     )
