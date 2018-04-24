@@ -6,6 +6,7 @@ export function makeClassifier (...classNames) {
     .join(' ');
 }
 
+export const quotaSize = 10737418240; // 10 G
 
 export function normalizePercentage (value) {
   const parsed = parseFloat(value);

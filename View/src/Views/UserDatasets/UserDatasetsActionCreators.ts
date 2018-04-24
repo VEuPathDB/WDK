@@ -79,7 +79,7 @@ export type DetailRemoveSuccessAction = {
 export type DetailRemoveErrorAction = {
   type: 'user-datasets/detail-remove-error',
   payload: {
-    error: Error
+    error: ServiceError
   }
 }
 

@@ -1,23 +1,24 @@
+import { keyBy } from 'lodash';
 import * as React from 'react';
-import { keyBy, pick } from 'lodash';
-import { PageControllerProps } from 'Core/CommonTypes';
-import { wrappable } from 'Utils/ComponentUtils';
-import { Question, UserDataset } from 'Utils/WdkModel';
-import AbstractPageController from 'Core/Controllers/AbstractPageController';
 
-import EmptyState from 'Views/UserDatasets/EmptyState';
+import { showLoginForm } from 'Core/ActionCreators/UserActionCreators';
+import { PageControllerProps } from 'Core/CommonTypes';
+import AbstractPageController from 'Core/Controllers/AbstractPageController';
+import { wrappable } from 'Utils/ComponentUtils';
+import { Question } from 'Utils/WdkModel';
+import BigwigDatasetDetail from 'Views/UserDatasets/Detail/BigwigDatasetDetail';
+import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
 import UserDatasetDetailStore, { State as StoreState } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
+import EmptyState from 'Views/UserDatasets/EmptyState';
 import {
   loadUserDatasetDetail,
-  updateUserDatasetDetail,
   removeUserDataset,
   shareUserDatasets,
-  unshareUserDatasets
+  unshareUserDatasets,
+  updateUserDatasetDetail,
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
-import { UserDatasetEntry } from 'Views/UserDatasets/Detail/UserDatasetDetailStore';
+import { quotaSize } from 'Views/UserDatasets/UserDatasetUtils';
 
-import UserDatasetDetail from 'Views/UserDatasets/Detail/UserDatasetDetail';
-import BigwigDatasetDetail from 'Views/UserDatasets/Detail/BigwigDatasetDetail';
 // import { removeUserDataset } from 'Views/UserDatasets/UserDatasetsActionCreators';
 
 type State = Pick<StoreState, 'userDatasetsById' | 'loadError' | 'userDatasetUpdating' | 'updateError'>
@@ -97,14 +98,14 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
   }
 
   isRenderDataLoadError () {
-    const { loadError, user } = this.state;
-    return (!user || user.isGuest) && loadError != null;
+    return this.state.loadError != null && this.state.loadError.status >= 500;
   }
 
   isRenderDataLoaded () {
     const { match } = this.props;
     const { userDatasetsById, user, questions, config } = this.state;
     const entry = userDatasetsById[match.params.id];
+    if (user && user.isGuest) return true;
     return (entry && !entry.isLoading && user && questions && config)
       ? true
       : false;
@@ -119,6 +120,18 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       default:
         return UserDatasetDetail;
     }
+  }
+
+  renderGuestView() {
+    return (
+      <EmptyState message={
+        <button
+          type="button"
+          className="btn"
+          onClick={() => this.dispatchAction(showLoginForm())}
+        >Please log in to access My Data Sets.</button>
+      }/>
+    );
   }
 
   renderView () {
@@ -138,6 +151,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
       location,
       updateError,
       removeUserDataset,
+      quotaSize,
       userDatasetUpdating,
       shareUserDatasets,
       unshareUserDatasets,
@@ -149,7 +163,7 @@ class UserDatasetDetailController extends AbstractPageController <State, UserDat
 
     const DetailView = this.getDetailView(typeof entry.resource === 'object' ? entry.resource.type : null);
     return user && user.isGuest
-      ? <EmptyState message="Please log in to view and edit My Data Sets."/>
+      ? this.renderGuestView()
       : <DetailView {...props}/>
   }
 }

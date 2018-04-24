@@ -1,10 +1,10 @@
 import * as React from 'react';
 
 import 'Views/UserDatasets/UserDatasets.scss';
+import { showLoginForm } from 'Core/ActionCreators/UserActionCreators';
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import { wrappable } from 'Utils/ComponentUtils';
 import { UserDataset } from 'Utils/WdkModel';
-import { User } from 'Utils/WdkUser';
 import UserDatasetEmptyState from 'Views/UserDatasets/EmptyState';
 import UserDatasetList from 'Views/UserDatasets/List/UserDatasetList';
 import UserDatasetListStore, { State as StoreState } from 'Views/UserDatasets/List/UserDatasetListStore';
@@ -16,6 +16,7 @@ import {
   updateProjectFilter,
   updateUserDatasetDetail,
 } from 'Views/UserDatasets/UserDatasetsActionCreators';
+import { quotaSize } from 'Views/UserDatasets/UserDatasetUtils';
 
 const ActionCreators = {
   updateUserDatasetDetail,
@@ -50,43 +51,60 @@ class UserDatasetListController extends AbstractPageController <StoreState, User
   }
 
   isRenderDataLoaded () {
-    return this.state.status === 'complete';
+    return (
+      this.state.status !== 'not-requested' &&
+      this.state.status !== 'loading'
+    );
   }
 
   isRenderDataLoadError() {
     return this.state.status === 'error';
   }
 
+  renderGuestView() {
+    const title = this.getTitle();
+    return (
+      <div className="UserDatasetList-Controller">
+        <h1 className="UserDatasetList-Title">{title}</h1>
+        <div className="UserDatasetList-Content">
+          <UserDatasetEmptyState message={
+            <button
+              type="button"
+              className="btn"
+              onClick={() => this.dispatchAction(showLoginForm())}
+            >Please log in to access My Data Sets.</button>
+          } />
+        </div>
+      </div>
+    )
+  }
+
   renderView () {
+    const { user } = this.state.globalData;
+
+    if (user.isGuest) return this.renderGuestView();
+
     if (this.state.status !== 'complete') return null;
 
-    const { userDatasets, userDatasetsById, filterByProject, globalData: { user, config } } = this.state;
+    const { userDatasets, userDatasetsById, filterByProject, globalData: { config } } = this.state;
     const { projectId, displayName: projectName } = config;
     const { history, location } = this.props;
 
-    const title = this.getTitle();
-    const loggedIn: boolean = (typeof user !== 'undefined' && user.isGuest === false);
     const listProps = {
       user,
       history,
       location,
       projectId,
       projectName,
+      quotaSize,
       userDatasets: userDatasets.map(id => userDatasetsById[id].resource) as UserDataset[],
       filterByProject,
       ...this.eventHandlers
     };
     return (
       <div className="UserDatasetList-Controller">
-        {!loggedIn
-          ? <h1 className="UserDatasetList-Title">{title}</h1>
-          : null
-        }
         <div className="UserDatasetList-Content">
-          {!loggedIn
-            ? <UserDatasetEmptyState message="Please log in to access My Data Sets."/>
-            : <UserDatasetList {...listProps} />
-          }
+          <UserDatasetList {...listProps} />
         </div>
       </div>
     )
