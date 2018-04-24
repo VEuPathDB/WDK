@@ -1,7 +1,7 @@
 import React from 'react';
+import { bytesToHuman } from 'Utils/Converters';
 
-function UserDatasetTutorial ({ projectName, rootUrl }) {
-  const orientationUrl = '';
+function UserDatasetTutorial ({ projectName, rootUrl, quotaSize }) {
   const galaxyUrl = 'https://eupathdb.globusgenomics.org/';
   return (
     <div className="row UserDataset-Tutorial">
@@ -20,13 +20,13 @@ function UserDatasetTutorial ({ projectName, rootUrl }) {
         <img src={`${rootUrl}/wdk/images/userDatasetHelp/tut-step-3.jpg`} />
         <ul>
           <li>You can now view, manage, share, and utilize your data set in <b>{projectName}</b>.</li>
-          <li>My Data sets you’ve created contribute to a per-user upload limit/quota of <b>1 GB</b>.</li>
+          <li>My Data sets you’ve created contribute to a per-user upload limit/quota of <b>{bytesToHuman(quotaSize)}</b>.</li>
           <li> Bigwig files can be sent to GBrowse in the dataset’s detail page.
                Click the dataset name or status icon to see this page.</li>
         </ul>
       </div>
     </div>
   );
-};
+}
 
 export default UserDatasetTutorial;
