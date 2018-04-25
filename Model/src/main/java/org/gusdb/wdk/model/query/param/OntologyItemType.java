@@ -22,6 +22,7 @@ public enum OntologyItemType {
   MULTIFILTER   ("multiFilter",   null,   MultiFilter.class),
 
   // data types of ontology leaf nodes
+  // (ontology_type_declaration_string, metadata_query_column_name, java_parser_class)
   STRING ("string", "string_value", String.class),
   NUMBER ("number", "number_value", Double.class),
   DATE   ("date",   "date_value",   String.class);
@@ -79,6 +80,7 @@ public enum OntologyItemType {
   @SuppressWarnings("unchecked")
   public static <T> T resolveTypedValue(ResultSet resultSet, OntologyItem ontologyItem,
       Class<T> ontologyItemClass) throws SQLException {
+    
     if (!ontologyItem.getType().getJavaClass().getName().equals(ontologyItemClass.getName())) {
       throw new IllegalStateException("Incoming ontologyItemClass (" + ontologyItemClass.getName() +
           ") must be the same as that configured for the ontologyItem's value Java class (" +
