@@ -23,6 +23,7 @@ import org.json.JSONObject;
  *   isDisplayable: Boolean,
  *   isInReport: Boolean,
  *   properties: Object
+ *   formats: Array of reporter names (String)
  * }
  * 
  * @author rdoherty
@@ -54,6 +55,7 @@ public class AttributeFieldFormatter {
       .put(Keys.TRUNCATE_TO, attribute.getTruncateTo())
       .put(Keys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(attribute))
       .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(attribute))
-      .put(Keys.PROPERTIES, attribute.getPropertyLists());
+      .put(Keys.PROPERTIES, attribute.getPropertyLists())
+      .put(Keys.FORMATS, attribute.getReporters().keySet());
   }
 }

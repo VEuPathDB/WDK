@@ -5,13 +5,15 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
+import org.gusdb.wdk.model.report.AbstractAttributeReporter;
+import org.gusdb.wdk.model.report.ReporterRef;
 
 /**
  * <p>
@@ -41,6 +43,9 @@ public abstract class AttributeField extends Field implements Cloneable {
 
   private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> _pluginMap;
+  
+  private List<ReporterRef> _reporterList = new ArrayList<ReporterRef>();
+  private Map<String, ReporterRef> _reporterMap;
 
   public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
 
@@ -147,6 +152,21 @@ public abstract class AttributeField extends Field implements Cloneable {
     return new LinkedHashMap<String, AttributePluginReference>(_pluginMap);
   }
 
+  public void addReporterReference(ReporterRef reference) {
+    WdkModelText prop = new WdkModelText();
+    prop.setName(AbstractAttributeReporter.ATTRIBUTE_FIELD_PROP);
+    prop.setText(getName());
+    reference.addProperty(prop);
+    if (_reporterList != null)
+      _reporterList.add(reference);
+    else
+      _reporterMap.put(reference.getName(), reference);
+  }
+
+  public Map<String, ReporterRef> getReporters() {
+    return new LinkedHashMap<String, ReporterRef>(_reporterMap);
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -164,6 +184,21 @@ public abstract class AttributeField extends Field implements Cloneable {
       }
     }
     _pluginList = null;
+    
+    // exclude reporter references
+    _reporterMap = new LinkedHashMap<String, ReporterRef>();
+    for (ReporterRef reporter : _reporterList) {
+      if (reporter.include(projectId)) {
+        String name = reporter.getName();
+        if (_reporterMap.containsKey(name))
+          throw new WdkModelException("The reporter '" + name
+              + "' is duplicated in attribute " + _name);
+        reporter.excludeResources(projectId);
+        _reporterMap.put(getName() + "/" + name, reporter);  // prepend this attribute's name to the reporter for uniqueness
+      }
+    }
+    _reporterList = null;
+
   }
 
   @Override
@@ -185,5 +220,11 @@ public abstract class AttributeField extends Field implements Cloneable {
     for (AttributePluginReference plugin : _pluginMap.values()) {
       plugin.resolveReferences(wdkModel);
     }
+    
+    // resolve plugin references
+    for (ReporterRef reporter : _reporterMap.values()) {
+      reporter.resolveReferences(wdkModel);
+    }
   }
+  
 }

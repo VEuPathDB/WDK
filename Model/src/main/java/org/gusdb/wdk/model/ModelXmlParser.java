@@ -968,15 +968,18 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, prefixIdAttr + "/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod(prefixIdAttr + "/display", "setText", 0);
     configureAttributePlugins(digester, "primaryKeyAttribute");
+    configureAttributeReporters(digester, "primaryKeyAttribute");
 
     // pk column attributes
     configureNode(digester, "*/pkColumnAttribute", PkColumnAttributeField.class, "addAttributeField");
     configureAttributePlugins(digester, "pkColumnAttribute");
+    configureAttributeReporters(digester, "pkColumnAttribute");
 
     // column attributes
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
     configureAttributePlugins(digester, "columnAttribute");
+    configureAttributeReporters(digester, "columnAttribute");
 
     // link attribute
     configureNode(digester, "*/linkAttribute", LinkAttributeField.class, "addAttributeField");
@@ -985,6 +988,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/linkAttribute/displayText", WdkModelText.class, "addDisplayText");
     digester.addCallMethod("*/linkAttribute/displayText", "setText", 0);
     configureAttributePlugins(digester, "linkAttribute");
+    configureAttributeReporters(digester, "linkAttribute");
 
     // text attribute
     configureNode(digester, "*/textAttribute", TextAttributeField.class, "addAttributeField");
@@ -993,12 +997,22 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/textAttribute/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod("*/textAttribute/display", "setText", 0);
     configureAttributePlugins(digester, "textAttribute");
+    configureAttributeReporters(digester, "textAttribute");
   }
 
   private static void configureAttributePlugins(Digester digester, String attribute) {
     String prefix = "*/" + attribute + "/plugin";
     // configure plugins for
     configureNode(digester, prefix, AttributePluginReference.class, "addAttributePluginReference");
+    configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod(prefix + "/property", "setText", 0);
+
+  }
+
+  private static void configureAttributeReporters(Digester digester, String attribute) {
+    String prefix = "*/" + attribute + "/reporter";
+    // configure plugins for
+    configureNode(digester, prefix, ReporterRef.class, "addReporterReference");
     configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(prefix + "/property", "setText", 0);
 
