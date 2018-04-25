@@ -847,6 +847,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (ReporterRef reporterRef : reporterMap.values()) {
       reporterRef.resolveReferences(model);
     }
+    for (AttributeField attribute : attributeFieldList) {
+      for (ReporterRef reporterRef : attribute.getReporters().values()) {
+        if (reporterMap.containsKey(reporterRef.getName())) {
+          throw new WdkModelException("Duplicate reporter with name: " + reporterRef.getName());
+        }
+        reporterMap.put(reporterRef.getName(), reporterRef);
+      }
+    }
+
 
     // register this URL segment with the model to ensure uniqueness
     _wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
