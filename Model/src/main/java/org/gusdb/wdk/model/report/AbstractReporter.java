@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 public abstract class AbstractReporter implements Reporter {
 
@@ -100,10 +99,6 @@ public abstract class AbstractReporter implements Reporter {
 
   protected Question getQuestion() {
     return _baseAnswer.getQuestion();
-  }
-
-  protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException {
-    return _baseAnswer.getAttributes().getSummaryAttributeFieldMap();
   }
 
 }
