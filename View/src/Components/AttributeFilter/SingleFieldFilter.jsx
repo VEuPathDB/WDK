@@ -1,10 +1,11 @@
 import React from 'react';
 import { omit } from 'lodash';
 import { isRange } from './Utils/FilterServiceUtils';
+import { shouldAddFilter } from './Utils';
 import DateField from './DateField';
 import NumberField from './NumberField';
-import { shouldAddFilter } from './Utils';
 import MembershipField from './MembershipField';
+import EmptyValues from './EmptyValues';
 
 export default class SingleFieldFilter extends React.Component {
   constructor(props) {
@@ -27,9 +28,10 @@ export default class SingleFieldFilter extends React.Component {
   }
 
   render() {
-    const { activeField, filters } = this.props;
+    const { activeField, activeFieldState, filters } = this.props;
 
     const FieldDetail = activeField == null ? null
+      : activeFieldState.summary.valueCounts.length === 0 ? EmptyValues
       : isRange(activeField) == false ? MembershipField
       : activeField.type == 'string' ? MembershipField
       : activeField.type == 'number' ? NumberField
@@ -42,7 +44,7 @@ export default class SingleFieldFilter extends React.Component {
       filters.find(filter => filter.field === activeField.term)
     );
 
-    const restProps = omit(this.props, ['filter']);
+    const restProps = omit(this.props, ['filters']);
 
     return (
       <React.Fragment>
