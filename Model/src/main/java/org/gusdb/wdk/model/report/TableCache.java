@@ -20,6 +20,9 @@ import org.gusdb.wdk.model.record.RecordInstance;
  * the db table has columns for PK, number of rows and a clob, 
  * which is the reporter-specific format for the table value of a specific record instance.
  * reporters that use the cache populate this table as they acquire data for specific records.
+ * the db table to use for the cache is determined by a property of the reporter in the model xml
+ * file.  the wdk has no facility for clearing the cache.  this seems to be the responsibility 
+ * of the managers of the database, upon new releases of the application data.
  */
 public class TableCache {
 
