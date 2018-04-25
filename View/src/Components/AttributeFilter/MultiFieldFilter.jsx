@@ -204,8 +204,10 @@ export default class MultiFieldFilter extends React.Component {
         }))
       ])
 
-    const filteredRows = rows.filter(({ summary }) =>
-      searchRe.test(this.props.fields.get(summary.term).display))
+    const filteredRows = rows
+      .filter(({ summary }) =>
+        pathToTerm(summary.term, this.props.activeField.term, this.props.fields)
+          .some(item => searchRe.test(item.display)))
 
     return <div className={cx()}>
       <button
@@ -273,4 +275,12 @@ export default class MultiFieldFilter extends React.Component {
     </div>
   }
 
+}
+
+function pathToTerm(leafTerm, rootTerm, fields) {
+  const item = fields.get(leafTerm);
+  const root = fields.get(rootTerm);
+  return item == null || item === root
+    ? Seq.empty()
+    : pathToTerm(item.parent, rootTerm, fields).concat(Seq.of(item));
 }
