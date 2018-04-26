@@ -106,7 +106,7 @@ public class QuestionComparison {
       throw new RuntimeException(wme);
     }
     Instant end = Instant.now();
-    System.out.println("Site comparison\t" + Duration.between(start, end).getSeconds() + "\tsec");  
+    System.out.println("Site comparison\t" + Duration.between(start, end).toNanos()/1E9 + "\tsec");  
   }
 
   
@@ -168,7 +168,7 @@ public class QuestionComparison {
 	}
    
     Instant end = Instant.now();
-    System.out.println("Concluding question name comparison\t" + Duration.between(start, end).getSeconds() + "\tsec");  
+    System.out.println("Concluding question name comparison\t" + Duration.between(start, end).toNanos()/1E9 + "\tsec");  
   }
 
   
@@ -226,7 +226,7 @@ public class QuestionComparison {
       errors.add(new Error("While processing compareOrganisms", wme.getMessage()));
     }
     Instant end = Instant.now();
-    System.out.println("Concluding organism comparison\t" + Duration.between(start, end).getSeconds() + "\tsec");
+    System.out.println("Concluding organism comparison\t" + Duration.between(start, end).toNanos()/1E9 + "\tsec");
   }
 
 
@@ -298,15 +298,14 @@ public class QuestionComparison {
       }
       finally {
          Instant serviceCallEnd = Instant.now();
-         System.out.println("Service calls: " + Duration.between(serviceCallStart, serviceCallEnd).getSeconds());
-         serviceCallDuration.plus(Duration.between(serviceCallStart, serviceCallEnd));
+         serviceCallDuration = serviceCallDuration.plusNanos(Duration.between(serviceCallStart, serviceCallEnd).toNanos());
       }
       
       // Create the parameter name lists from the JSONObjects returned by the service calls.
       List<String> qaParameterNames = createParameterNameList(qaData);
       List<String> prodParameterNames = createParameterNameList(prodData);
 
-      // Contains qa parameter names not in prodge
+      // Contains qa parameter names not in prod
       List<String> newParameterList = new ArrayList<>(qaParameterNames);
       newParameterList.removeAll(prodParameterNames);
       
@@ -326,7 +325,7 @@ public class QuestionComparison {
     }
     Instant end = Instant.now();
     System.out.println("Concluding parameter name comparison: Elapsed times...");
-    System.out.println("Method:\t" + Duration.between(start, end).getSeconds()	+ "\tsec\tService Calls:\t" + serviceCallDuration.getSeconds() + "\tsec");
+    System.out.println("Method:\t" + Duration.between(start, end).toNanos()/1E9 + "\tsec\tService Calls:\t" + serviceCallDuration.toNanos()/1E9 + "\tsec");
   }
 
 
@@ -359,6 +358,8 @@ public class QuestionComparison {
     System.out.println("Starting parameter value comparison");
 	Instant start = Instant.now();
 	
+	Duration serviceCallDuration = Duration.ZERO;
+	
 	int questionCounter = 0;
     for(String question : commonParameterMap.keySet()) {
     	
@@ -370,6 +371,7 @@ public class QuestionComparison {
       JSONObject qaData;
       JSONObject prodData;
       
+      Instant serviceCallStart = Instant.now();
       try {
     	// Get additional parameter metadata containing parameter values from the question service for question for each site.  
         qaData = new JSONObject(callGetService(qaUrl + questionPath));
@@ -378,6 +380,10 @@ public class QuestionComparison {
       catch(WdkModelException wme) {
         errors.add(new Error("While processing the " + question + " in compareParameterValue", wme.getMessage()));
     	continue;
+      }
+      finally {
+        Instant serviceCallEnd = Instant.now();
+        serviceCallDuration = serviceCallDuration.plusNanos(Duration.between(serviceCallStart, serviceCallEnd).toNanos());
       }
       
       // Extract the parameters JSONArray from each JSONObject
@@ -421,7 +427,7 @@ public class QuestionComparison {
       }
     }
     Instant end = Instant.now();
-    System.out.println("Concluding parameter value comparison\t" + Duration.between(start, end).getSeconds() + "\tsec");
+    System.out.println("Concluding parameter value comparison\t" + Duration.between(start, end).toNanos()/1E9 + "\tsec\tService Calls:\t" + serviceCallDuration.toNanos()/1E9 + "\tsec");
   }
   
 
