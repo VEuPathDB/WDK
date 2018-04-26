@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -32,6 +34,7 @@ public class QuestionComparison {
   private ComparisonBean organismComparison = null;
   private List<ComparisonBean> parameterNameComparisons = new ArrayList<>();
   private List<ComparisonBean> parameterValueComparisons = new ArrayList<>();
+  private List<ComparisonBean> parameterValueOptionComparisons = new ArrayList<>();
   private List<String> commonQuestionList = new ArrayList<>();
   private Map<String,List<String>> commonParameterMap = new HashMap<>();
   private List<Error> errors = new ArrayList<>();
@@ -71,7 +74,7 @@ public class QuestionComparison {
     System.out.println("Starting site comparison");
 	Instant start = Instant.now();
 	
-    validateParameters(qaUrl, prodUrl);
+    //validateParameters(qaUrl, prodUrl);
     
     try {
       System.out.println(NL + "Logging Comparisons between " + qaUrl + " and " + prodUrl + NL);
@@ -97,6 +100,7 @@ public class QuestionComparison {
       if(organismComparison != null)  organismComparison.display();  
       parameterNameComparisons.stream().forEach(comparison -> comparison.display());
       parameterValueComparisons.stream().forEach(comparison -> comparison.display());
+      parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display());
       
       // Display errors
       System.out.println(NL + "Trapped Errors");
@@ -319,7 +323,7 @@ public class QuestionComparison {
       commonParameterList.retainAll(prodParameterNames);
       commonParameterMap.put(question, commonParameterList);
    
-      // Create a list of parameter comparisons for each question for display
+      // Create a list of parameter name comparisons for each question for display
       ComparisonBean comparison = new ComparisonBean(question, "New Parameters", "Invalid Parameters", newParameterList, invalidParameterList);
       parameterNameComparisons.add(comparison);
     }
@@ -402,25 +406,84 @@ public class QuestionComparison {
 	    }
       }
 	  
-      Map<String, List<String>> qaParameterMap = createParameterValueMap(question, qaParameters, dependentParamList);
-	  Map<String, List<String>> prodParameterMap = createParameterValueMap(question, prodParameters, dependentParamList);
+      // Create maps of parameters to a listing of parameter values from the JSONObjects returned by the service calls.
+      Map<String, List<ParameterValue>> qaParameterMap = createParameterValueMap(question, qaParameters, dependentParamList);
+	  Map<String, List<ParameterValue>> prodParameterMap = createParameterValueMap(question, prodParameters, dependentParamList);
 	  
+	  // Iterate over the question parameters common to both sites.  Can use the key set of either site mapping because
+	  // both maps were already limited to the parameters the sites have in common.
 	  for(String parameter : qaParameterMap.keySet()) {
+		  
+		// This exception should not occur unless somehow, a parameter with a name common to both sites is of
+		// a different type in both sites.
 		if(!prodParameterMap.containsKey(parameter)) {
 		  throw new RuntimeException("Should only be dealing with common parameters - could be a change in parameter type for " + parameter + " in question " + question);
 		}
-		List<String> qaParameterValues = qaParameterMap.get(parameter);
-		List<String> prodParameterValues = prodParameterMap.get(parameter);
 		
+		// Pull the string values out of the ParameterValue objects for comparison.
+		List<String> qaParameterValues = qaParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
+		List<String> prodParameterValues = prodParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
+		
+		// Contains qa parameter values not in prod
 		List<String> newParameterValueList = new ArrayList<>(qaParameterValues);
         newParameterValueList.removeAll(prodParameterValues);
 	      
+        // Contains prod parameter values not in qa
         List<String> invalidParameterValueList = new ArrayList<>(prodParameterValues);
         invalidParameterValueList.removeAll(qaParameterValues);
         
+        // Create a list of parameter value comparisons for each question and parameter combination for display
         ComparisonBean comparison = new ComparisonBean(question + "/" + parameter, "New Parameter Values", "Invalid Parameter Values", newParameterValueList, invalidParameterValueList);
         parameterValueComparisons.add(comparison);
+        
+        // Contains parameter values common to both sites for each question and parameter combination.  Needed
+        // to identify which parameter values to use when comparing options for a given question, parameter and
+        // parameter value in the case of a filter param new parameter.
+        List<String> commonParameterValueList = new ArrayList<>(qaParameterValues);
+        commonParameterValueList.retainAll(prodParameterValues);
+       
+        // Iterate over the list of parameter values for this question/parameter combination that are common to both
+        // sites.
+        for(String parameterValue : commonParameterValueList) {
+        	
+          // Find the corresponding ParameterValue object from the previously created parameter maps
+          Optional<ParameterValue> optionalQaParameterValue = qaParameterMap.get(parameter).stream().filter(v -> v.getValue().equals(parameterValue)).findFirst();
+          Optional<ParameterValue> optionalProdParameterValue = prodParameterMap.get(parameter).stream().filter(v -> v.getValue().equals(parameterValue)).findFirst();
+          
+          // A single matching ParameterValue object should be found for each site.
+          if(optionalQaParameterValue.isPresent() && optionalProdParameterValue.isPresent()) {
+            ParameterValue qaParameterValue = optionalQaParameterValue.get();
+            ParameterValue prodParameterValue = optionalProdParameterValue.get();
+            
+            // Bypass any ParameterValue objects that are not FilterParamNewValue objects
+            if(qaParameterValue instanceof FilterParamNewValue && prodParameterValue instanceof FilterParamNewValue) {
+            
+              // Retrieve the parameter value options list from both objects
+        	  List<String> qaOptions = ((FilterParamNewValue) qaParameterValue).getOptions();
+        	  List<String> prodOptions = ((FilterParamNewValue) prodParameterValue).getOptions();
+        	
+        	  // Contains qa parameter value options not in prod
+        	  List<String> newParameterValueOptionList = new ArrayList<>(qaOptions);
+              newParameterValueOptionList.removeAll(prodOptions);
+            
+              // Contains prod parameter value options not in qa
+              List<String> invalidParameterValueOptionList = new ArrayList<>(prodOptions);
+              invalidParameterValueOptionList.removeAll(qaOptions);
+            
+              // Create a list of parameter value option comparisons for each meaningful question/parameter/parameter value
+              // combination for display
+              ComparisonBean parameterValueOptionComparison = new ComparisonBean(question + "/" + parameter + "/" + parameterValue,
+            		"New Parameter Value Options",
+            		"Invalid Parameter Value Options",
+            		newParameterValueOptionList,
+            		invalidParameterValueOptionList);
+              parameterValueOptionComparisons.add(parameterValueOptionComparison);
+            }  
+          }
+        }
+        
 	  }
+	  // Poor woman's spinner
 	  if(questionCounter % 10 == 0) {
         System.out.print("Completed " + questionCounter + " questions of " + commonParameterMap.keySet().size() + " total.  ");
         System.out.println("Last question completed: " + question);
@@ -440,29 +503,43 @@ public class QuestionComparison {
    * @param dependentParameterList - list of names of those parameters that depend on other parameters
    * @return - parameter values map
    */
-  protected Map<String, List<String>> createParameterValueMap(String question, JSONArray parameters, List<String> dependentParameterList) {
-    Map<String,List<String>> parameterValueMap = new HashMap<>();
+  protected Map<String, List<ParameterValue>> createParameterValueMap(String question, JSONArray parameters, List<String> dependentParameterList) {
+    Map<String,List<ParameterValue>> parameterValueMap = new HashMap<>();
     for(int i = 0; i < parameters.length(); i++) {
       JSONObject parameter = parameters.getJSONObject(i);
       String parameterName = parameter.getString("name");
       
       // Bypass those parameters that do not fulfill the requirements stated above.
-      if(commonParameterMap.get(question).contains(parameterName)
-          && ("FlatVocabParam".equals(parameter.getString("type")) || "EnumParam".equals(parameter.getString("type")))
-          && !dependentParameterList.contains(parameterName)) {
+      if(commonParameterMap.get(question).contains(parameterName)) {
+        if(("FlatVocabParam".equals(parameter.getString("type")) || "EnumParam".equals(parameter.getString("type")))
+            && !dependentParameterList.contains(parameterName)) {
     	  
-    	// Need to descend the tree to the leaves for parameter values  
-        if("treeBox".equals(parameter.getString("displayType"))) {	
-          List<String> parameterValues = new ArrayList<>();
-          getLeaves(parameter.getJSONObject("vocabulary"), parameterValues);
-          parameterValueMap.put(parameterName, parameterValues);
+    	  // Need to descend the tree to the leaves for parameter values  
+          if("treeBox".equals(parameter.getString("displayType"))) {	
+            List<ParameterValue> parameterValues = new ArrayList<>();
+            getLeaves(parameter.getJSONObject("vocabulary"), parameterValues);
+            parameterValueMap.put(parameterName, parameterValues);
+          }
+          // Just taking the first item of each JSON Array in each vocabulary list item
+          if("select".equals(parameter.getString("displayType"))) {
+            JSONArray vocabulary = parameter.getJSONArray("vocabulary");
+            List<ParameterValue> parameterValues = new ArrayList<>();
+            for(int j = 0; j < vocabulary.length(); j++) {
+               parameterValues.add(new ParameterValue(vocabulary.getJSONArray(j).getString(0)));
+            }
+            parameterValueMap.put(parameterName, parameterValues);
+          }
         }
-        // Just taking the first item of each JSON Array in each vocabulary list item
-        if("select".equals(parameter.getString("displayType"))) {
-          JSONArray vocabulary = parameter.getJSONArray("vocabulary");
-          List<String> parameterValues = new ArrayList<>();
-          for(int j = 0; j < vocabulary.length(); j++) {
-             parameterValues.add(vocabulary.getJSONArray(j).getString(0));
+        if("FilterParamNew".equals(parameter.getString("type"))) {
+          List<ParameterValue> parameterValues = new ArrayList<>();
+          JSONObject values = parameter.getJSONObject("values");
+          for(Object value : values.keySet()) {
+        	JSONArray selectionArray = values.getJSONArray((String)value);
+        	List<String> selections = new ArrayList<>();
+        	for(int j = 0; j < selectionArray.length(); j++) {
+        	  selections.add(selectionArray.getString(j));
+        	}
+        	parameterValues.add(new FilterParamNewValue((String)value,selections));
           }
           parameterValueMap.put(parameterName, parameterValues);
         }
@@ -477,10 +554,10 @@ public class QuestionComparison {
    * @param item - parent node
    * @param leaves - list of parameter values
    */
-  protected void getLeaves(JSONObject item, List<String> leaves) {
+  protected void getLeaves(JSONObject item, List<ParameterValue> leaves) {
 	JSONArray children = item.getJSONArray("children");
 	if(children.length() == 0) {
-	  leaves.add(item.getJSONObject("data").getString("term"));
+	  leaves.add(new ParameterValue(item.getJSONObject("data").getString("term")));
 	  return;  
 	}
 	for(int i = 0; i < children.length(); i++) {
@@ -555,6 +632,44 @@ public class QuestionComparison {
       client.close();
     }
   }
+  
+  
+  /**
+   * Simple class to use to allow polymorphism for parameter values.
+   * @author crisl-adm
+   *
+   */
+  private class ParameterValue {
+    private String _value;
+    
+    public ParameterValue(String value) {
+      _value = value;
+    }
+    
+    public String getValue() {
+      return _value;
+    }
+  }
+
+  
+  /**
+   * Extension of ParaeterValue class that can also hold value options
+   * @author crisl-adm
+   *
+   */
+  private class FilterParamNewValue extends ParameterValue {
+    private List<String> _options;
+    
+    public FilterParamNewValue(String value, List<String> options) {
+      super(value);
+      _options = options;
+    }
+    
+    public List<String> getOptions() {
+      return _options;
+    }
+  }
+  
   
   /**
    * Simple error class to gather error messages and the context in which they occur and salt away for later presentation.
