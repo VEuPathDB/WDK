@@ -124,7 +124,7 @@ function observeMutations(el: Element, options: MutationOptions) {
   let propsChangedObserver = new MutationObserver(function(mutations) {
     mutations.forEach(mutation => {
       if (mutation.type === 'attributes' && mutation.attributeName === 'data-props') {
-        handleDataProps(mutation.target)
+        handleDataProps(<Element>mutation.target)
       }
     })
   });
@@ -149,7 +149,7 @@ function observeMutations(el: Element, options: MutationOptions) {
       return observer;
     });
 
-    function handleDataProps (node: Node) {
+    function handleDataProps (node: Element) {
       const dataProps = node.attributes.getNamedItem('data-props');
       options.onPropsChanged(dataProps && JSON.parse(dataProps.value));
     }
