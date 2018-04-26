@@ -6,6 +6,8 @@ import { UserDataset, UserDatasetShare } from 'Utils/WdkModel';
 
 import { SharingSuccessAction } from '../UserDatasetsActionCreators';
 
+type ShareOperation = keyof SharingSuccessAction['payload']['response'];
+
 type State = Record<string, {
   isLoading: boolean;
   resource?: UserDataset
@@ -16,12 +18,12 @@ function isSharingAction(action: Action): action is SharingSuccessAction {
 }
 
 export default matchAction([
-  [ isSharingAction, composeReducers(handleMethod(false), handleMethod(true)) ]
+  [ isSharingAction, composeReducers(handleOperation('delete'), handleOperation('add')) ]
 ])
 
-function handleMethod(add: boolean) {
+function handleOperation(operation: ShareOperation) {
   return function (state: State, action: SharingSuccessAction): State {
-    const sharesByTargetId = action.payload.response[add ? 'add' : 'delete'];
+    const sharesByTargetId = action.payload.response[operation];
 
     if (sharesByTargetId == null) return state;
 
@@ -31,7 +33,7 @@ function handleMethod(add: boolean) {
       if (entry == null || entry.resource == null || shares == null) {
         return state;
       }
-      const operator = add ? unionWith : differenceWith;
+      const operator = operation === 'add' ? unionWith : differenceWith;
       const sharedWith = operator(entry.resource.sharedWith, shares, shareComparator);
 
       return {
