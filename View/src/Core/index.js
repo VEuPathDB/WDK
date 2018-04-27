@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import 'Core/vendor';
 
 import * as Components from 'Components';
-import * as FilterServiceUtils from 'Components/AttributeFilter/Utils/FilterServiceUtils';
+import * as AttributeFilterUtils from 'Components/AttributeFilter/Utils';
 
 import * as ReporterUtils from 'Views/ReporterForm/reporterUtils';
 
@@ -48,5 +48,5 @@ export {
   ComponentUtils,
   ActionCreators,
   StaticDataUtils,
-  FilterServiceUtils
+  AttributeFilterUtils
 };

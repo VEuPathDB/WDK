@@ -1,13 +1,14 @@
+import { memoize, uniq } from 'lodash';
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
-import { memoize, uniq } from 'lodash';
 
-import { isFilterField, isRange, isMulti, getTree } from "./Utils/FilterServiceUtils";
-import { Seq } from 'Utils/IterableUtils';
 import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
 import Icon from 'Components/Icon/IconAlt';
 import Tooltip from 'Components/Overlays/Tooltip';
+import { Seq } from 'Utils/IterableUtils';
+
+import { getTree, isFilterField, isMulti, isRange } from './Utils';
 
 /**
  * Tree of Fields, used to set the active field.

@@ -1,14 +1,13 @@
-import { get, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { Observable } from 'rxjs';
 
-import { Filter } from 'Components/AttributeFilter/Utils/FilterService';
+import { Filter } from 'Components/AttributeFilter/Types';
 import {
   GroupVisibilityChangedAction,
   ParamErrorAction,
-  ParamValueUpdatedAction,
+  ParamsUpdatedAction,
   QuestionLoadedAction,
   UnloadQuestionAction,
-  ParamsUpdatedAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
 import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
 import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from 'Params/FilterParamNew/Utils';

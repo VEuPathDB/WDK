@@ -12,8 +12,8 @@ import { Props as ParamProps } from 'Params/Utils';
 import { FilterParamNew as TFilterParamNew } from 'Utils/WdkModel';
 import { getLeaves, sortDistribution } from 'Params/FilterParamNew/Utils';
 import { MemberFieldState, RangeFieldState, State } from 'Params/FilterParamNew/State';
-import { Field, Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
-import { isRange } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
+import { Field, Filter, MemberFilter } from 'Components/AttributeFilter/Types';
+import { isRange } from 'Components/AttributeFilter/Utils';
 import _ServerSideAttributeFilter from 'Components/AttributeFilter/ServerSideAttributeFilter';
 
 const ServerSideAttributeFilter: any = _ServerSideAttributeFilter;

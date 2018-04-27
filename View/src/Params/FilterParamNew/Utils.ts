@@ -1,11 +1,11 @@
 import { memoize, sortBy, stubTrue as T } from 'lodash';
 import natsort from 'natural-sort';
 
-import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
-import { isRange, getTree } from 'Components/AttributeFilter/Utils/FilterServiceUtils';
+import { Filter, MemberFilter, ValueCounts } from 'Components/AttributeFilter/Types';
+import { getTree, isRange } from 'Components/AttributeFilter/Utils';
 import { filter, Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
-import { FilterParamNew, OntologyTermSummary, Parameter } from 'Utils/WdkModel';
+import { FilterParamNew, Parameter } from 'Utils/WdkModel';
 
 import { SortSpec } from './State';
 
@@ -43,8 +43,7 @@ function compareDistributionValues(valueA: any, valueB: any) {
 }
 
 
-type Distribution = OntologyTermSummary['valueCounts'];
-type Entry = Distribution[number];
+type Entry = ValueCounts[number];
 
 function filteredCountIsZero(entry: Entry) {
   return entry.filteredCount === 0;
@@ -57,9 +56,9 @@ function filteredCountIsZero(entry: Entry) {
  * @param {Distribution} distribution
  * @param {SortSpec} sort
  */
-export function sortDistribution(distribution: Distribution, sort: SortSpec, filter?: MemberFilter) {
+export function sortDistribution(distribution: ValueCounts, sort: SortSpec, filter?: MemberFilter) {
   const { columnKey, direction, groupBySelected } = sort;
-  const selectedSet = new Set(filter ? filter.value : [] as Array<string|number> );
+  const selectedSet = new Set(filter ? filter.value : [] as Array<string|number|null>);
   const selectionPred = groupBySelected
     ? (a: Entry) => !selectedSet.has(a.value)
     : T

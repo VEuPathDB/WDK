@@ -8,8 +8,7 @@ import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
 
 import StackedBar from './StackedBar';
-import { shouldAddFilter } from './Utils';
-import { isRange } from './Utils/FilterServiceUtils';
+import { shouldAddFilter, isRange } from './Utils';
 
 const cx = makeClassNameHelper('wdk-MultiFieldFilter');
 
@@ -48,10 +47,10 @@ export default class MultiFieldFilter extends React.Component {
 
   // Returns a new filters array with the provided filter details included
   updateFilter(filters, { field, value, includeUnknown, valueCounts }) {
-    let nextFilters = filters.filter(f => f.field !== field.term);
-    return shouldAddFilter(field, value, includeUnknown,
-      valueCounts, this.props.selectByDefault)
-      ? nextFilters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
+    const filter = { field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown };
+    const nextFilters = filters.filter(f => f.field !== field.term);
+    return shouldAddFilter(filter, valueCounts, this.props.selectByDefault)
+      ? nextFilters.concat(filter)
       : nextFilters;
   }
 
