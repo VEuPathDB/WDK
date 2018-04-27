@@ -29,7 +29,7 @@ INSERT INTO userlogins5.config(config_name, config_value) VALUES('wdk.user.schem
 CREATE TABLE userlogins5.users
 (
   user_id       NUMERIC(12) NOT NULL,
-  is_guest      NUMERIC(1) NOT NULL, --BOOLEAN NOT NULL,
+  is_guest      BOOLEAN NOT NULL,
   first_access  TIMESTAMP,
   CONSTRAINT "users_pk" PRIMARY KEY (user_id)
 );
