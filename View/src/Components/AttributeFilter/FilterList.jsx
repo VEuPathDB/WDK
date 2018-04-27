@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { map, partial } from 'lodash';
 
-import { getFilterValueDisplay } from './Utils/FilterServiceUtils';
+import { getFilterValueDisplay } from './Utils';
 
 /**
  * List of filters configured by the user.
@@ -68,7 +68,7 @@ export default class FilterList extends React.Component {
               var handleSelectClick = partial(this.handleFilterSelectClick, filter);
               var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
               var field = fields.get(filter.field);
-              var display = getFilterValueDisplay(field, filter);
+              var display = getFilterValueDisplay(filter);
 
               return (
                 <li key={filter.field} className={className}>

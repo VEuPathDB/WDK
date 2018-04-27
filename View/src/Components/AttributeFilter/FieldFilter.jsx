@@ -5,7 +5,7 @@ import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import EmptyField from './EmptyField';
 import MultiFieldFilter from './MultiFieldFilter';
 import SingleFieldFilter from './SingleFieldFilter';
-import { isMulti } from './Utils/FilterServiceUtils';
+import { isMulti } from './Utils';
 
 const cx = makeClassNameHelper('field-detail');
 /**

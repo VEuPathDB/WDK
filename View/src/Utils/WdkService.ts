@@ -17,7 +17,6 @@ import {
   AttributeField,
   Favorite,
   NewStepSpec,
-  OntologyTermSummary,
   Parameter,
   ParameterGroup,
   ParameterValue,
@@ -31,6 +30,7 @@ import {
   UserDataset,
   UserDatasetMeta,
 } from './WdkModel';
+import { OntologyTermSummary } from 'Components/AttributeFilter/Types';
 
 /**
  * Header added to service requests to indicate the version of the model

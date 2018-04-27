@@ -1,11 +1,11 @@
-import React from 'react';
 import { omit } from 'lodash';
-import { isRange } from './Utils/FilterServiceUtils';
-import { shouldAddFilter } from './Utils';
+import React from 'react';
+
 import DateField from './DateField';
-import NumberField from './NumberField';
-import MembershipField from './MembershipField';
 import EmptyValues from './EmptyValues';
+import MembershipField from './MembershipField';
+import NumberField from './NumberField';
+import { isRange, shouldAddFilter } from './Utils';
 
 export default class SingleFieldFilter extends React.Component {
   constructor(props) {
@@ -19,10 +19,10 @@ export default class SingleFieldFilter extends React.Component {
    * @param {boolean} includeUnknown Indicate if items with an unknown value for the field should be included.
    */
   handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
-    let filters = this.props.filters.filter(f => f.field !== field.term);
-    this.props.onFiltersChange(shouldAddFilter(field, value, includeUnknown,
-      valueCounts, this.props.selectByDefault)
-      ? filters.concat({ field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown })
+    const filter = { field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown };
+    const filters = this.props.filters.filter(f => f.field !== field.term);
+    this.props.onFiltersChange(shouldAddFilter(filter, valueCounts, this.props.selectByDefault)
+      ? filters.concat(filter)
       : filters
     );
   }

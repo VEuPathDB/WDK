@@ -1,6 +1,6 @@
 import { groupBy, isEqual, mapValues } from 'lodash';
 
-import { Filter, MemberFilter } from 'Components/AttributeFilter/Utils/FilterService';
+import { Filter, MemberFilter, OntologyTermSummary } from 'Components/AttributeFilter/Types';
 import {
   ActiveFieldSetAction,
   FieldStateUpdatedAction,
@@ -10,7 +10,6 @@ import {
 } from 'Params/FilterParamNew/ActionCreators';
 import { sortDistribution } from 'Params/FilterParamNew/Utils';
 import { Action } from 'Utils/ActionCreatorUtils';
-import { OntologyTermSummary } from 'Utils/WdkModel';
 
 
 export type SortSpec = {

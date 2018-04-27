@@ -2,7 +2,7 @@ import React from 'react';
 
 import Icon from 'Components/Icon/IconAlt';
 
-import { isRange } from './Utils/FilterServiceUtils';
+import { isRange } from './Utils';
 
 export default function EmptyValue(props) {
   return (
