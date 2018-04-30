@@ -457,27 +457,31 @@ public class QuestionComparison {
             
             // Bypass any ParameterValue objects that are not FilterParamNewValue objects
             if(qaParameterValue instanceof FilterParamNewValue && prodParameterValue instanceof FilterParamNewValue) {
-            
-              // Retrieve the parameter value options list from both objects
-        	  List<String> qaOptions = ((FilterParamNewValue) qaParameterValue).getOptions();
-        	  List<String> prodOptions = ((FilterParamNewValue) prodParameterValue).getOptions();
+            	
+              // Furthermore bypass any FilterParamNewValue objects that are histograms
+              if(!((FilterParamNewValue)qaParameterValue).isHistogram() && !((FilterParamNewValue)qaParameterValue).isHistogram()) {
+            	
+                // Retrieve the parameter value options list from both objects
+        	    List<String> qaOntologyTermValues = ((FilterParamNewValue) qaParameterValue).getOntologyTermValues();
+        	    List<String> prodOntologyTermValues = ((FilterParamNewValue) prodParameterValue).getOntologyTermValues();
         	
-        	  // Contains qa parameter value options not in prod
-        	  List<String> newParameterValueOptionList = new ArrayList<>(qaOptions);
-              newParameterValueOptionList.removeAll(prodOptions);
+        	    // Contains qa parameter value options not in prod
+        	    List<String> newParameterOntologyTermValueList = new ArrayList<>(qaOntologyTermValues);
+                newParameterOntologyTermValueList.removeAll(prodOntologyTermValues);
             
-              // Contains prod parameter value options not in qa
-              List<String> invalidParameterValueOptionList = new ArrayList<>(prodOptions);
-              invalidParameterValueOptionList.removeAll(qaOptions);
+                // Contains prod parameter value options not in qa
+                List<String> invalidParameterOntologyTermValueList = new ArrayList<>(prodOntologyTermValues);
+                invalidParameterOntologyTermValueList.removeAll(qaOntologyTermValues);
             
-              // Create a list of parameter value option comparisons for each meaningful question/parameter/parameter value
-              // combination for display
-              ComparisonBean parameterValueOptionComparison = new ComparisonBean(question + "/" + parameter + "/" + parameterValue,
-            		"New Parameter Value Options",
-            		"Invalid Parameter Value Options",
-            		newParameterValueOptionList,
-            		invalidParameterValueOptionList);
-              parameterValueOptionComparisons.add(parameterValueOptionComparison);
+                // Create a list of parameter value option comparisons for each meaningful question/parameter/parameter value
+                // combination for display
+                ComparisonBean parameterValueOptionComparison = new ComparisonBean(question + "/" + parameter + "/" + parameterValue,
+              		"New Parameter Ontology Term Values",
+              		"Invalid Parameter Ontology Term Values",
+              		newParameterOntologyTermValueList,
+              		invalidParameterOntologyTermValueList);
+                parameterValueOptionComparisons.add(parameterValueOptionComparison);
+              }
             }  
           }
         }
@@ -532,14 +536,24 @@ public class QuestionComparison {
         }
         if("FilterParamNew".equals(parameter.getString("type"))) {
           List<ParameterValue> parameterValues = new ArrayList<>();
+          JSONArray ontology = parameter.getJSONArray("ontology");
           JSONObject values = parameter.getJSONObject("values");
-          for(Object value : values.keySet()) {
-        	JSONArray selectionArray = values.getJSONArray((String)value);
-        	List<String> selections = new ArrayList<>();
-        	for(int j = 0; j < selectionArray.length(); j++) {
-        	  selections.add(selectionArray.getString(j));
-        	}
-        	parameterValues.add(new FilterParamNewValue((String)value,selections));
+          for(int j = 0; j < ontology.length(); j++) {
+            JSONObject ontologyItem = ontology.getJSONObject(j);
+            if(ontologyItem.has("type")) {
+              String term = ontologyItem.getString("term");
+              if(ontologyItem.getBoolean("isRange")) {
+            	parameterValues.add(new FilterParamNewValue(term, true, new ArrayList<String>()));
+              }
+              else {
+            	JSONArray termValueArray = values.getJSONArray(term);
+            	List<String> termValues = new ArrayList<>();
+            	for(int k = 0; k < termValueArray.length(); k++) {
+              	  termValues.add(termValueArray.getString(k));
+            	}  
+            	parameterValues.add(new FilterParamNewValue(term, false, termValues));  
+              }
+            }  
           }
           parameterValueMap.put(parameterName, parameterValues);
         }
@@ -658,15 +672,21 @@ public class QuestionComparison {
    *
    */
   private class FilterParamNewValue extends ParameterValue {
-    private List<String> _options;
+	private boolean _histogram;  
+    private List<String> _ontologyTermValues;
     
-    public FilterParamNewValue(String value, List<String> options) {
+    public FilterParamNewValue(String value, boolean histogram, List<String> ontologyTermValues) {
       super(value);
-      _options = options;
+      _histogram = histogram;
+      _ontologyTermValues = ontologyTermValues;
     }
     
-    public List<String> getOptions() {
-      return _options;
+    public boolean isHistogram() {
+      return _histogram;
+    }
+    
+    public List<String> getOntologyTermValues() {
+      return _ontologyTermValues;
     }
   }
   
