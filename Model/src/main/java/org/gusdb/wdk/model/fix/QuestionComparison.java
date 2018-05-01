@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class QuestionComparison {
@@ -546,12 +547,18 @@ public class QuestionComparison {
             	parameterValues.add(new FilterParamNewValue(term, true, new ArrayList<String>()));
               }
               else {
-            	JSONArray termValueArray = values.getJSONArray(term);
+            	JSONArray termValueArray = new JSONArray();  
+            	try {  
+            	  termValueArray = values.getJSONArray(term);
+            	}
+            	catch(JSONException je) {
+            	  errors.add(new Error("Inconsistency while processing the " + question +  "/" + parameterName + " in compareParameterValueMap", je.getMessage()));
+            	}
             	List<String> termValues = new ArrayList<>();
             	for(int k = 0; k < termValueArray.length(); k++) {
               	  termValues.add(termValueArray.getString(k));
             	}  
-            	parameterValues.add(new FilterParamNewValue(term, false, termValues));  
+            	parameterValues.add(new FilterParamNewValue(term, false, termValues));
               }
             }  
           }
