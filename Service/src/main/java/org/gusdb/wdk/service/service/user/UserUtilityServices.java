@@ -93,7 +93,7 @@ public class UserUtilityServices extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response lookupUserId(String body) throws RequestMisformatException {
-  	Set<String> userEmails = new HashSet<>();
+    Set<String> userEmails = new HashSet<>();
     JSONArray userEmailsJsonArray = new JSONObject(body).getJSONArray("emails");
     ObjectMapper mapper = new ObjectMapper();
     String userEmailsJson = userEmailsJsonArray.toString();
@@ -102,18 +102,18 @@ public class UserUtilityServices extends WdkService {
       userEmails = mapper.readValue(userEmailsJson, setType);
     }
     catch(IOException ioe) {
-    	  throw new RequestMisformatException("The user email list provided could not be parsed.", ioe);
+      throw new RequestMisformatException("The user email list provided could not be parsed.", ioe);
     }
     ModelConfig modelConfig = getWdkModel().getModelConfig();
-	ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
+    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     AccountManager accountManager = new AccountManager(getWdkModel().getAccountDb(),
-	   accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
+        accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
     Map<String,Long> userEmailIdMap = accountManager.lookUpUserIdsByEmail(userEmails);
     JSONArray jsonUserList = new JSONArray();
-    for(String userEmail : userEmails) {
-    	  if(userEmailIdMap.keySet().contains(userEmail)) {
-    	    jsonUserList.put(new JSONObject().put(userEmail,userEmailIdMap.get(userEmail)));
-    	  }
+    for (String userEmail : userEmails) {
+      if (userEmailIdMap.keySet().contains(userEmail)) {
+        jsonUserList.put(new JSONObject().put(userEmail,userEmailIdMap.get(userEmail)));
+      }
     }
     return Response.ok(new JSONObject().put("results", jsonUserList).toString()).build();
   }
