@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.report;
 
-import java.util.Map;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
@@ -28,11 +26,11 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
-    super.setProperties(properties);
-    if (properties.containsKey(PROPERTY_PAGE_SIZE)) {
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+    super.setProperties(reporterRef);
+    if (_properties.containsKey(PROPERTY_PAGE_SIZE)) {
       try {
-        _pageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
+        _pageSize = Integer.valueOf(_properties.get(PROPERTY_PAGE_SIZE));
       }
       catch (NumberFormatException e) {
         throw new WdkModelException("Reporter property '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");

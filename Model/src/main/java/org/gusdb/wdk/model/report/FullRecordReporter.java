@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -48,12 +49,23 @@ public class FullRecordReporter extends StandardReporter {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
-    super.setProperties(properties);
-    String cacheTableName = TableCache.getCacheTableName(properties);
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+    super.setProperties(reporterRef);
+    setTableCache();
+  }
+
+  private void setTableCache() {
+    String cacheTableName = TableCache.getCacheTableName(_properties);
     if (cacheTableName != null) {
       _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
     }
+  }
+
+  // special case to support model-independent code in FullRecordFileCreator.java
+  // TODO: find out if that file is still in use; if not, delete and delete this method
+  public void setProperties(Map<String, String> properties) {
+    _properties = new HashMap<>(properties);
+    setTableCache();
   }
 
   @Override

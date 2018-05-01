@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
-import org.gusdb.wdk.model.report.AbstractAttributeReporter;
+import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 
 /**
@@ -152,11 +152,8 @@ public abstract class AttributeField extends Field implements Cloneable {
     return new LinkedHashMap<String, AttributePluginReference>(_pluginMap);
   }
 
-  public void addReporterReference(ReporterRef reference) {
-    WdkModelText prop = new WdkModelText();
-    prop.setName(AbstractAttributeReporter.ATTRIBUTE_FIELD_PROP);
-    prop.setText(getName());
-    reference.addProperty(prop);
+  public void addReporterReference(AttributeReporterRef reference) {
+    reference.setAttributeField(this);
     if (_reporterList != null)
       _reporterList.add(reference);
     else

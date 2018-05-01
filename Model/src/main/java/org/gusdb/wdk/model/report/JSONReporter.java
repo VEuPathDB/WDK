@@ -39,9 +39,9 @@ public class JSONReporter extends StandardReporter {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
-    super.setProperties(properties);
-    String cacheTableName = TableCache.getCacheTableName(properties);
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+    super.setProperties(reporterRef);
+    String cacheTableName = TableCache.getCacheTableName(_properties);
     if (cacheTableName != null) {
       _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
     }

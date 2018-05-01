@@ -31,15 +31,13 @@ import org.json.JSONObject;
 public abstract class AbstractAttributeReporter extends AbstractReporter  {
 
   protected static final String ATTRIBUTE_COLUMN = "wdk_attribute";
-  public static final String ATTRIBUTE_FIELD_PROP = "attributeField";
 
   private AttributeField _attributeField;
-  protected Map<String, String> _properties;
 
   protected AbstractAttributeReporter(AnswerValue answerValue) {
     super(answerValue);
   }
-  
+
   @Override
   protected void write(OutputStream out) throws WdkModelException {
     JSONObject json = getJsonResult(_baseAnswer);
@@ -48,7 +46,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter  {
   }
 
   abstract protected JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException;
-  
+
   @Override
   public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException {
     throw new UnsupportedOperationException();
@@ -60,22 +58,19 @@ public abstract class AbstractAttributeReporter extends AbstractReporter  {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
-    super.setProperties(properties);
-    if (!properties.containsKey(ATTRIBUTE_FIELD_PROP)) {
-      throw new WdkModelException("Attribute Reporter must contain a property (specified in Model XML) called " + ATTRIBUTE_FIELD_PROP);
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+    if (!(reporterRef instanceof AttributeReporterRef)) {
+      // this should never happen
+      throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef");
     }
-    String attrFieldName = properties.get(ATTRIBUTE_FIELD_PROP);
-    RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
-    AttributeField column = recordClass.getAttributeFieldMap().get(attrFieldName);
-    if (column == null) {
-      throw new WdkModelException(recordClass.getName() + " does not have an attribute with name '"  + attrFieldName + "'");
-    }
-
+    super.setProperties(reporterRef);
+    _attributeField = ((AttributeReporterRef)reporterRef).getAttributeField();
   }
-  
-  protected AttributeField getAttributeField() { return _attributeField; }
-  
+
+  protected AttributeField getAttributeField() {
+    return _attributeField;
+  }
+
   protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
 

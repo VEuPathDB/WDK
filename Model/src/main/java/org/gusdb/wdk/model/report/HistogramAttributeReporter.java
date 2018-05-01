@@ -175,7 +175,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
     }
   }
 
-  private Map<String, Integer> loadData(AnswerValue answerValue) throws WdkModelException {
+  private Map<String, Integer> loadData(AnswerValue answerValue) {
     WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
     Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
     ResultSet resultSet = null;

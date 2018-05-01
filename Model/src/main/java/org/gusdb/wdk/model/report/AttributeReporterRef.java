@@ -2,8 +2,20 @@ package org.gusdb.wdk.model.report;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 public class AttributeReporterRef extends ReporterRef {
+
+  private AttributeField _attributeField;
+
+  public AttributeField getAttributeField() {
+    return _attributeField;
+  }
+
+  @Override
+  public String getName() {
+    return _attributeField.getName() + "-" + super.getName();
+  }
 
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
@@ -19,5 +31,9 @@ public class AttributeReporterRef extends ReporterRef {
     catch (ClassNotFoundException e) {
       throw new WdkModelException(msgStart + "cannot be found.", e);
     }
+  }
+
+  public void setAttributeField(AttributeField attributeField) {
+    _attributeField = attributeField;
   }
 }

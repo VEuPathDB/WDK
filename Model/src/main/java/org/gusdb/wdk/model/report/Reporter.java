@@ -23,14 +23,14 @@ public interface Reporter {
   // NOTE: implementing classes MUST have a constructor which takes a single AnswerValue argument
   // public Reporter(AnswerValue answerValue);
 
-  // methods to configure reporter
   /**
-   * Properties for the reporter set in the WDK Model XML.
-   * @param properties
+   * Pass on any required information contained in reporter reference to the reporter
+   * 
+   * @param reporterRef reference to this reporter
    * @throws WdkModelException
    */
-  public void setProperties(Map<String, String> properties) throws WdkModelException;
-  
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException;
+
   /**
    * A legacy method to gather user configurations for the reporter.  Called by struts actions.
    * @param config
@@ -39,7 +39,7 @@ public interface Reporter {
    * @throws WdkModelException
    */
   public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException;
-  
+
   /**
    * Gather end-user configurations for this reporter.  Uses the builder pattern (returns this reporter). 
    * @param config

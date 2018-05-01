@@ -143,11 +143,6 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
     return new LinkedHashMap<String, String>(this.properties);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude properties
@@ -171,12 +166,6 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
     this._wdkModel = wdkModel;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
     // warn user if they are using a service JSON reporter reference
@@ -196,4 +185,5 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
       throw new WdkModelException(msgStart + "cannot be found.", e);
     }
   }
+
 }
