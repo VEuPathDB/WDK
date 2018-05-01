@@ -81,9 +81,9 @@ public class JsonUserDataset implements UserDataset {
       for (int i=0; i<dataFilesJson.length(); i++) {
         JSONObject dataFileJson = dataFilesJson.getJSONObject(i);
         String name = dataFileJson.getString(NAME);
-        Long size = dataFileJson.getLong(SIZE);
+        Long fileSize = dataFileJson.getLong(SIZE);
         UserDatasetFile udf = session.getUserDatasetFile(dataFilesDir.resolve(name), userDatasetId);
-        udf.setSize(size);
+        udf.setSize(fileSize);
         dataFiles.put(name, udf);
       }
 
