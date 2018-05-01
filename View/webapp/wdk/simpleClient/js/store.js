@@ -83,20 +83,26 @@ var Store = function(dispatcher, initialValue) {
         // data is String[] representing new selected attributes
         _data.selectedAttributes = payload.data.slice();
         break;
-      case ActionType.CHANGE_RESULTS_ACTION:
-        // data is { results: Any }
-        _data.results = payload.data;
-        _data.type = payload.actionType;
-        _data.resultStats = { pageNum: _data.pagination.pageNum };
-        break;
       case ActionType.SET_LOADING_ACTION:
         // data is Boolean (true if loading)
         _data.isLoading = payload.data;
         break;
-      case ActionType.CREATE_STEP_ACTION:
-        // data is {results: Any }
+      case ActionType.CHANGE_RESULTS_ACTION:
+        // data is raw answer response
+        _data.type = Store.ANSWER_RESULT;
         _data.results = payload.data;
-        _data.type = payload.actionType;
+        _data.resultStats = { pageNum: _data.pagination.pageNum };
+        break;
+      case ActionType.CREATE_STEP_ACTION:
+        // data is raw step response
+        _data.type = Store.STEP_RESULT;
+        _data.results = payload.data;
+        break;
+      case ActionType.CREATE_TEMP_RESULT_ACTION:
+        // data is string (URL)
+        _data.type = Store.TEMP_RESULT;
+        _data.results = payload.data;
+        break;
       default:
         // this store does not support any other actions
     }
@@ -112,4 +118,7 @@ var Store = function(dispatcher, initialValue) {
 
 // public constants
 Store.NO_QUESTION_SELECTED = "_none_";
+Store.ANSWER_RESULT = "_answer_";
+Store.STEP_RESULT = "_step_";
+Store.TEMP_RESULT = "_temp_result_";
 

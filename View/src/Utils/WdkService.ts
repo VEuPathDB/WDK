@@ -58,6 +58,10 @@ export interface AnswerRequest {
   }
 }
 
+interface TempResultResponse {
+  id: string;
+}
+
 export type UserDatasetShareResponse = {
   [Key in 'add' | 'delete']: {
     [Key in string]: UserDataset['sharedWith']
@@ -637,11 +641,22 @@ export default class WdkService {
   /**
    * Get an answer from the answer service.
    */
-  getAnswer(answerSpec: AnswerSpec, formatting: AnswerFormatting) {
+  getAnswer(answerSpec: AnswerSpec, formatting: AnswerFormatting): Promise<Answer> {
     let method = 'post';
     let url = '/answer';
     let body: AnswerRequest = { answerSpec, formatting };
     return this._fetchJson<Answer>(method, url, stringify(body));
+  }
+
+  /**
+   * Get a temporary result
+   */
+  getTemporaryResultUrl(answerSpec: AnswerSpec, formatting: AnswerFormatting): Promise<string> {
+    let method = 'post';
+    let url = '/temporary-results';
+    let body: AnswerRequest = { answerSpec, formatting };
+    return this._fetchJson<TempResultResponse>(method, url, stringify(body))
+      .then(result => window.location.origin + this.serviceUrl + url + '/' + result.id);
   }
 
   /**

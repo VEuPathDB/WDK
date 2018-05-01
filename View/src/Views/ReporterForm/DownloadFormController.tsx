@@ -63,11 +63,11 @@ class DownloadFormController extends AbstractPageController<State, DownloadFormS
     // must reinitialize with every new props
     let { params } = this.props.match;
     if ('stepId' in params) {
-      this.eventHandlers.loadPageDataFromStepId(params.stepId);
+      this.eventHandlers.loadPageDataFromStepId(params.stepId, this.getQueryParams().format);
     }
     else if ('recordClass' in params) {
       this.eventHandlers.loadPageDataFromRecord(
-          params.recordClass, params.primaryKey.split('/').join(','));
+          params.recordClass, params.primaryKey.split('/').join(','), this.getQueryParams().format);
     }
     else {
       console.error("Neither stepId nor recordClass param was passed " +

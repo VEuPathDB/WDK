@@ -42,6 +42,14 @@ var QuestionSelect = React.createClass({
   }
 });
 
+function StepResults(props) {
+  return <div>Created step with ID: {props.results.id}</div>;
+}
+
+function TempResultResults(props) {
+  return <div><a href={props.results}>{props.results}</a></div>;
+}
+
 var SearchPage = React.createClass({
   changeQuestion: function(event) {
     this.props.ac.setQuestion(event.target.value);
@@ -61,6 +69,18 @@ var SearchPage = React.createClass({
     var store = this.props.data;
     var loadingStyle = ( !store.isLoading ? {"display":"none"} :
       {"height":"50px","float":"right","marginRight":"60px"} );
+    var getResultPane = function(store) {
+      switch(store.type) {
+        case Store.ANSWER_RESULT:
+          return <AnswerResults results={store.results} resultStats={store.resultStats}/>;
+        case Store.STEP_RESULT:
+          return <StepResults results={store.results}/>;
+        case Store.TEMP_RESULT:
+          return <TempResultResults results={store.results}/>;
+        default:
+          return <span/>;
+      }
+    };
     return (
       <div>
         <h3>Choose a Search<img style={loadingStyle} src="images/loading.gif"/></h3>
@@ -79,10 +99,7 @@ var SearchPage = React.createClass({
             <QuestionJson data={store}/>
           </div>
         </div>
-        {store.type != "createStepAction" ?
-          <AnswerResults results={store.results} resultStats={store.resultStats}/> :
-          <StepResults results={store.results}/>
-        }
+        {getResultPane(store)}
       </div>
     );
   }
@@ -130,6 +147,10 @@ var QuestionForm = React.createClass({
   createStep: function() {
     var store = this.props.data;
     this.props.ac.createStep(store);
+  },
+  createTempResult: function() {
+    var store = this.props.data;
+    this.props.ac.createTempResult(store);
   },
   render: function() {
     var store = this.props.data;
@@ -194,6 +215,7 @@ var QuestionForm = React.createClass({
         <hr/>
         <input type="button" value="Submit Request" onClick={this.submitRequest}/>
         <input type="button" value="Create a Step" onClick={this.createStep}/>
+        <input type="button" value="Create a Temporary Result" onClick={this.createTempResult}/>
       </div>
     );
   }
@@ -279,14 +301,3 @@ var AnswerResults = React.createClass({
     );
   }
 });
-
-var StepResults = React.createClass({
-  render: function() {
-    if (this.props.results == null) {
-      return ( <div></div> );
-    }
-    var id = this.props.results.id;
-    return(<div>step id is {id}</div>);
-  }
-});
-
