@@ -20,9 +20,12 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.cache.AnswerRequest;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterFactory;
@@ -30,7 +33,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
-import org.gusdb.wdk.service.request.answer.AnswerSpec;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -83,25 +85,30 @@ public class AnswerService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException, DataValidationException {
     try {
-      if (body == null || body.isEmpty()) {
-        throw new RequestMisformatException("Request JSON cannot be empty. " +
-            "If submitting a form, include the 'data' input parameter.");
-      }
-
-      // read request body into JSON object
-      JSONObject requestJson = new JSONObject(body);
-
-      // parse answer spec (question, params, etc.) and formatting object
-      JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser(), false);
-      JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
-
-      return getAnswerResponse(getSessionUser(), answerSpec, formatting);
+      AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser());
+      return getAnswerResponse(getSessionUser(), request.getAnswerSpec(), request.getFormatting());
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
       throw new BadRequestException(e);
     }
+  }
+
+  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel, User sessionUser)
+      throws RequestMisformatException, DataValidationException {
+    if (requestBody == null || requestBody.isEmpty()) {
+      throw new RequestMisformatException("Request JSON cannot be empty. " +
+          "If submitting a form, include the 'data' input parameter.");
+    }
+
+    // read request body into JSON object
+    JSONObject requestJson = new JSONObject(requestBody);
+
+    // parse answer spec (question, params, etc.) and formatting object
+    JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
+    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
+    JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
+    return new AnswerRequest(answerSpec, formatting);
   }
 
   /**

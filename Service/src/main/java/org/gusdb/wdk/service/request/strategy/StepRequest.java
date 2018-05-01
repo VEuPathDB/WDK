@@ -7,13 +7,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
-import org.gusdb.wdk.service.request.answer.AnswerSpec;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -84,7 +84,7 @@ public class StepRequest {
         throw new DataValidationException("Question of an existing step cannot be changed.");
       }
       Map<String, Param> updateParamMap = answerSpec.getQuestion().getParamMap();
-      Map<String, org.gusdb.wdk.beans.ParamValue> updateParamValueMap = answerSpec.getParamValues();
+      Map<String, org.gusdb.wdk.model.answer.spec.ParamValue> updateParamValueMap = answerSpec.getParamValues();
       Map<String, String> currentParamValueMap = step.getParamValues();
       for (Entry<String,Param> entry : updateParamMap.entrySet()) {
         if (entry.getValue() instanceof AnswerParam) {
