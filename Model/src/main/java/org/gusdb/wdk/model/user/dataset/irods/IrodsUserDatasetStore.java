@@ -31,6 +31,7 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
     return new IrodsUserDatasetSession(_usersRootDir, getWdkTempDirName());
   }
   
+  @Override
   public IrodsUserDatasetSession getSession(Path usersRootDir) throws WdkModelException {
     return new IrodsUserDatasetSession(usersRootDir, getWdkTempDirName());
   }

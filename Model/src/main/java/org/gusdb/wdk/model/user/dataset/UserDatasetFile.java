@@ -28,6 +28,9 @@ public abstract class UserDatasetFile {
     return filePath;
   }
   
+  /**
+   * @param dsSession session to use to fetch file name 
+   */
   public String getFileName(UserDatasetSession dsSession) {
     return getFilePath().getFileName().toString();
   }
