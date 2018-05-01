@@ -112,22 +112,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
             // check if we want to skip to other pages
-						// noskip used in addstep
+            // noskip used in addstep
             boolean noSkip = request.getParameterMap().containsKey("noskip");
             ActionForward forward;
-            if (request.getParameterMap().containsKey(
-                    CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+            if (request.getParameterMap().containsKey(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
                 // go to download page directly
-                forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
-                String path = forward.getPath() + "?step_id="
-                        + step.getStepId();
+                String path = "app/step/" + step.getStepId() + "/download";
 
                 // pass the reporter format if present
                 String format = request.getParameter("wdkReportFormat");
-                if (format != null && format.length() > 0)
-                  path += "&wdkReportFormat=" + format;
+                if (format != null && format.length() > 0) {
+                  path += "?format=" + format;
+                }
                 return new ActionForward(path, true);
-            } else if (!noSkip && answerValue.getDisplayResultSize() == 1
+            }
+            else if (!noSkip && answerValue.getDisplayResultSize() == 1
                     && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
                 RecordBean rec = answerValue.getRecords().next();
                 forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
@@ -174,7 +173,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         return null;
                     }
                 }
-                forward = getForward(request, step, mapping);
+                forward = getForward(request, step);
             } else if (noStrategy) {
                 // only runs the step and return the step info in json, does not
                 // create a strategy or add to existing strategy
@@ -311,8 +310,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return step;
     }
 
-    private ActionForward getForward(HttpServletRequest request, StepBean step,
-            ActionMapping mapping) throws WdkModelException, WdkUserException {
+    private ActionForward getForward(HttpServletRequest request, StepBean step)
+            throws WdkModelException, WdkUserException {
         logger.debug("start getting forward");
 
         AnswerValueBean answerValue = step.getAnswerValue();
@@ -330,13 +329,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         ActionForward forward = null;
 
-        if (request.getParameterMap().containsKey(
-                CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+        if (request.getParameterMap().containsKey(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
             // go to download page directly
-            forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
-            String path = forward.getPath() + "?"
-                    + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
-            return new ActionForward(path, true);
+            return new ActionForward("app/step/" + step.getStepId() + "/download", true);
         }
 
         if (WdkAction.resourceExists(customViewFile1, svltCtx)) {

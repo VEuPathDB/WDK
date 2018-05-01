@@ -127,7 +127,7 @@ wdk.namespace("window.wdk.history", function(ns, $) {
   }
 
   function downloadStep(stepId) {
-    var url = "downloadStep.do?step_id=" + stepId;
+    var url = "app/step/" + stepId + "/download";
     window.location = url;
   }
 

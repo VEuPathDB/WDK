@@ -11,10 +11,6 @@
               type="java.lang.String"
               required="false"
               description="if true, the basket column will not be included" %>
-<%@ attribute name="feature__newDownloadPage"
-              type="java.lang.Boolean"
-              required="false"
-              description="if true, use the new download page" %>
 
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
@@ -115,12 +111,8 @@
                   </c:otherwise>
                 </c:choose>
 
-                <c:url var="downloadLink" value="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"/>
-
-                <c:if test="${feature__newDownloadPage eq true}"> <!-- true = use React download page; false = use JSP download page-->
-                  <c:set var="summaryViewName" value="${empty requestScope.wdkView.name ? '_default' : requestScope.wdkView.name}"/>
-                  <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
-                </c:if>
+                <c:set var="summaryViewName" value="${empty requestScope.wdkView.name ? '_default' : requestScope.wdkView.name}"/>
+                <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
 
                 <a href="${downloadLink}"
                   class="step-download-link"
