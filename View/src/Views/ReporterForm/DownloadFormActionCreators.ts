@@ -46,7 +46,6 @@ export type ErrorAction = {
   }
 }
 
-
 export function selectReporter(reporterName: string): SelectReporterAction {
   return {
     type: 'downloadForm/selectReporter',
@@ -68,11 +67,14 @@ export function updateFormUiState(newUiState: any): UiUpdateAction {
   };
 }
 
-export function loadPageDataFromStepId(stepId: number): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
+export function loadPageDataFromStepId(
+  stepId: number, requestedFormat: string
+): ActionThunk<LoadingAction | ErrorAction | InitializeAction | SelectReporterAction> {
   return function run({ wdkService }) {
+    let bundlePromise = getStepBundlePromise(stepId, wdkService);
     return [
       <LoadingAction>{ type: 'downloadForm/loading' },
-      getStepBundlePromise(stepId, wdkService).then(
+      bundlePromise.then(
         stepBundle => (<InitializeAction>{
           type: 'downloadForm/initialize',
           payload: Object.assign(stepBundle, { scope: 'results' })
@@ -81,15 +83,17 @@ export function loadPageDataFromStepId(stepId: number): ActionThunk<LoadingActio
           type: 'downloadForm/error',
           payload: { error }
         })
-      )
+      ),
+      bundlePromise.then(() => selectReporter(requestedFormat))
     ];
   }
 }
 
 export function loadPageDataFromRecord(
   recordClassUrlSegment: string,
-  primaryKeyString: string
-): ActionThunk<LoadingAction | ErrorAction | InitializeAction> {
+  primaryKeyString: string,
+  requestedFormat: string
+): ActionThunk<LoadingAction | ErrorAction | InitializeAction | SelectReporterAction> {
   return function run({ wdkService }) {
     // create promise for recordClass
     let recordClassPromise = wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
@@ -121,7 +125,8 @@ export function loadPageDataFromRecord(
           type: 'downloadForm/error',
           payload: { error }
         })
-      )
+      ),
+      bundlePromise.then(() => selectReporter(requestedFormat))
     ];
   }
 }

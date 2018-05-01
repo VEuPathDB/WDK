@@ -103,6 +103,10 @@ public abstract class WdkService {
     return _serviceEndpoint;
   }
 
+  protected String getServiceUri() {
+    return getContextUri() + getServiceEndpoint();
+  }
+
   protected Cookie[] getCookies() {
     return _request.getCookies();
   }

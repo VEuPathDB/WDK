@@ -8,15 +8,15 @@ var Dispatcher = Flux.Dispatcher;
 
 // types of actions sent through the dispatcher
 var ActionType = {
-  CHANGE_QUESTION_ACTION:  "changeQuestionAction",
-  CHANGE_PARAM_ACTION:     "changeParamAction",
-  CHANGE_PAGING_ACTION:    "changePagingAction",
-  SET_ATTRIBUTES_VISIBLE:  "setAttributesVisible",
-  SET_SELECTED_ATTRIBUTES: "setSelectedAttributes",
-  CHANGE_RESULTS_ACTION:   "changeResultsAction",
-  SET_LOADING_ACTION:      "setLoadingAction",
-  CREATE_STEP_ACTION:      "createStepAction"
-
+  CHANGE_QUESTION_ACTION:    "changeQuestionAction",
+  CHANGE_PARAM_ACTION:       "changeParamAction",
+  CHANGE_PAGING_ACTION:      "changePagingAction",
+  SET_ATTRIBUTES_VISIBLE:    "setAttributesVisible",
+  SET_SELECTED_ATTRIBUTES:   "setSelectedAttributes",
+  CHANGE_RESULTS_ACTION:     "changeResultsAction",
+  SET_LOADING_ACTION:        "setLoadingAction",
+  CREATE_STEP_ACTION:        "createStepAction",
+  CREATE_TEMP_RESULT_ACTION: "createTempResultAction"
 };
 
 //**************************************************
@@ -107,7 +107,8 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     setAttributesVisible: setAttributesVisible,
     setSelectedAttributes: setSelectedAttributes,
     loadResults: loadResults,
-    createStep: createStep
+    createStep: createStep,
+    createTempResult: createTempResult
   };
 
   // private data
@@ -211,7 +212,7 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       }
     });
   }
-  
+
   function createStep(data) {
     setLoading(true);
     jQuery.ajax({
@@ -227,6 +228,28 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       error: function(jqXHR, textStatus, errorThrown ) {
         setLoading(false);
         alert("Error: Unable to create the step");
+      }
+    });
+  }
+
+  function createTempResult(data) {
+    setLoading(true);
+    jQuery.ajax({
+      type: "POST",
+      url: _serviceUrl + "/temporary-results",
+      contentType: 'application/json; charset=UTF-8',
+      data: JSON.stringify(Util.getAnswerRequestJson(data.selectedQuestion, data.paramValues, data.pagination, data.selectedAttributes)),
+      dataType: "json",
+      success: function(data, textStatus, jqXHR) {
+        setLoading(false);
+        // build URL to new resource
+        var url = _serviceUrl + "/temporary-results/" + data.id;
+        _dispatcher.dispatch({ actionType: ActionType.CREATE_TEMP_RESULT_ACTION, data: url });
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        // TODO: dispatch a CHANGE_RESULTS_ACTION with the specific error (i.e. probably user input problem)
+        setLoading(false);
+        alert("Error: Unable to create a temporary result");
       }
     });
   }

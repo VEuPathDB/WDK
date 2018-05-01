@@ -149,7 +149,10 @@ function tryFormInit(thisStore: DownloadFormStore, state: State) {
 }
 
 function updateReporter(thisStore: DownloadFormStore, state: State, selectedReporter: string) {
-  return Object.assign({}, state, { selectedReporter },
+  // selectedReporter may be undefined or invalid since we are now respecting a query param "preference"
+  let reporterFound = state.availableReporters.findIndex(r => r.name === selectedReporter) != -1;
+  return !reporterFound ? state :
+    Object.assign({}, state, { selectedReporter },
       thisStore.getSelectedReporter(selectedReporter, state.recordClass.name).getInitialState(state));
 }
 
