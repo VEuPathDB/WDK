@@ -56,7 +56,7 @@ public class ReporterFactory {
 
       Object[] params = { answerValue };
       Reporter reporter = (Reporter) constructor.newInstance(params);
-      reporter.setProperties(reporterRef.getProperties());
+      reporter.setProperties(reporterRef);
       return reporter;
     }
     catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException |

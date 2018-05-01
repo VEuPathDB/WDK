@@ -15,6 +15,15 @@ public class WdkModelText extends WdkModelBase {
   protected String name;
   private String text;
 
+  public WdkModelText() {
+    // needed for XML parsing
+  }
+
+  public WdkModelText(String name, String text) {
+    this.name = name;
+    this.text = text;
+  }
+
   /**
    * @return the name
    */

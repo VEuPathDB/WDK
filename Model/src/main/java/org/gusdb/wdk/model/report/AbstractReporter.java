@@ -29,8 +29,8 @@ public abstract class AbstractReporter implements Reporter {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
-    _properties = new HashMap<>(properties);
+  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+    _properties = new HashMap<>(reporterRef.getProperties());
   }
 
   public String getPropertyInfo() {

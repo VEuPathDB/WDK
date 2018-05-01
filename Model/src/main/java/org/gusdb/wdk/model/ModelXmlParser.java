@@ -109,6 +109,7 @@ import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
+import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
@@ -1012,7 +1013,7 @@ public class ModelXmlParser extends XmlParser {
   private static void configureAttributeReporters(Digester digester, String attribute) {
     String prefix = "*/" + attribute + "/reporter";
     // configure plugins for
-    configureNode(digester, prefix, ReporterRef.class, "addReporterReference");
+    configureNode(digester, prefix, AttributeReporterRef.class, "addReporterReference");
     configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(prefix + "/property", "setText", 0);
 
