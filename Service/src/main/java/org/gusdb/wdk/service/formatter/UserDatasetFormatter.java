@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
