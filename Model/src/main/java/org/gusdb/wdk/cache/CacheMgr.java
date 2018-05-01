@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.ManagedMap;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
@@ -36,6 +37,7 @@ public class CacheMgr {
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
   private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
+  private final ManagedMap<String, AnswerRequest> _answerRequestCache = new ManagedMap<>();
 
   private final Map<String,ItemCache<?,?>> _cacheRepo =
       new MapBuilder<String,ItemCache<?,?>>(new LinkedHashMap<String,ItemCache<?,?>>())
@@ -46,6 +48,7 @@ public class CacheMgr {
       .put("FilterParamNew Metadata Cache", _metadataNewCache)
       .put("FilterParamNew Ontology Cache", _filterParamNewCache)
       .put("FilterParamNew Cache", _filterParamNewCache)
+      .put("AnswerRequest Cache", _answerRequestCache)
       .toMap();
 
   private CacheMgr() { }
@@ -57,6 +60,7 @@ public class CacheMgr {
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
+  public ManagedMap<String, AnswerRequest> getAnswerRequestCache() { return _answerRequestCache; }
 
   // special getter lazily populates the repo with db-specific count caches
   public synchronized SqlCountCache getSqlCountCache(DatabaseInstance db) {
