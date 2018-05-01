@@ -123,10 +123,7 @@ public class ProcessRESTAction extends Action {
 
       LOG.info("Verified question in request: " + question.getFullName());
       LOG.info("Incoming params: " + FormatUtil.prettyPrint(new HttpRequestData(request).getTypedParamMap(),
-          Style.MULTI_LINE, new Function<String[],String>() {
-            @Override public String apply(String[] obj) {
-              return FormatUtil.arrayToString(obj);
-            }}));
+          Style.MULTI_LINE, obj -> FormatUtil.arrayToString(obj)));
 
       Map<String, String> outputConfig = new LinkedHashMap<String, String>();
 

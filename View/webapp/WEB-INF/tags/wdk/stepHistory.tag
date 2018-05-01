@@ -74,7 +74,7 @@
             <td onmouseover="wdk.history.hideAnyName()" align='right' nowrap>${step.estimateSize}</td>
             <c:set value="${step.question.fullName}" var="qName" />
             <td onmouseover="wdk.history.hideAnyName()" style="text-align:center;" nowrap><a onclick="wdk.stratTabCookie.setCurrentTabCookie('strategy_results', false);" href="showSummary.do?questionFullName=${qName}${step.summaryUrlParams}">view</a></td>
-            <td onmouseover="wdk.history.hideAnyName()" nowrap><a href="downloadStep.do?step_id=${step.stepId}">download</a></td>
+            <td onmouseover="wdk.history.hideAnyName()" nowrap><a href="app/step/${step.stepId}/download">download</a></td>
          </tr>
          <c:set var="i" value="${i+1}"/>
        </c:forEach>
