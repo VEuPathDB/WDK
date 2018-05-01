@@ -1,4 +1,4 @@
-package org.gusdb.wdk.beans;
+package org.gusdb.wdk.model.answer.spec;
 
 import org.gusdb.wdk.model.query.param.Param;
 
