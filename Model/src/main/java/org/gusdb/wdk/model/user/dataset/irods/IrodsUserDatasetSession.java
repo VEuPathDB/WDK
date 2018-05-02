@@ -31,8 +31,10 @@ public class IrodsUserDatasetSession extends JsonUserDatasetSession {
 	// events are needed.
 	if(lastHandledEventId != null && lastHandledEventId > 0) {  	
 	  String cutoffTime = Long.toString(lastHandledEventId).substring(0, Long.toString(lastHandledEventId).length() - 8);
+	  // Timestamp must be 11 places long
+	  cutoffTime = cutoffTime.length() == 11 ? cutoffTime : '0' + cutoffTime;
       logger.info("Event Cutoff Timestamp is " + cutoffTime + " sec");
-      String queryString = "select DATA_NAME where COLL_NAME like '" + eventsDirectory + "' AND DATA_MODIFY_TIME > '" + cutoffTime + "'";
+      String queryString = "select DATA_NAME where COLL_NAME like '" + eventsDirectory + "' AND DATA_MODIFY_TIME >= '" + cutoffTime + "'";
       List<String> eventFileNames = ((IrodsUserDatasetStoreAdaptor)this.getUserDatasetStoreAdaptor()).executeIrodsQuery(queryString);
       eventFilePaths = eventFileNames.stream().map(eventFileName -> Paths.get(eventsDirectory, eventFileName)).collect(Collectors.toList());
 	}
