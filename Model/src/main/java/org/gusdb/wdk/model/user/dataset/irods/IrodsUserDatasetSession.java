@@ -29,13 +29,12 @@ public class IrodsUserDatasetSession extends JsonUserDatasetSession {
 	List<Path> eventFilePaths = new ArrayList<>();
 	// If no prior event has been handled it is assumed that a new db is being spun up and all prior
 	// events are needed.
-	if(lastHandledEventId != null && lastHandledEventId > 0) {  
-      // Making the cutoff time an hour earlier than the last handled event.  So at least one handled
-      // event is always passed.  Not sure if this padding is really needed.  It does mean that the same
-      // check must still be applied on the event array provided farther downstream.
-      String cutoffTime = "0" + (lastHandledEventId/1000 - 60L*60L);
+	if(lastHandledEventId != null && lastHandledEventId > 0) {  	
+	  String cutoffTime = Long.toString(lastHandledEventId).substring(0, Long.toString(lastHandledEventId).length() - 8);
+	  // Timestamp must be 11 places long
+	  cutoffTime = cutoffTime.length() == 11 ? cutoffTime : '0' + cutoffTime;
       logger.info("Event Cutoff Timestamp is " + cutoffTime + " sec");
-      String queryString = "select DATA_NAME where COLL_NAME like '" + eventsDirectory + "' AND DATA_MODIFY_TIME > '" + cutoffTime + "'";
+      String queryString = "select DATA_NAME where COLL_NAME like '" + eventsDirectory + "' AND DATA_MODIFY_TIME >= '" + cutoffTime + "'";
       List<String> eventFileNames = ((IrodsUserDatasetStoreAdaptor)this.getUserDatasetStoreAdaptor()).executeIrodsQuery(queryString);
       eventFilePaths = eventFileNames.stream().map(eventFileName -> Paths.get(eventsDirectory, eventFileName)).collect(Collectors.toList());
 	}
