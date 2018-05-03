@@ -10,14 +10,23 @@ require WDK::Model::ModelConfig;
 
 
 if (@ARGV < 2) {
-        print "\nusage:  wdkGuestsReport  PlasmoDB   date (eg 01-JAN-18)  \n";
+        print "\nusage:  wdkGuestsReport  PlasmoDB   date (eg 01-JAN-18)   /pathToReportDir/ (default . ) \n";
         exit 1;
 }
+my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst;
+my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec); # array, no hash
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+my $today = "$mday-".$months[$mon]. "-".($year-100);
+
+print "today is: $today\n\n"; 
+
 
 my $start_run = time();
 
 if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
 my $projectId = $ARGV[0];
+my $path = $ARGV[2];
+if ( !$path ) {$path = './'; }
 
 my ($dbh, $dsn, $login, $passwd);
 my $cfg = new WDK::Model::ModelConfig($projectId);
@@ -35,14 +44,28 @@ my ($one, $two, $dsn2) = split /:/, $dsn;
 
 if ( !$ARGV[1] ) {die "\n\nPlease specify a cutoff date (eg 31-JUL-18).\n\n";}
 my $myDate = $ARGV[1];
-my $quoteddate  = $dbh->quote( $myDate );
+my $quotedDate  = $dbh->quote( $myDate );
+
+my $sqlQueries;
+$sqlQueries->{dateSql} = <<EOSQL;
+SELECT TO_DATE($quotedDate, 'YYYY/MM/DD') FROM dual
+EOSQL
+print "$sqlQueries->{dateSql}\n\n";
+my $sql =  $sqlQueries->{dateSql};
+my $sth1 = $dbh->prepare($sql)  or &error($DBI::errstr);
+$sth1->execute();
+my @formattedDate = $sth1->fetchrow_array();
+print "$formattedDate[0]\n\n";
+$sth1->finish;
+$myDate = $formattedDate[0];
+
 
 my $connect_string = $login . '/' . $passwd . '@' . $dsn2;
 my $sqlplus_settings = '
   set lin 300
   set pagesize 0
   set verify off
-  spool guestReport-upto-' . $myDate . '.txt';
+  spool ' . $path . 'guestReport-upto-' . $myDate . '.txt';
 my $sqlplus_script = '  @guestsCounts ' . $myDate;
 
 print $connect_string . "\n";
@@ -62,5 +85,8 @@ my $run_time = $end_run - $start_run;
 my $minutes = $run_time/60;
 my $hours = $minutes/60;
 printf "*********************Report took $run_time seconds (%.2f minutes) (%.2f hours) \n",$minutes,$hours;
+
+
+$dbh->disconnect;
 
 __END__
