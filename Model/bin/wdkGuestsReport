@@ -6,7 +6,7 @@
 use DBI;
 use strict;
 #use warnings;
-use WDK::Model::ModelConfig;
+require WDK::Model::ModelConfig;
 
 
 if (@ARGV < 2) {
