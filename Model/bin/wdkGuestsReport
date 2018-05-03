@@ -1,13 +1,11 @@
 #!/usr/bin/perl
-
 # Cristina Aurrecoechea 2018
 # Report on guests
-
 use DBI;
 use strict;
-#use warnings;
+use warnings;
+use lib "$ENV{GUS_HOME}/lib/perl";
 require WDK::Model::ModelConfig;
-
 
 if (@ARGV < 2) {
         print "\nusage:  wdkGuestsReport  PlasmoDB   date (eg 01-JAN-18)   /pathToReportDir/ (default . ) \n";
@@ -17,14 +15,13 @@ my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst;
 my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec); # array, no hash
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 my $today = "$mday-".$months[$mon]. "-".($year-100);
-
 print "today is: $today\n\n"; 
-
 
 my $start_run = time();
 
-if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
+if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserDB, login and password (ex PlasmoDB).\n\n";}
 my $projectId = $ARGV[0];
+
 my $path = $ARGV[2];
 if ( !$path ) {$path = './'; }
 
@@ -65,7 +62,7 @@ my $sqlplus_settings = '
   set lin 300
   set pagesize 0
   set verify off
-  spool ' . $path . 'guestReport-upto-' . $myDate . '.txt';
+  spool ' . $path . '/guestReport-upto-' . $myDate . '.txt';
 my $sqlplus_script = '  @guestsCounts ' . $myDate;
 
 print $connect_string . "\n";
