@@ -1,6 +1,6 @@
------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 -- GUESTS COUNTS -- parameter:  maxdate: eg: '01-APR-17' (April 1 2017)
---  @guestsCounts 01-APR-17
+-- run:  @guestsCounts 01-MAY-17   where 01-MAY-17 is the cutoff date (upper limit)
 -----------------------------------------------------------------------------------------
 
 prompt GUESTS -MIN DATE
@@ -12,27 +12,22 @@ prompt GUESTS -MAX DATE
 ---------------------------------------------------------------------------------------
 select max(first_access)  from userlogins5.users where is_guest = 1;
 
+prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
 -----------------------------------------------------------------------------------------
-prompt TOTAL GUEST COUNT with first access < '&1'
+-----------------------------------------------------------------------------------------
+prompt GUESTS STATS  with first access < '&1'
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
+-----------------------------------------------------------------------------------------
+prompt TOTAL GUEST COUNT
 ---------------------------------------------------------------------------------------
 select count(*) from userlogins5.users 
 where is_guest = 1
 and first_access < '&1';
-
-prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -----------------------------------------------------------------------------------------
-prompt GUEST COUNT  with first access < '&1',  WITH steps
----------------------------------------------------------------------------------------
-select count(*) from userlogins5.users 
-where is_guest = 1
-and first_access < '&1'
-and user_id in 
-(select user_id from userlogins5.steps
-  where is_deleted = 0
-);
-
------------------------------------------------------------------------------------------
-prompt GUEST COUNT with first access < '&1', WITH strategies
+prompt GUEST COUNT WITH strategies
 ---------------------------------------------------------------------------------------
 select count(*) from userlogins5.users 
 where is_guest = 1
@@ -41,17 +36,24 @@ and user_id in
 (select user_id from userlogins5.strategies
   where is_deleted = 0
 );
-
-prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -----------------------------------------------------------------------------------------
-prompt GUESTS with first access < '&1', how much they work
+prompt GUEST COUNT WITH steps but NO STRATEGIES
 ---------------------------------------------------------------------------------------
-prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+select count(*) from userlogins5.users 
+where is_guest = 1
+and first_access < '&1'
+and user_id in 
+(select user_id from userlogins5.steps
+  where is_deleted = 0
+    and strategy_id is NULL
+);
+
+
+prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
 -----------------------------------------------------------------------------------------
-prompt
-prompt GUESTS with first access < '&1'
-prompt
 prompt   GUEST count   STRATEGY count
+prompt
 prompt   (this number of guests with these many strategies)
 prompt   (interesting GUESTS probably have a strategy count >2 and <30)
 prompt
@@ -73,63 +75,13 @@ group by stratcount
 order by stratcount;
 
 
------------------------------------------------------------------------------------------
-prompt 
-prompt GUESTS with first access < '&1' with steps
-prompt
-prompt   STEP count    QUESTION
-prompt  (this number of steps with this question)
-prompt
-prompt
----------------------------------------------------------------------------------------
-
-select questionCount || '	' ||  question_name
-from
-(
-select question_name,count(*) as questionCount
-  from userlogins5.users u , userlogins5.steps st
-where u.user_id = st.user_id
-  and u.is_guest = 1
-  and first_access < '&1'
-  and st.is_deleted = 0
-group by st.question_name
-order by  questionCount desc,question_name
-);
 
 -----------------------------------------------------------------------------------------
-prompt 
-prompt GUESTS with first access < '&1'  with strategies
-prompt
-prompt   STEP count    QUESTION
-prompt  (this number of steps with this question)
-prompt
----------------------------------------------------------------------------------------
-
-select questionCount || '	' ||  question_name
-from
-(
-select question_name,count(*) as questionCount
-  from userlogins5.users u , userlogins5.steps st
-where u.user_id = st.user_id
-  and u.is_guest = 1
-  and first_access < '&1'
-  and st.is_deleted = 0
-  and st.strategy_id is not NULL
-group by st.question_name
-order by questionCount desc,question_name
-);
-
-
------------------------------------------------------------------------------------------
-prompt 
-prompt GUESTS with first access < '&1'  with strategies
-prompt
 prompt   STRATEGY count    STEP count
+prompt 
 prompt  (this number of strategies have this number of steps)
 prompt
 ---------------------------------------------------------------------------------------
-
-
 select count(*),stepcount
   from
     (
@@ -145,18 +97,13 @@ select count(*),stepcount
    )
  group by stepcount
  order by stepcount;
-
-
 -----------------------------------------------------------------------------------------
 prompt 
-prompt GUESTS with first access < '&1'  with strategies
-prompt  ONLY THOSE users WITH MORE THAN ONE strategy AND FEWER THAN 30 strategies:
-prompt       how many steps in these strategies?
+prompt  same as above but now ONLY THOSE users with a strategy count >2 and <30
 prompt
 prompt   STRATEGY count     STEP count
 prompt  (This many strategies with these many steps)
 ---------------------------------------------------------------------------------------
-
 select count(*), stepcount
 from
 (
@@ -184,4 +131,51 @@ group by  stepcount
 order by stepcount;
 
 
-prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
+
+-----------------------------------------------------------------------------------------
+prompt QUESTIONS in strategies
+prompt
+prompt   STEP count    QUESTION
+prompt  (this number of steps with this question)
+prompt
+---------------------------------------------------------------------------------------
+
+select questionCount || '	' ||  question_name
+from
+(
+select question_name,count(*) as questionCount
+  from userlogins5.users u , userlogins5.steps st
+where u.user_id = st.user_id
+  and u.is_guest = 1
+  and first_access < '&1'
+  and st.is_deleted = 0
+  and st.strategy_id is not NULL
+group by st.question_name
+order by questionCount desc,question_name
+);
+-----------------------------------------------------------------------------------------
+prompt 
+prompt QUESTIONS in steps that are NOT In strategies (web services)
+prompt
+prompt   STEP count    QUESTION
+prompt  (this number of steps with this question)
+prompt
+prompt
+---------------------------------------------------------------------------------------
+
+select questionCount || '	' ||  question_name
+from
+(
+select question_name,count(*) as questionCount
+  from userlogins5.users u , userlogins5.steps st
+where u.user_id = st.user_id
+  and u.is_guest = 1
+  and first_access < '&1'
+  and st.is_deleted = 0
+  and st.strategy_id is NULL
+group by st.question_name
+order by  questionCount desc,question_name
+);
+prompt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``

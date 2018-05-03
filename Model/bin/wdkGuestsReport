@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+
+# Cristina Aurrecoechea 2018
+# Report on guests
+
+use DBI;
+use strict;
+#use warnings;
+use WDK::Model::ModelConfig;
+
+
+if (@ARGV < 2) {
+        print "\nusage:  wdkGuestsReport  PlasmoDB   date (eg 01-JAN-18)  \n";
+        exit 1;
+}
+
+my $start_run = time();
+
+if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
+my $projectId = $ARGV[0];
+
+#my $dbh = getDbHandle();
+ my ($dbh, $dsn, $login, $passwd);
+  
+    
+  require WDK::Model::ModelConfig;
+  my $c = new WDK::Model::ModelConfig($projectId);
+
+  my $cfg = new WDK::Model::ModelConfig($projectId);
+  
+  $dsn    = $cfg->getUserDb->getDbiDsn;
+  $login  = $cfg->getUserDb->getLogin;
+  $passwd = $cfg->getUserDb->getPassword;
+
+##  die "You must run this on apicomm(n|s), not an apicommdev instance\n" if $dsn =~ /dev/i;
+  
+  $dbh = DBI->connect(
+                      $dsn, 
+                      $login, 
+                      $passwd,
+                      { PrintError => 1, RaiseError => 0}
+                     ) or die "Can't connect to the database: $DBI::errstr\n";
+  
+
+  print "db info:\n  dsn=$dsn\n  login=$login\n\n";
+
+my ($one, $two, $dsn2) = split /:/, $dsn;
+
+if ( !$ARGV[1] ) {die "\n\nPlease specify a cutoff date (eg 31-JUL-18).\n\n";}
+my $myDate = $ARGV[1];
+my $quoteddate  = $dbh->quote( $myDate );
+
+my $connect_string = $login . '/' . $passwd . '@' . $dsn2;
+my $sqlplus_settings = '
+  set lin 300
+  set pagesize 0
+  set verify off
+  spool guests-upto-' . $myDate . '.txt';
+my $sqlplus_script = '  @guestsCounts ' . $myDate;
+
+print $connect_string . "\n";
+print $sqlplus_settings . "\n\n";
+print $sqlplus_script . "\n";
+
+my $result = qx { sqlplus $connect_string  <<EOF
+$sqlplus_settings
+$sqlplus_script
+exit;
+EOF
+};
+print $result;
+
+my $end_run = time();
+my $run_time = $end_run - $start_run;
+my $minutes = $run_time/60;
+my $hours = $minutes/60;
+printf "*********************Report took $run_time seconds (%.2f minutes) (%.2f hours) \n",$minutes,$hours;
+
+
+
+sub getDbHandle {
+   
+  my ($dbh, $dsn, $login, $passwd);
+  
+    
+  require WDK::Model::ModelConfig;
+  my $c = new WDK::Model::ModelConfig($projectId);
+
+  my $cfg = new WDK::Model::ModelConfig($projectId);
+  
+  $dsn    = $cfg->getUserDb->getDbiDsn;
+  $login  = $cfg->getUserDb->getLogin;
+  $passwd = $cfg->getUserDb->getPassword;
+
+##  die "You must run this on apicomm(n|s), not an apicommdev instance\n" if $dsn =~ /dev/i;
+  
+  $dbh = DBI->connect(
+                      $dsn, 
+                      $login, 
+                      $passwd,
+                      { PrintError => 1, RaiseError => 0}
+                     ) or die "Can't connect to the database: $DBI::errstr\n";
+  
+
+  print "db info:\n  dsn=$dsn\n  login=$login\n\n";
+  return $dbh;
+  
+}
+
+
+
+
+__END__
