@@ -48,16 +48,17 @@ public class SummaryView extends WdkView {
 
     public SummaryViewHandler getHandlerInstance() throws WdkModelException {
         if (handlerClass != null) {  // resolve the handler class
+            String message = "Unable to instantiate summary view handler class: " + handlerClass;
             try {
                 Class<? extends SummaryViewHandler> hClass = Class.forName(
                     handlerClass).asSubclass(SummaryViewHandler.class);
                 return hClass.newInstance();
             } catch (ClassNotFoundException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkModelException(message, ex);
             } catch (InstantiationException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkModelException(message, ex);
             } catch (IllegalAccessException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkModelException(message, ex);
             }
         }
         return null;
