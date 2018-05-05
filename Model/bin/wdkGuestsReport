@@ -59,7 +59,7 @@ my $sqlplus_settings = '
   set pagesize 0
   set verify off
   spool ' . $path . '/guestReport-upto-' . $myDate . '.txt';
-my $sqlplus_script = '  @guestsCounts ' . $myDate;
+my $sqlplus_script = '@' . $ENV{GUS_HOME} . '/lib/sql/guestsCounts ' . $myDate;
 #print $connect_string . "\n";
 print $sqlplus_settings . "\n\n";
 print $sqlplus_script . "\n";
