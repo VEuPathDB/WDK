@@ -26,6 +26,7 @@ export interface RecordClass extends ModelEntity {
 
 export interface Reporter {
   name: string;
+  type: string;
   displayName: string;
   description: string;
   isInReport: boolean;
