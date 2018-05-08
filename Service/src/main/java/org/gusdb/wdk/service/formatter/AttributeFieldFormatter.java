@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -56,6 +55,6 @@ public class AttributeFieldFormatter {
       .put(Keys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(attribute))
       .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(attribute))
       .put(Keys.PROPERTIES, attribute.getPropertyLists())
-      .put(Keys.FORMATS, attribute.getReporters().keySet());
+      .put(Keys.FORMATS, RecordClassFormatter.getAnswerFormatsJson(attribute.getReporters().values(), FieldScope.ALL));
   }
 }
