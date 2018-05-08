@@ -496,6 +496,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return questionSets.containsKey(setName);
   }
 
+  public boolean hasQuestion(String questionName) {
+    try {
+      getQuestion(questionName);
+      return true;
+    }
+    catch (WdkModelException e) {
+      return false;
+    }
+  }
+
   public Map<String, QuestionSet> getQuestionSets() {
     Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
     for (String setName : questionSets.keySet()) {
