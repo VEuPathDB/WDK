@@ -208,13 +208,11 @@ export default class MultiFieldFilter extends React.Component {
   }
 
   render() {
-    const {
-      values = Seq.from(this.props.activeFieldState.summary)
-        .flatMap(summary => summary.valueCounts)
-        .map(count => count.value)
-        .uniq()
-        .toArray()
-    } = this.props.activeField;
+    const values = Seq.from(this.props.activeFieldState.summary)
+      .flatMap(summary => summary.valueCounts)
+      .map(count => count.value)
+      .uniq()
+      .toArray();
     const { searchTerm = '' } = this.props.activeFieldState;
     const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
     const leafFilters = get(this.props.filters.find(filter => filter.field === this.props.activeField.term), 'value.filters', []);
