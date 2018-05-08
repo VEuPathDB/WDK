@@ -18,6 +18,11 @@ public class AttributeReporterRef extends ReporterRef {
   }
 
   @Override
+  public String getReferenceName() {
+    return super.getName();
+  }
+
+  @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
 
     // try to find implementation class
