@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { map, partial } from 'lodash';
+import { partial } from 'lodash';
 
-import { getFilterValueDisplay } from './Utils';
+import { Seq } from 'Utils/IterableUtils';
+
+import { getFilterValueDisplay, shouldAddFilter } from './Utils';
 
 /**
  * List of filters configured by the user.
@@ -26,18 +28,31 @@ export default class FilterList extends React.Component {
    * @param {Filter} filter
    * @param {Event} event
    */
-  handleFilterSelectClick(filter, event) {
+  handleFilterSelectClick(filter, containerFilter = filter, event) {
     event.preventDefault();
-    this.props.onActiveFieldChange(filter.field);
+    this.props.onActiveFieldChange(containerFilter.field);
   }
 
 /**
  * @param {Filter} filter
  * @param {Event} event
  */
-  handleFilterRemoveClick(filter, event) {
+  handleFilterRemoveClick(filter, containerFilter, event) {
     event.preventDefault();
-    this.props.onFiltersChange(this.props.filters.filter(f => f !== filter));
+    if (containerFilter != null) {
+      const otherFilters = this.props.filters.filter(f => f !== containerFilter);
+      const nextContainerFilter = {
+        ...containerFilter,
+        value: {
+          ...containerFilter.value,
+          filters: containerFilter.value.filters.filter(f => f !== filter)
+        }
+      };
+      this.props.onFiltersChange(otherFilters.concat(shouldAddFilter(nextContainerFilter) ? [ nextContainerFilter ] : []));
+    }
+    else {
+      this.props.onFiltersChange(this.props.filters.filter(f => f !== filter));
+    }
   }
 
   render() {
@@ -63,12 +78,21 @@ export default class FilterList extends React.Component {
         {filters.length === 0
           ? ( hideGlobalCounts ? null : <strong><em>No filters applied</em></strong> )
           : <ul style={{display: 'inline-block'}} className="filter-items">
-            {map(filters, filter => {
+            {Seq.from(filters)
+              .flatMap(filter => filter.type === 'multiFilter'
+                ? filter.value.filters.map(leaf => [ leaf, filter ])
+                : [ [ filter ] ])
+              .map(([ filter, containerFilter ]) => {
               var className = activeField && activeField.term === filter.field ? 'selected' : '';
-              var handleSelectClick = partial(this.handleFilterSelectClick, filter);
-              var handleRemoveClick = partial(this.handleFilterRemoveClick, filter);
+              var handleSelectClick = partial(this.handleFilterSelectClick, filter, containerFilter);
+              var handleRemoveClick = partial(this.handleFilterRemoveClick, filter, containerFilter);
               var field = fields.get(filter.field);
-              var display = getFilterValueDisplay(filter);
+              var containerField = containerFilter && fields.get(containerFilter.field);
+              var fieldDisplay = containerField
+                ? containerField.display + " > " + field.display
+                : field.display;
+
+              var filterDisplay = getFilterValueDisplay(filter);
 
               return (
                 <li key={filter.field} className={className}>
@@ -76,7 +100,7 @@ export default class FilterList extends React.Component {
                     <a className="select"
                       onClick={handleSelectClick}
                       href={'#' + filter.field}
-                      title={display}>{field.display}</a>
+                      title={filterDisplay}>{fieldDisplay}</a>
                     {/* Use String.fromCharCode to avoid conflicts with
                         character ecoding. Other methods detailed at
                         http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities

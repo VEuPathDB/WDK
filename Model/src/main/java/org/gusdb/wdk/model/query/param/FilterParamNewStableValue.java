@@ -1,23 +1,29 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.gusdb.fgputil.FormatUtil.getInnerClassLog4jName;
+import static org.gusdb.fgputil.FormatUtil.printArray;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.wdk.model.query.param.OntologyItemType.MULTIFILTER;
+import static org.gusdb.wdk.model.query.param.OntologyItemType.STRING;
 
 /**
  * {
@@ -52,6 +58,7 @@ public class FilterParamNewStableValue {
   static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
   static final String FILTERS_IS_RANGE = "isRange";
   static final String FILTERS_TYPE = "type";
+  static final String FILTERS_MULTI_OPERATION = "operation";
 
   private FilterParamNew _param;
   private JSONObject _stableValueJson;
@@ -100,7 +107,7 @@ public class FilterParamNewStableValue {
         errors.add("'" + field + "'" + " is not a recognized ontology term");
         continue;
       }
-      if (!ontology.get(field).getIsRange()) memberFilters.add((MembersFilter)filter);
+      if (!ontology.get(field).getIsRange() && MULTIFILTER != ontology.get(field).getType()) memberFilters.add((MembersFilter)filter);
     }
     
     // run metadata query to find distinct values for each member field
@@ -216,6 +223,10 @@ public class FilterParamNewStableValue {
                 if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
                 filter = new StringMembersFilter(valueArr, includeUnknowns, field);
                 break;
+              case MULTIFILTER:
+                if (jsFilter.has(FILTERS_VALUE)) valueObj = jsFilter.getJSONObject(FILTERS_VALUE);
+                filter = new MultiFilter(valueObj, includeUnknowns, field);
+                break;
               default:
                 throw new WdkModelException("Unsupported filter type: " + type.name());
             }
@@ -297,7 +308,7 @@ public class FilterParamNewStableValue {
       OntologyItemType type = ontologyItem.getType();
       String columnName = type.getMetadataQueryColumn();
 
-      String whereClause = " WHERE " + FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'";
+      String whereClause = FilterParamNew.COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'";
 
       String unknownClause = includeUnknowns ? metadataTableName + "." + columnName + " is NULL OR " : " 1=0 OR ";
 
@@ -590,5 +601,93 @@ public class FilterParamNewStableValue {
       return members;
     }
 
+  }
+
+  private static enum MultiFilterOperation {
+
+    UNION("OR"), INTERSECT("AND");
+
+    private String _displayName;
+
+    MultiFilterOperation(String displayName) {
+      _displayName = displayName;
+    }
+
+    String getDisplayName() {
+      return _displayName;
+    }
+
+    static String printValues() {
+      return Arrays.asList(values())
+          .stream()
+          .map(v -> v.toString())
+          .collect(Collectors.joining(", "));
+    }
+
+  }
+
+  private class MultiFilter extends Filter {
+
+    private MultiFilterOperation _operation;
+    private JSONArray _leafFilters;
+
+    public MultiFilter(JSONObject jsonObject, Boolean includeUnknowns, String field) throws WdkModelException {
+      super(jsonObject == null, includeUnknowns, field);
+
+      if (jsonObject != null) {
+        String operation = jsonObject.getString(FILTERS_MULTI_OPERATION);
+        if (operation != null) _operation = MultiFilterOperation.valueOf(operation.toUpperCase());
+
+        if (_operation == null) {
+          mapToList(Arrays.asList(MultiFilterOperation.values()), op -> op.toString());
+          throw new WdkModelException("An unknown _operation was provided: `" + operation + "`. " +
+              "Expected one of: " + MultiFilterOperation.printValues());
+        }
+
+        _leafFilters = jsonObject.getJSONArray(FILTERS_KEY);
+      }
+    }
+
+    @Override
+    String getDisplayValue() {
+      return getLeafFilters()
+          .map(StringMembersFilter::getDisplayValue)
+          .collect(Collectors.joining(" " + _operation.getDisplayName() + " "));
+    }
+
+    @Override
+    Boolean getIncludeUnknowns() {
+      return includeUnknowns;
+    }
+
+    @Override
+    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
+      return _leafFilters.length() == 0 ? "1 = 1" :
+          getLeafFilters()
+              .map(toJavaFunction(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology))))
+              .collect(Collectors.joining(" " + _operation.getDisplayName() + " "));
+    }
+
+    @Override
+    protected String getValueSqlClause(String columnName, String metadataTableName) throws WdkModelException {
+      // this should never get called...
+      throw new WdkModelException("Unexpected method call.");
+    }
+
+    @Override
+    String getSignature() {
+      return getLeafFilters()
+          .map(StringMembersFilter::getSignature)
+          .collect(Collectors.joining(" " + _operation + " "));
+    }
+
+    private Stream<StringMembersFilter> getLeafFilters() {
+      return StreamSupport.stream(JsonIterators.arrayIterable(_leafFilters).spliterator(), false)
+          .map(toJavaFunction(fSwallow(jsonType -> new StringMembersFilter(
+              jsonType.getJSONObject().getJSONArray(FILTERS_VALUE),
+              jsonType.getJSONObject().getBoolean(FILTERS_INCLUDE_UNKNOWN),
+              jsonType.getJSONObject().getString(FILTERS_FIELD)
+          ))));
+    }
   }
 }

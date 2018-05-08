@@ -1,14 +1,14 @@
 import { bindAll, curry, escapeRegExp, get, keyBy } from 'lodash';
-import { MesaController as Mesa } from 'Components/Mesa';
 import React from 'react';
 
 import Icon from 'Components/Icon/IconAlt';
+import { MesaController as Mesa } from 'Components/Mesa';
 import RealTimeSearchBox from 'Components/SearchBox/RealTimeSearchBox';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
 
 import StackedBar from './StackedBar';
-import { shouldAddFilter, isRange } from './Utils';
+import { isRange, shouldAddFilter } from './Utils';
 
 const cx = makeClassNameHelper('wdk-MultiFieldFilter');
 
@@ -32,26 +32,57 @@ export default class MultiFieldFilter extends React.Component {
       'renderDistributionCell',
       'renderPercentCell'
     ]);
+    this.state = { operation: 'intersect' };
   }
 
   // Event handlers
 
   // Invoke callback with filters array
-  handleFieldFilterChange(field, value, includeUnknown, valueCounts) {
-    this.props.onFiltersChange(this.updateFilter(this.props.filters, { field, value, includeUnknown, valueCounts }));
+  handleLeafFilterChange(field, value, includeUnknown, valueCounts) {
+    const multiFilter = this.getOrCreateFilter();
+    const leafFilter = { field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown };
+    const otherLeafFilters = multiFilter.value.filters.filter(filter => filter.field !== field.term);
+    const shouldAdd = shouldAddFilter(leafFilter, valueCounts, this.props.selectByDefault);
+    const filter = {
+      ...multiFilter,
+      value: {
+        ...multiFilter.value,
+        filters: otherLeafFilters.concat(shouldAdd ? [leafFilter] : [])
+      }
+    };
+    const otherFilters = this.props.filters.filter(filter => filter.field !== this.props.activeField.term);
+    const nextFilters = otherFilters.concat(filter.value.filters.length > 0 ? [filter] : []);
+
+    this.props.onFiltersChange(nextFilters);
   }
 
   handleTableSort(column, direction) {
     this.props.onMemberSort(this.props.activeField, { columnKey: column.key, direction });
   }
 
-  // Returns a new filters array with the provided filter details included
-  updateFilter(filters, { field, value, includeUnknown, valueCounts }) {
-    const filter = { field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown };
-    const nextFilters = filters.filter(f => f.field !== field.term);
-    return shouldAddFilter(filter, valueCounts, this.props.selectByDefault)
-      ? nextFilters.concat(filter)
-      : nextFilters;
+  setOperation(operation) {
+    this.setState({ operation });
+    const filter = this.getOrCreateFilter();
+    if (filter.value.filters.length > 0) {
+      const otherFilters = this.props.filters.filter(filter => filter.field !== this.props.activeField.term);
+      const nextFilters = otherFilters.concat([{ ...filter, value: { ...filter.value, operation } }]);
+      this.props.onFiltersChange(nextFilters);
+    }
+  }
+
+  getOrCreateFilter() {
+    const { term: field, type, isRange } = this.props.activeField;
+    const filter = this.props.filters.find(filter => filter.field === this.props.activeField.term);
+    return filter != null ? filter : {
+      field,
+      type,
+      isRange,
+      value: {
+        operation: this.state.operation,
+        filters: []
+      },
+      includeUnknown: false // not sure we need this for multi filter
+    }
   }
 
   deriveRowClassName(row) {
@@ -155,7 +186,7 @@ export default class MultiFieldFilter extends React.Component {
     const fieldValues = summary.valueCounts.map(count => count.value);
     const isDisabled = !fieldValues.includes(value) || getFilteredCount(summary, value) <= 0;
     const handleChange = event =>
-      this.handleFieldFilterChange(
+      this.handleLeafFilterChange(
         this.props.fields.get(summary.term),
         ( event.target.checked
           ? [value].concat(filterValue)
@@ -186,7 +217,8 @@ export default class MultiFieldFilter extends React.Component {
     } = this.props.activeField;
     const { searchTerm = '' } = this.props.activeFieldState;
     const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
-    const filtersByField = keyBy(this.props.filters, 'field');
+    const leafFilters = get(this.props.filters.find(filter => filter.field === this.props.activeField.term), 'value.filters', []);
+    const filtersByField = keyBy(leafFilters, 'field');
 
     const rows = Seq.from(this.props.activeFieldState.summary)
       .flatMap(summary => [
@@ -208,70 +240,82 @@ export default class MultiFieldFilter extends React.Component {
         pathToTerm(summary.term, this.props.activeField.term, this.props.fields)
           .some(item => searchRe.test(item.display)))
 
-    return <div className={cx()}>
-      <button
-        type="button"
-        className={cx('UpdateCountsButton') + " btn"}
-        disabled={!this.props.activeFieldState.invalid || this.props.activeFieldState.loading}
-        onClick={() => this.props.onFieldCountUpdateRequest(this.props.activeField.term)}
-      >
-        {this.props.activeFieldState.loading
-          ? <div><Icon fa="circle-o-notch" className="fa-spin"/> Loading...</div>
-          : 'Update counts'}
-      </button>
-      <Mesa
-        options={{
-          useStickyHeader: true,
-          tableBodyMaxHeight: '80vh',
-          deriveRowClassName: this.deriveRowClassName
-        }}
-        uiState={{
-          sort: this.props.activeFieldState.sort
-        }}
-        eventHandlers={{
-          onSort: this.handleTableSort
-        }}
-        rows={rows.toArray()}
-        filteredRows={filteredRows.toArray()}
-        columns={[
-          {
-            key: 'display',
-            sortable: true,
-            width: '22em',
-            wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
-            renderHeading: [ this.renderDisplayHeadingName, this.renderDisplayHeadingSearch ],
-            renderCell: this.renderDisplayCell
-          },
-          {
-            key: 'filteredCount',
-            className: cx('CountCell'),
-            sortable: true,
-            width: '11em',
-            name: <div>Remaining {this.props.displayName}</div>,
-            renderCell: this.renderCountCell
-          },
-          {
-            key: 'count',
-            className: cx('CountCell'),
-            sortable: true,
-            width: '11em',
-            name: <div>All {this.props.displayName}</div>,
-            renderCell: this.renderCountCell
-          },
-          {
-            key: 'distribution',
-            name: 'Distribution',
-            renderCell: this.renderDistributionCell
-          },
-          {
-            key: '%',
-            width: '4em',
-            name: '%',
-            renderCell: this.renderPercentCell
-          }
-        ]}
-      />
-    </div>
+    return (
+      <div className={cx()}>
+        <button
+          type="button"
+          className={cx('UpdateCountsButton') + " btn"}
+          disabled={!this.props.activeFieldState.invalid || this.props.activeFieldState.loading}
+          onClick={() => this.props.onFieldCountUpdateRequest(this.props.activeField.term)}
+        >
+          {this.props.activeFieldState.loading
+            ? <div><Icon fa="circle-o-notch" className="fa-spin"/> Loading...</div>
+            : 'Update counts'}
+        </button>
+
+        <div style={{ margin: '.5em 0' }}>
+          Find {this.props.displayName} with <select
+            value={this.getOrCreateFilter().value.operation}
+            onChange={e => this.setOperation(e.target.value) }
+          >
+            <option value="union">any</option>
+            <option value="intersect">all</option>
+          </select> of the options selected below.
+        </div>
+        <Mesa
+          options={{
+            useStickyHeader: true,
+            tableBodyMaxHeight: '80vh',
+            deriveRowClassName: this.deriveRowClassName
+          }}
+          uiState={{
+            sort: this.props.activeFieldState.sort
+          }}
+          eventHandlers={{
+            onSort: this.handleTableSort
+          }}
+          rows={rows.toArray()}
+          filteredRows={filteredRows.toArray()}
+          columns={[
+            {
+              key: 'display',
+              sortable: true,
+              width: '22em',
+              wrapCustomHeadings: ({ headingRowIndex }) => headingRowIndex === 0,
+              renderHeading: [ this.renderDisplayHeadingName, this.renderDisplayHeadingSearch ],
+              renderCell: this.renderDisplayCell
+            },
+            {
+              key: 'filteredCount',
+              className: cx('CountCell'),
+              sortable: true,
+              width: '11em',
+              name: <div>Remaining {this.props.displayName}</div>,
+              renderCell: this.renderCountCell
+            },
+            {
+              key: 'count',
+              className: cx('CountCell'),
+              sortable: true,
+              width: '11em',
+              name: <div>All {this.props.displayName}</div>,
+              renderCell: this.renderCountCell
+            },
+            {
+              key: 'distribution',
+              name: 'Distribution',
+              renderCell: this.renderDistributionCell
+            },
+            {
+              key: '%',
+              width: '4em',
+              name: '%',
+              renderCell: this.renderPercentCell
+            }
+          ]}
+        />
+      </div>
+    );
   }
 
 }

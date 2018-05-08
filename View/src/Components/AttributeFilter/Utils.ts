@@ -26,7 +26,7 @@ export function isFilterField(field: Field): field is FilterField {
  */
 export function shouldAddFilter(filter: Filter, valueCounts: ValueCounts, selectByDefault: boolean) {
   if (filter.type === 'multiFilter') {
-    return true;
+    return filter.value.filters && filter.value.filters.length > 0;
   }
   if (selectByDefault == false) {
     if (filter.isRange) {
