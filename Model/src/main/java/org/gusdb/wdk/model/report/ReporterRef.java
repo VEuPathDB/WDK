@@ -70,7 +70,14 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   public void setName(String name) {
     this.name = name;
   }
-  
+
+  /**
+   * @return name by default, overridden by attribute reporter refs
+   */
+  public String getReferenceName() {
+    return name;
+  }
+
   /**
    * @return the displayName
    */
