@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.functional.FunctionalInterfaces.equalTo;
 import static org.gusdb.fgputil.functional.FunctionalInterfaces.negate;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toMapFunction;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +31,7 @@ public class StepDataWriter implements TableRowWriter<StepData> {
 
   private static final Integer[] UPDATE_PARAMETER_TYPES =
       mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),
-          toMapFunction(SQLTYPES)).toArray(new Integer[COLS.length]);
+          key -> SQLTYPES.get(key)).toArray(new Integer[COLS.length]);
 
   @Override
   public String getWriteSql(String schema) {
