@@ -662,7 +662,7 @@ public class FilterParamNewStableValue {
 
     @Override
     String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology, String filterSelectSql) throws WdkModelException {
-      return _leafFilters.length() == 0 ? "1 = 1" :
+      return _leafFilters.length() == 0 ? filterSelectSql + " WHERE  1 = 1" :
           "(" +
             getLeafFilters()
                 .map(toJavaFunction(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql))))
