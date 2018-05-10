@@ -824,7 +824,7 @@ public class FilterParamNew extends AbstractDependentParam {
        else {
         List<String> filterSqls = new ArrayList<String>();
         for (FilterParamNewStableValue.Filter filter : filters)
-          filterSqls.add(filterSelectSql + " WHERE " + filter.getFilterAsWhereClause(metadataTableName, ontology));
+          filterSqls.add(filter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql));
 
         filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
        }

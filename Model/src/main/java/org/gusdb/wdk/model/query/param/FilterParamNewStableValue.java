@@ -302,7 +302,7 @@ public class FilterParamNewStableValue {
     abstract String getSignature();
 
     // include in where clause a filter by ontology_id
-    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
+    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology, String filterSelectSql) throws WdkModelException {
 
       OntologyItem ontologyItem = ontology.get(field);
       OntologyItemType type = ontologyItem.getType();
@@ -317,7 +317,7 @@ public class FilterParamNewStableValue {
           getValueSqlClause(columnName, metadataTableName);
 
       // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
-      return whereClause + " AND (" + unknownClause + innerAndClause + ")";
+      return filterSelectSql + " WHERE " + whereClause + " AND (" + unknownClause + innerAndClause + ")";
     }
     
     @Override
@@ -661,11 +661,13 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology) throws WdkModelException {
+    String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology, String filterSelectSql) throws WdkModelException {
       return _leafFilters.length() == 0 ? "1 = 1" :
-          getLeafFilters()
-              .map(toJavaFunction(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology))))
-              .collect(Collectors.joining(" " + _operation.getDisplayName() + " "));
+          "(" +
+            getLeafFilters()
+                .map(toJavaFunction(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql))))
+                .collect(Collectors.joining(" " + _operation + " ")) +
+          ")";
     }
 
     @Override
