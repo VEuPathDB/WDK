@@ -97,8 +97,8 @@ var Histogram = (function() {
       const barWidth = this.getBarWidth(props.distribution);
 
       var { xaxisMin, xaxisMax } = props.uiState;
-      if (xaxisMin == null) xaxisMin = Math.floor(min - barWidth);
-      if (xaxisMax == null) xaxisMax = Math.ceil(max + barWidth);
+      if (xaxisMin == null) xaxisMin = min - barWidth;
+      if (xaxisMax == null) xaxisMax = max + barWidth;
       return { xaxisMin, xaxisMax };
     }
 
@@ -321,15 +321,15 @@ var Histogram = (function() {
     render() {
       var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
       var { yaxisMax, xaxisMin, xaxisMax } = this.state.uiState;
-      var barWidth = this.getBarWidth(distribution);
+      const barWidth = this.getBarWidth(distribution);
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
       var countsMax = Math.max(...counts);
 
       var values = distribution.map(entry => entry.value);
-      var valuesMin = Math.floor(Math.min(...values) - barWidth);
-      var valuesMax = Math.ceil(Math.max(...values) + barWidth);
+      var valuesMin = Math.min(...values) - barWidth;
+      var valuesMax = Math.max(...values) + barWidth;
 
       var xaxisMinSelector = chartType === 'date' ? (
         <DateSelector
@@ -450,8 +450,6 @@ function unwrapXaxisRange(flotRanges) {
     return { min: null, max: null };
   }
 
-  var { from, to } = flotRanges.xaxis;
-  var min = Number(from.toFixed(2));
-  var max = Number(to.toFixed(2));
+  var { from: min, to: max } = flotRanges.xaxis;
   return { min, max };
 }
