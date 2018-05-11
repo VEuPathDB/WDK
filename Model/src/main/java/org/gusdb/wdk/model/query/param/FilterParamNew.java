@@ -21,16 +21,18 @@ import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -753,29 +755,51 @@ public class FilterParamNew extends AbstractDependentParam {
 
     String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQueryNotIsRangeSql + ") bgd" + ontologyTermsWhereClause;
 
-    // run sql, and stuff results into map of term -> values
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
+
+    // We want to use the WDK cache for this sql, so have to force the sql into
+    // a new SqlQuery object.
+    SqlQuery sqlQuery = createQuery(_wdkModel, filterSelectSql, ontologyValuesCols);
     try {
-      new SQLRunner(dataSource, filterSelectSql, getFullName() + "__values_map").executeQuery(rs -> {
-        while (rs.next()) {
-          String field = rs.getString(FilterParamNew.COLUMN_ONTOLOGY_ID);
-          OntologyItem ontologyItem = ontology.get(field);
-          if (ontologyItem == null)
-            continue; // in the value map sql, but not in the ontology query. skip
-          OntologyItemType type = ontologyItem.getType();
-          Object value = OntologyItemType.resolveTypedValue(rs, ontologyItem, type.getJavaClass());
-          String valueString = value == null ? "NULL" : value.toString();
-          if (!ontologyValues.containsKey(field))
-            ontologyValues.put(field, new HashSet<String>());
-          ontologyValues.get(field).add(valueString);
-        }
-      });
-      return ontologyValues;
+      QueryInstance<?> instance = sqlQuery.makeInstance(user, contextParamValues, true, 0,
+          new HashMap<String, String>());
+      ResultList resultList = instance.getResults();
+      while (resultList.next()) {
+        String field = (String)resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID);
+        OntologyItem ontologyItem = ontology.get(field);
+        if (ontologyItem == null)
+          continue; // in the value map sql, but not in the ontology query. skip
+        String value = OntologyItemType.getStringValue(resultList, ontologyItem);
+        String valueString = value == null ? "NULL" : value;
+        if (!ontologyValues.containsKey(field))
+          ontologyValues.put(field, new HashSet<String>());
+        ontologyValues.get(field).add(valueString);
+      }
     }
-    catch (SQLRunnerException e) {
-      throw new WdkModelException(e.getCause());
+    catch (WdkUserException | SQLException e) {
+      throw new WdkModelException(e);
     }
+    return ontologyValues;
   }
+  
+  private SqlQuery createQuery(WdkModel wdkModel, String sql, List<String> colNames)
+      throws WdkModelException {
+  QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+  SqlQuery query = new SqlQuery();
+  query.setName(getFullName() + "_values_map");
+  query.setIsCacheable(true);
+  query.setSql(sql);
+  querySet.addQuery(query);
+  for (String colName : colNames) {
+      Column column = new Column();
+      column.setName(colName);
+      column.setQuery(query);
+      query.addColumn(column);
+  }
+  query.resolveReferences(wdkModel);
+  return query;
+}
+
    
   /**
    * this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)

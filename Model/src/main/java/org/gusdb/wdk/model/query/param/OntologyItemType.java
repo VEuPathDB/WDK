@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.dbms.ResultList;
 
 public enum OntologyItemType {
 
@@ -31,7 +32,7 @@ public enum OntologyItemType {
   private static class BranchNode{}
   private static class MultiFilter{}
 
-  private static final SimpleDateFormat dateFormatter = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_DASH);
+  private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_DASH);
 
   private final String _identifier;
   private final String _metadataQueryColumn;
@@ -97,7 +98,7 @@ public enum OntologyItemType {
         value = resultSet.getString(OntologyItemType.STRING.getMetadataQueryColumn()); break;
       case DATE:
         Date dateValue = resultSet.getDate(OntologyItemType.DATE.getMetadataQueryColumn());
-        value = resultSet.wasNull() ? null : dateFormatter.format(dateValue);
+        value = formatDate(dateValue);
         break;
       case MULTIFILTER:
         break;
@@ -109,4 +110,33 @@ public enum OntologyItemType {
     }
     return (T) value;
   }
+  
+  public static String getStringValue(ResultList resultList, OntologyItem ontologyItem) throws SQLException, WdkModelException {
+    
+    Object value = null;
+    switch(ontologyItem.getType()) {
+      case BRANCH:
+        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" + ontologyItem.getOntologyId() + "'." + 
+      " That term is either a branch in the ontology, or is a leaf but with a null type");
+      case NUMBER:
+        value = resultList.get(OntologyItemType.NUMBER.getMetadataQueryColumn()); break;
+      case STRING:
+        value = resultList.get(OntologyItemType.STRING.getMetadataQueryColumn()); break;
+      case DATE:
+        Date dateValue = (Date)resultList.get(OntologyItemType.DATE.getMetadataQueryColumn());
+        value = formatDate(dateValue);
+        break;
+      case MULTIFILTER:
+        break;
+      default:
+        break;
+    }
+    return value.toString();
+  }
+  
+  private static String formatDate(Date dateValue) {
+    if (dateValue == null) return null;
+    synchronized (DATE_FORMATTER) { return DATE_FORMATTER.format(dateValue); }
+  }
+
 }
