@@ -131,7 +131,7 @@ public enum OntologyItemType {
       default:
         break;
     }
-    return value.toString();
+    return value == null? null : value.toString();
   }
   
   private static String formatDate(Date dateValue) {
