@@ -279,7 +279,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       new SQLRunner(_userDs, INSERT_ANALYSIS_SQL, "insert-step-analysis").executeStatement(
           new Object[] { analysisId, stepId, displayName, state.getDbValue(), hasParams,
               invalidStepReason, contextHash, serializedContext },
-          new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
+          new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, _userBoolType,
               _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB });
     }
     catch (SQLRunnerException e) {
@@ -333,7 +333,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   public void setState(long analysisId, StepAnalysisState state) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_NEW_FLAG_SQL, "update-step-analysis-new-flag").executeUpdate(
-          new Object[] { state.getDbValue(), analysisId }, new Integer[] { Types.INTEGER, Types.INTEGER });
+          new Object[] { state.getDbValue(), analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
       if (changed == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
@@ -471,7 +471,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
             // read result row into an AnalysisInfo object
             Reader contextReader = rs.getCharacterStream(8);
             AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3),
-                StepAnalysisState.valueOf(rs.getInt(4)), rs.getBoolean(5), rs.getString(6), rs.getString(7),
+                StepAnalysisState.valueOf(rs.getBoolean(4) ? 1 : 0), rs.getBoolean(5), rs.getString(6), rs.getString(7),
                 contextReader == null ? null : IoUtil.readAllChars(contextReader));
 
             // add to result map
