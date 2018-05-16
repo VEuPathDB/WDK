@@ -35,11 +35,20 @@ export default class MultiFieldFilter extends React.Component {
     this.state = { operation: 'intersect' };
   }
 
+  // Update counts for subfilters if the filter operation changes
+  componentDidUpdate(prevProps, prevState) {
+    const prevFilter = this.getOrCreateFilter(prevProps, prevState);
+    const filter = this.getOrCreateFilter(this.props, this.state);
+    if (prevFilter.value.operation !== filter.value.operation) {
+      this.props.onFieldCountUpdateRequest(this.props.activeField.term);
+    }
+  }
+
   // Event handlers
 
   // Invoke callback with filters array
   handleLeafFilterChange(field, value, includeUnknown, valueCounts) {
-    const multiFilter = this.getOrCreateFilter();
+    const multiFilter = this.getOrCreateFilter(this.props, this.state);
     const leafFilter = { field: field.term, type: field.type, isRange: isRange(field), value, includeUnknown };
     const otherLeafFilters = multiFilter.value.filters.filter(filter => filter.field !== field.term);
     const shouldAdd = shouldAddFilter(leafFilter, valueCounts, this.props.selectByDefault);
@@ -62,7 +71,7 @@ export default class MultiFieldFilter extends React.Component {
 
   setOperation(operation) {
     this.setState({ operation });
-    const filter = this.getOrCreateFilter();
+    const filter = this.getOrCreateFilter(this.props, this.state);
     if (filter.value.filters.length > 0) {
       const otherFilters = this.props.filters.filter(filter => filter.field !== this.props.activeField.term);
       const nextFilters = otherFilters.concat([{ ...filter, value: { ...filter.value, operation } }]);
@@ -70,15 +79,15 @@ export default class MultiFieldFilter extends React.Component {
     }
   }
 
-  getOrCreateFilter() {
-    const { term: field, type, isRange } = this.props.activeField;
-    const filter = this.props.filters.find(filter => filter.field === this.props.activeField.term);
+  getOrCreateFilter(props, state) {
+    const { term: field, type, isRange } = props.activeField;
+    const filter = props.filters.find(filter => filter.field === props.activeField.term);
     return filter != null ? filter : {
       field,
       type,
       isRange,
       value: {
-        operation: this.state.operation,
+        operation: state.operation,
         filters: []
       },
       includeUnknown: false // not sure we need this for multi filter
@@ -215,6 +224,7 @@ export default class MultiFieldFilter extends React.Component {
       .toArray();
     const { searchTerm = '' } = this.props.activeFieldState;
     const searchRe = new RegExp(escapeRegExp(searchTerm), 'i');
+    const filter = this.getOrCreateFilter(this.props, this.state);
     const leafFilters = get(this.props.filters.find(filter => filter.field === this.props.activeField.term), 'value.filters', []);
     const filtersByField = keyBy(leafFilters, 'field');
 
@@ -243,8 +253,15 @@ export default class MultiFieldFilter extends React.Component {
         <button
           type="button"
           className={cx('UpdateCountsButton') + " btn"}
-          disabled={!this.props.activeFieldState.invalid || this.props.activeFieldState.loading}
+          disabled={(
+            filter.value.operation === 'union' ||
+            !this.props.activeFieldState.multiLeafInvalid ||
+            this.props.activeFieldState.loading
+          )}
           onClick={() => this.props.onFieldCountUpdateRequest(this.props.activeField.term)}
+          title={filter.value.operation === 'union'
+            ? 'When "any" is chosen, the selected options below do not impact each other.'
+            : 'Update the counts of the options in the table below.'}
         >
           {this.props.activeFieldState.loading
             ? <div><Icon fa="circle-o-notch" className="fa-spin"/> Loading...</div>
@@ -253,7 +270,7 @@ export default class MultiFieldFilter extends React.Component {
 
         <div style={{ margin: '.5em 0' }}>
           Find {this.props.displayName} with <select
-            value={this.getOrCreateFilter().value.operation}
+            value={this.getOrCreateFilter(this.props, this.state).value.operation}
             onChange={e => this.setOperation(e.target.value) }
           >
             <option value="union">any</option>
