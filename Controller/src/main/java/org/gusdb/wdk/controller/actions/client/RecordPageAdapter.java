@@ -35,7 +35,7 @@ public class RecordPageAdapter extends WdkAction {
     String recordClassRef = params.getValue(PARAM_RECORD_CLASS_NAME);
     RecordClassBean recordClass = getWdkModel().findRecordClass(recordClassRef);
     String url = createUrl(recordClass, params.getParamMap());
-    return new ActionResult().setExternalPath(url);
+    return new ActionResult().setExternalPath("/app" + url);
   }
   
   public static String createUrl(RecordClassBean recordClass, Map<String, String[]> params) {
