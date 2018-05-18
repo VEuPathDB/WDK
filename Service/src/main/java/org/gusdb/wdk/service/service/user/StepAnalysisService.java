@@ -51,20 +51,18 @@ public class StepAnalysisService extends UserService {
     return Response.noContent().build();
   }
 
-  private StepAnalysisContext getAnalysis(String analysisIdStr, String stepIdStr, String accessToken) throws WdkModelException {
+  private StepAnalysisContext getAnalysis(String analysisIdStr) throws WdkModelException {
+    return getAnalysis(analysisIdStr, null);
+  }
+
+  private StepAnalysisContext getAnalysis(String analysisIdStr, String accessToken) throws WdkModelException {
     try {
-      long stepId = parseIdOrNotFound("step", stepIdStr);
       long analysisId = parseIdOrNotFound("step analysis", analysisIdStr);
-      UserBundle userBundle = getUserBundle(Access.PUBLIC);
       StepAnalysisContext context = getWdkModel().getStepAnalysisFactory().getSavedContext(analysisId);
-      Step step = context.getStep();
-      if (stepId != step.getStepId()) {
-        // step of this analysis does not match step in URL
-        throw new NotFoundException("Step " + stepId + " does not contain analysis " + analysisId);
-      }
-      if (userBundle.getTargetUser().getUserId() != step.getUser().getUserId()) {
+      UserBundle userBundle = getUserBundle(Access.PUBLIC);
+      if (userBundle.getTargetUser().getUserId() != context.getStep().getUser().getUserId()) {
         // owner of this step does not match user in URL
-        throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step " + stepIdStr);
+        throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step " + context.getStep().getStepId());
       }
       if (userBundle.isSessionUser() || context.getAccessToken().equals(accessToken)) {
         return context;
@@ -74,5 +72,16 @@ public class StepAnalysisService extends UserService {
     catch (WdkUserException e) {
       throw new NotFoundException(formatNotFound("step analysis: " + analysisIdStr));
     }
+  }
+
+  private StepAnalysisContext getAnalysis(String analysisIdStr, String stepIdStr, String accessToken) throws WdkModelException {
+    StepAnalysisContext context = getAnalysis(analysisIdStr, accessToken);
+    long stepId = parseIdOrNotFound("step", stepIdStr);
+    Step step = context.getStep();
+    if (stepId != step.getStepId()) {
+      // step of this analysis does not match step in URL
+      throw new NotFoundException("Step " + stepId + " does not contain analysis " + analysisIdStr);
+    }
+    return context;
   }
 }
