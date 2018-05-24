@@ -48,12 +48,12 @@ public class QuestionComparison {
    * @param args
    */
   public static void main(String[] args) {
-    if (args.length != 2) {
-      System.err.println("Usage: questionComparison <qa url> <prod url>");
+    if (args.length < 2 || args.length > 3) {
+      System.err.println("Usage: questionComparison <qa url> <prod url> <new | invalid>");
       System.exit(1);
     }
     try {
-      new QuestionComparison().execute(args[0], args[1]);
+      new QuestionComparison().execute(args[0], args[1], args.length == 3 ? args[2] : "");
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -71,7 +71,7 @@ public class QuestionComparison {
    * @param prodUrl
    * @throws Exception
    */
-  protected void execute(String qaUrl, String prodUrl) throws Exception {
+  protected void execute(String qaUrl, String prodUrl, String displayOption) throws Exception {
     System.out.println("Starting site comparison");
 	Instant start = Instant.now();
 	
@@ -88,7 +88,7 @@ public class QuestionComparison {
       if(!commonQuestionList.isEmpty() && commonQuestionList.contains(ORGANISM_QUESTION)) compareOrganisms(qaUrl, prodUrl);
       
       // Although an unlikely scenario, there are no parameter names to compare if the sites have no
-      // questions in common.
+      // questions in common.\\
       if(!commonQuestionList.isEmpty()) compareParameterNames(qaUrl, prodUrl);
       
       // Although an unlikely scenario, there are no parameter value to compare if the sites have no
@@ -97,11 +97,11 @@ public class QuestionComparison {
       
       // Display results
       System.out.print(NL + "Result of Comparisons between " + qaUrl + " and " + prodUrl);
-      if(questionNameComparison != null)  questionNameComparison.display();     
-      if(organismComparison != null)  organismComparison.display();  
-      parameterNameComparisons.stream().forEach(comparison -> comparison.display());
-      parameterValueComparisons.stream().forEach(comparison -> comparison.display());
-      parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display());
+      if(questionNameComparison != null)  questionNameComparison.display(displayOption);     
+      if(organismComparison != null)  organismComparison.display(displayOption);  
+      parameterNameComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+      parameterValueComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+      parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display(displayOption));
       
       // Display errors
       System.out.println(NL + "Trapped Errors");
