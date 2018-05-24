@@ -36,6 +36,13 @@ export function FormMessage({ message, messageClass }) {
     <div className={messageClass}><span>{message}</span></div> );
 }
 
+export function IntroComponent() {
+  return (
+    <div> <a title="It will open in a new tab" target="_blank" href="/documents/EuPathDB_Website_Privacy_Policy.shtml">
+        <b>EuPathDB Websites Privacy Policy</b></a> 
+   </div> );
+}
+
 /**
  * React component for the user profile/account form
  * @type {*|Function}
@@ -55,14 +62,17 @@ class UserFormContainer extends React.Component {
   render() {
     let formInterpreter = this.props.statusDisplayFunction || interpretFormStatus;
     let formConfig = formInterpreter(this.props.formStatus, this.props.errorMessage);
-    let IntroComponent = this.props.introComponent || (() => <span/>);
+  //  let IntroComponent = this.props.introComponent || (() => <span/>);
+
     return (
       <div className="wdk-UserProfile">
         {this.props.shouldHideForm ?
           <div>{this.props.hiddenFormMessage}</div> :
           <div>
             <h1>{this.props.titleText}</h1>
-            <IntroComponent/>
+          {/*  <IntroComponent/> */}
+            <div style={{paddingBottom:"2em"}}>Review our <a title="It will open in a new tab" target="_blank" href="/documents/EuPathDB_Website_Privacy_Policy.shtml">
+        <b>EuPathDB Websites Privacy Policy</b></a>.</div>
             <FormMessage {...formConfig}/>
             <UserAccountForm
               user={this.props.userFormData}
