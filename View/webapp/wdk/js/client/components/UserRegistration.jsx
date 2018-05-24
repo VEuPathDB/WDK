@@ -65,7 +65,8 @@ let WhyRegister = () => (
 let PrivacyPolicy = () => (
   <div style={descriptionBoxStyle}>
     <div style={{fontSize:"1.2em"}}>
-      <b>EuPathDB Websites Privacy Policy</b> 
+      <a title="It will open in a new tab" target="_blank" href="/documents/EuPathDB_Website_Privacy_Policy.shtml">
+        <b>EuPathDB Websites Privacy Policy</b></a> 
     </div>
     <table>
       <tbody>
