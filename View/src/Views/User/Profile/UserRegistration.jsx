@@ -56,7 +56,6 @@ let WhyRegister = () => (
         <li>Use your favorites to store IDs of permanent interest, for faster access to its record page</li>
         <li>Add a comment on genes and sequences</li>
         <li>Set site preferences, such as items per page displayed in the query result</li>
-        <li>Opt to receive infrequent alerts (at most monthly), by selecting (below) from which EuPathDB sites</li>
       </ul>
     </div>
   </div>
@@ -65,7 +64,8 @@ let WhyRegister = () => (
 let PrivacyPolicy = () => (
   <div style={descriptionBoxStyle}>
     <div style={{fontSize:"1.2em"}}>
-      <b>EuPathDB Websites Privacy Policy</b> 
+      <a title="It will open in a new tab" target="_blank" href="/documents/EuPathDB_Website_Privacy_Policy.shtml">
+        <b>EuPathDB Websites Privacy Policy</b></a> 
     </div>
     <table>
       <tbody>
