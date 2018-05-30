@@ -192,8 +192,6 @@ export default class MultiFieldFilter extends React.Component {
     const { value, filter, summary, isSelected } = row;
     if (value == null) return null;
     const filterValue = get(filter, 'value', []);
-    const fieldValues = summary.valueCounts.map(count => count.value);
-    const isDisabled = !fieldValues.includes(value) || getFilteredCount(summary, value) <= 0;
     const handleChange = event =>
       this.handleLeafFilterChange(
         this.props.fields.get(summary.term),
@@ -208,8 +206,7 @@ export default class MultiFieldFilter extends React.Component {
       <label>
         <input
           type="checkbox"
-          disabled={isDisabled}
-          checked={isSelected && !isDisabled}
+          checked={isSelected}
           onChange={handleChange}
         /> {value}
       </label>
