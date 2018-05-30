@@ -7,6 +7,7 @@ import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
 import Icon from 'Components/Icon/IconAlt';
 import Tooltip from 'Components/Overlays/Tooltip';
 import { Seq } from 'Utils/IterableUtils';
+import { preorderSeq } from 'Utils/TreeUtils';
 
 import { getTree, isFilterField, isMulti, isRange } from './Utils';
 
@@ -127,19 +128,15 @@ export default class FieldList extends React.PureComponent {
     );
   }
 
-  getFieldSearchString(field) {
-    return [
-      field.display,
-      field.description ? field.description : '',
-      field.values ? field.values : ''
-    ]
-    .join(' ')
-    .toLowerCase();
+  getFieldSearchString(node) {
+    return isMulti(node.field)
+      ? preorderSeq(node).map(getNodeSearchString).join(' ')
+      : getNodeSearchString(node);
   }
 
   searchPredicate(node, searchTerms) {
     return searchTerms.every(searchTerm =>
-      this.getFieldSearchString(node.field).includes(searchTerm.toLowerCase())
+      this.getFieldSearchString(node).includes(searchTerm.toLowerCase())
     )
   }
 
@@ -182,3 +179,7 @@ FieldList.propTypes = {
   onActiveFieldChange: PropTypes.func.isRequired,
   activeField: PropTypes.object
 };
+
+function getNodeSearchString({ field: { display = '', description = '', values = '' }}) {
+  return `${display} ${description} ${values}`.toLowerCase();
+}
