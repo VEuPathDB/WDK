@@ -39,7 +39,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private boolean excludeNumbers = true;
   private Set<String> commonWords;
 
-  protected WordCloudAttributeReporter(AnswerValue answerValue) {
+  public WordCloudAttributeReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 
