@@ -803,7 +803,7 @@ public class StepFactory {
     }
 
     String paramFilters = _userDb.getPlatform().getClobData(rsStep, COLUMN_DISPLAY_PARAMS);
-    if (paramFilters != null && paramFilters.length() > 0) {
+    if (step.hasValidQuestion() && paramFilters != null && paramFilters.length() > 0) {
       // parse the param & filter values
       step.setParamFilterJSON(new JSONObject(paramFilters));
     }
@@ -1957,12 +1957,7 @@ public class StepFactory {
   }
 
   private void applyAlwaysOnFiltersToExistingStep(Step step) throws WdkModelException {
-    Question question;
-    try {
-      // check for question validity; 
-      question = step.getQuestion();
-    }
-    catch (WdkModelException e) {
+    if (!step.hasValidQuestion()) {
       // if not valid, user can only delete step so don't apply filters
       return;
     }
@@ -1975,6 +1970,7 @@ public class StepFactory {
     boolean modified = false;
     Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
     Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
+    Question question = step.getQuestion();
     @SuppressWarnings("unchecked") // cannot create array of specific map
     Map<String, Filter>[] filterMaps = new Map[] { question.getFilters(), question.getViewFilters() };
     for (Map<String, Filter> filterMap : filterMaps) {
