@@ -1591,4 +1591,14 @@ public class Step {
   public boolean isAnswerSpecComplete() throws WdkModelException {
     return hasAnswerParams() ? _strategyId != null : true;
   }
+
+  public boolean hasValidQuestion() {
+    try {
+      getQuestion();
+      return true;
+    }
+    catch (WdkModelException e) {
+      return false;
+    }
+  }
 }
