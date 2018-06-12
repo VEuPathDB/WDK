@@ -2,7 +2,16 @@ import { max, memoize, min, padStart, sortBy } from 'lodash';
 
 import { Seq } from 'Utils/IterableUtils';
 
-import { Field, FieldTreeNode, Filter, FilterField, MultiField, RangeField, ValueCounts } from './Types';
+import {
+  Field,
+  FieldTreeNode,
+  Filter,
+  FilterField,
+  MultiField,
+  MultiFilter,
+  RangeField,
+  ValueCounts
+} from './Types';
 
 /**
  * Determine if a field should use a range filter display
@@ -150,7 +159,7 @@ function mapBy<T, S>(iter: Iterable<T>, keyAccessor: (item: T) => S) {
 export function getFilterValueDisplay(filter: Filter): string {
   if (filter.type === 'multiFilter') {
     return filter.value.filters.map(getFilterValueDisplay)
-      .join(filter.value.operator === 'union' ? ' OR ' : ' AND ')
+      .join(filter.value.operation === 'union' ? ' OR ' : ' AND ')
   }
   if (filter.isRange) {
     let { value, includeUnknown } = filter;
@@ -177,3 +186,9 @@ export function getFilterValueDisplay(filter: Filter): string {
   }
 }
 
+export function getOperationDisplay(operation: MultiFilter['value']['operation']) {
+  switch(operation) {
+    case 'union': return 'any';
+    case 'intersect': return 'all';
+  }
+}

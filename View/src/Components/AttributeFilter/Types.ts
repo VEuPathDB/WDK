@@ -59,7 +59,7 @@ export type FieldTreeNode = {
 export type MemberValue<T> = Array<T|null>;
 export type RangeValue<T> = { min?: T, max?: T };
 export type MultiFilterValue = {
-  operator: "union" | "intersect",
+  operation: "union" | "intersect",
   filters: MemberFilter[]
 }
 

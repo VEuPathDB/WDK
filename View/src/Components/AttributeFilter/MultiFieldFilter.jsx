@@ -8,7 +8,7 @@ import { makeClassNameHelper } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
 
 import StackedBar from './StackedBar';
-import { isRange, shouldAddFilter } from './Utils';
+import { getOperationDisplay, isRange, shouldAddFilter } from './Utils';
 
 const cx = makeClassNameHelper('wdk-MultiFieldFilter');
 
@@ -146,8 +146,9 @@ export default class MultiFieldFilter extends React.Component {
   }
 
   renderCountCell({ key, row }) {
+    const internalsCount = key === 'count' ? row.summary.internalsCount : row.summary.internalsFilteredCount;
     const count = row.value == null
-      ? ( key === 'count' ? row.summary.internalsCount : row.summary.internalsFilteredCount )
+      ? internalsCount
       : ( key === 'count' ? getCount(row.summary, row.value) : getFilteredCount(row.summary, row.value) );
     return (
       <React.Fragment>
@@ -155,7 +156,7 @@ export default class MultiFieldFilter extends React.Component {
           {count.toLocaleString()}
         </div>
         <div>
-          <small>({toPercentage(count, row.summary.internalsCount || this.props.dataCount)}%)</small>
+          <small>({toPercentage(count, internalsCount || this.props.dataCount)}%)</small>
         </div>
       </React.Fragment>
     );
@@ -270,8 +271,8 @@ export default class MultiFieldFilter extends React.Component {
             value={this.getOrCreateFilter(this.props, this.state).value.operation}
             onChange={e => this.setOperation(e.target.value) }
           >
-            <option value="union">any</option>
-            <option value="intersect">all</option>
+            <option value="union">{getOperationDisplay('union')}</option>
+            <option value="intersect">{getOperationDisplay('intersect')}</option>
           </select> of the options selected below.
         </div>
         <Mesa
