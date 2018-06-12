@@ -483,6 +483,12 @@
   line-height: 14px;
   margin-left: 0;
   font-size: .8em;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filter-param .filter-items .filter-items {
+  font-size: 1em;
 }
 .filter-param .filter-items * {
   vertical-align: middle;
@@ -493,15 +499,30 @@
   line-height: 2.7em;
 }
 .filter-param .filter-items li {
-  display: inline-block;
-  margin-right: .2em;
+  display: inline-flex;
+  margin: .2em;
 }
-.filter-param .filter-items li > div {
-  padding: 2px 4px;
+.filter-param .filter-items li.multiFilter {
+  border-left: 2px solid #666666;
+  border-right: 2px solid #666666;
+  border-radius: 5px;
+  flex-direction: column;
+  padding: .4em .2em;
+  position: relative;
+  text-align: center;
+}
+.filter-param .filter-items li.multiFilter.selected {
+  border-left: 3px solid black;
+  border-right: 3px solid black;
+  font-weight: 500;
+}
+.filter-param .filter-items li > .filter-item {
   background-color: #ececec;
+  border-radius: 4px;
   border: 1px solid #c8c8c8;
+  padding: 2px 4px;
 }
-.filter-param .filter-items li.selected > div {
+.filter-param .filter-items li.selected .filter-item {
   border: 1px solid #909090;
   font-weight: 500;
 }

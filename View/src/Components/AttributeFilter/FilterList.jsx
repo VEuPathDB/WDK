@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { partial } from 'lodash';
+import { capitalize, partial } from 'lodash';
 
 import { Seq } from 'Utils/IterableUtils';
 
-import { getFilterValueDisplay, shouldAddFilter } from './Utils';
+import { getFilterValueDisplay, getOperationDisplay, shouldAddFilter } from './Utils';
 
 /**
  * List of filters configured by the user.
@@ -55,8 +55,42 @@ export default class FilterList extends React.Component {
     }
   }
 
+  renderFilterItem(filter, containerFilter) {
+    var { fields } = this.props;
+    var handleSelectClick = partial(this.handleFilterSelectClick, filter, containerFilter);
+    var handleRemoveClick = partial(this.handleFilterRemoveClick, filter, containerFilter);
+    var field = fields.get(filter.field);
+    var filterDisplay = getFilterValueDisplay(filter);
+
+    return (
+      <div className="filter-item">
+        <a className="select"
+          onClick={handleSelectClick}
+          href={'#' + filter.field}
+          title={filterDisplay}>{field.display}</a>
+        {/* Use String.fromCharCode to avoid conflicts with
+            character ecoding. Other methods detailed at
+            http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
+            cause JSX to encode. String.fromCharCode ensures that
+            the encoding is done in the browser */}
+        <span className="remove"
+          onClick={handleRemoveClick}
+          title="remove restriction">{String.fromCharCode(215)}</span>
+      </div>
+    );
+  }
+
   render() {
-    var { fields, filters, activeField, filteredDataCount, dataCount, displayName, loadingFilteredCount, hideGlobalCounts } = this.props;
+    const {
+      activeField,
+      fields,
+      filters,
+      filteredDataCount,
+      dataCount,
+      displayName,
+      loadingFilteredCount,
+      hideGlobalCounts
+    } = this.props;
 
     const filteredCount = hideGlobalCounts ? null
       : loadingFilteredCount ? (
@@ -77,42 +111,30 @@ export default class FilterList extends React.Component {
         {filters.length === 0 ? null : <div className="filter-list-selected">{filtered}</div>}
         {filters.length === 0
           ? ( hideGlobalCounts ? null : <strong><em>No filters applied</em></strong> )
-          : <ul style={{display: 'inline-block'}} className="filter-items">
-            {Seq.from(filters)
-              .flatMap(filter => filter.type === 'multiFilter'
-                ? filter.value.filters.map(leaf => [ leaf, filter ])
-                : [ [ filter ] ])
-              .map(([ filter, containerFilter ]) => {
-              var className = activeField && activeField.term === filter.field ? 'selected' : '';
-              var handleSelectClick = partial(this.handleFilterSelectClick, filter, containerFilter);
-              var handleRemoveClick = partial(this.handleFilterRemoveClick, filter, containerFilter);
-              var field = fields.get(filter.field);
-              var containerField = containerFilter && fields.get(containerFilter.field);
-              var fieldDisplay = containerField
-                ? containerField.display + " > " + field.display
-                : field.display;
-
-              var filterDisplay = getFilterValueDisplay(filter);
-
-              return (
-                <li key={filter.field} className={className}>
-                  <div className="ui-corner-all">
-                    <a className="select"
-                      onClick={handleSelectClick}
-                      href={'#' + filter.field}
-                      title={filterDisplay}>{fieldDisplay}</a>
-                    {/* Use String.fromCharCode to avoid conflicts with
-                        character ecoding. Other methods detailed at
-                        http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
-                        cause JSX to encode. String.fromCharCode ensures that
-                        the encoding is done in the browser */}
-                    <span className="remove"
-                      onClick={handleRemoveClick}
-                      title="remove restriction">{String.fromCharCode(215)}</span>
-                  </div>
-                </li>
-              );
-            })}
+          : <ul className="filter-items">
+            { Seq.from(filters)
+                .map(filter => {
+                  const className = activeField && activeField.term === filter.field
+                    ? `selected ${filter.type}`
+                    : filter.type;
+                  const field = fields.get(filter.field);
+                  return (
+                    <li key={filter.field} className={className}>
+                      { filter.type !== 'multiFilter'
+                        ? this.renderFilterItem(filter)
+                        : (
+                          <React.Fragment>
+                            <sup className="multiFilter-operation">
+                              {capitalize(getOperationDisplay(filter.value.operation))} of these {field.display}
+                            </sup>
+                            <ul className="filter-items">
+                              {filter.value.filters.map(leaf => <li key={leaf.field}>{this.renderFilterItem(leaf, filter)}</li>)}
+                            </ul>
+                          </React.Fragment>
+                        ) }
+                    </li>
+                  )
+                }) }
           </ul>}
       </div>
     );
