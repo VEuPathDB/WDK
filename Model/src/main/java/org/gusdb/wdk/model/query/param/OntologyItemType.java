@@ -111,7 +111,7 @@ public enum OntologyItemType {
     return (T) value;
   }
   
-  public static String getStringValue(ResultList resultList, OntologyItem ontologyItem) throws SQLException, WdkModelException {
+  public static String getStringValue(ResultList resultList, OntologyItem ontologyItem) throws WdkModelException {
     
     Object value = null;
     switch(ontologyItem.getType()) {

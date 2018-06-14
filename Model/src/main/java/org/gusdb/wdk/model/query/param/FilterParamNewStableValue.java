@@ -1,11 +1,20 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.*;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
+import static org.gusdb.wdk.model.query.param.OntologyItemType.MULTIFILTER;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -16,14 +25,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static org.gusdb.fgputil.FormatUtil.getInnerClassLog4jName;
-import static org.gusdb.fgputil.FormatUtil.printArray;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
-import static org.gusdb.wdk.model.query.param.OntologyItemType.MULTIFILTER;
-import static org.gusdb.wdk.model.query.param.OntologyItemType.STRING;
 
 /**
  * {
@@ -89,7 +90,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues, DataSource dataSource) throws WdkModelException {
+   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues) throws WdkModelException {
 
     // validate syntax
     String errmsg = validateSyntax();
@@ -114,7 +115,7 @@ public class FilterParamNewStableValue {
     if (memberFilters.size() != 0) {
       Set<String> relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(user, contextParamValues,
-          relevantOntologyTerms, ontology, dataSource);
+          relevantOntologyTerms, ontology);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {

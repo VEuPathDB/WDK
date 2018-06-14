@@ -72,7 +72,6 @@ import org.json.JSONObject;
  */
 public class FilterParamNew extends AbstractDependentParam {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
   public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
@@ -704,7 +703,7 @@ public class FilterParamNew extends AbstractDependentParam {
     contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
-    return getValuesMap(user, contextParamValues, null, ontology, _wdkModel.getAppDb().getDataSource());
+    return getValuesMap(user, contextParamValues, null, ontology);
   }
   
   /**
@@ -718,7 +717,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    */
   Map<String, Set<String>> getValuesMap(User user, Map<String, String> contextParamValues,
-      Set<String> ontologyTerms, Map<String, OntologyItem> ontology, DataSource dataSource)
+      Set<String> ontologyTerms, Map<String, OntologyItem> ontology)
       throws WdkModelException {
 
     List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
@@ -776,7 +775,7 @@ public class FilterParamNew extends AbstractDependentParam {
         ontologyValues.get(field).add(valueString);
       }
     }
-    catch (WdkUserException | SQLException e) {
+    catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
     return ontologyValues;
@@ -955,7 +954,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
 
-    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
 
     if (err != null) throw new WdkUserException(err);
   }
@@ -1004,7 +1003,7 @@ public class FilterParamNew extends AbstractDependentParam {
   protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
     if (stableValueString == null) return getDefault();
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
-    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues);
     return err != null ? getDefault() : stableValueString;
   }
 

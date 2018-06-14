@@ -221,7 +221,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     // Validate stableValue. If there are errors, we will set a request
     // attribute with the error string below.
     FilterParamNewStableValue fpnStableValue = new FilterParamNewStableValue(stableValue, (FilterParamNew) _param);
-    String errors = fpnStableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
+    String errors = fpnStableValue.validateSyntaxAndSemantics(user, contextParamValues);
 
     // do nothing
     if (errors == null) return;
