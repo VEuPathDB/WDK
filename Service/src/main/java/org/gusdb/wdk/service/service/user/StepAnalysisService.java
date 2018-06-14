@@ -51,6 +51,18 @@ public class StepAnalysisService extends UserService {
     return Response.noContent().build();
   }
 
+  /**
+   * Function to use to read an analysis context into memory if the request is an instance-private
+   * operation and no access token is provided.  Assumes step ID is also not provided, but TODO: figure
+   * out if this will ever be the case- maybe not if URLs for future step analysis services always
+   * include the step ID as well.
+   * 
+   * @param analysisIdStr analysis ID as a string (value passed as part of URL)
+   * @return step analysis context if the ID corresponds to one
+   * @throws WdkModelException if error occurs
+   * @throws NotFoundException if passed string is not an existing step analysis ID
+   * @throws ForbiddenException if current user does not have access to this analysis
+   */
   private StepAnalysisContext getAnalysis(String analysisIdStr) throws WdkModelException {
     return getAnalysis(analysisIdStr, getUserBundle(Access.PRIVATE), null);
   }
