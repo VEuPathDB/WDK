@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { capitalize, partial } from 'lodash';
+import { partial } from 'lodash';
 
 import { Seq } from 'Utils/IterableUtils';
 
@@ -125,7 +125,7 @@ export default class FilterList extends React.Component {
                         : (
                           <React.Fragment>
                             <sup className="multiFilter-operation">
-                              {capitalize(getOperationDisplay(filter.value.operation))} of these {field.display}
+                              {getOperationDisplay(filter.value.operation).toUpperCase()} {field.display} filters
                             </sup>
                             <ul className="filter-items">
                               {filter.value.filters.map(leaf => <li key={leaf.field}>{this.renderFilterItem(leaf, filter)}</li>)}
