@@ -43,14 +43,16 @@ export default class NumberField extends React.Component {
     });
 
     var size = knownDist.reduce(function(sum, entry) {
-      return entry.count + sum;
+      return entry.filteredCount + sum;
     }, 0);
 
     var sum = knownDist.reduce(function(sum, entry) {
-      return entry.value * entry.count + sum;
+      return entry.value * entry.filteredCount + sum;
     }, 0);
 
-    var values = knownDist.map(entry => entry.value);
+    var values = knownDist
+      .filter(entry => entry.filteredCount > 0)
+      .map(entry => entry.value);
     var distMin = Math.min(...values);
     var distMax = Math.max(...values);
     var distAvg = (sum / size).toFixed(2);
