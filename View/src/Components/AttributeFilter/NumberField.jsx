@@ -57,7 +57,7 @@ export default class NumberField extends React.Component {
     var unknownCount = unknownDist.reduce((sum, entry) => sum + entry.count, 0);
     var overview = (
       <dl className="ui-helper-clearfix">
-        <dt>Avg</dt>
+        <dt>Mean</dt>
         <dd>{distAvg}</dd>
         <dt>Min</dt>
         <dd>{distMin}</dd>
