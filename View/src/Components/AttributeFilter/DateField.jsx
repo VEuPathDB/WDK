@@ -54,7 +54,9 @@ export default class DateField extends React.Component {
     });
 
 
-    var values = sortBy(knownDist.map(entry => entry.value), value => new Date(value).getTime());
+    var values = sortBy(knownDist
+      .filter(entry => entry.filteredCount > 0)
+      .map(entry => entry.value), value => new Date(value).getTime());
     var distMin = values[0];
     var distMax = values[values.length - 1];
 
