@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -160,10 +160,10 @@ public class FlatVocabParam extends AbstractEnumParam {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
       return (vocabQuery.getIsCacheable() ?
-          CacheMgr.get().getVocabCache().getItem(fetcher.getCacheKey(dependedParamValues), fetcher) :
+          CacheMgr.get().getVocabCache().getValue(fetcher.getCacheKey(dependedParamValues), fetcher) :
           fetcher.fetchItem(dependedParamValues));
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       throw new WdkModelException(e);
     }
   }

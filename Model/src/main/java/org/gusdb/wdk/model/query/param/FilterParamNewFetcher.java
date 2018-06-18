@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FilterParamNewFetcher implements NoUpdateItemFetcher<String, FilterParamNewInstance> {
+public class FilterParamNewFetcher implements ValueFactory<String, FilterParamNewInstance> {
 
   private static final Logger LOG = Logger.getLogger(FlatVocabularyFetcher.class);
 
@@ -40,10 +40,10 @@ public class FilterParamNewFetcher implements NoUpdateItemFetcher<String, Filter
    * We don't need to read the vocabQueryRef from the cache key, because we know
    * it is the same as the one in the param's state.
    * 
-   * @throws UnfetchableItemException if unable to fetch item
+   * @throws ValueProductionException if unable to fetch item
    */
   @Override
-  public FilterParamNewInstance fetchItem(String cacheKey) throws UnfetchableItemException {
+  public FilterParamNewInstance getNewValue(String cacheKey) throws ValueProductionException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     LOG.info("Fetching filter param new instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);

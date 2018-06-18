@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
@@ -23,7 +23,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class OntologyItemNewFetcher implements NoUpdateItemFetcher<String, Map<String, OntologyItem>> {
+public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, OntologyItem>> {
 
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
@@ -39,7 +39,7 @@ public class OntologyItemNewFetcher implements NoUpdateItemFetcher<String, Map<S
   }
 
   @Override
-  public Map<String, OntologyItem> fetchItem(String cacheKey) throws UnfetchableItemException {
+  public Map<String, OntologyItem> getNewValue(String cacheKey) throws ValueProductionException {
     try {
       // trim away param values not needed by query, to avoid warnings
       Map<String, String> requiredParamValues = new HashMap<String, String>();
@@ -88,7 +88,7 @@ public class OntologyItemNewFetcher implements NoUpdateItemFetcher<String, Map<S
       return ontologyItemMap;
     }
     catch (WdkModelException | WdkUserException ex) {
-      throw new UnfetchableItemException(ex);
+      throw new ValueProductionException(ex);
     }
   }
 

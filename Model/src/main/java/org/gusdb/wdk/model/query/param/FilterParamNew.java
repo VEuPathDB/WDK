@@ -17,8 +17,8 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.ItemCache;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.InMemoryCache;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
@@ -74,11 +74,11 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private static final Logger LOG = Logger.getLogger(FilterParamNew.class);
 
-  public static class OntologyCache extends ItemCache<String, Map<String, OntologyItem>> {}
+  public static class OntologyCache extends InMemoryCache<String, Map<String, OntologyItem>> {}
 
-  public static class MetadataNewCache extends ItemCache<String, Map<String, MetaDataItem>> {}
+  public static class MetadataNewCache extends InMemoryCache<String, Map<String, MetaDataItem>> {}
 
-  public static class FilterParamNewCache extends ItemCache<String, FilterParamNewInstance> {}
+  public static class FilterParamNewCache extends InMemoryCache<String, FilterParamNewInstance> {}
 
   public static class FilterParamSummaryCounts {
     public long unfilteredFilterItemCount = 0;
@@ -378,9 +378,9 @@ public class FilterParamNew extends AbstractDependentParam {
     OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(_ontologyQuery, contextParamValues, user);
     Map<String, OntologyItem> map = null;
     try {
-      map = CacheMgr.get().getOntologyNewCache().getItem(fetcher.getCacheKey(), fetcher);
+      map = CacheMgr.get().getOntologyNewCache().getValue(fetcher.getCacheKey(), fetcher);
     }
-    catch (UnfetchableItemException ex) {
+    catch (ValueProductionException ex) {
       decodeException(ex);
     }
     return map;
@@ -456,7 +456,7 @@ public class FilterParamNew extends AbstractDependentParam {
     SqlCountCache cache = CacheMgr.get().getSqlCountCache(_wdkModel.getAppDb());
     try {
       return cache.getItem(sql, "filter-param-counts-" + qName);
-    } catch (UnfetchableItemException e) { throw new WdkModelException(e); }
+    } catch (ValueProductionException e) { throw new WdkModelException(e); }
   }
 
   /**
@@ -636,7 +636,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
   }
 
-  private void decodeException(UnfetchableItemException ex) throws WdkModelException {
+  private void decodeException(ValueProductionException ex) throws WdkModelException {
     Throwable nestedException = ex.getCause();
     if (nestedException == null)
       throw new WdkModelException(ex.getMessage());

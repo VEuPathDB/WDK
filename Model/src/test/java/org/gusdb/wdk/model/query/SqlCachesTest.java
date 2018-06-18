@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.cache.SqlResultCache;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
@@ -35,7 +35,7 @@ public class SqlCachesTest {
     try {
       return _countCache.getItem(countSql, "cached-count-sql");
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       return WdkModelException.unwrap(e, Long.class);
     }
   }
@@ -44,7 +44,7 @@ public class SqlCachesTest {
     try {
       return _resultCache.getItem(sql, "cached-query-sql");
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       return WdkModelException.unwrap(e, List.class);
     }
   }

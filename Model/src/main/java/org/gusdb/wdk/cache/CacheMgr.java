@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ManagedMap;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -31,16 +31,16 @@ public class CacheMgr {
 
   private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   private final StepCache _stepCache = new StepCache();
-  private final ItemCache<String, EnumParamVocabInstance> _vocabCache = new ItemCache<>();
+  private final InMemoryCache<String, EnumParamVocabInstance> _vocabCache = new InMemoryCache<>();
 
-  private final ItemCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new ItemCache<>();
+  private final InMemoryCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new InMemoryCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
   private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
   private final ManagedMap<String, AnswerRequest> _answerRequestCache = new ManagedMap<>();
 
-  private final Map<String,ItemCache<?,?>> _cacheRepo =
-      new MapBuilder<String,ItemCache<?,?>>(new LinkedHashMap<String,ItemCache<?,?>>())
+  private final Map<String,InMemoryCache<?,?>> _cacheRepo =
+      new MapBuilder<String,InMemoryCache<?,?>>(new LinkedHashMap<String,InMemoryCache<?,?>>())
       .put("Filter Size Cache", _filterSizeCache.getCache())
       .put("Step Cache", _stepCache)
       .put("Vocab Instance Cache", _vocabCache)
@@ -55,8 +55,8 @@ public class CacheMgr {
 
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
   public StepCache getStepCache() { return _stepCache; }
-  public ItemCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
-  public ItemCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
+  public InMemoryCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
+  public InMemoryCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
   public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
@@ -71,7 +71,7 @@ public class CacheMgr {
     return (SqlCountCache)_cacheRepo.get(key);
   }
 
-  public synchronized Map<String,ItemCache<?,?>> getAllCaches() {
+  public synchronized Map<String,InMemoryCache<?,?>> getAllCaches() {
     return new LinkedHashMap<>(_cacheRepo);
   }
 }
