@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.runtime.UnfetchableInstanceException;
@@ -49,7 +49,7 @@ public class AttributeMetaQueryHandler {
   public static List<Map<String, Object>> getDynamicallyDefinedAttributes(String queryName, WdkModel wdkModel)
       throws WdkModelException {
     try {
-      return CacheMgr.get().getAttributeMetaQueryCache().getItem(queryName,
+      return CacheMgr.get().getAttributeMetaQueryCache().getValue(queryName,
           new DynamicallyDefinedAttributeFetcher(wdkModel));
     }
     catch (Exception e) {
@@ -62,7 +62,7 @@ public class AttributeMetaQueryHandler {
     }
   }
 
-  private static class DynamicallyDefinedAttributeFetcher implements NoUpdateItemFetcher<String, List<Map<String,Object>>> {
+  private static class DynamicallyDefinedAttributeFetcher implements ValueFactory<String, List<Map<String,Object>>> {
 
     private static final List<FieldSetter> FIELDS = reduce(
         mapToList(CLIENT_CLASSES, clazz -> getRngFields(clazz)),
@@ -76,7 +76,7 @@ public class AttributeMetaQueryHandler {
     }
 
     @Override
-    public List<Map<String,Object>> fetchItem(String queryName) throws UnfetchableItemException {
+    public List<Map<String,Object>> getNewValue(String queryName) throws ValueProductionException {
       try {
         SqlQuery query = (SqlQuery) _wdkModel.resolveReference(queryName);
         final List<Map<String, Object>> dynamicAttrs = new ArrayList<>();
@@ -90,7 +90,7 @@ public class AttributeMetaQueryHandler {
         return dynamicAttrs;
       }
       catch (SQLRunnerException | WdkModelException e) {
-        throw new UnfetchableItemException((Exception)e.getCause());
+        throw new ValueProductionException((Exception)e.getCause());
       }
     }
 

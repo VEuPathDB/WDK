@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Timer;
-import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.json.JSONArray;
@@ -45,15 +45,15 @@ public class SystemService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getInMemoryCacheSnapshot() {
     JSONArray array = new JSONArray();
-    for (Entry<String, ItemCache<?,?>> entry : CacheMgr.get().getAllCaches().entrySet()) {
-      ItemCache<?,?> cache = entry.getValue();
+    for (Entry<String, InMemoryCache<?,?>> entry : CacheMgr.get().getAllCaches().entrySet()) {
+      InMemoryCache<?,?> cache = entry.getValue();
       int size = cache.getSize();
       Date lastTrim = cache.getLastTrimDate();
       array.put(new JSONObject()
           .put("name", entry.getKey())
-          .put("capacity", cache.getMaxCachedItems())
+          .put("capacity", cache.getCapacity())
           .put("size", size)
-          .put("pct-full", (100.0 * size / cache.getMaxCachedItems()) + "%")
+          .put("pct-full", (100.0 * size / cache.getCapacity()) + "%")
           .put("trim-amount", cache.getNumToTrimOnCapacity())
           .put("last-trim", (lastTrim == null ? "never" : lastTrim.toString()))
           .put("time-since-last-trim", (lastTrim == null ? "N/A" :

@@ -9,8 +9,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.cache.ItemCache;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.InMemoryCache;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -39,7 +39,7 @@ public class ResultFactory {
   public static final int UNKNOWN_INSTANCE_ID = 0;
 
   private static boolean USE_INSTANCE_INFO_CACHE = true;
-  private static ItemCache<String, InstanceInfo> INSTANCE_INFO_CACHE = new ItemCache<String, InstanceInfo>();
+  private static InMemoryCache<String, InstanceInfo> INSTANCE_INFO_CACHE = new InMemoryCache<String, InstanceInfo>();
   private final InstanceInfoFetcher instanceInfoFetcher;
 
   private DatabaseInstance database;
@@ -134,14 +134,14 @@ public class ResultFactory {
       
       // will update the cache if the info has unknown_instance_id
       InstanceInfo instanceInfo = USE_INSTANCE_INFO_CACHE ?
-          INSTANCE_INFO_CACHE.getItem(InstanceInfoFetcher.getKey(checksum), instanceInfoFetcher) :
+          INSTANCE_INFO_CACHE.getValue(InstanceInfoFetcher.getKey(checksum), instanceInfoFetcher) :
           getInstanceInfo(checksum);
       if (instanceInfo.message != null) {
         instance.setResultMessage(instanceInfo.message);
       }
       return instanceInfo;
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       throw (WdkModelException)e.getCause();
     }
   }

@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.user;
 
-import org.gusdb.fgputil.cache.ItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class StepFetcherProvider {
@@ -12,11 +12,11 @@ public class StepFetcherProvider {
     _stepFactory = stepFactory;
   }
 
-  public ItemFetcher<Long, Step> getFetcher(User user) {
+  public ValueFactory<Long, Step> getFetcher(User user) {
     return new StepFetcher(_stepFactory, user);
   }
 
-  public static class StepFetcher implements ItemFetcher<Long, Step> {
+  public static class StepFetcher implements ValueFactory<Long, Step> {
 
     private static final long EXPIRATION_SECS = 20;
 
@@ -29,22 +29,22 @@ public class StepFetcherProvider {
     }
 
     @Override
-    public Step fetchItem(Long stepId) throws UnfetchableItemException {
+    public Step getNewValue(Long stepId) throws ValueProductionException {
       try {
         return _stepFactory.loadStepNoCache(_user, stepId);
       }
       catch (WdkModelException e) {
-        throw new UnfetchableItemException(e);
+        throw new ValueProductionException(e);
       }
     }
   
     @Override
-    public Step updateItem(Long stepId, Step previousVersion) throws UnfetchableItemException {
-      return fetchItem(stepId);
+    public Step getUpdatedValue(Long stepId, Step previousVersion) throws ValueProductionException {
+      return getNewValue(stepId);
     }
   
     @Override
-    public boolean itemNeedsUpdating(Step step) {
+    public boolean valueNeedsUpdating(Step step) {
       long now = System.currentTimeMillis();
       // if step is too old, then refresh (trying to keep this close to a request-scope cache)
       return (step._objectCreationDate < now - (EXPIRATION_SECS * 1000));

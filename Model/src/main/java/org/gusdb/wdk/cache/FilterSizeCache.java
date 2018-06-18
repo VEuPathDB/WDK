@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.ItemCache;
-import org.gusdb.fgputil.cache.ItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.InMemoryCache;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
@@ -45,7 +45,7 @@ public class FilterSizeCache {
   // Fetches size of a single filter on a single step and populates a
   // FilterSizeGroup with the fetched value.  If value is already present for
   // the filter name, itemNeedsUpdating() returns false and no update will occur.
-  private static class SingleSizeFetcher implements ItemFetcher<Long, FilterSizeGroup> {
+  private static class SingleSizeFetcher implements ValueFactory<Long, FilterSizeGroup> {
 
     private final String _filterToFetch;
     private final WdkModel _wdkModel;
@@ -56,14 +56,14 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup fetchItem(Long id) throws UnfetchableItemException {
+    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return updateItem(id, emptyGroup);
+      return getUpdatedValue(id, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup updateItem(Long id, FilterSizeGroup previousVersion)
-        throws UnfetchableItemException {
+    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+        throws ValueProductionException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
         AnswerValue answerValue = step.getAnswerValue(false);
@@ -72,18 +72,18 @@ public class FilterSizeCache {
         return previousVersion;
       }
       catch (WdkUserException | WdkModelException e) {
-        throw new UnfetchableItemException(e);
+        throw new ValueProductionException(e);
       }
     }
 
     @Override
-    public boolean itemNeedsUpdating(FilterSizeGroup item) {
+    public boolean valueNeedsUpdating(FilterSizeGroup item) {
       // return false if size for this filter has already been retrieved
       return !item.sizeMap.containsKey(_filterToFetch);
     }
   }
 
-  public static class AllSizesFetcher implements ItemFetcher<Long, FilterSizeGroup> {
+  public static class AllSizesFetcher implements ValueFactory<Long, FilterSizeGroup> {
 
     protected final WdkModel _wdkModel;
 
@@ -92,14 +92,14 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup fetchItem(Long id) throws UnfetchableItemException {
+    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return updateItem(id, emptyGroup);
+      return getUpdatedValue(id, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup updateItem(Long id, FilterSizeGroup previousVersion)
-        throws UnfetchableItemException {
+    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+        throws ValueProductionException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
         AnswerValue answer = step.getAnswerValue(false);
@@ -109,23 +109,23 @@ public class FilterSizeCache {
         return previousVersion;
       }
       catch (WdkUserException | WdkModelException e) {
-        throw new UnfetchableItemException(e);
+        throw new ValueProductionException(e);
       }
     }
 
     @Override
-    public boolean itemNeedsUpdating(FilterSizeGroup item) {
+    public boolean valueNeedsUpdating(FilterSizeGroup item) {
       return !item.allFiltersLoaded;
     }
   }
 
-  private final ItemCache<Long, FilterSizeGroup> _cache = new ItemCache<>();
+  private final InMemoryCache<Long, FilterSizeGroup> _cache = new InMemoryCache<>();
 
   public FilterSizeCache() {
     subscribeToEvents();
   }
 
-  ItemCache<Long, FilterSizeGroup> getCache() {
+  InMemoryCache<Long, FilterSizeGroup> getCache() {
     return _cache;
   }
 
@@ -145,12 +145,12 @@ public class FilterSizeCache {
         if (event instanceof StepRevisedEvent) {
           long stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
           LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
-          _cache.expireCachedItems(stepId);
+          _cache.expireEntries(stepId);
         }
         else if (event instanceof StepResultsModifiedEvent) {
           List<Long> stepIds = ((StepResultsModifiedEvent)event).getStepIds();
           LOG.info("Notification of steps modification, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
-          _cache.expireCachedItems(stepIds.toArray(new Long[stepIds.size()]));
+          _cache.expireEntries(stepIds.toArray(new Long[stepIds.size()]));
         }
       }
     }, StepRevisedEvent.class, StepResultsModifiedEvent.class);
@@ -160,9 +160,9 @@ public class FilterSizeCache {
       throws WdkModelException, WdkUserException {
     LOG.debug("getFilterSize:  filterName : " + filterName +" and stepID: " + stepId);
     try {
-      return _cache.getItem(stepId, new SingleSizeFetcher(filterName, wdkModel)).sizeMap.get(filterName);
+      return _cache.getValue(stepId, new SingleSizeFetcher(filterName, wdkModel)).sizeMap.get(filterName);
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       return handleUnfetchableItem(e, Integer.class);
     }
   }
@@ -171,9 +171,9 @@ public class FilterSizeCache {
   public Map<String, Integer> getFilterSizes(long stepId, AllSizesFetcher fetcher)
       throws WdkModelException, WdkUserException {
     try {
-      return _cache.getItem(stepId, fetcher).sizeMap;
+      return _cache.getValue(stepId, fetcher).sizeMap;
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       return handleUnfetchableItem(e, Map.class);
     }
     
@@ -192,7 +192,7 @@ public class FilterSizeCache {
    * @throws WdkModelException if underlying exception is WdkModelException
    * @throws WdkUserException if underlying exception is WdkUserException
    */
-  private <T> T handleUnfetchableItem(UnfetchableItemException e, Class<T> returnClass)
+  private <T> T handleUnfetchableItem(ValueProductionException e, Class<T> returnClass)
       throws WdkModelException, WdkUserException {
     try {
       throw e.getCause();

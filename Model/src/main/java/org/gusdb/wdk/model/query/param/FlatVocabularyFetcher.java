@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.NoUpdateItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FlatVocabularyFetcher implements NoUpdateItemFetcher<String, EnumParamVocabInstance> {
+public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVocabInstance> {
 
   private static final Logger logger = Logger.getLogger(FlatVocabularyFetcher.class);
 
@@ -53,10 +53,10 @@ public class FlatVocabularyFetcher implements NoUpdateItemFetcher<String, EnumPa
    * We don't need to read the vocabQueryRef from the cache key, because we know
    * it is the same as the one in the param's state.
    * 
-   * @throws UnfetchableItemException if unable to fetch item
+   * @throws ValueProductionException if unable to fetch item
    */
   @Override
-  public EnumParamVocabInstance fetchItem(String cacheKey) throws UnfetchableItemException {
+  public EnumParamVocabInstance getNewValue(String cacheKey) throws ValueProductionException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
@@ -67,14 +67,14 @@ public class FlatVocabularyFetcher implements NoUpdateItemFetcher<String, EnumPa
     return fetchItem(dependedParamValues);
   }
 
-  public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws UnfetchableItemException {
+  public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws ValueProductionException {
     // create and populate vocab instance
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
   }
 
-  private void populateVocabInstance(EnumParamVocabInstance vocabInstance) throws UnfetchableItemException {
+  private void populateVocabInstance(EnumParamVocabInstance vocabInstance) throws ValueProductionException {
     try {
       // check if the query has "display" column
       boolean hasDisplay = _vocabQuery.getColumnMap().containsKey(FlatVocabParam.COLUMN_DISPLAY);
@@ -165,7 +165,7 @@ public class FlatVocabularyFetcher implements NoUpdateItemFetcher<String, EnumPa
           "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
     }
     catch (WdkModelException | WdkUserException e) {
-      throw new UnfetchableItemException(e);
+      throw new ValueProductionException(e);
     }
   }
 }

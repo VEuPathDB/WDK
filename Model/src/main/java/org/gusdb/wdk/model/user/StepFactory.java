@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.Wrapper;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
@@ -728,9 +728,9 @@ public class StepFactory {
   Step loadStep(User user, long stepId) throws WdkModelException {
     if (USE_CACHE) {
       try {
-        return CacheMgr.get().getStepCache().getItem(stepId, _stepFetcherProvider.getFetcher(user));
+        return CacheMgr.get().getStepCache().getValue(stepId, _stepFetcherProvider.getFetcher(user));
       }
-      catch (UnfetchableItemException e) {
+      catch (ValueProductionException e) {
         throw (WdkModelException)e.getCause();
       }
     }

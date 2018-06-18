@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.gusdb.fgputil.cache.ItemFetcher;
-import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.fgputil.cache.ValueFactory;
+import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -16,7 +16,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, MetaDataItem>> {
+public class MetaDataItemNewFetcher implements ValueFactory<String, Map<String, MetaDataItem>> {
 
   private Query query;
   private Map<String, String> paramValues;
@@ -31,7 +31,7 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
   }
 
   @Override
-  public Map<String, MetaDataItem> fetchItem(String cacheKey) throws UnfetchableItemException {
+  public Map<String, MetaDataItem> getNewValue(String cacheKey) throws ValueProductionException {
     try {
       // trim away param values not needed by query, to avoid warnings
       Map<String, String> requiredParamValues = new HashMap<String, String>();
@@ -62,7 +62,7 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
       return itemMap;
     }
     catch (WdkModelException | WdkUserException ex) {
-      throw new UnfetchableItemException(ex);
+      throw new ValueProductionException(ex);
     }
   }
 
@@ -78,12 +78,12 @@ public class MetaDataItemNewFetcher implements ItemFetcher<String, Map<String, M
   }
 
   @Override
-  public boolean itemNeedsUpdating(Map<String, MetaDataItem> item) {
+  public boolean valueNeedsUpdating(Map<String, MetaDataItem> item) {
     return false;
   }
 
   @Override
-  public Map<String, MetaDataItem> updateItem(String key, Map<String, MetaDataItem> item) {
+  public Map<String, MetaDataItem> getUpdatedValue(String key, Map<String, MetaDataItem> item) {
     throw new UnsupportedOperationException(
         "This method should never be called since itemNeedsUpdating() always returns false.");
   }
