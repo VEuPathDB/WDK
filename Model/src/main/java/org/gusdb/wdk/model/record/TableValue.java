@@ -107,6 +107,7 @@ public class TableValue implements Iterable<Map<String, AttributeValue>> {
   }
 
   // TODO: remove once JSPs are retired (used in (at least) questionDescription.tag)
+  @Deprecated
   public Iterator<Map<String, AttributeValue>> getIterator() {
     return iterator();
   }
