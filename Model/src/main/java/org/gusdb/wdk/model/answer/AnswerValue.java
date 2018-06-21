@@ -827,6 +827,12 @@ public class AnswerValue {
     reset();
   }
 
+  public void setPageToEntireResult() {
+    _startIndex = 1;
+    _endIndex = -1;
+    reset();
+  }
+
   public void setFilterOptions(FilterOptionList filterOptions) {
     _filterOptions = filterOptions;
     reset();
