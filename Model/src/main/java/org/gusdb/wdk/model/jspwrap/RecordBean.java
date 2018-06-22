@@ -113,4 +113,8 @@ public class RecordBean {
       }
       return _user.getWdkModel().getFavoriteFactory().isInFavorite(_user, recordClass, values);
     }
+
+    public void removeTableValue(String tableName) {
+      _recordInstance.removeTableValue(tableName);
+    }
 }
