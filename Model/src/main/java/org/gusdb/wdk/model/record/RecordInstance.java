@@ -30,4 +30,6 @@ public interface RecordInstance extends AttributeValueMap {
 
   public Map<String, TableValue> getTableValueMap() throws WdkModelException, WdkUserException;
 
+  public void removeTableValue(String tableName);
+
 }

@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model.record;
 
-import java.util.Collection;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -90,16 +89,14 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
     return values;
   }
 
-  protected Collection<TableField> getAvailableTableFields() {
-    return Functions.mapToList(_tableValueCache.keySet(), new Function<String, TableField>() {
-      @Override public TableField apply(String tableName) {
-        try {
-          return _recordClass.getTableField(tableName);
-        }
-        catch (WdkModelException e) {
-          throw new WdkRuntimeException("Cannot find table field '" + tableName +
-              "' in '" + _recordClass.getFullName() + "'.");
-        }
+  protected List<TableField> getAvailableTableFields() {
+    return mapToList(_tableValueCache.keySet(), tableName -> {
+      try {
+        return _recordClass.getTableField(tableName);
+      }
+      catch (WdkModelException e) {
+        throw new WdkRuntimeException("Cannot find table field '" + tableName +
+            "' in '" + _recordClass.getFullName() + "'.");
       }
     });
   }
@@ -133,5 +130,10 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
   @Override
   public IdAttributeValue getIdAttributeValue(IdAttributeField field) {
     return new IdAttributeValue(field, this);
+  }
+
+  @Override
+  public void removeTableValue(String tableName) {
+    _tableValueCache.remove(tableName);
   }
 }
