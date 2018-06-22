@@ -121,10 +121,10 @@ wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
     });
 
     // compute the font size
-    computeSize(tags, totalCount, 6, 100);
+    // computeSize(tags, totalCount, 6, 100);
 
     // uncomment below to compute font size scaled to maxCount
-    // computeSize(tags, maxCount, 6, 50);
+    computeSize(tags, maxCount, 6, 50);
 
     // sort word alphabetically if needed
     if (sortBy == "word") tags.sort(sortTags);
