@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.record;
 
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +90,7 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
     return values;
   }
 
-  protected List<TableField> getAvailableTableFields() {
+  protected Collection<TableField> getAvailableTableFields() {
     return mapToList(_tableValueCache.keySet(), tableName -> {
       try {
         return _recordClass.getTableField(tableName);
