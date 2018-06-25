@@ -758,7 +758,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // We want to use the WDK cache for this sql, so have to force the sql into
     // a new SqlQuery object.
-    SqlQuery sqlQuery = createQuery(_wdkModel, filterSelectSql, ontologyValuesCols);
+    SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols, _backgroundQuery.getParams(), _ontologyQuery.getParams());
     try {
       QueryInstance<?> instance = sqlQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
@@ -781,13 +781,15 @@ public class FilterParamNew extends AbstractDependentParam {
     return ontologyValues;
   }
   
-  private SqlQuery createQuery(WdkModel wdkModel, String sql, List<String> colNames)
+  private SqlQuery createValuesMapQuery(WdkModel wdkModel, String sql, List<String> colNames, Param[] bgdQueryParams, Param[] ontoQueryParams)
       throws WdkModelException {
   QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
   SqlQuery query = new SqlQuery();
   query.setName(getFullName() + "_values_map");
   query.setIsCacheable(true);
   query.setSql(sql);
+  for (Param param : bgdQueryParams) query.addParam(param);
+  for (Param param : ontoQueryParams) query.addParam(param);
   querySet.addQuery(query);
   for (String colName : colNames) {
       Column column = new Column();
