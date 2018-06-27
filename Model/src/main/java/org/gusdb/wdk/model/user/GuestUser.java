@@ -37,14 +37,16 @@ public class GuestUser extends User {
 
   @Override
   protected void checkIfSaved() {
-    synchronized(this) {
-      if (_userId == 0) {
-        // will assign id, full email, signature, and stable ID
-        GuestUser savedUser = _wdkModel.getUserFactory().saveTemporaryUser(this);
-        _userId = savedUser.getUserId();
-        _email = savedUser.getEmail();
-        _signature = savedUser.getSignature();
-        _stableId = savedUser.getStableId();
+    if (_userId == 0) {
+      synchronized(this) { // double check to avoid waiting unnecessarily
+        if (_userId == 0) {
+          // will assign id, full email, signature, and stable ID
+          GuestUser savedUser = _wdkModel.getUserFactory().saveTemporaryUser(this);
+          _userId = savedUser.getUserId();
+          _email = savedUser.getEmail();
+          _signature = savedUser.getSignature();
+          _stableId = savedUser.getStableId();
+        }
       }
     }
   }
