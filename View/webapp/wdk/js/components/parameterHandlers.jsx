@@ -142,31 +142,30 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
       .flatMap(dependson => dependson.split(/\s*,\s*/))
       .uniq()
       .forEach(name => {
-        $element.find(`.param[name=${name}]`)
-          .on('change', `#${name}:input`, event => {
-            legacyParamControllers.forEach(el => {
-              const propsAttrValue = el.getAttribute('data-props');
+        $element.on('change', `[name="array(${name})"], [name="value(${name})"]`, event => {
+          legacyParamControllers.forEach(el => {
+            const propsAttrValue = el.getAttribute('data-props');
 
-              if (propsAttrValue == null) {
-                console.error('Expected data-props to have a value ... skipping');
-                return;
-              }
+            if (propsAttrValue == null) {
+              console.error('Expected data-props to have a value ... skipping');
+              return;
+            }
 
-              const prevProps = JSON.parse(propsAttrValue);
-              const { value } = event.target;
+            const prevProps = JSON.parse(propsAttrValue);
+            const { value } = event.target;
 
-              // `prevProps.paramValues` may be undefined
-              if (_.get(prevProps, ['paramValues', name]) === value) return;
+            // `prevProps.paramValues` may be undefined
+            if (_.get(prevProps, ['paramValues', name]) === value) return;
 
-              const nextProps = Object.assign({}, prevProps, {
-                paramValues: Object.assign({}, prevProps.paramValues, {
-                  [name]: value
-                })
-              });
-
-              el.setAttribute('data-props', JSON.stringify(nextProps));
+            const nextProps = Object.assign({}, prevProps, {
+              paramValues: Object.assign({}, prevProps.paramValues, {
+                [name]: value
+              })
             });
+
+            el.setAttribute('data-props', JSON.stringify(nextProps));
           });
+        });
       });
 
 
