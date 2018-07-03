@@ -42,7 +42,7 @@ public class CreateStepAnalysisAction extends WdkAction {
         params.getValue(ANALYSIS_NAME_KEY), params.getIntValue(STEP_ID_KEY));
     
     try {
-      context = analysisMgr.createAnalysis(context);
+      analysisMgr.createAnalysis(context);
       return AbstractStepAnalysisIdAction.getStepAnalysisJsonResult(context);
     }
     catch (IllegalAnswerValueException ise) {
