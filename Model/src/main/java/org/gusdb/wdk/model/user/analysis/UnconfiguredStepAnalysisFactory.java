@@ -76,7 +76,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException,
+  public void createAnalysis(StepAnalysisContext context) throws WdkModelException,
       IllegalAnswerValueException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
