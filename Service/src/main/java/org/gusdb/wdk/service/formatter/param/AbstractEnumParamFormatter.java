@@ -60,7 +60,12 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
 
   protected JSONObject getVocabTreeJson(EnumParamVocabInstance vocabInstance) {
     EnumParamTermNode[] rootNodes = vocabInstance.getVocabTreeRoots();
-    if (rootNodes.length == 1) return nodeToJson(rootNodes[0]);
+
+    // Use single root node if it has children (the root node is hidden)
+    if (rootNodes.length == 1 && rootNodes[0].getChildren().length != 0) {
+      return nodeToJson(rootNodes[0]);
+    }
+
     EnumParamTermNode root = new EnumParamTermNode("@@fake@@");
     root.setDisplay("@@fake@@");
     for (EnumParamTermNode child: rootNodes) {
