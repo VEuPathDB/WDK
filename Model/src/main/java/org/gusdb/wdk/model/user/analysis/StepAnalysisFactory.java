@@ -21,7 +21,17 @@ public interface StepAnalysisFactory {
 
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException, WdkUserException;
 
-  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
+  /**
+   * Validates the passed context, then uses it to creates a new analysis instance (i.e. tab).  If successful,
+   * this method will assign an ID to the passed context, and may modify the display name to ensure a step's
+   * tabs have unique names.
+   * 
+   * @param context context to validate and use to create new analysis instance
+   * @throws WdkModelException if error occurs while instantiating context or writing to persistent store
+   * @throws IllegalAnswerValueException if answer cannot be used to create an analysis with the passed context
+   * @throws WdkUserException if answer is OK but analysis params fail validation in another way
+   */
+  public void createAnalysis(StepAnalysisContext context) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
 
   public StepAnalysisContext copyContext(StepAnalysisContext context) throws WdkModelException;
 
