@@ -190,14 +190,14 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public StepAnalysisContext createAnalysis(StepAnalysisContext context)
+  public void createAnalysis(StepAnalysisContext context)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
 
     // ensure this is a valid step to analyze
     checkStepForValidity(context);
 
     // analysis valid; write analysis to DB
-    return writeNewAnalysisContext(context, true);
+    writeNewAnalysisContext(context, true);
   }
 
   @Override
@@ -206,7 +206,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setState(StepAnalysisState.NO_RESULTS);
-    copy = writeNewAnalysisContext(copy, true);
+    writeNewAnalysisContext(copy, true);
     return copy;
   }
 
@@ -232,7 +232,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         // such and save; user will not be shown form and will be unable to run analysis
         toContext.setIsValidStep(false, e.getMessage());
       }
-      toContext = writeNewAnalysisContext(toContext, false);
+      writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId() + ".  Copying properties...");
       // copy properties of old context to new and make sure to close- not closing is a connection leak!
@@ -251,7 +251,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     LOG.info("Completed copy.");
   }
 
-  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)
+  private void writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)
       throws WdkModelException {
     // try to help user differentiate between tabs if requested
     if (adjustDisplayName) {
@@ -265,8 +265,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
     // override any previous value for id
     context.setAnalysisId(saId);
-
-    return context;
   }
 
   private String getAdjustedDisplayName(StepAnalysisContext context) throws WdkModelException {
