@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -487,7 +487,7 @@ public class StepBean {
       return step.getException();
   }
   
-  public Map<Long, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
+  public Map<Long, StepAnalysisInstance> getAppliedAnalyses() throws WdkModelException {
       return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
   }
 

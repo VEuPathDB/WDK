@@ -8,7 +8,7 @@ import org.gusdb.wdk.controller.action.standard.GenericPageAction;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.ResponseType;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.json.JSONObject;
 
@@ -23,7 +23,7 @@ public class RunStepAnalysisAction extends GenericPageAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
-    StepAnalysisContext context = StepAnalysisContext.createFromForm(params.getParamMap(), analysisMgr);
+    StepAnalysisInstance context = StepAnalysisInstance.createFromForm(params.getParamMap(), analysisMgr);
     AbstractStepAnalysisIdAction.verifyOwnership(getCurrentUser(), context);
     List<String> errors = analysisMgr.validateFormParams(context);
 
@@ -31,7 +31,7 @@ public class RunStepAnalysisAction extends GenericPageAction {
     if (errors.isEmpty()) {
       context = analysisMgr.runAnalysis(context);
       json.put(JsonKey.status.name(), "success");
-      json.put(JsonKey.context.name(), context.getInstanceJson());
+      json.put(JsonKey.context.name(), context.getJsonSummary());
     }
     else {
       // bad param values

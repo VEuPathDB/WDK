@@ -344,7 +344,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void updateContext(long analysisId, String contextHash, String serializedContext)
+  public void updateInstance(long analysisId, String contextHash, String serializedContext)
       throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_CONTEXT_SQL, "update-step-analysis-context").executeUpdate(

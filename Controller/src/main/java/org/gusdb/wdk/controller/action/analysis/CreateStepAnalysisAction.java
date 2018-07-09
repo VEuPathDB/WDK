@@ -12,8 +12,10 @@ import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,14 +38,17 @@ public class CreateStepAnalysisAction extends WdkAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     
-    StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
+    StepAnalysisFactory analysisFactory = getWdkModel().getModel().getStepAnalysisFactory();
     
-    StepAnalysisContext context = StepAnalysisContext.createNewContext(getCurrentUser(),
-        params.getValue(ANALYSIS_NAME_KEY), params.getIntValue(STEP_ID_KEY));
+    Step step = getCurrentUser().getUser().getWdkModel().getStepFactory().getStepById(params.getIntValue(STEP_ID_KEY));
+
+    String answerValueChecksum = step.getAnswerValue().getChecksum();
+    StepAnalysis stepAnalysis = step.getQuestion().getStepAnalysis(params.getValue(ANALYSIS_NAME_KEY));
     
     try {
-      analysisMgr.createAnalysis(context);
-      return AbstractStepAnalysisIdAction.getStepAnalysisJsonResult(context);
+      StepAnalysisInstance instance = analysisFactory.createAnalysisInstance(step, stepAnalysis, answerValueChecksum);
+
+      return AbstractStepAnalysisIdAction.getStepAnalysisJsonResult(instance);
     }
     catch (IllegalAnswerValueException ise) {
       return getInvalidStepResult(ise.getMessage());

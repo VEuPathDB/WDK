@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.user.Step;
 
 /**
@@ -56,13 +57,13 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
   
   @Override
-  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
-    return new ArrayList<StepAnalysisContext>();
+  public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException {
+    return new ArrayList<StepAnalysisInstance>();
   }
 
   @Override
-  public Map<Long, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
-    return new HashMap<Long, StepAnalysisContext>();
+  public Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException {
+    return new HashMap<Long, StepAnalysisInstance>();
   }
 
   @Override
@@ -71,43 +72,43 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
+  public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public void createAnalysis(StepAnalysisContext context) throws WdkModelException,
+  public StepAnalysisInstance createAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException,
       IllegalAnswerValueException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public StepAnalysisContext copyContext(StepAnalysisContext context) throws WdkModelException {
+  public StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public StepAnalysisContext runAnalysis(StepAnalysisContext context) throws WdkModelException {
+  public StepAnalysisInstance runAnalysis(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException {
+  public AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public StepAnalysisContext deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
+  public StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public void renameContext(StepAnalysisContext context) throws WdkModelException {
+  public void renameInstance(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException {
+  public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
@@ -122,12 +123,12 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public Path getResourcePath(StepAnalysisContext context, String relativePath) {
+  public Path getResourcePath(StepAnalysisInstance instance, String relativePath) {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException {
+  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 

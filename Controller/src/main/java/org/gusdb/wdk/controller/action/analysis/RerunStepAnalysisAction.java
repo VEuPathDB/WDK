@@ -5,7 +5,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.ResponseType;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.json.JSONObject;
 
 public class RerunStepAnalysisAction extends AbstractStepAnalysisIdAction {
@@ -17,12 +17,12 @@ public class RerunStepAnalysisAction extends AbstractStepAnalysisIdAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    StepAnalysisContext context = getContextFromPassedId();
+    StepAnalysisInstance context = getContextFromPassedId();
     JSONObject json = new JSONObject();
     if (context.hasParams() || !context.getStepAnalysis().getHasParameters()) {
       context = getAnalysisMgr().runAnalysis(context);
       json.put(JsonKey.status.name(), "success");
-      json.put(JsonKey.context.name(), context.getInstanceJson());
+      json.put(JsonKey.context.name(), context.getJsonSummary());
     }
     else {
       // cannot rerun analysis that has not yet submitted params

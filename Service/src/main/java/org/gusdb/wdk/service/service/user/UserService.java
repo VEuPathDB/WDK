@@ -6,9 +6,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.user.UserService.Access;
 
 @Path("/users/{id}")
 public abstract class UserService extends WdkService {
@@ -52,6 +56,29 @@ public abstract class UserService extends WdkService {
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     }
     return userBundle;
+  }
+  
+  protected Step getStepById(User user, long stepId) throws DataValidationException {
+    Step step;
+    try {
+      step = user.getWdkModel().getStepFactory().getStepById(stepId);
+    }
+    catch (WdkModelException e) {
+      throw new DataValidationException("Can't find step with ID " + stepId);
+    }
+    return step;
+  }
+  
+  // TODO: probably retire this when we retire answervalues in favor of answerspecs
+  protected String getAnswerValueChecksum(Step step) throws DataValidationException {
+    
+    String answerValueChecksum;
+    try {
+      answerValueChecksum = step.getAnswerValue().getChecksum();
+    } catch (WdkUserException | WdkModelException e) {
+      throw new DataValidationException("Can't create valid Answer from step with ID" + step.getStepId(), e);
+    }
+    return answerValueChecksum;
   }
 
   protected User getPrivateRegisteredUser() throws WdkModelException {

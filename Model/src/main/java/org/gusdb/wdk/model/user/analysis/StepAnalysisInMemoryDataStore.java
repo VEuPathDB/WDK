@@ -140,7 +140,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void updateContext(long analysisId, String contextHash, String serializedContext) throws WdkModelException {
+  public void updateInstance(long analysisId, String contextHash, String serializedContext) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).contextHash = contextHash;

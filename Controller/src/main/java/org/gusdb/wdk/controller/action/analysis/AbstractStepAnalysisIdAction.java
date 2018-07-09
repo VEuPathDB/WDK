@@ -14,13 +14,13 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 
 public abstract class AbstractStepAnalysisIdAction extends WdkAction {
   
   private static final Map<String,ParamDef> PARAMS =
-      new MapBuilder<String, ParamDef>().put(StepAnalysisContext.ANALYSIS_ID_KEY,
+      new MapBuilder<String, ParamDef>().put(StepAnalysisInstance.ANALYSIS_ID_KEY,
           new ParamDef(Required.REQUIRED, DataType.LONG)).toMap();
   
   private StepAnalysisFactory _analysisMgr;
@@ -46,7 +46,7 @@ public abstract class AbstractStepAnalysisIdAction extends WdkAction {
   }
   
   protected final long getAnalysisId() {
-    return getParams().getLongValue(StepAnalysisContext.ANALYSIS_ID_KEY);
+    return getParams().getLongValue(StepAnalysisInstance.ANALYSIS_ID_KEY);
   }
   
   protected final StepAnalysisFactory getAnalysisMgr() {
@@ -56,19 +56,19 @@ public abstract class AbstractStepAnalysisIdAction extends WdkAction {
     return _analysisMgr;
   }
   
-  protected final StepAnalysisContext getContextFromPassedId()
+  protected final StepAnalysisInstance getContextFromPassedId()
       throws WdkUserException, WdkModelException {
-    StepAnalysisContext context = StepAnalysisContext.createFromId(getAnalysisId(), getAnalysisMgr());
+    StepAnalysisInstance context = StepAnalysisInstance.createFromId(getAnalysisId(), getAnalysisMgr());
     verifyOwnership(getCurrentUser(), context);
     return context;
   }
   
-  public static ActionResult getStepAnalysisJsonResult(StepAnalysisContext context) {
+  public static ActionResult getStepAnalysisJsonResult(StepAnalysisInstance context) {
     return new ActionResult(ResponseType.json).setStream(
-        IoUtil.getStreamFromString(context.getInstanceJson().toString()));
+        IoUtil.getStreamFromString(context.getJsonSummary().toString()));
   }
 
-  public static void verifyOwnership(UserBean user, StepAnalysisContext context)
+  public static void verifyOwnership(UserBean user, StepAnalysisInstance context)
       throws WdkUserException, WdkModelException {
     if (user.getUserId() != context.getStep().getUser().getUserId()) {
       throw new WdkUserException("Permisssion Denied: You do not have permission" +

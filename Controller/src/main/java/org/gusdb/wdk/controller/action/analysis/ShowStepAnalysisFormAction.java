@@ -2,14 +2,14 @@ package org.gusdb.wdk.controller.action.analysis;
 
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 
 public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
-    StepAnalysisContext context = getContextFromPassedId();
+    StepAnalysisInstance context = getContextFromPassedId();
 
     if (!context.getIsValidStep()) {
       return new ActionResult().setViewName("invalidStep")

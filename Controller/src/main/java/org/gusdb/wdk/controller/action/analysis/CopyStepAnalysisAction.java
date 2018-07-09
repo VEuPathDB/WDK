@@ -7,6 +7,6 @@ public class CopyStepAnalysisAction extends AbstractStepAnalysisIdAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    return getStepAnalysisJsonResult(getAnalysisMgr().copyContext(getContextFromPassedId()));
+    return getStepAnalysisJsonResult(getAnalysisMgr().copyAnalysisInstance(getContextFromPassedId()));
   }
 }

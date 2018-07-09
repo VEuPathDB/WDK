@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 
 public class ImportStrategyAction extends Action {
@@ -63,8 +63,8 @@ public class ImportStrategyAction extends Action {
 
         // run any associated analyses on the root step of the new strategy; user will probably want them run just as before
         StepAnalysisFactory saFactory = wdkModel.getStepAnalysisFactory();
-        Collection<StepAnalysisContext> rootStepAnalyses =  saFactory.getAppliedAnalyses(newStrategy.getStrategy().getLatestStep()).values();
-        for (StepAnalysisContext saContext : rootStepAnalyses) {
+        Collection<StepAnalysisInstance> rootStepAnalyses =  saFactory.getAppliedAnalyses(newStrategy.getStrategy().getLatestStep()).values();
+        for (StepAnalysisInstance saContext : rootStepAnalyses) {
           saFactory.runAnalysis(saContext);
         }
 
@@ -95,7 +95,7 @@ public class ImportStrategyAction extends Action {
       }
       WdkModel wdkModel = oldStrategy.getUser().getWdkModel();
       if (selectedTabParam.equals("first_analysis")) {
-        Collection<StepAnalysisContext> analyses =
+        Collection<StepAnalysisInstance> analyses =
             wdkModel.getStepAnalysisFactory().getAppliedAnalyses(newStrategy.getLatestStep()).values();
         return (analyses.isEmpty() ? null : "step-analysis-" + analyses.iterator().next().getAnalysisId());
       }
@@ -103,14 +103,14 @@ public class ImportStrategyAction extends Action {
         String analysisIdStr = selectedTabParam.substring("step-analysis-".length());
         if (FormatUtil.isInteger(analysisIdStr)) {
           long oldAnalysisId = Long.parseLong(analysisIdStr);
-          List<StepAnalysisContext> oldAnalyses = new ArrayList<>(
+          List<StepAnalysisInstance> oldAnalyses = new ArrayList<>(
               wdkModel.getStepAnalysisFactory().getAppliedAnalyses(oldStrategy.getLatestStep()).values());
           int oldAnalysisIndex = findFirstIndex(oldAnalyses, analysis -> analysis.getAnalysisId() == oldAnalysisId);
           if (oldAnalysisIndex == -1) {
             // passed ID does not match an ID in the old strategy; do not convey preference
             return null;
           }
-          List<StepAnalysisContext> newAnalyses = new ArrayList<>(
+          List<StepAnalysisInstance> newAnalyses = new ArrayList<>(
               wdkModel.getStepAnalysisFactory().getAppliedAnalyses(newStrategy.getLatestStep()).values());
           return "step-analysis-" + newAnalyses.get(oldAnalysisIndex).getAnalysisId();
         }

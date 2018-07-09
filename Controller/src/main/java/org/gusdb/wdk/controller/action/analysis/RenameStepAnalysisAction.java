@@ -7,7 +7,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 
 public class RenameStepAnalysisAction extends AbstractStepAnalysisIdAction {
 
@@ -23,9 +23,9 @@ public class RenameStepAnalysisAction extends AbstractStepAnalysisIdAction {
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    StepAnalysisContext context = getContextFromPassedId();
+    StepAnalysisInstance context = getContextFromPassedId();
     context.setDisplayName(params.getValue(DISPLAY_NAME_KEY));
-    getAnalysisMgr().renameContext(context);
+    getAnalysisMgr().renameInstance(context);
     return getStepAnalysisJsonResult(context);
   }
   

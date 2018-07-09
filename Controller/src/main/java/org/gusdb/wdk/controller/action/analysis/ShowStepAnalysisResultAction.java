@@ -8,7 +8,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.analysis.AnalysisResult;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 
 public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
@@ -32,7 +32,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
-    StepAnalysisContext context = getContextFromPassedId();
+    StepAnalysisInstance context = getContextFromPassedId();
     String reason = null;
 
     if (LOG.isDebugEnabled()) { // check first so expensive ops below aren't unnecessarily done

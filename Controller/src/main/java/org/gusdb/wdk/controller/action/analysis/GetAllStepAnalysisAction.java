@@ -11,7 +11,7 @@ import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.analysis.AnalysisResult;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,9 +20,9 @@ import org.json.JSONObject;
 public class GetAllStepAnalysisAction extends GenericPageAction {
 
   private static class Analysis {
-    public StepAnalysisContext context;
+    public StepAnalysisInstance context;
     public AnalysisResult result;
-    public Analysis(StepAnalysisContext context, AnalysisResult result) {
+    public Analysis(StepAnalysisInstance context, AnalysisResult result) {
       this.context = context; this.result = result;
     }
   }
@@ -32,7 +32,7 @@ public class GetAllStepAnalysisAction extends GenericPageAction {
     
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
     Map<Long, Analysis> analysisMap = new HashMap<>();
-    for (StepAnalysisContext context : analysisMgr.getAllAnalyses()) {
+    for (StepAnalysisInstance context : analysisMgr.getAllAnalyses()) {
       AnalysisResult result = (context.getStatus().equals(ExecutionStatus.COMPLETE) ?
           analysisMgr.getAnalysisResult(context) : null);
       analysisMap.put(context.getAnalysisId(), new Analysis(context, result));
@@ -47,7 +47,7 @@ public class GetAllStepAnalysisAction extends GenericPageAction {
         Analysis analysis = analysisMap.get(id);
         JSONObject obj = new JSONObject();
         obj.put("id", id);
-        obj.put("context", analysis.context.getInstanceJson());
+        obj.put("context", analysis.context.getJsonSummary());
         if (analysis.context.getStatus().equals(ExecutionStatus.COMPLETE)) {
           obj.put("resultStatus", analysis.result.getStatus());
           obj.put("storedString", analysis.result.getStoredString());
