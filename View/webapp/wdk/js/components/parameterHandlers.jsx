@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Seq } from 'Utils/IterableUtils';
 
 // eslint-disable-next-line no-unused-vars
-import { UNRECOVERABLE_PARAM_ERROR_EVENT } from 'Core/Controllers/LegacyParamController';
+import { UNRECOVERABLE_PARAM_ERROR_EVENT } from 'Views/Question/LegacyParamController';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 

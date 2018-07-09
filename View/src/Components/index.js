@@ -56,6 +56,7 @@ import RecordAttributeSection from 'Views/Records/RecordAttributes/RecordAttribu
 
 export {
   Mesa,
+  Modal,
   Icon,
   Main,
   Page,

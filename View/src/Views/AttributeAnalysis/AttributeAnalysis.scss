@@ -1,0 +1,13 @@
+.AttributeAnalysis {
+
+  $popup-width: 825px;
+
+  & { 
+    width: $popup-width;
+  }
+
+  &PopupWrapper {
+    left: calc(50vw - #{$popup-width / 2});
+  }
+
+}

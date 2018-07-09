@@ -1,19 +1,20 @@
 import { escapeRegExp, intersection } from 'lodash';
 import React, { ValidationMap } from 'react';
 
+import 'Params/EnumParam/TreeBoxParam.scss';
 import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
 import Icon from 'Components/Icon/IconAlt';
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
 import { isType as isEnumParam } from 'Params/EnumParam';
 import SelectionInfo from 'Params/EnumParam/SelectionInfo';
 import { Context, Props } from 'Params/Utils';
-import { Action, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
+import { makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { safeHtml } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
 import { filterNodes, getLeaves, isBranch } from 'Utils/TreeUtils';
 import { Parameter, TreeBoxVocabNode, TreeBoxEnumParam } from 'Utils/WdkModel';
 
-import 'Params/EnumParam/TreeBoxParam.scss';
+import { matchAction } from '../../Utils/ReducerUtils';
 
 // Types
 // -----
@@ -31,15 +32,14 @@ export type State = {
 // ActionCreators
 // --------------
 
-export const ExpandedListSet = makeActionCreator('enum-param-treebox/expanded-list-set',
-  payload<Ctx & {
+export const ExpandedListSet = makeActionCreator<Ctx & {
     expandedList: string[]
-  }>());
+  }, 'enum-param-treebox/expanded-list-set'>('enum-param-treebox/expanded-list-set')
 
-export const SearchTermSet = makeActionCreator('enum-param-treebox/search-term-set',
-  payload<Ctx & {
-    searchTerm: string
-  }>());
+export const SearchTermSet = makeActionCreator<
+  Ctx & { searchTerm: string },
+  'enum-param-treebox/search-term-set'
+>('enum-param-treebox/search-term-set');
 
 
 // Utils
@@ -101,30 +101,23 @@ function deriveIndeterminateBranches(tree: TreeBoxVocabNode, items: string[]) {
 // Reducer
 // -------
 
-export function reduce(state: State, action: Action): State {
-  if (
-    ParamInitAction.isType(action) &&
-    isType(action.payload.parameter)
-  ) return {
+export const reduce = matchAction({} as State,
+  [ParamInitAction, (state, { parameter }) => ({
     expandedList: findBranchTermsUpToDepth(
-      action.payload.parameter.vocabulary,
-      action.payload.parameter.depthExpanded
+      (parameter as TreeBoxEnumParam).vocabulary,
+      (parameter as TreeBoxEnumParam).depthExpanded
     ),
     searchTerm: ''
-  }
-
-  if (ExpandedListSet.isType(action)) return {
+  })],
+  [ExpandedListSet, (state, { expandedList }) => ({
     ...state,
-    expandedList: action.payload.expandedList
-  };
-
-  if (SearchTermSet.isType(action)) return {
+    expandedList: expandedList
+  })],
+  [SearchTermSet, (state, { searchTerm }) => ({
     ...state,
-    searchTerm: action.payload.searchTerm
-  }
-
-  return state;
-}
+    searchTerm: searchTerm
+  })]
+);
 
 
 // View

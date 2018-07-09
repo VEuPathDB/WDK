@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@types/datatables.net": "^1.10.5",
+    "@types/flot": "^0.0.31",
     "@types/flux": "^3.1.7",
     "@types/jqueryui": "^1.11.35",
     "@types/json-stable-stringify": "^1.0.31",

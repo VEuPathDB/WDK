@@ -1,6 +1,6 @@
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
-import LegacyParamController from 'Core/Controllers/LegacyParamController';
+import LegacyParamController from 'Views/Question/LegacyParamController';
 import WdkPageController from 'Core/Controllers/WdkPageController';
 import WdkViewController from 'Core/Controllers/WdkViewController';
 import AnswerController from 'Views/Answer/AnswerController';
@@ -20,8 +20,10 @@ import UserRegistrationController from 'Views/User/Profile/UserRegistrationContr
 import UserMessageController from 'Views/User/UserMessageController';
 import UserDatasetDetailController from 'Views/UserDatasets/Detail/UserDatasetDetailController';
 import UserDatasetListController from 'Views/UserDatasets/List/UserDatasetListController';
+import AttributeAnalysisButtonController from 'Views/AttributeAnalysis/AttributeAnalysisButtonController';
 
 export {
+  AttributeAnalysisButtonController,
   AbstractPageController,
   AbstractViewController,
   AnswerController,

@@ -52,91 +52,61 @@ export type ActionCreatorRecord<T extends Action> = Record<string, ActionCreator
 /**
  * An Action that carries the type of its `type` and `payload` properties
  */
-interface TypedAction<T extends string, S> {
+export interface TypedAction<T extends string, S> {
   type: T;
   payload: S;
 }
 
-/**
- * A type used to carry some generic type. Used by the `payload()` function below.
- */
-interface Data<T> { }
+export interface TypedActionCreator<T extends string, S> {
 
-/**
- * An object that can be used to create Actions and to test for them.
- */
-interface TypedActionCreator<T extends string, S> {
-  // For convenience
+  /** String used to identify action type. */
   type: T;
-  // Create a TypedAction<T,S>
+
+  /** Predicate function for testing if an action is of this type. */
+  test(action: Action): action is TypedAction<T, S>;
+
+  /** Create an action with a specified payload. */
   create(payload: S): TypedAction<T, S>;
-  // Verify if an action is a TypedAction<T,S>
-  isType(action: Action): action is TypedAction<T, S>;
+}
+
+interface EmptyTypedActionCreator<T extends string> {
+
+  /** String used to identify action type. */
+  type: T;
+
+  /** Predicate function for testing if an action is of this type. */
+  test(action: Action): action is TypedAction<T, undefined>;
+
+  /** Create an action with a specified payload. */
+  create(): TypedAction<T, undefined>;
 }
 
 /**
- * An Action with no payload
- */
-interface EmptyActionCreator<T extends string> extends TypedActionCreator<T, undefined> {
-  create(): TypedAction<T, undefined>
-}
-
-
-// A basic object used to satisfy typescript's compiler (see `payload()` below).
-const empty = Object.create(null);
-
-/**
- * This is a trick to make `makeActionCreator()` infer the type of the Action's
- * `payload` property. By doing this, we can declare the types of an Action's
- * `type` and `payload` property non-redundantly. Without this trick, we would
- * have to declare the generic types as well as pass the string value of `type`:
- * `const ActionCreator = makeActionCreator<'my-type', { name: string }>('my-type');`
- *
- * @example
- * ```
- * // Note that we have to call `payload` (see the parentheses ----------------vv)
- * const ActionCreator = makeActionCreator('my-type', payload<{ name: string }>());
- * ```
- */
-export function payload<T = undefined>(): Data<T> {
-  return empty as Data<T>;
-}
-
-
-/**
- * Returns a class that can be used to create Actions. This provides many useful
+ * Returns a module that can be used to create Actions. This provides many useful
  * properties to reduce boilerplate while retaining maximum type safety.
  */
-export function makeActionCreator<T extends string>(type: T): EmptyActionCreator<T>;
-export function makeActionCreator<T extends string, S>(type: T, _: Data<S>): TypedActionCreator<T, S>;
-export function makeActionCreator<T extends string, S>(type: T, _?: Data<S>): TypedActionCreator<T, S> {
-  class Base implements TypedAction<T, S> {
-    readonly type = type
-    constructor(readonly payload: S) {}
-    static type = type;
-    static isType(action: TypedAction<string, any>): action is TypedAction<T, S> {
-      return action.type === type;
-    }
+export function makeActionCreator<T extends string>(type: T): EmptyTypedActionCreator<T>
+export function makeActionCreator<S, T extends string>(type: T): TypedActionCreator<T, S>
+export function makeActionCreator(type: string) {
+  return { type, create, test };
+
+  function create(payload?: any) {
+    return payload ? { type, payload } : { type }
   }
 
-  return _ == null
-    ? class ActionCreator extends Base {
-      static create() {
-        return new ActionCreator(undefined as any);
-      }
-    }
-    : class ActionCreator extends Base {
-      static create(payload: S) {
-        return new ActionCreator(payload);
-      }
-    }
+  function test(action: Action) {
+    return action.type === type;
+  }
 }
 
 export function isOneOf<T extends string, S>(...actionCreators: TypedActionCreator<T, S>[]) {
   return function isType(action: Action): action is TypedAction<T, S> {
-    return actionCreators.some(ac => ac.isType(action));
+    return actionCreators.some(ac => ac.test(action));
   }
 }
+
+export type ActionType<T extends TypedActionCreator<any, any>> =
+  T extends TypedActionCreator<infer S, infer U> ? TypedAction<S, U> : never;
 
 export interface EpicServices<T extends WdkStore = WdkStore> extends ActionCreatorServices {
   store: T;

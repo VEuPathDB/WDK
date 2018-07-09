@@ -15,7 +15,7 @@ interface AnyObject {
  * when props are equal use shallow comparison.
  */
 export function pure<P>(Component: React.StatelessComponent<P>) {
-  return class PureWrapper extends React.PureComponent<P, void> {
+  return class PureWrapper extends React.PureComponent<P> {
     static get displayName() {
       return `PureWrapper(${Component.displayName || Component.name})`;
     }
