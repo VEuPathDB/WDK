@@ -847,7 +847,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (ReporterRef reporterRef : reporterMap.values()) {
       reporterRef.resolveReferences(model);
     }
-    for (AttributeField attribute : attributeFieldList) {
+    for (AttributeField attribute : attributeFieldsMap.values()) {
       for (ReporterRef reporterRef : attribute.getReporters().values()) {
         if (reporterMap.containsKey(reporterRef.getName())) {
           throw new WdkModelException("Duplicate reporter with name: " + reporterRef.getName());
@@ -855,7 +855,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         reporterMap.put(reporterRef.getName(), reporterRef);
       }
     }
-
 
     // register this URL segment with the model to ensure uniqueness
     _wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
@@ -880,7 +879,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         attributeCategoryTree.addAttributeToCategories(attribute);
       }
     }
-    for (AttributeField attribute : attributeFieldList) {
+    for (AttributeField attribute : attributeFieldsMap.values()) {
       if (attribute != idAttributeField) {
         attributeCategoryTree.addAttributeToCategories(attribute);
       }
@@ -1134,7 +1133,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     primaryKeyDefinition.excludeResources(projectId);
 
     // exclude attributes
-    List<AttributeField> newFieldList = new ArrayList<AttributeField>();
     for (AttributeField field : attributeFieldList) {
       if (field.include(projectId)) {
         field.excludeResources(projectId);
@@ -1159,10 +1157,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
           throw new WdkModelException("The attribute " + fieldName + " has the same name as a table in the recordClass " + getFullName());
         }
         attributeFieldsMap.put(fieldName, field);
-        newFieldList.add(field);
       }
     }
-    attributeFieldList = newFieldList;
+    attributeFieldList = null;
 
     // make sure there is an ID attribute
     if (idAttributeField == null) {

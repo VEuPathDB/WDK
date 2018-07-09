@@ -1,0 +1,39 @@
+.HistogramAnalysis {
+
+  &Graph {
+    width: 700px;
+    height: 400px;
+    margin: auto;
+  }
+
+  &Summary {
+
+    dl {
+      display: flex;
+      justify-content: center;
+    }
+
+    dd {
+      margin-left: .5em;
+      margin-right: 1em;
+    }
+
+  }
+
+  &Controls {
+    align-items: center;
+    background: #eee;
+    display: flex;
+    margin: .5em 0;
+    padding: 1em;
+
+    > * {
+      margin: 0 .5em;
+    }
+  }
+
+  &Slider {
+    flex-grow: 2;
+  }
+
+}

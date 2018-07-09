@@ -866,6 +866,14 @@ export default class WdkService {
     return this._fetchJson<Step>('post', `/users/${userId}/steps`, JSON.stringify(newStepSpec));
   }
 
+  getStepAnswer(stepId: number, formatting: AnswerFormatting, userId: string = 'current') {
+    return this.sendRequest(Decode.ok, {
+      method: 'post',
+      path: `/users/${userId}/steps/${stepId}/answer`,
+      body: JSON.stringify(formatting)
+    });
+  }
+
   getOntology(name = '__wdk_categories__') {
     let recordClasses$ = this.getRecordClasses().then(rs => keyBy(rs, 'name'));
     let questions$ = this.getQuestions().then(qs => keyBy(qs, 'name'));

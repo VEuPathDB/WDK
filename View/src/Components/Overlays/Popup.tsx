@@ -106,7 +106,7 @@ export default class Popup extends React.Component<Props> {
       })
       .toggle(this.props.open);
 
-    if (this.props.open) this._updatePosition();
+    // if (this.props.open) this._updatePosition();
   }
 
   _updatePosition() {

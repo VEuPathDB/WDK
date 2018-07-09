@@ -1,7 +1,8 @@
 import React from 'react';
+
 import NumberRangeSelector from 'Components/InputControls/NumberRangeSelector';
-import { Parameter, NumberRangeParam } from 'Utils/WdkModel';
 import { Props } from 'Params/Utils';
+import { NumberRangeParam, Parameter } from 'Utils/WdkModel';
 
 export function isType(param: Parameter): param is NumberRangeParam {
   return param.type === 'NumberRangeParam';

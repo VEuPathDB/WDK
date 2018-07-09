@@ -109,6 +109,17 @@ export class Seq<T> {
     return new Seq(uniqBy(fn, this));
   }
 
+  orderBy<U>(fn: Mapper<T, U>, reverse = false) {
+    const reverseBit = reverse ? -1 : 1;
+    return new Seq(this.toArray().sort((a: T, b: T) => {
+      const mappedA = fn(a);
+      const mappedB = fn(b);
+      return mappedA < mappedB ? -1 * reverseBit
+           : mappedA > mappedB ? 1 * reverseBit
+           : 0;
+    }))
+  }
+
   filter(fn: Predicate<T>) {
     return new Seq(filter(fn, this));
   }

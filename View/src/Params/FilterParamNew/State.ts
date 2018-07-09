@@ -1,3 +1,4 @@
+import { Reducer } from '../../Utils/ReducerUtils';
 import { groupBy, isEqual, mapValues } from 'lodash';
 
 import { Filter, MemberFilter, OntologyTermSummary } from 'Components/AttributeFilter/Types';
@@ -9,7 +10,7 @@ import {
   SummaryCountsLoadedAction,
 } from 'Params/FilterParamNew/ActionCreators';
 import { sortDistribution } from 'Params/FilterParamNew/Utils';
-import { Action } from 'Utils/ActionCreatorUtils';
+import { matchAction } from 'Utils/ReducerUtils';
 
 
 export type SortSpec = {
@@ -60,53 +61,47 @@ const initialState: State = {
 }
 
 // FIXME Set loading and error statuses on ontologyTermSummaries entries
-export function reduce(state: State = initialState, action: Action): State {
-  if (ActiveFieldSetAction.isType(action)) return {
+export const reduce = <Reducer<State>>matchAction(initialState,
+  [ActiveFieldSetAction, (state, { activeField }) => ({
     ...state,
-    activeOntologyTerm: action.payload.activeField,
-    fieldStates: state.fieldStates[action.payload.activeField] == null ? {
+    activeOntologyTerm: activeField,
+    fieldStates: state.fieldStates[activeField] == null ? {
       ...state.fieldStates,
-      [action.payload.activeField]: { }
+      [activeField]: {}
     } : state.fieldStates
-  }
-
-  if (SummaryCountsLoadedAction.isType(action)) return {
+  })],
+  [SummaryCountsLoadedAction, (state, { nativeFiltered, nativeUnfiltered }) => ({
     ...state,
     loadingFilteredCount: false,
-    filteredCount: action.payload.nativeFiltered,
-    unfilteredCount: action.payload.nativeUnfiltered
-  }
-
-  if (FieldStateUpdatedAction.isType(action)) return {
+    filteredCount: nativeFiltered,
+    unfilteredCount: nativeUnfiltered
+  })],
+  [FieldStateUpdatedAction, (state, { field, fieldState }) => ({
     ...state,
     fieldStates: {
       ...state.fieldStates,
-      [action.payload.field]: {
-        ...state.fieldStates[action.payload.field],
-        ...action.payload.fieldState
+      [field]: {
+        ...state.fieldStates[field],
+        ...fieldState
       }
     }
-  }
-
-  if (FiltersUpdatedAction.isType(action)) return {
+  })],
+  [FiltersUpdatedAction, (state, { prevFilters, filters }) => ({
     ...state,
     loadingFilteredCount: true,
-    fieldStates: handleFilterChange(state, action.payload.prevFilters, action.payload.filters)
-  }
-
-  if (OntologyTermsInvalidated.isType(action)) return {
+    fieldStates: handleFilterChange(state, prevFilters, filters)
+  })],
+  [OntologyTermsInvalidated, (state, { retainedFields }) => ({
     ...state,
     fieldStates: mapValues(state.fieldStates, (fieldState, key) =>
-      action.payload.retainedFields.includes(key)
+      retainedFields.includes(key)
         ? fieldState
         : {
           ...fieldState,
           invalid: true
         })
-  }
-
-  return state;
-}
+  })]
+);
 
 function handleFilterChange(state: State, prevFilters: Filter[], filters: Filter[]) {
   // Get an array of fields whose associated filters have been modified.

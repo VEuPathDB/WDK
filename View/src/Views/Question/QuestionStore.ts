@@ -103,16 +103,16 @@ export default class QuestionStore extends WdkStore<State> {
 
 function reduceQuestionState(state = {} as QuestionState, action: Action): QuestionState | undefined {
 
-  if (UnloadQuestionAction.isType(action)) return undefined;
+  if (UnloadQuestionAction.test(action)) return undefined;
 
-  if (ActiveQuestionUpdatedAction.isType(action)) return {
+  if (ActiveQuestionUpdatedAction.test(action)) return {
     ...state,
     paramValues: action.payload.paramValues || {},
     stepId: action.payload.stepId,
     questionStatus: 'loading'
   }
 
-  if (QuestionLoadedAction.isType(action)) return {
+  if (QuestionLoadedAction.test(action)) return {
     ...state,
     questionStatus: 'complete',
     question: normalizeQuestion(action.payload.question),
@@ -136,17 +136,17 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
       Object.assign(groupUIState, { [group.name]: { isVisible: group.isVisible }}), {})
   }
 
-  if (QuestionErrorAction.isType(action)) return {
+  if (QuestionErrorAction.test(action)) return {
     ...state,
     questionStatus: 'error'
   };
 
-  if (QuestionNotFoundAction.isType(action)) return {
+  if (QuestionNotFoundAction.test(action)) return {
     ...state,
     questionStatus: 'not-found'
   };
 
-  if (ParamValueUpdatedAction.isType(action)) return {
+  if (ParamValueUpdatedAction.test(action)) return {
     ...state,
     paramValues: {
       ...state.paramValues,
@@ -158,7 +158,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
     }
   };
 
-  if (ParamErrorAction.isType(action)) return {
+  if (ParamErrorAction.test(action)) return {
     ...state,
     paramErrors: {
       ...state.paramErrors,
@@ -166,7 +166,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
     }
   };
 
-  if (ParamsUpdatedAction.isType(action)) {
+  if (ParamsUpdatedAction.test(action)) {
     const newParamsByName = keyBy(action.payload.parameters, 'name');
     const newParamValuesByName = mapValues(newParamsByName, param => param.defaultValue || '');
     const newParamErrors = mapValues(newParamsByName, () => undefined);
@@ -193,7 +193,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
     };
   }
 
-  if (ParamStateUpdatedAction.isType(action)) return {
+  if (ParamStateUpdatedAction.test(action)) return {
     ...state,
     paramUIState: {
       ...state.paramUIState,
@@ -201,7 +201,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
     }
   };
 
-  if (GroupVisibilityChangedAction.isType(action)) return {
+  if (GroupVisibilityChangedAction.test(action)) return {
     ...state,
     groupUIState: {
       ...state.groupUIState,
@@ -212,7 +212,7 @@ function reduceQuestionState(state = {} as QuestionState, action: Action): Quest
     }
   }
 
-  if (GroupStateUpdatedAction.isType(action)) return {
+  if (GroupStateUpdatedAction.test(action)) return {
     ...state,
     groupUIState: {
       ...state.groupUIState,

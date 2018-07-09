@@ -102,6 +102,12 @@
   version "2.0.32"
   resolved "https://registry.yarnpkg.com/@types/fbemitter/-/fbemitter-2.0.32.tgz#8ed204da0f54e9c8eaec31b1eec91e25132d082c"
 
+"@types/flot@^0.0.31":
+  version "0.0.31"
+  resolved "https://registry.yarnpkg.com/@types/flot/-/flot-0.0.31.tgz#0daca37c6c855b69a0a7e2e37dd0f84b3db8c8c1"
+  dependencies:
+    "@types/jquery" "*"
+
 "@types/flux@^3.1.7":
   version "3.1.7"
   resolved "https://registry.yarnpkg.com/@types/flux/-/flux-3.1.7.tgz#753e93692fed75fe8da8c4b4107801cada16428a"

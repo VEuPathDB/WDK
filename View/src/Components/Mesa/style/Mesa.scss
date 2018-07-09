@@ -5,6 +5,10 @@
 @import 'Ui/all';
 
 .MesaComponent {
+  * {
+    box-sizing: border-box;
+  }
+
   .faded {
     opacity: 0.5;
   }

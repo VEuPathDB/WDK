@@ -1,11 +1,13 @@
 export function stringValue (value) {
   switch (typeof value) {
     case 'string':
-      if (isHtml(value)) {
-        return htmlStringValue(value);
-      } else {
-        return value;
-      }
+      // HTML should not be parsed here.
+      // if (isHtml(value)) {
+      //   return htmlStringValue(value);
+      // } else {
+      //   return value;
+      // }
+      return value;
     case 'number':
     case 'boolean':
       return value.toString();

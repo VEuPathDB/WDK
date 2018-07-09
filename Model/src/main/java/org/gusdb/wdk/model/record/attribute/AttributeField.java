@@ -44,8 +44,8 @@ public abstract class AttributeField extends Field implements Cloneable {
   private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> _pluginMap;
   
-  private List<ReporterRef> _reporterList = new ArrayList<ReporterRef>();
-  private Map<String, ReporterRef> _reporterMap;
+  private List<AttributeReporterRef> _reporterList = new ArrayList<AttributeReporterRef>();
+  private Map<String, AttributeReporterRef> _reporterMap;
 
   public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
 
@@ -160,8 +160,8 @@ public abstract class AttributeField extends Field implements Cloneable {
       _reporterMap.put(reference.getName(), reference);
   }
 
-  public Map<String, ReporterRef> getReporters() {
-    return new LinkedHashMap<String, ReporterRef>(_reporterMap);
+  public Map<String, AttributeReporterRef> getReporters() {
+    return new LinkedHashMap<String, AttributeReporterRef>(_reporterMap);
   }
 
   @Override
@@ -183,8 +183,8 @@ public abstract class AttributeField extends Field implements Cloneable {
     _pluginList = null;
     
     // exclude reporter references
-    _reporterMap = new LinkedHashMap<String, ReporterRef>();
-    for (ReporterRef reporter : _reporterList) {
+    _reporterMap = new LinkedHashMap<String, AttributeReporterRef>();
+    for (AttributeReporterRef reporter : _reporterList) {
       if (reporter.include(projectId)) {
         String name = reporter.getName();
         if (_reporterMap.containsKey(name))

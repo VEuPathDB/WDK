@@ -1,93 +1,73 @@
 import { Observable } from 'rxjs/Rx';
 
-import { Action, combineEpics, EpicServices, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
+import { Action, combineEpics, EpicServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { Parameter, ParameterValue, ParameterValues, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
-import WdkService, { ServiceError } from 'Utils/WdkService';
+import WdkService from 'Utils/WdkService';
 import QuestionStore from 'Views/Question/QuestionStore';
 
 type BasePayload = {
   questionName: string;
 }
 
-export const ActiveQuestionUpdatedAction = makeActionCreator(
-  'quesiton/active-question-updated',
-  payload<BasePayload & {
-    paramValues?: ParameterValues;
-    stepId: number | undefined;
-  }>()
-);
+export const ActiveQuestionUpdatedAction = makeActionCreator<BasePayload & {
+  paramValues?: ParameterValues;
+  stepId: number | undefined;
+},
+  'quesiton/active-question-updated'
+  >('quesiton/active-question-updated');
 
-export const QuestionLoadedAction = makeActionCreator(
-  'question/question-loaded',
-  payload<BasePayload & {
+export const QuestionLoadedAction = makeActionCreator<
+  BasePayload & {
     question: QuestionWithParameters;
     recordClass: RecordClass;
     paramValues: ParameterValues;
-  }>()
-)
+  },
+  'question/question-loaded'
+  >('question/question-loaded');
 
-export const UnloadQuestionAction = makeActionCreator('question/unload-question', payload<BasePayload>());
+export const UnloadQuestionAction = makeActionCreator<BasePayload, 'question/unload-question'>('question/unload-question');
 
-export const QuestionErrorAction = makeActionCreator('question/question-error', payload<BasePayload>());
+export const QuestionErrorAction = makeActionCreator<BasePayload, 'question/question-error'>('question/question-error');
 
-export const QuestionNotFoundAction = makeActionCreator('question/question-not-found', payload<BasePayload>());
+export const QuestionNotFoundAction = makeActionCreator<BasePayload, 'question/question-not-found'>('question/question-not-found');
 
-export const ParamValueUpdatedAction = makeActionCreator(
-  'question/param-value-update',
-  payload<BasePayload & {
-    parameter: Parameter,
-    dependentParameters: Parameter[],
-    paramValues: ParameterValues,
-    paramValue: ParameterValue
-  }>()
-);
+export const ParamValueUpdatedAction = makeActionCreator<BasePayload & {
+  parameter: Parameter,
+  dependentParameters: Parameter[],
+  paramValues: ParameterValues,
+  paramValue: ParameterValue
+}, 'question/param-value-update'>('question/param-value-update');
 
-export const ParamErrorAction = makeActionCreator(
-  'question/param-error',
-  payload<BasePayload & {
-    error: string,
-    paramName: string
-  }>()
-);
+export const ParamErrorAction = makeActionCreator<BasePayload & {
+  error: string,
+  paramName: string
+}, 'question/param-error'>('question/param-error');
 
-export const ParamsUpdatedAction = makeActionCreator(
-  'question/params-updated',
-  payload<BasePayload & {
-    parameters: Parameter[]
-  }>()
-);
+export const ParamsUpdatedAction = makeActionCreator<BasePayload & {
+  parameters: Parameter[]
+},
+  'question/params-updated'
+  >('question/params-updated');
 
-export const ParamInitAction = makeActionCreator(
-  'question/param-init',
-  payload<BasePayload & {
-    parameter: Parameter;
-    paramValues: ParameterValues
-  }>()
-);
+export const ParamInitAction = makeActionCreator<BasePayload & {
+  parameter: Parameter;
+  paramValues: ParameterValues
+}, 'question/param-init'>('question/param-init');
 
-export const ParamStateUpdatedAction = makeActionCreator(
-  'question/param-state-updated',
-  payload<BasePayload & {
-    paramName: string;
-    paramState: any
-  }>()
-);
+export const ParamStateUpdatedAction = makeActionCreator<BasePayload & {
+  paramName: string;
+  paramState: any
+}, 'question/param-state-updated'>('question/param-state-updated');
 
-export const GroupVisibilityChangedAction = makeActionCreator(
-  'question/group-visibility-change',
-  payload<BasePayload & {
-    groupName: string;
-    isVisible: boolean;
-  }>()
-)
+export const GroupVisibilityChangedAction = makeActionCreator<BasePayload & {
+  groupName: string;
+  isVisible: boolean;
+}, 'question/group-visibility-change'>('question/group-visibility-change');
 
-export const GroupStateUpdatedAction = makeActionCreator(
-  'question/group-state-update',
-  payload<BasePayload & {
-    groupName: string;
-    groupState: any;
-  }>()
-)
+export const GroupStateUpdatedAction = makeActionCreator<BasePayload & {
+  groupName: string;
+  groupState: any;
+}, 'question/group-state-update'>('question/group-state-update');
 
 
 // Epics
@@ -97,11 +77,11 @@ export const questionEpic = combineEpics(loadQuestionEpic, updateDependentParams
 
 function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
   return action$
-    .filter(ActiveQuestionUpdatedAction.isType)
+    .filter(ActiveQuestionUpdatedAction.test)
     .mergeMap(action =>
       Observable.from(loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
       .takeUntil(action$.filter(killAction => (
-        UnloadQuestionAction.isType(killAction) &&
+        UnloadQuestionAction.test(killAction) &&
         killAction.payload.questionName === action.payload.questionName
       )))
     )
@@ -109,7 +89,7 @@ function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: Ep
 
 function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
   return action$
-    .filter(ParamValueUpdatedAction.isType)
+    .filter(ParamValueUpdatedAction.test)
     .filter(action => action.payload.parameter.dependentParams.length > 0)
     .debounceTime(1000)
     .mergeMap(action => {
@@ -123,9 +103,9 @@ function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: Ep
         parameters => ParamsUpdatedAction.create({questionName, parameters}),
         error => ParamErrorAction.create({ questionName, error: error.message, paramName: parameter.name })
       ))
-      .takeUntil(action$.filter(ParamValueUpdatedAction.isType))
+      .takeUntil(action$.filter(ParamValueUpdatedAction.test))
       .takeUntil(action$.filter(killAction => (
-        UnloadQuestionAction.isType(killAction) &&
+        UnloadQuestionAction.test(killAction) &&
         killAction.payload.questionName === action.payload.questionName
       )))
     });

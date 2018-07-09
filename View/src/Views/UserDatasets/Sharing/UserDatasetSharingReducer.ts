@@ -1,29 +1,34 @@
+import { Reducer } from '../../../Utils/ReducerUtils';
 import { differenceWith, unionWith } from 'lodash';
 
-import { Action } from 'Utils/ActionCreatorUtils';
+import { Action, makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { composeReducers, matchAction } from 'Utils/ReducerUtils';
 import { UserDataset, UserDatasetShare } from 'Utils/WdkModel';
 
 import { SharingSuccessAction } from '../UserDatasetsActionCreators';
 
-type ShareOperation = keyof SharingSuccessAction['payload']['response'];
+type Response = SharingSuccessAction['payload']['response'];
+type ShareOperation = keyof Response;
+type Shares = Response[ShareOperation];
 
 type State = Record<string, {
   isLoading: boolean;
   resource?: UserDataset
 }>;
 
-function isSharingAction(action: Action): action is SharingSuccessAction {
-  return action.type === 'user-datasets/sharing-success';
-}
+const SharingAction =
+  makeActionCreator<SharingSuccessAction['payload'], SharingSuccessAction['type']>('user-datasets/sharing-success')
 
-export default matchAction([
-  [ isSharingAction, composeReducers(handleOperation('delete'), handleOperation('add')) ]
-])
+const handleAdd = handleOperation('add');
+const handleDelete = handleOperation('delete');
+
+export default <Reducer<State>>matchAction({} as State,
+  [ SharingAction, (state, payload) => handleAdd(handleDelete(state, payload), payload) ]
+)
 
 function handleOperation(operation: ShareOperation) {
-  return function (state: State, action: SharingSuccessAction): State {
-    const sharesByTargetId = action.payload.response[operation];
+  return function (state: State, payload: SharingSuccessAction['payload']): State {
+    const sharesByTargetId = payload.response[operation];
 
     if (sharesByTargetId == null) return state;
 

@@ -1,6 +1,7 @@
 import WdkStore from 'Core/State/Stores/WdkStore';
 import GlobalDataStore from 'Core/State/Stores/GlobalDataStore';
 
+import { AttributeAnalysisStore } from 'Views/AttributeAnalysis/AttributeAnalysisStore';
 import SiteMapStore from 'Views/SiteMap/SiteMapStore';
 import QuestionStore from 'Views/Question/QuestionStore';
 import AnswerViewStore from 'Views/Answer/AnswerViewStore';
@@ -15,6 +16,7 @@ import UserDatasetDetailStore from 'Views/UserDatasets/Detail/UserDatasetDetailS
 import UserDatasetListStore from 'Views/UserDatasets/List/UserDatasetListStore';
 
 export {
+  AttributeAnalysisStore,
   WdkStore,
   GlobalDataStore,
   SiteMapStore,

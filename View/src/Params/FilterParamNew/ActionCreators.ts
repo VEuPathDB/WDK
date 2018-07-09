@@ -12,7 +12,7 @@ import {
 import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
 import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from 'Params/FilterParamNew/Utils';
 import { Context } from 'Params/Utils';
-import { Action, combineEpics, EpicServices, makeActionCreator, payload } from 'Utils/ActionCreatorUtils';
+import { Action, combineEpics, EpicServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { FilterParamNew } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
 import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
@@ -29,52 +29,52 @@ const defaultMemberFieldSort: MemberFieldState['sort'] = {
 // Action Creators
 // ---------------
 
-export const ActiveFieldSetAction = makeActionCreator(
-  'filter-param-new/active-field-set',
-  payload<Context<FilterParamNew> & {
-    activeField: string;
-  }>()
-)
+function makeFpnActionCreator<S, T extends string>(type: T) {
+  return makeActionCreator<Context<FilterParamNew> & S, T>(type);
+}
 
-export const FieldCountUpdateRequestAction = makeActionCreator(
-  'filter-param-new/field-count-update-request',
-  payload<Context<FilterParamNew> & {
-    field: string;
-  }>()
-)
+export const ActiveFieldSetAction =
+  makeFpnActionCreator<{ activeField: string }, 'filter-param-new/active-field-set'>('filter-param-new/active-field-set')
 
-export const SummaryCountsLoadedAction = makeActionCreator(
-  'filter-param-new/summary-counts-loaded',
-  payload<Context<FilterParamNew> & {
-    filtered: number;
-    unfiltered: number;
-    nativeFiltered: number;
-    nativeUnfiltered: number;
-  }>()
-)
+export const FieldCountUpdateRequestAction =
+  makeFpnActionCreator<{ field: string }, 'filter-param-new/field-count-update-request'>('filter-param-new/field-count-update-request')
 
-export const FieldStateUpdatedAction = makeActionCreator(
-  'filter-param-new/field-state-updated',
-  payload<Context<FilterParamNew> & {
-    field: string;
-    fieldState: FieldState;
-  }>()
-)
+export const SummaryCountsLoadedAction =
+  makeFpnActionCreator<
+    {
+      filtered: number;
+      unfiltered: number;
+      nativeFiltered: number;
+      nativeUnfiltered: number;
+    },
+    'filter-param-new/summary-counts-loaded'
+    >('filter-param-new/summary-counts-loaded')
 
-export const FiltersUpdatedAction = makeActionCreator(
-  'filter-param-new/filters-updated',
-  payload<Context<FilterParamNew> & {
-    prevFilters: Filter[];
-    filters: Filter[];
-  }>()
-)
+export const FieldStateUpdatedAction =
+  makeFpnActionCreator<
+    {
+      field: string;
+      fieldState: FieldState;
+    },
+    'filter-param-new/field-state-updated'
+    >('filter-param-new/field-state-updated')
 
-export const OntologyTermsInvalidated = makeActionCreator(
-  'filter-param-new/ontology-terms-invalidated',
-  payload<Context<FilterParamNew> & {
-    retainedFields: string[]
-  }>()
-)
+export const FiltersUpdatedAction =
+  makeFpnActionCreator<
+    {
+      prevFilters: Filter[];
+      filters: Filter[];
+    },
+    'filter-param-new/filters-updated'
+    >('filter-param-new/filters-updated')
+
+export const OntologyTermsInvalidated =
+  makeFpnActionCreator<
+    {
+      retainedFields: string[]
+    },
+    'filter-param-new/ontology-terms-invalidated'
+    >('filter-param-new/ontology-terms-invalidated')
 
 // Epics
 // -----
@@ -93,7 +93,7 @@ type LoadDeps = {
  */
 function initEpic(action$: Observable<Action>, services: EpicServices<QuestionStore>): Observable<Action> {
   return action$
-    .filter(QuestionLoadedAction.isType)
+    .filter(QuestionLoadedAction.test)
     .mergeMap(action => {
       const { questionName } = action.payload;
       const questionState = getQuestionState(services.store, questionName);
@@ -115,7 +115,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
         .map(parameter => ({ paramName: parameter.name, groupName: parameter.group }))
         .mergeMap(({paramName, groupName}) => {
           // Create an Observable<FilterParamNew> based on actions
-          const valueChangedParameter$ = action$.filter(FiltersUpdatedAction.isType)
+          const valueChangedParameter$ = action$.filter(FiltersUpdatedAction.test)
             .filter(
               action => action.payload.questionName === questionName &&
               action.payload.parameter.name === paramName
@@ -142,7 +142,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
             })
             .debounceTime(1000)
 
-          const activeOntologyTermChangedParameter$ = action$.filter(ActiveFieldSetAction.isType)
+          const activeOntologyTermChangedParameter$ = action$.filter(ActiveFieldSetAction.test)
             .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === paramName)
             .mergeMap(() => {
               const questionState = getQuestionState(services.store, questionName);
@@ -160,7 +160,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               return Observable.empty() as Observable<LoadDeps>;
             })
 
-          const forceSummaryUpdateParameter$ = action$.filter(FieldCountUpdateRequestAction.isType)
+          const forceSummaryUpdateParameter$ = action$.filter(FieldCountUpdateRequestAction.test)
             .filter(action => action.payload.questionName === questionName && action.payload.parameter.name === paramName)
             .mergeMap(action => {
               const questionState = getQuestionState(services.store, questionName);
@@ -174,7 +174,7 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
               })
             })
 
-          const groupVisibilityChangeParameter$ = action$.filter(GroupVisibilityChangedAction.isType)
+          const groupVisibilityChangeParameter$ = action$.filter(GroupVisibilityChangedAction.test)
             .filter(action => action.payload.questionName === questionName && action.payload.groupName === groupName)
             .mergeMap(() => {
               const questionState = getQuestionState(services.store, questionName);
@@ -227,14 +227,14 @@ function initEpic(action$: Observable<Action>, services: EpicServices<QuestionSt
             })))
         })
         .takeUntil(action$.filter(killAction => (
-          UnloadQuestionAction.isType(killAction) &&
+          UnloadQuestionAction.test(killAction) &&
           killAction.payload.questionName === action.payload.questionName
         )));
     })
 }
 
 function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
-  return action$.filter(ParamsUpdatedAction.isType)
+  return action$.filter(ParamsUpdatedAction.test)
     .switchMap(action => {
       const { questionName, parameters } = action.payload;
       return Observable.from(parameters)
@@ -262,7 +262,7 @@ function updateDependentParamsActiveFieldEpic(action$: Observable<Action>, { wdk
           );
         })
         .takeUntil(action$.filter(killAction => (
-          UnloadQuestionAction.isType(killAction) &&
+          UnloadQuestionAction.test(killAction) &&
           killAction.payload.questionName === action.payload.questionName
         )))
     })
