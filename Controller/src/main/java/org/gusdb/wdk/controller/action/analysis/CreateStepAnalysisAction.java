@@ -40,7 +40,7 @@ public class CreateStepAnalysisAction extends WdkAction {
     
     StepAnalysisFactory analysisFactory = getWdkModel().getModel().getStepAnalysisFactory();
     
-    Step step = getCurrentUser().getUser().getWdkModel().getStepFactory().getStepById(params.getIntValue(STEP_ID_KEY));
+    Step step = getCurrentUser().getUser().getWdkModel().getStepFactory().getStepByValidId(params.getIntValue(STEP_ID_KEY));
 
     String answerValueChecksum = step.getAnswerValue().getChecksum();
     StepAnalysis stepAnalysis = step.getQuestion().getStepAnalysis(params.getValue(ANALYSIS_NAME_KEY));

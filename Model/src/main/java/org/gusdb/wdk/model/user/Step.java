@@ -252,7 +252,7 @@ public class Step {
 
   public Step getPreviousStep() throws WdkModelException {
     if (_previousStep == null && _previousStepId != 0)
-      setPreviousStep(_stepFactory.loadStep(getUser(), _previousStepId));
+      setPreviousStep(_stepFactory.loadStepFromValidStepId(getUser(), _previousStepId));
     return _previousStep;
   }
 
@@ -270,7 +270,7 @@ public class Step {
 
   public Step getChildStep() throws WdkModelException {
     if (_childStep == null && _childStepId != 0)
-      setChildStep(_stepFactory.loadStep(getUser(), _childStepId));
+      setChildStep(_stepFactory.loadStepFromValidStepId(getUser(), _childStepId));
     return _childStep;
   }
 
@@ -615,7 +615,7 @@ public class Step {
   // saves param values AND filter values (AND step name and maybe other things)
   public void saveParamFilters() throws WdkModelException {
     // get Step as it is in the DB (FIXME: we should be tracking this in memory)
-    Step dbStep = _stepFactory.getStepById(getStepId());
+    Step dbStep = _stepFactory.getStepByValidId(getStepId());
     saveParamFilters(dbStep);
   }
 
@@ -659,7 +659,7 @@ public class Step {
    * @throws WdkModelException if unable to load updated step
    */
   private void refreshParamFilters() throws WdkModelException {
-    Step step = _stepFactory.getStepById(getStepId());
+    Step step = _stepFactory.getStepByValidId(getStepId());
     _filterName = step._filterName;
     _paramValues = step._paramValues;
     _filterOptions = step._filterOptions;
@@ -1078,7 +1078,7 @@ public class Step {
         Param param = params.get(paramName);
         String paramValue = _paramValues.get(paramName);
         if (param instanceof AnswerParam) {
-          Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
+          Step child = StepUtilities.getStepByValidStepId(getUser(), Integer.parseInt(paramValue));
           child = child.deepClone(strategyId, stepIdMap);
           paramValue = Long.toString(child.getStepId());
         }

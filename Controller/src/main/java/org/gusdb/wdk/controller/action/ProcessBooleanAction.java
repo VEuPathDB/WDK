@@ -165,7 +165,7 @@ public class ProcessBooleanAction extends Action {
 
     Map<Long, Long> rootMap;
     // the new step will be inserted before the given Step
-    StepBean newStep = new StepBean(user, StepUtilities.getStep(user.getUser(), Long.valueOf(strImport)));
+    StepBean newStep = new StepBean(user, StepUtilities.getStepByValidStepId(user.getUser(), Long.valueOf(strImport)));
     if (step.isCombined()) { // there are steps before the given Step, the new step will be combined into
       // a boolean (as the child), then the boolean will be inserted before the given step.
       StepBean booleanStep = new StepBean(user, StepUtilities.createBooleanStep(user.getUser(),

@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
@@ -84,7 +85,8 @@ public class StrategyRequest {
     	  boolean isHidden = getBooleanOrDefault(json, Keys.IS_HIDDEN, false);
     	  boolean isPublic = getBooleanOrDefault(json, Keys.IS_PUBLIC, false);
     	  JSONObject rootStepJson = json.getJSONObject(Keys.ROOT_STEP);
-    	  Step rootStep = stepFactory.getStepById(rootStepJson.getLong(Keys.ID));
+    	  long rootStepId = rootStepJson.getLong(Keys.ID);
+    	  Step rootStep = stepFactory.getStepById(rootStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rootStepId));
     	  TreeNode<Step> stepTree = buildStepTree(new TreeNode<Step>(rootStep), rootStepJson, stepFactory, user, projectId, new StringBuilder());
       return new StrategyRequest(name, savedName, description, isSaved, isHidden, isPublic, stepTree);
     }
@@ -109,7 +111,8 @@ public class StrategyRequest {
     if(stepJson.has(Keys.LEFT_STEP)) {
     	  JSONObject leftStepJson = stepJson.getJSONObject(Keys.LEFT_STEP);
     	  if(leftStepJson != null && leftStepJson.has(Keys.ID)) {
-    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(Keys.ID));
+    	    long leftStepId = leftStepJson.getLong(Keys.ID);
+    		Step leftStep = stepFactory.getStepById(leftStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + leftStepId));
     		parentStep.setPreviousStep(leftStep);
     	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
     	    if(leftStepJson.has(Keys.LEFT_STEP)) {
@@ -123,7 +126,8 @@ public class StrategyRequest {
     if(stepJson.has(Keys.RIGHT_STEP)) {
   	  JSONObject rightStepJson = stepJson.getJSONObject(Keys.RIGHT_STEP);
   	  if(rightStepJson != null && rightStepJson.has(Keys.ID)) {
-  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(Keys.ID));
+  	    long rightStepId = rightStepJson.getLong(Keys.ID);
+  		Step rightStep = stepFactory.getStepById(rightStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rightStepId));
   		parentStep.setChildStep(rightStep);
   	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
   	    if(rightStepJson.has(Keys.RIGHT_STEP)) {

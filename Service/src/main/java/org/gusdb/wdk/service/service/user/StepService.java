@@ -137,7 +137,7 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
-      Step step = stepFactory.getStepById(Long.parseLong(stepId));
+      Step step = stepFactory.getStepById(Long.parseLong(stepId)).orElseThrow(() -> new NotFoundException("Step ID not found: " + stepId));
       if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
       JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
@@ -185,7 +185,7 @@ public class StepService extends UserService {
   private Step getStepForCurrentUser(String stepId) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
+      Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId)).orElseThrow(() -> new NotFoundException("Step ID not found: " + stepId));
       if (step.getUser().getUserId() != user.getUserId()) {
         throw new ForbiddenException(WdkService.PERMISSION_DENIED);
       }

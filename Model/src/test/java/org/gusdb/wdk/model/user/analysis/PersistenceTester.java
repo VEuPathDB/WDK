@@ -70,7 +70,7 @@ public class PersistenceTester {
     
     StepAnalysisFactory analysisFactory = _wdkModel.getStepAnalysisFactory();
     
-    Step step = user.getUser().getWdkModel().getStepFactory().getStepById(TEST_STEP_ID);
+    Step step = user.getUser().getWdkModel().getStepFactory().getStepByValidId(TEST_STEP_ID);
 
     String answerValueChecksum = step.getAnswerValue().getChecksum();
     StepAnalysis stepAnalysis = step.getQuestion().getStepAnalysis(TEST_PLUGIN_NAME);

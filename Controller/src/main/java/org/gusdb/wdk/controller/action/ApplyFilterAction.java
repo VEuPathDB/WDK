@@ -62,7 +62,7 @@ public class ApplyFilterAction extends Action {
         }
       }
       
-      StepBean step = new StepBean(user, StepUtilities.getStep(user.getUser(), stepId));
+      StepBean step = new StepBean(user, StepUtilities.getStepByValidStepId(user.getUser(), stepId));
       JSONObject options = prepareOptions(request);
       AnswerValueBean answer = step.getAnswerValue();
       QuestionBean question = answer.getQuestion();

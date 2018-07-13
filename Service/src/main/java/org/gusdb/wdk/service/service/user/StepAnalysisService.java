@@ -57,7 +57,7 @@ public class StepAnalysisService extends UserService {
       long stepId = parseIdOrNotFound("step", stepIdStr);
       String analysisName = json.getString(ANALYSIS_NAME_KEY);
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getStepById(user, stepId);     
+      Step step = getStepByIdAndCheckItsUser(user, stepId);     
       String answerValueChecksum = getAnswerValueChecksum(step);
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.getQuestion(), analysisName);
       StepAnalysisInstance stepAnalysisInstance = getStepAnalysisInstance(step, stepAnalysis, answerValueChecksum);

@@ -59,10 +59,10 @@ public class RemoveFilterAction extends Action {
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
       }
-      step = new StepBean(user, stepFactory.getStepById(stepId));
+      step = new StepBean(user, stepFactory.getStepByValidId(stepId));
     }
     else {
-      step = new StepBean(user, StepUtilities.getStep(user.getUser(), stepId));
+      step = new StepBean(user, StepUtilities.getStepByValidStepId(user.getUser(), stepId));
     }
 
     AnswerValueBean answer = step.getAnswerValue();

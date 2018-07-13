@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.WdkService;
-import org.gusdb.wdk.service.service.user.UserService.Access;
 
 @Path("/users/{id}")
 public abstract class UserService extends WdkService {
@@ -58,13 +57,13 @@ public abstract class UserService extends WdkService {
     return userBundle;
   }
   
-  protected Step getStepById(User user, long stepId) throws DataValidationException {
-    Step step;
-    try {
-      step = user.getWdkModel().getStepFactory().getStepById(stepId);
-    }
-    catch (WdkModelException e) {
-      throw new DataValidationException("Can't find step with ID " + stepId);
+  protected Step getStepByIdAndCheckItsUser(User user, long stepId)
+      throws DataValidationException, WdkModelException {
+
+    Step step = user.getWdkModel().getStepFactory().getStepById(stepId).orElseThrow(
+        () -> new NotFoundException("Cannot find step with ID " + stepId));
+    if (user.getUserId() != step.getUser().getUserId()) {
+      throw new NotFoundException("User " + user.getUserId() + " does not own step " + stepId);
     }
     return step;
   }
