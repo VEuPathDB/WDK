@@ -1,0 +1,419 @@
+package org.gusdb.wdk.model.user;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
+import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
+import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
+import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CREATE_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CUSTOM_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DESCRIPTION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DISPLAY_PARAMS;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ESTIMATE_SIZE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_COLLAPSIBLE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_DELETED;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_PUBLIC;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LEFT_CHILD_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_RIGHT_CHILD_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STRATEGY_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_USER_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_VERSION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.STEP_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.STRATEGY_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.json.JSONObject;
+
+public class StrategyLoader {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(StrategyLoader.class);
+
+  private static final String STEP_COLUMNS = join(
+      asList(STEP_TABLE_COLUMNS).stream()
+      .map(col -> "st." + col)
+      .collect(toList()), ", ");
+
+  private static final List<String> STRAT_COLUMNS =
+      asList(STRATEGY_TABLE_COLUMNS).stream()
+      .filter(col -> !COLUMN_STRATEGY_ID.equals(col))
+      .map(col -> toStratCol(col))
+      .collect(toList());
+
+  private static final String VALUED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "sr." + col);
+  private static final String NULLED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "NULL as " + col);
+
+  // macros to fill in searches
+  private static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
+  private static final String PROJECT_ID_MACRO = "$$PROJECT_ID$$";
+  private static final String IS_DELETED_VALUE_MACRO = "$$IS_DELETED_BOOLEAN_VALUE$$";
+  private static final String SEARCH_CONDITIONS_MACRO = "$$SEARCH_CONDITIONS$$";
+
+  // to find steps
+  private static final String FIND_STEPS_SQL =
+      "(" +
+      "  select " + STEP_COLUMNS + ", " + VALUED_STRAT_COLUMNS +
+      "  from " + USER_SCHEMA_MACRO + TABLE_STRATEGY + " sr," +
+      "       " + USER_SCHEMA_MACRO + TABLE_STEP + " st_find," +
+      "       " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
+      "  where st_find." + COLUMN_STRATEGY_ID + " is not null" +
+      "    and sr." + COLUMN_STRATEGY_ID + " = st_find." + COLUMN_STRATEGY_ID +
+      "    and st." + COLUMN_STRATEGY_ID + " = st_find." + COLUMN_STRATEGY_ID +
+      "    and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "    and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "    " + SEARCH_CONDITIONS_MACRO +
+      ")" +
+      " union " +
+      "(" +
+      "  select " + STEP_COLUMNS + ", " + NULLED_STRAT_COLUMNS +
+      "  from " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
+      "  where st." + COLUMN_STRATEGY_ID + " is null" +
+      "    and st." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "    " + SEARCH_CONDITIONS_MACRO +
+      ")" +
+      " order by " + COLUMN_STRATEGY_ID;
+
+  // to find strategies
+  private static final String FIND_STRATEGIES_SQL =
+      "select " + STEP_COLUMNS + ", " + VALUED_STRAT_COLUMNS +
+      "from " + USER_SCHEMA_MACRO + TABLE_STRATEGY + " sr," +
+      "     " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
+      "where st." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID +
+      "  and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "  and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "  and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "  " + SEARCH_CONDITIONS_MACRO +
+      "order by " + COLUMN_STRATEGY_ID;
+
+  private static final Comparator<? super Step> STEP_COMPARATOR_LAST_RUN_TIME_DESC =
+      (s1, s2) -> (int)(s2.getLastRunTime().getTime() - s1.getLastRunTime().getTime());
+  private static final Comparator<? super Strategy> STRATEGY_COMPARATOR_LAST_MOD_TIME_DESC =
+      (s1,s2) -> (int)(s2.getLastModifiedTime().getTime() - s1.getLastModifiedTime().getTime());
+
+  private final WdkModel _wdkModel;
+  private final DataSource _userDbDs;
+  private final DBPlatform _userDbPlatform;
+  private final String _userSchema;
+  private final UserFactory _userFactory;
+  private final ValidationLevel _validationLevel;
+
+  StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel) {
+    _wdkModel = wdkModel;
+    _userDbDs = wdkModel.getUserDb().getDataSource();
+    _userDbPlatform = wdkModel.getUserDb().getPlatform();
+    _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    _userFactory = wdkModel.getUserFactory();
+    _validationLevel = validationLevel;
+  }
+
+  private String sqlBoolean(boolean boolValue) {
+    return _userDbPlatform.convertBoolean(boolValue);
+  }
+
+  private String prepareSql(String sql) {
+    return sql
+        .replace(USER_SCHEMA_MACRO, _userSchema)
+        .replace(PROJECT_ID_MACRO, _wdkModel.getProjectId())
+        .replace(IS_DELETED_VALUE_MACRO, sqlBoolean(false));
+  }
+
+  private SearchResult doSearch(String sql) throws WdkModelException {
+    return doSearch(sql, new Object[0], new Integer[0]);
+  }
+
+  private SearchResult doSearch(String sql, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
+    Map<Long,Strategy> strategies = new LinkedHashMap<>();
+    Map<Long,Step> steps = new LinkedHashMap<>();
+    try {
+      new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
+        Strategy currentStrategy = null;
+        while(rs.next()) {
+          // read a row
+          long nextStrategyId = rs.getLong(COLUMN_STRATEGY_ID);
+          if (rs.wasNull()) {
+            // this step row has no strategy ID
+            if (currentStrategy != null) {
+              // save off current strategy and reset 
+              strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+              currentStrategy = null;
+            }
+            // read orphan step and save off
+            Step orphanStep = readStep(rs);
+            steps.put(orphanStep.getStepId(), orphanStep);
+          }
+          else {
+            // this step row has a strategy ID
+            if (currentStrategy != null) {
+              // check to see if this row part of current strategy or beginning of next one
+              if (currentStrategy.getStrategyId() == nextStrategyId) {
+                // part of current; add step to current strategy
+                currentStrategy.appendStep(readStep(rs));
+              }
+              else {
+                // beginning of next strategy; save off current strat then read and make next strat current
+                strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+                currentStrategy = readStrategy(rs); // will also read/add step
+              }
+            }
+            else {
+              // no current strategy to save off; start new one with this step row
+              currentStrategy = readStrategy(rs); // will also read/add step
+            }
+          }
+          // check for leftover strategy to save
+          if (currentStrategy != null) {
+            strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+          }
+        }
+      });
+    }
+    catch (Exception e) {
+      return WdkModelException.unwrap(e, SearchResult.class);
+    }
+    // all data loaded; populate users and validate
+    UserCache userCache = new UserCache(_userFactory);
+    for (Strategy strategy : strategies.values()) {
+      strategy.finish(userCache);
+    }
+    // only validate orphan steps; attached steps will be finished by their strategy
+    for (Step step : filter(steps.values(), st -> st.getStrategyId() == null)) {
+      step.finish(userCache, null);
+    }
+    return new SearchResult(strategies, steps);
+  }
+
+  private Strategy readStrategy(ResultSet rs) throws SQLException {
+
+    long strategyId = rs.getLong(toStratCol(COLUMN_STRATEGY_ID));
+    long userId = rs.getLong(toStratCol(COLUMN_USER_ID));
+
+    Strategy strategy = new Strategy(_wdkModel, userId, strategyId);
+
+    strategy.setProjectId(rs.getString(toStratCol(COLUMN_PROJECT_ID)));
+    strategy.setCreatedTime(rs.getTimestamp(toStratCol(COLUMN_CREATE_TIME)));
+    strategy.setDeleted(rs.getBoolean(toStratCol(COLUMN_IS_DELETED)));
+    strategy.setLatestStepId(rs.getLong(toStratCol(COLUMN_ROOT_STEP_ID)));
+    strategy.setVersion(rs.getString(toStratCol(COLUMN_VERSION)));
+    strategy.setIsSaved(rs.getBoolean(toStratCol(COLUMN_IS_SAVED)));
+    strategy.setLastRunTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)));
+    strategy.setLastModifiedTime(rs.getTimestamp(toStratCol(COLUMN_LAST_MODIFIED_TIME)));
+    strategy.setDescription(rs.getString(toStratCol(COLUMN_DESCRIPTION)));
+    strategy.setSignature(rs.getString(toStratCol(COLUMN_SIGNATURE)));
+    strategy.setName(rs.getString(toStratCol(COLUMN_NAME)));
+    strategy.setSavedName(rs.getString(toStratCol(COLUMN_SAVED_NAME)));
+    strategy.setIsPublic(fetchNullableBoolean(rs, toStratCol(COLUMN_IS_PUBLIC), false)); // null = false (not public)
+
+    return strategy;
+  }
+
+  private Step readStep(ResultSet rs) throws SQLException {
+
+    long stepId = rs.getLong(COLUMN_STEP_ID);
+    long userId = rs.getLong(COLUMN_USER_ID);
+
+    Step step = new Step(_wdkModel, userId, stepId);
+
+    step.setStrategyId(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null));
+    step.setProjectId(rs.getString(COLUMN_PROJECT_ID));
+    step.setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION));
+    step.setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME));
+    step.setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME));
+    step.setEstimateSize(rs.getInt(COLUMN_ESTIMATE_SIZE));
+    step.setDeleted(rs.getBoolean(COLUMN_IS_DELETED));
+    step.setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null));
+    step.setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null));
+    step.setCustomName(rs.getString(COLUMN_CUSTOM_NAME));
+    step.setCollapsedName(rs.getString(COLUMN_COLLAPSED_NAME));
+    step.setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE));
+
+    step.setAnswerSpec(
+      AnswerSpec.builder(_wdkModel)
+        .setQuestionName(rs.getString(COLUMN_QUESTION_NAME))
+        .setLegacyFilterName(rs.getString(COLUMN_ANSWER_FILTER))
+        .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
+        .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
+        .build(_validationLevel)
+    );
+
+    return step;
+  }
+
+  Step getStepById(long stepId) throws WdkModelException {
+    String sql = prepareSql(FIND_STEPS_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
+    Step step = doSearch(sql).findFirstStep(st -> st.getStepId() == stepId);
+    if (step == null) {
+      throw new WdkModelException("No step with ID " + stepId + " exists.");
+    }
+    return step;
+  }
+
+  Strategy getStrategyById(long strategyId) throws WdkModelException, WdkUserException {
+    String sql = prepareSql(FIND_STRATEGIES_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_STRATEGY_ID) + " = " + strategyId));
+    return doSearch(sql).getOnlyStrategy("with strategy ID = " + strategyId);
+  }
+
+  List<Strategy> getPublicStrategies() throws WdkModelException {
+    String sql = prepareSql(FIND_STRATEGIES_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_IS_PUBLIC) + " = " + sqlBoolean(true)));
+    return descModTimeSort(doSearch(sql).getStrategies());
+  }
+
+  Map<Long, Step> getSteps(Long userId) throws WdkModelException {
+    String sql = prepareSql(FIND_STEPS_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_USER_ID + " = " + userId));
+    List<Step> steps = doSearch(sql).findSteps(step -> true);
+    // sort steps by last run time, descending
+    steps.sort(STEP_COMPARATOR_LAST_RUN_TIME_DESC);
+    return toStepMap(steps);
+  }
+
+  List<Strategy> getStrategies(long userId, boolean saved, boolean recent) throws WdkModelException {
+    String baseSql = prepareSql(FIND_STRATEGIES_SQL);
+    String baseConditions =
+        "and sr." + toStratCol(COLUMN_USER_ID) + " = " + userId +
+        " and sr." + toStratCol(COLUMN_IS_SAVED) + " = " + _userDbPlatform.convertBoolean(saved);
+    List<Strategy> strategies = (recent ?
+
+        // search using recently viewed condition and related statement param
+        doSearch(
+            baseSql.replace(SEARCH_CONDITIONS_MACRO, baseConditions +
+                " and sr." + toStratCol(COLUMN_LAST_VIEWED_TIME) + " >= ?"),
+            new Object[] { getRecentTimestamp() }, new Integer[] { Types.TIMESTAMP }) :
+
+        // search using only user id and is-saved conditions
+        doSearch(baseSql.replace(SEARCH_CONDITIONS_MACRO, baseConditions))
+
+    ).getStrategies();
+
+    // sort by last modified time, descending
+    return descModTimeSort(strategies);
+  }
+
+  Map<Long, Strategy> getStrategies(long userId, Map<Long, Strategy> invalidStrategies) throws WdkModelException {
+    String sql = prepareSql(FIND_STRATEGIES_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_USER_ID) + " = " + userId));
+    List<Strategy> strategies = descModTimeSort(doSearch(sql).getStrategies());
+    invalidStrategies.putAll(toStrategyMap(filter(strategies, strat -> !strat.isValid())));
+    return toStrategyMap(strategies);
+  }
+
+  Strategy getStrategyBySignature(String strategySignature) throws WdkModelException, WdkUserException {
+    String sql = prepareSql(FIND_STRATEGIES_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_SIGNATURE) + " = ?"));
+    return doSearch(sql, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
+        .getOnlyStrategy("with strategy signature = " + strategySignature);
+    
+  }
+
+  private static Timestamp getRecentTimestamp() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, -1);
+    return new Timestamp(calendar.getTimeInMillis());
+  }
+
+  private static Map<Long,Step> toStepMap(List<Step> steps) {
+    return getMapFromList(steps, step -> new TwoTuple<Long,Step>(step.getStepId(), step));
+  }
+
+  private static Map<Long,Strategy> toStrategyMap(List<Strategy> strategies) {
+    return getMapFromList(strategies, strat -> new TwoTuple<Long,Strategy>(strat.getStrategyId(), strat));
+  }
+
+  // add prefix to strategy table columns since some share names with step table columns
+  private static String toStratCol(String col) {
+    return "strat_" + col;
+  }
+
+  private static String mappedColumnSelection(List<String> colNames, Function<String,String> mapper) {
+    return join(colNames.stream().map(mapper).collect(toList()), ", ");
+  }
+
+  private static List<Strategy> descModTimeSort(List<Strategy> strategies) {
+    strategies.sort(STRATEGY_COMPARATOR_LAST_MOD_TIME_DESC);
+    return strategies;
+  }
+
+  private static class SearchResult {
+
+    private final Map<Long,Strategy> _strategies;
+    private final Map<Long,Step> _steps;
+
+    public SearchResult(Map<Long,Strategy> strategies, Map<Long,Step> steps) {
+      _strategies = strategies;
+      _steps = steps;
+    }
+
+    public List<Step> findSteps(Predicate<Step> pred) {
+      return _steps.values().stream().filter(pred).collect(toList());
+    }
+
+    public Step findFirstStep(Predicate<Step> pred) {
+      List<Step> found = findSteps(pred);
+      return found.isEmpty() ? null : found.get(0);
+    }
+
+    public List<Strategy> getStrategies() {
+      return findStrategies(strategy -> true);
+    }
+
+    public List<Strategy> findStrategies(Predicate<Strategy> pred) {
+      return _strategies.values().stream().filter(pred).collect(toList());
+    }
+
+    public Strategy getOnlyStrategy(String conditionMessage) throws WdkUserException, WdkModelException {
+      switch (_strategies.size()) {
+        case 0: throw new WdkUserException("Could not find any strategy " + conditionMessage);
+        case 1: return _strategies.get(0);
+        default: throw new WdkModelException("Found >1 strategy " + conditionMessage);
+      }
+    }
+
+  }
+}

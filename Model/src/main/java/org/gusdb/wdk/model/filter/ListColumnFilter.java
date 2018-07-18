@@ -3,9 +3,13 @@ package org.gusdb.wdk.model.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidationStatus;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
@@ -103,17 +107,23 @@ public class ListColumnFilter extends SqlColumnFilter {
     }
     return values;
   }
-  
+
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
-	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+    throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
-  
+
   @Override
   /**
    * Not fully implemented yet.
    */
   public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
-	  return false;
+    return false;
+  }
+
+  @Override
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
+    // TODO: determine if validation is warranted here
+    return ValidationBundle.builder().setStatus(ValidationStatus.SEMANTICALLY_VALID)
   }
 }

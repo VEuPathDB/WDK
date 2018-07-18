@@ -191,6 +191,7 @@ public class Keys {
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_VALID = "isValid";
+  public static final String INVALID_REASON = "invalidReason";
   public static final String IS_HIDDEN = "isHidden";
   public static final String IS_DELETED = "isDeleted";
   public static final String ROOT_STEP = "root";

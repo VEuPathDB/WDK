@@ -361,7 +361,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.info("Make answer with start=" + start + ", end=" + end);
 
         StepBean step = new StepBean(wdkUser, StepUtilities.createStep(wdkUser.getUser(), strategyId,
-            question.getQuestion(), params, filterName, deleted, true, assignedWeight));
+            question.getQuestion(), params, filterName, deleted, assignedWeight));
         String customName = request.getParameter(PARAM_CUSTOM_NAME);
         if (customName != null && customName.trim().length() > 0) {
             step.setCustomName(customName);

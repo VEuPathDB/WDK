@@ -1,11 +1,12 @@
 package org.gusdb.wdk.model.user;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class MockSingleStep extends MockStep {
 
-  public MockSingleStep(StepFactory stepFactory, User user, String type) throws WdkModelException {
-    super(stepFactory, user, type);
+  public MockSingleStep(WdkModel wdkModel, User user, String type) {
+    super(wdkModel, user, type);
   }
 
   @Override

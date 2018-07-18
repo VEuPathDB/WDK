@@ -70,7 +70,7 @@ public class ResultSizeFactory {
     return _resultSize;
   }
 
-  public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+  public int getDisplayResultSize() throws WdkModelException {
     ResultSize plugin = _answerValue.getQuestion().getRecordClass().getResultSizePlugin();
     LOG.debug("getting Display result size.");
     return plugin.getResultSize(_answerValue);

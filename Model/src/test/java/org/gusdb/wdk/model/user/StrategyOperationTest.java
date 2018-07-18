@@ -15,7 +15,7 @@ public abstract class StrategyOperationTest {
   protected final User user = new MockUser(wdkModel);
 
   protected Strategy createStrategy(Step root) throws WdkModelException {
-    Strategy strategy = new Strategy(stepFactory, user, random.nextInt(Integer.MAX_VALUE) + 1);
+    Strategy strategy = new Strategy(wdkModel, user, random.nextInt(Integer.MAX_VALUE) + 1);
     strategy.setProjectId(wdkModel.getProjectId());
     strategy.setLatestStep(root);
     return strategy;

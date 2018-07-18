@@ -184,7 +184,7 @@ public class AnswerParam extends Param {
   }
 
   public boolean allowRecordClass(String recordClassName) {
-    return recordClasses.containsKey(recordClassName);
+    return recordClassName != null && recordClasses.containsKey(recordClassName);
   }
 
   public void setExposeAsAttribute(boolean exposeAsAttribute) {

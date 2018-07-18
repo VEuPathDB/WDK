@@ -1732,9 +1732,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * try to find a filter with the associated key.  
    * @param key
    * @return null if not found
-   * @throws WdkModelException
    */
-  public Filter getFilter(String key) throws WdkModelException {
+  public Filter getFilter(String key) {
     Filter filter = getStepFilter(key);
     if (filter == null)
       filter = getColumnFilter(key);

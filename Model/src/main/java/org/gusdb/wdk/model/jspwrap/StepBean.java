@@ -12,7 +12,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
@@ -40,7 +40,7 @@ public class StepBean {
         return step;
     }
 
-    public StepBean getPreviousStep() throws WdkModelException {
+    public StepBean getPreviousStep() {
         if (step.getPreviousStep() != null) {
             return new StepBean(user, step.getPreviousStep());
         }
@@ -50,14 +50,6 @@ public class StepBean {
     public StepBean getNextStep() {
         Step nextStep = step.getNextStep();
         return (nextStep == null) ? null : new StepBean(user, nextStep);
-    }
-
-    public void setNextStep(StepBean next) throws WdkModelException {
-        if (next != null) step.setNextStep(next.step);
-        else {
-            Step nextStep = null;
-            step.setNextStep(nextStep);
-        }
     }
 
     public StepBean getParentStep() {
@@ -70,7 +62,7 @@ public class StepBean {
         return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
-    public StepBean getChildStep() throws WdkModelException {
+    public StepBean getChildStep() {
         if (step.getChildStep() != null) {
             return new StepBean(user, step.getChildStep());
         }
@@ -105,7 +97,7 @@ public class StepBean {
         step.setCustomName(customName);
     }
 
-    public RecordClassBean getRecordClass() throws WdkModelException {
+    public RecordClassBean getRecordClass() {
         return new RecordClassBean(step.getRecordClass());
     }
 
@@ -125,11 +117,11 @@ public class StepBean {
         return step.getResultSize();
     }
 
-    public String getOperation() throws WdkUserException, WdkModelException {
+    public String getOperation() {
         return step.getOperation();
     }
 
-    public boolean getIsFirstStep() throws WdkModelException {
+    public boolean getIsFirstStep() {
         return step.isFirstStep();
     }
 
@@ -245,7 +237,7 @@ public class StepBean {
     /**
      * @return the isValid
      */
-    public boolean getIsValid() throws WdkModelException {
+    public boolean getIsValid() {
         return step.isValid();
     }
 
@@ -253,7 +245,7 @@ public class StepBean {
         return step.getParamValues();
     }
 
-    public Map<String, String> getParamNames() throws WdkModelException {
+    public Map<String, String> getParamNames() {
         return step.getParamNames();
     }
 
@@ -354,7 +346,7 @@ public class StepBean {
         return step.getFilterName();
     }
 
-    public String getSummaryUrlParams() throws WdkModelException {
+    public String getSummaryUrlParams() {
         StringBuffer sb = new StringBuffer();
         Map<String, String> paramValues = step.getParamValues();
         Map<String, Param> params = step.getQuestion().getParamMap();
@@ -378,12 +370,8 @@ public class StepBean {
     }
 
     public String getQuestionUrlParams() {
-        Question question;
-        try {
-            question = step.getQuestion();
-        } catch (WdkModelException ex) {
-            return "";
-        }
+        Question question = step.getQuestion();
+        if (question == null) return "";
         StringBuffer sb = new StringBuffer();
         Map<String, String> paramValues = step.getParamValues();
         Map<String, Param> params = question.getParamMap();
@@ -492,7 +480,7 @@ public class StepBean {
   }
 
   public void setValid(boolean valid){
-    step.setValid(valid);
+    step.setValidFlag(valid);
   }
 
   public boolean getHasCompleteAnalyses() throws WdkModelException {

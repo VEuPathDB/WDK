@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * @author jerric
@@ -59,7 +58,7 @@ public class Migrator_b18_b19 implements Migrator {
       int count = 0;
       while (rsSteps.next()) {
         // test getting question name, and fail if we are still on old schema
-        rsSteps.getString("question_name");
+        String questionName = rsSteps.getString("question_name");
 
         // get step info
         int stepId = rsSteps.getInt("step_id");
@@ -69,7 +68,9 @@ public class Migrator_b18_b19 implements Migrator {
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
         Step step = new Step(null, 0, 0);
-        step.setParamFilterJSON(new JSONObject(paramContent));
+        step.setParamFilterJSONString(paramContent);
+        step.setQuestionName(questionName);
+        step.validate();
         Map<String, String> params = step.getParamValues();
         updateParams(stepId, params, leftChildId, rightChildId);
         step.setParamValues(params);

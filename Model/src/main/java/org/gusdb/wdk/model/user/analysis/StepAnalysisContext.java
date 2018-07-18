@@ -100,7 +100,7 @@ public class StepAnalysisContext {
         "bean exists with id " + stepId + " for user " + userBean.getUserId()));
     ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
     
-    Question question = ctx._step.getQuestion();
+    Question question = ctx._step.getAnswerSpec().getQuestion();
     ctx._stepAnalysis = question.getStepAnalyses().get(analysisName);
     
     if (ctx._stepAnalysis == null) {
@@ -153,7 +153,7 @@ public class StepAnalysisContext {
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
           "to find step (ID=" + stepId + ") defined in step analysis context (ID=" + analysisId + ")"));
       ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
-      Question question = ctx._step.getQuestion();
+      Question question = ctx._step.getAnswerSpec().getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
       ctx._formParams = new LinkedHashMap<>();

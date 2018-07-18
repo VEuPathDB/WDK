@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -114,10 +115,10 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     _formParams = formParams;
   }
   @Override
-  public ValidationErrors validateFormParams(Map<String, String[]> formParams)
+  public ValidationBundle validateFormParams(Map<String, String[]> formParams)
       throws WdkModelException, WdkUserException {
     // no validation
-    return null;
+    return ValidationBundle.builder().build();
   }
 
   /**

@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
@@ -132,8 +132,8 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException {
-    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted, validate,
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
+    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted,
         assignedWeight);
     return new StepBean(this, step);
   }
@@ -159,28 +159,6 @@ public class UserBean {
       beans[i] = new StepBean(this, steps[i]);
     }
     return beans;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#getHistories()
-   */
-  public StepBean[] getInvalidSteps() throws WdkModelException {
-    Step[] steps = StepUtilities.getInvalidSteps(_user);
-    StepBean[] beans = new StepBean[steps.length];
-    for (int i = 0; i < steps.length; i++) {
-      beans[i] = new StepBean(this, steps[i]);
-    }
-    return beans;
-  }
-
-  public void deleteInvalidSteps() throws WdkModelException {
-    _wdkModel.getStepFactory().deleteInvalidSteps(_user);
-  }
-
-  public void deleteInvalidStrategies() throws WdkModelException {
-    _wdkModel.getStepFactory().deleteInvalidStrategies(_user);
   }
 
   public Map<String, List<StepBean>> getStepsByCategory() throws WdkModelException {
@@ -318,7 +296,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#deleteStrategies()
    */
   public void deleteStrategies() throws WdkModelException {
-    StepUtilities.deleteStrategies(_user);
+    _wdkModel.getStepFactory().deleteStrategies(_user, false);
   }
 
   /**
@@ -739,7 +717,7 @@ public class UserBean {
   }
 
   public long getNewStrategyId() throws WdkModelException {
-    return _wdkModel.getStepFactory().getNewStrategyId();
+    return _wdkModel.getStepFactory().getNextStrategyId();
   }
 
 }

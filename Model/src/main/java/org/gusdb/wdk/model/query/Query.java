@@ -141,7 +141,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
   public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
+      int assignedWeight, Map<String, String> context) throws WdkModelException;
 
   @Override
   public abstract Query clone();

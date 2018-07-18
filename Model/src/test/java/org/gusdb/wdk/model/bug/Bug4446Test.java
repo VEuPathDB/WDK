@@ -99,6 +99,6 @@ public class Bug4446Test {
       }
     }
 
-    return StepUtilities.createStep(user, inputStep.getStrategyId(), question, values, (String) null, false, false, 0);
+    return StepUtilities.createStep(user, inputStep.getStrategyId(), question, values, (String) null, false, 0);
   }
 }

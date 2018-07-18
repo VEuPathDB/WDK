@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
 import java.util.List;
 import java.util.Map;
 
@@ -7,7 +9,6 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Strategy;
 
 public class ShowPublicStratsAction extends WdkAction {
@@ -17,17 +18,13 @@ public class ShowPublicStratsAction extends WdkAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    List<Strategy> publicStrats = getWdkModel().getModel().getStepFactory().loadPublicStrategies();
+    List<Strategy> publicStrats = getWdkModel().getModel().getStepFactory().getPublicStrategies();
     return new ActionResult().setViewName(SUCCESS)
         .setRequestAttribute("publicStrats", publicStrats)
         .setRequestAttribute("numValidPublicStrats", getNumValid(publicStrats));
   }
 
-  private int getNumValid(List<Strategy> stratList) throws WdkModelException {
-	int numValid = 0;
-	for (Strategy strat : stratList) {
-      if (strat.isValid()) numValid++;
-	}
-	return numValid;
+  private int getNumValid(List<Strategy> stratList) {
+    return reduce(stratList, (numValid, strat) -> strat.isValid() ? numValid + 1 : numValid,  0);
   }
 }

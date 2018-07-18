@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -13,6 +15,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -283,24 +286,20 @@ public class SharedStepsResolver extends BaseCLI {
     return step.newId;
   }
 
-  private String updateContent(String content, Map<Long, Long> ids) throws WdkModelException {
+  private String updateContent(String content, Map<Long, Long> ids) {
     JSONObject jsContent = new JSONObject(content);
-    Step step = new Step(null, 0, 0);
-    step.setParamFilterJSON(jsContent);
-    Map<String, String> params = step.getParamValues();
-
-    // update param values
-    String[] paramNames = params.keySet().toArray(new String[0]);
-    for (long oldId : ids.keySet()) {
-      String old = Long.toString(oldId);
-      for (String paramName : paramNames) {
-        String value = params.get(paramName);
-        if (value.equals(old))
-          params.put(paramName, Long.toString(ids.get(oldId)));
+    JSONObject params = jsContent.has(Step.KEY_PARAMS) ? jsContent.getJSONObject(Step.KEY_PARAMS) : jsContent;
+    // RRD: Crazy. When migrating steps we just changed param values if the value was an old ID.
+    //      This means if there was a string param (number) with value of an ID, we would change to new ID.
+    //      I am replicating that logic below since this code will likely never run again.
+    Set<String> oldIds = ids.keySet().stream().map(id -> String.valueOf(id)).collect(Collectors.toSet());
+    for (String paramName : JsonUtil.getKeys(params)) {
+      String oldValue = params.getString(paramName);
+      if (oldIds.contains(oldValue)) {
+        // perform a mapping; put new ID in place 
+        params.put(paramName, String.valueOf(ids.get(Long.valueOf(oldValue))));
       }
     }
-    step.setParamValues(params);
-    jsContent = step.getParamFilterJSON();
     return jsContent.toString();
   }
 }

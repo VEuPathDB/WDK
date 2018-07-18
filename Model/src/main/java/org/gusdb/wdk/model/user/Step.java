@@ -1,9 +1,13 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,26 +16,30 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
+import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.wdk.model.WdkIllegalArgumentException;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.filter.FilterOption;
-import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.ParamValuesInvalidException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONArray;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,24 +47,33 @@ import org.json.JSONObject;
  * @author Charles Treatman
  * 
  */
-public class Step {
+public class Step implements StrategyElement {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
+  // TODO: decide what to do with these constants (key all errors off them somehow?)
+  public static enum InvalidReason {
+
+    // answer spec problems
+    INVALID_QUESTION,
+    INVALID_ANSWER_SPEC,
+
+    // strategy integrity problems
+    CHILD_STEPS_OUTSIDE_STRATEGY;
+  }
+
   public static final int RESET_SIZE_FLAG = -1;
 
-  public static final String KEY_PARAMS = "params";
-  public static final String KEY_FILTERS = "filters";
-  public static final String KEY_VIEW_FILTERS = "viewFilters";
-
-  // injected during Step object creation
+  // set during Step object creation
+  private final WdkModel _wdkModel;
   private final StepFactory _stepFactory;
-  // lazy loaded, but every step has a user
-  private User _user;
+
   // in DB, owning user id
   private long _userId;
   // in DB, Primary key
   private long _stepId;
+  // in DB, encapsulating strategy (may be null if orphan step)
+  private Long _strategyId;
   // in DB, set during step creation
   private Date _createdTime;
   // in DB, last time Answer generated, written to DB each time
@@ -65,37 +82,37 @@ public class Step {
   private String _customName;
   // in DB, for soft delete
   private boolean _isDeleted = false;
-
-  // creation timestamp for this Java object
-  public long _objectCreationDate;
-
-  // nested step
+  // in DB, valid flag may be set during maintenance (TODO: assess relevance any more?)
+  private boolean _isValidFlag = true;
+  // in DB, last known size of result (see _estimateSizeRefreshed below)
+  private int _estimateSize = -1;
+  // in DB, tells if nested step
   private boolean _collapsible = false;
+  // in DB, custom name for nested "strategy"
   private String _collapsedName = null;
-
+  // in DB, project ID when step was created
   private String _projectId;
+  // in DB, project version when step was created
   private String _projectVersion;
-  private String _questionName;
+  // in DB, IDs of child steps (i.e. left and right children)
+  private long _previousStepId = 0;
+  private long _childStepId = 0;
+
+  // in DB, defines the parameters used to find this Step's answer
+  private AnswerSpec _answerSpec;
+
+  // set during finish() from IDs in DB
+  private User _user;
+  private Strategy _strategy;
 
   // Steps within the "main branch" strategy flow
   // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
-  private Step _nextStep = null;
+  //private Step _nextStep = null;
   // Previous step could be first step (=leaf), or combined step
-  private Step _previousStep = null;
+  //private Step _previousStep = null;
 
-  // Parent step must be a boolean
-  private Step _parentStep = null;
   // Child can be a "normal" leaf, or collapsible version of leaf, boolean, or transform
-  private Step _childStep = null;
-
-  // Probably should be marked deprecated
-  // Jerric says can be retrieved from param values
-  private String _booleanExpression;
-
-  // in DB, set during maintenance (true or null = valid, false = invalid)
-  private boolean _valid = true;
-  // set during runtime so we don't recheck validity over and over as we check the tree
-  private boolean _validityChecked = false;
+  //private Step _childStep = null;
 
   /**
    * First set when step was created and answer generated, size stored in DB. So can use this to show step
@@ -105,52 +122,14 @@ public class Step {
    * (in place)- also all steps affected by this step are also changed to -1 so the values are set when those
    * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
    */
-  private int _estimateSize = -1;
-
-  // LEGACY!!  Any filtering code mods should be applied to the parameterized
-  //     filter framework.  TODO: remove this code and migrade the DB
-  // Name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
-  // if any filters exist on a recordclass, model must have a "default" filter; usually this is
-  // a filter that simply returns all the results. The default filter is automatically applied to a step.
-  // This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
-  private String _filterName;
+  private boolean _estimateSizeRefreshed = false;
 
   // stores answer values for this step object and manages reuse of those objects
   private AnswerValueCache _answerValueCache;
 
-  // Map of param name (without set name) to stable value (always a string), which are:
-  // StringParam: unquoted raw value
-  // TimestampParam: millisecs since 1970 (or whatever)
-  // DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
-  // AbstractEnumParam: unsorted string representation of term list (comma-delimited)
-  // EnumParam: (inherited)
-  // FlatVocabParam: (inherited)
-  // FilterParam: JSON string representing all filters applied (see FilterParam)
-  // AnswerParam: Step ID
-  private Map<String, String> _paramValues = new LinkedHashMap<String, String>();
-
-  // filters applied to this step
-  private FilterOptionList _filterOptions;
-
-  // view filters applied to this step
-  private FilterOptionList _viewFilterOptions;
-
-  // only applied to leaf steps, user-defined
-  // during booleans, weights of records are modified (per boolean-specific logic, see BooleanQuery)
-  private int _assignedWeight;
-
-  // in DB, for those steps unloaded (i.e. previous and child steps are lazy loaded)
-  private long _previousStepId;
-  private long _childStepId;
-
-  // This value may or may not be used by the UI, but it is not changed. isRevisable always returns true
-  private boolean _revisable = true;
-
   // Set if exception occurs during step loading (but we don't want to bubble the exception up)
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception _exception;
-
-  private Long _strategyId;
 
   // Set this if this step should not be written to /read from db.  A hack in support of
   // summary views, until they are refactored using service.
@@ -168,39 +147,14 @@ public class Step {
    *          id of the step
    * @throws WdkModelException 
    */
-  public Step(StepFactory stepFactory, long userId, long stepId) throws WdkModelException {
-    _stepFactory = stepFactory;
+  public Step(WdkModel wdkModel, long userId, long stepId) {
+    _wdkModel = wdkModel;
+    _stepFactory = wdkModel.getStepFactory();
     _user = null;
     _userId = userId;
     _stepId = stepId;
     _answerValueCache = new AnswerValueCache(this);
     _isDeleted = false;
-    _assignedWeight = 0;
-    _objectCreationDate = System.currentTimeMillis();
-  }
-
-  /**
-   * Creates a step object for the given user and step ID.
-   * 
-   * @param stepFactory
-   *          step factory that generated this step
-   * @param user
-   *          owner of this step
-   * @param stepId
-   *          id of the step
-   * @throws WdkModelException 
-   * @throws NullPointerException
-   *           if user is null
-   */
-  public Step(StepFactory stepFactory, User user, long stepId) throws WdkModelException {
-    _stepFactory = stepFactory;
-    _user = user;
-    _userId = user.getUserId();
-    _stepId = stepId;
-    _answerValueCache = new AnswerValueCache(this);
-    _isDeleted = false;
-    _assignedWeight = 0;
-    _objectCreationDate = System.currentTimeMillis();
   }
 
   /**
@@ -211,6 +165,7 @@ public class Step {
    * @throws WdkModelException 
    */
   public Step(Step step) throws WdkModelException {
+    _wdkModel = step._wdkModel;
     _stepFactory = step._stepFactory;
     _user = step._user;
     _userId = step._userId;
@@ -223,37 +178,26 @@ public class Step {
     _collapsedName = step._collapsedName;
     _projectId = step._projectId;
     _projectVersion = step._projectVersion;
-    _questionName = step._questionName;
-    _nextStep = step._nextStep;
-    _previousStep = step._previousStep;
-    _parentStep = step._parentStep;
-    _childStep = step._childStep;
-    _booleanExpression = step._booleanExpression;
-    _valid = step._valid;
-    _validityChecked = step._validityChecked;
+    _isValidFlag = step._isValidFlag;
     _estimateSize = step._estimateSize;
-    _filterName = step._filterName;
-    _paramValues = step._paramValues;
-    _filterOptions = step._filterOptions;
-    _viewFilterOptions = step._viewFilterOptions;
-    _assignedWeight = step._assignedWeight;
+    _estimateSizeRefreshed = step._estimateSizeRefreshed;
     _previousStepId = step._previousStepId;
     _childStepId = step._childStepId;
-    _revisable = step._revisable;
     _exception = step._exception;
     _strategyId = step._strategyId;
     _inMemoryOnly = step._inMemoryOnly;
-    _objectCreationDate = step._objectCreationDate;
 
     // answer value cache copy is NOT shallow- if caller wants a new step, they are
     // probably going to modify it to get a different answer value
     _answerValueCache = new AnswerValueCache(this);
   }
 
-  public Step getPreviousStep() throws WdkModelException {
-    if (_previousStep == null && _previousStepId != 0)
-      setPreviousStep(_stepFactory.loadStep(getUser(), _previousStepId));
-    return _previousStep;
+  public Step getPreviousStep() {
+    return _previousStepId == 0 ? null : _strategy.getStep(_previousStepId);
+  }
+
+  public Step getChildStep() {
+    return _childStepId == 0 ? null : _strategy.getStep(_childStepId);
   }
 
   public Step getNextStep() {
@@ -261,50 +205,83 @@ public class Step {
   }
 
   public Step getParentStep() {
-    return _parentStep;
+    return _strategy.findParentOf(_stepId);
   }
 
   public Step getParentOrNextStep() {
-    return (_nextStep != null) ? _nextStep : _parentStep;
+    Step nextStep = getNextStep();
+    return (_nextStep != null) ? _nextStep : getParentStep();
   }
 
-  public Step getChildStep() throws WdkModelException {
-    if (_childStep == null && _childStepId != 0)
-      setChildStep(_stepFactory.loadStep(getUser(), _childStepId));
-    return _childStep;
+  /**
+   * Basic getter than just returns the current value for this field without checks,
+   * lazy loading, or side effects (e.g., database updates)
+   * 
+   * @return "current" estimate size as shown in DB
+   */
+  @Deprecated
+  public int getRawEstimateSize() {
+    return getEstimateSize();
   }
 
-  public int getAnswerParamCount() {
-    try {
-      return getQuestion().getQuery().getAnswerParamCount();
-    }
-    catch (WdkModelException ex) {
-      return 0;
-    }
+  /**
+   * Calculate the estimate size
+   * 
+   * @return newly calculated estimate size
+   */
+  @Deprecated
+  public int getCalculatedEstimateSize() {
+    return defaultOnException(() -> getResultSize(), 0);
+  }
+
+  /**
+   * @return Size estimate of this step's result
+   */
+  public int getEstimateSize() {
+    return _answerSpec.isValid() ? _estimateSize : 0;
+  }
+
+  /**
+   * @param estimateSize
+   *          The estimateSize to set.
+   */
+  void setEstimateSize(int estimateSize) {
+    _estimateSize = estimateSize;
   }
 
   /** 
-   * Get the real result size from the answerValue.  AnswerValue is
-   * responsible for caching, if any
+   * Get the real result size from the answerValue.  AnswerValue is responsible for caching, if any
    */
-  public int getResultSize() throws WdkModelException, WdkUserException {
+  public int getResultSize() throws WdkModelException {
+    return _estimateSizeRefreshed ? _estimateSize :
+           !_answerSpec.isValid() ? 0 :
+           recalculateResultSize();
+  }
+
+  private int recalculateResultSize() throws WdkModelException {
     _estimateSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
+    _estimateSizeRefreshed = true;
+    update(true);
     return _estimateSize;
   }
 
   // Needs to be updated for transforms
-  public String getOperation() throws WdkModelException, WdkUserException {
+  public String getOperation() {
     if (isFirstStep()) {
-      throw new WdkUserException("getOperation cannot be called on the first Step.");
+      throw new IllegalStateException("getOperation cannot be called on the first Step.");
     }
-    BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
+    BooleanQuery query = (BooleanQuery) _answerSpec.getQuestion().getQuery();
     StringParam operator = query.getOperatorParam();
-    return _paramValues.get(operator.getName());
+    return _answerSpec.getParamValues().get(operator.getName());
   }
 
+  @Deprecated
   public void setParentStep(Step parentStep) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, parentStep);
-    _parentStep = parentStep;
+    // check if this is a no-op
+    if (parentStep.getStepId() == _parentStepId) return;
+    verifySameOwnerAndProject(this, parentStep);
+    _strategy.appendStep(parentStep);
+    _parentStepId = parentStep.getStepId();
     if (parentStep != null) {
       parentStep._childStep = this;
       parentStep._childStepId = _stepId;
@@ -312,52 +289,46 @@ public class Step {
   }
 
   public void setChildStep(Step childStep) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, childStep);
+    verifySameOwnerAndProject(this, childStep);
     _childStep = childStep;
     if (childStep != null) {
       childStep._parentStep = this;
       _childStepId = childStep.getStepId();
-
-      // also update the param value
-      String paramName = getChildStepParamName();
-      _paramValues.put(paramName, Long.toString(_childStepId));
+      updateAnswerParamValue(getChildStepParamName(), _childStepId);
     }
     else
       _childStepId = 0;
   }
 
   public void setNextStep(Step nextStep) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, nextStep);
+    verifySameOwnerAndProject(this, nextStep);
     _nextStep = nextStep;
     if (nextStep != null) {
-      nextStep._previousStep = this;
       nextStep._previousStepId = _stepId;
     }
   }
 
   public void setPreviousStep(Step previousStep) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, previousStep);
+    verifySameOwnerAndProject(this, previousStep);
     _previousStep = previousStep;
     if (previousStep != null) {
       previousStep._nextStep = this;
       _previousStepId = previousStep.getStepId();
-
-      String paramName = getPreviousStepParamName();
-      _paramValues.put(paramName, Long.toString(_previousStepId));
+      updateAnswerParamValue(getPreviousStepParamName(), _previousStepId);
     }
     else
       _previousStepId = 0;
   }
 
-  public boolean isFirstStep() throws WdkModelException {
+  private void updateAnswerParamValue(String paramName, long stepId) {
+    _answerSpec = AnswerSpec.builder(_answerSpec).setParamValue(paramName, Long.toString(stepId)).build();
+  }
+
+  public boolean isFirstStep() {
     return (null == getPreviousStepParam());
   }
 
-  public User getUser() throws WdkModelException {
-    if (_user == null) {
-      // if constructed with only the user id, lazy-load User object
-      _user = _stepFactory.getWdkModel().getUserFactory().getUserById(_userId);
-    }
+  public User getUser() {
     return _user;
   }
 
@@ -391,23 +362,16 @@ public class Step {
    */
   public String getCustomName() {
     String name = _customName;
-    if (name == null || name.length() == 0) {
-      try {
-        name = getQuestion().getShortDisplayName();
-      }
-      catch (WdkModelException ex) {
-        name = null;
-      }
+    Question question = _answerSpec.getQuestion();
+    if (name == null || name.isEmpty()) {
+      name = question == null ? _answerSpec.getQuestionName() : question.getShortDisplayName();
     }
-    if (name == null)
-      name = getQuestionName();
-    if (name != null) {
-      // remove script injections
-      name = name.replaceAll("<.+?>", " ");
-      name = name.replaceAll("[\"]", " ");
-      name = name.trim().replaceAll("\\s+", " ");
-      if (name.length() > 4000)
-        name = name.substring(0, 4000);
+    // remove script injections
+    name = name.replaceAll("<.+?>", " ");
+    name = name.replaceAll("[\"]", " ");
+    name = name.trim().replaceAll("\\s+", " ");
+    if (name.length() > 4000) {
+      name = name.substring(0, 4000);
     }
     return name;
   }
@@ -417,29 +381,15 @@ public class Step {
    *         underlying question.
    */
   public String getShortDisplayName() {
-    /*
-     * String name = customName;
-     * 
-     * if (name == null) name = getQuestion().getShortDisplayName(); if (name != null) { // remove script
-     * injections name = name.replaceAll("<.+?>", " "); name = name.replaceAll("['\"]", " "); name =
-     * name.trim().replaceAll("\\s+", " "); if (name.length() > 4000) name = name.substring(0, 4000); } return
-     * name;
-     */
-    try {
-      return getQuestion().getShortDisplayName();
-    }
-    catch (WdkModelException ex) {
-      return getDisplayName();
-    }
+    Question question = _answerSpec.getQuestion();
+    return question == null ? getDisplayName() : question.getShortDisplayName();
   }
 
   public String getDisplayName() {
-    try {
-      return getQuestion().getDisplayName();
-    }
-    catch (WdkModelException ex) {
-      return (_customName != null) ? _customName : _questionName;
-    }
+    Question question = _answerSpec.getQuestion();
+    return question == null ?
+        (_customName != null ? _customName : _answerSpec.getQuestionName()) :
+        question.getDisplayName();
   }
 
   /**
@@ -455,94 +405,6 @@ public class Step {
    */
   public long getStepId() {
     return _stepId;
-  }
-  
-  /**
-   * Basic getter than just returns the current value for this field without checks,
-   * lazy loading, or side effects (e.g., database updates)
-   * @return
-   */
-  public int getRawEstimateSize() {
-	return _estimateSize;
-  }
-  
-  /**
-   * Calculate the estimate size
-   * @return
-   */
-  public int calculateEstimateSize() {
-    try {
-      if (!isValid()) {
-        return RESET_SIZE_FLAG;
-      }
-      if (_estimateSize == RESET_SIZE_FLAG) {
-        // The flag indicates if the size has been reset, and need to be calculated again.
-        try {
-          _estimateSize = getResultSize();
-          this.update(true);
-        }
-        catch (ParamValuesInvalidException e) {
-          // means we have invalid param values in this Step; invalidate locally
-          // TODO: experimented with writing this value to DB here but that causes errors if bad params
-          //   are entered during Add Step.  Figure out why and maybe add back
-          //invalidateStep();
-          _valid = false;
-          _validityChecked = true;
-          return 0;
-        }
-      }
-      return _estimateSize;
-    }
-    catch (Exception e) {
-      // do not throw error in this method, just return 0, to avoid infinite
-      // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
-      // it sees a -1;
-    	  // Used by service and NOT by struts
-      LOG.error("Error occurred, use the old estimate size", e);
-      return -1;
-    }
-  }
-
-  /**
-   * @return Size estimate of this step's result
-   */
-  public int getEstimateSize() {
-    try {
-      if (!isValid()) {
-        return 0;
-      }
-      if (_estimateSize == RESET_SIZE_FLAG) {
-        // The flag indicates if the size has been reset, and need to be calculated again.
-        try {
-          _estimateSize = getResultSize();
-        }
-        catch (ParamValuesInvalidException e) {
-          // means we have invalid param values in this Step; invalidate locally
-          // TODO: experimented with writing this value to DB here but that causes errors if bad params
-          //   are entered during Add Step.  Figure out why and maybe add back
-          //invalidateStep();
-          _valid = false;
-          _validityChecked = true;
-          return 0;
-        }
-      }
-      return _estimateSize;
-    }
-    catch (Exception e) {
-      // do not throw error in this method, just return 0, to avoid infinite
-      // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
-      // it sees a -1;
-      LOG.error("Error occurred, use the old estimate size", e);
-      return 0;
-    }
-  }
-
-  /**
-   * @param estimateSize
-   *          The estimateSize to set.
-   */
-  public void setEstimateSize(int estimateSize) {
-    _estimateSize = estimateSize;
   }
 
   /**
@@ -560,19 +422,22 @@ public class Step {
     _lastRunTime = lastRunTime;
   }
 
+  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
+  public boolean isBoolean() {
+    Question question = _answerSpec.getQuestion();
+    return question == null ? false : question.isBoolean();
+  }
+
   /**
    * A combined step can take one or more steps as input. a Transform is a special case of combined step, and
    * a boolean is another special case.
    * 
    * @return a flag to determine if a step can take other step(s) as input.
    */
+  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isCombined() {
-    try {
-      return getQuestion().isCombined();
-    }
-    catch (WdkModelException ex) {
-      return false;
-    }
+    Question question = _answerSpec.getQuestion();
+    return question == null ? false : question.isCombined();
   }
 
   /**
@@ -580,28 +445,10 @@ public class Step {
    * 
    * @return Returns whether this Step is a transform
    */
+  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isTransform() {
-    try {
-      return getQuestion().isTransform();
-    }
-    catch (WdkModelException ex) {
-      return false;
-    }
-  }
-
-  /**
-   * @return Returns the booleanExpression.
-   */
-  public String getBooleanExpression() {
-    return _booleanExpression;
-  }
-
-  /**
-   * @param booleanExpression
-   *          The booleanExpression to set.
-   */
-  public void setBooleanExpression(String booleanExpression) {
-    _booleanExpression = booleanExpression;
+    Question question = _answerSpec.getQuestion();
+    return question == null ? false : question .isTransform();
   }
 
   // saves attributes of the step that do NOT impact results or parent steps
@@ -647,7 +494,7 @@ public class Step {
             FormatUtil.arrayToString(stepIds.toArray())));
 
     // refresh in-memory step here in case listeners also modified it
-    refreshParamFilters();
+    refreshAnswerSpec();
   }
 
   /**
@@ -658,22 +505,14 @@ public class Step {
    * 
    * @throws WdkModelException if unable to load updated step
    */
-  private void refreshParamFilters() throws WdkModelException {
+  private void refreshAnswerSpec() throws WdkModelException {
     Step step = _stepFactory.getStepById(getStepId());
-    _filterName = step._filterName;
-    _paramValues = step._paramValues;
-    _filterOptions = step._filterOptions;
-    _viewFilterOptions = step._viewFilterOptions;
-    _objectCreationDate = step._objectCreationDate;
+    _answerSpec = step._answerSpec;
   }
 
   public String getDescription() {
-    try {
-      return getQuestion().getDescription();
-    }
-    catch (WdkModelException ex) {
-      return null;
-    }
+    Question question = _answerSpec.getQuestion();
+    return question == null ? null : question.getDescription();
   }
 
   /**
@@ -721,84 +560,19 @@ public class Step {
    * 
    * @return true if this step is valid (to the best of our knowledge), else false
    */
-  public boolean isValid() throws WdkModelException {
-    if (!_valid || _validityChecked) {
-      // check 1: return; later, revise can turn step from invalid -> valid
-      // check 2: if value is memoized, do not check steps and params again
-      return _valid;
-    }
-
-    // check stored param names against those in Question
-    Question question = null;
-    try {
-      question = getQuestion();
-    }
-    catch (WdkModelException e) {
-      LOG.warn("Found step [" + _stepId + "] with invalid question " + _questionName + ". Invalidating in DB.");
-      invalidateStep();
-      return false;
-    }
-
-    Map<String, Param> params = question.getParamMap();
-    for (String paramName : _paramValues.keySet()) {
-      if (!params.containsKey(paramName)) {
-        LOG.error("Unable to find all stored param names in Question " + "(bad param name = " + paramName +
-            ").  Setting valid to false.");
-        invalidateStep();
-        return false;
-      }
-    }
-
-    // check previous and child steps if still valid
-    Step myPrevStep, myChildStep;
-    if (_valid &&
-        (((myPrevStep = getPreviousStep()) != null && !myPrevStep.isValid()) ||
-         ((myChildStep = getChildStep()) != null && !myChildStep.isValid()))) {
-      invalidateStep();
-      return false;
-    }
-
-    _validityChecked = true;
-    return true;
+  public boolean isValid() {
+    return _answerSpec.isValid();
   }
 
-  /**
-   * Sets valid value to false and sends change to the DB
-   * 
-   * @throws WdkModelException
-   *           if unable to update DB
-   */
-  public void invalidateStep() throws WdkModelException {
-    setValid(false);
-    _validityChecked = true;
-    if (!_inMemoryOnly) {
-     _stepFactory.setStepValidFlag(this);
-    }
-  }
-
-  /**
-   * @param isValid
-   *          the isValid to set
-   */
-  public void setValid(boolean valid) {
-    _valid = valid;
-  }
-
-  public Map<String, String> getParamNames() throws WdkModelException {
-    Map<String, Param> params = getQuestion().getQuery().getParamMap();
-    Map<String, String> names = new LinkedHashMap<String, String>();
-    for (Param param : params.values()) {
-      names.put(param.getName(), param.getPrompt());
-    }
-    return names;
+  public Map<String, String> getParamNames() {
+    return _answerSpec.getQuestion() == null ?
+        new LinkedHashMap<String, String>() :
+        getMapFromList(_answerSpec.getQuestion().getQuery().getParamMap().values(),
+            param -> new TwoTuple<>(param.getName(), param.getPrompt()));
   }
 
   public String getQuestionName() {
-    return _questionName;
-  }
-
-  public void setQuestionName(String questionName) {
-    _questionName = questionName;
+    return _answerSpec.getQuestionName();
   }
 
   public String getProjectId() {
@@ -943,80 +717,8 @@ public class Step {
     return null;
   }
 
-  /**
-   * @return the paramErrors
-   */
-  public Map<String, String> getParamValues() {
-    return new LinkedHashMap<String, String>(_paramValues);
-  }
-
-  /**
-   * @param paramValues
-   *          the paramValues to set
-   */
-  public void setParamValues(Map<String, String> paramValues) {
-    if (paramValues == null)
-      paramValues = new LinkedHashMap<>();
-    _paramValues = new LinkedHashMap<String, String>(paramValues);
-  }
-
-  public FilterOptionList getFilterOptions() {
-    if (_filterOptions == null) {
-      _filterOptions = new FilterOptionList(_stepFactory.getWdkModel(), _questionName);
-    }
-    return _filterOptions;
-  }
-
-  public FilterOptionList getViewFilterOptions() {
-    if (_viewFilterOptions == null) {
-      _viewFilterOptions = new FilterOptionList(_stepFactory.getWdkModel(), _questionName);
-    }
-    return _viewFilterOptions;
-  }
-
-  public void setFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
-    validateFilterOptions(filterOptions, false);
-    _filterOptions = filterOptions;
-    _answerValueCache.invalidateAll();
-  }
-
-  public void setViewFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
-    validateFilterOptions(filterOptions, true);
-    _viewFilterOptions = filterOptions;
-    _answerValueCache.invalidateViewAnswers();
-  }
-
-  // we need to pass the disabled property
-  public void addFilterOption(String filterName, JSONObject filterValue, boolean is_disabled) throws WdkModelException {
-    getFilterOptions().addFilterOption(filterName, filterValue, is_disabled);
-    validateFilterOptions(getViewFilterOptions(), false);
-  }
-
-  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
-    getFilterOptions().addFilterOption(filterName, filterValue);
-    validateFilterOptions(getViewFilterOptions(), false);
-  }
-
-
-  public void removeFilterOption(String filterName) {
-    getFilterOptions().removeFilterOption(filterName);
-  }
-
-  public void addViewFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
-    getViewFilterOptions().addFilterOption(filterName, filterValue);
-    validateFilterOptions(getViewFilterOptions(), true);
-  }
-
-  public void removeViewFilterOption(String filterName) {
-    getViewFilterOptions().removeFilterOption(filterName);
-  }
-
-  public void setParamValue(String paramName, String paramValue) {
-    _paramValues.put(paramName, paramValue);
-  }
-
-  public RecordClass getRecordClass() throws WdkModelException {
-    return getQuestion().getRecordClass();
+  public RecordClass getRecordClass() {
+    return _answerSpec.hasValidQuestion() ? null : _answerSpec.getQuestion().getRecordClass();
   }
 
   public int getIndexFromId(int stepId) throws WdkUserException, WdkModelException {
@@ -1032,24 +734,24 @@ public class Step {
   }
 
   public Step createStep(String filterName, int assignedWeight) throws WdkModelException {
-    RecordClass recordClass = getQuestion().getRecordClass();
-    AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
+    AnswerFilterInstance filter = _answerSpec.getQuestion().getRecordClass().getFilterInstance(filterName);
     return createStep(filter, assignedWeight);
   }
 
   public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
-    AnswerFilterInstance oldFilter = getFilter();
-    if (filter == null && oldFilter == null && _assignedWeight == assignedWeight)
+    // make sure caller is asking for something new; if not, return this Step
+    AnswerFilterInstance oldFilter = _answerSpec.getLegacyFilter();
+    if (_answerSpec.getWeight() == assignedWeight &&
+        ((filter == null && oldFilter == null) ||
+         (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
       return this;
-    if (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName()) &&
-        _assignedWeight == assignedWeight)
-      return this;
+    }
 
     // create new steps
-    Question question = getQuestion();
-    Map<String, String> params = getParamValues();
-    Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, _isDeleted, false,
-        assignedWeight, getFilterOptions());
+    Question question = _answerSpec.getQuestion();
+    Map<String, String> params = _answerSpec.getParamValues().toMap();
+    Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, _isDeleted,
+        assignedWeight, _answerSpec.getFilterValues());
     step._collapsedName = _collapsedName;
     step._customName = _customName;
     step._collapsible = _collapsible;
@@ -1067,25 +769,25 @@ public class Step {
   public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
     Step step;
     if (!isCombined()) {
-      step = StepUtilities.createStep(_user, strategyId, getQuestion(), _paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, _filterOptions);
+      step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(), _answerSpec.getParamValues().toMap(),
+          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getWeight(), _answerSpec.getFilterValues());
     }
     else {
-      Question question = getQuestion();
+      Question question = _answerSpec.getQuestion();
       Map<String, String> paramValues = new LinkedHashMap<String, String>();
       Map<String, Param> params = question.getParamMap();
-      for (String paramName : _paramValues.keySet()) {
+      for (String paramName : _answerSpec.getParamValues().keySet()) {
         Param param = params.get(paramName);
-        String paramValue = _paramValues.get(paramName);
+        String paramValue = _answerSpec.getParamValues().get(paramName);
         if (param instanceof AnswerParam) {
-          Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
+          Step child = StepUtilities.getStep(getUser(), Long.parseLong(paramValue));
           child = child.deepClone(strategyId, stepIdMap);
           paramValue = Long.toString(child.getStepId());
         }
         paramValues.put(paramName, paramValue);
       }
       step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, getFilterOptions());
+          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getWeight(), _answerSpec.getFilterValues());
     }
 
     stepIdMap.put(getStepId(), step.getStepId());
@@ -1103,47 +805,29 @@ public class Step {
 
   public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
-    if (_filterOptions != null && _filterOptions.isFiltered(this))
+    if (_answerSpec.getFilterValues() != null && _answerSpec.getFilterValues().isFiltered(_answerSpec.toSimpleAnswerSpec()))
       return true;
 
-    AnswerFilterInstance filter = getFilter();
-    if (filter == null)
-      return false;
-
-    Question question;
-    try {
-      question = getQuestion();
-    }
-    catch (WdkModelException ex) {
+    AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
+    Question question = _answerSpec.getQuestion();
+    if (filter == null || question == null) {
       return false;
     }
-    RecordClass recordClass = question.getRecordClass();
-    AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
-    if (defaultFilter == null)
-      return true;
 
-    return (!defaultFilter.getName().equals(filter.getName()));
+    AnswerFilterInstance defaultFilter = question.getRecordClass().getDefaultFilter();
+    return defaultFilter == null ? true : !defaultFilter.getName().equals(filter.getName());
   }
 
   public String getFilterDisplayName() {
-    AnswerFilterInstance filter = getFilter();
-    return (filter != null) ? filter.getDisplayName() : _filterName;
+    AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
+    return (filter != null) ? filter.getDisplayName() : _answerSpec.getLegacyFilterName();
   }
 
-  public Step getFirstStep() throws WdkModelException {
+  public Step getFirstStep() {
     Step step = this;
     while (step.getPreviousStep() != null)
       step = step.getPreviousStep();
     return step;
-  }
-
-  public boolean isBoolean() {
-    try {
-      return getQuestion().isBoolean();
-    }
-    catch (WdkModelException ex) {
-      return false;
-    }
   }
 
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
@@ -1157,14 +841,14 @@ public class Step {
     try {
       jsStep.put("id", _stepId);
       jsStep.put("customName", _customName);
-      jsStep.put("question", _questionName);
+      jsStep.put("question", _answerSpec.getQuestion());
       jsStep.put("projectVersion", _projectVersion);
-      jsStep.put("filter", _filterName);
+      jsStep.put("filter", _answerSpec.getLegacyFilterName());
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", _isDeleted);
-      jsStep.put(KEY_PARAMS, getParamsJSON());
-      jsStep.put(KEY_FILTERS, getFilterOptionsJSON());
+      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS, ParamFiltersClobFormat.formatParams(_answerSpec.getParamValues()));
+      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS, ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterValues()));
 
       Step childStep = getChildStep();
       if (childStep != null) {
@@ -1192,56 +876,20 @@ public class Step {
     return jsStep;
   }
 
-  public Question getQuestion() throws WdkModelException {
-    return _stepFactory.getWdkModel().getQuestion(_questionName);
-  }
-
-  public AnswerFilterInstance getFilter() {
-    try {
-      return getQuestion().getRecordClass().getFilterInstance(_filterName);
-    }
-    catch (WdkModelException ex) {
-      return null;
-    }
-  }
-
-  public String getFilterName() {
-    return _filterName;
-  }
-
-  public void setFilterName(String filterName) {
-    _filterName = filterName;
-  }
-
-  public AnswerValue getAnswerValue() throws WdkModelException, WdkUserException {
+  public AnswerValue getAnswerValue() throws WdkModelException {
     return _answerValueCache.getAnswerValue(true);
   }
 
-  public AnswerValue getViewAnswerValue() throws WdkModelException, WdkUserException {
+  public AnswerValue getViewAnswerValue() throws WdkModelException {
     return _answerValueCache.getViewAnswerValue(true);
   }
 
-  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException {
     return _answerValueCache.getAnswerValue(validate);
   }
 
   public void resetAnswerValue() {
     _answerValueCache.invalidateAll();
-  }
-
-  /**
-   * @return the assignedWeight
-   */
-  public int getAssignedWeight() {
-    return _assignedWeight;
-  }
-
-  /**
-   * @param assignedWeight
-   *          the assignedWeight to set
-   */
-  public void setAssignedWeight(int assignedWeight) {
-    _assignedWeight = assignedWeight;
   }
 
   /**
@@ -1260,7 +908,7 @@ public class Step {
   }
 
   public void setAndVerifyPreviousStepId(long previousStepId) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, previousStepId);
+    verifySameOwnerAndProject(this, previousStepId);
     setPreviousStepId(previousStepId);
   }
 
@@ -1280,12 +928,8 @@ public class Step {
   }
 
   public void setAndVerifyChildStepId(long childStepId) throws WdkModelException {
-    _stepFactory.verifySameOwnerAndProject(this, childStepId);
+    verifySameOwnerAndProject(this, childStepId);
     setChildStepId(childStepId);
-  }
-
-  public boolean isRevisable() {
-    return _revisable;
   }
 
   /**
@@ -1293,10 +937,10 @@ public class Step {
    * list.
    * 
    * @return an AnswerParam
-   * @throws WdkModelException
    */
-  public AnswerParam getPreviousStepParam() throws WdkModelException {
-    Param[] params = getQuestion().getParams();
+  public AnswerParam getPreviousStepParam() {
+    if (!hasValidQuestion()) return null;
+    Param[] params = _answerSpec.getQuestion().getParams();
     for (Param param : params) {
       if (param instanceof AnswerParam) {
         return (AnswerParam) param;
@@ -1317,8 +961,9 @@ public class Step {
     return (param == null) ? null : param.getName();
   }
 
-  public AnswerParam getChildStepParam() throws WdkModelException {
-    Param[] params = getQuestion().getParams();
+  public AnswerParam getChildStepParam() {
+    if (!hasValidQuestion()) return null;
+    Param[] params = _answerSpec.getQuestion().getParams();
     int index = 0;
     for (Param param : params) {
       if (param instanceof AnswerParam) {
@@ -1379,147 +1024,13 @@ public class Step {
   }
 
   public boolean getHasCompleteAnalyses() throws WdkModelException {
-    return _stepFactory.getWdkModel().getStepAnalysisFactory().hasCompleteAnalyses(this);
+    return _wdkModel.getStepAnalysisFactory().hasCompleteAnalyses(this);
   }
 
-  public JSONObject getParamFilterJSON() {
-    JSONObject jsContent = new JSONObject();
-    jsContent.put(KEY_PARAMS, getParamsJSON());
-    jsContent.put(KEY_FILTERS, getFilterOptionsJSON());
-    jsContent.put(KEY_VIEW_FILTERS, getViewFilterOptionsJSON());
-    return jsContent;
-  }
 
-  public void setParamFilterJSON(JSONObject jsContent) throws WdkModelException {
-
-    // handle no params, no filters
-    if (jsContent == null) {
-      setParamsJSON(null);
-      setFilterOptionsJSON(null);
-      setViewFilterOptionsJSON(null);
-      return;
-    }
-
-    //logger.debug("Parsing json:\n" + jsContent.toString(2));
-
-    // legacy records: if no "params" property, assume JSON represents only params
-    if (!jsContent.has(KEY_PARAMS)) {
-      setParamsJSON(jsContent);
-      setFilterOptionsJSON(null);
-      setViewFilterOptionsJSON(null);
-      return;
-    }
-
-    // assume up-to-date layout
-    try {
-      setParamsJSON(jsContent.getJSONObject(KEY_PARAMS));
-    }
-    catch (JSONException e) {
-      throw new WdkModelException("Params property value is not a JSON Object", e);
-    }
-
-    //logger.debug("**********setting filters for step:");
-    setFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_FILTERS));
-    //logger.debug("**********setting VIEW filters for step:");
-    setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
-  }
-
-  private static JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
-    if (jsContent.has(propKey)) {
-      // FIXME: Some steps in the DB have a filters property with a JSON object (usually empty);
-      //    Ignore these for now to avoid errors; they will eventually be overwritten or die quietly
-      try {
-        jsContent.getJSONObject(propKey);
-        // if successful, ignore!
-        return null;
-      }
-      catch (JSONException e) {
-        // not an object; hopefully it is an array (parsed below)
-      }
-
-      // proper value is an array of filter objects
-      try {
-        return jsContent.getJSONArray(propKey);
-      }
-      catch (JSONException e) {
-        throw new WdkModelException(propKey + " property value is not a JSON Array", e);
-      }
-    }
-    return null;
-  }
-
-  public JSONObject getParamsJSON() {
-    // convert params
-    JSONObject jsParams = new JSONObject();
-    for (String paramName : _paramValues.keySet()) {
-      jsParams.put(paramName, _paramValues.get(paramName));
-    }
-    return jsParams;
-  }
-
-  void setParamsJSON(JSONObject jsParams) throws WdkModelException {
-    _paramValues = new LinkedHashMap<String, String>();
-    if (jsParams != null) {
-      try {
-        // read params;
-        String[] paramNames = JSONObject.getNames(jsParams);
-        if (paramNames != null) {
-          for (String paramName : paramNames) {
-            String paramValue = jsParams.getString(paramName);
-            LOG.trace("param '" + paramName + "' = '" + paramValue + "'");
-            _paramValues.put(paramName, paramValue);
-          }
-        }
-      }
-      catch (JSONException ex) {
-        throw new WdkModelException(ex);
-      }
-    }
-  }
-
-  public JSONArray getFilterOptionsJSON() {
-    return (_filterOptions == null) ? new JSONArray() : _filterOptions.getJSON();
-  }
-
-  public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    // getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
-    if (jsOptions == null || _questionName == null ) {
-      _filterOptions = null;
-    }
-    else {
-      FilterOptionList newList = new FilterOptionList(_stepFactory.getWdkModel(), _questionName, jsOptions);
-      validateFilterOptions(newList, false);
-      _filterOptions = newList;
-    }
-  }
-
-  public JSONArray getViewFilterOptionsJSON() {
-    return (_viewFilterOptions == null) ? new JSONArray() : _viewFilterOptions.getJSON();
-  }
-
-  public void setViewFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    if (jsOptions == null || _questionName == null) {
-      _viewFilterOptions = null;
-    }
-    else {
-      FilterOptionList newList = new FilterOptionList(_stepFactory.getWdkModel(), _questionName, jsOptions);
-      validateFilterOptions(newList, true);
-      _viewFilterOptions = newList;
-    }
-  }
-
-  private void validateFilterOptions(FilterOptionList optionList, boolean desiredViewOnlyFlag) throws WdkModelException {
-    if (optionList == null) return;
-    for (FilterOption filter : optionList) {
-      if (filter.getFilter().getIsViewOnly() != desiredViewOnlyFlag) {
-        String viewOnlyString = (desiredViewOnlyFlag ? "view-only" : "regular (non-view-only)");
-        throw new WdkModelException("Cannot set Filter '" + filter.getFilter().getKey() + "' as a " + viewOnlyString + " filter.");
-      }
-    }
-  }
-
-  public String getType() throws WdkModelException {
-    return getRecordClass().getFullName();
+  public String getType() {
+    RecordClass recordClass = getRecordClass();
+    return recordClass == null ? null : getRecordClass().getFullName();
   }
 
   /**
@@ -1564,6 +1075,7 @@ public class Step {
           " is not compatible with the parent step#" + getStepId());
   }
 
+  @Override
   public Long getStrategyId() {
     return _strategyId;
   }
@@ -1581,24 +1093,131 @@ public class Step {
     _inMemoryOnly = inMemoryOnly;
   }
   
-  public boolean hasAnswerParams() throws WdkModelException {
-    for(Param param : getQuestion().getParams()) {
-    	  if(param instanceof AnswerParam) return true;
+  public boolean hasAnswerParams() {
+    if (!hasValidQuestion()) return false;
+    for(Param param : _answerSpec.getQuestion().getParams()) {
+      if(param instanceof AnswerParam) return true;
     }
     return false;
   }
   
-  public boolean isAnswerSpecComplete() throws WdkModelException {
+  public boolean isAnswerSpecComplete() {
     return hasAnswerParams() ? _strategyId != null : true;
   }
 
-  public boolean hasValidQuestion() {
+  public boolean finish(UserCache userCache, Strategy owner) throws WdkModelException {
     try {
-      getQuestion();
-      return true;
+      // 1. Set user and strategy for this step
+      _user = userCache.get(_userId);
+      _strategy = owner;
+
+      // 2. Confirm left and right child null if strategyId = null
+      if (_strategyId == null &&
+          (_childStepId != 0 || _childStep != null ||
+           _previousStepId != 0 || _previousStep != null)) {
+        return setInvalid(InvalidReason.CHILD_STEPS_OUTSIDE_STRATEGY);
+      }
+
+      // 3. Confirm left and right child match answer params
+      // TODO: implement this
+
     }
-    catch (WdkModelException e) {
-      return false;
+    catch (JSONException e) {
+      throw new WdkModelException("ParamFilters not valid JSON", e);
     }
+  }
+
+  Long getUserId() {
+    return _userId;
+  }
+
+  void setUser(User user) {
+    _user = user;
+  }
+
+  @Override
+  public long getId() {
+    return getStepId();
+  }
+
+  private static Map<String, ParamValue> toParamValueMap(Question question, Map<String, String> paramValues) {
+    Map<String, Param> questionParams = question.getParamMap();
+    Map<String, ParamValue> paramValueMap = new HashMap<>();
+    for (String key : paramValues.keySet()) {
+      paramValueMap.put(key, new ParamValue(questionParams.get(key), paramValues.get(key)));
+    }
+    return paramValueMap;
+  }
+
+  public void setAnswerSpec(AnswerSpec answerSpec) {
+    _answerSpec = answerSpec;
+  }
+
+  private void verifySameOwnerAndProject(Step step1, Step step2) throws WdkModelException {
+    // check that users match
+    if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
+          "Cannot align two steps with different " + "owners.  Existing step " + step1.getStepId() +
+          " has owner " + step1.getUser().getUserId() + " (" + step1.getUser().getEmail() +
+          ")\n  Call made to align the following step (see stack below for " +
+          "how):\n  Newly aligned step " + step2.getStepId() + " has owner " + step2.getUser().getUserId() +
+          " (" + step2.getUser().getEmail() + ")");
+    }
+
+    // check that projects both match current project
+    String projectId = _wdkModel.getProjectId();
+    if (!step1.getProjectId().equals(projectId) || !step2.getProjectId().equals(projectId)) {
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
+          "Cannot align two steps with different " +
+          "projects.  Project IDs don't match during alignment of two " +
+          "steps!!\n  Currently loaded model has project " + projectId + ".\n  Existing step " +
+          step1.getStepId() + " has project " + step1.getProjectId() +
+          "\n  Call made to align the following " + "step (see stack below for how):\n  Newly aligned step " +
+          step2.getStepId() + " has project " + step2.getProjectId());
+    }
+  }
+
+  private void verifySameOwnerAndProject(Step step1, long step2Id) throws WdkModelException {
+    // some logic sets 0 for step IDs; this is valid but not eligible for this check
+    if (step2Id == 0)
+      return;
+    Step step2;
+    try {
+      step2 = _stepFactory.getStepById(step2Id);
+    }
+    catch (Exception e) {
+      throw new WdkIllegalArgumentException(getVerificationPrefix() + "Unable to load step with ID " +
+          step2Id + " to compare owners with another step.", e);
+    }
+    verifySameOwnerAndProject(step1, step2);
+  }
+
+  static String getVerificationPrefix() {
+    return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
+  }
+
+  public boolean hasValidQuestion() {
+    return _answerSpec.getQuestion() != null;
+  }
+
+  public AnswerSpec getAnswerSpec() {
+    return _answerSpec;
+  }
+
+  public void patchAnswerParams() throws WdkModelException {
+    Param[] params = _answerSpec.getQuestion().getParams();
+    boolean leftParamEmpty = true;
+    for (Param param : params) {
+      if (param instanceof AnswerParam) {
+        if (leftParamEmpty) {
+          updateAnswerParamValue(param.getName(), getPreviousStepId());
+          leftParamEmpty = false;
+        }
+        else {
+          updateAnswerParamValue(param.getName(), getChildStepId());
+        }
+      }
+    }
+    saveParamFilters();
   }
 }

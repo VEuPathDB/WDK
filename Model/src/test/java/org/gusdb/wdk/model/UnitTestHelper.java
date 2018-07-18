@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -69,8 +70,9 @@ public class UnitTestHelper {
         if (guest == null) {
             guest = new GuestUser(getModel());
         }
-        StepUtilities.deleteStrategies(guest);
-        StepUtilities.deleteSteps(guest);
+        StepFactory stepFactory = getModel().getStepFactory();
+        stepFactory.deleteStrategies(guest, false);
+        stepFactory.deleteSteps(guest, false);
         return guest;
     }
 
@@ -112,7 +114,7 @@ public class UnitTestHelper {
         List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return StepUtilities.createStep(user, null, question, params, (String) null, false, false, 0);
+        return StepUtilities.createStep(user, null, question, params, (String) null, false, 0);
     }
 
     private static void loadQuestions() throws WdkModelException {

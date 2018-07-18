@@ -52,7 +52,7 @@ public class ShowBasketAction extends Action {
         QuestionBean question = recordClass.getRealtimeBasketQuestion();
         // the only param is user_id, the value of which is added automatically in QueryInstance
         Map<String, String> params = new LinkedHashMap<String, String>();
-        StepBean step = user.createStep(null, question, params, null, true, false, Utilities.DEFAULT_WEIGHT);
+        StepBean step = user.createStep(null, question, params, null, true, Utilities.DEFAULT_WEIGHT);
 
         ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
         path = forward.getPath() + "?" + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&" +

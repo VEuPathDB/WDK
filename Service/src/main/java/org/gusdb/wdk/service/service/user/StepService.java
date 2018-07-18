@@ -21,15 +21,15 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecFactory;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
-import org.gusdb.wdk.service.factory.WdkStepFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
-import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
+import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
@@ -66,18 +66,18 @@ public class StepService extends UserService {
       
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
-//      validateStep(stepRequest.getAnswerSpec(), false);
+      //validateStep(stepRequest.getAnswerSpec(), false);
       
       // create the step and insert into the database
-      Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
-      if(runStep != null && runStep) {
-    	    if(step.isAnswerSpecComplete()) {
-    	      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-    	    	  new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
-    	    }
-    	    else {
-    	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
-    	    }
+      Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
+      if (runStep != null && runStep) {
+        if(step.isAnswerSpecComplete()) {
+          AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.parse(step);
+          new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
+        }
+        else {
+          throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
+        }
       }
       return Response.ok(StepFormatter.getStepJson(step, true).toString()).build();
     }
@@ -111,13 +111,13 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-      
+
       // reset the estimated size in the database for this step and any downstream steps, if any
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-      
+
       // reset the current step object estimate size
       step.setEstimateSize(-1);
-      
+
       // return updated step
       return Response.ok(StepFormatter.getStepJson(step, false).toString()).build();
     }
@@ -128,7 +128,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -139,7 +139,7 @@ public class StepService extends UserService {
       StepFactory stepFactory = new StepFactory(getWdkModel());
       Step step = stepFactory.getStepById(Long.parseLong(stepId));
       if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
-      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+      AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.createFromStep(step);
       JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
       return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
     }
@@ -195,26 +195,39 @@ public class StepService extends UserService {
       throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-  
+
   /**
    * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
    * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
    * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
    * @throws WdkModelException
    * @throws DataValidationException
-   */
-//  protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
-//	Question question = answerSpec.getQuestion();
-//	if(question.hasAnswerParams() ? inStrategy : true) {
-//	  Map<String, String> context = new LinkedHashMap<String, String>();
-//      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-//	  try {  
-//	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-//	    //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
-//	  }
-//      catch(WdkUserException wue) {
-//        throw new DataValidationException(wue);
-//      }
-//	}
-//  }
+   *//*
+  private void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
+    Question question = answerSpec.getQuestion();
+    if(question.hasAnswerParams() ? inStrategy : true) {
+      Map<String, String> context = new LinkedHashMap<String, String>();
+      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+      try {  
+        User user = getUserBundle(Access.PRIVATE).getSessionUser();
+        //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
+      }
+      catch(WdkUserException wue) {
+        throw new DataValidationException(wue);
+      }
+    }
+  }*/
+
+  private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
+    // new step must be created from raw spec
+    AnswerSpec answerSpec = stepRequest.getAnswerSpec();
+    Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
+        AnswerValueFactory.convertParams(answerSpec.getParamValues()),
+        answerSpec.getLegacyFilter(), answerSpec.getFilterValues(), answerSpec.getWeight(), false,
+        stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName(), null);
+    step.setViewFilterOptions(answerSpec.getViewFilterValues());
+    step.saveParamFilters();
+    return step;
+  }
+
 }

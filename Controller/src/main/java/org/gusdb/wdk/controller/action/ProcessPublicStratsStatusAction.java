@@ -37,7 +37,7 @@ public class ProcessPublicStratsStatusAction extends WdkAction {
     int stratId = params.getIntValue(STRAT_ID_PARAM_KEY);
     boolean isPublic = params.getBooleanValue(IS_PUBLIC_PARAM_KEY);
     StepFactory factory = getWdkModel().getModel().getStepFactory();
-    Strategy strat = factory.getStrategyById(getCurrentUser().getUser(), stratId);
+    Strategy strat = factory.getStrategyById(stratId);
     if (strat.getUser().getUserId() != getCurrentUser().getUserId()) {
       // only allow owner of strategy to update is_public status
       throw new WdkUserException("Permission Denied. " +

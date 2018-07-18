@@ -17,8 +17,6 @@
 
 <c:set var="steps" value="${user.steps}"/>
 <c:set var="modelName" value="${model.name}"/>
-<c:set var="invalidSteps" value="${user.invalidSteps}" />
-
 
 <!-- decide if there are any steps -->
 <c:choose>

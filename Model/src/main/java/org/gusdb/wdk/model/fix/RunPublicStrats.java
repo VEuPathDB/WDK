@@ -76,7 +76,7 @@ public class RunPublicStrats extends BaseCLI {
   private static List<Strategy> publicStrats(WdkModel wdkModel) throws WdkModelException {
 
     StepFactory factory = wdkModel.getStepFactory();
-    List<Strategy> publicStrategies = factory.loadPublicStrategies();
+    List<Strategy> publicStrategies = factory.getPublicStrategies();
     int stratCount = 0;
     List<Strategy> erroredPublicStrats = new ArrayList<>();
     int allStratSize = publicStrategies.size();

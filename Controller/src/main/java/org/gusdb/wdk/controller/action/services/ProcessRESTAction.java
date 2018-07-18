@@ -151,7 +151,7 @@ public class ProcessRESTAction extends Action {
       outputConfig.put(StandardConfig.ATTACHMENT_TYPE, "plain");
       outputConfig.put(StandardConfig.INCLUDE_EMPTY_TABLES, "true");
 
-      StepBean step = wdkUser.createStep(null, question, stableValues, null, false, true, Utilities.DEFAULT_WEIGHT);
+      StepBean step = wdkUser.createStep(null, question, stableValues, null, false, Utilities.DEFAULT_WEIGHT);
       AnswerValueBean answerValue = step.getAnswerValue();
 
       Reporter reporter = ReporterFactory.getReporter(answerValue.getAnswerValue(), outputType, outputConfig);

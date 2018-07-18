@@ -112,11 +112,11 @@ public class MergeUserTest {
     String existName = "Name" + UnitTestHelper.getRandom().nextInt();
     User guest = UnitTestHelper.getGuest();
     Step step = UnitTestHelper.createNormalStep(guest);
-    StepUtilities.createStrategy(step, existName, false);
+    StepUtilities.createStrategy(step, false, existName);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
     Step newStep = UnitTestHelper.createNormalStep(registeredUser);
-    Strategy expected = StepUtilities.createStrategy(newStep, existName, false);
+    Strategy expected = StepUtilities.createStrategy(newStep, false, existName);
 
     int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
 
@@ -134,11 +134,11 @@ public class MergeUserTest {
     String existName = "Name" + UnitTestHelper.getRandom().nextInt();
     User guest = UnitTestHelper.getGuest();
     Step step = UnitTestHelper.createNormalStep(guest);
-    StepUtilities.createStrategy(step, existName, false);
+    StepUtilities.createStrategy(step, false, existName);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
     Step newStep = UnitTestHelper.createNormalStep(registeredUser);
-    Strategy expected = StepUtilities.createStrategy(newStep, existName, true);
+    Strategy expected = StepUtilities.createStrategy(newStep, true, existName);
 
     int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
 

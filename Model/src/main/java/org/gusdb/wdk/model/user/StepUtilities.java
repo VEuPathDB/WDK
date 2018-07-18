@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.question.Question;
@@ -25,45 +25,38 @@ public class StepUtilities {
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException {
-    AnswerFilterInstance filter = null;
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
-    if (filterName != null) {
-      filter = recordClass.getFilterInstance(filterName);
-    }
-    else
-      filter = recordClass.getDefaultFilter();
-    return createStep(user, strategyId, question, paramValues, filter, deleted, validate, assignedWeight);
+    AnswerFilterInstance filter = filterName != null ?
+        recordClass.getFilterInstance(filterName) :
+        recordClass.getDefaultFilter();
+    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight);
   }
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight)
+      AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException {
-    return createStep(user, strategyId, question, paramValues, filter, deleted, validate,
-        assignedWeight, null);
+    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate,
+      AnswerFilterInstance filter, boolean deleted,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException {
-    Step step = user.getWdkModel().getStepFactory().createStep(user, strategyId, question, paramValues,
-        filter, deleted, validate, assignedWeight, filterOptions);
-    return step;
+    return user.getWdkModel().getStepFactory().createStep(user, question, paramValues,
+        filter, filterOptions, assignedWeight, deleted, null, false, null, strategyId);
   }
 
   public static Strategy createStrategy(Step step, boolean saved) throws WdkModelException, WdkUserException {
     return createStrategy(step, null, null, saved, null, false, false);
   }
 
-  public static Strategy createStrategy(Step step, boolean saved, boolean hidden) throws WdkModelException,
-      WdkUserException {
+  public static Strategy createStrategy(Step step, boolean saved, boolean hidden) throws WdkModelException, WdkUserException {
     return createStrategy(step, null, null, saved, null, hidden, false);
   }
 
   // Transitional method...how to handle savedName properly?
   // Probably by expecting it if a name is given?
-  public static Strategy createStrategy(Step step, String name, boolean saved) throws WdkModelException,
-      WdkUserException {
+  public static Strategy createStrategy(Step step, boolean saved, String name) throws WdkModelException, WdkUserException {
     return createStrategy(step, name, null, saved, null, false, false);
   }
 
@@ -86,15 +79,13 @@ public class StepUtilities {
 
   public static Map<Long, Step> getStepsMap(User user) throws WdkModelException {
     logger.debug("loading steps...");
-    Map<Long, Step> invalidSteps = new LinkedHashMap<>();
-    Map<Long, Step> allSteps = user.getWdkModel().getStepFactory().loadSteps(user, invalidSteps);
-    return allSteps;
+    return user.getWdkModel().getStepFactory().getSteps(user.getUserId());
   }
 
   public static Map<Long, Strategy> getStrategiesMap(User user) throws WdkModelException {
     logger.debug("loading strategies...");
     Map<Long, Strategy> invalidStrategies = new LinkedHashMap<>();
-    Map<Long, Strategy> strategies = user.getWdkModel().getStepFactory().loadStrategies(user, invalidStrategies);
+    Map<Long, Strategy> strategies = user.getWdkModel().getStepFactory().getStrategies(user.getUserId(), invalidStrategies);
     return strategies;
   }
 
@@ -123,7 +114,7 @@ public class StepUtilities {
   public static Strategy[] getInvalidStrategies(User user) throws WdkModelException {
     try {
       Map<Long, Strategy> strategies = new LinkedHashMap<>();
-      user.getWdkModel().getStepFactory().loadStrategies(user, strategies);
+      user.getWdkModel().getStepFactory().getStrategies(user.getUserId(), strategies);
 
       Strategy[] array = new Strategy[strategies.size()];
       strategies.values().toArray(array);
@@ -149,19 +140,19 @@ public class StepUtilities {
 
   public static Map<String, List<Strategy>> getUnsavedStrategiesByCategory(User user) throws WdkModelException {
     WdkModel wdkModel = user.getWdkModel();
-    List<Strategy> strategies = wdkModel.getStepFactory().loadStrategies(user, false, false);
+    List<Strategy> strategies = wdkModel.getStepFactory().getStrategies(user.getUserId(), false, false);
     return formatStrategiesByRecordClass(strategies, wdkModel);
   }
 
   public static Map<String, List<Strategy>> getSavedStrategiesByCategory(User user) throws WdkModelException {
     WdkModel wdkModel = user.getWdkModel();
-    List<Strategy> strategies = wdkModel.getStepFactory().loadStrategies(user, true, false);
+    List<Strategy> strategies = wdkModel.getStepFactory().getStrategies(user.getUserId(), true, false);
     return formatStrategiesByRecordClass(strategies, wdkModel);
   }
 
   public static Map<String, List<Strategy>> getRecentStrategiesByCategory(User user) throws WdkModelException {
     WdkModel wdkModel = user.getWdkModel();
-    List<Strategy> strategies = wdkModel.getStepFactory().loadStrategies(user, false, true);
+    List<Strategy> strategies = wdkModel.getStepFactory().getStrategies(user.getUserId(), false, true);
     return formatStrategiesByRecordClass(strategies, wdkModel);
   }
 
@@ -223,15 +214,6 @@ public class StepUtilities {
     return array;
   }
 
-  public static Step[] getInvalidSteps(User user) throws WdkModelException {
-    Map<Long, Step> steps = new LinkedHashMap<>();
-    user.getWdkModel().getStepFactory().loadSteps(user, steps);
-
-    Step[] array = new Step[steps.size()];
-    steps.values().toArray(array);
-    return array;
-  }
-
   public static Map<Long, Strategy> getStrategiesMap(User user, String rcName) throws WdkModelException {
     Map<Long, Strategy> strategies = getStrategiesMap(user);
     Map<Long, Strategy> selected = new LinkedHashMap<>();
@@ -250,17 +232,13 @@ public class StepUtilities {
     return array;
   }
 
-  public static Step getStep(User user, long stepID) throws WdkModelException {
-    return user.getWdkModel().getStepFactory().loadStep(user, stepID);
+  public static Step getStep(User user, long stepId) throws WdkModelException {
+    return user.getWdkModel().getStepFactory().getStepById(stepId);
   }
 
-  public static Strategy getStrategy(User user, long strategyId) throws WdkModelException, WdkUserException {
-    return getStrategy(user, strategyId, true);
-  }
-
-  public static Strategy getStrategy(User user, long strategyId, boolean allowDeleted)
+  public static Strategy getStrategy(User user, long strategyId)
       throws WdkModelException, WdkUserException {
-    return user.getWdkModel().getStepFactory().loadStrategy(user, strategyId, allowDeleted);
+    return user.getWdkModel().getStepFactory().getStrategyById(strategyId);
   }
 
   public static void deleteSteps(User user) throws WdkModelException {
@@ -308,7 +286,7 @@ public class StepUtilities {
     if (parts.length == 1) {
       // new strategy export url
       String strategySignature = parts[0];
-      oldStrategy = wdkModel.getStepFactory().loadStrategy(strategySignature);
+      oldStrategy = wdkModel.getStepFactory().getStrategyBySignature(strategySignature);
     }
     else {
       // get user from user signature
@@ -319,7 +297,7 @@ public class StepUtilities {
         throw new WdkUserException("Invalid strategy ID: " + strategyIdStr);
       }
       int strategyId = Integer.parseInt(strategyIdStr);
-      oldStrategy = StepUtilities.getStrategy(owner, strategyId, true);
+      oldStrategy = StepUtilities.getStrategy(owner, strategyId);
     }
     return oldStrategy;
   }
@@ -338,11 +316,8 @@ public class StepUtilities {
   public static Step createBooleanStep(User user, long strategyId, Step leftStep, Step rightStep, String booleanOperator,
       String filterName) throws WdkModelException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
-    Question question = null;
-    try {
-      question = leftStep.getQuestion();
-    }
-    catch (WdkModelException ex) {
+    Question question = leftStep.getQuestion();
+    if (question == null) {
       // in case the left step has an invalid question, try the right
       question = rightStep.getQuestion();
     }
@@ -392,7 +367,7 @@ public class StepUtilities {
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
     //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
-    Step booleanStep = createStep(user, strategyId, question, params, filter, false, false, 0);
+    Step booleanStep = createStep(user, strategyId, question, params, filter, false, 0);
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
