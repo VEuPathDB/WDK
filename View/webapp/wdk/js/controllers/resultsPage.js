@@ -6,6 +6,7 @@ Provides functions to support results table
 */
 
 import _ from 'lodash';
+import Url from 'url';
 
 wdk.namespace("window.wdk.resultsPage", function(ns, $) {
 
@@ -189,9 +190,12 @@ wdk.namespace("window.wdk.resultsPage", function(ns, $) {
     }
     url = url + "&resultsOnly=true";
     currentDiv.find("div.attributesList").hide();
+    var parsedUrl = Url.parse(url);
     if (update) currentDiv.block();
     $.ajax({
-      url: url,
+      url: parsedUrl.pathname,
+      method: 'post',
+      data: parsedUrl.search.slice(1),
       dataType: "html",
       beforeSend: function() {
         if(strat) wdk.util.showLoading(strat.frontId);
