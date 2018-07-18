@@ -33,7 +33,7 @@ public class PublicStrategyService extends WdkService {
    */
   @GET
   public Response getPublicStrategies() throws JSONException, WdkModelException {
-    List<Strategy> publicStrategies = getWdkModel().getStepFactory().loadPublicStrategies();
+    List<Strategy> publicStrategies = getWdkModel().getStepFactory().getPublicStrategies();
     List<Strategy> validPublicStrategies = filter(publicStrategies, pSwallow(strategy -> strategy.isValid()));
     return Response.ok(StrategyFormatter.getStrategiesJson(validPublicStrategies, false).toString()).build();
   }

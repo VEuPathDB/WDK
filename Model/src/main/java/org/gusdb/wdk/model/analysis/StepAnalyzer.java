@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.analysis;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -78,10 +79,10 @@ public interface StepAnalyzer {
    * before params are passed in via <code>setFormParams()</code>.
    * 
    * @param formParams form parameter values to be validated
-   * @return an object encapsulating the errors, or null if no errors occurred
+   * @return an object encapsulating the errors
    * @throws WdkUserException 
    */
-  public ValidationErrors validateFormParams(Map<String, String[]> formParams)
+  public ValidationBundle validateFormParams(Map<String, String[]> formParams)
       throws WdkModelException, WdkUserException;
 
   /**

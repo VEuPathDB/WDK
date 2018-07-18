@@ -31,7 +31,7 @@ public class ShowStepAnalysisTabAction extends WdkAction {
     int strategyId = params.getIntValue(STRATEGY_ID_KEY);
     int stepId = params.getIntValue(STEP_ID_KEY);
     
-    Strategy strategy = getWdkModel().getModel().getStepFactory().getStrategyById(getCurrentUser().getUser(), strategyId);
+    Strategy strategy = getWdkModel().getModel().getStepFactory().getStrategyById(strategyId);
     Step step = strategy.getStepById(stepId);
 
     if (step == null) {

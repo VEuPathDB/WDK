@@ -108,7 +108,7 @@ public class FilterSizeCache {
         previousVersion.allFiltersLoaded = true;
         return previousVersion;
       }
-      catch (WdkUserException | WdkModelException e) {
+      catch (WdkModelException e) {
         throw new ValueProductionException(e);
       }
     }

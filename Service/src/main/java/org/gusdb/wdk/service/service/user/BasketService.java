@@ -26,7 +26,6 @@ import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.request.RecordRequest;
-import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
@@ -197,7 +196,8 @@ public class BasketService extends UserService {
       throws WdkModelException, RequestMisformatException, DataValidationException {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-    AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
+    AnswerSpec basketAnswerSpec = AnswerSpec.builder(getWdkModel())
+        .setQuestion(recordClass.getRealtimeBasketQuestion()).build();
     JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
     return AnswerService.getAnswerResponse(user, basketAnswerSpec, formatting);
   }

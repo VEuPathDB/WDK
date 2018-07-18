@@ -21,6 +21,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
@@ -31,7 +32,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
-import org.gusdb.wdk.model.analysis.ValidationErrors;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
@@ -165,16 +165,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     List<String> errorList = new ArrayList<String>();
 
     // this is a unique configuration; validate parameters
-    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
+    ValidationBundle errors = getConfiguredAnalyzer(context, _fileStore)
         .validateFormParams(context.getFormParams());
 
     // if no errors present; return empty error list
-    if (errors == null || errors.isEmpty()) return errorList;
+    if (errors.getStatus().isValid()) return errorList;
 
     // otherwise, add and return messages to client
-    errorList.addAll(errors.getMessages());
+    errorList.addAll(errors.getErrors());
     // FIXME: figure out display of these values; for now, translate param errors into strings
-    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
+    for (Entry<String,List<String>> paramErrors : errors.getKeyedErrors().entrySet()) {
       for (String message : paramErrors.getValue()) {
         errorList.add(paramErrors.getKey() + ": " + message);
       }
@@ -431,7 +431,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
-      StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
+      StepAnalysisFileStore fileStore) throws WdkModelException {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
     analyzer.setFormParams(context.getFormParams());

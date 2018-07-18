@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.request.answer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,15 +12,16 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.answer.spec.FilterOption;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
+import org.gusdb.wdk.model.answer.spec.ParamValueSet;
 import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.filter.FilterOption;
-import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -28,33 +30,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AnswerSpecFactory {
+public class AnswerSpecServiceFormat {
 
-  private static final Logger LOG = Logger.getLogger(AnswerSpec.class);
-
-  public static AnswerSpec createFromQuestion(Question question) {
-    return new AnswerSpec(question);
-  }
-
-  public static AnswerSpec createFromStep(Step step) throws WdkModelException {
-    Question question = step.getQuestion();
-    AnswerSpec answerSpec = new AnswerSpec(question);
-    answerSpec.setParamValues(toParamValueMap(question, step.getParamValues()));
-    answerSpec.setLegacyFilter(step.getFilter());
-    answerSpec.setFilterValues(step.getFilterOptions());
-    answerSpec.setViewFilterValues(step.getViewFilterOptions());
-    answerSpec.setWeight(step.getAssignedWeight());
-    return answerSpec;
-  }
-
-  private static Map<String, ParamValue> toParamValueMap(Question question, Map<String, String> paramValues) {
-    Map<String, Param> questionParams = question.getParamMap();
-    Map<String, ParamValue> paramValueMap = new HashMap<>();
-    for (String key : paramValues.keySet()) {
-      paramValueMap.put(key, new ParamValue(questionParams.get(key), paramValues.get(key)));
-    }
-    return paramValueMap;
-  }
+  private static final Logger LOG = Logger.getLogger(AnswerSpecServiceFormat.class);
 
   /**
    * Creates an AnswerRequest object using the passed JSON.  "questionName" is
@@ -81,14 +59,13 @@ public class AnswerSpecFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
+  public static AnswerSpec parse(JSONObject json, WdkModel wdkModel, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
-      String questionName = json.getString(Keys.QUESTION_NAME);
-      modelBean.validateQuestionFullName(questionName);
-      WdkModel model = modelBean.getModel();
-      Question question = model.getQuestion(questionName);
-      AnswerSpec request = new AnswerSpec(question);
+      AnswerSpecBuilder builder = AnswerSpec.builder(wdkModel)
+          .setQuestionName(json.getString(Keys.QUESTION_NAME))
+          .setParamValues(JsonUtil.parseProperties(json.getJSONObject(Keys.PARAMETERS)));
+
       // params are required (empty array if no params)
       request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user, expectIncompleteSpec));
       // all filter fields are optional
@@ -102,7 +79,7 @@ public class AnswerSpecFactory {
           parseFilterValues(json.getJSONArray(Keys.VIEW_FILTERS), question, model, true) :
             new FilterOptionList(model, questionName));
       if (json.has(Keys.WDK_WEIGHT)) {
-        request.setWeight(json.getInt(Keys.WDK_WEIGHT));
+        builder.setAssignedWeight(json.getInt(Keys.WDK_WEIGHT));
       }
       return request;
     }
@@ -147,14 +124,14 @@ public class AnswerSpecFactory {
     return filterList;
   }
 
-  private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
-      Question question, User user, boolean expectIncompleteSpec) throws WdkUserException, WdkModelException {
+  private static Map<String, String> parseParamValues(JSONObject paramsJson, Question question,
+      User user, boolean expectIncompleteSpec) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
     Map<String, String> contextValues = getContextValues(paramsJson);
 
     // loop through expected params and build valid list of values from request
-    Map<String, ParamValue> paramValues = new HashMap<>();
+    Map<String, String> paramValues = new HashMap<>();
     for (Param expectedParam : expectedParams.values()) {
       String paramName = expectedParam.getName();
       String stableValue = null;
@@ -179,8 +156,7 @@ public class AnswerSpecFactory {
         // null actually expected as parameter value; error if not the case
         throw new WdkUserException("Unattached steps' answer params must have null values.");
       }
-      paramValues.put(paramName, new ParamValue(expectedParam,
-          expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue)));
+      paramValues.put(paramName, expectedParam.getParamHandler().validateStableValueSyntax(user, stableValue));
     }
     return paramValues;
   }
@@ -218,6 +194,20 @@ public class AnswerSpecFactory {
           "', value = " + contextValues.get(name).toString());
     }
     return contextValues;
+  }
+
+  public static JSONObject format(AnswerSpec answerSpec) {
+    JSONObject json = new JSONObject()
+        .put(Keys.QUESTION_NAME, answerSpec.getQuestionName())
+        .put(Keys.PARAMETERS, AnswerSpecDbFormat.formatParams(answerSpec.getParamValues()) // same format as in DB (for now)
+        .put(Keys.FILTERS, JsonUtil.getOrEmptyArray(step.getFilterOptionsJSON()))
+        .put(Keys.VIEW_FILTERS, JsonUtil.getOrEmptyArray(step.getViewFilterOptionsJSON()))
+        .put(Keys.WDK_WEIGHT, step.getAssignedWeight());
+      AnswerFilterInstance legacyFilter = step.getFilter();
+      if (legacyFilter != null) {
+        json.put(Keys.LEGACY_FILTER_NAME, legacyFilter.getName());
+      }
+      return json;
   }
 
 }

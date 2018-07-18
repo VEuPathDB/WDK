@@ -27,7 +27,6 @@ public enum OntologyItemType {
   STRING ("string", "string_value", String.class),
   NUMBER ("number", "number_value", Double.class),
   DATE   ("date",   "date_value",   String.class);
- 
 
   private static class BranchNode{}
   private static class MultiFilter{}
@@ -81,7 +80,6 @@ public enum OntologyItemType {
   @SuppressWarnings("unchecked")
   public static <T> T resolveTypedValue(ResultSet resultSet, OntologyItem ontologyItem,
       Class<T> ontologyItemClass) throws SQLException {
-    
     if (!ontologyItem.getType().getJavaClass().getName().equals(ontologyItemClass.getName())) {
       throw new IllegalStateException("Incoming ontologyItemClass (" + ontologyItemClass.getName() +
           ") must be the same as that configured for the ontologyItem's value Java class (" +
@@ -90,8 +88,8 @@ public enum OntologyItemType {
     Object value = null;
     switch(ontologyItem.getType()) {
       case BRANCH:
-        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" + ontologyItem.getOntologyId() + "'." + 
-      " That term is either a branch in the ontology, or is a leaf but with a null type");
+        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" + ontologyItem.getOntologyId() + "'." +
+            " That term is either a branch in the ontology, or is a leaf but with a null type");
       case NUMBER:
         value = resultSet.getDouble(OntologyItemType.NUMBER.getMetadataQueryColumn()); break;
       case STRING:
@@ -110,18 +108,19 @@ public enum OntologyItemType {
     }
     return (T) value;
   }
-  
+
   public static String getStringValue(ResultList resultList, OntologyItem ontologyItem) throws WdkModelException {
-    
     Object value = null;
     switch(ontologyItem.getType()) {
       case BRANCH:
-        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" + ontologyItem.getOntologyId() + "'." + 
-      " That term is either a branch in the ontology, or is a leaf but with a null type");
+        throw new IllegalStateException("Error trying to get a metadata value for ontology term '" +
+            ontologyItem.getOntologyId() + "'. That term is either a branch in the ontology, or is a leaf but with a null type");
       case NUMBER:
-        value = resultList.get(OntologyItemType.NUMBER.getMetadataQueryColumn()); break;
+        value = resultList.get(OntologyItemType.NUMBER.getMetadataQueryColumn());
+        break;
       case STRING:
-        value = resultList.get(OntologyItemType.STRING.getMetadataQueryColumn()); break;
+        value = resultList.get(OntologyItemType.STRING.getMetadataQueryColumn());
+        break;
       case DATE:
         Date dateValue = (Date)resultList.get(OntologyItemType.DATE.getMetadataQueryColumn());
         value = formatDate(dateValue);
@@ -133,7 +132,7 @@ public enum OntologyItemType {
     }
     return value == null? null : value.toString();
   }
-  
+
   private static String formatDate(Date dateValue) {
     if (dateValue == null) return null;
     synchronized (DATE_FORMATTER) { return DATE_FORMATTER.format(dateValue); }

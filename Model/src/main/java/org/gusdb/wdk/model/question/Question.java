@@ -372,13 +372,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
+      boolean validate, int assignedWeight) throws WdkModelException {
     LOG.debug("makeAnswerValue() any page, (will also query.makeInstance() first)");
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
-    QueryInstance<?> qi = _query.makeInstance(user, dependentValues, validate,
-        assignedWeight, context);
+    QueryInstance<?> qi = _query.makeInstance(user, dependentValues, validate, assignedWeight, context);
     AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
         pageEnd, sortingAttributes, filter);
 
@@ -1218,7 +1217,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * Returns a set of view filters (by name) for this question.
    * 
-   * @return map of all non-view-only filters, from filter name to filter
+   * @return map of all view-only filters, from filter name to filter
    */
   public Map<String, Filter> getViewFilters() {
     LOG.debug("QUESTION: GETTING VIEW FILTERs");
@@ -1242,7 +1241,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return filter;
   }
   
-  public Filter getFilterOrNull(String filterName) throws WdkModelException {
+  public Filter getFilterOrNull(String filterName) {
     Filter filter = _filters.get(filterName);
     if (filter == null) filter = _recordClass.getFilter(filterName); 
     return filter;

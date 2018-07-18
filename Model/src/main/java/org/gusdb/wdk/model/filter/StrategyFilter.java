@@ -2,9 +2,12 @@ package org.gusdb.wdk.model.filter;
 
 import java.util.Collection;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
@@ -34,11 +37,6 @@ public class StrategyFilter extends StepFilter {
     return FILTER_NAME;
   }
 
-  @Override
-  public void setDisplay(String display) {
-    super.setDisplay(display);
-  }
-  
   /**
    * @throws WdkModelException 
    * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
@@ -52,7 +50,7 @@ public class StrategyFilter extends StepFilter {
   }
 
   /**
-   * the options contains the id of the strategy choosen as the filter.
+   * the options contains the id of the strategy chosen as the filter.
    * @throws WdkUserException 
    * @throws WdkModelException 
    * 
@@ -88,7 +86,7 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(answer.getUser(), strategyId);
+    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(strategyId);
   }
   
   @Override
@@ -102,5 +100,11 @@ public class StrategyFilter extends StepFilter {
    */
   public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
 	  return false;
+  }
+
+  @Override
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
+    TODO Auto-generated method stub
+    return null;
   }
 }

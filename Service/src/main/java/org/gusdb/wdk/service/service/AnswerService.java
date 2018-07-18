@@ -21,11 +21,11 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.cache.AnswerRequest;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterFactory;
@@ -33,7 +33,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
-import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
+import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
@@ -85,7 +85,7 @@ public class AnswerService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException, DataValidationException {
     try {
-      AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser());
+      AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser());
       return getAnswerResponse(getSessionUser(), request.getAnswerSpec(), request.getFormatting());
     }
     catch (JSONException | RequestMisformatException e) {
@@ -94,7 +94,7 @@ public class AnswerService extends WdkService {
     }
   }
 
-  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel, User sessionUser)
+  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel, User sessionUser)
       throws RequestMisformatException, DataValidationException {
     if (requestBody == null || requestBody.isEmpty()) {
       throw new RequestMisformatException("Request JSON cannot be empty. " +
@@ -106,7 +106,7 @@ public class AnswerService extends WdkService {
 
     // parse answer spec (question, params, etc.) and formatting object
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
+    AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel, sessionUser, false);
     JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
     return new AnswerRequest(answerSpec, formatting);
   }
@@ -145,7 +145,7 @@ public class AnswerService extends WdkService {
   public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
     JSONObject requestJson = new JSONObject(body);
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser(), false);
+    AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, getWdkModel(), getSessionUser(), false);
     AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();

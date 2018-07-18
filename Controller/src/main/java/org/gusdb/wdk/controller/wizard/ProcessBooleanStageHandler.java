@@ -189,7 +189,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     // create child step
     QuestionBean question = wdkModel.getQuestion(questionName);
-    return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
+    return user.createStep(strategy.getStrategyId(), question, params, null, false, weight);
   }
 
   public static StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, long importStrategyId)

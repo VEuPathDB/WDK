@@ -31,22 +31,22 @@ import org.json.JSONObject;
 
 
 public class StrategyService extends UserService {
-	
+
   public static final String STRATEGY_RESOURCE = "Strategy ID ";
 
   public StrategyService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
-  
+
   @GET
   @Path("strategies")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStrategies() throws WdkModelException {
-	User user = getPrivateRegisteredUser();
-	List<Strategy> strategies = getWdkModel().getStepFactory().loadStrategies(user,false,false);
+    User user = getPrivateRegisteredUser();
+    List<Strategy> strategies = getWdkModel().getStepFactory().getStrategies(user.getUserId(), false, false);
     return Response.ok(StrategyFormatter.getStrategiesJson(strategies, false).toString()).build();
   }
-  
+
   @POST
   @Path("strategies")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -62,61 +62,60 @@ public class StrategyService extends UserService {
      
       // Pull all the steps out of the tree
       List<Step> steps = stepTree.
-    		  findAll(step -> true)
-    		  .stream()
-    		  .map(node -> node.getContents())
-    		  .collect(Collectors.toList());
-      
+          findAll(step -> true)
+          .stream()
+          .map(node -> node.getContents())
+          .collect(Collectors.toList());
+
       // Update steps with filled in answer params and save.
-      for(Step step : steps) {
-    	    stepFactory.patchAnswerParams(step);
+      for (Step step : steps) {
+        step.patchAnswerParams();
       }
-      
+
       // Create the strategy
-      Strategy strategy = stepFactory.createStrategy(user,
-    		                           rootStep,
-    		                           strategyRequest.getName(),
-    		                           strategyRequest.getSavedName(),
-    		                           strategyRequest.isSaved(),
-    		                           strategyRequest.getDescription(),
-    		                           strategyRequest.isHidden(),
-    		                           strategyRequest.isPublic());
-      
+      Strategy strategy = stepFactory.createStrategy(
+          user,
+          rootStep,
+          strategyRequest.getName(),
+          strategyRequest.getSavedName(),
+          strategyRequest.isSaved(),
+          strategyRequest.getDescription(),
+          strategyRequest.isHidden(),
+          strategyRequest.isPublic());
+
       // Add new strategy to all the embedded steps
       steps.stream().forEach(step -> step.setStrategyId(strategy.getStrategyId()));
-      
+
       // Update left/right child ids in db first
       //rootStep.update(true);
-      
+
       // Update those steps in the database with the strategyId
       stepFactory.setStrategyIdForThisAndUpstreamSteps(rootStep, strategy.getStrategyId());
       return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId())), true).toString()).build();
     }
     catch(WdkModelException wme) {
-    	  throw new WdkModelException("Unable to create the strategy.", wme);
+      throw new WdkModelException("Unable to create the strategy.", wme);
     }
     catch(RequestMisformatException rmfe) {
-    	  throw new BadRequestException(rmfe);
+      throw new BadRequestException(rmfe);
     }
     catch(WdkUserException wue) {
-    	  throw new DataValidationException(wue);
+      throw new DataValidationException(wue);
     }
   }
-  
-  
-  
+
   @GET
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStrategy(@PathParam("strategyId") String strategyId) throws WdkModelException {
     return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(strategyId), true).toString()).build();
   }
-  
+
   protected Strategy getStrategyForCurrentUser(String strategyId) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
-      Strategy strategy = getWdkModel().getStepFactory().getStrategyById(user, Long.parseLong(strategyId));
+      Strategy strategy = getWdkModel().getStepFactory().getStrategyById(Long.parseLong(strategyId));
       if (strategy.getUser().getUserId() != user.getUserId()) {
         throw new ForbiddenException(WdkService.PERMISSION_DENIED);
       }

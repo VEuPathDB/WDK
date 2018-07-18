@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.record;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 
 public interface ResultSize {
@@ -13,9 +12,8 @@ public interface ResultSize {
    * @param answerValue answer value from which to get a count
    * @return custom record count
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public Integer getResultSize(AnswerValue answerValue) throws WdkModelException, WdkUserException;
+  public Integer getResultSize(AnswerValue answerValue) throws WdkModelException;
 
   /**
    * Returns a custom display result size for this answer value, but uses the
@@ -25,7 +23,6 @@ public interface ResultSize {
    * @param idSql customized ID SQL
    * @return custom record count
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException, WdkUserException;
+  public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException;
 }

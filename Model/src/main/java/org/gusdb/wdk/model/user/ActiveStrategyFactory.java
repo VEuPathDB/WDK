@@ -156,7 +156,7 @@ class ActiveStrategyFactory {
     }
 
     private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
-      return _user.getWdkModel().getStepFactory().getStrategyById(_user, strategyId);
+      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId);
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {

@@ -62,7 +62,7 @@ public abstract class AbstractFilter implements Filter {
 
   @Override
   public void setIsViewOnly(boolean isViewOnly) {
-    _isViewOnly = isViewOnly;
+    _type = ;
   }
 
   @Override

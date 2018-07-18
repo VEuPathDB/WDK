@@ -203,15 +203,7 @@ public class StrategyBean {
     return formatter.format(date);
   }
 
-  public boolean isValidBasedOnStepFlags() {
-    return strategy.isValidBasedOnStepFlags();
-  }
-
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.user.Strategy#isValid()
-   */
-  public boolean isValid() throws WdkModelException {
+  public boolean isValid() {
     return strategy.isValid();
   }
 

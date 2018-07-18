@@ -24,8 +24,8 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.filter.FilterOption;
-import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.FilterOption;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -458,7 +458,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
       JSONArray stepFilterDisplayNames = new JSONArray();
       for (FilterOption option : filterOptions) {
         if (isValidQuestion) {
-          if (!option.getFilter().getIsViewOnly()) {
+          if (!option.getFilter().getFilterType().isViewOnly()) {
             stepFilterDisplayNames.put(option.getFilter().getDisplay());
           }
         }

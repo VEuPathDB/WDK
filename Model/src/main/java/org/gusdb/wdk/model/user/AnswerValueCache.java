@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 
@@ -31,10 +30,8 @@ public class AnswerValueCache {
   //    (may be different than answerValue IFF viewOnlyFilters are present)
   private TwoTuple<AnswerValue, AnswerValue> _viewAnswerValues = new TwoTuple<>(null, null);
 
-  public AnswerValueCache(Step step) throws WdkModelException {
+  public AnswerValueCache(Step step) {
     _step = step;
-    // expandStep script generates step in memory with step_id 0 and user_id 0
-    if (step.getStepId() != 0) _range = getDefaultPageRange(step.getUser());
   }
 
   public void invalidateAll() {
@@ -52,13 +49,13 @@ public class AnswerValueCache {
   }
 
   public AnswerValue getAnswerValue(boolean validate)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     _answerValues = getAnswerValuePair(_answerValues, validate, false);
     return (validate ? _answerValues.getFirst() : _answerValues.getSecond());
   }
 
   public AnswerValue getViewAnswerValue(boolean validate)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     if (_step.getViewFilterOptions().getSize() == 0) {
       return getAnswerValue(validate);
     }
@@ -69,7 +66,7 @@ public class AnswerValueCache {
   private TwoTuple<AnswerValue, AnswerValue> getAnswerValuePair(
       TwoTuple<AnswerValue, AnswerValue> currentValues,
       boolean validate, boolean applyViewFilters)
-          throws WdkModelException, WdkUserException {
+          throws WdkModelException {
     AnswerValue validated = currentValues.getFirst();
     AnswerValue unvalidated = currentValues.getSecond();
     if (validate) {
@@ -77,16 +74,24 @@ public class AnswerValueCache {
         return currentValues;
       }
       else {
-        validated = makeAnswerValue(_step, _range, true, applyViewFilters);
+        validated = makeAnswerValue(_step, getRange(), true, applyViewFilters);
         unvalidated = validated;
       }
     }
     else {
       if (unvalidated == null) {
-        unvalidated = makeAnswerValue(_step, _range, false, applyViewFilters);
+        unvalidated = makeAnswerValue(_step, getRange(), false, applyViewFilters);
       }
     }
     return new TwoTuple<>(validated, unvalidated);
+  }
+
+  private int[] getRange() throws WdkModelException {
+    if (_range == null) {
+      // expandStep script generates step in memory with step_id 0 and user_id 0
+      _range = _step.getStepId() == 0 ? new int[]{1, 20} : getDefaultPageRange(_step.getUser());
+    }
+    return _range;
   }
 
   private static int[] getDefaultPageRange(User user) {
@@ -94,7 +99,7 @@ public class AnswerValueCache {
   }
   
   private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     Question question = step.getQuestion();
     User user = step.getUser();
     Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
@@ -113,7 +118,7 @@ public class AnswerValueCache {
         step.update(false);
       }
     }
-    catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException ex) {
      /* if(step.isValid()) {
           LOG.info("invalidating a step based on invalid param values, step: " + step.getStepId() + " question: " + step.getQuestionName());
           step.invalidateStep();

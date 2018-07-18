@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action;
 
 import java.util.HashMap;
@@ -21,7 +18,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
 import org.gusdb.wdk.model.user.UserSession;
 
 /**

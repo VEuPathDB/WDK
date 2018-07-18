@@ -1,10 +1,13 @@
 package org.gusdb.wdk.model.filter;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
-import org.gusdb.wdk.model.user.Step;
 
 /**
  * Filter is an interface for step-based or column-based result filter.
@@ -13,6 +16,21 @@ import org.gusdb.wdk.model.user.Step;
  *
  */
 public interface Filter {
+
+  public static enum FilterType {
+    STANDARD,  // can be used as a regular or view filter
+    VIEW_ONLY; // can only be used as a view filter (typically uses >1 rows to do filtering)
+
+    public boolean isViewOnly() { return equals(VIEW_ONLY); }
+
+    public boolean containerSupports(FilterType filterType) {
+      switch(this) {
+        case STANDARD: return filterType.equals(STANDARD);
+        case VIEW_ONLY: return true;
+      }
+      throw new IllegalStateException("This method must have cases for all values.");
+    }
+  }
 
   /**
    * @return the unique name of a filter. The name can only contain: [a-zA-Z0-9\.\-_].
@@ -43,7 +61,7 @@ public interface Filter {
   /**
    * @returns false if this filter should affect the actual result; true if it only affects the results view
    */
-  boolean getIsViewOnly();
+  FilterType getFilterType();
 
   void setIsViewOnly(boolean isViewOnly);
 
@@ -68,7 +86,13 @@ public interface Filter {
    */
   void setDefaultValue(JSONObject defaultValue);
   
-  JSONObject getDefaultValue(Step step) throws WdkModelException;
+  /**
+   * Returns the default value of this filter given the question and params in simpleSpec
+   * 
+   * @param simpleSpec the question and parameters of a step to be filtered
+   * @return default value of this filter, or null if by default this filter should not be applied
+   */
+  JSONObject getDefaultValue(SimpleAnswerSpec simpleSpec);
   
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
@@ -117,6 +141,16 @@ public interface Filter {
    * @param value
    * @return
    */
-  public boolean defaultValueEquals(Step step, JSONObject value) throws WdkModelException;
+  public boolean defaultValueEquals(SimpleAnswerSpec simpleAnswerSpec, JSONObject value) throws WdkModelException;
+
+  /**
+   * Validates the passed value the best it can without access to the AnswerValue it will be applied to
+   * 
+   * @param question question of the answer spec this filter will be applied to
+   * @param value potential JSON value for this filter
+   * @param validationLevel level of validation to perform
+   * @return bundle of information describing validity of the passed value for this filter
+   */
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel);
 
 }

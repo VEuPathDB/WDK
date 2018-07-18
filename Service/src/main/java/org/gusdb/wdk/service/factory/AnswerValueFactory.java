@@ -29,7 +29,7 @@ public class AnswerValueFactory {
       //   would much rather see 0-based start and have end index be exclusive
       //   (i.e. need to fix on AnswerValue)
       AnswerValue answerValue = request.getQuestion().makeAnswerValue(_user,
-          convertParams(request.getParamValues()), 1, -1,
+          request.getParamValues().toMap(), 1, -1,
           null, request.getLegacyFilter(), true, request.getWeight());
       answerValue.setFilterOptions(request.getFilterValues());
       answerValue.setViewFilterOptions(request.getViewFilterValues());

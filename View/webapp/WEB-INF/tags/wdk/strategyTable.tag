@@ -67,7 +67,7 @@
         data-saved="${strategy.isSaved}"
         data-step-id="${strategy.latestStepId}"
         data-is-public="${strategy.isPublic}"
-        data-valid="${strategy.validBasedOnStepFlags}">
+        data-valid="${strategy.valid}">
       <td scope="row"><input class="strat-selector-box" type=checkbox id="${strategyId}" onclick="wdk.history.updateSelectedList()"/></td>
       <%-- need to see if this strategy id is in the session. --%>
       <c:set var="active" value=""/>
@@ -98,7 +98,7 @@
             <c:out value="${dispNam}"/>
           </span>
           <c:if test="${!strategy.isSaved}">*</c:if>
-          <c:if test="${!strategy.validBasedOnStepFlags}">&nbsp;&nbsp;&nbsp;<imp:image title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="wdk/images/invalidIcon.png" width="12"/></c:if>
+          <c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<imp:image title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="wdk/images/invalidIcon.png" width="12"/></c:if>
         </div> 
 
       </td>
@@ -176,7 +176,7 @@
       <c:set var="checkboxTitle" value="Check this box to make your strategy visible to the community under the 'Public' tab."/>
       <c:set var="disabledProp" value=""/>
       <c:choose>
-        <c:when test="${!strategy.validBasedOnStepFlags}">
+        <c:when test="${!strategy.valid}">
           <c:set var="disabledProp">disabled="disabled"</c:set>
           <c:set var="checkboxTitle" value="This strategy must be revised before it can be made public.  It is invalid due to release updates."/>
         </c:when>

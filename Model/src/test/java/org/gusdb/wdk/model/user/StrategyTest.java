@@ -46,7 +46,7 @@ public class StrategyTest {
     String strategyName = "My Strategy";
 
     Step step = UnitTestHelper.createNormalStep(user);
-    Strategy strategy = StepUtilities.createStrategy(step, strategyName, false);
+    Strategy strategy = StepUtilities.createStrategy(step, false, strategyName);
 
     Assert.assertEquals("strategy name", strategyName, strategy.getName());
   }

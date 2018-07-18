@@ -186,7 +186,7 @@ public class StrategyFixer extends BaseCLI {
       while (resultSet.next()) {
         int strategyId = resultSet.getInt("strategy_id");
         int userId = resultSet.getInt("user_id");
-        String sig = factory.getStrategySignature(userId, strategyId);
+        String sig = StepFactory.getStrategySignature(wdkModel.getProjectId(), userId, strategyId);
 
         psUpdate.setString(1, sig);
         psUpdate.setInt(2, strategyId);

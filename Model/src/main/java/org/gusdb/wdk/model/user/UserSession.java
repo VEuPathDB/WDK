@@ -72,7 +72,7 @@ public class UserSession {
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (long id : ids) {
       try {
-        Strategy strategy = _user.getWdkModel().getStepFactory().getStrategyById(_user, id);
+        Strategy strategy = _user.getWdkModel().getStepFactory().getStrategyById(id);
         strategies.add(strategy);
       }
       catch (WdkModelException ex) {

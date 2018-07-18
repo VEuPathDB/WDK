@@ -93,15 +93,6 @@ public class StepTest {
   }
 
   @Test
-  public void testGetInvalidSteps() throws Exception {
-    Step[] invalidStep = StepUtilities.getInvalidSteps(user);
-    for (Step step : invalidStep) {
-      Assert.assertNotNull("question name", step.getQuestionName());
-      Assert.assertNotNull("params", step.getParamValues());
-    }
-  }
-
-  @Test
   public void testDeleteStep() throws Exception {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);

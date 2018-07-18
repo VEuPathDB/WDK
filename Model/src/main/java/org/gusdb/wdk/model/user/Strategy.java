@@ -1,150 +1,175 @@
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
+import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.model.WdkIllegalArgumentException;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Strategy {
+public class Strategy implements StrategyElement {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
-  private StepFactory stepFactory;
-  private User user;
-  private Step latestStep;
-  private long strategyId;
-  private boolean isSaved;
-  private boolean isDeleted = false;
-  private Date createdTime;
-  private Date lastModifiedTime;
-  private String projectId;
-  private String signature;
-  private String description;
-  private String name;
-  private String savedName = null;
-  private boolean isPublic = false;
+  private final WdkModel _wdkModel;
+  private final StepFactory _stepFactory;
+  private final long _userId;
+  private User _user;
+  private Step _latestStep;
+  private long _strategyId;
+  private boolean _isSaved;
+  private boolean _isDeleted = false;
+  private Date _createdTime;
+  private Date _lastModifiedTime;
+  private String _projectId;
+  private String _signature;
+  private String _description;
+  private String _name;
+  private String _savedName = null;
+  private boolean _isPublic = false;
+  private long _latestStepId = 0;
+  private String _version;
+  private Date _lastRunTime;
+  private RecordClass _recordClass;
+  private Map<Long, Step> _stepMap = new HashMap<>();
 
-  private long latestStepId = 0;
-  private int estimateSize;
-  private String version;
-  private boolean valid = true;
-  private boolean isValidBasedOnStepFlags;
-  private Date lastRunTime;
-  private RecordClass recordClass;
-
-  public Strategy(StepFactory factory, User user, long strategyId) {
-    this.stepFactory = factory;
-    this.user = user;
-    this.strategyId = strategyId;
-    isSaved = false;
+  public Strategy(WdkModel wdkModel, long userId, long strategyId) {
+    _wdkModel = wdkModel;
+    _stepFactory = wdkModel.getStepFactory();
+    _userId = userId;
+    _user = null;
+    _strategyId = strategyId;
+    _isSaved = false;
   }
 
-  public User getUser() {
-    return user;
+  public Strategy(WdkModel wdkModel, User user, long strategyId) {
+    _wdkModel = wdkModel;
+    _stepFactory = wdkModel.getStepFactory();
+    _userId = user.getUserId();
+    _user = user;
+    _strategyId = strategyId;
+    _isSaved = false;
+  }
+
+  public User getUser() throws WdkModelException {
+    if (_user == null) {
+      // if constructed with only the user id, lazy-load User object
+      _user = _wdkModel.getUserFactory().getUserById(_userId);
+    }
+    return _user;
   }
 
   public boolean isDeleted() {
-    return isDeleted;
+    return _isDeleted;
   }
 
   void setDeleted(boolean isDeleted) {
-    this.isDeleted = isDeleted;
+    _isDeleted = isDeleted;
   }
 
   public String getVersion() {
     // if (latestStep != null)
     // version = latestStep.getAnswer().getProjectVersion();
-    return version;
+    return _version;
   }
 
   void setVersion(String version) {
-    this.version = version;
+    _version = version;
   }
 
   public void setName(String name) {
     if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
       name = name.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
     }
-    this.name = name;
+    _name = name;
   }
 
   public String getName() {
-    return name;
+    return _name;
   }
 
   public void setSavedName(String savedName) {
     if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
       savedName = savedName.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
     }
-    this.savedName = savedName;
+    _savedName = savedName;
   }
 
   public String getSavedName() {
-    return savedName;
+    return _savedName;
   }
 
   public void setIsSaved(boolean saved) {
-    this.isSaved = saved;
+    _isSaved = saved;
   }
 
   public boolean getIsSaved() {
-    return isSaved;
+    return _isSaved;
   }
 
   public boolean getIsPublic() {
-    return isPublic;
+    return _isPublic;
   }
 
   public void setIsPublic(boolean isPublic) {
-    this.isPublic = isPublic;
+    _isPublic = isPublic;
   }
 
   public String getProjectId() {
-    return projectId;
+    return _projectId;
   }
 
   public void setProjectId(String projectId) {
-    this.projectId = projectId;
+    _projectId = projectId;
   }
 
   public Step getLatestStep() throws WdkModelException {
-    if (latestStep == null && latestStepId != 0)
-      setLatestStep(stepFactory.loadStep(user, latestStepId));
-    return latestStep;
+    if (_latestStep == null && _latestStepId != 0)
+      setLatestStep(_stepFactory.getStepById(_latestStepId));
+    return _latestStep;
   }
 
   public void setLatestStep(Step step) throws WdkModelException {
-    stepFactory.verifySameOwnerAndProject(this, step);
-    this.latestStep = step;
+    verifySameOwnerAndProject(this, step);
+    _latestStep = step;
     // also update the cached info
-    latestStepId = step.getStepId();
+    _latestStepId = step.getStepId();
   }
 
   void setStrategyId(long strategyId) {
-    this.strategyId = strategyId;
+    _strategyId = strategyId;
   }
 
-  public long getStrategyId() {
-    return strategyId;
+  @Override
+  public Long getStrategyId() {
+    return _strategyId;
   }
 
   /**
    * @return Returns the createTime.
    */
   public Date getCreatedTime() {
-    return createdTime;
+    return _createdTime;
   }
 
   /**
@@ -152,11 +177,21 @@ public class Strategy {
    *          The createTime to set.
    */
   void setCreatedTime(Date createdTime) {
-    this.createdTime = createdTime;
+    _createdTime = createdTime;
   }
 
-  public Step getStep(int index) throws WdkModelException {
-    return getLatestStep().getStep(index);
+  /**
+   * Returns a step in this strategy by step ID
+   * 
+   * @param stepId step ID
+   * @return step with the passed ID
+   * @throws IllegalArgumentException if strategy does not contain a step with the passed ID
+   */
+  public Step getStep(long stepId) throws IllegalArgumentException {
+    if (_stepMap.containsKey(stepId)) {
+      return _stepMap.get(stepId);
+    }
+    throw new IllegalArgumentException("Strategy " + _strategyId + " does not contain step " + stepId);
   }
 
   public List<Step> getMainBranch() throws WdkModelException {
@@ -168,18 +203,18 @@ public class Strategy {
   }
 
   public void setLatestStepId(long stepId) {
-    this.latestStepId = stepId;
-    this.latestStep = null; // root step is now out of date
+    _latestStepId = stepId;
+    _latestStep = null; // root step is now out of date
   }
 
   public long getLatestStepId() {
-    return latestStepId;
+    return _latestStepId;
   }
 
   public Step getStepById(long id) throws WdkModelException {
     Step step = getLatestStep().getStepByDisplayId(id);
     if (step == null)
-      throw new WdkModelException("Strategy #" + strategyId + " doesn't have step #" + id);
+      throw new WdkModelException("Strategy #" + _strategyId + " doesn't have step #" + id);
     return step;
   }
 
@@ -192,12 +227,12 @@ public class Strategy {
    * @throws WdkUserException
    */
   public void update(boolean overwrite) throws WdkModelException, WdkUserException {
-    stepFactory.updateStrategy(user, this, overwrite);
+    _stepFactory.updateStrategy(_user, this, overwrite);
   }
 
   public RecordClass getRecordClass() throws WdkModelException {
-    if (latestStep == null && recordClass != null)
-      return recordClass;
+    if (_latestStep == null && _recordClass != null)
+      return _recordClass;
     return getLatestStep().getRecordClass();
   }
 
@@ -214,7 +249,7 @@ public class Strategy {
   public Map<Long, Long> insertStepBefore(Step newStep, long targetId) throws WdkModelException,
       WdkUserException {
     Step targetStep = getStepById(targetId);
-    stepFactory.verifySameOwnerAndProject(this, targetStep);
+    verifySameOwnerAndProject(this, targetStep);
 
     Map<Long, Long> rootMap = new HashMap<>();
 
@@ -227,7 +262,7 @@ public class Strategy {
       // the new step, while old first step will become the child of this new step
       if (newStep.getChildStep() == null || newStep.getChildStep().getStepId() != targetId)
         throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + strategyId);
+            targetId + " since it will corrupt the structure of the strategy #" + _strategyId);
 
       // if the first step has any step upstream, will link it to the new step
       Step nextStep = getNext(targetStep);
@@ -264,7 +299,7 @@ public class Strategy {
       // new step.
       if (targetStep.getPreviousStepId() != newStep.getPreviousStepId())
         throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + strategyId);
+            targetId + " since it will corrupt the structure of the strategy #" + _strategyId);
 
       // make sure the target step can take the newStep as previousStep
       targetStep.checkPreviousAllowed(newStep);
@@ -295,7 +330,7 @@ public class Strategy {
     Step previousStep = newStep.getPreviousStep();
     if (previousStep == null || previousStep.getStepId() != targetId)
       throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " after step #" + targetId +
-          " since it will corrupt the structure of the strategy #" + strategyId);
+          " since it will corrupt the structure of the strategy #" + _strategyId);
 
     // if the strategy is saved, need to make a unsaved copy first
     if (getIsSaved())
@@ -405,7 +440,7 @@ public class Strategy {
         }
         else { // otherwise, previous step exists, no more deletion needed. will exit loop.
           // check if the step can take the previous step
-          stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_LEFT_CHILD_ID);
+          _stepFactory.dropDependency(previousStep.getStepId(), StepFactoryHelpers.COLUMN_LEFT_CHILD_ID);
           step.checkPreviousAllowed(previousStep);
           step.setPreviousStep(previousStep);
           step.saveParamFilters();
@@ -422,7 +457,7 @@ public class Strategy {
             rootMap.put(step.getStepId(), previousStep.getStepId());
 
             // check if parent can take previous step as child
-            stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_RIGHT_CHILD_ID);
+            _stepFactory.dropDependency(previousStep.getStepId(), StepFactoryHelpers.COLUMN_RIGHT_CHILD_ID);
             parentStep.checkChildAllowed(previousStep);
             parentStep.setChildStep(previousStep);
             parentStep.saveParamFilters();
@@ -446,7 +481,7 @@ public class Strategy {
         update(false);
       }
       else { // no more steps left in the strategy, delete the strategy itself.
-        stepFactory.deleteStrategy(strategyId);
+        _stepFactory.deleteStrategy(_strategyId);
         rootMap.clear();
       }
     }
@@ -454,7 +489,7 @@ public class Strategy {
     // after strategy is deleted (if needed), will now delete steps
     LOG.debug("Total " + deletes.size() + " steps deleted.");
     for (Step delete : deletes) {
-      stepFactory.deleteStep(delete.getStepId());
+      _stepFactory.deleteStep(delete.getStepId());
     }
 
     return rootMap;
@@ -624,7 +659,7 @@ public class Strategy {
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
     String checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsStrategy));
-    LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
+    LOG.debug("Strategy #" + _strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
     return checksum;
   }
 
@@ -636,12 +671,12 @@ public class Strategy {
     JSONObject jsStrategy = new JSONObject();
 
     try {
-      jsStrategy.put("id", this.strategyId);
-      jsStrategy.put("name", this.name);
-      jsStrategy.put("savedName", this.savedName);
-      jsStrategy.put("description", this.description);
-      jsStrategy.put("saved", this.isSaved);
-      jsStrategy.put("deleted", this.isDeleted);
+      jsStrategy.put("id", _strategyId);
+      jsStrategy.put("name", _name);
+      jsStrategy.put("savedName", _savedName);
+      jsStrategy.put("description", _description);
+      jsStrategy.put("saved", _isSaved);
+      jsStrategy.put("deleted", _isDeleted);
       jsStrategy.put("type", getRecordClass().getFullName());
 
       if (!forChecksum) {
@@ -650,7 +685,7 @@ public class Strategy {
         jsStrategy.put("resultSize", getEstimateSize());
       }
 
-      JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId, forChecksum);
+      JSONObject stepContent = getLatestStep().getJSONContent(_strategyId, forChecksum);
       jsStrategy.put("latestStep", stepContent);
     }
     catch (JSONException ex) {
@@ -659,40 +694,18 @@ public class Strategy {
     return jsStrategy;
   }
 
-  public boolean isValidBasedOnStepFlags() {
-    return isValidBasedOnStepFlags;
-  }
-
-  public void setValidBasedOnStepFlags(boolean isValidBasedOnStepFlags) {
-    this.isValidBasedOnStepFlags = isValidBasedOnStepFlags;
-  }
-
-  /**
-   * @return the valid
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public boolean isValid() throws WdkModelException {
-    if (latestStep == null)
-      getLatestStep();
-    if (latestStep != null)
-      valid = latestStep.isValid();
-    return valid;
-  }
-
-  public void setValid(boolean valid) {
-    this.valid = valid;
+  public boolean isValid() {
+    // if any steps are invalid, the strategy is invalid
+    return reduce(_stepMap.values(), (acc, next) -> (!next.isValid() ? false : acc), true);
   }
 
   /**
    * @return the lastRunTime
    */
   public Date getLastRunTime() {
-    if (latestStep != null)
-      lastRunTime = latestStep.getLastRunTime();
-    return lastRunTime;
+    if (_latestStep != null)
+      _lastRunTime = _latestStep.getLastRunTime();
+    return _lastRunTime;
   }
 
   /**
@@ -700,14 +713,14 @@ public class Strategy {
    *          the lastRunTime to set
    */
   public void setLastRunTime(Date lastRunTime) {
-    this.lastRunTime = lastRunTime;
+    _lastRunTime = lastRunTime;
   }
 
   /**
    * @return the lastModifiedTime
    */
   public Date getLastModifiedTime() {
-    return lastModifiedTime;
+    return _lastModifiedTime;
   }
 
   /**
@@ -715,7 +728,7 @@ public class Strategy {
    *          the lastModifiedTime to set
    */
   public void setLastModifiedTime(Date lastModifiedTime) {
-    this.lastModifiedTime = lastModifiedTime;
+    _lastModifiedTime = lastModifiedTime;
   }
 
   /**
@@ -726,7 +739,7 @@ public class Strategy {
    * @return the signature
    */
   public String getSignature() {
-    return signature;
+    return _signature;
   }
 
   /**
@@ -734,14 +747,14 @@ public class Strategy {
    *          the signature to set
    */
   public void setSignature(String signature) {
-    this.signature = signature;
+    _signature = signature;
   }
 
   /**
    * @return the description
    */
   public String getDescription() {
-    return description;
+    return _description;
   }
 
   /**
@@ -749,25 +762,20 @@ public class Strategy {
    *          the description to set
    */
   public void setDescription(String description) {
-    this.description = description;
+    _description = description;
   }
 
   public int getEstimateSize() {
-    if (latestStep != null)
-      estimateSize = latestStep.getEstimateSize();
-    return estimateSize;
+    return (_latestStep == null ? 0 : defaultOnException(() -> _latestStep.getResultSize(), 0));
   }
 
   public String getEstimateSizeNoCalculate() {
-    return (estimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(estimateSize));
-  }
-
-  void setEstimateSize(int estimateSize) {
-    this.estimateSize = estimateSize;
+    int latestStepEstimateSize = _latestStep == null ? 0 : _latestStep.getEstimateSize();
+    return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
   }
 
   public void setRecordClass(RecordClass recordClass) {
-    this.recordClass = recordClass;
+    _recordClass = recordClass;
   }
 
   /**
@@ -825,4 +833,134 @@ public class Strategy {
     }
     return null;
   }
+
+  void appendStep(Step step) {
+    _stepMap.put(step.getStepId(), step);
+  }
+
+  void finish(UserCache userCache) throws WdkModelException {
+
+    // assigne the user from the user cache
+    _user = userCache.get(_userId);
+
+    // 1. Confirm project and user id match across strat and all steps, and that steps were properly assigned
+    for (Step step : _stepMap.values()) {
+      String identifier = "Step " + step.getStepId();
+      if (_userId != step.getUserId().longValue()) {
+        throw new WdkModelException(identifier + " does not have the same owner as its strategy, " + _strategyId);
+      }
+      if (!_projectId.equals(step.getProjectId())) {
+        throw new WdkModelException(identifier + " does not have the same project as its strategy, " + _strategyId);
+      }
+      if (_strategyId != step.getStrategyId().longValue()) {
+        throw new WdkModelException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + step.getStrategyId() + " (i.e. SQL is broken).");
+      }
+    }
+
+    // temporary map to keep track of which steps have been referenced so far
+    Map<Long, Boolean> stepRefMap = Functions.getMapFromList(_stepMap.values(),
+        step -> new TwoTuple<Long,Boolean>(step.getId(), false));
+
+    // 2. Make sure all referenced steps are present and used only once
+    _latestStep = getReferencedStep(stepRefMap, this, getLatestStepId(), false);
+    for (Step step : _stepMap.values()) {
+      step.setPreviousStep(getReferencedStep(stepRefMap, step, step.getPreviousStepId(), true));
+      step.setChildStep(getReferencedStep(stepRefMap, step, step.getChildStepId(), true));
+    }
+
+    // 3. Throw exception if steps are assigned to this strat that are not in the tree
+    for (Entry<Long,Boolean> ref : stepRefMap.entrySet()) {
+      if (!ref.getValue()) {
+        throw new WdkModelException("Step " + ref.getKey() + " has strategy ID " + _strategyId +
+            " but is not referenced as the root step or by any steps in the strategy.");
+      }
+    }
+
+    // 4. Validate each step in the strategy; regardless of validity, strategy can be sent out and hopefully displayed
+    for (Step step : _stepMap.values()) {
+      step.finish(userCache, this);
+    }
+  }
+
+  private Step getReferencedStep(Map<Long,Boolean> stepRefMap, StrategyElement parent, long stepId, boolean allowZero) throws WdkModelException {
+    String parentIdentifier = parent.getClass().getSimpleName() + " " + parent.getId();
+    if (stepId == 0) {
+      if (allowZero) {
+        return null;
+      }
+      else {
+        throw new WdkModelException(parentIdentifier + " " + " must refer to a valid step ID.");
+      }
+    }
+    Boolean isReferenced = stepRefMap.get(stepId);
+    if (isReferenced == null) {
+      throw new WdkModelException(parentIdentifier + " refers to step " + stepId + " which is not part of its strategy.");
+    }
+    if (isReferenced) {
+      throw new WdkModelException("Step " + stepId + " is referenced by >1 steps in strategy " + parent.getStrategyId());
+    }
+    stepRefMap.put(stepId, true);
+    return _stepMap.get(stepId);
+  }
+
+  /**
+   * Sets the owner for this strategy and for all the steps in this strategy to the passed user
+   * 
+   * @param user user to set
+   */
+  void setUser(User user) {
+    _user = user;
+    for (Step step : _stepMap.values()) {
+      step.setUser(user);
+    }
+  }
+
+  @Override
+  public long getId() {
+    return getStrategyId();
+  }
+
+  public int getNumSteps() {
+    return _stepMap.size();
+  }
+
+  @Deprecated // used???
+  public int getNumStepsUi() {
+    return _stepMap.values().stream()
+      // FIXME: the following line has issues if getQuestion() returns null (i.e. invalid question name)
+      .filter(step -> step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
+      .collect(Collectors.counting()).intValue();
+  }
+
+  private void verifySameOwnerAndProject(Strategy strategy, Step step) throws WdkModelException {
+    // check that users match
+    if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
+      throw new WdkIllegalArgumentException(Step.getVerificationPrefix() +
+          "Cannot assign a root step to a strategy unless they have the same" + "owner.  Existing strategy " +
+          strategy.getStrategyId() + " has" + "owner " + strategy.getUser().getUserId() + " (" +
+          strategy.getUser().getEmail() + ")\n  Call made to assign the " +
+          "following root step (see stack below for how):\n  Newly assigned" + "step " + step.getStepId() +
+          " has owner " + step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")");
+    }
+
+    // check that projects both match current project
+    String projectId = _wdkModel.getProjectId();
+    if (!strategy.getProjectId().equals(projectId) || !step.getProjectId().equals(projectId)) {
+      throw new WdkIllegalArgumentException(Step.getVerificationPrefix() +
+          "Cannot assign a root step to a strategy " +
+          "unless they have the same project.  Project IDs don't match " +
+          "during assignment of root step to strategy!!\n  Currently loaded " + "model has project " +
+          projectId + ".\n  Root step to be assigned (" + step.getStepId() + ") has project " +
+          step.getProjectId() + ".\n  " + "Strategy being assigned step (" + strategy.getStrategyId() +
+          ") has project " + strategy.getProjectId());
+    }
+  }
+
+  public Step findParentOf(long stepId) {
+    Optional<Step> foundParent = _stepMap.values().stream()
+      .filter(step -> step.getChildStepId() == stepId || step.getPreviousStepId() == stepId)
+      .findFirst();
+    return foundParent.isPresent() ? foundParent.get() : null;
+  }
+
 }

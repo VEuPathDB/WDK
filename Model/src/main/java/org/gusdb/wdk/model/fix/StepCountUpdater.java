@@ -243,7 +243,7 @@ public class StepCountUpdater extends BaseCLI {
           }
           catch (Exception ex) {
             // don't need to update DB here since updating in finally
-            step.setValid(false);
+            step.setValidFlag(false);
           }
           finally {
             step.update(false);
