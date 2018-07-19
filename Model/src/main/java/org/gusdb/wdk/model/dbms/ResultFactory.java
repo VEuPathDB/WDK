@@ -122,7 +122,7 @@ public class ResultFactory {
       return new SqlResultList(resultSet);
     }
     catch (SQLException e) {
-      throw new WdkModelException("Unable to retrieve cached results.", e);
+      throw new WdkModelException("Unable to retrieve results from WDK Cache.", e);
     }
   }
 

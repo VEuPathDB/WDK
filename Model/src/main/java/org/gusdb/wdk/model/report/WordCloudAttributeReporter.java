@@ -25,7 +25,6 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private static final String PROP_EXCLUDE_NUMBERS = "exclude-numbers";
   private static final String PROP_COMMON_WORDS = "common-words";
 
-  private static final String ATTR_CONTENT = "content";
   private static final String ATTR_TAGS = "tags";
 
   private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
