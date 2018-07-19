@@ -11,9 +11,12 @@ import {
 import * as ParamModules from 'Params';
 import QuestionStore, { State, QuestionState } from 'Views/Question/QuestionStore';
 import { Seq } from 'Utils/IterableUtils';
-import { Parameter } from 'Utils/WdkModel';
+import { preorder } from 'Utils/TreeUtils';
+import { Parameter, EnumParam } from 'Utils/WdkModel';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import { Context } from 'Params/Utils';
+import { isType as isEnumParam } from 'Params/EnumParam';
+import { isType as isTreeBoxParam } from 'Params/EnumParam/TreeBoxEnumParam';
 
 export const UNRECOVERABLE_PARAM_ERROR_EVENT = 'unrecoverable-param-error';
 
@@ -170,6 +173,8 @@ export default class LegacyParamController extends AbstractViewController<
       )
     }
 
+    const ParameterInput = isEnumParam(parameter) ? EnumParameterInput : SimpleParamterInput;
+
     return (
       <div>
         <this.paramModules.ParamComponent
@@ -187,9 +192,10 @@ export default class LegacyParamController extends AbstractViewController<
             });
           }}
         />
-        <ParamterInput
+        <ParameterInput
           name={this.props.paramName}
           value={this.state.paramValues[this.props.paramName]}
+          parameter={parameter}
         />
       </div>
     )
@@ -200,13 +206,14 @@ export default class LegacyParamController extends AbstractViewController<
 type ParameterInputProps = {
   name: string;
   value: string;
+  parameter: Parameter;
 }
 
 /**
  * Input element that emits change events so that it can participate in classic
  * question page (see wdk/js/components/paramterHandlers.js).
  */
-class ParamterInput extends React.Component<ParameterInputProps> {
+class SimpleParamterInput extends React.Component<ParameterInputProps> {
 
   input: HTMLInputElement | null;
 
@@ -233,6 +240,72 @@ class ParamterInput extends React.Component<ParameterInputProps> {
         type="hidden"
         id={this.props.name}
         name={`value(${this.props.name})`}
+        value={this.props.value}
+      />
+    );
+  }
+
+}
+
+type EnumParameterInputProps = {
+  name: string;
+  value: string;
+  parameter: EnumParam;
+}
+
+class EnumParameterInput extends React.Component<EnumParameterInputProps> {
+  render() {
+    const options = isTreeBoxParam(this.props.parameter)
+      ? Seq.from(preorder(this.props.parameter.vocabulary, node => node.children))
+        .filter(node => node.children.length == 0)
+        .map(node => node.data.term)
+        .toArray()
+      : this.props.parameter.vocabulary.map(entry => entry[0])
+    const selected = this.props.value ? new Set(this.props.value.split(',')) : new Set();
+    return (
+      <React.Fragment>
+        {options.map(value =>
+          <EnumCheckbox key={value} checked={selected.has(value)} name={this.props.name} value={value}/>
+        )}
+      </React.Fragment>
+    );
+  }
+}
+
+type EnumCheckboxProps = {
+  name: string;
+  value: string;
+  checked: boolean;
+}
+
+class EnumCheckbox extends React.Component<EnumCheckboxProps> {
+  input: HTMLInputElement | null;
+
+  dispatchChangeEvent = debounce(this._dispatchChangeEvent, 1000);
+
+  componentDidUpdate(prevProps: EnumCheckboxProps) {
+    if (prevProps.checked !== this.props.checked) {
+      this.dispatchChangeEvent();
+    }
+  }
+
+  _dispatchChangeEvent() {
+    if (this.input == null) {
+      console.warn("Input field is not defined. Skipping event dispatch.");
+      return;
+    }
+    this.input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  render() {
+    return (
+      <input
+        ref={el => this.input = el}
+        style={{ display: 'none' }}
+        type="checkbox"
+        checked={this.props.checked}
+        readOnly={true}
+        name={`array(${this.props.name})`}
         value={this.props.value}
       />
     );
