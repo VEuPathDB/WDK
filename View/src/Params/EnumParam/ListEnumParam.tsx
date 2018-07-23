@@ -8,7 +8,7 @@ export function isType(parameter: Parameter): parameter is ListEnumParam {
   return (
     isEnumParam(parameter) && (
       parameter.displayType === 'select' ||
-      parameter.displayType === 'checkbox' ||
+      parameter.displayType === 'checkBox' ||
       parameter.displayType === 'typeAhead'
     )
   );

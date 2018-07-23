@@ -169,15 +169,18 @@ const treeBoxVocabDecoder: Decode.Decoder<TreeBoxVocabNode> =
 
 const parameterDecoder: Decode.Decoder<Parameter> =
   Decode.combine(
-    Decode.field('name', Decode.string),
-    Decode.field('displayName', Decode.string),
-    Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
-    Decode.field('help', Decode.string),
-    Decode.field('isVisible', Decode.boolean),
-    Decode.field('group', Decode.string),
-    Decode.field('isReadOnly', Decode.boolean),
-    Decode.field('defaultValue', Decode.optional(Decode.string)),
-    Decode.field('dependentParams', Decode.arrayOf(Decode.string)),
+    /* Common properties */
+    Decode.combine(
+      Decode.field('name', Decode.string),
+      Decode.field('displayName', Decode.string),
+      Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
+      Decode.field('help', Decode.string),
+      Decode.field('isVisible', Decode.boolean),
+      Decode.field('group', Decode.string),
+      Decode.field('isReadOnly', Decode.boolean),
+      Decode.field('defaultValue', Decode.optional(Decode.string)),
+      Decode.field('dependentParams', Decode.arrayOf(Decode.string))
+    ),
     Decode.oneOf(
       /* AnswerParam */
       Decode.field('type', Decode.constant('AnswerParam')),
