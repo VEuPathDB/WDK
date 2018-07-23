@@ -241,6 +241,16 @@ wdk.namespace("wdk.addStepPopup", function(ns, $) {
 
             $("#query_form").css("z-index", 100);
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
+          },
+
+          error: function(jqXHR, textStatus, errorThrown) {
+            wizardLoading(false);
+            $(ele).trigger(CANCEL_EVENT);
+            window.alert(`
+              Something went wrong and your request could not be processed.
+              Make sure that all form fields have values.
+              If you continue to have trouble, please contact us using the link at the top of the page.
+            `);
           }
         });
         break;
