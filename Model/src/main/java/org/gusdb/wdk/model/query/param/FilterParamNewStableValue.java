@@ -119,7 +119,10 @@ public class FilterParamNewStableValue {
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
-        String err = mf.validateValues(metadataMembers.get(mf.getField()));
+        Set<String> validMemberValues = metadataMembers.containsKey(mf.getField())?
+            metadataMembers.get(mf.getField()) : Collections.emptySet();
+        String err = mf.validateValues(validMemberValues);
+
         if (err != null)
           errors.add(err);
       }
