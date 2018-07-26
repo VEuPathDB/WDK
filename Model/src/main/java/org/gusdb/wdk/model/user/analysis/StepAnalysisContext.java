@@ -175,7 +175,7 @@ public class StepAnalysisContext {
       throw new DeprecatedAnalysisException("Illegal step analysis plugin " +
           "name for analysis with ID: " + analysisId, e);
     }
-    catch (WdkModelException e) {
+    catch (WdkModelException | NullPointerException e) {
       throw new DeprecatedAnalysisException("Unable to construct context " +
           "from analysis with ID: " + analysisId, e);
     }
