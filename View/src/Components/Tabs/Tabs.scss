@@ -14,6 +14,8 @@
     .wdk-Tab {
       padding: 1em;
       cursor: pointer;
+      border: none;
+      background: transparent;
 
       &__active {
         margin-bottom: -1px;

@@ -7,10 +7,11 @@ import GlobalDataStore from 'Core/State/Stores/GlobalDataStore';
 import WdkStore from 'Core/State/Stores/WdkStore';
 import { Action, ActionCreatorResult, ActionCreatorServices } from 'Utils/ActionCreatorUtils';
 import { UserDataset } from 'Utils/WdkModel';
+import { PluginContext, ClientPlugin, CompositeClientPlugin } from 'Utils/ClientPlugin';
 
 
 export interface StoreConstructor<T extends WdkStore> {
-  new(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices): T;
+  new(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices, locatePlugin: LocatePlugin): T;
 }
 
 export interface DispatchAction {
@@ -32,6 +33,7 @@ export interface Container<T> {
 export interface ViewControllerProps<Store> {
   stores: Container<Store>;
   makeDispatchAction: MakeDispatchAction;
+  locatePlugin: LocatePlugin;
 }
 
 export type PageControllerProps<Store> = ViewControllerProps<Store> & RouteComponentProps<any>;
@@ -71,3 +73,7 @@ export interface MesaSortObject {
   columnKey: string;
   direction: string;
 };
+
+export interface LocatePlugin {
+  (type: string): CompositeClientPlugin;
+}

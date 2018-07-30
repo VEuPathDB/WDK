@@ -1,6 +1,6 @@
 import { matchAction, Reducer } from 'Utils/ReducerUtils';
 
-import { makeReduce, State as BaseState } from '../BaseAttributeAnalysis';
+import { makeReduce, State as BaseState, observe } from '../BaseAttributeAnalysis';
 import { AttributeReportReceived } from '../BaseAttributeAnalysis/BaseAttributeAnalysisActions';
 import { RankRange, RankRangeChanged, Sort, WordCloudSorted } from './WordCloudActions';
 
@@ -27,7 +27,7 @@ const reduceVisualization = matchAction({} as VisualizationState,
   [WordCloudSorted, (state, wordCloudSort): VisualizationState => ({ ...state, wordCloudSort })],
 );
 
-export const reduce: Reducer<State> = makeReduce<'word' | 'count', VisualizationState>(
-  { sort: { key: 'word', direction: 'asc' }, search: '' },
-  reduceVisualization
-);
+export const reduce: Reducer<State> =
+  makeReduce<'word' | 'count', VisualizationState>('word', reduceVisualization);
+
+export { observe };

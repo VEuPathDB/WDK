@@ -4,7 +4,7 @@ import { Action, ActionType, TypedActionCreator } from './ActionCreatorUtils';
 
 type AnonTA = TypedActionCreator<string, any>;
 
-export type Reducer<T, S extends Action = Action> = (state: T, action: S) => T;
+export type Reducer<T, S extends Action = Action> = (state: T|undefined, action: S) => T;
 
 type Case<T, S extends AnonTA> = [S, (state: T, payload: ActionType<S>['payload']) => T ]
 

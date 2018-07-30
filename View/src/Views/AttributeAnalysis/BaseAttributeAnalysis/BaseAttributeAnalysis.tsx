@@ -9,7 +9,7 @@ import Tabs from 'Components/Tabs/Tabs';
 import { DispatchAction } from 'Core/CommonTypes';
 import { Seq } from 'Utils/IterableUtils';
 
-import { TableSearched, TableSorted, TabSelected } from './BaseAttributeAnalysisActions';
+import { TableSearched, TableSorted, TabSelected, TablePaged, TableRowsPerPageChanged } from './BaseAttributeAnalysisActions';
 import { State } from './BaseAttributeAnalysisState';
 
 type VisualizationConfig = {
@@ -23,7 +23,7 @@ type TableConfig<T extends string> = {
 }
 
 type Props<T extends string> = {
-  state: State<T>;
+  state: State<T>
   dispatch: DispatchAction;
   visualizationConfig: VisualizationConfig;
   tableConfig: TableConfig<T>;
@@ -32,6 +32,12 @@ type Props<T extends string> = {
 type Column = { key: 'value' | 'count'; display: string; }
 
 export class AttributeAnalysis<T extends string> extends React.PureComponent<Props<T>> {
+
+  onPageChange = (currentPage: number) =>
+    this.props.dispatch(TablePaged.create(currentPage))
+
+  onRowsPerPageChange = (rowsPerPage: number) =>
+    this.props.dispatch(TableRowsPerPageChanged.create(rowsPerPage))
 
   onSort = (column: Column, direction: 'asc' | 'desc') =>
     this.props.dispatch(TableSorted.create({ key: column.key, direction }))
@@ -44,7 +50,7 @@ export class AttributeAnalysis<T extends string> extends React.PureComponent<Pro
 
   render() {
     const { state, visualizationConfig, tableConfig } = this.props;
-    const { sort, search } = state.table;
+    const { currentPage, rowsPerPage, sort, search } = state.table;
 
 
     const { data } = this.props.tableConfig;
@@ -55,6 +61,9 @@ export class AttributeAnalysis<T extends string> extends React.PureComponent<Pro
       .filter(row => search ? tableConfig.columns.some(column => searchRe.test(String(row[column.key] || ''.toLowerCase()))) : true)
       .orderBy(row => row[sort.key], sort.direction === 'desc')
       .toArray();
+
+    const firstRowIndex = (currentPage - 1) * rowsPerPage;
+    const pagedData = filteredData.slice(firstRowIndex, firstRowIndex + rowsPerPage);
 
     return (
       <Tabs
@@ -82,20 +91,27 @@ export class AttributeAnalysis<T extends string> extends React.PureComponent<Pro
                   state={{
                     options: {
                       useStickyHeader: true,
-                      tableBodyMaxHeight: '60vh'
+                      tableBodyMaxHeight: '38vh'
                     },
                     actions: [],
                     eventHandlers: {
-                      onSort: this.onSort
+                      onSort: this.onSort,
+                      onPageChange: this.onPageChange,
+                      onRowsPerPageChange: this.onRowsPerPageChange
                     },
                     uiState: {
                       sort: {
                         columnKey: state.table.sort.key,
                         direction: state.table.sort.direction
+                      },
+                      pagination: {
+                        currentPage,
+                        rowsPerPage,
+                        totalRows: filteredData.length,
                       }
                     },
                     rows: data,
-                    filteredRows: filteredData,
+                    filteredRows: pagedData,
                     columns: tableConfig.columns.map(({ key, display: name }) => ({
                       key,
                       name,

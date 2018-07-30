@@ -23,7 +23,14 @@ import * as StaticDataUtils from 'Utils/StaticDataUtils';
 import * as Stores from 'Core/State/Stores';
 import * as Controllers from 'Core/Controllers';
 import * as ActionCreators from 'Core/ActionCreators';
+import * as Plugins from 'Core/Plugins';
 import { initialize, wrapComponents } from 'Core/main';
+
+declare global {
+  interface Window {
+    __asset_path_remove_me_please__: string;
+  }
+}
 
 __webpack_public_path__ = window.__asset_path_remove_me_please__; // eslint-disable-line
 
@@ -38,6 +45,7 @@ export {
   initialize,
   Components,
   Controllers,
+  Plugins,
   PromiseUtils,
   CategoryUtils,
   OntologyUtils,
