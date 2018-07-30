@@ -3,7 +3,8 @@ import { Observable } from 'rxjs/Rx';
 
 import WdkDispatcher from 'Core/State/Dispatcher';
 import GlobalDataStore, { GlobalData } from 'Core/State/Stores/GlobalDataStore';
-import { Action, ActionCreatorServices, Epic } from 'Utils/ActionCreatorUtils';
+import { Action, ActionCreatorServices, Epic, EpicServices } from 'Utils/ActionCreatorUtils';
+import { LocatePlugin } from '../../CommonTypes';
 
 export interface BaseState {
   globalData: GlobalData;
@@ -16,6 +17,8 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
 
   /** The store that provides global state */
   globalDataStore: GlobalDataStore;
+
+  locatePlugin: LocatePlugin;
 
   // Makes it possible to access the type of the Store's state via typescript.
   // E.g., Store['state'].
@@ -64,18 +67,18 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
   /**
    * A root epic that merges the observables returned by `getEpics()`.
    */
-  rootEpic(actions$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
-    const epicServices = { ...services, store: this };
-    const epicActions = this.getEpics().map(epic => epic(actions$, epicServices));
+  rootEpic(actions$: Observable<Action>, services: EpicServices): Observable<Action> {
+    const epicActions = this.getEpics().map(epic => epic(actions$, services));
     return Observable.merge(...epicActions);
   }
 
   /*------------- Methods that should probably not be overridden -------------*/
 
-  constructor(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices) {
+  constructor(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices, locatePlugin: LocatePlugin) {
     super(dispatcher);
     this.channel = channel;
     this.globalDataStore = globalDataStore;
+    this.locatePlugin = locatePlugin;
     this.configureEpic(dispatcher, services);
   }
 
@@ -95,6 +98,8 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
 
   configureEpic(dispatcher: WdkDispatcher<Action>, services: ActionCreatorServices) {
     // Wire up epics.
+    const epicServices = { ...services, store: this };
+
     const action$ = dispatcher.asObservable().filter(action =>
       this.storeShouldReceiveAction(action.channel));
 
@@ -104,7 +109,7 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     };
 
     const startEpic = (): Observable<Action> =>
-      this.rootEpic(action$, services)
+      this.rootEpic(action$, epicServices)
         // Assign channel unless action isBroadcast
         .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
         .catch((error: Error, caught) => {

@@ -1,8 +1,9 @@
 import { matchAction } from 'Utils/ReducerUtils';
 
-import { makeReduce, State as BaseState } from '../BaseAttributeAnalysis';
-import { DisplayType, SetBinSize, SetDisplayType } from './HistogramActions';
+import { makeReduce, observe, State as BaseState } from '../BaseAttributeAnalysis';
 import { AttributeReportReceived } from '../BaseAttributeAnalysis/BaseAttributeAnalysisActions';
+import { DisplayType, SetBinSize, SetDisplayType } from './HistogramActions';
+
 
 type HistogramState = {
   binSize: number;
@@ -21,7 +22,7 @@ const reduceHistogram = matchAction({} as HistogramState,
   [SetDisplayType, (state, displayType): HistogramState => ({ ...state, displayType })],
 )
 
-export const reduce = makeReduce<'attrValue' | 'recordCount', HistogramState>(
-  { sort: { key: 'attrValue', direction: 'asc' }, search: ''},
-  reduceHistogram
-);
+export const reduce =
+  makeReduce<'attrValue' | 'recordCount', HistogramState>('attrValue', reduceHistogram);
+
+export { observe }

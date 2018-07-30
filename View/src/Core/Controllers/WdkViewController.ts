@@ -1,6 +1,7 @@
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
 import { Action, ActionCreatorRecord } from 'Utils/ActionCreatorUtils';
+import { StoreConstructor } from '../CommonTypes';
 
 /**
  * Simple implementation of 'AbstractViewController' that uses 'WdkStore' and
@@ -25,7 +26,7 @@ export default class WdkViewController<
     return this.store.getState();
   }
 
-  getStoreClass() {
+  getStoreClass(): StoreConstructor<WdkStore> {
     return WdkStore;
   }
 

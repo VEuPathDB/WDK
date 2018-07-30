@@ -9,6 +9,7 @@ import { Seq } from 'Utils/IterableUtils';
 import { createDeferred } from 'Utils/PromiseUtils';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import * as WdkControllers from 'Core/Controllers';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 
 export * from 'Core/index';
 
@@ -75,9 +76,16 @@ wdk.namespace('wdk', ns => {
         onPropsChanged(props: any) {
           ReactDOM.render(
             React.createElement(
-              Router,
-              { history: context.history },
-              React.createElement(ViewController as any, { ...props, ...context })
+              ErrorBoundary,
+              {
+                dispatchAction: context.dispatchAction,
+                renderError: () => 'There was an error!'
+              },
+              React.createElement(
+                Router,
+                { history: context.history },
+                React.createElement(ViewController as any, { ...props, ...context })
+              )
             ), el)
         },
         onRemoved() {

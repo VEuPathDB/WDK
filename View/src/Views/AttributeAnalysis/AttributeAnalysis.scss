@@ -10,4 +10,11 @@
     left: calc(50vw - #{$popup-width / 2});
   }
 
+  &Button {
+    background-image: url('plugin.png') !important;
+    background-size: cover;
+    width: 22px;
+    height: 18px;
+  }
+
 }

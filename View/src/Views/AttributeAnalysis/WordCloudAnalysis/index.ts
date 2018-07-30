@@ -1,1 +1,0 @@
-export { reduce, State } from './WordCloudState';

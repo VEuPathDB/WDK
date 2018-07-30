@@ -1,15 +1,17 @@
-import React, { Component, Children, ReactChild, ReactNode } from 'react';
-import Popup from 'Components/Overlays/Popup';
-import Icon from 'Components/Icon/Icon';
+import React, { Children, Component, ReactChild, ReactNode } from 'react';
+
 import Resizable from 'Components/Display/Resizable';
-import { wrappable, makeClassNameHelper } from 'Utils/ComponentUtils';
+import Icon from 'Components/Icon/Icon';
+import Popup from 'Components/Overlays/Popup';
+import { makeClassNameHelper, wrappable } from 'Utils/ComponentUtils';
+import { TabbableContainer } from '..';
 
 let c = makeClassNameHelper('wdk-Dialog');
 let c2 = makeClassNameHelper(' ');
 
 type Props = {
   open: boolean;
-  children: ReactChild;
+  children: ReactNode;
   modal?: boolean;
   title?: ReactNode;
   buttons?: ReactNode[];
@@ -27,6 +29,7 @@ class Dialog extends Component<Props> {
   constructor(props: Props) {
     super(props);
     this.setHeaderNodeRef = this.setHeaderNodeRef.bind(this);
+    this.handleKeyDown =  this.handleKeyDown.bind(this);
   }
 
   makeClassName(suffix = '', ...modifiers: any[]) {
@@ -46,6 +49,12 @@ class Dialog extends Component<Props> {
     else classes.remove('wdk-ModalOpen');
   }
 
+  handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if ((event.key === 'Escape' || event.key === 'Esc') && this.props.onClose) {
+      this.props.onClose();
+    }
+  }
+
   componentDidMount() {
     this.blockScrollingIfModalOpen();
   }
@@ -59,6 +68,8 @@ class Dialog extends Component<Props> {
   }
 
   render () {
+    if (!this.props.open) return null;
+
     let {
       onClose = () => {},
       buttons = [(
@@ -94,7 +105,9 @@ class Dialog extends Component<Props> {
         open={this.props.open}
         dragHandleSelector={() => this.headerNode as Element}
       >
-        {content}
+        <TabbableContainer autoFocus onKeyDown={this.handleKeyDown}>
+          {content}
+        </TabbableContainer>
       </Popup>
     );
   }

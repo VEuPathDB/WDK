@@ -6,9 +6,11 @@ import {
   AttributeReportFailed,
   AttributeReportReceived,
   AttributeReportRequested,
+  TablePaged,
   TableSorted,
   TableSearched,
-  TabSelected
+  TabSelected,
+  TableRowsPerPageChanged
 } from './BaseAttributeAnalysisActions';
 
 
@@ -36,12 +38,32 @@ const reduceReport = <Reducer<ReportState>>matchAction({ status: 'idle' },
 type TableState<T extends string> = {
   sort: { key: T; direction: 'asc' | 'desc'; }
   search: string;
+  currentPage: number;
+  rowsPerPage: number;
 }
 
 const makeReduceTable = <T extends string>(init: TableState<T>) => <Reducer<TableState<T>>>matchAction(init,
-  [AttributeReportCancelled, (state) => init],
-  [TableSorted, (state, sort) => ({ ...state, sort })],
-  [TableSearched, (state, search) => ({ ...state, search })],
+  [AttributeReportCancelled, (state): TableState<T> => init],
+  [TablePaged, (state, currentPage): TableState<T> => ({
+    ...state,
+    currentPage
+  })],
+  [TableRowsPerPageChanged, (state, rowsPerPage): TableState<T> => ({
+    ...state,
+    currentPage: 1,
+    rowsPerPage
+  })],
+  [TableSorted, (state, sort): TableState<T> => ({
+    ...state,
+    currentPage: 1,
+    sort
+    // casting return value since the payload of TableSorted cannot be genericized.
+  }) as TableState<T>],
+  [TableSearched, (state, search): TableState<T> => ({
+    ...state,
+    currentPage: 1,
+    search
+  })],
 )
 
 
@@ -69,9 +91,17 @@ export type State<T extends string, S = {}> = {
   visualization: S;
 }
 
-export const makeReduce = <T extends string, S>(initTableState: TableState<T>, reduceVisualization: Reducer<S> = () => ({} as S)): Reducer<State<T, S>> => combineReducers({
+export const makeReduce = <T extends string, S>(initTableSortColumn: T, reduceVisualization: Reducer<S> = () => ({} as S)): Reducer<State<T, S>> => combineReducers({
   data: reduceReport,
-  table: makeReduceTable<T>(initTableState),
+  table: makeReduceTable<T>({
+    currentPage: 1,
+    rowsPerPage: 100,
+    search: '',
+    sort: {
+      key: initTableSortColumn,
+      direction: 'asc'
+    }
+  }),
   tabs: reduceTabs,
   visualization: reduceVisualization
 })

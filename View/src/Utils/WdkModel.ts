@@ -268,7 +268,7 @@ export interface AnswerSpec {
 
 export interface AnswerFormatting {
   format: string
-  formatConfig?: {}
+  formatConfig?: object
 }
 
 export interface NewStepSpec {

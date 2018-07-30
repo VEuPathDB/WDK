@@ -12,10 +12,12 @@ const settings = {
 class PaginationMenu extends React.PureComponent {
   constructor (props) {
     super(props);
-    this.renderPageLink = this.renderPageLink.bind(this);
-    this.renderEllipsis = this.renderEllipsis.bind(this);
-    this.renderPageList = this.renderPageList.bind(this);
     this.renderDynamicPageLink = this.renderDynamicPageLink.bind(this);
+    this.renderEllipsis = this.renderEllipsis.bind(this);
+    this.renderPageLink = this.renderPageLink.bind(this);
+    this.renderPageList = this.renderPageList.bind(this);
+    this.renderPerPageMenu = this.renderPerPageMenu.bind(this);
+    this.renderRelativeLink = this.renderRelativeLink.bind(this);
   }
 
   renderEllipsis (key = '') {
@@ -35,8 +37,14 @@ class PaginationMenu extends React.PureComponent {
     );
   }
 
+  getTotalPages() {
+    const { rowsPerPage, totalRows } = this.props;
+    return Math.ceil(totalRows / rowsPerPage);
+  }
+
   getRelativePageNumber (relative) {
-    const { currentPage, totalPages } = this.props;
+    const { currentPage } = this.props;
+    const totalPages = this.getTotalPages();
     switch (relative.toLowerCase()) {
       case 'first':
       case 'start':
@@ -104,7 +112,8 @@ class PaginationMenu extends React.PureComponent {
 
   renderPageList () {
     const { overflowPoint } = settings;
-    const { totalPages, currentPage } = this.props;
+    const { currentPage } = this.props;
+    const totalPages = this.getTotalPages();
 
     const pageList = new Array(totalPages)
       .fill({})
@@ -133,7 +142,8 @@ class PaginationMenu extends React.PureComponent {
   }
 
   render () {
-    const { totalPages, currentPage } = this.props;
+    const { currentPage } = this.props;
+    const totalPages = this.getTotalPages();
 
     const PageList = this.renderPageList;
     const PerPageMenu = this.renderPerPageMenu;
@@ -152,7 +162,7 @@ class PaginationMenu extends React.PureComponent {
 };
 
 PaginationMenu.propTypes = {
-  totalPages: PropTypes.number,
+  totalRows: PropTypes.number,
   currentPage: PropTypes.number,
   rowsPerPage: PropTypes.number,
   onPageChange: PropTypes.func,
