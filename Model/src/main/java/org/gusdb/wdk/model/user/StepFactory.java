@@ -1261,10 +1261,6 @@ public class StepFactory {
     Map<String, Param> params = question.getParamMap();
 
     Map<String, String> paramValues = oldStep.getParamValues();
-    paramValues.entrySet().stream()
-        .forEach(entry -> {
-          entry.setValue("test");
-        });
     for (String paramName : paramValues.keySet()) {
       Param param = params.get(paramName);
       String paramValue = paramValues.get(paramName);
